@@ -1,0 +1,250 @@
+# CAM-OCCT Development Guide
+
+## Project Overview
+
+CAM-OCCT is a web-based Computer-Aided Manufacturing (CAM) application that converts SVG and DXF design files into optimized G-code for CNC plasma cutting operations. The application specifically targets LinuxCNC 2.9+ QtPlasmaC controllers.
+
+## Key Technologies
+
+- **Frontend**: Svelte 5 with TypeScript
+- **Styling**: Tailwind CSS
+- **3D Graphics**: Three.js
+- **Geometry Processing**: OpenCascade.js
+- **File Processing**: DXF parser, Web Workers
+- **Build Tool**: Vite
+- **Testing**: Vitest (unit tests), Playwright (e2e tests)
+
+## Project Structure
+
+```
+cam-occt/
+├── src/                   # Source code (to be created)
+│   ├── lib/               # Shared libraries and utilities
+│   ├── routes/            # SvelteKit routes
+│   └── app.html           # Main HTML template
+├── tests/                  # Test files
+│   ├── dxf/               # DXF test files for testing import functionality
+│   └── e2e/               # End-to-end Playwright tests (to be created)
+├── .claude/               # Claude-specific documentation (if exists)
+│   └── docs/              # Third-party library docs
+└── package.json           # Project dependencies and scripts
+```
+
+## Development Guidelines
+
+### 1. Code Organization
+
+- **Components**: Create reusable Svelte components in `src/components/`
+- **Code**: Place application code in `src/lib/`
+- **Types**: TypeScript type definitions in `src/types/`
+- **Pages**: Svelte pages go in `src/routes/`
+- **Styles**: CSS styles go in `src/styles/`
+
+### 2. Testing Strategy
+
+#### Unit Tests
+- Place unit tests alongside the files they test (e.g., `utils.ts` → `utils.test.ts`)
+- Use Vitest for unit testing
+- Focus on testing core algorithms, utility functions, and data transformations
+- Run with: `npm run test`
+
+#### E2E Tests
+- Place all e2e tests in `tests/e2e/`
+- Use Playwright for browser automation
+- Test complete user workflows (file import → optimization → export)
+- Run with: `npm run test:e2e`
+- Interactive UI: `npm run test:e2e:ui`
+
+#### Test Data
+- Use DXF files from `tests/dxf/` for import testing
+
+### 3. Available Scripts
+
+```bash
+npm run dev          # Start development server (already running in manual testing)
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run check        # Svelte type checking
+npm run typecheck    # TypeScript type checking
+npm run validate     # Run all validation checks
+npm run test         # Run unit tests
+npm run test:e2e     # Run e2e tests
+```
+
+### 4. Core Features to Implement
+
+Based on the PRD, the following features need implementation:
+
+#### Phase 1 (MVP)
+1. **File Import System**
+   - SVG parser and processor
+   - DXF parser integration (using existing `dxf` package)
+   - File validation and error handling
+
+2. **Basic Drawing Editor**
+   - Shape selection and deletion
+   - Object repositioning (drag & drop)
+   - Scaling and rotation tools
+   - Undo/redo functionality
+
+3. **Cut programming**
+   - Basic cutting parameters
+   - Apply cutting parameters to shapes to create tool paths
+
+4. **Cut Path Generation**
+   - Basic path optimization (minimize rapid movements)
+   - Lead-in/lead-out generation
+   - Cut sequencing
+
+5. **G-code Export**
+   - LinuxCNC compatible output
+
+#### Phase 2 (Optimization)
+1. **Advanced Optimization**
+   - Nesting algorithms
+   - Hole detection and specialized processing
+   - Material database
+
+2. **Visualization**
+   - 3D cut simulation using Three.js
+   - Real-time preview
+   - Time estimation
+
+### 5. Architecture Patterns
+
+#### State Management
+- Use Svelte stores for global application state
+- Keep component state local when possible
+- Consider using a state machine for complex workflows
+
+#### File Processing
+- Use Web Workers for heavy computational tasks
+- Implement progressive loading for large files
+- Add proper error boundaries and fallbacks
+
+#### Performance Considerations
+- Lazy load heavy dependencies (OpenCascade.js, Three.js)
+- Use virtual rendering for large datasets
+- Implement debouncing for real-time operations
+
+### 6. OpenCascade.js Integration
+
+OpenCascade.js is used for advanced geometry operations:
+- Boolean operations (union, difference, intersection)
+- Offset calculations for kerf compensation
+- Complex curve handling (splines, NURBS)
+- Geometric validation
+
+### 7. Three.js Usage
+
+Three.js handles all 3D visualization:
+- 2D/3D viewport rendering
+- Cut path animation
+- Interactive camera controls
+- Selection and highlighting
+
+### 8. G-code Generation
+
+When generating G-code for LinuxCNC QtPlasmaC:
+- Use appropriate M-codes for plasma control
+- Include torch height control (THC) commands
+- Add proper pierce delays
+- Control ohmic sensing on/off state
+
+### 9. Error Handling
+
+- Validate all file imports with clear error messages
+- Handle geometry errors gracefully
+- Provide fallback options for optimization failures
+- Log errors appropriately for debugging
+
+### 10. Browser Compatibility
+
+Target modern browsers only:
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+
+## Common Development Tasks
+
+### Adding a New File Parser
+1. Create parser in `src/lib/parsers/`
+2. Add unit tests for parser logic
+3. Integrate with file import system
+4. Add e2e test for complete workflow
+
+### Creating a New Tool
+1. Define tool component in `src/lib/components/tools/`
+2. Add tool state management
+3. Implement tool interactions
+4. Create keyboard shortcuts
+5. Add to toolbar UI
+
+### Implementing an Optimization Algorithm
+1. Create algorithm in `src/lib/optimization/`
+2. Add comprehensive unit tests
+3. Benchmark performance with test files
+4. Add UI controls and feedback
+5. Document algorithm behavior
+
+## Performance Guidelines
+
+- Keep initial bundle size under 500KB
+- Lazy load heavy dependencies
+- Use Web Workers for computations > 16ms
+- Implement virtual scrolling for large lists
+- Cache computed values appropriately
+
+## Security Considerations
+
+- Validate all file inputs
+- Sanitize SVG content before rendering
+- Use Content Security Policy headers
+- Never execute user-provided code
+- Validate G-code output before export
+
+## Debugging Tips
+
+- Use browser DevTools Performance tab for profiling
+- Enable Svelte DevTools for component inspection
+- Use `npm run check:watch` during development
+- Test with various DXF files from `test/dxf/`
+- Check console for OpenCascade.js initialization
+
+## Third-Party Documentation
+
+Documentation for key libraries is available in `.claude/docs/` (when present):
+- OpenCascade.js API reference
+- Three.js examples and guides
+- DXF format specifications
+- LinuxCNC G-code reference
+
+## Contributing Guidelines
+
+1. **Before Starting**: Review the PRD.md for feature requirements
+2. **Code Style**: Follow existing patterns in the codebase
+3. **Testing**: Write tests for new functionality
+4. **Type Safety**: Ensure TypeScript strict mode compliance
+5. **Performance**: Profile and optimize critical paths
+6. **Documentation**: Update relevant documentation
+
+## Quick Start for New Features
+
+1. Understand the requirement from PRD.md
+2. Plan implementation with appropriate data structures
+3. Write failing tests first (TDD approach)
+4. Implement feature incrementally
+5. Ensure all tests pass
+6. Run validation: `npm run validate`
+7. Test manually with sample files
+8. Create e2e test for user workflow
+
+## Common Pitfalls to Avoid
+
+- Don't assume file formats are standard - always validate
+- Avoid blocking the main thread with heavy computations
+- Don't trust user input - validate and sanitize
+- Remember browser memory limits with large files
+- Test with real-world DXF files, not just simple shapes
+- Consider touch device support from the start
