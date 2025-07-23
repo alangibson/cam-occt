@@ -1,2 +1,6 @@
-node_modules
-.claude/docs
+node_modules/
+.claude/docs/
+.svelte-kit/
+build/
+test-results/
+playwright-report/

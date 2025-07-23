@@ -30,6 +30,16 @@ cam-occt/
 └── package.json           # Project dependencies and scripts
 ```
 
+## Bug Fix Process
+
+When the user reports a bug, follow this process:
+1. **Write an automated test** that will catch the error
+2. **Fix the bug** by implementing the necessary changes
+3. **Run the test** to verify the fix works
+4. **Report completion** or, if the test fails, iterate on the fix
+
+This ensures all bugs are properly covered by tests and prevents regressions.
+
 ## Development Guidelines
 
 ### 1. Code Organization
@@ -158,13 +168,25 @@ When generating G-code for LinuxCNC QtPlasmaC:
 - Provide fallback options for optimization failures
 - Log errors appropriately for debugging
 
-### 10. Browser Compatibility
+### 10. Browser Compatibility & Rendering
+
+**Client-Side Only Application**: This application is designed to run entirely in the browser and does NOT support Server-Side Rendering (SSR). All processing happens on the client side for optimal performance with large files and complex calculations.
 
 Target modern browsers only:
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
+
+Use feature detection for:
+- Web Workers
+- WebGL (for Three.js)
+- File API
+- Drag & Drop API
+
+**Note**: The application uses dynamic imports for heavy dependencies to ensure optimal loading performance.
+
+**IMPORTANT**: Never run the dev server (`npm run dev`) as it is assumed to always be running at the default port during development. Only reference the running server for testing purposes.
 
 ## Common Development Tasks
 
