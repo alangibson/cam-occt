@@ -1,0 +1,346 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+CAM OCCT is a single-page Svelte 5 + TypeScript application that generates CNC plasma cutter G-code from SVG and DXF files. The target CNC controller is LinuxCNC 2.9+ QtPlasmaC.
+
+## Application Architecture
+
+### Application Workflow
+
+The application follows a state machine-driven workflow:
+1. **IDLE** → **LOADING** → **LOADED**: File import and validation
+2. **LOADED** → **MODIFYING** → **LOADED**: Geometry modifications
+3. **LOADED** → **PROGRAMMING** → **EXPORTING**: G-code generation
+4. **ERROR** → **[Previous State]**: Error handling with retry capability
+
+## Technology Stack
+
+- **Vite**: Build tool and dev server
+- **Svelte 5**: Reactive UI framework with runes syntax
+- **TypeScript**: Strict mode enabled for type safety
+- **Three.js**: 3D rendering and geometry visualization
+- **OpenCascade.js**: WASM library for CAD geometry operations
+
+## Shape Selection Behavior
+
+The Three.js viewer implements a sophisticated selection system with hover and click interactions:
+
+### Selection Rules
+
+1. **Hover Selection**: Shape is selected when user hovers over it
+2. **Hover Deselection**: Shape is unselected when user no longer hovers over it (if not clicked)
+3. **Click Pinning**: If user clicks on shape, it stays selected regardless of hover state
+4. **Click Switching**: If user clicks on another shape, all previous shapes are unselected
+
+### Implementation Details
+
+- **Hover Detection**: Uses raycasting with 5.0 threshold for precise line detection
+- **State Management**: Tracks `hoveredObject`, `selectedObject`, and `pinnedObject` separately
+- **Coordinate Systems**: Mouse coordinates converted to normalized device coordinates (-1 to +1)
+- **Empty Space Clicks**: Clicking empty space unpins all selections
+
+### Testing
+
+Selection behavior is comprehensively tested in `tests/e2e/selection-behavior-test.spec.ts`:
+- Individual rule testing (Rules 1-4)
+- Combined workflow scenarios
+- Edge cases (rapid hover events)
+- Visual verification via properties panel visibility
+
+## Code Patterns
+
+### Svelte 5 Conventions
+- Use `<script lang="ts">` for all components
+- **⚠️ ALWAYS Consult Svelte 5 Documentation First**: Before making any Svelte changes, read the docs at `./docs/svelte/documentation/docs/` to understand correct patterns and avoid basic errors
+- **Use Svelte 5 runes for reactivity** instead of legacy stores:
+  - `let count = $state(0)` for reactive state (only in `.svelte` or `.svelte.js/.svelte.ts` files)
+  - `let doubled = $derived(count * 2)` for derived state
+  - `$effect(() => { ... })` for side effects
+  - `let { prop } = $props()` for component props
+  - `let prop = $bindable()` for two-way binding
+- **Event handling**: Use `onclick` instead of `on:click` for native events
+- **Props**: Use `let { prop } = $props()` interface instead of `export let prop`
+- **Component communication**: Use callback props instead of `createEventDispatcher`
+- **Module state sharing**: Use object pattern for cross-module state (see Svelte docs section "Passing state across modules")
+- Use destructured imports (`import { foo } from 'bar'`)
+- **Component decomposition**: Extract reusable UI patterns into separate components
+  - Example: `ShapePropertiesPanel.svelte`, `ViewerControls.svelte`, `LayerMenu.svelte`
+
+### State Management
+- **Global state in `src/lib/stores.svelte.ts` using Svelte 5 runes**: 
+  - Use object pattern: `export const appState = $state({ currentStage: 'import', ... })`
+  - Direct property updates: `appState.currentStage = 'modify'`
+  - File MUST have `.svelte.ts` extension to use `$state` rune
+  - No more `.set()`, `.update()`, or `$store` subscriptions
+- **Project state**: Includes current stage, imported files, geometry, and cut paths
+- **Stage navigation**: Direct state property updates instead of store methods
+- **Component state**: Use `$state()`, `$derived()`, and `$effect()` for local component reactivity
+
+### Three.js Integration
+- Encapsulated in `ThreeViewer` class for reusability
+- Automatic resize handling and animation loop
+- Designed for OpenCascade geometry integration
+
+## File Processing Flow (OpenCascade-First)
+
+1. **Import Stage**: File validation (SVG/DXF), drag-drop support
+2. **Parse to OpenCascade**: DXF → OpenCascade shapes using `DxfToOpenCascadeConverter`
+3. **Visualize**: OpenCascade shapes → Three.js geometry using `OpenCascadeToThreeJSConverter`
+4. **Modify**: CAD operations on OpenCascade shapes (boolean, offset, transform)
+5. **Generate Paths**: OpenCascade toolpath algorithms
+6. **Export**: G-code from OpenCascade geometry
+
+### OpenCascade Geometry Pipeline
+
+**Core Classes:**
+- `OpenCascadeService`: Singleton for OpenCascade.js initialization
+- `DxfToOpenCascadeConverter`: DXF entities → OpenCascade edges/wires/faces
+- `OpenCascadeToThreeJSConverter`: OpenCascade shapes → Three.js BufferGeometry
+
+**DXF Entity Mapping:**
+- **LINE**: `BRepBuilderAPI_MakeEdge` with start/end points
+- **POLYLINE**: `BRepBuilderAPI_MakeWire` with multiple edges
+- **CIRCLE**: `gp_Circ` → `BRepBuilderAPI_MakeEdge`
+- **ARC**: `gp_Circ` with angle limits → `BRepBuilderAPI_MakeEdge`
+- **SPLINE**: `GeomAPI_PointsToBSpline` → `BRepBuilderAPI_MakeEdge`
+
+**Visualization:**
+- Line geometries: Sampled points from curve parametrization
+- Solid geometries: `BRepMesh_IncrementalMesh` tessellation
+
+## Testing and Quality
+
+- Always run `npm run typecheck` after significant changes
+- Test file upload with both SVG and DXF formats
+- Verify G-code output format matches LinuxCNC QtPlasmaC requirements
+- Test stage navigation and state persistence
+- **⚠️ CRITICAL: Use Screenshot Tests for Visualization Issues**: When fixing problems where geometry/images are not displaying correctly, always create Playwright tests that take screenshots to visually verify the fix. Console logs alone cannot confirm that geometry is actually visible to users. Screenshot tests provide definitive proof that rendering issues are resolved.
+
+## Test Files
+
+- When referencing DXF files by name (e.g., ADLER.dxf, Blocktest.dxf), these files are located in the `test/dxf/` directory or subdirectories thereof
+- Always examine actual test files when debugging file-specific issues
+
+## Integration Points
+
+- **OpenCascade.js**: Core CAD kernel - MUST be used for all geometry operations
+- **DXF Parser**: `dxf` npm package → OpenCascade shape conversion
+- **Toolpath Generation**: OpenCascade offset algorithms for plasma cutter paths
+- **G-code Post-Processor**: LinuxCNC QtPlasmaC specific output formatting
+
+## Development Rules
+
+### File Management Rules (⚠️ CRITICAL - Must Follow)
+
+1. **⚠️ NEVER Create Duplicate Files**: DO NOT create files with suffixes like 'enhanced', 'legacy', 'debug', 'integration', '-v2', '-new', etc. 
+   - **ALWAYS modify existing files in place**
+   - **NEVER create backup copies** - use git for version control
+   - **Delete obsolete code** rather than keeping it alongside new code
+   - If major refactoring is needed, create a single clean implementation and remove the old one
+   - Examples of FORBIDDEN patterns: `component-legacy.svelte`, `service-enhanced.ts`, `test-debug.spec.ts`
+
+2. **⚠️ NEVER Create Separate Test Directories**: DO NOT create `__tests__`, `test/`, or `tests/unit/` directories.
+   - **Test files MUST live alongside the files they test**
+   - Use the pattern: `filename.test.ts` next to `filename.ts`
+   - Example: `src/lib/dxf-parser.ts` and `src/lib/dxf-parser.test.ts` in the same directory
+   - **Only exception**: E2E tests can remain in `tests/e2e/` for browser testing
+   - **NEVER separate unit tests from their source files**
+
+### Geometry Rules (⚠️ CRITICAL - Must Follow)
+
+1. **⚠️ CRITICAL: Always Favor Underlying Geometry Over Bounding Box Calculations**: Use actual geometric data (DXF coordinates, OpenCascade curve parameters, etc.) instead of bounding box approximations wherever possible. Bounding boxes are approximations and lead to incorrect results. Prefer: DXF entity data → OpenCascade geometry queries → bounding box (only as last resort).
+
+### Architecture Rules (⚠️ CRITICAL - Must Follow)
+
+1. **Use Clean Architecture Layers**: 
+   - Domain layer: Pure business logic, no external dependencies
+   - Application layer: Use cases, orchestration, repositories 
+   - Presentation layer: UI concerns, view models, controllers
+   - **NEVER mix layers or skip abstractions**
+
+2. **Command Pattern for State Changes**:
+   - Use `TransactionManager` for atomic operations
+   - All state modifications must be commands with rollback capability
+   - **NEVER make direct state changes without commands**
+
+3. **Event Bus for Communication**:
+   - Use typed event buses for inter-component communication
+   - **NEVER use direct method calls between layers**
+   - Subscribe to domain events, emit UI events
+
+4. **Coordinate Manager for Transformations**:
+   - Use `CoordinateManager` for ALL coordinate transformations
+   - Register coordinate systems (DXF, Three.js, screen, etc.)
+   - **NEVER perform manual coordinate calculations**
+
+5. **Service Container for Dependencies**:
+   - Register services with proper lifecycle (singleton/transient/scoped)
+   - Use dependency injection instead of direct instantiation
+   - **NEVER use global variables or singletons directly**
+
+6. **State Machine for Application Flow**:
+   - Use `AppStateMachine` for workflow management
+   - Validate state transitions with guards
+   - **NEVER change application state without state machine**
+
+### OpenCascade Rules (⚠️ CRITICAL - Unchanged)
+
+7. **Never bypass OpenCascade**: All geometry must flow through OpenCascade shapes
+8. **Initialization Required**: Always await `OpenCascadeService.getInstance().initialize()`
+9. **Shape Storage**: Store OpenCascade shapes in domain models for CAD operations
+10. **Visualization Only**: Three.js is only for display, not geometry processing
+11. **⚠️ CRITICAL: OpenCascade is Single Source of Truth**: Three.js visualizations are only ever a representation of what is in OpenCascade data models. All geometry transformations, positioning, and CAD operations must be performed at the OpenCascade level, never in Three.js. OpenCascade shapes contain the authoritative geometry data.
+
+### Testing Rules (⚠️ CRITICAL - Unchanged)
+
+12. **⚠️ CRITICAL: Always Test Error Fixes**: When fixing any error, immediately create automated tests that reproduce and verify the fix. This prevents regression and ensures issues don't resurface.
+13. **⚠️ CRITICAL: Read Test Results Completely**: ALWAYS examine the full test output summary AND stderr output. Look for "X failed" in the results AND examine ALL error messages in stderr. Even if the test summary shows "passed", errors in stderr indicate test conditions that are failing and must be addressed. Never claim success based on partial test output or just the summary line. If any tests fail OR there are errors in stderr, the fix is incomplete.
+14. **⚠️ CRITICAL: Stderr Errors = Test Failures**: Any error messages in stderr during test runs indicate failing test conditions that must be fixed, even if the test framework doesn't mark them as "failed". These are expected behaviors being tested that are producing errors instead of correct results.
+15. **⚠️ CRITICAL: Always Consult OpenCascade Documentation**: When working with OpenCascade.js API, ALWAYS consult the local documentation at `./docs/ocjs.org` (text files with API reference documentation) first before guessing constructor names or method signatures. For deeper understanding of API concepts, parameters, and usage patterns, also consult the OpenCascade C++ library documentation at `./docs/OCCT/documentation.txt` which contains the underlying API that OpenCascade.js is built upon. Additionally, consult the replicad examples at `./docs/replicad` which demonstrate real-world OpenCascade.js usage patterns - note that replicad calls its OpenCascade package "replicad-opencascadejs". This prevents API errors and ensures correct usage. Additionally consult the CascadeStudio source code at './docs/CascadeStudio' for examples of OpenCascade.js usage and rendering OpenCascade.js with Three.js.
+16. **⚠️ CRITICAL: NEVER Miss Test Failures**: When running tests, ALWAYS examine BOTH the summary line AND all stderr output. Stderr errors indicate real failures that must be fixed. Count the actual error messages in stderr to verify how many issues remain. If stderr shows constructor errors, API errors, or any exceptions, the tests are failing regardless of what the summary says. Do NOT declare success until stderr is clean.
+17. **⚠️ CRITICAL: Passing Tests Must Not Emit Errors**: A passing test must NEVER emit error messages to stderr. Error messages in stderr indicate real problems that must be fixed, not expected test behavior. If testing error conditions, use proper mocking or assertions that don't generate actual error output. Clean stderr output is required for all passing tests.
+18. **⚠️ CRITICAL: Always Test Browser Functionality Automatically**: NEVER rely on manual browser testing. Always implement automated browser tests using Playwright or similar tools to verify real browser functionality, especially for file loading, OpenCascade operations, and UI interactions. Test with actual DXF files and capture console errors automatically. Fix any issues found and write tests before claiming functionality works.
+
+### Coordinate System Rules (⚠️ CRITICAL - Updated for New Architecture)
+
+19. **⚠️ CRITICAL: Use CoordinateManager for ALL Transformations**: The new `CoordinateManager` handles all coordinate system transformations. Register coordinate systems (DXF, Three.js, screen, etc.) and use `transformPoint()`, `transformPoints()`, and `getTransformMatrix()` methods. **NEVER perform manual coordinate calculations**.
+20. **⚠️ CRITICAL: Investigate Browser Console Errors Directly**: When the user reports browser console errors, you MUST start the development server and examine the browser console output yourself to see the actual errors. Do not guess or assume what the errors might be. Load the problematic file in the browser, open developer tools, and capture the exact error messages, stack traces, and context. Only then can you properly diagnose and fix the root cause.
+
+## 🏗️ NEW ARCHITECTURE IMPLEMENTATION SUMMARY
+
+The CAM OCCT application now implements **Clean Architecture** with the following core principles to prevent regressions:
+
+### MUST USE Components:
+
+1. **Command Pattern**: All state changes through `TransactionManager` with rollback capability
+2. **Event Bus**: Decoupled communication via typed event buses (`Events.GeometryEvent`, etc.)
+3. **Coordinate Manager**: Single source for coordinate transformations between systems
+4. **Service Container**: Dependency injection with lifecycle management (singleton/transient/scoped)
+5. **State Machine**: Application workflow via `AppStateMachine` with explicit transitions
+6. **Layer Separation**: Domain → Application → Presentation (never bypass layers)
+
+### Architecture Files:
+
+- `src/lib/architecture/command.ts` - Transaction-safe operations
+- `src/lib/architecture/event-bus.ts` - Decoupled communication
+- `src/lib/architecture/coordinate-manager.ts` - Coordinate transformations  
+- `src/lib/architecture/service-container.ts` - Dependency management
+- `src/lib/architecture/state-machine.ts` - Application workflow
+- `src/lib/architecture/layers/domain.ts` - Business logic
+- `src/lib/architecture/layers/application.ts` - Use cases
+- `src/lib/architecture/layers/presentation.ts` - UI concerns
+
+### Why This Architecture Prevents Regressions:
+
+1. **Isolated Layers**: Changes in one layer don't cascade to others
+2. **Transaction Safety**: Operations can be rolled back if they fail
+3. **Coordinate Isolation**: Single transformation point prevents scaling bugs
+4. **Event Isolation**: Components communicate via events, not direct calls
+5. **Dependency Management**: Proper service lifecycle prevents shared state issues
+6. **State Validation**: State machine prevents invalid application state transitions
+
+**⚠️ CRITICAL**: Any new features or bug fixes MUST use this architecture. Do not add to legacy stores/reactive systems.
+12. **⚠️ CRITICAL: Overlay Elements Must Scale with Geometry**: When adding UI overlays (hover markers, dimension indicators, etc.) on top of DXF geometry, ensure they are added to the geometry group (`this.geometryGroup`) rather than directly to the scene. This ensures overlays scale properly when units change or zoom level changes. Elements added directly to the scene will not scale with the main geometry and will appear incorrectly sized.
+13. **⚠️ CRITICAL: Use DXF Viewer Examples for Reference**: When working with DXF file loading and processing, consult the working examples at `./docs/dxf-viewer`, `./docs/dxf-viewer-example-src`, `./docs/three-dxf-viewer`, and `./docs/dxf-viewer-examples`. These examples correctly handle DXF files including Blocktest.dxf with proper block insertion, transforms, and visibility. Use these as reference implementations for correct DXF parsing, block processing, and geometry rendering patterns.
+14. **⚠️ CRITICAL: Write Automated Tests Instead of Manual Browser Testing**: DO NOT start the development server and manually test functionality. Instead:
+    - Write automated Playwright tests that verify browser functionality
+    - Create unit tests for individual components and functions
+    - Use automated screenshot comparison for visual regression testing
+    - Write integration tests that load actual DXF files and verify results
+    - Automated tests prevent regression and ensure consistent verification
+    - Only start dev server manually when explicitly requested by user for demonstration
+15. **⚠️ CRITICAL: Use OpenCascade.js Native NURBS Support**: For SPLINE entity handling, use OpenCascade.js native NURBS capabilities with `GeomAPI_PointsToBSpline` rather than external libraries. DXF SPLINE entities are NURBS curves and OpenCascade.js provides complete B-spline curve support.
+16. **⚠️ CRITICAL: Avoid Tessellation Unless No Alternative**: Do NOT tessellate OpenCascade shapes unnecessarily. Always work with native OpenCascade geometry objects (edges, wires, faces) and only tessellate when absolutely required for visualization in Three.js. Tessellation loses geometric precision and should be minimized.
+17. **⚠️ CRITICAL: Properly Capture Browser Console Errors in Automated Tests**: When writing browser functionality tests:
+    - Set up console event handlers BEFORE navigating to the page
+    - Capture the full error object, not just msg.text()
+    - Wait for file processing to complete (not just page load)
+    - Check error location to identify the exact source
+    - NEVER declare a fix complete without automated tests that show zero console errors
+    - Run browser tests with actual problem files (e.g., Tractor Seat Mount - Left.dxf)
+    - TypeScript compilation fixes do NOT guarantee runtime fixes - always test with automated browser tests
+18. **⚠️ CRITICAL: NO Manual Testing - Use Automated Tests Only**: NEVER run `npm run dev` or start the development server for debugging or manual testing. The dev server always times out and causes delays. Always write automated Playwright tests instead:
+    - Manual testing is unreliable and doesn't prevent regression
+    - Automated tests provide consistent, repeatable verification
+    - Use Playwright for browser functionality testing
+    - Use Vitest for unit and integration testing
+    - Use screenshot comparison for visual verification
+    - Only start dev server when explicitly requested by user for demonstration purposes
+    - All functionality must be verified through automated tests before declaring complete
+    - **NEVER EVER start npm run dev for debugging - it wastes time and always fails**
+19. **⚠️ CRITICAL: Zoom State Preservation**: When modifying ThreeViewer geometry refresh operations:
+    - NEVER reset zoom during shape modifications or reactive property changes
+    - Use `clearScene(false)` and `addMultipleGeometries(..., true)` to preserve zoom during refreshes
+    - Only reset zoom to 100% when loading completely new files (new file imports)
+    - Zoom should remain at 100% for natural 1:1 scale display when new files are loaded
+    - Write automated tests to verify zoom preservation during shape selection, modification, and deletion
+    - Zoom regression breaks user workflow and must be prevented with comprehensive test coverage
+20. **⚠️ CRITICAL: 1:1 Scale Display Accuracy**: Camera positioning affects 1:1 scale calculation:
+    - `calculate1To1Scale()` must use distance from camera to geometry center, not camera distance from origin
+    - Always call `positionCameraForGeometry()` after adding new geometry, even when preserving zoom
+    - Camera distance calculation: use `camera.position.distanceTo(geometryCenter)` not `camera.position.length()`
+    - Test 1:1 scale display at 100% zoom with actual DXF coordinate measurements
+    - Breaking 1:1 scale makes the application useless for CAD work - treat as critical regression
+21. **⚠️ CRITICAL: Shape Selection Highlighting Persistence**: Selected shapes must remain visually highlighted:
+    - Both selected and hovered shapes use orange highlighting for consistency (0xff8800 color)
+    - Selection highlighting must persist through shape modifications and refreshes
+    - Use `reSelectShapeByIndex()` to restore selection highlighting after refresh operations
+    - Store selected shape index before refresh, restore selection after refresh completes
+    - Test selection highlighting persistence through complete modify→refresh→highlight workflow
+    - Lost selection highlighting breaks user feedback and must be prevented
+22. **⚠️ CRITICAL: Zoom Scaling Accuracy - NEVER VIOLATE**: Displayed size on screen MUST ALWAYS match zoom factor:
+    - If an object is 100mm wide at 100% zoom, it MUST measure exactly 100mm when measured on screen with a ruler
+    - If an object is 2 inches wide at 150% zoom, it MUST measure exactly 3 inches when measured on screen
+    - This rule applies to ALL units (mm, inches) and ALL zoom levels (5% to 500%)
+    - Use ZoomScaler module for all zoom calculations - never implement custom zoom logic
+    - At 96 DPI: 1 inch = 96 pixels exactly, 1mm = 96/25.4 pixels exactly
+    - Write comprehensive tests with actual measurement validation to prevent regressions
+    - Breaking accurate zoom scaling makes the application useless for precision CAD work
+    - NEVER use camera distance or viewport-dependent calculations for zoom scaling
+    - Zoom accuracy is fundamental to CAD applications - treat violations as critical bugs
+23. **⚠️ CRITICAL: Use Three.js Documentation as Primary Reference**: Always consult Three.js docs for anything Three.js related:
+    - Three.js documentation and examples are located at `./docs/three.js/`
+    - Use built-in Three.js controls (OrbitControls, etc.) instead of custom implementations
+    - Consult `./docs/three.js/examples/jsm/controls/` for proper control implementations  
+    - Check `./docs/three.js/examples/` for working examples and patterns
+    - Use Three.js native capabilities for camera manipulation, rendering, and geometry operations
+    - Never reinvent Three.js functionality - leverage existing, tested solutions
+24. **⚠️ CRITICAL: Always Check Browser Console Errors Before Task Completion**: No task is complete until browser console is error-free:
+    - Use automated Playwright tests to check browser console during functionality testing
+    - Navigate through all application pages (Import, Modify, Program, Export) to verify no console errors
+    - DO NOT start dev server manually (assume it's running on default port 5173)
+    - Console errors indicate broken functionality that must be fixed before declaring success
+    - Use browser testing tools to verify real-world functionality, not just TypeScript compilation
+    - Create console error check scripts when needed: `node check-console.mjs`
+    - Zero console errors is required for task completion - no exceptions
+25. **⚠️ CRITICAL: Always Test DXF File Loading Before Task Completion**: Run specific DXF file test before declaring completion:
+    - ALWAYS run: `npx playwright test dxf-console-error-check.spec.ts` before saying you are done
+    - Test specifically loads "Tractor Light Mount - Left.dxf" and checks for console errors
+    - This test catches real-world DXF loading issues that basic page navigation misses
+    - Any console errors during DXF loading indicate broken functionality that must be fixed
+    - File must load successfully and display in the viewer without any console errors
+    - Test covers the complete DXF loading pipeline: parsing → OpenCascade → Three.js rendering
+    - Zero console errors during DXF file loading is mandatory for task completion
+26. **⚠️ CRITICAL: Always Test Shape Selection Behavior Before Task Completion**: Run comprehensive shape selection test before declaring completion:
+    - ALWAYS run: `npx playwright test shape-selection-behavior.spec.ts` before saying you are done
+    - Test verifies all selection behavior requirements from CLAUDE.md:
+      - Rule 1: Hover Selection - Shape is selected when user hovers over it
+      - Rule 2: Hover Deselection - Shape is unselected when user no longer hovers over it (if not clicked)
+      - Rule 3: Click Pinning - If user clicks on shape, it stays selected regardless of hover state
+      - Rule 4: Click Switching - If user clicks on another shape, all previous shapes are unselected
+      - Rule 5: Empty Space Click - Clicking empty space unpins all selections
+    - Test must pass with zero console errors and all selection behaviors working correctly
+    - Shape selection is critical for user interaction and must never be broken
+    - Properties panel must show correct hover/selection information (hovered vs selected)
+    - Never declare selection functionality complete without running this comprehensive test
+27. **⚠️ CRITICAL: Always Preserve Layer Visibility During Scene Refresh**: Layer visibility must be preserved when refreshing visualization:
+    - After calling `viewer.clearScene()` and `viewer.addMultipleGeometries()`, always restore layer visibility settings
+    - Use `appState.drawingLayers.forEach()` to iterate hidden layers and call `viewer.toggleLayerVisibility(layer.name, false)`
+    - This prevents regression where invisible layers reappear after shape deletion, modification, or scene refresh
+    - Apply this pattern in ALL functions that refresh the scene: `loadFile()`, `refreshVisualization()`, `handleModifyShape()`, etc.
+    - Layer visibility state is stored in `appState.drawingLayers` and must be maintained across operations
+    - Test layer visibility preservation by hiding layers, performing operations, and verifying layers remain hidden
+    - **NEVER** allow scene refresh operations to reset layer visibility - this breaks user workflow

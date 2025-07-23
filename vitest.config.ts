@@ -1,0 +1,23 @@
+import { defineConfig } from 'vitest/config';
+import { sveltekit } from '@sveltejs/kit/vite';
+
+export default defineConfig({
+	plugins: [sveltekit()],
+	test: {
+		environment: 'jsdom',
+		globals: true,
+		setupFiles: ['./src/test/setup.ts'],
+		include: ['src/**/*.{test,spec}.{js,ts}'],
+		watchExclude: ['**/node_modules/**', '**/dist/**', '**/docs/**']
+	},
+	optimizeDeps: {
+		include: ['three', 'dxf'],
+		exclude: ['opencascade.js']
+	},
+	assetsInclude: ['**/*.wasm'],
+	server: {
+		watch: {
+			ignored: ['**/docs/**']
+		}
+	}
+});
