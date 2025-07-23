@@ -1,60 +1,25 @@
 <script lang="ts">
-  import FileImport from '../components/FileImport.svelte';
-  import DrawingCanvas from '../components/DrawingCanvas.svelte';
-  import ToolBar from '../components/ToolBar.svelte';
-  import CuttingParameters from '../components/CuttingParameters.svelte';
-  import GCodeExport from '../components/GCodeExport.svelte';
-  import LayersList from '../components/LayersList.svelte';
-  import ShapeProperties from '../components/ShapeProperties.svelte';
+  import WorkflowBreadcrumbs from '../components/WorkflowBreadcrumbs.svelte';
+  import WorkflowContainer from '../components/WorkflowContainer.svelte';
   import Footer from '../components/Footer.svelte';
-  import Units from '../components/Units.svelte';
-  import type { CuttingParameters as CuttingParametersType } from '../types';
-  
-  let cuttingParameters: CuttingParametersType = {
-    feedRate: 1000,
-    pierceHeight: 3.8,
-    pierceDelay: 0.5,
-    cutHeight: 1.5,
-    kerf: 1.5,
-    leadInLength: 5,
-    leadOutLength: 5
-  };
+  import { workflowStore } from '../lib/stores/workflow';
 </script>
 
 <div class="app">
-  <div class="main-content">
-    <div class="sidebar">
-      <FileImport />
-      
-      <div class="units-section">
-        <Units />
-      </div>
-      
-      <div class="layers-section">
-        <LayersList />
-      </div>
-      
-      <div class="parameters-section">
-        <CuttingParameters bind:parameters={cuttingParameters} units="mm" />
-      </div>
-      
-      <div class="export-section">
-        <GCodeExport parameters={cuttingParameters} />
-      </div>
-    </div>
-    
-    <div class="workspace">
-      <ToolBar />
-      <div class="canvas-container">
-        <DrawingCanvas />
-      </div>
-      <Footer />
-    </div>
-    
-    <div class="right-sidebar">
-      <ShapeProperties />
-    </div>
-  </div>
+  <!-- Header -->
+  <header class="app-header">
+    <WorkflowBreadcrumbs />
+  </header>
+
+  <!-- Body -->
+  <main class="app-body">
+    <WorkflowContainer />
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <Footer />
+  </footer>
 </div>
 
 <style>
@@ -70,47 +35,18 @@
     height: 100vh;
   }
   
+  .app-header {
+    flex-shrink: 0;
+  }
   
-  .main-content {
-    display: flex;
+  .app-body {
     flex: 1;
+    display: flex;
+    flex-direction: column;
     overflow: hidden;
   }
   
-  .sidebar {
-    width: 300px;
-    background-color: #f5f5f5;
-    padding: 1rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .right-sidebar {
-    width: 250px;
-    background-color: #f5f5f5;
-    padding: 1rem;
-    overflow-y: auto;
-    border-left: 1px solid #ddd;
-  }
-  
-  .workspace {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .canvas-container {
-    flex: 1;
-    position: relative;
-    background-color: #fff;
-  }
-  
-  .units-section,
-  .layers-section,
-  .parameters-section,
-  .export-section {
-    margin-top: 1rem;
+  .app-footer {
+    flex-shrink: 0;
   }
 </style>

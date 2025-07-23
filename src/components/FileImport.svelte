@@ -1,7 +1,10 @@
 <script lang="ts">
+  import { createEventDispatcher } from 'svelte';
   import { parseDXF } from '../lib/parsers/dxf-parser';
   import { parseSVG } from '../lib/parsers/svg-parser';
   import { drawingStore } from '../lib/stores/drawing';
+  
+  const dispatch = createEventDispatcher();
   
   let fileInput: HTMLInputElement;
   let isDragging = false;
@@ -35,6 +38,7 @@
         }
         
         drawingStore.setDrawing(drawing, file.name);
+        dispatch('fileImported', { drawing, fileName: file.name });
       } catch (error) {
         console.error('Error parsing file:', error);
         alert('Error parsing file. Please check the file format.');

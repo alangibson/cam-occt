@@ -4,6 +4,120 @@
 
 CAM-OCCT is a web-based Computer-Aided Manufacturing (CAM) application that converts SVG and DXF design files into optimized G-code for CNC plasma cutting operations. The application specifically targets LinuxCNC 2.9+ QtPlasmaC controllers.
 
+## User Workflow Stages
+
+The application is organized around a clear 5-stage workflow that guides users from importing drawings to generating G-code:
+
+### 1. Import Stage
+**Purpose**: Import DXF or SVG drawings into the application
+- Upload files via import button or drag-and-drop zone
+- Configure import options (decompose polylines, translate to positive quadrant)
+- Detect and display drawing units from file metadata
+- Validate file format and geometry
+
+### 2. Edit Stage  
+**Purpose**: Edit the drawing using basic image editing functions
+- View and manipulate drawing geometry
+- Select, move, scale, and rotate shapes
+- Manage layer visibility and organization
+- Set display units (mm/inch) for visualization
+- View shape properties and coordinates
+
+### 3. Program Stage
+**Purpose**: Build tool paths that trace the drawing using cut parameters
+- Define cutting parameters (feed rates, pierce delays, lead-in/out)
+- Generate optimized tool paths from geometry
+- Apply cut sequencing and optimization algorithms
+- Preview programmed tool paths overlaid on drawing
+
+### 4. Simulate Stage
+**Purpose**: Graphically simulate cutting process in real time
+- 3D visualization of cutting simulation
+- Real-time playback of tool path execution
+- Time estimation and cut analysis
+- Visual verification before G-code generation
+
+### 5. Export Stage
+**Purpose**: Generate G-code and export/download it
+- Generate LinuxCNC-compatible G-code
+- Display generated G-code for review
+- Download G-code file for CNC machine
+- Export cutting reports and documentation
+
+## UI Layout Architecture
+
+The application uses a workflow-based UI layout with three main rows: Header, Body, and Footer.
+
+### Primary UI Hierarchy
+
+```
+window
+├─ header
+│  ├─ workflow stage breadcrumbs
+├─ body
+│  ├─ page for current workflow stage
+├─ footer
+│  ├─ drawing size
+│  ├─ zoom factor
+```
+
+### Workflow Stage Pages
+
+#### Import Stage
+```
+import
+├─ Import button
+├─ Drag and drop zone
+├─ Decompose polylines checkbox
+├─ Translate to positive quadrant checkbox
+```
+
+#### Edit Stage
+```
+edit
+├─ left column
+│  ├─ display units
+│  ├─ layers
+├─ center column
+│  ├─ toolbar
+│  ├─ drawing image
+├─ right column
+│  ├─ shape properties
+```
+
+#### Program Stage
+```
+program
+├─ left column
+├─ center column
+│  ├─ programmed drawing image
+├─ right column
+```
+
+#### Simulate Stage
+```
+simulate
+├─ center column
+│  ├─ 3D simulation viewport
+├─ simulation controls
+```
+
+#### Export Stage
+```
+export
+├─ generate gcode button
+├─ generate gcode text area
+├─ download button
+```
+
+### Layout Behavior
+
+- **Header**: Always visible, shows current workflow stage via breadcrumbs
+- **Body**: Content changes completely based on workflow stage
+- **Footer**: Always visible, may show different information per stage
+- **Navigation**: Users progress through stages sequentially (Import → Edit → Program → Simulate → Export)
+- **State Management**: Each stage maintains its own state while preserving data from previous stages
+
 ## Key Technologies
 
 - **Frontend**: Svelte 5 with TypeScript
@@ -124,7 +238,6 @@ Based on the PRD, the following features need implementation:
 
 4. **Cut Path Generation**
    - Basic path optimization (minimize rapid movements)
-   - Lead-in/lead-out generation
    - Cut sequencing
 
 5. **G-code Export**
@@ -132,8 +245,11 @@ Based on the PRD, the following features need implementation:
 
 #### Phase 2 (Optimization)
 1. **Advanced Optimization**
+   - Lead-in/lead-out generation
+   - Overcutting
+   - kerf compensation: Insetting and outsetting of cuts
    - Nesting algorithms
-   - Hole detection and specialized processing
+   - Hole detection and underspeed setting
    - Material database
 
 2. **Visualization**
