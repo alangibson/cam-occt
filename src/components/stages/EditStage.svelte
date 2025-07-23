@@ -28,7 +28,6 @@
       </div>
       
       <div class="panel">
-        <h3 class="panel-title">Layers</h3>
         <LayersList />
       </div>
 
@@ -136,7 +135,7 @@
 
   .next-stage-panel {
     margin-top: auto;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     color: white;
     border: none;
   }

@@ -1,6 +1,7 @@
 <script lang="ts">
   import CuttingParameters from '../CuttingParameters.svelte';
   import DrawingCanvas from '../DrawingCanvas.svelte';
+  import LayersInfo from '../LayersInfo.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import type { CuttingParameters as CuttingParametersType } from '../../types';
 
@@ -32,6 +33,10 @@
         <CuttingParameters bind:parameters={cuttingParameters} units="mm" />
       </div>
 
+      <div class="panel">
+        <LayersInfo />
+      </div>
+
       <div class="panel next-stage-panel">
         <button 
           class="next-button"
@@ -52,7 +57,7 @@
         <p>Tool paths will be overlaid on your drawing geometry</p>
       </div>
       <div class="canvas-container">
-        <DrawingCanvas />
+        <DrawingCanvas respectLayerVisibility={false} />
       </div>
     </div>
 
@@ -158,7 +163,7 @@
 
   .next-stage-panel {
     margin-top: auto;
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     color: white;
     border: none;
   }

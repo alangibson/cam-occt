@@ -97,6 +97,8 @@
     background-color: #4f46e5;
     color: white;
     border-color: #4f46e5;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3), 0 2px 4px -1px rgba(79, 70, 229, 0.2);
+    transform: scale(1.05);
   }
 
   .breadcrumb-button.completed {

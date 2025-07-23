@@ -339,7 +339,7 @@
 
   .next-stage-panel {
     margin-top: auto;
-    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     color: white;
     border: none;
   }

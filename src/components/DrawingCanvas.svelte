@@ -4,6 +4,8 @@
   import type { Shape, Point2D } from '../types';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
   
+  export let respectLayerVisibility = true; // Default to true for Edit stage
+  
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
   let mousePos: Point2D = { x: 0, y: 0 };
@@ -54,11 +56,13 @@
     
     // Draw shapes
     drawing.shapes.forEach(shape => {
-      // Check if layer is visible
-      const shapeLayer = shape.layer || '0';
-      const isVisible = layerVisibility[shapeLayer] !== false; // Default to visible if not set
-      
-      if (!isVisible) return; // Skip invisible shapes
+      // Check if layer is visible (only if respectLayerVisibility is true)
+      if (respectLayerVisibility) {
+        const shapeLayer = shape.layer || '0';
+        const isVisible = layerVisibility[shapeLayer] !== false; // Default to visible if not set
+        
+        if (!isVisible) return; // Skip invisible shapes
+      }
       
       const isSelected = selectedShapes.has(shape.id);
       const isHovered = hoveredShape === shape.id;
@@ -390,11 +394,13 @@
     const tolerance = 5 / totalScale;
     
     for (const shape of drawing.shapes) {
-      // Check if layer is visible before hit testing
-      const shapeLayer = shape.layer || '0';
-      const isVisible = layerVisibility[shapeLayer] !== false; // Default to visible if not set
-      
-      if (!isVisible) continue; // Skip invisible shapes
+      // Check if layer is visible before hit testing (only if respectLayerVisibility is true)
+      if (respectLayerVisibility) {
+        const shapeLayer = shape.layer || '0';
+        const isVisible = layerVisibility[shapeLayer] !== false; // Default to visible if not set
+        
+        if (!isVisible) continue; // Skip invisible shapes
+      }
       
       if (isPointNearShape(point, shape, tolerance)) {
         return shape;
