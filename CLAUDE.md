@@ -345,6 +345,66 @@ When adding new shape types:
 - Origin cross drawing can affect subsequent shape colors if context isn't managed properly
 - Each `drawShape()` call should be isolated with its own context state
 
+## DXF Polyline Bulge Handling
+
+**CRITICAL**: DXF polylines and lwpolylines can contain bulge factors that define curved segments between vertices. Proper bulge handling is essential for accurate CAD file rendering.
+
+### Bulge Factor Mathematics
+
+**Formula**: `bulge = tan(θ/4)` where θ is the included angle of the arc segment
+
+**Sign Convention**:
+- **Positive bulge**: Counter-clockwise arc direction (left turn)
+- **Negative bulge**: Clockwise arc direction (right turn)
+- **Zero bulge**: Straight line segment
+- **Special case**: `bulge = ±1.0` creates a perfect semicircle (180°)
+
+### Bulge-to-Arc Conversion Algorithm
+
+```typescript
+const theta = 4 * Math.atan(bulge); // Include sign for direction
+const radius = Math.abs(chordLength / (2 * Math.sin(theta / 2)));
+const perpDist = radius * Math.cos(theta / 2);
+const perpAngle = Math.atan2(dy, dx) + (bulge > 0 ? Math.PI / 2 : -Math.PI / 2);
+
+const center = {
+  x: chordMidX + perpDist * Math.cos(perpAngle),
+  y: chordMidY + perpDist * Math.sin(perpAngle)
+};
+```
+
+### Implementation Requirements
+
+1. **Parser Level**: Preserve bulge data in polyline vertices when decomposition is disabled
+2. **Rendering Level**: Canvas must handle bulges when drawing polylines
+3. **Decomposition Level**: Convert bulged segments to proper arc entities
+4. **Type System**: Support `PolylineVertex` interface with optional bulge property
+
+### Two Rendering Modes
+
+1. **Bulge-Preserved Mode** (`decomposePolylines: false`):
+   - Returns polylines with bulge data intact
+   - Canvas renders curved segments using bulge-to-arc conversion
+   - Maintains original polyline structure for editing
+
+2. **Decomposed Mode** (`decomposePolylines: true`):
+   - Breaks polylines into individual line and arc entities
+   - Better for CAM processing requiring separate geometric elements
+   - Each curved segment becomes an independent arc shape
+
+### Testing Requirements
+
+- Test with files containing various bulge magnitudes (±0.1 to ±2.0)
+- Verify both CW and CCW arc directions
+- Ensure semicircle cases (bulge = ±1.0) render correctly
+- Compare visual output between bulge-preserved and decomposed modes
+
+### Common Files with Bulges
+
+- `Polylinie.dxf`: 16 vertices with 10 non-zero bulges, complex mixed geometry
+- `polylines_with_bulge.dxf`: Simple test case with basic bulge scenarios
+- `AFluegel Rippen b2 0201.dxf`: Real-world example with intricate curved profiles
+
 ## Common Pitfalls to Avoid
 
 - Don't assume file formats are standard - always validate
@@ -354,3 +414,5 @@ When adding new shape types:
 - Test with real-world DXF files, not just simple shapes
 - Consider touch device support from the start
 - Always use context save/restore when drawing shapes to prevent color bleeding
+- **Never ignore bulge factors** - they define essential curved geometry in polylines
+- **Test both rendering modes** - bulge-preserved and decomposed should both work correctly

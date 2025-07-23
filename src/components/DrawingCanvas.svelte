@@ -86,6 +86,105 @@
     ctx.stroke();
   }
   
+  function drawPolylineWithBulges(vertices: any[], closed: boolean) {
+    if (vertices.length < 2) return;
+    
+    ctx.beginPath();
+    ctx.moveTo(vertices[0].x, vertices[0].y);
+    
+    // Draw each segment, handling bulges
+    for (let i = 0; i < vertices.length - 1; i++) {
+      const currentVertex = vertices[i];
+      const nextVertex = vertices[i + 1];
+      const bulge = currentVertex.bulge || 0;
+      
+      if (Math.abs(bulge) < 1e-10) {
+        // Straight line segment
+        ctx.lineTo(nextVertex.x, nextVertex.y);
+      } else {
+        // Arc segment - draw using canvas arc
+        drawBulgedSegment(currentVertex, nextVertex, bulge);
+      }
+    }
+    
+    // Handle closing segment for closed polylines
+    if (closed && vertices.length >= 3) {
+      const lastVertex = vertices[vertices.length - 1];
+      const firstVertex = vertices[0];
+      const bulge = lastVertex.bulge || 0;
+      
+      if (Math.abs(bulge) < 1e-10) {
+        // Straight line closing segment
+        ctx.lineTo(firstVertex.x, firstVertex.y);
+      } else {
+        // Arc closing segment
+        drawBulgedSegment(lastVertex, firstVertex, bulge);
+      }
+      ctx.closePath();
+    }
+    
+    ctx.stroke();
+  }
+  
+  function drawBulgedSegment(start: any, end: any, bulge: number) {
+    // Convert bulge to arc parameters
+    const arc = bulgeToArc(start, end, bulge);
+    if (!arc) {
+      ctx.lineTo(end.x, end.y);
+      return;
+    }
+    
+    // Draw arc using canvas arc method
+    ctx.arc(
+      arc.center.x,
+      arc.center.y,
+      arc.radius,
+      arc.startAngle,
+      arc.endAngle,
+      arc.clockwise
+    );
+  }
+  
+  // Bulge-to-arc conversion function (same as in DXF parser)
+  function bulgeToArc(start: any, end: any, bulge: number) {
+    if (Math.abs(bulge) < 1e-10) {
+      return null;
+    }
+    
+    const dx = end.x - start.x;
+    const dy = end.y - start.y;
+    const chordLength = Math.sqrt(dx * dx + dy * dy);
+    
+    if (chordLength < 1e-10) {
+      return null;
+    }
+    
+    const theta = 4 * Math.atan(bulge);
+    const radius = Math.abs(chordLength / (2 * Math.sin(theta / 2)));
+    
+    const chordMidX = (start.x + end.x) / 2;
+    const chordMidY = (start.y + end.y) / 2;
+    
+    const perpDist = radius * Math.cos(theta / 2);
+    const perpAngle = Math.atan2(dy, dx) + (bulge > 0 ? Math.PI / 2 : -Math.PI / 2);
+    
+    const center = {
+      x: chordMidX + perpDist * Math.cos(perpAngle),
+      y: chordMidY + perpDist * Math.sin(perpAngle)
+    };
+    
+    const startAngle = Math.atan2(start.y - center.y, start.x - center.x);
+    const endAngle = Math.atan2(end.y - center.y, end.x - center.x);
+    
+    return {
+      center,
+      radius,
+      startAngle,
+      endAngle,
+      clockwise: bulge < 0
+    };
+  }
+
   function drawShape(shape: Shape, isSelected: boolean, isHovered: boolean = false) {
     // Save context state
     ctx.save();
@@ -134,7 +233,11 @@
         
       case 'polyline':
         const polyline = shape.geometry as any;
-        if (polyline.points.length > 0) {
+        if (polyline.vertices && polyline.vertices.length > 0) {
+          // Render polyline with bulge support
+          drawPolylineWithBulges(polyline.vertices, polyline.closed);
+        } else if (polyline.points && polyline.points.length > 0) {
+          // Fallback to simple line rendering for polylines without bulge data
           ctx.beginPath();
           ctx.moveTo(polyline.points[0].x, polyline.points[0].y);
           for (let i = 1; i < polyline.points.length; i++) {

@@ -30,9 +30,14 @@ export interface Circle {
   radius: number;
 }
 
+export interface PolylineVertex extends Point2D {
+  bulge?: number;
+}
+
 export interface Polyline {
   points: Point2D[];
   closed: boolean;
+  vertices?: PolylineVertex[]; // Optional bulge-aware vertices for DXF polylines
 }
 
 export type GeometryType = 'line' | 'arc' | 'circle' | 'polyline' | 'spline';

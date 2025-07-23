@@ -3,7 +3,11 @@ let parseString: any;
 import type { Drawing, Shape, Point2D } from '../../types';
 import { generateId } from '../utils/id';
 
-export async function parseDXF(content: string): Promise<Drawing> {
+interface DXFOptions {
+  decomposePolylines?: boolean;
+}
+
+export async function parseDXF(content: string, options: DXFOptions = {}): Promise<Drawing> {
   // Dynamically import DXF parser only on client side
   if (!parseString) {
     const dxfModule = await import('dxf');
@@ -22,10 +26,19 @@ export async function parseDXF(content: string): Promise<Drawing> {
   // Process entities
   if (parsed && parsed.entities) {
     parsed.entities.forEach((entity: any) => {
-      const shape = convertDXFEntity(entity);
-      if (shape) {
-        shapes.push(shape);
-        updateBounds(shape, bounds);
+      const result = convertDXFEntity(entity, options);
+      if (result) {
+        if (Array.isArray(result)) {
+          // Multiple shapes (decomposed polyline)
+          result.forEach(shape => {
+            shapes.push(shape);
+            updateBounds(shape, bounds);
+          });
+        } else {
+          // Single shape
+          shapes.push(result);
+          updateBounds(result, bounds);
+        }
       }
     });
   }
@@ -49,7 +62,7 @@ export async function parseDXF(content: string): Promise<Drawing> {
   };
 }
 
-function convertDXFEntity(entity: any): Shape | null {
+function convertDXFEntity(entity: any, options: DXFOptions = {}): Shape | Shape[] | null {
   try {
     switch (entity.type) {
       case 'LINE':
@@ -147,23 +160,30 @@ function convertDXFEntity(entity: any): Shape | null {
       case 'LWPOLYLINE':
       case 'POLYLINE':
         if (entity.vertices && Array.isArray(entity.vertices) && entity.vertices.length > 0) {
-          const points: Point2D[] = entity.vertices
-            .filter((v: any) => v && typeof v.x === 'number' && typeof v.y === 'number')
-            .map((v: any) => ({
-              x: v.x,
-              y: v.y
-            }));
-          
-          if (points.length > 0) {
-            return {
-              id: generateId(),
-              type: 'polyline',
-              geometry: {
-                points,
-                closed: entity.shape || entity.closed || false
-              },
-              layer: entity.layer
-            };
+          if (options.decomposePolylines) {
+            return decomposePolyline(entity);
+          } else {
+            // Original behavior - return as polyline but preserve bulge data
+            const vertices = entity.vertices
+              .filter((v: any) => v && typeof v.x === 'number' && typeof v.y === 'number')
+              .map((v: any) => ({
+                x: v.x,
+                y: v.y,
+                bulge: v.bulge || 0
+              }));
+            
+            if (vertices.length > 0) {
+              return {
+                id: generateId(),
+                type: 'polyline',
+                geometry: {
+                  points: vertices.map((v: any) => ({ x: v.x, y: v.y })), // Keep existing interface
+                  closed: entity.shape || entity.closed || false,
+                  vertices // Add bulge-aware vertices
+                },
+                layer: entity.layer
+              };
+            }
           }
         }
         return null;
@@ -177,6 +197,145 @@ function convertDXFEntity(entity: any): Shape | null {
     console.warn(`Error converting DXF entity of type ${entity.type}:`, error);
     return null;
   }
+}
+
+function decomposePolyline(entity: any): Shape[] {
+  const shapes: Shape[] = [];
+  const vertices = entity.vertices;
+  const closed = entity.shape || entity.closed || false;
+  
+  if (!vertices || vertices.length < 2) {
+    return shapes;
+  }
+  
+  // Process each segment between consecutive vertices
+  for (let i = 0; i < vertices.length - 1; i++) {
+    const currentVertex = vertices[i];
+    const nextVertex = vertices[i + 1];
+    
+    // Skip invalid vertices
+    if (!currentVertex || !nextVertex || 
+        typeof currentVertex.x !== 'number' || typeof currentVertex.y !== 'number' ||
+        typeof nextVertex.x !== 'number' || typeof nextVertex.y !== 'number') {
+      continue;
+    }
+    
+    const start: Point2D = { x: currentVertex.x, y: currentVertex.y };
+    const end: Point2D = { x: nextVertex.x, y: nextVertex.y };
+    const bulge = currentVertex.bulge || 0;
+    
+    if (Math.abs(bulge) < 1e-10) {
+      // Straight line segment
+      shapes.push({
+        id: generateId(),
+        type: 'line',
+        geometry: { start, end },
+        layer: entity.layer
+      });
+    } else {
+      // Arc segment - convert bulge to arc
+      const arc = bulgeToArc(start, end, bulge);
+      if (arc) {
+        shapes.push({
+          id: generateId(),
+          type: 'arc',
+          geometry: arc,
+          layer: entity.layer
+        });
+      }
+    }
+  }
+  
+  // Handle closing segment for closed polylines
+  if (closed && vertices.length >= 3) {
+    const lastVertex = vertices[vertices.length - 1];
+    const firstVertex = vertices[0];
+    
+    if (lastVertex && firstVertex &&
+        typeof lastVertex.x === 'number' && typeof lastVertex.y === 'number' &&
+        typeof firstVertex.x === 'number' && typeof firstVertex.y === 'number') {
+      
+      const start: Point2D = { x: lastVertex.x, y: lastVertex.y };
+      const end: Point2D = { x: firstVertex.x, y: firstVertex.y };
+      const bulge = lastVertex.bulge || 0;
+      
+      if (Math.abs(bulge) < 1e-10) {
+        // Straight line segment
+        shapes.push({
+          id: generateId(),
+          type: 'line',
+          geometry: { start, end },
+          layer: entity.layer
+        });
+      } else {
+        // Arc segment
+        const arc = bulgeToArc(start, end, bulge);
+        if (arc) {
+          shapes.push({
+            id: generateId(),
+            type: 'arc',
+            geometry: arc,
+            layer: entity.layer
+          });
+        }
+      }
+    }
+  }
+  
+  return shapes;
+}
+
+function bulgeToArc(start: Point2D, end: Point2D, bulge: number): any | null {
+  if (Math.abs(bulge) < 1e-10) {
+    return null; // No arc, should be a line
+  }
+  
+  // Calculate chord vector and length
+  const dx = end.x - start.x;
+  const dy = end.y - start.y;
+  const chordLength = Math.sqrt(dx * dx + dy * dy);
+  
+  if (chordLength < 1e-10) {
+    return null; // Zero-length chord
+  }
+  
+  // Calculate included angle from bulge
+  // bulge = tan(θ/4), so θ = 4 * atan(bulge)
+  const theta = 4 * Math.atan(bulge); // Note: using bulge directly, not abs(bulge)
+  
+  // Calculate radius using the correct formula
+  const radius = Math.abs(chordLength / (2 * Math.sin(theta / 2)));
+  
+  // Calculate center point using the MetalHeadCAM algorithm
+  const chordMidX = (start.x + end.x) / 2;
+  const chordMidY = (start.y + end.y) / 2;
+  
+  // Distance from chord midpoint to arc center
+  const perpDist = radius * Math.cos(theta / 2);
+  
+  // Perpendicular angle - determines which side of chord the center is on
+  const perpAngle = Math.atan2(dy, dx) + (bulge > 0 ? Math.PI / 2 : -Math.PI / 2);
+  
+  // Arc center
+  const center = {
+    x: chordMidX + perpDist * Math.cos(perpAngle),
+    y: chordMidY + perpDist * Math.sin(perpAngle)
+  };
+  
+  // Calculate start and end angles
+  const startAngle = Math.atan2(start.y - center.y, start.x - center.x);
+  const endAngle = Math.atan2(end.y - center.y, end.x - center.x);
+  
+  // Determine if arc is clockwise or counter-clockwise
+  const clockwise = bulge < 0;
+  
+  return {
+    center,
+    radius,
+    startAngle,
+    endAngle,
+    clockwise
+  };
 }
 
 function updateBounds(shape: Shape, bounds: any): void {
@@ -196,7 +355,7 @@ function updateBounds(shape: Shape, bounds: any): void {
 function sampleSplinePoints(splineEntity: any): Point2D[] {
   const controlPoints = splineEntity.controlPoints;
   const degree = splineEntity.degree || 3;
-  const knots = splineEntity.knots;
+  // const knots = splineEntity.knots; // Reserved for future NURBS implementation
   
   // Simple approach: if we have fit points, use them
   if (splineEntity.fitPoints && splineEntity.fitPoints.length >= 2) {

@@ -5,6 +5,7 @@
   
   let fileInput: HTMLInputElement;
   let isDragging = false;
+  let decomposePolylines = true; // Default to checked
   
   $: fileName = $drawingStore.fileName;
   
@@ -21,7 +22,7 @@
         let drawing;
         
         if (file.name.toLowerCase().endsWith('.dxf')) {
-          drawing = await parseDXF(content);
+          drawing = await parseDXF(content, { decomposePolylines });
         } else if (file.name.toLowerCase().endsWith('.svg')) {
           drawing = parseSVG(content);
         } else {
@@ -79,6 +80,16 @@
     Import DXF/SVG
   </button>
   
+  <div class="options">
+    <label class="checkbox-label">
+      <input
+        type="checkbox"
+        bind:checked={decomposePolylines}
+      />
+      Decompose polylines
+    </label>
+  </div>
+  
   {#if fileName}
     <p class="filename">Loaded: {fileName}</p>
   {:else}
@@ -123,5 +134,24 @@
     margin-top: 1rem;
     color: #0066cc;
     font-weight: 500;
+  }
+  
+  .options {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: #333;
+    cursor: pointer;
+  }
+  
+  .checkbox-label input[type="checkbox"] {
+    cursor: pointer;
   }
 </style>
