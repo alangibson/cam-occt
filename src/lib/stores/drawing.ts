@@ -11,6 +11,7 @@ interface DrawingState {
   offset: Point2D;
   fileName: string | null;
   layerVisibility: { [layerName: string]: boolean };
+  displayUnit: 'mm' | 'inch';
 }
 
 function createDrawingStore() {
@@ -23,7 +24,8 @@ function createDrawingStore() {
     scale: 1,
     offset: { x: 0, y: 0 },
     fileName: null,
-    layerVisibility: {}
+    layerVisibility: {},
+    displayUnit: 'mm'
   });
 
   return {
@@ -31,7 +33,10 @@ function createDrawingStore() {
     setDrawing: (drawing: Drawing, fileName?: string) => update(state => ({ 
       ...state, 
       drawing,
-      fileName: fileName || null
+      fileName: fileName || null,
+      displayUnit: drawing.units, // Set display unit from drawing's detected units
+      scale: 1, // Always start at 100% zoom
+      offset: { x: 0, y: 0 } // Reset offset
     })),
     
     selectShape: (shapeId: string, multi = false) => update(state => {
@@ -130,6 +135,11 @@ function createDrawingStore() {
     setHoveredShape: (shapeId: string | null) => update(state => ({
       ...state,
       hoveredShape: shapeId
+    })),
+    
+    setDisplayUnit: (unit: 'mm' | 'inch') => update(state => ({
+      ...state,
+      displayUnit: unit
     }))
   };
 }

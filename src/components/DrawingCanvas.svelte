@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { drawingStore } from '../lib/stores/drawing';
   import type { Shape, Point2D } from '../types';
+  import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
   
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -15,6 +16,11 @@
   $: scale = $drawingStore.scale;
   $: offset = $drawingStore.offset;
   $: layerVisibility = $drawingStore.layerVisibility;
+  $: displayUnit = $drawingStore.displayUnit;
+  
+  // Calculate physical scale factor for proper unit display
+  $: physicalScale = drawing ? getPhysicalScaleFactor(drawing.units, displayUnit) : 1;
+  $: totalScale = scale * physicalScale;
   
   onMount(() => {
     ctx = canvas.getContext('2d')!;
@@ -41,7 +47,7 @@
     // Set transform
     ctx.save();
     ctx.translate(canvas.width / 2 + offset.x, canvas.height / 2 + offset.y);
-    ctx.scale(scale, -scale); // Flip Y axis for CAD convention
+    ctx.scale(totalScale, -totalScale); // Flip Y axis for CAD convention with physical scaling
     
     // Draw origin cross at (0,0)
     drawOriginCross();
@@ -68,10 +74,10 @@
   }
   
   function drawOriginCross() {
-    const crossSize = 20 / scale; // Fixed size regardless of zoom
+    const crossSize = 20 / totalScale; // Fixed size regardless of zoom
     
     ctx.strokeStyle = '#888888';
-    ctx.lineWidth = 1 / scale;
+    ctx.lineWidth = 1 / totalScale;
     
     // Draw horizontal line
     ctx.beginPath();
@@ -192,13 +198,13 @@
     // Priority: selected > hovered > normal
     if (isSelected) {
       ctx.strokeStyle = '#ff6600';
-      ctx.lineWidth = 2 / scale;
+      ctx.lineWidth = 2 / totalScale;
     } else if (isHovered) {
       ctx.strokeStyle = '#ff6600';
-      ctx.lineWidth = 1.5 / scale;
+      ctx.lineWidth = 1.5 / totalScale;
     } else {
       ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 1 / scale;
+      ctx.lineWidth = 1 / totalScale;
     }
     
     switch (shape.type) {
@@ -256,7 +262,7 @@
   }
   
   function drawShapePoints(shape: Shape) {
-    const pointSize = 4 / scale; // Fixed size regardless of zoom
+    const pointSize = 4 / totalScale; // Fixed size regardless of zoom
     
     // Get points using the same logic as ShapeProperties component
     const origin = getShapeOrigin(shape);
@@ -372,8 +378,8 @@
   
   function screenToWorld(screenPos: Point2D): Point2D {
     return {
-      x: (screenPos.x - canvas.width / 2 - offset.x) / scale,
-      y: -(screenPos.y - canvas.height / 2 - offset.y) / scale
+      x: (screenPos.x - canvas.width / 2 - offset.x) / totalScale,
+      y: -(screenPos.y - canvas.height / 2 - offset.y) / totalScale
     };
   }
   
@@ -381,7 +387,7 @@
     if (!drawing) return null;
     
     // Simple hit testing - check if point is near shape
-    const tolerance = 5 / scale;
+    const tolerance = 5 / totalScale;
     
     for (const shape of drawing.shapes) {
       // Check if layer is visible before hit testing
@@ -563,8 +569,8 @@
       if (selectedShapes.size > 0) {
         // Move selected shapes
         const worldDelta = {
-          x: (newMousePos.x - mousePos.x) / scale,
-          y: -(newMousePos.y - mousePos.y) / scale
+          x: (newMousePos.x - mousePos.x) / totalScale,
+          y: -(newMousePos.y - mousePos.y) / totalScale
         };
         
         drawingStore.moveShapes(Array.from(selectedShapes), worldDelta);
@@ -604,9 +610,10 @@
     
     // Zoom towards mouse position
     const worldPos = screenToWorld(mousePos);
+    const newTotalScale = newScale * physicalScale;
     const newOffset = {
-      x: mousePos.x - canvas.width / 2 - worldPos.x * newScale,
-      y: mousePos.y - canvas.height / 2 + worldPos.y * newScale
+      x: mousePos.x - canvas.width / 2 - worldPos.x * newTotalScale,
+      y: mousePos.y - canvas.height / 2 + worldPos.y * newTotalScale
     };
     
     drawingStore.setViewTransform(newScale, newOffset);
@@ -628,6 +635,7 @@
   $: if (ctx && selectedShapes) render();
   $: if (ctx && scale) render();
   $: if (ctx && offset) render();
+  $: if (ctx && displayUnit) render();
 </script>
 
 <canvas

@@ -1,0 +1,78 @@
+/**
+ * Unit conversion utilities for CAM-OCCT
+ * Handles conversion between different units and physical display scaling
+ */
+
+export type Unit = 'mm' | 'inch';
+
+// Physical constants for screen display
+const MM_PER_INCH = 25.4;
+const PIXELS_PER_INCH = 96; // Standard CSS DPI
+const PIXELS_PER_MM = PIXELS_PER_INCH / MM_PER_INCH; // ~3.78 pixels per mm
+
+/**
+ * Get the pixels per unit for physical display scaling
+ * This ensures that 1 unit on screen = 1 physical unit when zoom is 100%
+ */
+export function getPixelsPerUnit(unit: Unit): number {
+  switch (unit) {
+    case 'mm':
+      return PIXELS_PER_MM; // ~3.78 pixels per mm
+    case 'inch':
+      return PIXELS_PER_INCH; // 96 pixels per inch
+    default:
+      return PIXELS_PER_MM; // Default to mm
+  }
+}
+
+/**
+ * Convert a value from one unit to another
+ * Used for unit conversion when switching display units
+ */
+export function convertUnits(value: number, fromUnit: Unit, toUnit: Unit): number {
+  if (fromUnit === toUnit) {
+    return value;
+  }
+  
+  if (fromUnit === 'mm' && toUnit === 'inch') {
+    return value / MM_PER_INCH;
+  }
+  
+  if (fromUnit === 'inch' && toUnit === 'mm') {
+    return value * MM_PER_INCH;
+  }
+  
+  return value;
+}
+
+/**
+ * Calculate the physical scale factor needed to display geometry
+ * at the correct physical size for the selected display unit
+ */
+export function getPhysicalScaleFactor(geometryUnit: Unit, displayUnit: Unit): number {
+  // Scale factor to display geometry values as if they were in display units
+  // Example: 186.2mm geometry displayed as inches should appear 186.2" on screen
+  return getPixelsPerUnit(displayUnit);
+}
+
+/**
+ * Format a numeric value with appropriate precision for the given unit
+ */
+export function formatValue(value: number, unit: Unit): string {
+  const precision = unit === 'inch' ? 3 : 1; // More precision for inches
+  return value.toFixed(precision);
+}
+
+/**
+ * Get the unit symbol for display
+ */
+export function getUnitSymbol(unit: Unit): string {
+  switch (unit) {
+    case 'mm':
+      return 'mm';
+    case 'inch':
+      return 'in';
+    default:
+      return '';
+  }
+}

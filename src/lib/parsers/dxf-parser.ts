@@ -24,6 +24,33 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
     maxY: -Infinity
   };
 
+  // Extract units from DXF header
+  let drawingUnits: 'mm' | 'inch' = 'mm'; // Default to mm
+  
+  
+  if (parsed && parsed.header && (parsed.header.$INSUNITS !== undefined || parsed.header.insUnits !== undefined)) {
+    const insunits = parsed.header.$INSUNITS || parsed.header.insUnits;
+    // Convert DXF $INSUNITS values to our unit system
+    switch (insunits) {
+      case 1: // Inches
+        drawingUnits = 'inch';
+        break;
+      case 4: // Millimeters  
+        drawingUnits = 'mm';
+        break;
+      case 5: // Centimeters - treat as mm for now
+        drawingUnits = 'mm';
+        break;
+      case 6: // Meters - treat as mm for now
+        drawingUnits = 'mm';
+        break;
+      default:
+        // For all other units (unitless, feet, etc.), default to mm
+        drawingUnits = 'mm';
+        break;
+    }
+  }
+
   // Process entities
   if (parsed && parsed.entities) {
     parsed.entities.forEach((entity: any) => {
@@ -84,7 +111,7 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
   return {
     shapes,
     bounds: finalBounds, 
-    units: 'mm' // Default to mm, can be detected from DXF header
+    units: drawingUnits // Use detected units from DXF header
   };
 }
 

@@ -7,6 +7,7 @@
   import LayersList from '../components/LayersList.svelte';
   import ShapeProperties from '../components/ShapeProperties.svelte';
   import Footer from '../components/Footer.svelte';
+  import Units from '../components/Units.svelte';
   import type { CuttingParameters as CuttingParametersType } from '../types';
   
   let cuttingParameters: CuttingParametersType = {
@@ -24,6 +25,10 @@
   <div class="main-content">
     <div class="sidebar">
       <FileImport />
+      
+      <div class="units-section">
+        <Units />
+      </div>
       
       <div class="layers-section">
         <LayersList />
@@ -102,6 +107,7 @@
     background-color: #fff;
   }
   
+  .units-section,
   .layers-section,
   .parameters-section,
   .export-section {

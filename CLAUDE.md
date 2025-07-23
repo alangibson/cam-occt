@@ -468,3 +468,81 @@ const center = {
 - Provides predictable origin point for machining setup
 
 **Algorithm Complexity**: O(n) where n is the number of shapes, as each shape is processed exactly once for both bounds calculation and translation.
+
+## Display Units and Physical Scaling
+
+**CRITICAL**: The application implements proper unit handling to ensure accurate physical representation of CAD drawings on screen.
+
+### Unit System Architecture
+
+**Display Units vs Drawing Units**:
+- **Drawing Units**: The original units detected from the DXF file (stored in drawing.units)
+- **Display Units**: The units selected by the user for visualization (stored in displayUnit)
+- **Physical Scaling**: Automatic scaling to show correct physical size on screen
+
+### Unit Detection from DXF Files
+
+The application extracts units from the DXF `$INSUNITS` header variable:
+- **Value 1**: Inches → 'inch'
+- **Value 4**: Millimeters → 'mm' 
+- **Value 5**: Centimeters → treated as 'mm'
+- **Value 6**: Meters → treated as 'mm'
+- **Default**: 'mm' for all other values (unitless, feet, etc.)
+
+When a DXF file is loaded:
+1. Units are extracted from the header
+2. The display unit dropdown defaults to the detected unit
+3. The view is reset to 100% zoom (scale = 1)
+4. Drawing is centered at origin
+
+### Physical Size Display
+
+**Core Principle**: At 100% zoom, geometry values are displayed at the physical size specified by the display unit setting. When display units change, the visual scale changes accordingly.
+
+**Implementation**:
+- Display unit controls physical interpretation: 100 units → 100mm when display=mm, 100" when display=inch
+- 1 mm display = ~3.78 pixels on screen (96 DPI standard)
+- 1 inch display = 96 pixels on screen
+- Physical scale depends on the DISPLAY unit selection, not geometry units
+- Zoom factor remains independent of unit changes
+
+**Scaling Formula**:
+```typescript
+const physicalScale = getPhysicalScaleFactor(drawing.units, displayUnit); // Display unit controls scale
+const totalScale = zoomScale * physicalScale;
+```
+
+### Unit Switching Behavior
+
+When user changes display units:
+- **Visual size changes** - geometry values are interpreted as the selected display unit
+- **Geometry coordinates remain unchanged** (no data modification)
+- **Zoom level stays the same** (scale factor unchanged)
+- **Physical interpretation changes** - same numeric values shown at different physical sizes
+
+**CRITICAL**: Display unit switching SHOULD change visual scale. A 186.2 unit drawing should appear 186.2mm wide when display=mm, and 186.2 inches wide when display=inch at 100% zoom.
+
+### Canvas Coordinate System
+
+All canvas transformations use `totalScale` which combines:
+- **User zoom scale**: Controlled by mouse wheel (1.0 = 100%)
+- **Physical scale**: Unit-based scaling for correct physical size
+- **Y-axis flip**: CAD convention (positive Y up) vs canvas (positive Y down)
+
+### Implementation Guidelines
+
+1. **Always use totalScale** for canvas rendering, hit testing, and coordinate transformations
+2. **Physical scale depends on display units** - always pass both geometry and display units to getPhysicalScaleFactor()
+3. **Reset to 100% zoom** when loading new drawings for consistency
+4. **Update all visual elements** (line widths, point sizes, tolerances) using totalScale
+5. **Maintain geometry precision** - never modify coordinate data during unit switches
+6. **Test physical accuracy** - use a ruler to verify screen measurements match expected physical size for the display unit
+
+### Testing Requirements
+
+- Test unit detection from various DXF files with different $INSUNITS values
+- **Verify physical size accuracy** using physical rulers on screen at 100% zoom for both display unit settings
+- **Test that unit switching DOES change visual size** - geometry values are interpreted as display units physically
+- Test coordinate accuracy after unit switches (shapes should remain selectable)
+- Verify proper scaling of UI elements (line widths, selection points, etc.)
+- **Physical size test**: ADLER.DXF (186.2 units) should measure 186.2mm when display=mm, 186.2 inches when display=inch at 100% zoom
