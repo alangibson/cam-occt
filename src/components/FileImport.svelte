@@ -6,6 +6,7 @@
   let fileInput: HTMLInputElement;
   let isDragging = false;
   let decomposePolylines = true; // Default to checked
+  let translateToPositiveQuadrant = true; // Default to checked
   
   $: fileName = $drawingStore.fileName;
   
@@ -22,7 +23,10 @@
         let drawing;
         
         if (file.name.toLowerCase().endsWith('.dxf')) {
-          drawing = await parseDXF(content, { decomposePolylines });
+          drawing = await parseDXF(content, { 
+            decomposePolylines,
+            translateToPositiveQuadrant 
+          });
         } else if (file.name.toLowerCase().endsWith('.svg')) {
           drawing = parseSVG(content);
         } else {
@@ -88,6 +92,14 @@
       />
       Decompose polylines
     </label>
+    
+    <label class="checkbox-label">
+      <input
+        type="checkbox"
+        bind:checked={translateToPositiveQuadrant}
+      />
+      Translate to positive quadrant
+    </label>
   </div>
   
   {#if fileName}
@@ -139,7 +151,9 @@
   .options {
     margin-top: 1rem;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
   }
   
   .checkbox-label {

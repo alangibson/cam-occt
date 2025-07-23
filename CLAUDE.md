@@ -416,3 +416,55 @@ const center = {
 - Always use context save/restore when drawing shapes to prevent color bleeding
 - **Never ignore bulge factors** - they define essential curved geometry in polylines
 - **Test both rendering modes** - bulge-preserved and decomposed should both work correctly
+
+## Core Algorithms
+
+### DXF Polyline Decomposition Algorithm
+
+**Purpose**: Convert DXF polyline entities into individual line and arc shapes for precise CAM processing.
+
+**Algorithm Process**:
+1. Iterate through consecutive vertex pairs in the polyline
+2. Check each vertex's bulge factor to determine segment type
+3. For zero bulge: create straight line segment between vertices
+4. For non-zero bulge: convert to arc using bulge-to-arc mathematics
+5. Handle closing segment for closed polylines (last vertex to first)
+6. Return array of individual Shape objects
+
+**Key Features**:
+- Preserves exact geometry by converting bulge factors to precise arc parameters
+- Handles both open and closed polylines
+- Creates independent shapes suitable for CAM tool path generation
+- Maintains original layer and styling information
+
+**Use Cases**:
+- When individual geometric elements are needed for machining operations
+- For applications requiring separate selection/manipulation of polyline segments
+- When exporting to formats that don't support complex polylines
+
+### Drawing Translation to Positive Quadrant Algorithm
+
+**Purpose**: Automatically translate imported drawings so their bounding box starts at the origin (0,0), ensuring all geometry is in the positive quadrant.
+
+**Algorithm Process**:
+1. Calculate drawing's current bounding box from all shapes
+2. Determine translation vector needed to move minimum point to origin
+3. Skip translation if drawing is already in positive quadrant
+4. Apply translation to all shape types (lines, circles, arcs, polylines)
+5. For polylines, translate both points and vertices arrays while preserving bulge data
+6. Update drawing bounds to reflect new position
+
+**Key Features**:
+- Only translates when necessary (negative coordinates exist)
+- Preserves all relative positions and geometric relationships
+- Handles all shape types including bulge-aware polylines
+- Updates drawing bounds to reflect new position
+- Compatible with polyline decomposition and other import options
+
+**Benefits**:
+- Ensures consistent coordinate system for CAM operations
+- Eliminates negative coordinate issues in G-code generation
+- Simplifies material positioning and nesting algorithms
+- Provides predictable origin point for machining setup
+
+**Algorithm Complexity**: O(n) where n is the number of shapes, as each shape is processed exactly once for both bounds calculation and translation.

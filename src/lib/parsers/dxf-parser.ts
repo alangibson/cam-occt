@@ -5,6 +5,7 @@ import { generateId } from '../utils/id';
 
 interface DXFOptions {
   decomposePolylines?: boolean;
+  translateToPositiveQuadrant?: boolean;
 }
 
 export async function parseDXF(content: string, options: DXFOptions = {}): Promise<Drawing> {
@@ -44,7 +45,7 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
   }
 
   // Ensure bounds are valid - if no shapes were processed, set to zero bounds
-  const finalBounds = {
+  let finalBounds = {
     min: { 
       x: isFinite(bounds.minX) ? bounds.minX : 0, 
       y: isFinite(bounds.minY) ? bounds.minY : 0 
@@ -55,11 +56,71 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
     }
   };
 
+  // Apply translation to positive quadrant if requested
+  if (options.translateToPositiveQuadrant && shapes.length > 0) {
+    const translation = {
+      x: -finalBounds.min.x,
+      y: -finalBounds.min.y
+    };
+    
+    // Only translate if there's a negative offset
+    if (translation.x > 0 || translation.y > 0) {
+      // Translate all shapes
+      shapes.forEach(shape => {
+        translateShape(shape, translation);
+      });
+      
+      // Update bounds after translation
+      finalBounds = {
+        min: { x: 0, y: 0 },
+        max: { 
+          x: finalBounds.max.x + translation.x, 
+          y: finalBounds.max.y + translation.y 
+        }
+      };
+    }
+  }
+
   return {
     shapes,
     bounds: finalBounds, 
     units: 'mm' // Default to mm, can be detected from DXF header
   };
+}
+
+function translateShape(shape: Shape, translation: Point2D): void {
+  switch (shape.type) {
+    case 'line':
+      const line = shape.geometry as any;
+      line.start.x += translation.x;
+      line.start.y += translation.y;
+      line.end.x += translation.x;
+      line.end.y += translation.y;
+      break;
+      
+    case 'circle':
+    case 'arc':
+      const circle = shape.geometry as any;
+      circle.center.x += translation.x;
+      circle.center.y += translation.y;
+      break;
+      
+    case 'polyline':
+      const polyline = shape.geometry as any;
+      // Translate points array
+      polyline.points.forEach((point: Point2D) => {
+        point.x += translation.x;
+        point.y += translation.y;
+      });
+      // Translate vertices array if it exists (bulge-aware polylines)
+      if (polyline.vertices) {
+        polyline.vertices.forEach((vertex: any) => {
+          vertex.x += translation.x;
+          vertex.y += translation.y;
+        });
+      }
+      break;
+  }
 }
 
 function convertDXFEntity(entity: any, options: DXFOptions = {}): Shape | Shape[] | null {
