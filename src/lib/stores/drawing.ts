@@ -162,7 +162,13 @@ function moveShape(shape: Shape, delta: Point2D): Shape {
         points: polyline.points.map((p: Point2D) => ({
           x: p.x + delta.x,
           y: p.y + delta.y
-        }))
+        })),
+        // Also update vertices array if it exists (for bulge-aware polylines)
+        vertices: polyline.vertices ? polyline.vertices.map((v: any) => ({
+          x: v.x + delta.x,
+          y: v.y + delta.y,
+          bulge: v.bulge || 0
+        })) : undefined
       };
       break;
   }
@@ -201,7 +207,12 @@ function scaleShape(shape: Shape, scaleFactor: number, origin: Point2D): Shape {
       const polyline = shape.geometry as any;
       scaled.geometry = {
         ...polyline,
-        points: polyline.points.map(scalePoint)
+        points: polyline.points.map(scalePoint),
+        // Also update vertices array if it exists (for bulge-aware polylines)
+        vertices: polyline.vertices ? polyline.vertices.map((v: any) => ({
+          ...scalePoint({ x: v.x, y: v.y }),
+          bulge: v.bulge || 0
+        })) : undefined
       };
       break;
   }
@@ -255,7 +266,12 @@ function rotateShape(shape: Shape, angle: number, origin: Point2D): Shape {
       const polyline = shape.geometry as any;
       rotated.geometry = {
         ...polyline,
-        points: polyline.points.map(rotatePoint)
+        points: polyline.points.map(rotatePoint),
+        // Also update vertices array if it exists (for bulge-aware polylines)
+        vertices: polyline.vertices ? polyline.vertices.map((v: any) => ({
+          ...rotatePoint({ x: v.x, y: v.y }),
+          bulge: v.bulge || 0
+        })) : undefined
       };
       break;
   }

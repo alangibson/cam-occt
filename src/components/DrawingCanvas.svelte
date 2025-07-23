@@ -422,11 +422,58 @@
         
       case 'polyline':
         const polyline = shape.geometry as any;
-        for (let i = 0; i < polyline.points.length - 1; i++) {
-          if (distanceToLine(point, polyline.points[i], polyline.points[i + 1]) < tolerance) {
-            return true;
+        // Use vertices array if available (bulge-aware polylines)
+        const vertices = polyline.vertices || polyline.points.map((p: any) => ({ ...p, bulge: 0 }));
+        
+        for (let i = 0; i < vertices.length - 1; i++) {
+          const currentVertex = vertices[i];
+          const nextVertex = vertices[i + 1];
+          const bulge = currentVertex.bulge || 0;
+          
+          if (Math.abs(bulge) < 1e-10) {
+            // Straight line segment
+            if (distanceToLine(point, currentVertex, nextVertex) < tolerance) {
+              return true;
+            }
+          } else {
+            // Arc segment - check if point is near the arc
+            const arc = bulgeToArc(currentVertex, nextVertex, bulge);
+            if (arc) {
+              const distToCenter = distance(point, arc.center);
+              if (Math.abs(distToCenter - arc.radius) < tolerance) {
+                const pointAngle = Math.atan2(point.y - arc.center.y, point.x - arc.center.x);
+                if (isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle)) {
+                  return true;
+                }
+              }
+            }
           }
         }
+        
+        // Check closing segment for closed polylines
+        if (polyline.closed && vertices.length >= 3) {
+          const lastVertex = vertices[vertices.length - 1];
+          const firstVertex = vertices[0];
+          const bulge = lastVertex.bulge || 0;
+          
+          if (Math.abs(bulge) < 1e-10) {
+            if (distanceToLine(point, lastVertex, firstVertex) < tolerance) {
+              return true;
+            }
+          } else {
+            const arc = bulgeToArc(lastVertex, firstVertex, bulge);
+            if (arc) {
+              const distToCenter = distance(point, arc.center);
+              if (Math.abs(distToCenter - arc.radius) < tolerance) {
+                const pointAngle = Math.atan2(point.y - arc.center.y, point.x - arc.center.x);
+                if (isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle)) {
+                  return true;
+                }
+              }
+            }
+          }
+        }
+        
         return false;
         
       default:
