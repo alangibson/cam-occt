@@ -139,8 +139,7 @@ cam-occt/
 ├── tests/                  # Test files
 │   ├── dxf/               # DXF test files for testing import functionality
 │   └── e2e/               # End-to-end Playwright tests (to be created)
-├── .claude/               # Claude-specific documentation (if exists)
-│   └── docs/              # Third-party library docs
+├── reference/             # Reference implementations and third-party library docs
 └── package.json           # Project dependencies and scripts
 ```
 
@@ -231,6 +230,59 @@ Based on the PRD, the following features need implementation:
    - Object repositioning (drag & drop)
    - Scaling and rotation tools
    - Undo/redo functionality
+
+### DXF Parser Implementation Details
+
+#### Supported Entity Types
+The DXF parser currently supports the following entity types:
+- **LINE**: Direct line entities and lines from LINE entity arrays
+- **CIRCLE**: Circular entities 
+- **ARC**: Arc entities with proper angle handling
+- **SPLINE**: NURBS curves converted to polylines using control point sampling
+- **LWPOLYLINE/POLYLINE**: Lightweight and regular polylines with bulge support
+- **INSERT**: Block references with full transformation support
+
+#### INSERT Entity (Block Reference) Support
+**Status**: ✅ COMPLETED & VERIFIED
+
+INSERT entities allow DXF files to reference reusable block definitions with transformations:
+
+**Transformation Support:**
+- **Translation**: X, Y insertion point coordinates
+- **Scaling**: Separate X and Y scale factors
+- **Rotation**: Rotation angle in degrees (converted to radians)
+- **Defaults**: Graceful handling with sensible fallbacks (0 for translation/rotation, 1 for scaling)
+
+**Implementation Details:**
+- Blocks are indexed by name in a Map structure during parsing
+- Block base points are stored and used for correct INSERT positioning
+- Each INSERT entity references a block by name and applies transformations
+- INSERT positions are offset by the block's base point for correct DXF compliance
+- Transformations are applied in correct order (matching reference implementation):
+  1. Translate by negative block base point
+  2. Apply scaling (scaleX, scaleY)
+  3. Apply rotation (in radians)
+  4. Translate to INSERT position (x, y)
+- All geometry types (line, circle, arc, polyline) support transformation
+- Nested block support through recursive entity processing
+
+**Block Base Point Handling:**
+- DXF blocks have a base point that defines the origin for INSERT operations
+- INSERT coordinates are relative to this base point
+- The parser correctly applies transformation matrix: translate(-basePoint) → scale → rotate → translate(insertPos)
+- This ensures INSERT entities appear in the correct absolute positions per DXF standard
+
+**Bug Fix Completed:**
+- Fixed transformation order to match reference implementation in `./reference/dxf-viewer`
+- Corrected block base point handling for proper INSERT positioning
+- Resolved user-reported issue where Blocktest.dxf showed wrong positioning
+
+**Testing:**
+- ✅ Comprehensive test suite covers transformation accuracy and positioning
+- ✅ Real DXF file testing with Blocktest.dxf shows correct layout: 6-8 distinct squares
+- ✅ Verification of complex transformations including rotation, scaling, and translation
+- ✅ Base point offset testing ensures INSERT entities appear in correct positions
+- ✅ All 48 line entities correctly parsed and transformed (6 direct + 7 INSERT × 6 lines each)
 
 3. **Cut programming**
    - Basic cutting parameters

@@ -51,13 +51,30 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
     }
   }
 
+  // Process blocks first to build block dictionary
+  const blocks = new Map<string, any[]>();
+  const blockBasePoints = new Map<string, {x: number, y: number}>();
+  if (parsed && parsed.blocks) {
+    for (const blockKey in parsed.blocks) {
+      const block = parsed.blocks[blockKey];
+      if (block && block.entities && block.name) {
+        blocks.set(block.name, block.entities);
+        // Store block base point for INSERT transformations
+        blockBasePoints.set(block.name, {
+          x: block.x || 0,
+          y: block.y || 0
+        });
+      }
+    }
+  }
+
   // Process entities
   if (parsed && parsed.entities) {
     parsed.entities.forEach((entity: any) => {
-      const result = convertDXFEntity(entity, options);
+      const result = convertDXFEntity(entity, options, blocks, blockBasePoints);
       if (result) {
         if (Array.isArray(result)) {
-          // Multiple shapes (decomposed polyline)
+          // Multiple shapes (decomposed polyline or INSERT entities)
           result.forEach(shape => {
             shapes.push(shape);
             updateBounds(shape, bounds);
@@ -150,9 +167,55 @@ function translateShape(shape: Shape, translation: Point2D): void {
   }
 }
 
-function convertDXFEntity(entity: any, options: DXFOptions = {}): Shape | Shape[] | null {
+function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<string, any[]> = new Map(), blockBasePoints: Map<string, {x: number, y: number}> = new Map()): Shape | Shape[] | null {
   try {
     switch (entity.type) {
+      case 'INSERT':
+        // Handle INSERT entities (block references)
+        const blockName = entity.block || entity.name;
+        if (blockName && blocks.has(blockName)) {
+          const blockEntities = blocks.get(blockName) || [];
+          const insertedShapes: Shape[] = [];
+          
+          // Get transformation parameters with defaults
+          const insertX = entity.x || 0;
+          const insertY = entity.y || 0;
+          const scaleX = entity.scaleX || 1;
+          const scaleY = entity.scaleY || 1;
+          const rotation = entity.rotation || 0; // In degrees
+          const rotationRad = (rotation * Math.PI) / 180; // Convert to radians
+          
+          // Get block base point for proper INSERT positioning
+          const basePoint = blockBasePoints.get(blockName) || { x: 0, y: 0 };
+          
+          // Process each entity in the block
+          for (const blockEntity of blockEntities) {
+            const shape = convertDXFEntity(blockEntity, options, blocks, blockBasePoints);
+            if (shape) {
+              const shapesToTransform = Array.isArray(shape) ? shape : [shape];
+              
+              // Apply transformation to each shape
+              for (const shapeToTransform of shapesToTransform) {
+                const transformedShape = transformShape(shapeToTransform, {
+                  insertX,
+                  insertY,
+                  scaleX,
+                  scaleY,
+                  rotationRad,
+                  blockBaseX: basePoint.x,
+                  blockBaseY: basePoint.y
+                });
+                if (transformedShape) {
+                  insertedShapes.push(transformedShape);
+                }
+              }
+            }
+          }
+          
+          return insertedShapes.length > 0 ? insertedShapes : null;
+        }
+        return null;
+
       case 'LINE':
         // Handle LINE entities - can have vertices array or direct start/end points
         if (entity.vertices && entity.vertices.length >= 2) {
@@ -533,6 +596,87 @@ function binomialCoefficient(n: number, k: number): number {
     result = result * (n - i) / (i + 1);
   }
   return result;
+}
+
+function transformShape(shape: Shape, transform: {
+  insertX: number;
+  insertY: number;
+  scaleX: number;
+  scaleY: number;
+  rotationRad: number;
+  blockBaseX: number;
+  blockBaseY: number;
+}): Shape | null {
+  const { insertX, insertY, scaleX, scaleY, rotationRad, blockBaseX, blockBaseY } = transform;
+  const clonedShape = JSON.parse(JSON.stringify(shape));
+  
+  const transformPoint = (p: Point2D): Point2D => {
+    // Step 1: Translate by negative block base point (block origin)
+    let x = p.x - blockBaseX;
+    let y = p.y - blockBaseY;
+    
+    // Step 2: Apply scaling
+    x = x * scaleX;
+    y = y * scaleY;
+    
+    // Step 3: Apply rotation
+    if (rotationRad !== 0) {
+      const cos = Math.cos(rotationRad);
+      const sin = Math.sin(rotationRad);
+      const newX = x * cos - y * sin;
+      const newY = x * sin + y * cos;
+      x = newX;
+      y = newY;
+    }
+    
+    // Step 4: Apply INSERT position translation
+    x += insertX;
+    y += insertY;
+    
+    return { x, y };
+  };
+  
+  // Transform geometry based on shape type
+  switch (clonedShape.type) {
+    case 'line':
+      const line = clonedShape.geometry as any;
+      line.start = transformPoint(line.start);
+      line.end = transformPoint(line.end);
+      break;
+      
+    case 'circle':
+    case 'arc':
+      const circle = clonedShape.geometry as any;
+      circle.center = transformPoint(circle.center);
+      // Scale radius (use average of scaleX and scaleY for uniform scaling)
+      circle.radius *= (scaleX + scaleY) / 2;
+      // Adjust arc angles for rotation
+      if (clonedShape.type === 'arc' && rotationRad !== 0) {
+        circle.startAngle += rotationRad;
+        circle.endAngle += rotationRad;
+      }
+      break;
+      
+    case 'polyline':
+      const polyline = clonedShape.geometry as any;
+      polyline.points = polyline.points.map(transformPoint);
+      if (polyline.vertices) {
+        polyline.vertices = polyline.vertices.map((v: any) => ({
+          ...v,
+          ...transformPoint({ x: v.x, y: v.y })
+        }));
+      }
+      break;
+      
+    default:
+      console.warn(`Unknown shape type for transformation: ${clonedShape.type}`);
+      return null;
+  }
+  
+  // Generate new ID for transformed shape
+  clonedShape.id = generateId();
+  
+  return clonedShape;
 }
 
 function getShapePoints(shape: Shape): Point2D[] {

@@ -1,5 +1,5 @@
 node_modules/
-.claude/docs/
+reference
 .svelte-kit/*/
 build/
 test-results/
