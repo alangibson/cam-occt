@@ -21,9 +21,8 @@ test.describe('Application Loading', () => {
     // Check that the page loaded successfully (not a 500 error)
     expect(response?.status()).toBe(200);
     
-    // Check that the main content is visible
-    await expect(page.locator('h1')).toContainText('CAM-OCCT');
-    await expect(page.locator('header p')).toContainText('CNC Plasma Cutting CAM Software');
+    // Check that the main content is visible (header was removed)
+    await expect(page.locator('footer')).toBeVisible();
     
     // Check that key components are visible
     await expect(page.locator('button:has-text("Import DXF/SVG")')).toBeVisible();

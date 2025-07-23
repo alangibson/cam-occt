@@ -4,6 +4,7 @@
   import { calculateDrawingSize, type DrawingSize } from '../lib/utils/drawing-size';
   
   $: drawing = $drawingStore.drawing;
+  $: scale = $drawingStore.scale;
   let drawingSize: DrawingSize | null = null;
   let isCalculating = false;
   
@@ -31,6 +32,10 @@
   function formatSize(size: number, units: string): string {
     return `${size.toFixed(2)} ${units}`;
   }
+  
+  function formatZoom(scale: number): string {
+    return `${(scale * 100).toFixed(0)}%`;
+  }
 </script>
 
 <footer class="footer">
@@ -49,6 +54,8 @@
     {:else}
       <span class="no-drawing">No drawing loaded</span>
     {/if}
+    
+    <span class="zoom-info">Zoom: {formatZoom(scale)}</span>
   </div>
 </footer>
 
@@ -63,7 +70,7 @@
   
   .drawing-info {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
   }
   
@@ -89,5 +96,11 @@
   
   .no-drawing {
     color: #999;
+  }
+  
+  .zoom-info {
+    font-family: 'Courier New', monospace;
+    font-weight: 500;
+    color: #333;
   }
 </style>

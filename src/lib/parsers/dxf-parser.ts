@@ -79,13 +79,14 @@ function convertDXFEntity(entity: any): Shape | null {
         return null;
 
       case 'CIRCLE':
-        if (entity.center && typeof entity.radius === 'number') {
+        // CIRCLE entities have x, y, r properties (similar to ARCs)
+        if (typeof entity.x === 'number' && typeof entity.y === 'number' && typeof entity.r === 'number') {
           return {
             id: generateId(),
             type: 'circle',
             geometry: {
-              center: { x: entity.center.x, y: entity.center.y },
-              radius: entity.radius
+              center: { x: entity.x, y: entity.y },
+              radius: entity.r
             },
             layer: entity.layer
           };

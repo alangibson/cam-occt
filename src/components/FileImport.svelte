@@ -6,6 +6,8 @@
   let fileInput: HTMLInputElement;
   let isDragging = false;
   
+  $: fileName = $drawingStore.fileName;
+  
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
     
@@ -77,7 +79,11 @@
     Import DXF/SVG
   </button>
   
-  <p class="hint">or drag and drop a file here</p>
+  {#if fileName}
+    <p class="filename">Loaded: {fileName}</p>
+  {:else}
+    <p class="hint">or drag and drop a file here</p>
+  {/if}
 </div>
 
 <style>
@@ -111,5 +117,11 @@
   .hint {
     margin-top: 1rem;
     color: #666;
+  }
+  
+  .filename {
+    margin-top: 1rem;
+    color: #0066cc;
+    font-weight: 500;
   }
 </style>

@@ -4,6 +4,8 @@
   import ToolBar from '../components/ToolBar.svelte';
   import CuttingParameters from '../components/CuttingParameters.svelte';
   import GCodeExport from '../components/GCodeExport.svelte';
+  import LayersList from '../components/LayersList.svelte';
+  import ShapeProperties from '../components/ShapeProperties.svelte';
   import Footer from '../components/Footer.svelte';
   import type { CuttingParameters as CuttingParametersType } from '../types';
   
@@ -23,6 +25,10 @@
     <div class="sidebar">
       <FileImport />
       
+      <div class="layers-section">
+        <LayersList />
+      </div>
+      
       <div class="parameters-section">
         <CuttingParameters bind:parameters={cuttingParameters} units="mm" />
       </div>
@@ -38,6 +44,10 @@
         <DrawingCanvas />
       </div>
       <Footer />
+    </div>
+    
+    <div class="right-sidebar">
+      <ShapeProperties />
     </div>
   </div>
 </div>
@@ -72,6 +82,14 @@
     gap: 1rem;
   }
   
+  .right-sidebar {
+    width: 250px;
+    background-color: #f5f5f5;
+    padding: 1rem;
+    overflow-y: auto;
+    border-left: 1px solid #ddd;
+  }
+  
   .workspace {
     flex: 1;
     display: flex;
@@ -84,6 +102,7 @@
     background-color: #fff;
   }
   
+  .layers-section,
   .parameters-section,
   .export-section {
     margin-top: 1rem;

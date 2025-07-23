@@ -91,6 +91,30 @@ EOF`;
     expect(parsed.entities.length).toBeGreaterThan(0);
   });
 
+  it('should parse CIRCLE entities from real DXF file', async () => {
+    const dxfContent = readFileSync('tests/dxf/2.dxf', 'utf-8');
+    
+    // Test the raw DXF parsing library directly
+    const { parseString } = await import('dxf');
+    const parsed = parseString(dxfContent);
+    
+    console.log('CIRCLE entities in raw parse:', parsed.entities?.filter((e: any) => e.type === 'CIRCLE') || []);
+    console.log('Sample CIRCLE entity:', JSON.stringify(parsed.entities?.find((e: any) => e.type === 'CIRCLE'), null, 2));
+    
+    const drawing = await parseDXF(dxfContent);
+    
+    console.log('Parsed drawing shapes:', drawing.shapes.length);
+    console.log('Shape types:', drawing.shapes.map(s => s.type));
+    
+    // Should contain CIRCLE entities
+    const circleShapes = drawing.shapes.filter(s => s.type === 'circle');
+    console.log('CIRCLE shapes found:', circleShapes.length);
+    
+    if (parsed.entities?.some((e: any) => e.type === 'CIRCLE')) {
+      expect(circleShapes.length).toBeGreaterThan(0);
+    }
+  });
+
   it('should parse SPLINE entities from real DXF file', async () => {
     const dxfContent = readFileSync('tests/dxf/polygons/nested-splines.dxf', 'utf-8');
     

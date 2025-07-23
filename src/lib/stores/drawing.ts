@@ -9,6 +9,7 @@ interface DrawingState {
   scale: number;
   offset: Point2D;
   fileName: string | null;
+  layerVisibility: { [layerName: string]: boolean };
 }
 
 function createDrawingStore() {
@@ -19,7 +20,8 @@ function createDrawingStore() {
     dragStart: null,
     scale: 1,
     offset: { x: 0, y: 0 },
-    fileName: null
+    fileName: null,
+    layerVisibility: {}
   });
 
   return {
@@ -113,6 +115,14 @@ function createDrawingStore() {
       ...state,
       scale,
       offset
+    })),
+    
+    setLayerVisibility: (layerName: string, visible: boolean) => update(state => ({
+      ...state,
+      layerVisibility: {
+        ...state.layerVisibility,
+        [layerName]: visible
+      }
     }))
   };
 }

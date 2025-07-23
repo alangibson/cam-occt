@@ -52,12 +52,14 @@ This ensures all bugs are properly covered by tests and prevents regressions.
 ## UI Changes and Testing
 
 **CRITICAL**: After making any changes to the UI (layout, components, styling, text content), you MUST:
-1. **Rerun all e2e Playwright tests** to ensure they still pass
-2. **Fix any failing tests** caused by UI changes (selectors, text expectations, layout changes)
-3. **Update test expectations** if the UI changes are intentional
-4. **Verify screenshot tests** still capture the correct visual elements
+1. **Run Svelte/Vite build check** with `npm run build` to ensure no compilation errors
+2. **Run unit tests** with `npm run test` to catch any TypeScript or logic errors
+3. **Rerun all e2e Playwright tests** to ensure they still pass
+4. **Fix any failing tests** caused by UI changes (selectors, text expectations, layout changes)
+5. **Update test expectations** if the UI changes are intentional
+6. **Verify screenshot tests** still capture the correct visual elements
 
-UI changes frequently break e2e tests due to changed selectors, moved elements, or different text content.
+**NEVER tell the user you are done without running these tests first.** UI changes frequently break e2e tests due to changed selectors, moved elements, or different text content. Build errors are common when adding new components or imports.
 
 ## Development Guidelines
 
@@ -214,6 +216,8 @@ Use feature detection for:
 
 **IMPORTANT**: Never run the dev server (`npm run dev`) as it is assumed to always be running at the default port during development. Only reference the running server for testing purposes.
 
+**CRITICAL**: DO NOT EVER START THE DEV SERVER WITH `npm run dev`. The user manages the dev server themselves. If you need the dev server running, ask the user to start it. Never run `npm run dev` under any circumstances, even if it appears to not be running.
+
 ## Common Development Tasks
 
 ### Adding a New File Parser
@@ -287,6 +291,37 @@ Documentation for key libraries is available in `.claude/docs/` (when present):
 6. Run validation: `npm run validate`
 7. Test manually with sample files
 8. Create e2e test for user workflow
+
+## Shape Origins and Geometry
+
+**Shape Origins**: Every shape has a geometric origin that defines its position on the x,y plane:
+- **Circle**: The origin is the center point
+- **Line**: The origin is the start point
+- **Arc**: The origin is the center point
+- **Polyline**: The origin is the first point in the sequence
+- **Spline** (converted to polyline): The origin is the first sampled point
+
+Understanding shape origins is critical for:
+- Shape positioning and transformations
+- Calculating relative distances between shapes
+- Tool path generation and sequencing
+- UI display of shape properties
+
+## Shape Selection and Interaction Rules
+
+**CRITICAL**: All shape types must follow consistent hover and selection rules in the canvas:
+
+- **Selection**: Every shape type (line, circle, arc, polyline, spline) must be selectable by clicking
+- **Hit Detection**: All shapes must implement proper hit detection in `isPointNearShape()` function
+- **Common Bug**: Missing cases in the switch statement for new shape types (e.g., arc was missing)
+- **Tolerance**: Use consistent tolerance values scaled by zoom level for fair selection across shapes
+- **Visual Feedback**: Selected shapes should use consistent highlight styling
+
+When adding new shape types:
+1. Add rendering case in `drawShape()` function
+2. Add hit detection case in `isPointNearShape()` function  
+3. Add bounds calculation in `getShapePoints()` function
+4. Test selection behavior manually
 
 ## Common Pitfalls to Avoid
 

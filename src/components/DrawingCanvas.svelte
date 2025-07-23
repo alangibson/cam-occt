@@ -13,6 +13,7 @@
   $: selectedShapes = $drawingStore.selectedShapes;
   $: scale = $drawingStore.scale;
   $: offset = $drawingStore.offset;
+  $: layerVisibility = $drawingStore.layerVisibility;
   
   onMount(() => {
     ctx = canvas.getContext('2d')!;
@@ -43,8 +44,19 @@
     
     // Draw shapes
     drawing.shapes.forEach(shape => {
+      // Check if layer is visible
+      const shapeLayer = shape.layer || '0';
+      const isVisible = layerVisibility[shapeLayer] !== false; // Default to visible if not set
+      
+      if (!isVisible) return; // Skip invisible shapes
+      
       const isSelected = selectedShapes.has(shape.id);
       drawShape(shape, isSelected);
+      
+      // Draw origin/start/end points for selected shapes
+      if (isSelected) {
+        drawShapePoints(shape);
+      }
     });
     
     ctx.restore();
@@ -102,6 +114,121 @@
     }
   }
   
+  function drawShapePoints(shape: Shape) {
+    const pointSize = 4 / scale; // Fixed size regardless of zoom
+    
+    // Get points using the same logic as ShapeProperties component
+    const origin = getShapeOrigin(shape);
+    const startPoint = getShapeStartPoint(shape);
+    const endPoint = getShapeEndPoint(shape);
+    
+    // Draw origin point (blue)
+    if (origin) {
+      ctx.fillStyle = '#0066ff';
+      ctx.beginPath();
+      ctx.arc(origin.x, origin.y, pointSize, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    
+    // Draw start point (green)
+    if (startPoint) {
+      ctx.fillStyle = '#00ff00';
+      ctx.beginPath();
+      ctx.arc(startPoint.x, startPoint.y, pointSize, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+    
+    // Draw end point (red)
+    if (endPoint) {
+      ctx.fillStyle = '#ff0000';
+      ctx.beginPath();
+      ctx.arc(endPoint.x, endPoint.y, pointSize, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  }
+  
+  function getShapeOrigin(shape: Shape): Point2D {
+    switch (shape.type) {
+      case 'line':
+        const line = shape.geometry as any;
+        return line.start; // Origin is the start point
+      
+      case 'circle':
+      case 'arc':
+        const circle = shape.geometry as any;
+        return circle.center; // Origin is the center
+      
+      case 'polyline':
+        const polyline = shape.geometry as any;
+        return polyline.points.length > 0 ? polyline.points[0] : { x: 0, y: 0 }; // Origin is the first point
+      
+      default:
+        return { x: 0, y: 0 };
+    }
+  }
+  
+  function getShapeStartPoint(shape: Shape): Point2D | null {
+    switch (shape.type) {
+      case 'line':
+        const line = shape.geometry as any;
+        return line.start;
+      
+      case 'polyline':
+        const polyline = shape.geometry as any;
+        return polyline.points.length > 0 ? polyline.points[0] : null;
+      
+      case 'arc':
+        // For arcs, calculate start point from center, radius, and start angle
+        const arc = shape.geometry as any;
+        return {
+          x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
+          y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
+        };
+      
+      case 'circle':
+        // For circles, define start point as rightmost point (0°)
+        const circle = shape.geometry as any;
+        return {
+          x: circle.center.x + circle.radius,
+          y: circle.center.y
+        };
+      
+      default:
+        return null;
+    }
+  }
+  
+  function getShapeEndPoint(shape: Shape): Point2D | null {
+    switch (shape.type) {
+      case 'line':
+        const line = shape.geometry as any;
+        return line.end;
+      
+      case 'polyline':
+        const polyline = shape.geometry as any;
+        return polyline.points.length > 0 ? polyline.points[polyline.points.length - 1] : null;
+      
+      case 'arc':
+        // For arcs, calculate end point from center, radius, and end angle
+        const arc = shape.geometry as any;
+        return {
+          x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
+          y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
+        };
+      
+      case 'circle':
+        // For circles, define end point as leftmost point (180°)
+        const circle = shape.geometry as any;
+        return {
+          x: circle.center.x - circle.radius,
+          y: circle.center.y
+        };
+      
+      default:
+        return null;
+    }
+  }
+  
   function screenToWorld(screenPos: Point2D): Point2D {
     return {
       x: (screenPos.x - canvas.width / 2 - offset.x) / scale,
@@ -116,6 +243,12 @@
     const tolerance = 5 / scale;
     
     for (const shape of drawing.shapes) {
+      // Check if layer is visible before hit testing
+      const shapeLayer = shape.layer || '0';
+      const isVisible = layerVisibility[shapeLayer] !== false; // Default to visible if not set
+      
+      if (!isVisible) continue; // Skip invisible shapes
+      
       if (isPointNearShape(point, shape, tolerance)) {
         return shape;
       }
@@ -135,6 +268,17 @@
         const distToCenter = distance(point, circle.center);
         return Math.abs(distToCenter - circle.radius) < tolerance;
         
+      case 'arc':
+        const arc = shape.geometry as any;
+        const distToCenterArc = distance(point, arc.center);
+        // Check if point is near the arc circumference
+        if (Math.abs(distToCenterArc - arc.radius) > tolerance) {
+          return false;
+        }
+        // Check if point is within the arc's angular range
+        const pointAngle = Math.atan2(point.y - arc.center.y, point.x - arc.center.x);
+        return isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle);
+        
       case 'polyline':
         const polyline = shape.geometry as any;
         for (let i = 0; i < polyline.points.length - 1; i++) {
@@ -151,6 +295,26 @@
   
   function distance(p1: Point2D, p2: Point2D): number {
     return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+  }
+  
+  function isAngleInArcRange(angle: number, startAngle: number, endAngle: number): boolean {
+    // Normalize angles to [0, 2π]
+    const normalizeAngle = (a: number) => {
+      while (a < 0) a += 2 * Math.PI;
+      while (a >= 2 * Math.PI) a -= 2 * Math.PI;
+      return a;
+    };
+    
+    const normAngle = normalizeAngle(angle);
+    const normStart = normalizeAngle(startAngle);
+    const normEnd = normalizeAngle(endAngle);
+    
+    if (normStart <= normEnd) {
+      return normAngle >= normStart && normAngle <= normEnd;
+    } else {
+      // Arc crosses 0 degrees
+      return normAngle >= normStart || normAngle <= normEnd;
+    }
   }
   
   function distanceToLine(point: Point2D, lineStart: Point2D, lineEnd: Point2D): number {
@@ -260,6 +424,11 @@
     }
   }
   
+  function handleContextMenu(e: MouseEvent) {
+    // Prevent browser context menu when right-clicking for drag operations
+    e.preventDefault();
+  }
+  
   // Re-render when store changes
   $: if (ctx && drawing) render();
   $: if (ctx && selectedShapes) render();
@@ -275,7 +444,8 @@
   on:mouseup={handleMouseUp}
   on:mouseleave={handleMouseUp}
   on:wheel={handleWheel}
-  tabindex="0"
+  on:contextmenu={handleContextMenu}
+  tabindex="0"  
   on:keydown={handleKeyDown}
 ></canvas>
 
