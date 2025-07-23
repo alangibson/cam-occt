@@ -44,6 +44,7 @@ export interface Shape {
   layer?: string;
   color?: string;
   selected?: boolean;
+  originalType?: string; // Track original DXF entity type for converted shapes
 }
 
 export interface Drawing {

@@ -8,6 +8,7 @@ interface DrawingState {
   dragStart: Point2D | null;
   scale: number;
   offset: Point2D;
+  fileName: string | null;
 }
 
 function createDrawingStore() {
@@ -17,12 +18,17 @@ function createDrawingStore() {
     isDragging: false,
     dragStart: null,
     scale: 1,
-    offset: { x: 0, y: 0 }
+    offset: { x: 0, y: 0 },
+    fileName: null
   });
 
   return {
     subscribe,
-    setDrawing: (drawing: Drawing) => update(state => ({ ...state, drawing })),
+    setDrawing: (drawing: Drawing, fileName?: string) => update(state => ({ 
+      ...state, 
+      drawing,
+      fileName: fileName || null
+    })),
     
     selectShape: (shapeId: string, multi = false) => update(state => {
       const selectedShapes = new Set(multi ? state.selectedShapes : []);

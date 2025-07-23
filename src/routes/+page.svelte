@@ -4,6 +4,7 @@
   import ToolBar from '../components/ToolBar.svelte';
   import CuttingParameters from '../components/CuttingParameters.svelte';
   import GCodeExport from '../components/GCodeExport.svelte';
+  import Footer from '../components/Footer.svelte';
   import type { CuttingParameters as CuttingParametersType } from '../types';
   
   let cuttingParameters: CuttingParametersType = {
@@ -18,11 +19,6 @@
 </script>
 
 <div class="app">
-  <header>
-    <h1>CAM-OCCT</h1>
-    <p>CNC Plasma Cutting CAM Software</p>
-  </header>
-  
   <div class="main-content">
     <div class="sidebar">
       <FileImport />
@@ -41,6 +37,7 @@
       <div class="canvas-container">
         <DrawingCanvas />
       </div>
+      <Footer />
     </div>
   </div>
 </div>
@@ -58,23 +55,6 @@
     height: 100vh;
   }
   
-  header {
-    background-color: #2c3e50;
-    color: white;
-    padding: 1rem;
-    text-align: center;
-  }
-  
-  header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-  }
-  
-  header p {
-    margin: 0.25rem 0 0 0;
-    opacity: 0.8;
-    font-size: 0.9rem;
-  }
   
   .main-content {
     display: flex;

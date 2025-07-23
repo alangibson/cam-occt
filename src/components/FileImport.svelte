@@ -27,7 +27,7 @@
           return;
         }
         
-        drawingStore.setDrawing(drawing);
+        drawingStore.setDrawing(drawing, file.name);
       } catch (error) {
         console.error('Error parsing file:', error);
         alert('Error parsing file. Please check the file format.');

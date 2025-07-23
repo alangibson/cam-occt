@@ -40,6 +40,25 @@ When the user reports a bug, follow this process:
 
 This ensures all bugs are properly covered by tests and prevents regressions.
 
+## Problem Solving Philosophy
+
+**CRITICAL**: Always fix problems at the root, do not work around them.
+- If there's a CSP issue blocking OpenCascade.js, fix the CSP configuration
+- If there's a dependency issue, fix the dependency management
+- If there's a build configuration issue, fix the build config
+- Do NOT create fallback methods or workarounds that mask the real problem
+- The goal is to have one consistent, working implementation, not multiple code paths
+
+## UI Changes and Testing
+
+**CRITICAL**: After making any changes to the UI (layout, components, styling, text content), you MUST:
+1. **Rerun all e2e Playwright tests** to ensure they still pass
+2. **Fix any failing tests** caused by UI changes (selectors, text expectations, layout changes)
+3. **Update test expectations** if the UI changes are intentional
+4. **Verify screenshot tests** still capture the correct visual elements
+
+UI changes frequently break e2e tests due to changed selectors, moved elements, or different text content.
+
 ## Development Guidelines
 
 ### 1. Code Organization
@@ -139,11 +158,18 @@ Based on the PRD, the following features need implementation:
 
 ### 6. OpenCascade.js Integration
 
-OpenCascade.js is used for advanced geometry operations:
-- Boolean operations (union, difference, intersection)
-- Offset calculations for kerf compensation
-- Complex curve handling (splines, NURBS)
-- Geometric validation
+**IMPORTANT**: Always prefer OpenCascade.js built-in geometry functions when possible. This ensures precision, performance, and consistency with CAD standards.
+
+OpenCascade.js is used for ALL geometry operations:
+- **Bounding box calculations** - Use `Bnd_Box` and `BRepBndLib::Add()`
+- **Boolean operations** - Union, difference, intersection using `BRepAlgoAPI_*`
+- **Offset calculations** - For kerf compensation using `BRepOffsetAPI_MakeOffset`
+- **Complex curve handling** - Splines, NURBS, arcs using `Geom_*` classes
+- **Geometric validation** - Shape analysis and repair
+- **Distance calculations** - Point-to-curve, curve-to-curve distances
+- **Area and volume calculations** - Using `GProp_GProps` and `BRepGProp::*`
+
+When implementing any geometry-related functionality, first check if OpenCascade.js provides a built-in solution before writing custom algorithms.
 
 ### 7. Three.js Usage
 

@@ -12,8 +12,12 @@ export async function parseDXF(content: string): Promise<Drawing> {
   
   const parsed = parseString(content);
   const shapes: Shape[] = [];
-  let minX = Infinity, minY = Infinity;
-  let maxX = -Infinity, maxY = -Infinity;
+  const bounds = {
+    minX: Infinity,
+    minY: Infinity,
+    maxX: -Infinity,
+    maxY: -Infinity
+  };
 
   // Process entities
   if (parsed && parsed.entities) {
@@ -21,17 +25,26 @@ export async function parseDXF(content: string): Promise<Drawing> {
       const shape = convertDXFEntity(entity);
       if (shape) {
         shapes.push(shape);
-        updateBounds(shape, { minX, minY, maxX, maxY });
+        updateBounds(shape, bounds);
       }
     });
   }
 
+  // Ensure bounds are valid - if no shapes were processed, set to zero bounds
+  const finalBounds = {
+    min: { 
+      x: isFinite(bounds.minX) ? bounds.minX : 0, 
+      y: isFinite(bounds.minY) ? bounds.minY : 0 
+    },
+    max: { 
+      x: isFinite(bounds.maxX) ? bounds.maxX : 0, 
+      y: isFinite(bounds.maxY) ? bounds.maxY : 0 
+    }
+  };
+
   return {
     shapes,
-    bounds: {
-      min: { x: minX, y: minY },
-      max: { x: maxX, y: maxY }
-    },
+    bounds: finalBounds, 
     units: 'mm' // Default to mm, can be detected from DXF header
   };
 }
@@ -80,20 +93,46 @@ function convertDXFEntity(entity: any): Shape | null {
         return null;
 
       case 'ARC':
-        if (entity.center && typeof entity.radius === 'number' && 
-            typeof entity.startAngle === 'number' && typeof entity.endAngle === 'number') {
+        // ARC entities have x, y, r properties (not center/radius)
+        if (typeof entity.x === 'number' && typeof entity.y === 'number' && 
+            typeof entity.r === 'number' && typeof entity.startAngle === 'number' && 
+            typeof entity.endAngle === 'number') {
           return {
             id: generateId(),
             type: 'arc',
             geometry: {
-              center: { x: entity.center.x, y: entity.center.y },
-              radius: entity.radius,
-              startAngle: entity.startAngle * Math.PI / 180,
-              endAngle: entity.endAngle * Math.PI / 180,
+              center: { x: entity.x, y: entity.y },
+              radius: entity.r,
+              startAngle: entity.startAngle, // Already in radians from DXF library
+              endAngle: entity.endAngle,     // Already in radians from DXF library
               clockwise: false
             },
             layer: entity.layer
           };
+        }
+        return null;
+
+      case 'SPLINE':
+        // SPLINE entities are NURBS curves - convert to polyline by sampling points
+        if (entity.controlPoints && Array.isArray(entity.controlPoints) && entity.controlPoints.length >= 2) {
+          try {
+            const sampledPoints = sampleSplinePoints(entity);
+            if (sampledPoints.length >= 2) {
+              return {
+                id: generateId(),
+                type: 'polyline',
+                geometry: {
+                  points: sampledPoints,
+                  closed: entity.closed || false
+                },
+                layer: entity.layer,
+                originalType: 'spline' // Keep track of original entity type
+              };
+            }
+          } catch (error) {
+            console.warn('Error sampling SPLINE entity:', error);
+            return null;
+          }
         }
         return null;
 
@@ -135,11 +174,110 @@ function convertDXFEntity(entity: any): Shape | null {
 function updateBounds(shape: Shape, bounds: any): void {
   const points = getShapePoints(shape);
   points.forEach(p => {
-    bounds.minX = Math.min(bounds.minX, p.x);
-    bounds.minY = Math.min(bounds.minY, p.y);
-    bounds.maxX = Math.max(bounds.maxX, p.x);
-    bounds.maxY = Math.max(bounds.maxY, p.y);
+    // Only update bounds with finite values
+    if (p && isFinite(p.x) && isFinite(p.y)) {
+      bounds.minX = Math.min(bounds.minX, p.x);
+      bounds.minY = Math.min(bounds.minY, p.y);
+      bounds.maxX = Math.max(bounds.maxX, p.x);
+      bounds.maxY = Math.max(bounds.maxY, p.y);
+    }
   });
+}
+
+// Sample points along a SPLINE (NURBS) curve to convert to polyline
+function sampleSplinePoints(splineEntity: any): Point2D[] {
+  const controlPoints = splineEntity.controlPoints;
+  const degree = splineEntity.degree || 3;
+  const knots = splineEntity.knots;
+  
+  // Simple approach: if we have fit points, use them
+  if (splineEntity.fitPoints && splineEntity.fitPoints.length >= 2) {
+    return splineEntity.fitPoints.map((p: any) => ({ x: p.x, y: p.y }));
+  }
+  
+  // For now, implement a simple approach using control points
+  // For production use, we'd want proper NURBS evaluation
+  const sampledPoints: Point2D[] = [];
+  const numSamples = Math.max(16, controlPoints.length * 4); // Adaptive sampling
+  
+  if (degree === 1 || controlPoints.length <= 2) {
+    // Linear interpolation for degree 1 or simple cases
+    for (let i = 0; i < controlPoints.length; i++) {
+      sampledPoints.push({ x: controlPoints[i].x, y: controlPoints[i].y });
+    }
+  } else {
+    // Simple approximation: sample along the control polygon with smoothing
+    // This is not a true NURBS evaluation but provides a reasonable approximation
+    
+    // Start with first control point
+    sampledPoints.push({ x: controlPoints[0].x, y: controlPoints[0].y });
+    
+    // Sample intermediate points using a simple curve approximation
+    for (let i = 0; i < numSamples - 1; i++) {
+      const t = (i + 1) / numSamples;
+      const point = evaluateSimpleBSpline(controlPoints, degree, t);
+      if (point) {
+        sampledPoints.push(point);
+      }
+    }
+    
+    // End with last control point
+    const lastPoint = controlPoints[controlPoints.length - 1];
+    sampledPoints.push({ x: lastPoint.x, y: lastPoint.y });
+  }
+  
+  return sampledPoints;
+}
+
+// Simple B-spline evaluation (approximation)
+function evaluateSimpleBSpline(controlPoints: any[], degree: number, t: number): Point2D | null {
+  if (controlPoints.length === 0) return null;
+  
+  // Clamp t to [0, 1]
+  t = Math.max(0, Math.min(1, t));
+  
+  if (degree === 1 || controlPoints.length <= 2) {
+    // Linear interpolation
+    const index = t * (controlPoints.length - 1);
+    const i = Math.floor(index);
+    const j = Math.min(i + 1, controlPoints.length - 1);
+    const alpha = index - i;
+    
+    return {
+      x: controlPoints[i].x * (1 - alpha) + controlPoints[j].x * alpha,
+      y: controlPoints[i].y * (1 - alpha) + controlPoints[j].y * alpha
+    };
+  }
+  
+  // For higher degrees, use a simple approximation
+  // This is not true NURBS evaluation but works for basic cases
+  const n = controlPoints.length - 1;
+  let x = 0, y = 0;
+  
+  for (let i = 0; i <= n; i++) {
+    const basis = bernsteinBasis(n, i, t);
+    x += basis * controlPoints[i].x;
+    y += basis * controlPoints[i].y;
+  }
+  
+  return { x, y };
+}
+
+// Bernstein basis function (for Bezier curve approximation)
+function bernsteinBasis(n: number, i: number, t: number): number {
+  return binomialCoefficient(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
+}
+
+// Binomial coefficient calculation
+function binomialCoefficient(n: number, k: number): number {
+  if (k > n) return 0;
+  if (k === 0 || k === n) return 1;
+  
+  let result = 1;
+  for (let i = 0; i < k; i++) {
+    result = result * (n - i) / (i + 1);
+  }
+  return result;
 }
 
 function getShapePoints(shape: Shape): Point2D[] {

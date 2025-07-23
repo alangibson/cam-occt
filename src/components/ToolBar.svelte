@@ -2,6 +2,7 @@
   import { drawingStore } from '../lib/stores/drawing';
   
   $: selectedCount = $drawingStore.selectedShapes.size;
+  $: fileName = $drawingStore.fileName;
   
   function handleScale() {
     const factor = parseFloat(prompt('Enter scale factor:', '1.5') || '1');
@@ -29,42 +30,66 @@
 </script>
 
 <div class="toolbar">
-  <button
-    on:click={() => drawingStore.deleteSelected()}
-    disabled={selectedCount === 0}
-  >
-    Delete ({selectedCount})
-  </button>
+  <div class="toolbar-left">
+    <button
+      on:click={() => drawingStore.deleteSelected()}
+      disabled={selectedCount === 0}
+    >
+      Delete ({selectedCount})
+    </button>
+    
+    <button
+      on:click={handleScale}
+      disabled={selectedCount === 0}
+    >
+      Scale
+    </button>
+    
+    <button
+      on:click={handleRotate}
+      disabled={selectedCount === 0}
+    >
+      Rotate
+    </button>
+    
+    <button
+      on:click={() => drawingStore.clearSelection()}
+      disabled={selectedCount === 0}
+    >
+      Clear Selection
+    </button>
+  </div>
   
-  <button
-    on:click={handleScale}
-    disabled={selectedCount === 0}
-  >
-    Scale
-  </button>
-  
-  <button
-    on:click={handleRotate}
-    disabled={selectedCount === 0}
-  >
-    Rotate
-  </button>
-  
-  <button
-    on:click={() => drawingStore.clearSelection()}
-    disabled={selectedCount === 0}
-  >
-    Clear Selection
-  </button>
+  <div class="toolbar-right">
+    {#if fileName}
+      <span class="file-name">{fileName}</span>
+    {/if}
+  </div>
 </div>
 
 <style>
   .toolbar {
     display: flex;
-    gap: 0.5rem;
+    justify-content: space-between;
+    align-items: center;
     padding: 0.5rem;
     background-color: #f5f5f5;
     border-bottom: 1px solid #ddd;
+  }
+  
+  .toolbar-left {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .toolbar-right {
+    flex-shrink: 0;
+  }
+  
+  .file-name {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
   }
   
   button {
