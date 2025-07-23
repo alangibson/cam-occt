@@ -323,6 +323,28 @@ When adding new shape types:
 3. Add bounds calculation in `getShapePoints()` function
 4. Test selection behavior manually
 
+## Shape Color Scheme and Visual Behavior
+
+**CRITICAL**: The application uses a consistent color scheme for shape states:
+
+### Color Requirements:
+- **Normal shapes**: Black (`#000000`) with 1px line width
+- **Hovered shapes**: Orange (`#ff6600`) with 1.5px line width  
+- **Selected shapes**: Orange (`#ff6600`) with 2px line width
+- **Origin cross**: Gray (`#888888`) with 1px line width
+
+### Visual Behavior Rules:
+- **Priority**: Selected state overrides hovered state overrides normal state
+- **Consistency**: ALL shape types (line, circle, arc, polyline, spline) must use the same colors
+- **Context Management**: Use `ctx.save()` and `ctx.restore()` to prevent color bleeding between shapes
+- **Hover Detection**: Mouse movement updates hover state in real-time when not dragging
+- **Properties Display**: Hover shows shape properties with blue text "Showing hovered shape (click to select)"
+
+### Implementation Notes:
+- Shape drawing must save/restore canvas context to prevent style interference
+- Origin cross drawing can affect subsequent shape colors if context isn't managed properly
+- Each `drawShape()` call should be isolated with its own context state
+
 ## Common Pitfalls to Avoid
 
 - Don't assume file formats are standard - always validate
@@ -331,3 +353,4 @@ When adding new shape types:
 - Remember browser memory limits with large files
 - Test with real-world DXF files, not just simple shapes
 - Consider touch device support from the start
+- Always use context save/restore when drawing shapes to prevent color bleeding

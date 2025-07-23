@@ -4,6 +4,7 @@ import type { Drawing, Shape, Point2D } from '../../types';
 interface DrawingState {
   drawing: Drawing | null;
   selectedShapes: Set<string>;
+  hoveredShape: string | null;
   isDragging: boolean;
   dragStart: Point2D | null;
   scale: number;
@@ -16,6 +17,7 @@ function createDrawingStore() {
   const { subscribe, set, update } = writable<DrawingState>({
     drawing: null,
     selectedShapes: new Set(),
+    hoveredShape: null,
     isDragging: false,
     dragStart: null,
     scale: 1,
@@ -123,6 +125,11 @@ function createDrawingStore() {
         ...state.layerVisibility,
         [layerName]: visible
       }
+    })),
+    
+    setHoveredShape: (shapeId: string | null) => update(state => ({
+      ...state,
+      hoveredShape: shapeId
     }))
   };
 }

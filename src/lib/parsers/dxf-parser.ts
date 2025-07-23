@@ -127,7 +127,14 @@ function convertDXFEntity(entity: any): Shape | null {
                   closed: entity.closed || false
                 },
                 layer: entity.layer,
-                originalType: 'spline' // Keep track of original entity type
+                originalType: 'spline', // Keep track of original entity type
+                splineData: {
+                  controlPoints: entity.controlPoints || [],
+                  knots: entity.knots || [],
+                  weights: entity.weights || [],
+                  degree: entity.degree || 3,
+                  fitPoints: entity.fitPoints || []
+                }
               };
             }
           } catch (error) {

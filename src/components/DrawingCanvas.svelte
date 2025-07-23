@@ -11,6 +11,7 @@
   
   $: drawing = $drawingStore.drawing;
   $: selectedShapes = $drawingStore.selectedShapes;
+  $: hoveredShape = $drawingStore.hoveredShape;
   $: scale = $drawingStore.scale;
   $: offset = $drawingStore.offset;
   $: layerVisibility = $drawingStore.layerVisibility;
@@ -42,6 +43,9 @@
     ctx.translate(canvas.width / 2 + offset.x, canvas.height / 2 + offset.y);
     ctx.scale(scale, -scale); // Flip Y axis for CAD convention
     
+    // Draw origin cross at (0,0)
+    drawOriginCross();
+    
     // Draw shapes
     drawing.shapes.forEach(shape => {
       // Check if layer is visible
@@ -51,7 +55,8 @@
       if (!isVisible) return; // Skip invisible shapes
       
       const isSelected = selectedShapes.has(shape.id);
-      drawShape(shape, isSelected);
+      const isHovered = hoveredShape === shape.id;
+      drawShape(shape, isSelected, isHovered);
       
       // Draw origin/start/end points for selected shapes
       if (isSelected) {
@@ -62,10 +67,40 @@
     ctx.restore();
   }
   
+  function drawOriginCross() {
+    const crossSize = 20 / scale; // Fixed size regardless of zoom
+    
+    ctx.strokeStyle = '#888888';
+    ctx.lineWidth = 1 / scale;
+    
+    // Draw horizontal line
+    ctx.beginPath();
+    ctx.moveTo(-crossSize, 0);
+    ctx.lineTo(crossSize, 0);
+    ctx.stroke();
+    
+    // Draw vertical line
+    ctx.beginPath();
+    ctx.moveTo(0, -crossSize);
+    ctx.lineTo(0, crossSize);
+    ctx.stroke();
+  }
   
-  function drawShape(shape: Shape, isSelected: boolean) {
-    ctx.strokeStyle = isSelected ? '#ff6600' : '#000000';
-    ctx.lineWidth = (isSelected ? 2 : 1) / scale;
+  function drawShape(shape: Shape, isSelected: boolean, isHovered: boolean = false) {
+    // Save context state
+    ctx.save();
+    
+    // Priority: selected > hovered > normal
+    if (isSelected) {
+      ctx.strokeStyle = '#ff6600';
+      ctx.lineWidth = 2 / scale;
+    } else if (isHovered) {
+      ctx.strokeStyle = '#ff6600';
+      ctx.lineWidth = 1.5 / scale;
+    } else {
+      ctx.strokeStyle = '#000000';
+      ctx.lineWidth = 1 / scale;
+    }
     
     switch (shape.type) {
       case 'line':
@@ -112,6 +147,9 @@
         }
         break;
     }
+    
+    // Restore context state
+    ctx.restore();
   }
   
   function drawShapePoints(shape: Shape) {
@@ -186,7 +224,7 @@
         };
       
       case 'circle':
-        // For circles, define start point as rightmost point (0°)
+        // For circles, start and end points must be the same (rightmost point at 0°)
         const circle = shape.geometry as any;
         return {
           x: circle.center.x + circle.radius,
@@ -217,10 +255,10 @@
         };
       
       case 'circle':
-        // For circles, define end point as leftmost point (180°)
+        // For circles, start and end points must be the same (rightmost point at 0°)
         const circle = shape.geometry as any;
         return {
-          x: circle.center.x - circle.radius,
+          x: circle.center.x + circle.radius,
           y: circle.center.y
         };
       
@@ -392,6 +430,12 @@
           y: offset.y + delta.y
         });
       }
+    } else {
+      // Handle hover detection when not dragging
+      const worldPos = screenToWorld(newMousePos);
+      const shape = getShapeAtPoint(worldPos);
+      
+      drawingStore.setHoveredShape(shape ? shape.id : null);
     }
     
     mousePos = newMousePos;
@@ -405,7 +449,7 @@
   function handleWheel(e: WheelEvent) {
     e.preventDefault();
     
-    const scaleFactor = e.deltaY > 0 ? 0.9 : 1.1;
+    const scaleFactor = e.deltaY > 0 ? 0.95 : 1.05;
     const newScale = scale * scaleFactor;
     
     // Zoom towards mouse position

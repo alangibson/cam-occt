@@ -37,6 +37,14 @@ export interface Polyline {
 
 export type GeometryType = 'line' | 'arc' | 'circle' | 'polyline' | 'spline';
 
+export interface SplineData {
+  controlPoints: Point2D[];
+  knots: number[];
+  weights: number[];
+  degree: number;
+  fitPoints: Point2D[];
+}
+
 export interface Shape {
   id: string;
   type: GeometryType;
@@ -45,6 +53,7 @@ export interface Shape {
   color?: string;
   selected?: boolean;
   originalType?: string; // Track original DXF entity type for converted shapes
+  splineData?: SplineData; // Original spline data for converted spline shapes
 }
 
 export interface Drawing {
