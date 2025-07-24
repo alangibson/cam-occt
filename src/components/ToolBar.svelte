@@ -27,6 +27,7 @@
       );
     }
   }
+
 </script>
 
 <div class="toolbar">

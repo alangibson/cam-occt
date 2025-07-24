@@ -1,0 +1,101 @@
+import { writable } from 'svelte/store';
+import type { DetectedPart, PartDetectionWarning } from '../algorithms/part-detection';
+
+interface PartStore {
+  parts: DetectedPart[];
+  warnings: PartDetectionWarning[];
+  highlightedPartId: string | null;
+}
+
+const initialState: PartStore = {
+  parts: [],
+  warnings: [],
+  highlightedPartId: null
+};
+
+export const partStore = writable<PartStore>(initialState);
+
+// Helper functions
+export function setParts(parts: DetectedPart[], warnings: PartDetectionWarning[] = []) {
+  partStore.update(state => ({
+    ...state,
+    parts,
+    warnings
+  }));
+}
+
+export function clearParts() {
+  partStore.update(state => ({
+    ...state,
+    parts: [],
+    warnings: [],
+    highlightedPartId: null
+  }));
+}
+
+// Part highlighting functions
+export function highlightPart(partId: string) {
+  partStore.update(state => ({
+    ...state,
+    highlightedPartId: partId
+  }));
+}
+
+export function clearHighlight() {
+  partStore.update(state => ({
+    ...state,
+    highlightedPartId: null
+  }));
+}
+
+// Helper to get all chain IDs that belong to a specific part
+export function getPartChainIds(partId: string, parts: DetectedPart[]): string[] {
+  const part = parts.find(p => p.id === partId);
+  if (!part) return [];
+  
+  const chainIds: string[] = [];
+  
+  // Add shell chain ID
+  chainIds.push(part.shell.chain.id);
+  
+  // Add all hole chain IDs recursively
+  function addHoleChainIds(holes: any[]) {
+    for (const hole of holes) {
+      chainIds.push(hole.chain.id);
+      if (hole.holes) {
+        addHoleChainIds(hole.holes);
+      }
+    }
+  }
+  
+  addHoleChainIds(part.holes);
+  
+  return chainIds;
+}
+
+// Helper to get the type of a chain (shell or hole)
+export function getChainPartType(chainId: string, parts: DetectedPart[]): 'shell' | 'hole' | null {
+  for (const part of parts) {
+    if (part.shell.chain.id === chainId) {
+      return 'shell';
+    }
+    
+    // Check holes recursively
+    if (isChainInHoles(chainId, part.holes)) {
+      return 'hole';
+    }
+  }
+  return null;
+}
+
+function isChainInHoles(chainId: string, holes: any[]): boolean {
+  for (const hole of holes) {
+    if (hole.chain.id === chainId) {
+      return true;
+    }
+    if (hole.holes && isChainInHoles(chainId, hole.holes)) {
+      return true;
+    }
+  }
+  return false;
+}

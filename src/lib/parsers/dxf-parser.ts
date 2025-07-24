@@ -6,6 +6,17 @@ import { generateId } from '../utils/id';
 interface DXFOptions {
   decomposePolylines?: boolean;
   translateToPositiveQuadrant?: boolean;
+  squashLayers?: boolean;
+}
+
+/**
+ * Helper function to conditionally include layer information based on squashLayers option
+ */
+function getLayerInfo(entity: any, options: DXFOptions): { layer?: string } {
+  if (options.squashLayers) {
+    return {}; // Don't include layer information
+  }
+  return { layer: entity.layer };
 }
 
 export async function parseDXF(content: string, options: DXFOptions = {}): Promise<Drawing> {
@@ -226,7 +237,7 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
               start: { x: entity.vertices[0].x, y: entity.vertices[0].y },
               end: { x: entity.vertices[1].x, y: entity.vertices[1].y }
             },
-            layer: entity.layer
+            ...getLayerInfo(entity, options)
           };
         } else if (entity.start && entity.end) {
           // Alternative LINE format
@@ -237,7 +248,7 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
               start: { x: entity.start.x, y: entity.start.y },
               end: { x: entity.end.x, y: entity.end.y }
             },
-            layer: entity.layer
+            ...getLayerInfo(entity, options)
           };
         }
         return null;
@@ -252,7 +263,7 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
               center: { x: entity.x, y: entity.y },
               radius: entity.r
             },
-            layer: entity.layer
+            ...getLayerInfo(entity, options)
           };
         }
         return null;
@@ -272,7 +283,7 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
               endAngle: entity.endAngle,     // Already in radians from DXF library
               clockwise: false
             },
-            layer: entity.layer
+            ...getLayerInfo(entity, options)
           };
         }
         return null;
@@ -290,7 +301,7 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
                   points: sampledPoints,
                   closed: entity.closed || false
                 },
-                layer: entity.layer,
+                ...getLayerInfo(entity, options),
                 originalType: 'spline', // Keep track of original entity type
                 splineData: {
                   controlPoints: entity.controlPoints || [],
@@ -312,7 +323,7 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
       case 'POLYLINE':
         if (entity.vertices && Array.isArray(entity.vertices) && entity.vertices.length > 0) {
           if (options.decomposePolylines) {
-            return decomposePolyline(entity);
+            return decomposePolyline(entity, options);
           } else {
             // Original behavior - return as polyline but preserve bulge data
             const vertices = entity.vertices
@@ -332,7 +343,7 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
                   closed: entity.shape || entity.closed || false,
                   vertices // Add bulge-aware vertices
                 },
-                layer: entity.layer
+                ...getLayerInfo(entity, options)
               };
             }
           }
@@ -350,7 +361,7 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
   }
 }
 
-function decomposePolyline(entity: any): Shape[] {
+function decomposePolyline(entity: any, options: DXFOptions): Shape[] {
   const shapes: Shape[] = [];
   const vertices = entity.vertices;
   const closed = entity.shape || entity.closed || false;
@@ -381,7 +392,7 @@ function decomposePolyline(entity: any): Shape[] {
         id: generateId(),
         type: 'line',
         geometry: { start, end },
-        layer: entity.layer
+        ...getLayerInfo(entity, options)
       });
     } else {
       // Arc segment - convert bulge to arc
@@ -391,7 +402,7 @@ function decomposePolyline(entity: any): Shape[] {
           id: generateId(),
           type: 'arc',
           geometry: arc,
-          layer: entity.layer
+          ...getLayerInfo(entity, options)
         });
       }
     }
@@ -416,7 +427,7 @@ function decomposePolyline(entity: any): Shape[] {
           id: generateId(),
           type: 'line',
           geometry: { start, end },
-          layer: entity.layer
+          ...getLayerInfo(entity, options)
         });
       } else {
         // Arc segment
@@ -426,7 +437,7 @@ function decomposePolyline(entity: any): Shape[] {
             id: generateId(),
             type: 'arc',
             geometry: arc,
-            layer: entity.layer
+            ...getLayerInfo(entity, options)
           });
         }
       }

@@ -2,7 +2,9 @@
   import { onMount } from 'svelte';
   import { drawingStore } from '../lib/stores/drawing';
   import { chainStore } from '../lib/stores/chains';
+  import { partStore } from '../lib/stores/parts';
   import { getShapeChainId, getChainShapeIds } from '../lib/stores/chains';
+  import { getChainPartType, getPartChainIds } from '../lib/stores/parts';
   import type { Shape, Point2D } from '../types';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
   
@@ -23,6 +25,11 @@
   $: layerVisibility = $drawingStore.layerVisibility;
   $: displayUnit = $drawingStore.displayUnit;
   $: chains = $chainStore.chains;
+  $: parts = $partStore.parts;
+  $: highlightedPartId = $partStore.highlightedPartId;
+  
+  // Get chain IDs that belong to the highlighted part
+  $: highlightedChainIds = highlightedPartId ? getPartChainIds(highlightedPartId, parts) : [];
   
   // Calculate physical scale factor for proper unit display
   $: physicalScale = drawing ? getPhysicalScaleFactor(drawing.units, displayUnit) : 1;
@@ -69,6 +76,7 @@
       }
       
       const chainId = getShapeChainId(shape.id, chains);
+      const partType = getChainPartType(chainId || '', parts);
       let isSelected = selectedShapes.has(shape.id);
       let isHovered = hoveredShape === shape.id;
       
@@ -79,7 +87,7 @@
         isHovered = chainShapeIds.some(id => hoveredShape === id);
       }
       
-      drawShape(shape, isSelected, isHovered, chainId);
+      drawShape(shape, isSelected, isHovered, chainId, partType);
       
       // Draw origin/start/end points for selected shapes (but not in Program stage when treating chains as entities)
       if (isSelected && !(treatChainsAsEntities)) {
@@ -208,19 +216,33 @@
     };
   }
 
-  function drawShape(shape: Shape, isSelected: boolean, isHovered: boolean = false, chainId: string | null = null) {
+  function drawShape(shape: Shape, isSelected: boolean, isHovered: boolean = false, chainId: string | null = null, partType: 'shell' | 'hole' | null = null) {
     // Save context state
     ctx.save();
     
-    // Priority: selected > hovered > chain > normal
+    // Check if this shape is part of the highlighted part
+    const isPartHighlighted = chainId && highlightedChainIds.includes(chainId);
+    
+    // Priority: selected > hovered > part highlighted > part type > chain > normal
     if (isSelected) {
       ctx.strokeStyle = '#ff6600';
       ctx.lineWidth = 2 / totalScale;
     } else if (isHovered) {
       ctx.strokeStyle = '#ff6600';
       ctx.lineWidth = 1.5 / totalScale;
+    } else if (isPartHighlighted) {
+      ctx.strokeStyle = '#f59e0b'; // Amber color for highlighted part
+      ctx.lineWidth = 2.5 / totalScale;
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 3 / totalScale;
+    } else if (partType === 'shell') {
+      ctx.strokeStyle = '#2563eb'; // Blue color for part shells
+      ctx.lineWidth = 1.5 / totalScale;
+    } else if (partType === 'hole') {
+      ctx.strokeStyle = '#93c5fd'; // Lighter blue color for holes
+      ctx.lineWidth = 1.5 / totalScale;
     } else if (chainId) {
-      ctx.strokeStyle = '#2563eb'; // Blue color for chained shapes
+      ctx.strokeStyle = '#2563eb'; // Blue color for chained shapes (fallback)
       ctx.lineWidth = 1.5 / totalScale;
     } else {
       ctx.strokeStyle = '#000000';

@@ -328,16 +328,31 @@ INSERT entities allow DXF files to reference reusable block definitions with tra
 
 ### 6. OpenCascade.js Integration
 
-**IMPORTANT**: Always prefer OpenCascade.js built-in geometry functions when possible. This ensures precision, performance, and consistency with CAD standards.
+**CRITICAL**: Always favor OpenCascade.js for doing geometry over writing your own code. OpenCascade is very mature and well tested.
+
+**NEVER write custom geometric algorithms when OpenCascade.js provides the functionality**. OpenCascade.js is a proven, mature CAD kernel with decades of development and testing behind it. Custom geometric code is prone to edge cases, floating point errors, and mathematical inaccuracies.
 
 OpenCascade.js is used for ALL geometry operations:
 - **Bounding box calculations** - Use `Bnd_Box` and `BRepBndLib::Add()`
 - **Boolean operations** - Union, difference, intersection using `BRepAlgoAPI_*`
+- **Containment detection** - Use geometric boolean operations, never bounding box approximations
 - **Offset calculations** - For kerf compensation using `BRepOffsetAPI_MakeOffset`
 - **Complex curve handling** - Splines, NURBS, arcs using `Geom_*` classes
 - **Geometric validation** - Shape analysis and repair
 - **Distance calculations** - Point-to-curve, curve-to-curve distances
 - **Area and volume calculations** - Using `GProp_GProps` and `BRepGProp::*`
+- **Point-in-polygon tests** - Use `BRepClass_FaceClassifier` instead of ray casting
+
+**Testing OpenCascade.js in Node.js Environment**:
+Always unit test using the method developed for part detection:
+
+1. **WASM Initialization**: Use `opencascade.js/dist/node.js` for Node.js test environment
+2. **Test Setup**: Create test helper module `src/lib/test-utils/opencascade-setup.ts`
+3. **Environment Detection**: Automatically detect Node.js vs browser and load appropriate WASM version
+4. **Test Coverage**: Ensure geometric operations work correctly in both browser and test environments
+
+**OpenCascade Documentation**:
+OpenCascade.js is a WASM build of OpenCascade C++ with JavaScript bindings. The full OpenCascade C++ library documentation is available at `reference/OCCT/dox`. Consult this documentation when figuring out the OpenCascade.js API, as the JavaScript bindings directly correspond to the C++ API.
 
 When implementing any geometry-related functionality, first check if OpenCascade.js provides a built-in solution before writing custom algorithms.
 
@@ -687,6 +702,115 @@ interface ChainDetectionOptions {
 - Edge cases: empty arrays, single shapes, zero tolerance, identical points
 - Performance validation with large shape sets
 
+---
+
+### Part Detection Algorithm
+
+**Purpose**: Analyze chains to detect hierarchical part structures consisting of shells (outer boundaries) and holes, enabling proper cutting sequence optimization and tool path generation.
+
+**Algorithm Definition**: 
+A part consists of a shell (closed chain forming the outer boundary of a part) and zero or more holes (closed chains contained within the shell). The algorithm supports recursive nesting where parts can exist within holes of larger parts, creating a hierarchical structure.
+
+**Part Structure Hierarchy**:
+- **Part Shell**: Closed chain at even nesting levels (0, 2, 4...) - represents the outer boundary of a part
+- **Part Hole**: Closed chain at odd nesting levels (1, 3, 5...) - represents voids within a part
+- **Recursive Nesting**: Parts within holes within parts, supporting unlimited depth
+
+**Core Algorithm Process**:
+
+1. **Chain Classification**: Separate chains into closed and open categories:
+   - **Closed Chains**: Chains where the end point of the last shape connects to the start point of the first shape within tolerance (0.01 units)
+   - **Open Chains**: All other chains that don't form closed loops
+
+2. **Bounding Box Calculation**: Calculate accurate bounding boxes for all closed chains:
+   - **Lines**: Min/max of start and end coordinates
+   - **Circles**: Center ± radius for all axes
+   - **Arcs**: Conservative bounding box using center ± radius (simplified)
+   - **Polylines**: Min/max of all vertex coordinates
+
+3. **Containment Hierarchy Analysis**: Build parent-child relationships between closed chains:
+   - For each chain, find the smallest chain that completely contains it
+   - Use bounding box containment tests with strict inequality to avoid self-containment
+   - Create containment map (child → parent) for hierarchy traversal
+
+4. **Nesting Level Calculation**: Determine the depth of each chain in the hierarchy:
+   - **Level 0**: Root chains (not contained by any other chain)
+   - **Level N**: Chains contained by a chain at level N-1
+   - Walk up the containment hierarchy to calculate depth
+
+5. **Shell Identification**: Classify chains as shells or holes based on nesting level:
+   - **Even Levels (0, 2, 4...)**: Part shells (outer boundaries)
+   - **Odd Levels (1, 3, 5...)**: Part holes (voids within parts)
+
+6. **Part Structure Building**: Create hierarchical part objects:
+   - For each shell, find all direct child holes (level N+1)
+   - Recursively build hole structures with nested parts
+   - Generate unique IDs for parts, shells, and holes
+
+7. **Warning Generation**: Detect problematic open chains:
+   - Check if open chain endpoints cross closed chain boundaries
+   - Generate warnings for chains that may interfere with part boundaries
+
+**Key Features**:
+- **Hierarchical Nesting**: Unlimited depth part-within-hole-within-part structures
+- **Automatic Shell/Hole Classification**: Even/odd level determination
+- **Boundary Crossing Detection**: Warnings for open chains that cross part boundaries
+- **Mixed Shape Support**: Works with rectangles, circles, and complex polygons
+- **Visual Differentiation**: Shells colored blue (#2563eb), holes colored light blue (#93c5fd)
+
+**Implementation Details**:
+- **Location**: `src/lib/algorithms/part-detection.ts`
+- **Store Integration**: Part data managed via `partStore` for reactive UI updates
+- **Canvas Integration**: Different colors for shells and holes in Program stage
+- **UI Integration**: "Detect Parts" button in toolbar, Parts list in left panel, warnings in right panel
+
+**Data Types**:
+```typescript
+interface DetectedPart {
+  id: string;
+  shell: PartShell;
+  holes: PartHole[];
+}
+
+interface PartShell {
+  id: string;
+  chain: ShapeChain;
+  type: 'shell';
+  boundingBox: BoundingBox;
+  holes: PartHole[];
+}
+
+interface PartHole {
+  id: string;
+  chain: ShapeChain;
+  type: 'hole';
+  boundingBox: BoundingBox;
+  holes: PartHole[]; // Nested holes (parts within this hole)
+}
+```
+
+**Warning System**:
+```typescript
+interface PartDetectionWarning {
+  type: 'overlapping_boundary';
+  chainId: string;
+  message: string;
+}
+```
+
+**Algorithm Complexity**:
+- **Time Complexity**: O(n²) for containment analysis + O(n) for hierarchy building = O(n²)
+- **Space Complexity**: O(n) for containment map and part structures
+
+**Testing Coverage**:
+- Basic part detection with single shells and holes
+- Multi-level hierarchical nesting (parts within holes within parts)
+- Complex nesting scenarios with multiple branches
+- Warning generation for boundary-crossing open chains
+- Edge cases: identical bounding boxes, very small chains, negative coordinates
+- Chain closure detection with tolerance handling
+- Mixed shape types (rectangles, circles, complex polygons)
+
 **Use Cases**:
 - **Tool Path Optimization**: Identify connected geometry for continuous cutting paths
 - **Pierce Point Reduction**: Minimize torch starts by following connected chains
@@ -778,3 +902,83 @@ All canvas transformations use `totalScale` which combines:
 - Test coordinate accuracy after unit switches (shapes should remain selectable)
 - Verify proper scaling of UI elements (line widths, selection points, etc.)
 - **Physical size test**: ADLER.DXF (186.2 units) should measure 186.2mm when display=mm, 186.2 inches when display=inch at 100% zoom
+
+## Part Detection Algorithm
+
+### Critical Design Principles
+
+**NEVER USE BOUNDING BOX CONTAINMENT FOR PART DETECTION**
+
+Bounding box containment is fundamentally flawed for determining geometric part/hole relationships:
+
+1. **Size-based assumptions are wrong**: A larger bounding box doesn't mean it contains smaller shapes
+2. **Overlapping rectangles**: Bounding boxes can overlap without true geometric containment
+3. **Complex shapes**: Non-rectangular shapes (circles, arcs, complex polygons) can have misleading bounding boxes
+4. **False positives**: A small shape outside a large shape can have a bounding box that appears "contained"
+
+### Correct Approach: Geometric Boolean Operations
+
+Use OpenCascade.js boolean operations for mathematically sound containment:
+
+```typescript
+// CORRECT: True geometric containment
+const intersection = new openCascade.BRepAlgoAPI_Common_3(innerFace, outerFace);
+const intersectionArea = calculateFaceArea(intersection.Shape());
+const innerArea = calculateFaceArea(innerFace);
+const isContained = Math.abs(innerArea - intersectionArea) / innerArea < 0.05;
+```
+
+### Testing Requirements
+
+- **Unit tests MUST use OpenCascade.js**: Set up WASM loading in Node.js test environment
+- **No bounding box fallbacks**: Tests should fail if geometric operations aren't available
+- **Verify with complex geometries**: Test overlapping, nested, and edge cases
+
+### Historical Issues
+
+Previous implementations incorrectly used:
+- Bounding box area comparisons for containment hierarchy
+- Size-based "smallest container" selection
+- Area ratios to determine shells vs holes
+
+These approaches led to incorrect part detection where holes were classified as parts and vice versa.
+
+## DXF Test Files and Expected Part Detection Results
+
+The following DXF files in `tests/dxf/` are used for testing part detection algorithms. Each file has specific expectations:
+
+| File | Expected Parts | Expected Holes | Current Status | Notes |
+|------|----------------|----------------|----------------|-------|
+| `1.dxf` | 2 parts | 0 holes | ❌ Detects 1 part | Simple geometry that should separate into 2 parts |
+| `2.dxf` | 2 parts | 0 holes | ✅ Correctly detects 2 parts | Working correctly |
+| `3.dxf` | 2 parts | 0 holes | ❌ Detects 1 part | Geometry issue preventing proper separation |
+| `1997.dxf` | 4 parts | 2 holes total | ✅ Correctly detects 4 parts with 2 holes | Chain-2 contains chain-3, chain-4 contains chain-5 |
+| `ADLER.dxf` | 9 parts | 1 hole total | ✅ Correctly detects 9 parts with 1 hole | Chain-5 contains chain-10 as hole |
+| `Tractor Seat Mount - Left.dxf` | 1 part | Multiple holes | ❌ Detects 4 parts | **Multi-layer file** - layers need to be squashed before detection |
+| `2013-11-08_test.dxf` | 1 part | 3 holes | ❌ Detects 3 parts | **Multi-layer file** - layers need to be squashed before detection |
+| `probleme.dxf` | 0 parts (warning) | 0 holes | ❌ No warning issued | Unclosed chains prevent part detection - should warn user |
+
+### Multi-Layer DXF Files
+
+Some DXF files contain multiple layers where one layer represents the part outline and another represents holes. For proper part detection:
+
+1. **Layer Squashing Required**: All layers must be combined into a single geometry set before part detection
+2. **Hole Layers**: Typically contain circular or complex hole patterns
+3. **Part Layers**: Contain the main part outline
+4. **Processing Order**: Squash layers → detect chains → detect parts/holes
+
+### Problematic Files Requiring Special Handling
+
+**`probleme.dxf`**: This file contains unclosed chains where arc endpoints don't exactly connect to adjacent geometry. When no parts are detected due to unclosed chains, the system should:
+- Issue a warning to the user about potential geometry problems
+- Suggest checking for gaps in the drawing
+- Recommend tolerance adjustment or manual geometry repair
+
+### Testing Approach
+
+Tests verify:
+1. **Correct part/hole counts** for each file
+2. **Proper geometric containment** using OpenCascade.js boolean operations
+3. **Warning generation** for problematic files
+4. **Layer handling** for multi-layer files (when implemented)
+5. **Chain closure detection** with appropriate tolerances

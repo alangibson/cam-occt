@@ -8,7 +8,7 @@ interface ChainStore {
 
 const initialState: ChainStore = {
   chains: [],
-  tolerance: 0.05
+  tolerance: 0.1
 };
 
 export const chainStore = writable<ChainStore>(initialState);

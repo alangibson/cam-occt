@@ -48,11 +48,21 @@ export function detectShapeChains(shapes: Shape[], options: ChainDetectionOption
   let chainId = 1;
   
   for (const [, shapeIndices] of chainGroups) {
-    if (shapeIndices.length > 1) { // Only create chains with multiple shapes
+    if (shapeIndices.length > 1) {
+      // Multiple connected shapes form a chain
       chains.push({
         id: `chain-${chainId++}`,
         shapes: shapeIndices.map(index => shapes[index])
       });
+    } else if (shapeIndices.length === 1) {
+      // Single shape - check if it's a closed shape (should be treated as a chain)
+      const singleShape = shapes[shapeIndices[0]];
+      if (isShapeClosed(singleShape, tolerance)) {
+        chains.push({
+          id: `chain-${chainId++}`,
+          shapes: [singleShape]
+        });
+      }
     }
   }
 
@@ -127,6 +137,44 @@ function getShapePoints(shape: Shape): Point2D[] {
     
     default:
       return [];
+  }
+}
+
+/**
+ * Checks if a single shape forms a closed loop
+ */
+function isShapeClosed(shape: Shape, tolerance: number): boolean {
+  switch (shape.type) {
+    case 'circle':
+      // Circles are always closed
+      return true;
+    
+    case 'polyline':
+      const polyline = shape.geometry as any;
+      if (!polyline.points || polyline.points.length < 3) return false;
+      
+      const firstPoint = polyline.points[0];
+      const lastPoint = polyline.points[polyline.points.length - 1];
+      
+      if (!firstPoint || !lastPoint) return false;
+      
+      // Check if first and last points are within tolerance
+      const distance = Math.sqrt(
+        Math.pow(firstPoint.x - lastPoint.x, 2) + Math.pow(firstPoint.y - lastPoint.y, 2)
+      );
+      
+      return distance <= tolerance;
+    
+    case 'arc':
+      // Arcs are open by definition (unless they're a full circle, but that would be a circle)
+      return false;
+    
+    case 'line':
+      // Lines are open by definition
+      return false;
+    
+    default:
+      return false;
   }
 }
 

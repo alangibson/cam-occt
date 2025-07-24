@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import type { Drawing, Shape, Point2D } from '../../types';
 import { clearChains } from './chains';
+import { clearParts } from './parts';
 
 interface DrawingState {
   drawing: Drawing | null;
@@ -32,8 +33,9 @@ function createDrawingStore() {
   return {
     subscribe,
     setDrawing: (drawing: Drawing, fileName?: string) => {
-      // Clear chains when importing a new file
+      // Clear chains and parts when importing a new file
       clearChains();
+      clearParts();
       
       return update(state => ({ 
         ...state, 
@@ -146,7 +148,21 @@ function createDrawingStore() {
     setDisplayUnit: (unit: 'mm' | 'inch') => update(state => ({
       ...state,
       displayUnit: unit
-    }))
+    })),
+
+    replaceAllShapes: (shapes: Shape[]) => update(state => {
+      if (!state.drawing) return state;
+      
+      // Clear chains and parts when shapes are replaced
+      clearChains();
+      clearParts();
+      
+      return {
+        ...state,
+        drawing: { ...state.drawing, shapes },
+        selectedShapes: new Set() // Clear selection since shape IDs may have changed
+      };
+    })
   };
 }
 

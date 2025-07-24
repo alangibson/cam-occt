@@ -12,7 +12,10 @@ export default defineConfig({
 			allow: ['..']
 		},
 		watch: {
-			ignored: ['**/docs/**']
+			ignored: [
+				'**/docs/**',
+				'**/reference/**'
+			]
 		}
 	},
 	ssr: {
