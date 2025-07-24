@@ -637,6 +637,70 @@ const center = {
 
 **Algorithm Complexity**: O(n) where n is the number of shapes, as each shape is processed exactly once for both bounds calculation and translation.
 
+### Shape Chain Detection Algorithm
+
+**Purpose**: Detect connected sequences of shapes where endpoints overlap within a user-defined tolerance for optimized cutting path generation.
+
+**Algorithm Definition**: 
+A chain is defined as a connected sequence of shapes where some point in shape A overlaps with some point in shape B within the specified tolerance distance. The overlap relationship is transitive - if A connects to B and B connects to C, then A, B, and C form a single chain.
+
+**Core Algorithm Process**:
+1. **Point Extraction**: Extract key geometric points from each shape:
+   - **Lines**: Start and end points
+   - **Circles**: Center plus 4 cardinal points (right, left, top, bottom)
+   - **Arcs**: Start point, end point, and center
+   - **Polylines**: All vertices in the point sequence
+
+2. **Connectivity Analysis**: For each pair of shapes, check if any point from shape A is within tolerance distance of any point from shape B using Euclidean distance formula
+
+3. **Union-Find Processing**: Use Union-Find (Disjoint Set) data structure to efficiently group connected shapes into chains:
+   - Initialize each shape as its own component
+   - Union shapes that are within tolerance distance
+   - Apply path compression and union by rank for optimal performance
+
+4. **Chain Formation**: Group shapes by their root component and create chain objects for groups containing multiple shapes
+
+**Key Features**:
+- **User-Configurable Tolerance**: Default 0.05 units, adjustable from 0.001 to 10 units
+- **Mixed Shape Support**: Works with lines, circles, arcs, and polylines
+- **Transitive Connectivity**: A→B→C connections form single chains
+- **Efficient Performance**: O(n²α(n)) complexity where α is inverse Ackermann function
+- **Visual Feedback**: Detected chains are colored blue in the canvas
+
+**Implementation Details**:
+- **Location**: `src/lib/algorithms/chain-detection.ts`
+- **Store Integration**: Chain data managed via `chainStore` for reactive UI updates
+- **Canvas Integration**: Shapes in chains rendered with blue stroke color (#2563eb)
+- **UI Controls**: Tolerance input and "Detect Chains" button in Program stage
+
+**Chain Detection Options**:
+```typescript
+interface ChainDetectionOptions {
+  tolerance: number; // Distance tolerance for point overlap (default: 0.05)
+}
+```
+
+**Testing Coverage**:
+- Basic connectivity detection with various tolerances
+- Mixed shape type chaining (lines, circles, arcs, polylines)
+- Complex scenarios: branching chains, closed loops, large chain sequences
+- Edge cases: empty arrays, single shapes, zero tolerance, identical points
+- Performance validation with large shape sets
+
+**Use Cases**:
+- **Tool Path Optimization**: Identify connected geometry for continuous cutting paths
+- **Pierce Point Reduction**: Minimize torch starts by following connected chains
+- **Cut Sequencing**: Group related shapes for efficient machining order
+- **Quality Control**: Verify drawing connectivity before G-code generation
+
+**Visual Integration**:
+- Chain shapes displayed with blue stroke color in Program stage canvas
+- Chain detection results shown in right panel with shape counts
+- Real-time tolerance adjustment with immediate re-detection capability
+- Integration with existing selection and hover states (priority: selected > hovered > chain > normal)
+
+**Algorithm Complexity**: O(n²α(n)) where n is the number of shapes and α is the inverse Ackermann function (effectively constant for practical input sizes).
+
 ## Display Units and Physical Scaling
 
 **CRITICAL**: The application implements proper unit handling to ensure accurate physical representation of CAD drawings on screen.

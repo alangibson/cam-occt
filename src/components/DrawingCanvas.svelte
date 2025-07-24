@@ -1,10 +1,13 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { drawingStore } from '../lib/stores/drawing';
+  import { chainStore } from '../lib/stores/chains';
+  import { getShapeChainId, getChainShapeIds } from '../lib/stores/chains';
   import type { Shape, Point2D } from '../types';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
   
   export let respectLayerVisibility = true; // Default to true for Edit stage
+  export let treatChainsAsEntities = false; // Default to false, true for Program stage
   
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -19,6 +22,7 @@
   $: offset = $drawingStore.offset;
   $: layerVisibility = $drawingStore.layerVisibility;
   $: displayUnit = $drawingStore.displayUnit;
+  $: chains = $chainStore.chains;
   
   // Calculate physical scale factor for proper unit display
   $: physicalScale = drawing ? getPhysicalScaleFactor(drawing.units, displayUnit) : 1;
@@ -64,12 +68,21 @@
         if (!isVisible) return; // Skip invisible shapes
       }
       
-      const isSelected = selectedShapes.has(shape.id);
-      const isHovered = hoveredShape === shape.id;
-      drawShape(shape, isSelected, isHovered);
+      const chainId = getShapeChainId(shape.id, chains);
+      let isSelected = selectedShapes.has(shape.id);
+      let isHovered = hoveredShape === shape.id;
       
-      // Draw origin/start/end points for selected shapes
-      if (isSelected) {
+      // If treating chains as entities, check if any shape in the chain is selected/hovered
+      if (treatChainsAsEntities && chainId) {
+        const chainShapeIds = getChainShapeIds(shape.id, chains);
+        isSelected = chainShapeIds.some(id => selectedShapes.has(id));
+        isHovered = chainShapeIds.some(id => hoveredShape === id);
+      }
+      
+      drawShape(shape, isSelected, isHovered, chainId);
+      
+      // Draw origin/start/end points for selected shapes (but not in Program stage when treating chains as entities)
+      if (isSelected && !(treatChainsAsEntities)) {
         drawShapePoints(shape);
       }
     });
@@ -195,16 +208,19 @@
     };
   }
 
-  function drawShape(shape: Shape, isSelected: boolean, isHovered: boolean = false) {
+  function drawShape(shape: Shape, isSelected: boolean, isHovered: boolean = false, chainId: string | null = null) {
     // Save context state
     ctx.save();
     
-    // Priority: selected > hovered > normal
+    // Priority: selected > hovered > chain > normal
     if (isSelected) {
       ctx.strokeStyle = '#ff6600';
       ctx.lineWidth = 2 / totalScale;
     } else if (isHovered) {
       ctx.strokeStyle = '#ff6600';
+      ctx.lineWidth = 1.5 / totalScale;
+    } else if (chainId) {
+      ctx.strokeStyle = '#2563eb'; // Blue color for chained shapes
       ctx.lineWidth = 1.5 / totalScale;
     } else {
       ctx.strokeStyle = '#000000';
@@ -559,10 +575,30 @@
     const shape = getShapeAtPoint(worldPos);
     
     if (shape) {
-      if (!e.ctrlKey && !selectedShapes.has(shape.id)) {
-        drawingStore.clearSelection();
+      if (treatChainsAsEntities) {
+        // Get all shapes in the chain
+        const chainShapeIds = getChainShapeIds(shape.id, chains);
+        
+        // Check if any shape in the chain is already selected
+        const chainSelected = chainShapeIds.some(id => selectedShapes.has(id));
+        
+        if (!e.ctrlKey && !chainSelected) {
+          drawingStore.clearSelection();
+        }
+        
+        // Select/deselect all shapes in the chain
+        chainShapeIds.forEach(id => {
+          if (!selectedShapes.has(id) || !e.ctrlKey) {
+            drawingStore.selectShape(id, true); // Always multi-select for chains
+          }
+        });
+      } else {
+        // Original single-shape selection logic
+        if (!e.ctrlKey && !selectedShapes.has(shape.id)) {
+          drawingStore.clearSelection();
+        }
+        drawingStore.selectShape(shape.id, e.ctrlKey);
       }
-      drawingStore.selectShape(shape.id, e.ctrlKey);
     } else if (!e.ctrlKey) {
       drawingStore.clearSelection();
     }
@@ -597,7 +633,13 @@
       const worldPos = screenToWorld(newMousePos);
       const shape = getShapeAtPoint(worldPos);
       
-      drawingStore.setHoveredShape(shape ? shape.id : null);
+      if (treatChainsAsEntities && shape) {
+        // When treating chains as entities, we still only set the hovered shape to the actual shape
+        // The rendering logic will handle highlighting the whole chain
+        drawingStore.setHoveredShape(shape.id);
+      } else {
+        drawingStore.setHoveredShape(shape ? shape.id : null);
+      }
     }
     
     mousePos = newMousePos;

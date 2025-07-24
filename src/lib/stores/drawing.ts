@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import type { Drawing, Shape, Point2D } from '../../types';
+import { clearChains } from './chains';
 
 interface DrawingState {
   drawing: Drawing | null;
@@ -30,14 +31,19 @@ function createDrawingStore() {
 
   return {
     subscribe,
-    setDrawing: (drawing: Drawing, fileName?: string) => update(state => ({ 
-      ...state, 
-      drawing,
-      fileName: fileName || null,
-      displayUnit: drawing.units, // Set display unit from drawing's detected units
-      scale: 1, // Always start at 100% zoom
-      offset: { x: 0, y: 0 } // Reset offset
-    })),
+    setDrawing: (drawing: Drawing, fileName?: string) => {
+      // Clear chains when importing a new file
+      clearChains();
+      
+      return update(state => ({ 
+        ...state, 
+        drawing,
+        fileName: fileName || null,
+        displayUnit: drawing.units, // Set display unit from drawing's detected units
+        scale: 1, // Always start at 100% zoom
+        offset: { x: 0, y: 0 } // Reset offset
+      }));
+    },
     
     selectShape: (shapeId: string, multi = false) => update(state => {
       const selectedShapes = new Set(multi ? state.selectedShapes : []);
