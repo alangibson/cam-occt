@@ -55,12 +55,12 @@ export interface PartDetectionResult {
 /**
  * Detects parts from a collection of chains using geometric containment
  */
-export async function detectParts(chains: ShapeChain[]): Promise<PartDetectionResult> {
+export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1): Promise<PartDetectionResult> {
   const warnings: PartDetectionWarning[] = [];
   
   // Separate closed and open chains
-  const closedChains = chains.filter(chain => isChainClosed(chain));
-  const openChains = chains.filter(chain => !isChainClosed(chain));
+  const closedChains = chains.filter(chain => isChainClosed(chain, tolerance));
+  const openChains = chains.filter(chain => !isChainClosed(chain, tolerance));
   
   // Calculate bounding boxes for all closed chains
   const chainBounds = new Map<string, BoundingBox>();
@@ -122,7 +122,7 @@ export async function detectParts(chains: ShapeChain[]): Promise<PartDetectionRe
 /**
  * Checks if a chain forms a closed loop
  */
-function isChainClosed(chain: ShapeChain): boolean {
+function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boolean {
   if (chain.shapes.length === 0) return false;
   
   // Get all endpoints from the shapes in the chain
@@ -144,12 +144,31 @@ function isChainClosed(chain: ShapeChain): boolean {
   if (!firstStart || !lastEnd) return false;
   
   // Check if the chain is closed (end connects to start within tolerance)
-  const tolerance = 0.01; // Small tolerance for floating point comparison
   const distance = Math.sqrt(
     Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
   );
   
+  // Use ONLY the user-set tolerance
   return distance < tolerance;
+}
+
+/**
+ * Calculates the actual gap distance between the first and last points of a chain
+ */
+function calculateChainGapDistance(chain: ShapeChain): number {
+  if (chain.shapes.length === 0) return 0;
+  
+  const firstShape = chain.shapes[0];
+  const lastShape = chain.shapes[chain.shapes.length - 1];
+  
+  const firstStart = getShapeStartPoint(firstShape);
+  const lastEnd = getShapeEndPoint(lastShape);
+  
+  if (!firstStart || !lastEnd) return 0;
+  
+  return Math.sqrt(
+    Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
+  );
 }
 
 /**
@@ -365,14 +384,15 @@ function isPointInBoundingBox(point: Point2D | null, bbox: BoundingBox): boolean
 }
 
 /**
- * Builds a containment hierarchy map using geometric containment (child -> parent)
+ * Builds a containment hierarchy map using hybrid containment approach (child -> parent)
+ * First tries geometric containment, falls back to bounding box when geometry has gaps
  */
 async function buildGeometricContainmentHierarchy(
   closedChains: ShapeChain[]
 ): Promise<Map<string, string>> {
   const containmentMap = new Map<string, string>();
   
-  // For performance, we'll first do a quick bounding box check before expensive geometric checks
+  // Calculate bounding boxes for all chains
   const chainBounds = new Map<string, BoundingBox>();
   for (const chain of closedChains) {
     chainBounds.set(chain.id, calculateChainBoundingBox(chain));
@@ -390,23 +410,23 @@ async function buildGeometricContainmentHierarchy(
       if (i === j) continue;
       
       const parentChain = closedChains[j];
-      const parentBounds = chainBounds.get(parentChain.id);
-      if (!parentBounds) continue;
+      const parentBounds = chainBounds.get(parentChain.id)!;
       
-      // Use ONLY geometric containment - no bounding box fallbacks
-      // Bounding box containment is mathematically unsound for part detection
+      let isContained = false;
+      
       try {
-        const isGeometricallyContained = await isChainGeometricallyContained(childChain, parentChain);
-        if (isGeometricallyContained) {
-          const area = (parentBounds.maxX - parentBounds.minX) * (parentBounds.maxY - parentBounds.minY);
-          if (area < smallestArea) {
-            smallestArea = area;
-            smallestContainer = parentChain;
-          }
-        }
+        // Use ONLY geometric containment - no bounding box fallbacks
+        isContained = await isChainGeometricallyContained(childChain, parentChain);
       } catch (error: any) {
-        console.warn(`Geometric containment check failed for chains ${childChain.id} and ${parentChain.id}: ${error.message}`);
         // NO FALLBACK - geometric containment is required for correct part detection
+      }
+      
+      if (isContained) {
+        const area = (parentBounds.maxX - parentBounds.minX) * (parentBounds.maxY - parentBounds.minY);
+        if (area < smallestArea) {
+          smallestArea = area;
+          smallestContainer = parentChain;
+        }
       }
     }
     

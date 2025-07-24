@@ -118,6 +118,29 @@ export
 - **Navigation**: Users progress through stages sequentially (Import → Edit → Program → Simulate → Export)
 - **State Management**: Each stage maintains its own state while preserving data from previous stages
 
+## Key Technical Context
+
+### Tractor Seat Mount Test File
+The "Tractor Seat Mount - Left.dxf" test file should produce 1 part with 12 holes:
+- 4 round holes (circles)
+- 8 holes formed by spline curves that create letter shapes
+- "Hole" in the context of part detection does not imply roundness - it refers to any closed chain that is contained within a part's outer boundary
+
+### Chain Closure Tolerance
+**CRITICAL**: Use ONLY the user-set tolerance from the Program page for ALL chain closure detection. Do NOT implement "adaptive tolerance" or any other tolerance calculation based on chain size, complexity, or other factors. The user-set tolerance is the single source of truth for determining if chains are closed.
+
+- Chain closure detection must use exactly the tolerance value set by the user
+- Part detection must pass the user tolerance to all chain closure functions  
+- UI chain status display must use the same user tolerance
+- Any "adaptive" or "smart" tolerance calculations are explicitly forbidden
+
+### Chain Normalization and Closure
+**IMPORTANT**: When analyzing chain traversal, coincident points between the first shape (shape 1) and the last shape (final shape) are EXPECTED and CORRECT for closed chains. This is what makes a chain closed - the end point of the last shape should coincide with the start point of the first shape.
+
+- Do NOT report this as an error or warning - this is normal closed chain behavior
+- Only report non-sequent shape coincident points as potential ordering issues when they occur between shapes that are not first/last
+- Chain normalization should preserve this first/last coincidence for proper closure
+
 ## Key Technologies
 
 - **Frontend**: Svelte 5 with TypeScript
@@ -933,6 +956,21 @@ Bounding box containment is fundamentally flawed for determining geometric part/
 2. **Overlapping rectangles**: Bounding boxes can overlap without true geometric containment
 3. **Complex shapes**: Non-rectangular shapes (circles, arcs, complex polygons) can have misleading bounding boxes
 4. **False positives**: A small shape outside a large shape can have a bounding box that appears "contained"
+5. **Mathematical incorrectness**: Bounding box containment will often cause incorrect part/hole detection results
+
+**DO NOT ADD BOUNDING BOX FALLBACK LOGIC TO THE CONTAINMENT DETECTION**. Previous attempts to use bounding box containment as a fallback for geometric operations have consistently caused incorrect results where parts are miscategorized as holes or vice versa.
+
+### Fallback and Simplification Approval Requirement
+
+**CRITICAL**: All fallbacks, workarounds, and geometric simplifications in algorithms must be explicitly approved by the user before implementation. This includes but is not limited to:
+
+- Bounding box containment as fallback for geometric operations
+- Adaptive tolerance calculations instead of user-set tolerances  
+- Polyline-to-edge oversimplifications that lose geometric detail
+- Any approximation methods that could affect geometric accuracy
+- Fallback algorithms when primary geometric operations fail
+
+The user must review and approve each proposed fallback or simplification to ensure it meets the application's accuracy requirements. Document all approved fallbacks with clear explanations of when and why they are used.
 
 ### Correct Approach: Geometric Boolean Operations
 

@@ -10,6 +10,7 @@
   
   export let respectLayerVisibility = true; // Default to true for Edit stage
   export let treatChainsAsEntities = false; // Default to false, true for Program stage
+  export let onChainClick: ((chainId: string) => void) | null = null; // Callback for chain clicks
   
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -598,6 +599,9 @@
     
     if (shape) {
       if (treatChainsAsEntities) {
+        // Get the chain ID for this shape
+        const chainId = getShapeChainId(shape.id, chains);
+        
         // Get all shapes in the chain
         const chainShapeIds = getChainShapeIds(shape.id, chains);
         
@@ -614,6 +618,11 @@
             drawingStore.selectShape(id, true); // Always multi-select for chains
           }
         });
+        
+        // Notify parent component about chain click
+        if (onChainClick && chainId) {
+          onChainClick(chainId);
+        }
       } else {
         // Original single-shape selection logic
         if (!e.ctrlKey && !selectedShapes.has(shape.id)) {

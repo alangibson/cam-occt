@@ -7,7 +7,7 @@
   import { chainStore, setChains, setTolerance } from '../../lib/stores/chains';
   import { partStore, setParts, highlightPart, clearHighlight } from '../../lib/stores/parts';
   import { detectShapeChains } from '../../lib/algorithms/chain-detection';
-  import { detectParts } from '../../lib/algorithms/part-detection';
+  import { detectParts, type PartDetectionWarning } from '../../lib/algorithms/part-detection';
   import { analyzeChainTraversal, normalizeChain } from '../../lib/algorithms/chain-normalization';
   import type { CuttingParameters as CuttingParametersType, Shape } from '../../types';
   import type { ShapeChain } from '../../lib/algorithms/chain-detection';
@@ -141,10 +141,32 @@
     isDetectingParts = true;
     
     try {
-      const partResult = await detectParts(detectedChains);
-      setParts(partResult.parts, partResult.warnings);
+      // Add warnings for open chains first
+      const openChainWarnings: PartDetectionWarning[] = [];
+      for (const chain of detectedChains) {
+        if (!isChainClosed(chain)) {
+          const firstShape = chain.shapes[0];
+          const lastShape = chain.shapes[chain.shapes.length - 1];
+          const firstStart = getShapeStartPoint(firstShape);
+          const lastEnd = getShapeEndPoint(lastShape);
+          
+          if (firstStart && lastEnd) {
+            openChainWarnings.push({
+              type: 'overlapping_boundary',
+              chainId: chain.id,
+              message: `Chain ${chain.id} is open. Start: (${firstStart.x.toFixed(2)}, ${firstStart.y.toFixed(2)}), End: (${lastEnd.x.toFixed(2)}, ${lastEnd.y.toFixed(2)})`
+            });
+          }
+        }
+      }
       
-      console.log(`Detected ${partResult.parts.length} parts with ${partResult.warnings.length} warnings`);
+      const partResult = await detectParts(detectedChains, tolerance);
+      
+      // Combine open chain warnings with part detection warnings
+      const allWarnings = [...openChainWarnings, ...partResult.warnings];
+      setParts(partResult.parts, allWarnings);
+      
+      console.log(`Detected ${partResult.parts.length} parts with ${allWarnings.length} warnings`);
     } catch (error) {
       console.error('Error detecting parts:', error);
       setParts([], []);
@@ -159,6 +181,128 @@
       clearHighlight();
     } else {
       highlightPart(partId);
+    }
+  }
+
+  // Chain analysis functions
+  function isChainClosed(chain: ShapeChain): boolean {
+    if (!chain || chain.shapes.length === 0) return false;
+    
+    // Single circle is always closed
+    if (chain.shapes.length === 1 && chain.shapes[0].type === 'circle') {
+      return true;
+    }
+    
+    // Check if first and last points connect
+    const firstShape = chain.shapes[0];
+    const lastShape = chain.shapes[chain.shapes.length - 1];
+    
+    const firstStart = getShapeStartPoint(firstShape);
+    const lastEnd = getShapeEndPoint(lastShape);
+    
+    if (!firstStart || !lastEnd) return false;
+    
+    const distance = Math.sqrt(
+      Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
+    );
+    
+    // Use ONLY the user-set tolerance
+    return distance < tolerance;
+  }
+
+  function getShapeStartPoint(shape: Shape): {x: number, y: number} | null {
+    switch (shape.type) {
+      case 'line':
+        return shape.geometry.start;
+      case 'polyline':
+        return shape.geometry.points.length > 0 ? shape.geometry.points[0] : null;
+      case 'arc':
+        const arc = shape.geometry;
+        return {
+          x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
+          y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
+        };
+      case 'circle':
+        return {
+          x: shape.geometry.center.x + shape.geometry.radius,
+          y: shape.geometry.center.y
+        };
+      default:
+        return null;
+    }
+  }
+
+  function getShapeEndPoint(shape: Shape): {x: number, y: number} | null {
+    switch (shape.type) {
+      case 'line':
+        return shape.geometry.end;
+      case 'polyline':
+        const points = shape.geometry.points;
+        return points.length > 0 ? points[points.length - 1] : null;
+      case 'arc':
+        const arc = shape.geometry;
+        return {
+          x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
+          y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
+        };
+      case 'circle':
+        return {
+          x: shape.geometry.center.x + shape.geometry.radius,
+          y: shape.geometry.center.y
+        };
+      default:
+        return null;
+    }
+  }
+
+  function calculateChainBoundingBox(chain: ShapeChain): {minX: number, maxX: number, minY: number, maxY: number} {
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    
+    for (const shape of chain.shapes) {
+      const shapeBounds = getShapeBoundingBox(shape);
+      minX = Math.min(minX, shapeBounds.minX);
+      maxX = Math.max(maxX, shapeBounds.maxX);
+      minY = Math.min(minY, shapeBounds.minY);
+      maxY = Math.max(maxY, shapeBounds.maxY);
+    }
+    
+    return { minX, maxX, minY, maxY };
+  }
+
+  function getShapeBoundingBox(shape: Shape): {minX: number, maxX: number, minY: number, maxY: number} {
+    switch (shape.type) {
+      case 'line':
+        return {
+          minX: Math.min(shape.geometry.start.x, shape.geometry.end.x),
+          maxX: Math.max(shape.geometry.start.x, shape.geometry.end.x),
+          minY: Math.min(shape.geometry.start.y, shape.geometry.end.y),
+          maxY: Math.max(shape.geometry.start.y, shape.geometry.end.y)
+        };
+      case 'circle':
+        return {
+          minX: shape.geometry.center.x - shape.geometry.radius,
+          maxX: shape.geometry.center.x + shape.geometry.radius,
+          minY: shape.geometry.center.y - shape.geometry.radius,
+          maxY: shape.geometry.center.y + shape.geometry.radius
+        };
+      case 'arc':
+        return {
+          minX: shape.geometry.center.x - shape.geometry.radius,
+          maxX: shape.geometry.center.x + shape.geometry.radius,
+          minY: shape.geometry.center.y - shape.geometry.radius,
+          maxY: shape.geometry.center.y + shape.geometry.radius
+        };
+      case 'polyline':
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        for (const point of shape.geometry.points || []) {
+          minX = Math.min(minX, point.x);
+          maxX = Math.max(maxX, point.x);
+          minY = Math.min(minY, point.y);
+          maxY = Math.max(maxY, point.y);
+        }
+        return { minX, maxX, minY, maxY };
+      default:
+        return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
     }
   }
 
@@ -330,7 +474,11 @@
         </div>
       </div>
       <div class="canvas-container">
-        <DrawingCanvas respectLayerVisibility={false} treatChainsAsEntities={true} />
+        <DrawingCanvas 
+          respectLayerVisibility={false} 
+          treatChainsAsEntities={true}
+          onChainClick={handleChainClick}
+        />
       </div>
     </div>
 
@@ -350,6 +498,12 @@
               <div class="property">
                 <span class="property-label">Shapes:</span>
                 <span class="property-value">{selectedChain.shapes.length}</span>
+              </div>
+              <div class="property">
+                <span class="property-label">Status:</span>
+                <span class="property-value {isChainClosed(selectedChain) ? 'closed' : 'open'}">
+                  {isChainClosed(selectedChain) ? 'Closed' : 'Open'}
+                </span>
               </div>
               <div class="property">
                 <span class="property-label">Issues:</span>
@@ -1002,6 +1156,14 @@
     font-size: 0.875rem;
     font-weight: 600;
     color: #374151;
+  }
+
+  .property-value.closed {
+    color: #059669; /* Green for closed chains */
+  }
+
+  .property-value.open {
+    color: #dc2626; /* Red for open chains */
   }
 
   .shapes-title, .issues-title {
