@@ -92,7 +92,7 @@ describe('Chain Normalization', () => {
       
       const traversalIssue = results[0].issues.find(issue => issue.type === 'broken_traversal');
       expect(traversalIssue).toBeDefined();
-      expect(traversalIssue?.description).toContain('Non-adjacent shapes');
+      expect(traversalIssue?.description).toContain('Non-sequent shapes');
     });
 
     it('should handle single shape chain', () => {

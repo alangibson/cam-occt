@@ -652,6 +652,24 @@ const center = {
 
 **Algorithm Complexity**: O(n) where n is the number of shapes, as each shape is processed exactly once for both bounds calculation and translation.
 
+### Chain Traversal and Normalization Concepts
+
+**Terminology**:
+- **Sequent shapes**: Shapes that are next to each other in the chain sequence (e.g., shape[i] and shape[i+1])
+- **Adjacent shapes**: Shapes that are geometrically touching/connected (may not be sequent)
+- Use "sequent" when referring to chain ordering, "adjacent" for geometric relationships
+
+**Chain Closure Detection**:
+- **Closed chain**: The end point of the last shape is coincident with the start point of the first shape (within tolerance)
+- **Open chain**: The end point of the last shape is NOT coincident with the start point of the first shape
+- **Special case**: If the sequent shapes are the first and last shapes in the chain and their endpoints are coincident, consider the chain closed
+- This is a fundamental concept for toolpath generation - closed chains represent complete boundaries, open chains represent partial paths
+
+**Chain Normalization**:
+- Reorders and reverses shapes to achieve proper end-to-start traversal
+- For arcs: When reversing, flip the `clockwise` flag to maintain sweep direction
+- For polylines with bulges: When reversing, negate all bulge values and shift associations to preserve arc directions
+
 ### Shape Chain Detection Algorithm
 
 **Purpose**: Detect connected sequences of shapes where endpoints overlap within a user-defined tolerance for optimized cutting path generation.

@@ -200,13 +200,26 @@ function detectCoincidentPointIssues(chain: ShapeChain): ChainTraversalIssue[] {
     for (let j = i + 1; j < chain.shapes.length; j++) {
       const shape2 = chain.shapes[j];
       
-      // Skip adjacent shapes (they should connect)
+      // Skip sequent shapes (they should connect)
+      // Special case: first and last shapes are sequent if the chain is closed
       if (Math.abs(i - j) === 1) continue;
+      if ((i === 0 && j === chain.shapes.length - 1) || (j === 0 && i === chain.shapes.length - 1)) {
+        // Check if this is a closed chain by seeing if first and last shapes connect
+        const firstShape = chain.shapes[0];
+        const lastShape = chain.shapes[chain.shapes.length - 1];
+        const firstStart = getShapeStartPoint(firstShape);
+        const lastEnd = getShapeEndPoint(lastShape);
+        
+        if (firstStart && lastEnd && pointsAreClose(firstStart, lastEnd, tolerance)) {
+          // This is a closed chain, so first and last shapes are effectively sequent
+          continue;
+        }
+      }
 
       const shape1Points = getAllShapePoints(shape1);
       const shape2Points = getAllShapePoints(shape2);
 
-      // Check for any coincident points between non-adjacent shapes
+      // Check for any coincident points between non-sequent shapes
       for (const point1 of shape1Points) {
         for (const point2 of shape2Points) {
           if (pointsAreClose(point1, point2, tolerance)) {
@@ -217,7 +230,7 @@ function detectCoincidentPointIssues(chain: ShapeChain): ChainTraversalIssue[] {
               shapeIndex2: j,
               point1,
               point2,
-              description: `Non-adjacent shapes ${i + 1} and ${j + 1} have coincident points at (${point1.x.toFixed(3)}, ${point1.y.toFixed(3)}). This may indicate improper chain ordering.`
+              description: `Non-sequent shapes ${i + 1} and ${j + 1} have coincident points at (${point1.x.toFixed(3)}, ${point1.y.toFixed(3)}). This may indicate improper chain ordering.`
             });
           }
         }
