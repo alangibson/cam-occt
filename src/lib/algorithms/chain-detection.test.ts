@@ -53,7 +53,7 @@ describe('Chain Detection Algorithm', () => {
   }
 
   describe('Basic Chain Detection', () => {
-    it('should detect no chains when shapes are isolated', () => {
+    it('should detect chains for isolated shapes', () => {
       const shapes: Shape[] = [
         createLine(0, 0, 10, 0),    // Isolated line 1
         createLine(20, 0, 30, 0),  // Isolated line 2
@@ -61,7 +61,10 @@ describe('Chain Detection Algorithm', () => {
       ];
 
       const chains = detectShapeChains(shapes, { tolerance: 0.05 });
-      expect(chains).toHaveLength(0);
+      expect(chains).toHaveLength(3); // Each isolated shape forms its own chain
+      expect(chains[0].shapes).toHaveLength(1);
+      expect(chains[1].shapes).toHaveLength(1);
+      expect(chains[2].shapes).toHaveLength(1);
     });
 
     it('should detect a simple chain of connected lines', () => {
@@ -87,17 +90,19 @@ describe('Chain Detection Algorithm', () => {
         createLine(100, 0, 110, 0),
         createLine(110, 0, 120, 0),
         
-        // Isolated shape (should not form a chain)
+        // Isolated shape (forms its own single-shape chain)
         createLine(200, 0, 210, 0)
       ];
 
       const chains = detectShapeChains(shapes, { tolerance: 0.05 });
-      expect(chains).toHaveLength(2);
+      expect(chains).toHaveLength(3); // 2 multi-shape chains + 1 single-shape chain
       
-      // Both chains should have 2 shapes each
-      chains.forEach(chain => {
-        expect(chain.shapes).toHaveLength(2);
-      });
+      // Find chains by length
+      const multiShapeChains = chains.filter(chain => chain.shapes.length === 2);
+      const singleShapeChains = chains.filter(chain => chain.shapes.length === 1);
+      
+      expect(multiShapeChains).toHaveLength(2); // Two connected pairs
+      expect(singleShapeChains).toHaveLength(1); // One isolated shape
     });
   });
 
@@ -120,7 +125,9 @@ describe('Chain Detection Algorithm', () => {
       ];
 
       const chains = detectShapeChains(shapes, { tolerance: 0.05 });
-      expect(chains).toHaveLength(0);
+      expect(chains).toHaveLength(2); // Two separate single-shape chains
+      expect(chains[0].shapes).toHaveLength(1);
+      expect(chains[1].shapes).toHaveLength(1);
     });
 
     it('should work with different tolerance values', () => {
@@ -131,7 +138,7 @@ describe('Chain Detection Algorithm', () => {
 
       // Should not connect with small tolerance
       const chainsSmallTolerance = detectShapeChains(shapes, { tolerance: 0.1 });
-      expect(chainsSmallTolerance).toHaveLength(0);
+      expect(chainsSmallTolerance).toHaveLength(2); // Two separate single-shape chains
 
       // Should connect with large tolerance
       const chainsLargeTolerance = detectShapeChains(shapes, { tolerance: 1.0 });
@@ -236,7 +243,8 @@ describe('Chain Detection Algorithm', () => {
     it('should handle single shape', () => {
       const shapes = [createLine(0, 0, 10, 0)];
       const chains = detectShapeChains(shapes, { tolerance: 0.05 });
-      expect(chains).toHaveLength(0); // Single shapes don't form chains
+      expect(chains).toHaveLength(1); // Single shapes form chains too
+      expect(chains[0].shapes).toHaveLength(1);
     });
 
     it('should handle zero tolerance', () => {
@@ -257,7 +265,7 @@ describe('Chain Detection Algorithm', () => {
       ];
 
       const chains = detectShapeChains(shapes, { tolerance: 0.0001 });
-      expect(chains).toHaveLength(0); // Should not connect
+      expect(chains).toHaveLength(2); // Two separate single-shape chains
 
       const chainsLarger = detectShapeChains(shapes, { tolerance: 0.01 });
       expect(chainsLarger).toHaveLength(1); // Should connect

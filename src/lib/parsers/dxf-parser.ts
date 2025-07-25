@@ -175,6 +175,12 @@ function translateShape(shape: Shape, translation: Point2D): void {
         });
       }
       break;
+      
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      ellipse.center.x += translation.x;
+      ellipse.center.y += translation.y;
+      break;
   }
 }
 
@@ -347,6 +353,39 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
               };
             }
           }
+        }
+        return null;
+
+      case 'ELLIPSE':
+        // Handle ELLIPSE entities
+        // DXF ellipse format:
+        // 10, 20, 30: Center point (x, y, z)
+        // 11, 21, 31: Major axis endpoint vector (x, y, z)
+        // 40: Ratio of minor axis to major axis
+        // 41: Start parameter (for ellipse arcs) - optional
+        // 42: End parameter (for ellipse arcs) - optional
+        if (typeof entity.x === 'number' && typeof entity.y === 'number' &&
+            typeof entity.majorX === 'number' && typeof entity.majorY === 'number' &&
+            typeof entity.axisRatio === 'number') {
+          
+          const ellipse: any = {
+            center: { x: entity.x, y: entity.y },
+            majorAxisEndpoint: { x: entity.majorX, y: entity.majorY },
+            minorToMajorRatio: entity.axisRatio
+          };
+          
+          // Add start and end parameters if they exist (ellipse arcs)
+          if (typeof entity.startAngle === 'number' && typeof entity.endAngle === 'number') {
+            ellipse.startParam = entity.startAngle;
+            ellipse.endParam = entity.endAngle;
+          }
+          
+          return {
+            id: generateId(),
+            type: 'ellipse',
+            geometry: ellipse,
+            ...getLayerInfo(entity, options)
+          };
         }
         return null;
 
@@ -679,6 +718,22 @@ function transformShape(shape: Shape, transform: {
       }
       break;
       
+    case 'ellipse':
+      const ellipse = clonedShape.geometry as any;
+      ellipse.center = transformPoint(ellipse.center);
+      // Transform the major axis endpoint vector
+      const majorAxisEnd = {
+        x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
+        y: ellipse.center.y + ellipse.majorAxisEndpoint.y
+      };
+      const transformedMajorAxisEnd = transformPoint(majorAxisEnd);
+      ellipse.majorAxisEndpoint = {
+        x: transformedMajorAxisEnd.x - ellipse.center.x,
+        y: transformedMajorAxisEnd.y - ellipse.center.y
+      };
+      // Note: minorToMajorRatio stays the same as it's a proportion
+      break;
+      
     default:
       console.warn(`Unknown shape type for transformation: ${clonedShape.type}`);
       return null;
@@ -713,6 +768,24 @@ function getShapePoints(shape: Shape): Point2D[] {
     case 'polyline':
       const polyline = shape.geometry as any;
       return polyline.points;
+    
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      // Calculate bounding box points for ellipse
+      const majorAxisLength = Math.sqrt(
+        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+        ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+      );
+      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+      
+      // For bounding box calculation, we need the extent of the ellipse
+      // This is an approximation - true ellipse bounds calculation is more complex
+      const maxExtent = Math.max(majorAxisLength, minorAxisLength);
+      
+      return [
+        { x: ellipse.center.x - maxExtent, y: ellipse.center.y - maxExtent },
+        { x: ellipse.center.x + maxExtent, y: ellipse.center.y + maxExtent }
+      ];
     
     default:
       return [];

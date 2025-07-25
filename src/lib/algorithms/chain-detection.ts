@@ -15,6 +15,7 @@ export interface ShapeChain {
  * A chain is defined as a connected sequence of shapes where:
  * - Some point in shape A overlaps with some point in shape B within the tolerance
  * - The overlap relationship is transitive (A connects to B, B connects to C → A, B, C form a chain)
+ * - ALL shapes form chains, including single isolated shapes (both open and closed)
  * 
  * Algorithm uses Union-Find (Disjoint Set) data structure for efficient chain detection.
  */
@@ -55,14 +56,12 @@ export function detectShapeChains(shapes: Shape[], options: ChainDetectionOption
         shapes: shapeIndices.map(index => shapes[index])
       });
     } else if (shapeIndices.length === 1) {
-      // Single shape - check if it's a closed shape (should be treated as a chain)
+      // Single shape - ALL single shapes form chains (both open and closed)
       const singleShape = shapes[shapeIndices[0]];
-      if (isShapeClosed(singleShape, tolerance)) {
-        chains.push({
-          id: `chain-${chainId++}`,
-          shapes: [singleShape]
-        });
-      }
+      chains.push({
+        id: `chain-${chainId++}`,
+        shapes: [singleShape]
+      });
     }
   }
 
@@ -135,6 +134,62 @@ function getShapePoints(shape: Shape): Point2D[] {
       const polyline = shape.geometry as any;
       return polyline.points || [];
     
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      
+      // Calculate major and minor axis lengths
+      const majorAxisLength = Math.sqrt(
+        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+        ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+      );
+      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+      
+      // Calculate rotation angle of major axis
+      const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      
+      if (typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number') {
+        // Ellipse arc - return start and end points
+        const startParam = ellipse.startParam;
+        const endParam = ellipse.endParam;
+        
+        // Calculate start point
+        const startX = majorAxisLength * Math.cos(startParam);
+        const startY = minorAxisLength * Math.sin(startParam);
+        const rotatedStartX = startX * Math.cos(majorAxisAngle) - startY * Math.sin(majorAxisAngle);
+        const rotatedStartY = startX * Math.sin(majorAxisAngle) + startY * Math.cos(majorAxisAngle);
+        
+        // Calculate end point
+        const endX = majorAxisLength * Math.cos(endParam);
+        const endY = minorAxisLength * Math.sin(endParam);
+        const rotatedEndX = endX * Math.cos(majorAxisAngle) - endY * Math.sin(majorAxisAngle);
+        const rotatedEndY = endX * Math.sin(majorAxisAngle) + endY * Math.cos(majorAxisAngle);
+        
+        return [
+          { x: ellipse.center.x + rotatedStartX, y: ellipse.center.y + rotatedStartY }, // Start point
+          { x: ellipse.center.x + rotatedEndX, y: ellipse.center.y + rotatedEndY },     // End point
+          ellipse.center // Center
+        ];
+      } else {
+        // Full ellipse - return key points around the perimeter
+        const points: Point2D[] = [];
+        
+        // Sample key points around the ellipse perimeter (0°, 90°, 180°, 270°)
+        for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 2) {
+          const x = majorAxisLength * Math.cos(angle);
+          const y = minorAxisLength * Math.sin(angle);
+          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
+          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
+          
+          points.push({
+            x: ellipse.center.x + rotatedX,
+            y: ellipse.center.y + rotatedY
+          });
+        }
+        
+        points.push(ellipse.center); // Add center point
+        return points;
+      }
+    
     default:
       return [];
   }
@@ -172,6 +227,11 @@ function isShapeClosed(shape: Shape, tolerance: number): boolean {
     case 'line':
       // Lines are open by definition
       return false;
+    
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      // Full ellipses are closed, ellipse arcs are open
+      return !(typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number');
     
     default:
       return false;

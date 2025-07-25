@@ -4,7 +4,7 @@
   import LayersInfo from '../LayersInfo.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
-  import { chainStore, setChains, setTolerance } from '../../lib/stores/chains';
+  import { chainStore, setChains, setTolerance, selectChain } from '../../lib/stores/chains';
   import { partStore, setParts, highlightPart, clearHighlight } from '../../lib/stores/parts';
   import { detectShapeChains } from '../../lib/algorithms/chain-detection';
   import { detectParts, type PartDetectionWarning } from '../../lib/algorithms/part-detection';
@@ -39,7 +39,7 @@
   let chainNormalizationResults: ChainNormalizationResult[] = [];
   
   // Chain selection state
-  let selectedChainId: string | null = null;
+  $: selectedChainId = $chainStore.selectedChainId;
   $: selectedChain = selectedChainId ? detectedChains.find(chain => chain.id === selectedChainId) : null;
   $: selectedChainAnalysis = selectedChainId ? chainNormalizationResults.find(result => result.chainId === selectedChainId) : null;
   
@@ -49,7 +49,7 @@
       chainNormalizationResults = analyzeChainTraversal(detectedChains);
     } else {
       chainNormalizationResults = [];
-      selectedChainId = null;
+      selectChain(null);
     }
   }
   
@@ -193,6 +193,13 @@
       return true;
     }
     
+    // Single full ellipse is always closed
+    if (chain.shapes.length === 1 && chain.shapes[0].type === 'ellipse') {
+      const ellipse = chain.shapes[0].geometry as any;
+      // Full ellipses are closed, ellipse arcs are open
+      return !(typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number');
+    }
+    
     // Check if first and last points connect
     const firstShape = chain.shapes[0];
     const lastShape = chain.shapes[chain.shapes.length - 1];
@@ -230,6 +237,42 @@
           x: circle.center.x + circle.radius,
           y: circle.center.y
         };
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        
+        // Calculate major and minor axis lengths
+        const majorAxisLength = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+        
+        // Calculate rotation angle of major axis
+        const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+        
+        if (typeof ellipse.startParam === 'number') {
+          // Ellipse arc - return actual start point
+          const startX = majorAxisLength * Math.cos(ellipse.startParam);
+          const startY = minorAxisLength * Math.sin(ellipse.startParam);
+          const rotatedStartX = startX * Math.cos(majorAxisAngle) - startY * Math.sin(majorAxisAngle);
+          const rotatedStartY = startX * Math.sin(majorAxisAngle) + startY * Math.cos(majorAxisAngle);
+          
+          return {
+            x: ellipse.center.x + rotatedStartX,
+            y: ellipse.center.y + rotatedStartY
+          };
+        } else {
+          // Full ellipse - return rightmost point (0 radians)
+          const startX = majorAxisLength;
+          const startY = 0;
+          const rotatedStartX = startX * Math.cos(majorAxisAngle) - startY * Math.sin(majorAxisAngle);
+          const rotatedStartY = startX * Math.sin(majorAxisAngle) + startY * Math.cos(majorAxisAngle);
+          
+          return {
+            x: ellipse.center.x + rotatedStartX,
+            y: ellipse.center.y + rotatedStartY
+          };
+        }
       default:
         return null;
     }
@@ -256,6 +299,42 @@
           x: circle.center.x + circle.radius,
           y: circle.center.y
         };
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        
+        // Calculate major and minor axis lengths
+        const majorAxisLength = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+        
+        // Calculate rotation angle of major axis
+        const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+        
+        if (typeof ellipse.endParam === 'number') {
+          // Ellipse arc - return actual end point
+          const endX = majorAxisLength * Math.cos(ellipse.endParam);
+          const endY = minorAxisLength * Math.sin(ellipse.endParam);
+          const rotatedEndX = endX * Math.cos(majorAxisAngle) - endY * Math.sin(majorAxisAngle);
+          const rotatedEndY = endX * Math.sin(majorAxisAngle) + endY * Math.cos(majorAxisAngle);
+          
+          return {
+            x: ellipse.center.x + rotatedEndX,
+            y: ellipse.center.y + rotatedEndY
+          };
+        } else {
+          // Full ellipse - return rightmost point (same as start for closed shape)
+          const endX = majorAxisLength;
+          const endY = 0;
+          const rotatedEndX = endX * Math.cos(majorAxisAngle) - endY * Math.sin(majorAxisAngle);
+          const rotatedEndY = endX * Math.sin(majorAxisAngle) + endY * Math.cos(majorAxisAngle);
+          
+          return {
+            x: ellipse.center.x + rotatedEndX,
+            y: ellipse.center.y + rotatedEndY
+          };
+        }
       default:
         return null;
     }
@@ -311,6 +390,40 @@
           maxY = Math.max(maxY, point.y);
         }
         return { minX, maxX, minY, maxY };
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        
+        // Calculate major and minor axis lengths
+        const majorAxisLength = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+        
+        // Calculate rotation angle of major axis
+        const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+        
+        // For a rotated ellipse, we need to find the actual bounding box
+        // This requires finding the extrema of the parametric ellipse equations
+        const cos_angle = Math.cos(majorAxisAngle);
+        const sin_angle = Math.sin(majorAxisAngle);
+        
+        // Calculate the bounding box dimensions
+        const halfWidth = Math.sqrt(
+          majorAxisLength * majorAxisLength * cos_angle * cos_angle +
+          minorAxisLength * minorAxisLength * sin_angle * sin_angle
+        );
+        const halfHeight = Math.sqrt(
+          majorAxisLength * majorAxisLength * sin_angle * sin_angle +
+          minorAxisLength * minorAxisLength * cos_angle * cos_angle
+        );
+        
+        return {
+          minX: ellipse.center.x - halfWidth,
+          maxX: ellipse.center.x + halfWidth,
+          minY: ellipse.center.y - halfHeight,
+          maxY: ellipse.center.y + halfHeight
+        };
       default:
         return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
     }
@@ -319,9 +432,9 @@
   // Chain selection functions
   function handleChainClick(chainId: string) {
     if (selectedChainId === chainId) {
-      selectedChainId = null;
+      selectChain(null);
     } else {
-      selectedChainId = chainId;
+      selectChain(chainId);
     }
   }
 

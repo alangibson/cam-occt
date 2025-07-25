@@ -203,6 +203,14 @@ function moveShape(shape: Shape, delta: Point2D): Shape {
         })) : undefined
       };
       break;
+      
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      moved.geometry = {
+        ...ellipse,
+        center: { x: ellipse.center.x + delta.x, y: ellipse.center.y + delta.y }
+      };
+      break;
   }
   
   return moved;
@@ -245,6 +253,25 @@ function scaleShape(shape: Shape, scaleFactor: number, origin: Point2D): Shape {
           ...scalePoint({ x: v.x, y: v.y }),
           bulge: v.bulge || 0
         })) : undefined
+      };
+      break;
+      
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      const scaledCenter = scalePoint(ellipse.center);
+      const majorAxisEnd = {
+        x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
+        y: ellipse.center.y + ellipse.majorAxisEndpoint.y
+      };
+      const scaledMajorAxisEnd = scalePoint(majorAxisEnd);
+      
+      scaled.geometry = {
+        ...ellipse,
+        center: scaledCenter,
+        majorAxisEndpoint: {
+          x: scaledMajorAxisEnd.x - scaledCenter.x,
+          y: scaledMajorAxisEnd.y - scaledCenter.y
+        }
       };
       break;
   }
@@ -304,6 +331,25 @@ function rotateShape(shape: Shape, angle: number, origin: Point2D): Shape {
           ...rotatePoint({ x: v.x, y: v.y }),
           bulge: v.bulge || 0
         })) : undefined
+      };
+      break;
+      
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      const rotatedCenter = rotatePoint(ellipse.center);
+      const majorAxisEnd = {
+        x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
+        y: ellipse.center.y + ellipse.majorAxisEndpoint.y
+      };
+      const rotatedMajorAxisEnd = rotatePoint(majorAxisEnd);
+      
+      rotated.geometry = {
+        ...ellipse,
+        center: rotatedCenter,
+        majorAxisEndpoint: {
+          x: rotatedMajorAxisEnd.x - rotatedCenter.x,
+          y: rotatedMajorAxisEnd.y - rotatedCenter.y
+        }
       };
       break;
   }

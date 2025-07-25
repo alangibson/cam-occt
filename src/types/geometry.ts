@@ -40,7 +40,15 @@ export interface Polyline {
   vertices?: PolylineVertex[]; // Optional bulge-aware vertices for DXF polylines
 }
 
-export type GeometryType = 'line' | 'arc' | 'circle' | 'polyline' | 'spline';
+export interface Ellipse {
+  center: Point2D;
+  majorAxisEndpoint: Point2D; // Vector from center to end of major axis
+  minorToMajorRatio: number; // Ratio of minor axis to major axis
+  startParam?: number; // Start parameter for ellipse arcs (optional)
+  endParam?: number; // End parameter for ellipse arcs (optional)
+}
+
+export type GeometryType = 'line' | 'arc' | 'circle' | 'polyline' | 'spline' | 'ellipse';
 
 export interface SplineData {
   controlPoints: Point2D[];
@@ -53,7 +61,7 @@ export interface SplineData {
 export interface Shape {
   id: string;
   type: GeometryType;
-  geometry: Line | Arc | Circle | Polyline;
+  geometry: Line | Arc | Circle | Polyline | Ellipse;
   layer?: string;
   color?: string;
   selected?: boolean;

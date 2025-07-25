@@ -3,7 +3,7 @@
   import { drawingStore } from '../lib/stores/drawing';
   import { chainStore } from '../lib/stores/chains';
   import { partStore } from '../lib/stores/parts';
-  import { getShapeChainId, getChainShapeIds } from '../lib/stores/chains';
+  import { getShapeChainId, getChainShapeIds, getSelectedChainShapeIds } from '../lib/stores/chains';
   import { getChainPartType, getPartChainIds } from '../lib/stores/parts';
   import type { Shape, Point2D } from '../types';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
@@ -26,11 +26,15 @@
   $: layerVisibility = $drawingStore.layerVisibility;
   $: displayUnit = $drawingStore.displayUnit;
   $: chains = $chainStore.chains;
+  $: selectedChainId = $chainStore.selectedChainId;
   $: parts = $partStore.parts;
   $: highlightedPartId = $partStore.highlightedPartId;
   
   // Get chain IDs that belong to the highlighted part
   $: highlightedChainIds = highlightedPartId ? getPartChainIds(highlightedPartId, parts) : [];
+  
+  // Get shape IDs for the selected chain
+  $: selectedChainShapeIds = getSelectedChainShapeIds(selectedChainId, chains);
   
   // Calculate physical scale factor for proper unit display
   $: physicalScale = drawing ? getPhysicalScaleFactor(drawing.units, displayUnit) : 1;
@@ -216,6 +220,49 @@
       clockwise: bulge < 0
     };
   }
+  
+  function drawEllipse(ellipse: any) {
+    // Calculate major and minor axis lengths
+    const majorAxisLength = Math.sqrt(
+      ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+      ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+    );
+    const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+    
+    // Calculate rotation angle of major axis
+    const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+    
+    // Save context for transformation
+    ctx.save();
+    
+    // Transform to ellipse coordinate system
+    ctx.translate(ellipse.center.x, ellipse.center.y);
+    ctx.rotate(majorAxisAngle);
+    ctx.scale(majorAxisLength, minorAxisLength);
+    
+    // Determine if this is an ellipse arc or full ellipse
+    const isArc = typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number';
+    
+    ctx.beginPath();
+    if (isArc) {
+      // Draw ellipse arc
+      let startParam = ellipse.startParam!;
+      let endParam = ellipse.endParam!;
+      
+      // Handle parameter wrapping
+      if (endParam < startParam) {
+        endParam += 2 * Math.PI;
+      }
+      
+      ctx.arc(0, 0, 1, startParam, endParam, false);
+    } else {
+      // Draw full ellipse as a circle in the transformed coordinate system
+      ctx.arc(0, 0, 1, 0, 2 * Math.PI, false);
+    }
+    
+    ctx.restore();
+    ctx.stroke();
+  }
 
   function drawShape(shape: Shape, isSelected: boolean, isHovered: boolean = false, chainId: string | null = null, partType: 'shell' | 'hole' | null = null) {
     // Save context state
@@ -224,13 +271,21 @@
     // Check if this shape is part of the highlighted part
     const isPartHighlighted = chainId && highlightedChainIds.includes(chainId);
     
-    // Priority: selected > hovered > part highlighted > part type > chain > normal
+    // Check if this shape is part of the selected chain
+    const isChainSelected = selectedChainShapeIds.includes(shape.id);
+    
+    // Priority: selected > hovered > chain selected > part highlighted > part type > chain > normal
     if (isSelected) {
       ctx.strokeStyle = '#ff6600';
       ctx.lineWidth = 2 / totalScale;
     } else if (isHovered) {
       ctx.strokeStyle = '#ff6600';
       ctx.lineWidth = 1.5 / totalScale;
+    } else if (isChainSelected) {
+      ctx.strokeStyle = '#10b981'; // Emerald color for selected chain
+      ctx.lineWidth = 2.5 / totalScale;
+      ctx.shadowColor = '#10b981';
+      ctx.shadowBlur = 2 / totalScale;
     } else if (isPartHighlighted) {
       ctx.strokeStyle = '#f59e0b'; // Amber color for highlighted part
       ctx.lineWidth = 2.5 / totalScale;
@@ -298,6 +353,11 @@
           ctx.stroke();
         }
         break;
+        
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        drawEllipse(ellipse);
+        break;
     }
     
     // Restore context state
@@ -352,6 +412,10 @@
         const polyline = shape.geometry as any;
         return polyline.points.length > 0 ? polyline.points[0] : { x: 0, y: 0 }; // Origin is the first point
       
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        return ellipse.center; // Origin is the center
+      
       default:
         return { x: 0, y: 0 };
     }
@@ -383,6 +447,39 @@
           y: circle.center.y
         };
       
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        // Calculate major axis length
+        const majorAxisLength = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        
+        if (typeof ellipse.startParam === 'number') {
+          // For ellipse arcs, calculate start point from start parameter
+          const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+          const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+          
+          // Parametric ellipse equations
+          const x = majorAxisLength * Math.cos(ellipse.startParam);
+          const y = minorAxisLength * Math.sin(ellipse.startParam);
+          
+          // Rotate by major axis angle and translate to center
+          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
+          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
+          
+          return {
+            x: ellipse.center.x + rotatedX,
+            y: ellipse.center.y + rotatedY
+          };
+        } else {
+          // For full ellipses, use rightmost point (parameter 0)
+          return {
+            x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
+            y: ellipse.center.y + ellipse.majorAxisEndpoint.y
+          };
+        }
+      
       default:
         return null;
     }
@@ -413,6 +510,39 @@
           x: circle.center.x + circle.radius,
           y: circle.center.y
         };
+      
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        // Calculate major axis length
+        const majorAxisLength = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        
+        if (typeof ellipse.endParam === 'number') {
+          // For ellipse arcs, calculate end point from end parameter
+          const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+          const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+          
+          // Parametric ellipse equations
+          const x = majorAxisLength * Math.cos(ellipse.endParam);
+          const y = minorAxisLength * Math.sin(ellipse.endParam);
+          
+          // Rotate by major axis angle and translate to center
+          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
+          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
+          
+          return {
+            x: ellipse.center.x + rotatedX,
+            y: ellipse.center.y + rotatedY
+          };
+        } else {
+          // For full ellipses, start and end points are the same (rightmost point at parameter 0)
+          return {
+            x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
+            y: ellipse.center.y + ellipse.majorAxisEndpoint.y
+          };
+        }
       
       default:
         return null;
@@ -526,6 +656,58 @@
         }
         
         return false;
+        
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        // Use a simpler approximation for hit testing: check if point is within ellipse bounds + tolerance
+        const majorAxisLength = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+        const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+        
+        // Transform point to ellipse coordinate system
+        const dx = point.x - ellipse.center.x;
+        const dy = point.y - ellipse.center.y;
+        const rotatedX = dx * Math.cos(-majorAxisAngle) - dy * Math.sin(-majorAxisAngle);
+        const rotatedY = dx * Math.sin(-majorAxisAngle) + dy * Math.cos(-majorAxisAngle);
+        
+        // Check if point is on the ellipse perimeter within tolerance
+        const normalizedX = rotatedX / majorAxisLength;
+        const normalizedY = rotatedY / minorAxisLength;
+        const distanceFromEllipse = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+        
+        if (typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number') {
+          // For ellipse arcs, also check if point is within angular range
+          const pointParam = Math.atan2(normalizedY, normalizedX);
+          let startParam = ellipse.startParam;
+          let endParam = ellipse.endParam;
+          
+          // Normalize parameters to [0, 2π]
+          while (startParam < 0) startParam += 2 * Math.PI;
+          while (endParam < 0) endParam += 2 * Math.PI;
+          while (startParam >= 2 * Math.PI) startParam -= 2 * Math.PI;
+          while (endParam >= 2 * Math.PI) endParam -= 2 * Math.PI;
+          
+          let normalizedPointParam = pointParam;
+          while (normalizedPointParam < 0) normalizedPointParam += 2 * Math.PI;
+          while (normalizedPointParam >= 2 * Math.PI) normalizedPointParam -= 2 * Math.PI;
+          
+          // Check if point parameter is within arc range
+          let withinRange = false;
+          if (startParam <= endParam) {
+            withinRange = normalizedPointParam >= startParam && normalizedPointParam <= endParam;
+          } else {
+            // Arc crosses 0 degrees
+            withinRange = normalizedPointParam >= startParam || normalizedPointParam <= endParam;
+          }
+          
+          return Math.abs(distanceFromEllipse - 1) < tolerance / Math.min(majorAxisLength, minorAxisLength) && withinRange;
+        } else {
+          // Full ellipse
+          return Math.abs(distanceFromEllipse - 1) < tolerance / Math.min(majorAxisLength, minorAxisLength);
+        }
         
       default:
         return false;

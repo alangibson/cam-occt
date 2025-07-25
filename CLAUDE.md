@@ -134,6 +134,25 @@ The "Tractor Seat Mount - Left.dxf" test file should produce 1 part with 12 hole
 - UI chain status display must use the same user tolerance
 - Any "adaptive" or "smart" tolerance calculations are explicitly forbidden
 
+### User-Only Tolerance Setting
+**CRITICAL**: ONLY the user sets tolerance values through the 'Tolerance (units)' property on the Program page. Developers must NEVER pick or suggest tolerance values in code or tests to make algorithms work. 
+
+- **NEVER** choose tolerances like 20.0, 150.0, etc. in code to make tests pass
+- **NEVER** implement tolerance recommendations or automatic adjustments
+- **ALWAYS** use the user-provided tolerance from the UI
+- If geometry doesn't work with user tolerance, that's the correct behavior - don't override it
+- Tests should use realistic default tolerances (0.1) to show actual behavior
+
+### Chain Detection and Processing Rules
+
+**CRITICAL**: Follow these fundamental rules for all chain operations:
+
+- **Always detect AND normalize chains** before doing further analysis on them
+- **Make no assumptions** about the 'right' number of chains in a drawing - there could easily be thousands
+- **Chains are chains** no matter if they are open or closed - both types are valid chains
+- **Only closed chains can form the shell** of a part (outer boundary)
+- **Only closed chains can have holes** (inner boundaries within shells)
+
 ### Chain Normalization and Closure
 **IMPORTANT**: When analyzing chain traversal, coincident points between the first shape (shape 1) and the last shape (final shape) are EXPECTED and CORRECT for closed chains. This is what makes a chain closed - the end point of the last shape should coincide with the start point of the first shape.
 
@@ -196,6 +215,29 @@ This ensures all bugs are properly covered by tests and prevents regressions.
 6. **Verify screenshot tests** still capture the correct visual elements
 
 **NEVER tell the user you are done without running these tests first.** UI changes frequently break e2e tests due to changed selectors, moved elements, or different text content. Build errors are common when adding new components or imports.
+
+## Testing Requirements Before Reporting Completion
+
+**CRITICAL**: Before reporting that any functionality is "fixed" or "complete" to the user, you MUST:
+
+1. **Run ALL relevant tests** to verify the fix actually works
+2. **Verify that existing functionality still works** (regression testing)
+3. **Update test expectations** to match the correct behavior, not broken behavior
+4. **Only report success** when tests actually pass with the expected correct behavior
+
+**NEVER claim something is fixed without running tests to verify it works.** Always run tests before making claims about functionality being complete or working correctly.
+
+## Test Writing Guidelines
+
+**CRITICAL**: Tests must be written based on USER REQUIREMENTS, not current broken behavior:
+
+1. **Write tests for the CORRECT expected behavior** as specified by user requirements
+2. **DO NOT change test expectations just to make tests pass** - this defeats the entire purpose of testing
+3. **Tests should FAIL when functionality is broken** and PASS when functionality works correctly
+4. **Use tests to drive development** - implement functionality until tests pass with correct behavior
+5. **Document current broken behavior separately** but do not make tests expect broken behavior
+
+**NEVER modify tests to match broken code.** Tests must reflect what the user wants the system to do, not what it currently does wrong.
 
 ## Development Guidelines
 
@@ -465,13 +507,14 @@ Use feature detection for:
 - Test with various DXF files from `test/dxf/`
 - Monitor console for geometric algorithm performance
 
-## Third-Party Documentation
+## References
 
-Documentation for key libraries is available in `.claude/docs/` (when present):
+Documentation for key libraries is available in `./references` (when present):
 - Three.js examples and guides
 - DXF format specifications
 - LinuxCNC G-code reference
 - Geometric algorithm references
+- MetalHeadCam for working examples at ./reference/MetalHeadCAM
 
 ## Contributing Guidelines
 
@@ -694,6 +737,8 @@ const center = {
 
 **Algorithm Definition**: 
 A chain is defined as a connected sequence of shapes where some point in shape A overlaps with some point in shape B within the specified tolerance distance. The overlap relationship is transitive - if A connects to B and B connects to C, then A, B, and C form a single chain.
+
+**CRITICAL**: ALL shapes form chains, including single isolated shapes. Both open and closed shapes form chains. Single shapes that are not connected to other shapes still form single-shape chains. This ensures that every shape in the drawing is part of the chain analysis for tool path generation.
 
 **Core Algorithm Process**:
 1. **Point Extraction**: Extract key geometric points from each shape:

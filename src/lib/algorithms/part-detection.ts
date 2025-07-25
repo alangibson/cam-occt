@@ -6,11 +6,17 @@
  * - Closed chains enclosed within shells are holes
  * - Open chains that cross boundaries generate warnings
  * - Supports recursive nesting (parts within holes within parts)
+ * 
+ * Uses JSTS for robust geometric containment detection based on MetalHeadCAM reference
  */
 
 import type { ShapeChain } from './chain-detection';
 import type { Point2D, Shape } from '../../types';
-import { isChainGeometricallyContained } from '../utils/geometric-operations';
+import { 
+  buildContainmentHierarchy, 
+  identifyShells as identifyShellsJSTS 
+} from '../utils/geometric-containment-jsts';
+import { normalizeChain } from './chain-normalization';
 
 export interface PartHole {
   id: string;
@@ -58,9 +64,13 @@ export interface PartDetectionResult {
 export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1): Promise<PartDetectionResult> {
   const warnings: PartDetectionWarning[] = [];
   
-  // Separate closed and open chains
-  const closedChains = chains.filter(chain => isChainClosed(chain, tolerance));
-  const openChains = chains.filter(chain => !isChainClosed(chain, tolerance));
+  // CRITICAL: Normalize all chains BEFORE any analysis
+  const normalizedChains = chains.map(chain => normalizeChain(chain));
+  
+  // Separate closed and open chains (using normalized chains)
+  const closedChains = normalizedChains.filter(chain => isChainClosed(chain, tolerance));
+  const openChains = normalizedChains.filter(chain => !isChainClosed(chain, tolerance));
+  
   
   // Calculate bounding boxes for all closed chains
   const chainBounds = new Map<string, BoundingBox>();
@@ -80,22 +90,82 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1)
     }
   }
   
-  // Build containment hierarchy using geometric containment
-  const containmentMap = await buildGeometricContainmentHierarchy(closedChains);
+  // Build containment hierarchy using JSTS geometric containment
+  const containmentMap = buildContainmentHierarchy(closedChains, tolerance);
   
-  // Identify shells (chains that are not holes in other parts)
-  // A chain is a shell if either:
-  // 1. It's not contained by any other chain (root shell)
-  // 2. It's at an even level in the nesting hierarchy (part within hole within part)
-  const shells = identifyShells(closedChains, containmentMap);
+  // Debug: log containment hierarchy
+  console.log(`Part detection: ${closedChains.length} closed chains, containment map size: ${containmentMap.size}`);
+  for (const [child, parent] of containmentMap.entries()) {
+    console.log(`  ${child} is contained in ${parent}`);
+  }
   
-  // Build part structures
+  // SIMPLIFIED APPROACH: Only root-level chains (no parent) are parts
+  // Everything else contained within them are holes
+  const rootChains = closedChains.filter(chain => !containmentMap.has(chain.id));
+  console.log(`Found ${rootChains.length} root chains (parts): ${rootChains.map(c => c.id).join(', ')}`);
+  
+  // Debug ATT00079.dxf specifically - examine the 6 problem chains
+  if (rootChains.length === 27) {
+    const problemChains = ['chain-29', 'chain-34', 'chain-65', 'chain-70', 'chain-85', 'chain-90'];
+    console.log('\nATT00079 DEBUG: Examining the 6 problem chains...');
+    
+    for (const chainId of problemChains) {
+      const chain = closedChains.find(c => c.id === chainId);
+      if (chain) {
+        const gapDistance = calculateChainGapDistance(chain);
+        const isClosedAtTolerance = isChainClosed(chain, tolerance);
+        const shapes = chain.shapes.map(s => s.type).join(',');
+        
+        console.log(`${chainId}: gap=${gapDistance.toFixed(6)}, closed=${isClosedAtTolerance}, shapes=[${shapes}]`);
+        
+        // Check if this chain would be closed at a higher tolerance
+        const wouldBeClosedAt1 = isChainClosed(chain, 1.0);
+        const wouldBeClosedAt5 = isChainClosed(chain, 5.0);
+        console.log(`  Would be closed at tolerance 1.0: ${wouldBeClosedAt1}, 5.0: ${wouldBeClosedAt5}`);
+      }
+    }
+  }
+  
+  // Build part structures - each root chain is a part
   const parts: DetectedPart[] = [];
   let partCounter = 1;
   
-  for (const shellChain of shells) {
-    const part = buildPartFromShell(shellChain, closedChains, containmentMap, chainBounds, partCounter++);
+  for (const rootChain of rootChains) {
+    // Find all chains directly contained within this root chain
+    const directHoles: ShapeChain[] = [];
+    for (const [childId, parentId] of containmentMap.entries()) {
+      if (parentId === rootChain.id) {
+        const holeChain = closedChains.find(c => c.id === childId);
+        if (holeChain) {
+          directHoles.push(holeChain);
+        }
+      }
+    }
+    
+    // Create simple part structure with shell and holes (no nested parts)
+    const part: DetectedPart = {
+      id: `part-${partCounter}`,
+      shell: {
+        id: `shell-${partCounter}`,
+        chain: rootChain,
+        type: 'shell',
+        boundingBox: chainBounds.get(rootChain.id)!,
+        holes: []
+      },
+      holes: directHoles.map((hole, idx) => ({
+        id: `hole-${partCounter}-${idx + 1}`,
+        chain: hole,
+        type: 'hole' as const,
+        boundingBox: chainBounds.get(hole.id)!,
+        holes: [] // No nested holes - simple 2-level hierarchy
+      }))
+    };
+    
+    // Also set the holes on the shell for backward compatibility
+    part.shell.holes = part.holes;
+    
     parts.push(part);
+    partCounter++;
   }
   
   // If no parts were detected and there are open chains, warn about potential unclosed geometry
@@ -125,6 +195,11 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1)
 function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boolean {
   if (chain.shapes.length === 0) return false;
   
+  // Special case: single-shape circles are inherently closed
+  if (chain.shapes.length === 1 && chain.shapes[0].type === 'circle') {
+    return true;
+  }
+  
   // Get all endpoints from the shapes in the chain
   const endpoints: Point2D[] = [];
   
@@ -148,7 +223,7 @@ function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boolean {
     Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
   );
   
-  // Use ONLY the user-set tolerance
+  // Use ONLY the user-set tolerance - no adaptive tolerance calculations allowed
   return distance < tolerance;
 }
 
@@ -453,128 +528,3 @@ function isContainedWithin(inner: BoundingBox, outer: BoundingBox): boolean {
   );
 }
 
-/**
- * Identifies which chains are shells (part boundaries) vs holes
- * Uses nesting level to determine: even levels = shells, odd levels = holes
- */
-function identifyShells(
-  closedChains: ShapeChain[], 
-  containmentMap: Map<string, string>
-): ShapeChain[] {
-  const shells: ShapeChain[] = [];
-  
-  for (const chain of closedChains) {
-    const nestingLevel = calculateNestingLevel(chain.id, containmentMap);
-    
-    // Even nesting levels (0, 2, 4...) are shells
-    // Odd nesting levels (1, 3, 5...) are holes
-    if (nestingLevel % 2 === 0) {
-      shells.push(chain);
-    }
-  }
-  
-  return shells;
-}
-
-/**
- * Calculates the nesting level of a chain (0 = root, 1 = first level hole, etc.)
- */
-function calculateNestingLevel(chainId: string, containmentMap: Map<string, string>): number {
-  let level = 0;
-  let currentId = chainId;
-  
-  while (containmentMap.has(currentId)) {
-    level++;
-    currentId = containmentMap.get(currentId)!;
-  }
-  
-  return level;
-}
-
-/**
- * Builds a part structure from a shell chain
- */
-function buildPartFromShell(
-  shellChain: ShapeChain,
-  allChains: ShapeChain[],
-  containmentMap: Map<string, string>,
-  chainBounds: Map<string, BoundingBox>,
-  partId: number
-): DetectedPart {
-  const shellBounds = chainBounds.get(shellChain.id)!;
-  
-  // Find direct children (holes in this shell)
-  const directHoles: ShapeChain[] = [];
-  for (const [childId, parentId] of containmentMap.entries()) {
-    if (parentId === shellChain.id) {
-      const childChain = allChains.find(c => c.id === childId);
-      if (childChain) {
-        directHoles.push(childChain);
-      }
-    }
-  }
-  
-  // Build hole structures recursively
-  const holes: PartHole[] = [];
-  let holeCounter = 1;
-  
-  for (const holeChain of directHoles) {
-    const hole = buildHoleFromChain(holeChain, allChains, containmentMap, chainBounds, holeCounter++);
-    holes.push(hole);
-  }
-  
-  const shell: PartShell = {
-    id: `shell-${partId}`,
-    chain: shellChain,
-    type: 'shell',
-    boundingBox: shellBounds,
-    holes: holes
-  };
-  
-  return {
-    id: `part-${partId}`,
-    shell,
-    holes
-  };
-}
-
-/**
- * Builds a hole structure from a chain
- */
-function buildHoleFromChain(
-  holeChain: ShapeChain,
-  allChains: ShapeChain[],
-  containmentMap: Map<string, string>,
-  chainBounds: Map<string, BoundingBox>,
-  holeId: number
-): PartHole {
-  const holeBounds = chainBounds.get(holeChain.id)!;
-  
-  // Find chains contained within this hole (parts within the hole)
-  const nestedParts: ShapeChain[] = [];
-  for (const [childId, parentId] of containmentMap.entries()) {
-    if (parentId === holeChain.id) {
-      const childChain = allChains.find(c => c.id === childId);
-      if (childChain) {
-        nestedParts.push(childChain);
-      }
-    }
-  }
-  
-  // Build nested hole structures recursively
-  const nestedHoles: PartHole[] = [];
-  let nestedCounter = 1;
-  
-  for (const nestedChain of nestedParts) {
-    const nestedHole = buildHoleFromChain(nestedChain, allChains, containmentMap, chainBounds, nestedCounter++);
-    nestedHoles.push(nestedHole);
-  }
-  
-  return {
-    id: `hole-${holeId}`,
-    chain: holeChain,
-    type: 'hole',
-    boundingBox: holeBounds,
-    holes: nestedHoles
-  };
-}

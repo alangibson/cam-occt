@@ -71,7 +71,9 @@ describe('Part Detection Algorithm', () => {
       
       const result = await detectParts(openChains);
       expect(result.parts).toHaveLength(0);
-      expect(result.warnings).toHaveLength(0);
+      expect(result.warnings).toHaveLength(1);
+      expect(result.warnings[0].type).toBe('overlapping_boundary');
+      expect(result.warnings[0].message).toContain('unclosed chain');
     });
 
     it('should detect a single part from a single closed chain', async () => {

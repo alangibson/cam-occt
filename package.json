@@ -41,7 +41,9 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@types/jsts": "^0.17.24",
     "dxf": "^4.6.1",
+    "jsts": "^2.12.1",
     "three": "^0.169.0"
   }
 }

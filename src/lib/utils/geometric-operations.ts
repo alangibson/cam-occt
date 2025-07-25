@@ -126,6 +126,74 @@ function getShapePoints(shape: Shape): Point2D[] {
       const polyline = shape.geometry as any;
       return polyline.points || [];
       
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      // Create polygon approximation of ellipse
+      const ellipsePoints: Point2D[] = [];
+      const ellipseSegments = 64; // More segments for ellipse to capture shape accurately
+      
+      // Calculate major and minor axis lengths
+      const majorAxisLength = Math.sqrt(
+        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+        ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+      );
+      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+      
+      // Calculate rotation angle of major axis
+      const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      
+      // Determine if this is an ellipse arc or full ellipse
+      const isArc = typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number';
+      
+      if (isArc) {
+        // Ellipse arc - only sample between start and end parameters
+        const startParam = ellipse.startParam!;
+        const endParam = ellipse.endParam!;
+        let paramSpan = endParam - startParam;
+        
+        // Handle parameter wrapping
+        if (paramSpan <= 0) paramSpan += 2 * Math.PI;
+        
+        const numSegments = Math.max(8, Math.ceil(ellipseSegments * paramSpan / (2 * Math.PI)));
+        
+        for (let i = 0; i <= numSegments; i++) {
+          const param = startParam + (paramSpan * i) / numSegments;
+          
+          // Parametric ellipse equations
+          const x = majorAxisLength * Math.cos(param);
+          const y = minorAxisLength * Math.sin(param);
+          
+          // Rotate by major axis angle and translate to center
+          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
+          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
+          
+          ellipsePoints.push({
+            x: ellipse.center.x + rotatedX,
+            y: ellipse.center.y + rotatedY
+          });
+        }
+      } else {
+        // Full ellipse
+        for (let i = 0; i < ellipseSegments; i++) {
+          const param = (i * 2 * Math.PI) / ellipseSegments;
+          
+          // Parametric ellipse equations
+          const x = majorAxisLength * Math.cos(param);
+          const y = minorAxisLength * Math.sin(param);
+          
+          // Rotate by major axis angle and translate to center
+          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
+          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
+          
+          ellipsePoints.push({
+            x: ellipse.center.x + rotatedX,
+            y: ellipse.center.y + rotatedY
+          });
+        }
+      }
+      
+      return ellipsePoints;
+      
     default:
       return [];
   }
