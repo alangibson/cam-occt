@@ -10,8 +10,7 @@ export default defineConfig({
 		watchExclude: ['**/node_modules/**', '**/dist/**', '**/docs/**']
 	},
 	optimizeDeps: {
-		include: ['three', 'dxf'],
-		exclude: ['opencascade.js']
+		include: ['three', 'dxf']
 	},
 	assetsInclude: ['**/*.wasm'],
 	server: {

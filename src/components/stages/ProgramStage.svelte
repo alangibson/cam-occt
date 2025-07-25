@@ -213,19 +213,22 @@
   function getShapeStartPoint(shape: Shape): {x: number, y: number} | null {
     switch (shape.type) {
       case 'line':
-        return shape.geometry.start;
+        const line = shape.geometry as any;
+        return line.start;
       case 'polyline':
-        return shape.geometry.points.length > 0 ? shape.geometry.points[0] : null;
+        const polyline = shape.geometry as any;
+        return polyline.points.length > 0 ? polyline.points[0] : null;
       case 'arc':
-        const arc = shape.geometry;
+        const arc = shape.geometry as any;
         return {
           x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
           y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
         };
       case 'circle':
+        const circle = shape.geometry as any;
         return {
-          x: shape.geometry.center.x + shape.geometry.radius,
-          y: shape.geometry.center.y
+          x: circle.center.x + circle.radius,
+          y: circle.center.y
         };
       default:
         return null;
@@ -235,20 +238,23 @@
   function getShapeEndPoint(shape: Shape): {x: number, y: number} | null {
     switch (shape.type) {
       case 'line':
-        return shape.geometry.end;
+        const line = shape.geometry as any;
+        return line.end;
       case 'polyline':
-        const points = shape.geometry.points;
+        const polyline = shape.geometry as any;
+        const points = polyline.points;
         return points.length > 0 ? points[points.length - 1] : null;
       case 'arc':
-        const arc = shape.geometry;
+        const arc = shape.geometry as any;
         return {
           x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
           y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
         };
       case 'circle':
+        const circle = shape.geometry as any;
         return {
-          x: shape.geometry.center.x + shape.geometry.radius,
-          y: shape.geometry.center.y
+          x: circle.center.x + circle.radius,
+          y: circle.center.y
         };
       default:
         return null;
@@ -272,29 +278,33 @@
   function getShapeBoundingBox(shape: Shape): {minX: number, maxX: number, minY: number, maxY: number} {
     switch (shape.type) {
       case 'line':
+        const line = shape.geometry as any;
         return {
-          minX: Math.min(shape.geometry.start.x, shape.geometry.end.x),
-          maxX: Math.max(shape.geometry.start.x, shape.geometry.end.x),
-          minY: Math.min(shape.geometry.start.y, shape.geometry.end.y),
-          maxY: Math.max(shape.geometry.start.y, shape.geometry.end.y)
+          minX: Math.min(line.start.x, line.end.x),
+          maxX: Math.max(line.start.x, line.end.x),
+          minY: Math.min(line.start.y, line.end.y),
+          maxY: Math.max(line.start.y, line.end.y)
         };
       case 'circle':
+        const circle = shape.geometry as any;
         return {
-          minX: shape.geometry.center.x - shape.geometry.radius,
-          maxX: shape.geometry.center.x + shape.geometry.radius,
-          minY: shape.geometry.center.y - shape.geometry.radius,
-          maxY: shape.geometry.center.y + shape.geometry.radius
+          minX: circle.center.x - circle.radius,
+          maxX: circle.center.x + circle.radius,
+          minY: circle.center.y - circle.radius,
+          maxY: circle.center.y + circle.radius
         };
       case 'arc':
+        const arc = shape.geometry as any;
         return {
-          minX: shape.geometry.center.x - shape.geometry.radius,
-          maxX: shape.geometry.center.x + shape.geometry.radius,
-          minY: shape.geometry.center.y - shape.geometry.radius,
-          maxY: shape.geometry.center.y + shape.geometry.radius
+          minX: arc.center.x - arc.radius,
+          maxX: arc.center.x + arc.radius,
+          minY: arc.center.y - arc.radius,
+          maxY: arc.center.y + arc.radius
         };
       case 'polyline':
+        const polyline = shape.geometry as any;
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-        for (const point of shape.geometry.points || []) {
+        for (const point of polyline.points || []) {
           minX = Math.min(minX, point.x);
           maxX = Math.max(maxX, point.x);
           minY = Math.min(minY, point.y);

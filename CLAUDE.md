@@ -146,7 +146,7 @@ The "Tractor Seat Mount - Left.dxf" test file should produce 1 part with 12 hole
 - **Frontend**: Svelte 5 with TypeScript
 - **Styling**: Tailwind CSS
 - **3D Graphics**: Three.js
-- **Geometry Processing**: OpenCascade.js
+- **Geometry Processing**: Custom algorithms
 - **File Processing**: DXF parser, Web Workers
 - **Build Tool**: Vite
 - **Testing**: Vitest (unit tests), Playwright (e2e tests)
@@ -345,39 +345,34 @@ INSERT entities allow DXF files to reference reusable block definitions with tra
 - Add proper error boundaries and fallbacks
 
 #### Performance Considerations
-- Lazy load heavy dependencies (OpenCascade.js, Three.js)
+- Lazy load heavy dependencies (Three.js)
 - Use virtual rendering for large datasets
 - Implement debouncing for real-time operations
 
-### 6. OpenCascade.js Integration
+### 6. Geometric Algorithms
 
-**CRITICAL**: Always favor OpenCascade.js for doing geometry over writing your own code. OpenCascade is very mature and well tested.
+**CRITICAL**: Use well-tested, mathematically sound geometric algorithms. Focus on accuracy and robustness when implementing custom geometric operations.
 
-**NEVER write custom geometric algorithms when OpenCascade.js provides the functionality**. OpenCascade.js is a proven, mature CAD kernel with decades of development and testing behind it. Custom geometric code is prone to edge cases, floating point errors, and mathematical inaccuracies.
+Custom geometric algorithms are used for ALL geometry operations:
+- **Bounding box calculations** - Calculate min/max coordinates from shape geometry
+- **Boolean operations** - Custom intersection, union, and difference algorithms
+- **Containment detection** - Point-in-polygon tests using ray casting or winding number
+- **Offset calculations** - For kerf compensation using custom offsetting algorithms
+- **Complex curve handling** - Splines, NURBS, arcs using mathematical curve definitions
+- **Geometric validation** - Shape analysis and repair using custom validation
+- **Distance calculations** - Point-to-curve, curve-to-curve distance algorithms
+- **Area and volume calculations** - Using geometric integration methods
+- **Point-in-polygon tests** - Ray casting algorithm for containment detection
 
-OpenCascade.js is used for ALL geometry operations:
-- **Bounding box calculations** - Use `Bnd_Box` and `BRepBndLib::Add()`
-- **Boolean operations** - Union, difference, intersection using `BRepAlgoAPI_*`
-- **Containment detection** - Use geometric boolean operations, never bounding box approximations
-- **Offset calculations** - For kerf compensation using `BRepOffsetAPI_MakeOffset`
-- **Complex curve handling** - Splines, NURBS, arcs using `Geom_*` classes
-- **Geometric validation** - Shape analysis and repair
-- **Distance calculations** - Point-to-curve, curve-to-curve distances
-- **Area and volume calculations** - Using `GProp_GProps` and `BRepGProp::*`
-- **Point-in-polygon tests** - Use `BRepClass_FaceClassifier` instead of ray casting
+**Testing Geometric Algorithms**:
+Always unit test geometric operations thoroughly:
 
-**Testing OpenCascade.js in Node.js Environment**:
-Always unit test using the method developed for part detection:
+1. **Edge Cases**: Test with degenerate geometries, zero-area shapes, and boundary conditions
+2. **Accuracy**: Verify numerical precision with known geometric properties
+3. **Performance**: Benchmark with large datasets and complex geometries
+4. **Robustness**: Test with real-world CAD file data
 
-1. **WASM Initialization**: Use `opencascade.js/dist/node.js` for Node.js test environment
-2. **Test Setup**: Create test helper module `src/lib/test-utils/opencascade-setup.ts`
-3. **Environment Detection**: Automatically detect Node.js vs browser and load appropriate WASM version
-4. **Test Coverage**: Ensure geometric operations work correctly in both browser and test environments
-
-**OpenCascade Documentation**:
-OpenCascade.js is a WASM build of OpenCascade C++ with JavaScript bindings. The full OpenCascade C++ library documentation is available at `reference/OCCT/dox`. Consult this documentation when figuring out the OpenCascade.js API, as the JavaScript bindings directly correspond to the C++ API.
-
-When implementing any geometry-related functionality, first check if OpenCascade.js provides a built-in solution before writing custom algorithms.
+When implementing geometric functionality, prioritize mathematical correctness and numerical stability.
 
 ### 7. Three.js Usage
 
@@ -468,15 +463,15 @@ Use feature detection for:
 - Enable Svelte DevTools for component inspection
 - Use `npm run check:watch` during development
 - Test with various DXF files from `test/dxf/`
-- Check console for OpenCascade.js initialization
+- Monitor console for geometric algorithm performance
 
 ## Third-Party Documentation
 
 Documentation for key libraries is available in `.claude/docs/` (when present):
-- OpenCascade.js API reference
 - Three.js examples and guides
 - DXF format specifications
 - LinuxCNC G-code reference
+- Geometric algorithm references
 
 ## Contributing Guidelines
 
@@ -948,17 +943,17 @@ All canvas transformations use `totalScale` which combines:
 
 ### Critical Design Principles
 
-**NEVER USE BOUNDING BOX CONTAINMENT FOR PART DETECTION**
+**USE PROPER GEOMETRIC CONTAINMENT FOR PART DETECTION**
 
-Bounding box containment is fundamentally flawed for determining geometric part/hole relationships:
+Proper geometric containment is essential for determining part/hole relationships:
 
-1. **Size-based assumptions are wrong**: A larger bounding box doesn't mean it contains smaller shapes
-2. **Overlapping rectangles**: Bounding boxes can overlap without true geometric containment
-3. **Complex shapes**: Non-rectangular shapes (circles, arcs, complex polygons) can have misleading bounding boxes
-4. **False positives**: A small shape outside a large shape can have a bounding box that appears "contained"
-5. **Mathematical incorrectness**: Bounding box containment will often cause incorrect part/hole detection results
+1. **Point-in-polygon tests**: Use ray casting or winding number algorithms for accurate containment
+2. **Curve intersection analysis**: Detect when boundaries cross or overlap
+3. **Area-based validation**: Verify containment using geometric area calculations
+4. **Numerical precision**: Handle floating-point errors with appropriate tolerances
+5. **Mathematical correctness**: Ensure algorithms follow established geometric principles
 
-**DO NOT ADD BOUNDING BOX FALLBACK LOGIC TO THE CONTAINMENT DETECTION**. Previous attempts to use bounding box containment as a fallback for geometric operations have consistently caused incorrect results where parts are miscategorized as holes or vice versa.
+**Bounding box checks can be used as a fast preliminary filter** but must always be followed by proper geometric containment verification.
 
 ### Fallback and Simplification Approval Requirement
 
@@ -972,32 +967,42 @@ Bounding box containment is fundamentally flawed for determining geometric part/
 
 The user must review and approve each proposed fallback or simplification to ensure it meets the application's accuracy requirements. Document all approved fallbacks with clear explanations of when and why they are used.
 
-### Correct Approach: Geometric Boolean Operations
+### Correct Approach: Custom Geometric Algorithms
 
-Use OpenCascade.js boolean operations for mathematically sound containment:
+Use custom geometric algorithms for mathematically sound containment:
 
 ```typescript
-// CORRECT: True geometric containment
-const intersection = new openCascade.BRepAlgoAPI_Common_3(innerFace, outerFace);
-const intersectionArea = calculateFaceArea(intersection.Shape());
-const innerArea = calculateFaceArea(innerFace);
-const isContained = Math.abs(innerArea - intersectionArea) / innerArea < 0.05;
+// CORRECT: Point-in-polygon containment test
+function isChainContained(innerChain: ShapeChain, outerChain: ShapeChain): boolean {
+  // Test if all points of inner chain are inside outer chain polygon
+  const innerPoints = extractChainPoints(innerChain);
+  return innerPoints.every(point => isPointInPolygon(point, outerChain));
+}
+
+// Ray casting algorithm for point-in-polygon test
+function isPointInPolygon(point: Point, chain: ShapeChain): boolean {
+  // Implementation using ray casting algorithm
+  // Returns true if point is inside the polygon formed by the chain
+}
 ```
 
 ### Testing Requirements
 
-- **Unit tests MUST use OpenCascade.js**: Set up WASM loading in Node.js test environment
-- **No bounding box fallbacks**: Tests should fail if geometric operations aren't available
+- **Unit tests for geometric algorithms**: Test mathematical correctness and edge cases
+- **Numerical precision validation**: Verify algorithms handle floating-point precision correctly
 - **Verify with complex geometries**: Test overlapping, nested, and edge cases
 
 ### Historical Issues
 
-Previous implementations incorrectly used:
-- Bounding box area comparisons for containment hierarchy
-- Size-based "smallest container" selection
-- Area ratios to determine shells vs holes
+Key requirements for geometric containment:
+- Point-in-polygon tests for accurate containment detection
+- Proper handling of edge cases and numerical precision
+- Mathematical validation of containment relationships
 
-These approaches led to incorrect part detection where holes were classified as parts and vice versa.
+Incorrect approaches to avoid:
+- Bounding box-only containment (insufficient for complex shapes)
+- Size-based assumptions without geometric verification
+- Area ratios without proper containment validation
 
 ## DXF Test Files and Expected Part Detection Results
 
@@ -1034,7 +1039,7 @@ Some DXF files contain multiple layers where one layer represents the part outli
 
 Tests verify:
 1. **Correct part/hole counts** for each file
-2. **Proper geometric containment** using OpenCascade.js boolean operations
+2. **Proper geometric containment** using custom geometric algorithms
 3. **Warning generation** for problematic files
 4. **Layer handling** for multi-layer files (when implemented)
 5. **Chain closure detection** with appropriate tolerances

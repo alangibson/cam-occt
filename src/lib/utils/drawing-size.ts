@@ -7,10 +7,7 @@ export interface DrawingSize {
   source: 'dxf' | 'calculated';
 }
 
-// Dynamic import to avoid SSR issues with OpenCascade.js
-let openCascade: any = null;
-
-export async function calculateDrawingSize(drawing: Drawing | null): Promise<DrawingSize | null> {
+export function calculateDrawingSize(drawing: Drawing | null): DrawingSize | null {
   if (!drawing || drawing.shapes.length === 0) {
     return null;
   }
@@ -35,201 +32,198 @@ export async function calculateDrawingSize(drawing: Drawing | null): Promise<Dra
     };
   }
   
-  // If DXF bounds are invalid, calculate using OpenCascade.js
-  console.warn('DXF bounds are invalid, falling back to OpenCascade.js calculation');
+  // If DXF bounds are invalid, calculate using custom algorithms
+  console.warn('DXF bounds are invalid, falling back to custom bounding box calculation');
   
-  // Initialize OpenCascade.js if not already loaded
-  if (!openCascade) {
-    try {
-      const opencascadeModule = await import('opencascade.js');
-      openCascade = await opencascadeModule.default();
-    } catch (error) {
-      console.error('Failed to load OpenCascade.js:', error);
-      throw new Error('Cannot calculate drawing size: both DXF bounds and OpenCascade.js failed');
-    }
-  }
-
-  const occBounds = await calculateBoundingBoxWithOCC(drawing.shapes);
-  if (!occBounds) {
-    throw new Error('Failed to calculate bounding box with OpenCascade.js');
+  const customBounds = calculateBoundingBoxFromShapes(drawing.shapes);
+  if (!customBounds) {
+    throw new Error('Failed to calculate bounding box from shapes');
   }
 
   return {
-    width: occBounds.width,
-    height: occBounds.height,
+    width: customBounds.width,
+    height: customBounds.height,
     units: drawing.units,
     source: 'calculated'
   };
 }
 
-async function calculateBoundingBoxWithOCC(shapes: Shape[]): Promise<{ width: number; height: number } | null> {
-  if (!openCascade || shapes.length === 0) return null;
+function calculateBoundingBoxFromShapes(shapes: Shape[]): { width: number; height: number } | null {
+  if (shapes.length === 0) return null;
 
-  try {
-    // Create a compound shape from all individual shapes
-    const builder = new openCascade.BRep_Builder();
-    const compound = new openCascade.TopoDS_Compound();
-    builder.MakeCompound(compound);
+  let minX = Infinity;
+  let maxX = -Infinity;
+  let minY = Infinity;
+  let maxY = -Infinity;
 
-    let hasValidShapes = false;
-
-    // Convert each shape to OpenCascade geometry and add to compound
-    for (const shape of shapes) {
-      const occShape = await convertShapeToOCC(shape);
-      if (occShape) {
-        builder.Add(compound, occShape);
-        occShape.delete();
-        hasValidShapes = true;
-      }
+  for (const shape of shapes) {
+    const shapeBounds = getShapeBounds(shape);
+    if (shapeBounds) {
+      minX = Math.min(minX, shapeBounds.min.x);
+      maxX = Math.max(maxX, shapeBounds.max.x);
+      minY = Math.min(minY, shapeBounds.min.y);
+      maxY = Math.max(maxY, shapeBounds.max.y);
     }
+  }
 
-    if (!hasValidShapes) {
-      compound.delete();
-      builder.delete();
-      return null;
-    }
-
-    // Calculate bounding box using OpenCascade.js
-    const boundingBox = new openCascade.Bnd_Box_1();
-    openCascade.BRepBndLib.Add(compound, boundingBox, false);
-
-    // Extract bounds
-    const corner1 = boundingBox.CornerMin();
-    const corner2 = boundingBox.CornerMax();
-    
-    const width = Math.abs(corner2.X() - corner1.X());
-    const height = Math.abs(corner2.Y() - corner1.Y());
-
-    // Clean up
-    compound.delete();
-    boundingBox.delete();
-    corner1.delete();
-    corner2.delete();
-    builder.delete();
-
-    return { width, height };
-  } catch (error) {
-    console.error('Error in OpenCascade.js bounding box calculation:', error);
+  if (!isFinite(minX) || !isFinite(maxX) || !isFinite(minY) || !isFinite(maxY)) {
     return null;
   }
+
+  return {
+    width: Math.abs(maxX - minX),
+    height: Math.abs(maxY - minY)
+  };
 }
 
-async function convertShapeToOCC(shape: Shape): Promise<any> {
-  if (!openCascade) return null;
-
-  try {
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        if (!line.start || !line.end || !isFinite(line.start.x) || !isFinite(line.start.y) || 
-            !isFinite(line.end.x) || !isFinite(line.end.y)) {
-          return null;
+function getShapeBounds(shape: Shape): { min: { x: number; y: number }; max: { x: number; y: number } } | null {
+  switch (shape.type) {
+    case 'line':
+      const line = shape.geometry as any;
+      if (!line.start || !line.end || !isFinite(line.start.x) || !isFinite(line.start.y) || 
+          !isFinite(line.end.x) || !isFinite(line.end.y)) {
+        return null;
+      }
+      
+      return {
+        min: {
+          x: Math.min(line.start.x, line.end.x),
+          y: Math.min(line.start.y, line.end.y)
+        },
+        max: {
+          x: Math.max(line.start.x, line.end.x),
+          y: Math.max(line.start.y, line.end.y)
         }
-        
-        const p1 = new openCascade.gp_Pnt_3(line.start.x, line.start.y, 0);
-        const p2 = new openCascade.gp_Pnt_3(line.end.x, line.end.y, 0);
-        const lineGeom = new openCascade.GC_MakeSegment_1(p1, p2);
-        const edge = new openCascade.BRepBuilderAPI_MakeEdge_24(lineGeom.Value().get());
-        
-        p1.delete();
-        p2.delete();
-        lineGeom.delete();
-        
-        return edge.Edge();
+      };
 
-      case 'circle':
-        const circle = shape.geometry as any;
-        if (!circle.center || !isFinite(circle.center.x) || !isFinite(circle.center.y) || 
-            !isFinite(circle.radius) || circle.radius <= 0) {
-          return null;
+    case 'circle':
+      const circle = shape.geometry as any;
+      if (!circle.center || !isFinite(circle.center.x) || !isFinite(circle.center.y) || 
+          !isFinite(circle.radius) || circle.radius <= 0) {
+        return null;
+      }
+      
+      return {
+        min: {
+          x: circle.center.x - circle.radius,
+          y: circle.center.y - circle.radius
+        },
+        max: {
+          x: circle.center.x + circle.radius,
+          y: circle.center.y + circle.radius
         }
-        
-        const center = new openCascade.gp_Pnt_3(circle.center.x, circle.center.y, 0);
-        const normal = new openCascade.gp_Dir_4(0, 0, 1);
-        const axis = new openCascade.gp_Ax2_3(center, normal);
-        const circleGeom = new openCascade.gp_Circ_2(axis, circle.radius);
-        const circleEdge = new openCascade.BRepBuilderAPI_MakeEdge_8(circleGeom);
-        
-        center.delete();
-        normal.delete();
-        axis.delete();
-        circleGeom.delete();
-        
-        return circleEdge.Edge();
+      };
 
-      case 'arc':
-        const arc = shape.geometry as any;
-        if (!arc.center || !isFinite(arc.center.x) || !isFinite(arc.center.y) || 
-            !isFinite(arc.radius) || arc.radius <= 0 ||
-            !isFinite(arc.startAngle) || !isFinite(arc.endAngle)) {
-          return null;
-        }
-        
-        const arcCenter = new openCascade.gp_Pnt_3(arc.center.x, arc.center.y, 0);
-        const arcNormal = new openCascade.gp_Dir_4(0, 0, 1);
-        const arcAxis = new openCascade.gp_Ax2_3(arcCenter, arcNormal);
-        const arcCircle = new openCascade.gp_Circ_2(arcAxis, arc.radius);
-        
-        const startParam = arc.startAngle;
-        const endParam = arc.endAngle;
-        const arcEdge = new openCascade.BRepBuilderAPI_MakeEdge_9(arcCircle, startParam, endParam);
-        
-        arcCenter.delete();
-        arcNormal.delete();
-        arcAxis.delete();
-        arcCircle.delete();
-        
-        return arcEdge.Edge();
-
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        if (!polyline.points || polyline.points.length < 2) return null;
-
-        // Validate all points are finite
-        for (const point of polyline.points) {
-          if (!point || !isFinite(point.x) || !isFinite(point.y)) {
-            return null;
+    case 'arc':
+      const arc = shape.geometry as any;
+      if (!arc.center || !isFinite(arc.center.x) || !isFinite(arc.center.y) || 
+          !isFinite(arc.radius) || arc.radius <= 0 ||
+          !isFinite(arc.startAngle) || !isFinite(arc.endAngle)) {
+        return null;
+      }
+      
+      // For arcs, we need to check the arc endpoints and any quadrant crossings
+      const startAngle = arc.startAngle;
+      const endAngle = arc.endAngle;
+      
+      // Calculate start and end points
+      const startX = arc.center.x + arc.radius * Math.cos(startAngle);
+      const startY = arc.center.y + arc.radius * Math.sin(startAngle);
+      const endX = arc.center.x + arc.radius * Math.cos(endAngle);
+      const endY = arc.center.y + arc.radius * Math.sin(endAngle);
+      
+      let minX = Math.min(startX, endX);
+      let maxX = Math.max(startX, endX);
+      let minY = Math.min(startY, endY);
+      let maxY = Math.max(startY, endY);
+      
+      // Check if arc crosses major axes (0°, 90°, 180°, 270°)
+      const normalizeAngle = (angle: number) => {
+        while (angle < 0) angle += 2 * Math.PI;
+        while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
+        return angle;
+      };
+      
+      const normStart = normalizeAngle(startAngle);
+      const normEnd = normalizeAngle(endAngle);
+      
+      const checkAngle = (testAngle: number, pointX: number, pointY: number) => {
+        if (arc.clockwise) {
+          // For clockwise arcs, check if testAngle is between start and end going clockwise
+          if (normStart > normEnd) {
+            if (testAngle <= normStart && testAngle >= normEnd) {
+              minX = Math.min(minX, pointX);
+              maxX = Math.max(maxX, pointX);
+              minY = Math.min(minY, pointY);
+              maxY = Math.max(maxY, pointY);
+            }
+          } else {
+            if (testAngle <= normStart || testAngle >= normEnd) {
+              minX = Math.min(minX, pointX);
+              maxX = Math.max(maxX, pointX);
+              minY = Math.min(minY, pointY);
+              maxY = Math.max(maxY, pointY);
+            }
+          }
+        } else {
+          // For counter-clockwise arcs
+          if (normStart < normEnd) {
+            if (testAngle >= normStart && testAngle <= normEnd) {
+              minX = Math.min(minX, pointX);
+              maxX = Math.max(maxX, pointX);
+              minY = Math.min(minY, pointY);
+              maxY = Math.max(maxY, pointY);
+            }
+          } else {
+            if (testAngle >= normStart || testAngle <= normEnd) {
+              minX = Math.min(minX, pointX);
+              maxX = Math.max(maxX, pointX);
+              minY = Math.min(minY, pointY);
+              maxY = Math.max(maxY, pointY);
+            }
           }
         }
+      };
+      
+      // Check 0° (right)
+      checkAngle(0, arc.center.x + arc.radius, arc.center.y);
+      // Check 90° (top)
+      checkAngle(Math.PI / 2, arc.center.x, arc.center.y + arc.radius);
+      // Check 180° (left)
+      checkAngle(Math.PI, arc.center.x - arc.radius, arc.center.y);
+      // Check 270° (bottom)
+      checkAngle(3 * Math.PI / 2, arc.center.x, arc.center.y - arc.radius);
+      
+      return { min: { x: minX, y: minY }, max: { x: maxX, y: maxY } };
 
-        const wireBuilder = new openCascade.BRepBuilderAPI_MakeWire_1();
-        
-        for (let i = 0; i < polyline.points.length - 1; i++) {
-          const pt1 = new openCascade.gp_Pnt_3(polyline.points[i].x, polyline.points[i].y, 0);
-          const pt2 = new openCascade.gp_Pnt_3(polyline.points[i + 1].x, polyline.points[i + 1].y, 0);
-          const segment = new openCascade.GC_MakeSegment_1(pt1, pt2);
-          const edge = new openCascade.BRepBuilderAPI_MakeEdge_24(segment.Value().get());
-          
-          wireBuilder.Add_1(edge.Edge());
-          
-          pt1.delete();
-          pt2.delete();
-          segment.delete();
-          edge.delete();
+    case 'polyline':
+      const polyline = shape.geometry as any;
+      if (!polyline.points || polyline.points.length === 0) return null;
+
+      let polyMinX = Infinity;
+      let polyMaxX = -Infinity;
+      let polyMinY = Infinity;
+      let polyMaxY = -Infinity;
+
+      for (const point of polyline.points) {
+        if (point && isFinite(point.x) && isFinite(point.y)) {
+          polyMinX = Math.min(polyMinX, point.x);
+          polyMaxX = Math.max(polyMaxX, point.x);
+          polyMinY = Math.min(polyMinY, point.y);
+          polyMaxY = Math.max(polyMaxY, point.y);
         }
+      }
 
-        // Close the wire if needed
-        if (polyline.closed && polyline.points.length > 2) {
-          const firstPt = new openCascade.gp_Pnt_3(polyline.points[polyline.points.length - 1].x, polyline.points[polyline.points.length - 1].y, 0);
-          const lastPt = new openCascade.gp_Pnt_3(polyline.points[0].x, polyline.points[0].y, 0);
-          const closingSegment = new openCascade.GC_MakeSegment_1(firstPt, lastPt);
-          const closingEdge = new openCascade.BRepBuilderAPI_MakeEdge_24(closingSegment.Value().get());
-          
-          wireBuilder.Add_1(closingEdge.Edge());
-          
-          firstPt.delete();
-          lastPt.delete();
-          closingSegment.delete();
-          closingEdge.delete();
-        }
-
-        return wireBuilder.Wire();
-
-      default:
+      if (!isFinite(polyMinX) || !isFinite(polyMaxX) || !isFinite(polyMinY) || !isFinite(polyMaxY)) {
         return null;
-    }
-  } catch (error) {
-    console.warn(`Error converting ${shape.type} to OpenCascade shape:`, error);
-    return null;
+      }
+
+      return {
+        min: { x: polyMinX, y: polyMinY },
+        max: { x: polyMaxX, y: polyMaxY }
+      };
+
+    default:
+      return null;
   }
 }

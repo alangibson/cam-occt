@@ -51,7 +51,7 @@ describe('Debug Containment Detection After Normalization', () => {
           console.log(`  -> This explains why ${circleChain.id} is not detected as a hole`);
         }
       } catch (error) {
-        console.log(`ERROR: ${error.message}`);
+        console.log(`ERROR: ${(error as Error).message}`);
         console.log(`  -> Geometric containment failed, this explains the missing hole`);
       }
     }
@@ -75,7 +75,7 @@ describe('Debug Containment Detection After Normalization', () => {
           console.log(`  -> This explains why ${letterChain.id} is not detected as a hole`);
         }
       } catch (error) {
-        console.log(`ERROR: ${error.message}`);
+        console.log(`ERROR: ${(error as Error).message}`);
         console.log(`  -> Geometric containment failed for ${letterChain.id}`);
       }
     }

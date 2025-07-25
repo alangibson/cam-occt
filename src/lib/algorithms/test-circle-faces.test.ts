@@ -59,7 +59,7 @@ describe('Test Circle Face Creation and Containment', () => {
         }
         
       } catch (error) {
-        console.log(`  ERROR: ${error.message}`);
+        console.log(`  ERROR: ${(error as Error).message}`);
         failedContainments++;
       }
     }

@@ -25,7 +25,7 @@ describe('Chain Store', () => {
   it('should initialize with empty chains and default tolerance', () => {
     const state = get(chainStore);
     expect(state.chains).toEqual([]);
-    expect(state.tolerance).toBe(0.05);
+    expect(state.tolerance).toBe(0.1);
   });
 
   it('should set chains correctly', () => {

@@ -29,9 +29,9 @@ describe('Tractor Seat Mount Debug Analysis', () => {
       console.log(`   Total shapes: ${parsed.shapes.length}`);
 
       // Analyze layers
-      const layerStats = {};
+      const layerStats: Record<string, number> = {};
       parsed.shapes.forEach(shape => {
-        const layer = shape.layer || 'NO_LAYER';
+        const layer = (shape as any).layer || 'NO_LAYER';
         layerStats[layer] = (layerStats[layer] || 0) + 1;
       });
 
@@ -41,7 +41,7 @@ describe('Tractor Seat Mount Debug Analysis', () => {
       });
 
       // Analyze shape types
-      const shapeStats = {};
+      const shapeStats: Record<string, number> = {};
       parsed.shapes.forEach(shape => {
         shapeStats[shape.type] = (shapeStats[shape.type] || 0) + 1;
       });

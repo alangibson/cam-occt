@@ -42,7 +42,6 @@
   },
   "dependencies": {
     "dxf": "^4.6.1",
-    "opencascade.js": "beta",
     "three": "^0.169.0"
   }
 }
