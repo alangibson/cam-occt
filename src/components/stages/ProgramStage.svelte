@@ -9,9 +9,13 @@
   import { detectShapeChains } from '../../lib/algorithms/chain-detection';
   import { detectParts, type PartDetectionWarning } from '../../lib/algorithms/part-detection';
   import { analyzeChainTraversal, normalizeChain } from '../../lib/algorithms/chain-normalization';
+  import { tessellationStore, type TessellationPoint } from '../../lib/stores/tessellation';
+  import { tessellateShape } from '../../lib/utils/tessellation';
   import type { CuttingParameters as CuttingParametersType, Shape } from '../../types';
   import type { ShapeChain } from '../../lib/algorithms/chain-detection';
   import type { ChainNormalizationResult } from '../../lib/algorithms/chain-normalization';
+  import type { AlgorithmParameters } from '../../types/algorithm-parameters';
+  import { DEFAULT_ALGORITHM_PARAMETERS } from '../../types/algorithm-parameters';
 
   let cuttingParameters: CuttingParametersType = {
     feedRate: 1000,
@@ -28,6 +32,15 @@
   let isDetectingChains = false;
   let isDetectingParts = false;
   let isNormalizing = false;
+  let isTessellating = false;
+
+  // Algorithm parameters
+  let algorithmParams: AlgorithmParameters = { ...DEFAULT_ALGORITHM_PARAMETERS };
+  
+  // Keep tolerance input synchronized with chain detection parameters
+  $: {
+    algorithmParams.chainDetection.tolerance = tolerance;
+  }
   
   // Reactive chain and part data
   $: detectedChains = $chainStore.chains;
@@ -43,10 +56,13 @@
   $: selectedChain = selectedChainId ? detectedChains.find(chain => chain.id === selectedChainId) : null;
   $: selectedChainAnalysis = selectedChainId ? chainNormalizationResults.find(result => result.chainId === selectedChainId) : null;
   
+  // Tessellation state
+  $: tessellationActive = $tessellationStore.isActive;
+  
   // Auto-analyze chains for traversal issues when chains change
   $: {
     if (detectedChains.length > 0) {
-      chainNormalizationResults = analyzeChainTraversal(detectedChains);
+      chainNormalizationResults = analyzeChainTraversal(detectedChains, algorithmParams.chainNormalization);
     } else {
       chainNormalizationResults = [];
       selectChain(null);
@@ -111,7 +127,7 @@
     
     try {
       // Normalize all chains
-      const normalizedChains = detectedChains.map(chain => normalizeChain(chain));
+      const normalizedChains = detectedChains.map(chain => normalizeChain(chain, algorithmParams.chainNormalization));
       
       // Flatten normalized chains back to shapes
       const normalizedShapes = normalizedChains.flatMap(chain => chain.shapes);
@@ -132,6 +148,50 @@
     }
   }
 
+  async function handleTessellateChains() {
+    if (detectedChains.length === 0) {
+      console.warn('No chains detected. Please detect chains first.');
+      return;
+    }
+    
+    isTessellating = true;
+    
+    try {
+      if (tessellationActive) {
+        // Clear existing tessellation
+        tessellationStore.clearTessellation();
+      } else {
+        // Generate tessellation points
+        const tessellationPoints: TessellationPoint[] = [];
+        
+        for (const chain of detectedChains) {
+          for (let shapeIndex = 0; shapeIndex < chain.shapes.length; shapeIndex++) {
+            const shape = chain.shapes[shapeIndex];
+            const shapePoints = tessellateShape(shape, algorithmParams.partDetection);
+            
+            for (let pointIndex = 0; pointIndex < shapePoints.length; pointIndex++) {
+              const point = shapePoints[pointIndex];
+              tessellationPoints.push({
+                x: point.x,
+                y: point.y,
+                chainId: chain.id,
+                shapeIndex,
+                pointIndex
+              });
+            }
+          }
+        }
+        
+        tessellationStore.setTessellation(tessellationPoints);
+        console.log(`Generated ${tessellationPoints.length} tessellation points for ${detectedChains.length} chains`);
+      }
+    } catch (error) {
+      console.error('Error tessellating chains:', error);
+    } finally {
+      isTessellating = false;
+    }
+  }
+  
   async function handleDetectParts() {
     if (detectedChains.length === 0) {
       console.warn('No chains detected. Please detect chains first.');
@@ -160,7 +220,7 @@
         }
       }
       
-      const partResult = await detectParts(detectedChains, tolerance);
+      const partResult = await detectParts(detectedChains, tolerance, algorithmParams.partDetection);
       
       // Combine open chain warnings with part detection warnings
       const allWarnings = [...openChainWarnings, ...partResult.warnings];
@@ -437,6 +497,8 @@
       selectChain(chainId);
     }
   }
+  
+  // Tessellation is now handled by the imported tessellateShape function
 
   // Auto-complete program stage (user can adjust parameters and continue)
   workflowStore.completeStage('program');
@@ -572,6 +634,14 @@
             </button>
             
             <button 
+              class="tessellate-button"
+              on:click={handleTessellateChains}
+              disabled={isTessellating || detectedChains.length === 0}
+            >
+              {isTessellating ? 'Tessellating...' : tessellationActive ? 'Clear Tessellation' : 'Tessellate Chains'}
+            </button>
+            
+            <button 
               class="detect-parts-button"
               on:click={handleDetectParts}
               disabled={isDetectingParts || detectedChains.length === 0}
@@ -579,6 +649,7 @@
               {isDetectingParts ? 'Detecting...' : 'Detect Parts'}
             </button>
           </div>
+          
 
           {#if detectedChains.length > 0 || detectedParts.length > 0}
             <div class="toolbar-results">
@@ -706,6 +777,157 @@
           </div>
         </div>
       {/if}
+
+      <!-- Algorithm Parameters -->
+      <div class="panel algorithm-params-panel">
+        <h3 class="panel-title">Algorithm Parameters</h3>
+        
+        <!-- Chain Detection Parameters -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">Chain Detection</summary>
+          <div class="param-group-content">
+            <label class="param-label">
+              Connection Tolerance:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.chainDetection.tolerance} 
+                min="0.001" 
+                max="10" 
+                step="0.001"
+                class="param-input"
+                title="Distance tolerance for connecting shapes into chains."
+              />
+              <div class="param-description">
+                Maximum distance between shape endpoints to be considered connected. 
+                Higher values will connect shapes that are further apart, potentially creating longer chains. 
+                Lower values require more precise endpoint alignment.
+              </div>
+            </label>
+          </div>
+        </details>
+
+        <!-- Chain Normalization Parameters -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">Chain Normalization</summary>
+          <div class="param-group-content">
+            <label class="param-label">
+              Traversal Tolerance:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.chainNormalization.traversalTolerance} 
+                min="0.001" 
+                max="1.0" 
+                step="0.001"
+                class="param-input"
+                title="Tolerance for floating point comparison in traversal analysis."
+              />
+              <div class="param-description">
+                Precision tolerance for checking if shape endpoints align during chain traversal analysis. 
+                Smaller values require more precise alignment between consecutive shapes. 
+                Used to determine if chains can be traversed end-to-start without gaps.
+              </div>
+            </label>
+            
+            <label class="param-label">
+              Max Traversal Attempts:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.chainNormalization.maxTraversalAttempts} 
+                min="1" 
+                max="10" 
+                step="1"
+                class="param-input"
+                title="Maximum number of traversal attempts per chain."
+              />
+              <div class="param-description">
+                Limits how many different starting points the algorithm tries when analyzing chain traversal. 
+                Higher values are more thorough but slower for complex chains. 
+                Lower values improve performance but may miss valid traversal paths.
+              </div>
+            </label>
+          </div>
+        </details>
+
+        <!-- Part Detection Parameters -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">Part Detection</summary>
+          <div class="param-group-content">
+            <div class="param-grid">
+              <label class="param-label">
+                Circle Points:
+                <input 
+                  type="number" 
+                  bind:value={algorithmParams.partDetection.circleTessellationPoints} 
+                  min="8" 
+                  max="128" 
+                  step="1"
+                  class="param-input"
+                  title="Number of points to tessellate circles into. Higher = better precision but slower."
+                />
+                <div class="param-description">
+                  Number of straight line segments used to approximate circles for geometric operations. 
+                  Higher values provide better accuracy for containment detection but slower performance. 
+                  Increase for complex files with precision issues.
+                </div>
+              </label>
+              
+              <label class="param-label">
+                Min Arc Points:
+                <input 
+                  type="number" 
+                  bind:value={algorithmParams.partDetection.minArcTessellationPoints} 
+                  min="4" 
+                  max="64" 
+                  step="1"
+                  class="param-input"
+                  title="Minimum number of points for arc tessellation."
+                />
+                <div class="param-description">
+                  Minimum number of points for arc tessellation, regardless of arc length. 
+                  Ensures even very small arcs have adequate geometric representation. 
+                  Higher values improve precision for tiny arc segments.
+                </div>
+              </label>
+              
+              <label class="param-label">
+                Arc Precision:
+                <input 
+                  type="number" 
+                  bind:value={algorithmParams.partDetection.arcTessellationDensity} 
+                  min="0.01" 
+                  max="0.5" 
+                  step="0.01"
+                  class="param-input"
+                  title="Arc tessellation density factor. Smaller = more points."
+                />
+                <div class="param-description">
+                  Controls how finely arcs are divided into line segments (radians per point). 
+                  Smaller values create more points and better precision. 
+                  Larger values use fewer points for faster processing but less accuracy.
+                </div>
+              </label>
+              
+              <label class="param-label">
+                Decimal Precision:
+                <input 
+                  type="number" 
+                  bind:value={algorithmParams.partDetection.decimalPrecision} 
+                  min="1" 
+                  max="6" 
+                  step="1"
+                  class="param-input"
+                  title="Decimal precision for coordinate rounding."
+                />
+                <div class="param-description">
+                  Number of decimal places for coordinate rounding to avoid floating-point errors. 
+                  Higher values preserve more precision but may cause numerical instability. 
+                  Lower values improve robustness but may lose fine geometric details.
+                </div>
+              </label>
+            </div>
+          </div>
+        </details>
+      </div>
 
       
       <!-- Hidden for now -->
@@ -943,6 +1165,27 @@
   }
 
   .normalize-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  .tessellate-button {
+    padding: 0.75rem 1rem;
+    background-color: #8b5cf6;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+  }
+
+  .tessellate-button:hover:not(:disabled) {
+    background-color: #7c3aed;
+  }
+
+  .tessellate-button:disabled {
     background-color: #9ca3af;
     cursor: not-allowed;
   }
@@ -1358,5 +1601,88 @@
     font-size: 0.75rem;
     color: #6b7280;
     line-height: 1.4;
+  }
+
+  /* Algorithm parameters styles */
+  .algorithm-params-panel {
+    border-left: 4px solid #8b5cf6;
+  }
+
+  .algorithm-params-panel .panel-title {
+    color: #8b5cf6;
+  }
+
+  .param-group-details {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.375rem;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+  }
+
+  .param-group-details:last-child {
+    margin-bottom: 0;
+  }
+
+  .param-group-summary {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+    background-color: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s ease;
+  }
+
+  .param-group-summary:hover {
+    background-color: #e2e8f0;
+  }
+
+  .param-group-content {
+    padding: 0.75rem;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .param-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .param-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .param-input {
+    padding: 0.375rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    background-color: white;
+    transition: border-color 0.2s ease;
+    width: 100%;
+  }
+
+  .param-input:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+  }
+
+  .param-description {
+    font-size: 0.7rem;
+    color: #6b7280;
+    line-height: 1.3;
+    margin-top: 0.25rem;
+    font-style: italic;
   }
 </style>

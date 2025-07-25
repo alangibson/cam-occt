@@ -1,4 +1,6 @@
 import type { Shape, Point2D } from '../../types';
+import type { ChainDetectionParameters } from '../../types/algorithm-parameters';
+import { DEFAULT_CHAIN_DETECTION_PARAMETERS } from '../../types/algorithm-parameters';
 
 export interface ChainDetectionOptions {
   tolerance: number;

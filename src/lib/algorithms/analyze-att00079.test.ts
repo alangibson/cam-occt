@@ -9,7 +9,8 @@ import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { Shape, ShapeChain } from '../../types';
+import type { Shape } from '../../types';
+import type { ShapeChain } from './chain-detection';
 
 const problematicChains = ['chain-34', 'chain-65', 'chain-70', 'chain-85', 'chain-90'];
 

@@ -7,6 +7,8 @@ import { GeometryFactory, Coordinate } from 'jsts/org/locationtech/jts/geom';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import type { ShapeChain } from '../algorithms/chain-detection';
 import type { Point2D, Shape } from '../../types';
+import type { PartDetectionParameters } from '../../types/part-detection';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../types/part-detection';
 
 // Import bounding box calculation from part detection
 interface BoundingBox {
@@ -86,8 +88,6 @@ function getShapeBoundingBox(shape: Shape): BoundingBox {
   }
 }
 
-const DECIMAL_PRECISION = 3;
-
 /**
  * Round number to specified decimal places to avoid floating point errors
  */
@@ -96,139 +96,25 @@ function roundToDecimalPlaces(value: number, places: number): number {
   return Math.round(value * factor) / factor;
 }
 
+// Import the corrected tessellation function
+import { tessellateShape as tessellateShapeCorrect } from './tessellation';
+
 /**
  * Convert a shape to a series of points (tessellation)
+ * Now uses the corrected tessellation implementation
  */
-function tessellateShape(shape: Shape): Point2D[] {
-  const points: Point2D[] = [];
-  
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      points.push(line.start, line.end);
-      break;
-      
-    case 'circle':
-      const circle = shape.geometry as any;
-      // Tessellate circle with 64 points for better precision
-      const numPoints = 64;
-      for (let i = 0; i < numPoints; i++) {
-        const angle = (i / numPoints) * 2 * Math.PI;
-        points.push({
-          x: circle.center.x + circle.radius * Math.cos(angle),
-          y: circle.center.y + circle.radius * Math.sin(angle)
-        });
-      }
-      break;
-      
-    case 'arc':
-      const arc = shape.geometry as any;
-      // Tessellate arc with proportional points
-      let startAngle = arc.startAngle;
-      let endAngle = arc.endAngle;
-      
-      // Handle clockwise arcs
-      if (arc.clockwise && startAngle > endAngle) {
-        endAngle += 2 * Math.PI;
-      } else if (!arc.clockwise && endAngle > startAngle) {
-        startAngle += 2 * Math.PI;
-      }
-      
-      const arcSpan = Math.abs(endAngle - startAngle);
-      const numArcPoints = Math.max(16, Math.round(arcSpan / (Math.PI / 32)));
-      
-      for (let i = 0; i <= numArcPoints; i++) {
-        const t = i / numArcPoints;
-        const angle = arc.clockwise ? 
-          startAngle - t * arcSpan : 
-          startAngle + t * arcSpan;
-        points.push({
-          x: arc.center.x + arc.radius * Math.cos(angle),
-          y: arc.center.y + arc.radius * Math.sin(angle)
-        });
-      }
-      break;
-      
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      if (polyline.vertices && polyline.vertices.length > 0) {
-        // Use vertices if available (may have bulge data)
-        polyline.vertices.forEach((vertex: any) => {
-          points.push({ x: vertex.x, y: vertex.y });
-        });
-      } else if (polyline.points && polyline.points.length > 0) {
-        // Fallback to points
-        points.push(...polyline.points);
-      }
-      break;
-      
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      const majorAxisLength = Math.sqrt(
-        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-        ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-      );
-      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-      const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
-      
-      const isArc = typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number';
-      
-      if (isArc) {
-        // Tessellate ellipse arc
-        let startParam = ellipse.startParam;
-        let endParam = ellipse.endParam;
-        if (endParam < startParam) endParam += 2 * Math.PI;
-        
-        const paramSpan = endParam - startParam;
-        const numEllipsePoints = Math.max(8, Math.round(paramSpan / (Math.PI / 16)));
-        
-        for (let i = 0; i <= numEllipsePoints; i++) {
-          const t = i / numEllipsePoints;
-          const param = startParam + t * paramSpan;
-          
-          const x = majorAxisLength * Math.cos(param);
-          const y = minorAxisLength * Math.sin(param);
-          
-          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
-          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
-          
-          points.push({
-            x: ellipse.center.x + rotatedX,
-            y: ellipse.center.y + rotatedY
-          });
-        }
-      } else {
-        // Tessellate full ellipse
-        const numEllipsePoints = 32;
-        for (let i = 0; i < numEllipsePoints; i++) {
-          const param = (i / numEllipsePoints) * 2 * Math.PI;
-          
-          const x = majorAxisLength * Math.cos(param);
-          const y = minorAxisLength * Math.sin(param);
-          
-          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
-          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
-          
-          points.push({
-            x: ellipse.center.x + rotatedX,
-            y: ellipse.center.y + rotatedY
-          });
-        }
-      }
-      break;
-  }
-  
-  return points;
+function tessellateShape(shape: Shape, params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS): Point2D[] {
+  return tessellateShapeCorrect(shape, params);
 }
 
 /**
  * Convert a chain to a series of points by tessellating all shapes
  */
-function tessellateChain(chain: ShapeChain): Point2D[] {
+function tessellateChain(chain: ShapeChain, params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS): Point2D[] {
   const points: Point2D[] = [];
   
   for (const shape of chain.shapes) {
-    const shapePoints = tessellateShape(shape);
+    const shapePoints = tessellateShape(shape, params);
     points.push(...shapePoints);
   }
   
@@ -325,10 +211,10 @@ function getShapeEndPoint(shape: any): Point2D | null {
 /**
  * Calculate the area of a closed chain using JSTS
  */
-function calculateChainArea(chain: ShapeChain, tolerance: number = 0.01): number {
+function calculateChainArea(chain: ShapeChain, tolerance: number = 0.01, params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS): number {
   if (!isChainClosed(chain, tolerance)) return 0; // Only closed chains have area
   
-  const points = tessellateChain(chain);
+  const points = tessellateChain(chain, params);
   if (points.length < 3) return 0;
   
   const geometryFactory = new GeometryFactory();
@@ -336,8 +222,8 @@ function calculateChainArea(chain: ShapeChain, tolerance: number = 0.01): number
   try {
     // Convert points to JSTS coordinates with precision rounding
     const coords = points.map(p => new Coordinate(
-      roundToDecimalPlaces(p.x, DECIMAL_PRECISION),
-      roundToDecimalPlaces(p.y, DECIMAL_PRECISION)
+      roundToDecimalPlaces(p.x, params.decimalPrecision),
+      roundToDecimalPlaces(p.y, params.decimalPrecision)
     ));
     
     // Ensure the ring is closed
@@ -359,7 +245,7 @@ function calculateChainArea(chain: ShapeChain, tolerance: number = 0.01): number
  * Check if one closed chain contains another using JSTS geometric operations
  * Based on MetalHeadCAM implementation
  */
-export function isChainContainedInChain(innerChain: ShapeChain, outerChain: ShapeChain, tolerance: number): boolean {
+export function isChainContainedInChain(innerChain: ShapeChain, outerChain: ShapeChain, tolerance: number, params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS): boolean {
   // Only closed chains can contain other chains
   if (!isChainClosed(outerChain, tolerance)) {
     return false;
@@ -369,10 +255,10 @@ export function isChainContainedInChain(innerChain: ShapeChain, outerChain: Shap
   
   try {
     // Convert outer chain to JSTS polygon
-    const outerPoints = tessellateChain(outerChain);
+    const outerPoints = tessellateChain(outerChain, params);
     const outerCoords = outerPoints.map(p => new Coordinate(
-      roundToDecimalPlaces(p.x, DECIMAL_PRECISION),
-      roundToDecimalPlaces(p.y, DECIMAL_PRECISION)
+      roundToDecimalPlaces(p.x, params.decimalPrecision),
+      roundToDecimalPlaces(p.y, params.decimalPrecision)
     ));
     
     // Remove duplicate consecutive coordinates (this can cause JSTS to fail)
@@ -400,10 +286,10 @@ export function isChainContainedInChain(innerChain: ShapeChain, outerChain: Shap
     const outerPolygon = geometryFactory.createPolygon(outerLinearRing);
     
     // Convert inner chain to JSTS geometry
-    const innerPoints = tessellateChain(innerChain);
+    const innerPoints = tessellateChain(innerChain, params);
     const innerCoords = innerPoints.map(p => new Coordinate(
-      roundToDecimalPlaces(p.x, DECIMAL_PRECISION),
-      roundToDecimalPlaces(p.y, DECIMAL_PRECISION)
+      roundToDecimalPlaces(p.x, params.decimalPrecision),
+      roundToDecimalPlaces(p.y, params.decimalPrecision)
     ));
     
     
@@ -485,7 +371,7 @@ export function isChainContainedInChain(innerChain: ShapeChain, outerChain: Shap
  * Build containment hierarchy using area-based sorting and smallest-container selection
  * Based on MetalHeadCAM cut nesting algorithm
  */
-export function buildContainmentHierarchy(chains: ShapeChain[], tolerance: number): Map<string, string> {
+export function buildContainmentHierarchy(chains: ShapeChain[], tolerance: number, params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS): Map<string, string> {
   const containmentMap = new Map<string, string>(); // child -> parent
   
   // Only work with closed chains (only they can contain others)
@@ -496,7 +382,7 @@ export function buildContainmentHierarchy(chains: ShapeChain[], tolerance: numbe
   // Calculate areas and sort by area (largest first) 
   const chainsWithArea = closedChains.map(chain => ({
     chain,
-    area: calculateChainArea(chain, tolerance),
+    area: calculateChainArea(chain, tolerance, params),
     boundingBox: calculateChainBoundingBox(chain)
   })).sort((a, b) => b.area - a.area); // Largest first
   
@@ -514,7 +400,7 @@ export function buildContainmentHierarchy(chains: ShapeChain[], tolerance: numbe
       if (potential.area <= current.area) continue;
       
       // Do full geometric containment check
-      let isContained = isChainContainedInChain(current.chain, potential.chain, tolerance);
+      let isContained = isChainContainedInChain(current.chain, potential.chain, tolerance, params);
       
       // ATT00079.dxf specific fix: Handle rounded rectangles (line-arc-line-arc pattern)
       // These small rounded rectangles are consistently failing JSTS geometric containment

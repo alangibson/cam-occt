@@ -3,6 +3,7 @@
   import { drawingStore } from '../lib/stores/drawing';
   import { chainStore } from '../lib/stores/chains';
   import { partStore } from '../lib/stores/parts';
+  import { tessellationStore } from '../lib/stores/tessellation';
   import { getShapeChainId, getChainShapeIds, getSelectedChainShapeIds } from '../lib/stores/chains';
   import { getChainPartType, getPartChainIds } from '../lib/stores/parts';
   import type { Shape, Point2D } from '../types';
@@ -29,6 +30,7 @@
   $: selectedChainId = $chainStore.selectedChainId;
   $: parts = $partStore.parts;
   $: highlightedPartId = $partStore.highlightedPartId;
+  $: tessellationState = $tessellationStore;
   
   // Get chain IDs that belong to the highlighted part
   $: highlightedChainIds = highlightedPartId ? getPartChainIds(highlightedPartId, parts) : [];
@@ -39,6 +41,9 @@
   // Calculate physical scale factor for proper unit display
   $: physicalScale = drawing ? getPhysicalScaleFactor(drawing.units, displayUnit) : 1;
   $: totalScale = scale * physicalScale;
+  
+  // Re-render when tessellation state changes
+  $: if (tessellationState) render();
   
   onMount(() => {
     ctx = canvas.getContext('2d')!;
@@ -100,6 +105,11 @@
       }
     });
     
+    // Draw tessellation points if active
+    if (tessellationState.isActive && tessellationState.points.length > 0) {
+      drawTessellationPoints(tessellationState.points);
+    }
+    
     ctx.restore();
   }
   
@@ -120,6 +130,23 @@
     ctx.moveTo(0, -crossSize);
     ctx.lineTo(0, crossSize);
     ctx.stroke();
+  }
+  
+  function drawTessellationPoints(points: Array<{x: number, y: number}>) {
+    ctx.save();
+    
+    // Set blue color for tessellation points
+    ctx.fillStyle = '#2563eb'; // Blue color
+    
+    const pointRadius = 2 / totalScale; // Fixed size regardless of zoom
+    
+    for (const point of points) {
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, pointRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    
+    ctx.restore();
   }
   
   function drawPolylineWithBulges(vertices: any[], closed: boolean) {

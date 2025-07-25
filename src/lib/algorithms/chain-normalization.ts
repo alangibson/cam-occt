@@ -12,6 +12,8 @@
 
 import type { ShapeChain } from './chain-detection';
 import type { Shape, Point2D } from '../../types';
+import type { ChainNormalizationParameters } from '../../types/algorithm-parameters';
+import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS } from '../../types/algorithm-parameters';
 
 export interface ChainTraversalIssue {
   type: 'coincident_endpoints' | 'coincident_startpoints' | 'broken_traversal';
@@ -33,14 +35,14 @@ export interface ChainNormalizationResult {
 /**
  * Analyzes all chains for traversal issues
  */
-export function analyzeChainTraversal(chains: ShapeChain[]): ChainNormalizationResult[] {
-  return chains.map(chain => analyzeChainTraversalIssues(chain));
+export function analyzeChainTraversal(chains: ShapeChain[], params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): ChainNormalizationResult[] {
+  return chains.map(chain => analyzeChainTraversalIssues(chain, params));
 }
 
 /**
  * Analyzes a single chain for traversal issues
  */
-function analyzeChainTraversalIssues(chain: ShapeChain): ChainNormalizationResult {
+function analyzeChainTraversalIssues(chain: ShapeChain, params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): ChainNormalizationResult {
   const issues: ChainTraversalIssue[] = [];
   
   if (chain.shapes.length < 2) {
@@ -53,7 +55,7 @@ function analyzeChainTraversalIssues(chain: ShapeChain): ChainNormalizationResul
   }
 
   // Check if we can traverse the chain properly (end-to-start connectivity)
-  const traversalPath = attemptChainTraversal(chain);
+  const traversalPath = attemptChainTraversal(chain, params);
   
   if (!traversalPath.canTraverse) {
     // Find specific issues that prevent traversal
@@ -76,15 +78,16 @@ function analyzeChainTraversalIssues(chain: ShapeChain): ChainNormalizationResul
 /**
  * Attempts to traverse a chain following end-to-start connectivity
  */
-function attemptChainTraversal(chain: ShapeChain): { canTraverse: boolean; path: number[] } {
+function attemptChainTraversal(chain: ShapeChain, params: ChainNormalizationParameters): { canTraverse: boolean; path: number[] } {
   if (chain.shapes.length === 0) return { canTraverse: true, path: [] };
   if (chain.shapes.length === 1) return { canTraverse: true, path: [0] };
 
-  const tolerance = 0.01; // Small tolerance for floating point comparison
+  const { traversalTolerance, maxTraversalAttempts } = params;
 
-  // Try starting from each shape to find a valid traversal path
-  for (let startIndex = 0; startIndex < chain.shapes.length; startIndex++) {
-    const result = attemptTraversalFromStart(chain, startIndex, tolerance);
+  // Try starting from each shape to find a valid traversal path (limit attempts)
+  const maxAttempts = Math.min(maxTraversalAttempts, chain.shapes.length);
+  for (let startIndex = 0; startIndex < maxAttempts; startIndex++) {
+    const result = attemptTraversalFromStart(chain, startIndex, traversalTolerance);
     if (result.canTraverse) {
       return result;
     }
@@ -357,15 +360,15 @@ function generateChainDescription(chain: ShapeChain, issues: ChainTraversalIssue
 /**
  * Normalizes a chain by reordering and reversing shapes for proper traversal
  */
-export function normalizeChain(chain: ShapeChain): ShapeChain {
+export function normalizeChain(chain: ShapeChain, params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): ShapeChain {
   if (chain.shapes.length <= 1) {
     return chain;
   }
 
-  const tolerance = 0.01;
+  const { traversalTolerance } = params;
   
   // First, try to find a valid traversal order by building the chain step by step
-  const normalizedShapes = buildOptimalTraversalOrder(chain.shapes, tolerance);
+  const normalizedShapes = buildOptimalTraversalOrder(chain.shapes, traversalTolerance);
   
   return {
     ...chain,

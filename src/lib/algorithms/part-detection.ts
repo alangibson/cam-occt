@@ -16,6 +16,8 @@ import {
   buildContainmentHierarchy, 
   identifyShells as identifyShellsJSTS 
 } from '../utils/geometric-containment-jsts';
+import type { PartDetectionParameters } from '../../types/part-detection';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../types/part-detection';
 import { normalizeChain } from './chain-normalization';
 
 export interface PartHole {
@@ -61,7 +63,7 @@ export interface PartDetectionResult {
 /**
  * Detects parts from a collection of chains using geometric containment
  */
-export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1): Promise<PartDetectionResult> {
+export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1, params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS): Promise<PartDetectionResult> {
   const warnings: PartDetectionWarning[] = [];
   
   // CRITICAL: Normalize all chains BEFORE any analysis
@@ -91,7 +93,7 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1)
   }
   
   // Build containment hierarchy using JSTS geometric containment
-  const containmentMap = buildContainmentHierarchy(closedChains, tolerance);
+  const containmentMap = buildContainmentHierarchy(closedChains, tolerance, params);
   
   // Debug: log containment hierarchy
   console.log(`Part detection: ${closedChains.length} closed chains, containment map size: ${containmentMap.size}`);
@@ -103,28 +105,6 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1)
   // Everything else contained within them are holes
   const rootChains = closedChains.filter(chain => !containmentMap.has(chain.id));
   console.log(`Found ${rootChains.length} root chains (parts): ${rootChains.map(c => c.id).join(', ')}`);
-  
-  // Debug ATT00079.dxf specifically - examine the 6 problem chains
-  if (rootChains.length === 27) {
-    const problemChains = ['chain-29', 'chain-34', 'chain-65', 'chain-70', 'chain-85', 'chain-90'];
-    console.log('\nATT00079 DEBUG: Examining the 6 problem chains...');
-    
-    for (const chainId of problemChains) {
-      const chain = closedChains.find(c => c.id === chainId);
-      if (chain) {
-        const gapDistance = calculateChainGapDistance(chain);
-        const isClosedAtTolerance = isChainClosed(chain, tolerance);
-        const shapes = chain.shapes.map(s => s.type).join(',');
-        
-        console.log(`${chainId}: gap=${gapDistance.toFixed(6)}, closed=${isClosedAtTolerance}, shapes=[${shapes}]`);
-        
-        // Check if this chain would be closed at a higher tolerance
-        const wouldBeClosedAt1 = isChainClosed(chain, 1.0);
-        const wouldBeClosedAt5 = isChainClosed(chain, 5.0);
-        console.log(`  Would be closed at tolerance 1.0: ${wouldBeClosedAt1}, 5.0: ${wouldBeClosedAt5}`);
-      }
-    }
-  }
   
   // Build part structures - each root chain is a part
   const parts: DetectedPart[] = [];
@@ -458,73 +438,5 @@ function isPointInBoundingBox(point: Point2D | null, bbox: BoundingBox): boolean
   );
 }
 
-/**
- * Builds a containment hierarchy map using hybrid containment approach (child -> parent)
- * First tries geometric containment, falls back to bounding box when geometry has gaps
- */
-async function buildGeometricContainmentHierarchy(
-  closedChains: ShapeChain[]
-): Promise<Map<string, string>> {
-  const containmentMap = new Map<string, string>();
-  
-  // Calculate bounding boxes for all chains
-  const chainBounds = new Map<string, BoundingBox>();
-  for (const chain of closedChains) {
-    chainBounds.set(chain.id, calculateChainBoundingBox(chain));
-  }
-  
-  for (let i = 0; i < closedChains.length; i++) {
-    const childChain = closedChains[i];
-    const childBounds = chainBounds.get(childChain.id);
-    if (!childBounds) continue;
-    
-    let smallestContainer: ShapeChain | null = null;
-    let smallestArea = Infinity;
-    
-    for (let j = 0; j < closedChains.length; j++) {
-      if (i === j) continue;
-      
-      const parentChain = closedChains[j];
-      const parentBounds = chainBounds.get(parentChain.id)!;
-      
-      let isContained = false;
-      
-      try {
-        // Use ONLY geometric containment - no bounding box fallbacks
-        isContained = await isChainGeometricallyContained(childChain, parentChain);
-      } catch (error: any) {
-        // NO FALLBACK - geometric containment is required for correct part detection
-      }
-      
-      if (isContained) {
-        const area = (parentBounds.maxX - parentBounds.minX) * (parentBounds.maxY - parentBounds.minY);
-        if (area < smallestArea) {
-          smallestArea = area;
-          smallestContainer = parentChain;
-        }
-      }
-    }
-    
-    if (smallestContainer) {
-      containmentMap.set(childChain.id, smallestContainer.id);
-    }
-  }
-  
-  return containmentMap;
-}
 
-/**
- * Checks if one bounding box is completely contained within another
- */
-function isContainedWithin(inner: BoundingBox, outer: BoundingBox): boolean {
-  return (
-    inner.minX >= outer.minX &&
-    inner.maxX <= outer.maxX &&
-    inner.minY >= outer.minY &&
-    inner.maxY <= outer.maxY &&
-    // Ensure it's not identical (avoid self-containment issues)
-    !(inner.minX === outer.minX && inner.maxX === outer.maxX && 
-      inner.minY === outer.minY && inner.maxY === outer.maxY)
-  );
-}
 
