@@ -1,11 +1,11 @@
 /**
  * Workflow state management for CAM-OCCT application
- * Manages the 5-stage workflow: Import → Edit → Program → Simulate → Export
+ * Manages the 6-stage workflow: Import → Edit → Prepare → Program → Simulate → Export
  */
 
 import { writable, type Writable } from 'svelte/store';
 
-export type WorkflowStage = 'import' | 'edit' | 'program' | 'simulate' | 'export';
+export type WorkflowStage = 'import' | 'edit' | 'prepare' | 'program' | 'simulate' | 'export';
 
 export interface WorkflowState {
   currentStage: WorkflowStage;
@@ -14,7 +14,7 @@ export interface WorkflowState {
 }
 
 // Define the workflow progression order
-const WORKFLOW_ORDER: WorkflowStage[] = ['import', 'edit', 'program', 'simulate', 'export'];
+const WORKFLOW_ORDER: WorkflowStage[] = ['import', 'edit', 'prepare', 'program', 'simulate', 'export'];
 
 function createWorkflowStore(): Writable<WorkflowState> & {
   setStage: (stage: WorkflowStage) => void;
@@ -126,6 +126,7 @@ export function getStageDisplayName(stage: WorkflowStage): string {
   switch (stage) {
     case 'import': return 'Import';
     case 'edit': return 'Edit';
+    case 'prepare': return 'Prepare';
     case 'program': return 'Program';
     case 'simulate': return 'Simulate';
     case 'export': return 'Export';
@@ -138,6 +139,7 @@ export function getStageDescription(stage: WorkflowStage): string {
   switch (stage) {
     case 'import': return 'Import DXF or SVG drawings';
     case 'edit': return 'Edit drawing using basic tools';
+    case 'prepare': return 'Analyze chains and detect parts';
     case 'program': return 'Build tool paths with cut parameters';
     case 'simulate': return 'Simulate cutting process';
     case 'export': return 'Generate and download G-code';

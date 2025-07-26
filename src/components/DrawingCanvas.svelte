@@ -12,6 +12,8 @@
   export let respectLayerVisibility = true; // Default to true for Edit stage
   export let treatChainsAsEntities = false; // Default to false, true for Program stage
   export let onChainClick: ((chainId: string) => void) | null = null; // Callback for chain clicks
+  export let disableDragging = false; // Default to false, true to disable dragging
+  export let showChainEndpoints = false; // Default to false, true to show chain start/end points
   
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -108,6 +110,11 @@
     // Draw tessellation points if active
     if (tessellationState.isActive && tessellationState.points.length > 0) {
       drawTessellationPoints(tessellationState.points);
+    }
+    
+    // Draw chain start/end points if enabled
+    if (showChainEndpoints) {
+      drawChainEndpoints();
     }
     
     ctx.restore();
@@ -576,6 +583,61 @@
     }
   }
   
+  function drawChainEndpoints() {
+    if (!showChainEndpoints || chains.length === 0) return;
+    
+    const pointSize = 6 / totalScale; // Slightly larger than shape points for visibility
+    
+    chains.forEach(chain => {
+      if (chain.shapes.length === 0) return;
+      
+      const firstShape = chain.shapes[0];
+      const lastShape = chain.shapes[chain.shapes.length - 1];
+      
+      // Get chain start point (start of first shape)
+      const chainStartPoint = getShapeStartPoint(firstShape);
+      
+      // Get chain end point (end of last shape)
+      const chainEndPoint = getShapeEndPoint(lastShape);
+      
+      // Draw start point (bright green with white border)
+      if (chainStartPoint) {
+        ctx.save();
+        // White border
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(chainStartPoint.x, chainStartPoint.y, pointSize + 1 / totalScale, 0, 2 * Math.PI);
+        ctx.fill();
+        // Green center
+        ctx.fillStyle = '#10b981'; // Emerald green
+        ctx.beginPath();
+        ctx.arc(chainStartPoint.x, chainStartPoint.y, pointSize, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+      }
+      
+      // Draw end point (bright red with white border) - only if different from start
+      if (chainEndPoint && (
+        !chainStartPoint || 
+        Math.abs(chainEndPoint.x - chainStartPoint.x) > 0.01 || 
+        Math.abs(chainEndPoint.y - chainStartPoint.y) > 0.01
+      )) {
+        ctx.save();
+        // White border
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(chainEndPoint.x, chainEndPoint.y, pointSize + 1 / totalScale, 0, 2 * Math.PI);
+        ctx.fill();
+        // Red center
+        ctx.fillStyle = '#ef4444'; // Red
+        ctx.beginPath();
+        ctx.arc(chainEndPoint.x, chainEndPoint.y, pointSize, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
+  }
+  
   function screenToWorld(screenPos: Point2D): Point2D {
     return {
       x: (screenPos.x - canvas.width / 2 - offset.x) / totalScale,
@@ -848,16 +910,16 @@
     const newMousePos = { x: e.offsetX, y: e.offsetY };
     
     if (isMouseDown && dragStart) {
-      if (selectedShapes.size > 0) {
-        // Move selected shapes
+      if (selectedShapes.size > 0 && !disableDragging) {
+        // Move selected shapes (only if dragging is enabled)
         const worldDelta = {
           x: (newMousePos.x - mousePos.x) / totalScale,
           y: -(newMousePos.y - mousePos.y) / totalScale
         };
         
         drawingStore.moveShapes(Array.from(selectedShapes), worldDelta);
-      } else {
-        // Pan view
+      } else if (selectedShapes.size === 0) {
+        // Pan view (always allowed)
         const delta = {
           x: newMousePos.x - mousePos.x,
           y: newMousePos.y - mousePos.y

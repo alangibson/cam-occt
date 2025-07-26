@@ -1,7 +1,7 @@
 <script lang="ts">
   import { workflowStore, getStageDisplayName, type WorkflowStage } from '../lib/stores/workflow';
 
-  const stages: WorkflowStage[] = ['import', 'edit', 'program', 'simulate', 'export'];
+  const stages: WorkflowStage[] = ['import', 'edit', 'prepare', 'program', 'simulate', 'export'];
 
   function handleStageClick(stage: WorkflowStage) {
     if ($workflowStore.canAdvanceTo(stage)) {
@@ -24,7 +24,6 @@
           on:click={() => handleStageClick(stage)}
           aria-current={$workflowStore.currentStage === stage ? 'step' : undefined}
         >
-          <span class="stage-number">{index + 1}</span>
           <span class="stage-name">{getStageDisplayName(stage)}</span>
         </button>
         
@@ -65,7 +64,6 @@
   .breadcrumb-button {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
     padding: 0.5rem 1rem;
     background: none;
     border: 2px solid transparent;
@@ -122,26 +120,6 @@
     cursor: not-allowed;
   }
 
-  .stage-number {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
-    background-color: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    font-size: 0.75rem;
-    font-weight: 600;
-  }
-
-  .breadcrumb-button.current .stage-number,
-  .breadcrumb-button.completed .stage-number {
-    background-color: rgba(255, 255, 255, 0.3);
-  }
-
-  .breadcrumb-button.inaccessible .stage-number {
-    background-color: rgba(156, 163, 175, 0.2);
-  }
 
   .stage-name {
     font-weight: 500;
@@ -163,7 +141,7 @@
     }
     
     .breadcrumb-button {
-      padding: 0.5rem;
+      padding: 0.5rem 0.75rem;
     }
   }
 </style>
