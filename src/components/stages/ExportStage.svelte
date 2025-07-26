@@ -1,5 +1,6 @@
 <script lang="ts">
   import GCodeExport from '../GCodeExport.svelte';
+  import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import type { CuttingParameters } from '../../types';
 
@@ -32,8 +33,7 @@
 
     <!-- Side Panel -->
     <div class="side-column">
-      <div class="panel">
-        <h3 class="panel-title">Export Summary</h3>
+      <AccordionPanel title="Export Summary" isExpanded={true}>
         <div class="summary-grid">
           <div class="summary-item">
             <span class="summary-label">Target Controller:</span>
@@ -52,10 +52,9 @@
             <span class="summary-value">Enabled</span>
           </div>
         </div>
-      </div>
+      </AccordionPanel>
 
-      <div class="panel">
-        <h3 class="panel-title">G-code Features</h3>
+      <AccordionPanel title="G-code Features" isExpanded={true}>
         <ul class="feature-list">
           <li>✅ Torch height control (THC) commands</li>
           <li>✅ Automatic pierce delay</li>
@@ -64,10 +63,9 @@
           <li>✅ Rapid traverse movements</li>
           <li>✅ Proper coordinate system</li>
         </ul>
-      </div>
+      </AccordionPanel>
 
-      <div class="panel">
-        <h3 class="panel-title">Safety Reminders</h3>
+      <AccordionPanel title="Safety Reminders" isExpanded={true}>
         <div class="safety-warnings">
           <div class="warning-item">
             <span class="warning-icon">⚠️</span>
@@ -82,20 +80,21 @@
             <span>Ensure proper safety equipment is in place</span>
           </div>
         </div>
-      </div>
+      </AccordionPanel>
 
-      <div class="panel workflow-panel">
-        <h3 class="panel-title">Start New Project</h3>
-        <button 
-          class="restart-button"
-          on:click={handleStartOver}
-        >
-          Import New Drawing
-        </button>
-        <p class="restart-help">
-          Start a new CAM workflow with a different drawing file.
-        </p>
-      </div>
+      <AccordionPanel title="Start New Project" isExpanded={true}>
+        <div class="workflow-content">
+          <button 
+            class="restart-button"
+            on:click={handleStartOver}
+          >
+            Import New Drawing
+          </button>
+          <p class="restart-help">
+            Start a new CAM workflow with a different drawing file.
+          </p>
+        </div>
+      </AccordionPanel>
     </div>
   </div>
 </div>
@@ -135,21 +134,13 @@
   }
 
 
-  .panel {
-    background: white;
-    border: 1px solid #e5e7eb;
+  /* Removed .panel and .panel-title styles - now handled by AccordionPanel component */
+
+  .workflow-content {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
     border-radius: 0.5rem;
     padding: 1rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  }
-
-  .panel-title {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #f3f4f6;
-    padding-bottom: 0.5rem;
   }
 
   .summary-grid {
@@ -221,17 +212,7 @@
     font-size: 1rem;
   }
 
-  .workflow-panel {
-    margin-top: auto;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    color: white;
-    border: none;
-  }
-
-  .workflow-panel .panel-title {
-    color: white;
-    border-bottom-color: rgba(255, 255, 255, 0.2);
-  }
+  /* Removed .workflow-panel styles - now handled by workflow-content within AccordionPanel */
 
   .restart-button {
     width: 100%;

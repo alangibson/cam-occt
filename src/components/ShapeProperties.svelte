@@ -31,6 +31,10 @@
         const polyline = shape.geometry as any;
         return polyline.points.length > 0 ? polyline.points[0] : { x: 0, y: 0 }; // Origin is the first point
       
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        return ellipse.center; // Origin is the center
+      
       default:
         return { x: 0, y: 0 };
     }
@@ -61,6 +65,12 @@
           x: circle.center.x + circle.radius,
           y: circle.center.y
         };
+      
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        // For ellipse arcs, use startParam if available, otherwise start at parameter 0
+        const startParam = ellipse.startParam !== undefined ? ellipse.startParam : 0;
+        return getEllipsePointAtParameter(ellipse, startParam);
       
       default:
         return null;
@@ -93,6 +103,12 @@
           y: circle.center.y
         };
       
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        // For ellipse arcs, use endParam if available, otherwise end at parameter 2π
+        const endParam = ellipse.endParam !== undefined ? ellipse.endParam : 2 * Math.PI;
+        return getEllipsePointAtParameter(ellipse, endParam);
+      
       default:
         return null;
     }
@@ -109,11 +125,49 @@
     }
     return shape.type.toUpperCase();
   }
+  
+  // Helper function to calculate a point on an ellipse at a given parameter
+  // Uses the ezdxf approach: calculating minor axis using counterclockwise perpendicular
+  function getEllipsePointAtParameter(ellipse: any, parameter: number): Point2D {
+    // IMPORTANT: majorAxisEndpoint is already a VECTOR from center, not an absolute point!
+    // This is how DXF stores ellipse data (group codes 11,21,31)
+    const majorAxisVector = ellipse.majorAxisEndpoint;
+    
+    // Calculate major axis length (this is the semi-major axis length)
+    const majorAxisLength = Math.sqrt(majorAxisVector.x * majorAxisVector.x + majorAxisVector.y * majorAxisVector.y);
+    
+    // Calculate minor axis length (this is the semi-minor axis length)
+    const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+    
+    // Calculate unit vectors
+    const majorAxisUnit = {
+      x: majorAxisVector.x / majorAxisLength,
+      y: majorAxisVector.y / majorAxisLength
+    };
+    
+    // Minor axis is perpendicular to major axis (counterclockwise rotation)
+    // This is equivalent to the 2D cross product: z_axis × major_axis (right-hand rule)
+    const minorAxisUnit = {
+      x: -majorAxisUnit.y,  // counterclockwise perpendicular
+      y: majorAxisUnit.x
+    };
+    
+    // Calculate point using parametric ellipse equation from ezdxf
+    const cosParam = Math.cos(parameter);
+    const sinParam = Math.sin(parameter);
+    
+    const x = cosParam * majorAxisLength * majorAxisUnit.x + sinParam * minorAxisLength * minorAxisUnit.x;
+    const y = cosParam * majorAxisLength * majorAxisUnit.y + sinParam * minorAxisLength * minorAxisUnit.y;
+    
+    // Translate to ellipse center
+    return {
+      x: ellipse.center.x + x,
+      y: ellipse.center.y + y
+    };
+  }
 </script>
 
 <div class="shape-properties">
-  <h3>Shape Properties</h3>
-  
   {#if displayShape}
     <div class="property-group">
       <div class="property-row">
@@ -239,10 +293,7 @@
     min-height: 200px;
   }
   
-  h3 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-  }
+  /* h3 header removed - title now handled by AccordionPanel */
   
   .property-group {
     display: flex;

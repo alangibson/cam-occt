@@ -1,14 +1,12 @@
 <script lang="ts">
   import DrawingCanvas from '../DrawingCanvas.svelte';
   import CuttingParameters from '../CuttingParameters.svelte';
+  import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
-  import { chainStore } from '../../lib/stores/chains';
-  import { partStore } from '../../lib/stores/parts';
-  import { detectShapeChains } from '../../lib/algorithms/chain-detection';
-  import { detectParts, isChainClosed } from '../../lib/algorithms/part-detection';
-  import { setChains, setTolerance } from '../../lib/stores/chains';
-  import { setParts } from '../../lib/stores/parts';
+  import { chainStore, selectChain } from '../../lib/stores/chains';
+  import { partStore, highlightPart, clearHighlight } from '../../lib/stores/parts';
+  import { isChainClosed } from '../../lib/algorithms/part-detection';
   import type { CuttingParameters as CuttingParametersType } from '../../types';
 
   let cuttingParameters: CuttingParametersType = {
@@ -21,54 +19,39 @@
     leadOutLength: 5
   };
   
-  let tolerance = 0.1;
-
   // Subscribe to stores
   $: drawing = $drawingStore.drawing;
   $: chains = $chainStore.chains;
   $: parts = $partStore.parts;
-  $: chainTolerance = $chainStore.tolerance;
-
-  // Update tolerance when it changes
-  $: if (tolerance !== chainTolerance) {
-    setTolerance(tolerance);
-  }
-
-  function handleDetectChains() {
-    if (!drawing) return;
-    
-    const detectedChains = detectShapeChains(drawing.shapes, { tolerance });
-    setChains(detectedChains);
-  }
-
-  async function handleDetectParts() {
-    if (chains.length === 0) {
-      alert('Please detect chains first');
-      return;
-    }
-    
-    const result = await detectParts(chains, tolerance);
-    setParts(result.parts, result.warnings);
-  }
+  $: selectedChainId = $chainStore.selectedChainId;
+  $: highlightedPartId = $partStore.highlightedPartId;
 
   function handleNext() {
     workflowStore.completeStage('program');
     workflowStore.setStage('simulate');
   }
 
-  // Auto-detect chains when drawing changes
-  $: if (drawing && drawing.shapes.length > 0) {
-    handleDetectChains();
+  // Chain selection functions
+  function handleChainClick(chainId: string) {
+    if (selectedChainId === chainId) {
+      selectChain(null); // Deselect if already selected
+    } else {
+      selectChain(chainId);
+    }
   }
 
-  // Auto-detect parts when chains change
-  $: if (chains.length > 0) {
-    handleDetectParts();
+  // Part highlighting functions  
+  function handlePartClick(partId: string) {
+    if (highlightedPartId === partId) {
+      clearHighlight();
+    } else {
+      highlightPart(partId);
+    }
   }
 
   // Helper function to check if a chain is closed
   function isChainClosedHelper(chain: any): boolean {
-    return isChainClosed(chain, tolerance);
+    return isChainClosed(chain, 0.1); // Use default tolerance since this is display-only
   }
 
   // Auto-complete program stage (user can adjust parameters and continue)
@@ -77,69 +60,62 @@
 
 <div class="program-stage">
   <div class="program-layout">
-    <!-- Left Column - Parts and Chains -->
+    <!-- Left Column - Parts and Paths -->
     <div class="left-column">
-      <div class="panel">
-        <h3 class="panel-title">Chain Detection</h3>
-        <div class="tolerance-input">
-          <label for="tolerance">Tolerance ({$drawingStore.displayUnit}):</label>
-          <input
-            id="tolerance"
-            type="number"
-            bind:value={tolerance}
-            min="0.001"
-            max="10"
-            step="0.01"
-            class="tolerance-field"
-          />
-        </div>
-        <button class="detect-button" on:click={handleDetectChains}>
-          Detect Chains
-        </button>
-      </div>
 
       {#if chains.length > 0}
-        <div class="panel">
-          <h3 class="panel-title">Chains ({chains.length})</h3>
-          <div class="chain-list">
+        <AccordionPanel title="Paths ({chains.length})" isExpanded={true}>
+          <div class="path-list">
             {#each chains as chain (chain.id)}
-              <div class="chain-item">
-                <span class="chain-name">Chain {chain.id.split('-')[1]}</span>
-                <span class="chain-info">{chain.shapes.length} shapes</span>
-                <span class="chain-status {isChainClosedHelper(chain) ? 'closed' : 'open'}">
+              <div 
+                class="path-item {selectedChainId === chain.id ? 'selected' : ''}"
+                role="button"
+                tabindex="0"
+                on:click={() => handleChainClick(chain.id)}
+                on:keydown={(e) => e.key === 'Enter' && handleChainClick(chain.id)}
+              >
+                <span class="path-name">Path {chain.id.split('-')[1]}</span>
+                <span class="path-status {isChainClosedHelper(chain) ? 'closed' : 'open'}">
                   {isChainClosedHelper(chain) ? 'Closed' : 'Open'}
                 </span>
               </div>
             {/each}
           </div>
-        </div>
+        </AccordionPanel>
       {/if}
 
       {#if parts.length > 0}
-        <div class="panel">
-          <h3 class="panel-title">Parts ({parts.length})</h3>
+        <AccordionPanel title="Parts ({parts.length})" isExpanded={true}>
           <div class="parts-list">
             {#each parts as part (part.id)}
-              <div class="part-item">
+              <div 
+                class="part-item {highlightedPartId === part.id ? 'highlighted' : ''}"
+                role="button"
+                tabindex="0"
+                on:click={() => handlePartClick(part.id)}
+                on:keydown={(e) => e.key === 'Enter' && handlePartClick(part.id)}
+              >
                 <span class="part-name">Part {part.id.split('-')[1]}</span>
                 <span class="part-info">{part.holes.length} holes</span>
               </div>
             {/each}
           </div>
-        </div>
+        </AccordionPanel>
       {/if}
 
-      <div class="panel next-stage-panel">
-        <button 
-          class="next-button"
-          on:click={handleNext}
-        >
-          Next: Simulate Cutting
-        </button>
-        <p class="next-help">
-          Review your tool paths and simulate the cutting process.
-        </p>
-      </div>
+      <AccordionPanel title="Next Stage" isExpanded={true}>
+        <div class="next-stage-content">
+          <button 
+            class="next-button"
+            on:click={handleNext}
+          >
+            Next: Simulate Cutting
+          </button>
+          <p class="next-help">
+            Review your tool paths and simulate the cutting process.
+          </p>
+        </div>
+      </AccordionPanel>
     </div>
 
     <!-- Center Column - Drawing Canvas -->
@@ -149,6 +125,7 @@
           <DrawingCanvas 
             treatChainsAsEntities={true}
             disableDragging={true}
+            onChainClick={handleChainClick}
             currentStage="program"
           />
         {:else}
@@ -162,28 +139,44 @@
 
     <!-- Right Column - Cutting Parameters -->
     <div class="right-column">
-      <div class="panel">
-        <h3 class="panel-title">Cutting Parameters</h3>
+      <AccordionPanel title="Cutting Parameters" isExpanded={true}>
         <CuttingParameters bind:parameters={cuttingParameters} units={$drawingStore.displayUnit || 'mm'} />
-      </div>
+      </AccordionPanel>
       
-      <div class="panel">
-        <h3 class="panel-title">Path Information</h3>
+      <AccordionPanel title="Path Information" isExpanded={true}>
         <div class="path-info">
-          <div class="info-item">
-            <span class="info-label">Total Chains:</span>
-            <span class="info-value">{chains.length}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Total Parts:</span>
-            <span class="info-value">{parts.length}</span>
-          </div>
-          <div class="info-item">
-            <span class="info-label">Cut Paths:</span>
-            <span class="info-value">{chains.length} (default)</span>
-          </div>
+          {#if selectedChainId}
+            {@const selectedChain = chains.find(c => c.id === selectedChainId)}
+            {#if selectedChain}
+              <div class="info-item">
+                <span class="info-label">Selected Path:</span>
+                <span class="info-value">Path {selectedChain.id.split('-')[1]}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Status:</span>
+                <span class="info-value">{isChainClosedHelper(selectedChain) ? 'Closed' : 'Open'}</span>
+              </div>
+              <div class="info-item">
+                <span class="info-label">Shapes:</span>
+                <span class="info-value">{selectedChain.shapes.length}</span>
+              </div>
+            {/if}
+          {:else}
+            <div class="info-item">
+              <span class="info-label">Total Paths:</span>
+              <span class="info-value">{chains.length}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Total Parts:</span>
+              <span class="info-value">{parts.length}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Instructions:</span>
+              <span class="info-value">Select a path to view details</span>
+            </div>
+          {/if}
         </div>
-      </div>
+      </AccordionPanel>
     </div>
   </div>
 </div>
@@ -211,6 +204,8 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    min-height: 0; /* Allow flex child to shrink */
+    flex-shrink: 0; /* Prevent column from shrinking */
   }
 
   .center-column {
@@ -226,51 +221,15 @@
     border-left: 1px solid #e5e7eb;
     padding: 1rem;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0; /* Allow flex child to shrink */
+    flex-shrink: 0; /* Prevent column from shrinking */
   }
 
-  .panel {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  }
+  /* Removed .panel styles - now handled by AccordionPanel component */
 
-  .tolerance-input {
-    margin-bottom: 1rem;
-  }
-
-  .tolerance-input label {
-    display: block;
-    margin-bottom: 0.25rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-  }
-
-  .tolerance-field {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-  }
-
-  .detect-button {
-    width: 100%;
-    padding: 0.5rem 1rem;
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-
-  .detect-button:hover {
-    background-color: #2563eb;
-  }
 
   .canvas-container {
     flex: 1;
@@ -292,47 +251,60 @@
     color: #374151;
   }
 
-  .chain-list, .parts-list {
-    max-height: 200px;
-    overflow-y: auto;
-  }
+  /* .parts-list has no special styling - shows all parts without scrollbar */
+  
+  /* .path-list has no special styling - shows all paths without scrollbar */
 
-  .chain-item, .part-item {
+  .path-item, .part-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f3f4f6;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+    border: 1px solid transparent;
+    border-radius: 0.375rem;
     font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
   }
 
-  .chain-item:last-child, .part-item:last-child {
-    border-bottom: none;
+  .path-item:hover, .part-item:hover {
+    background-color: #f3f4f6;
   }
 
-  .chain-name, .part-name {
+  .path-item.selected {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
+  }
+
+  .part-item.highlighted {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+  }
+
+  .path-name, .part-name {
     font-weight: 500;
     color: #374151;
   }
 
-  .chain-info, .part-info {
+  .path-info, .part-info {
     color: #6b7280;
     font-size: 0.75rem;
   }
 
-  .chain-status {
+  .path-status {
     font-size: 0.75rem;
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-weight: 500;
   }
 
-  .chain-status.closed {
+  .path-status.closed {
     background-color: #dcfce7;
     color: #166534;
   }
 
-  .chain-status.open {
+  .path-status.open {
     background-color: #fef3c7;
     color: #92400e;
   }
@@ -359,11 +331,11 @@
     color: #374151;
   }
 
-  .next-stage-panel {
-    margin-top: auto;
+  .next-stage-content {
     background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     color: white;
-    border: none;
+    border-radius: 0.5rem;
+    padding: 1rem;
   }
 
   .next-button {
@@ -391,14 +363,7 @@
     line-height: 1.4;
   }
 
-  .panel-title {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #f3f4f6;
-    padding-bottom: 0.5rem;
-  }
+  /* Removed .panel-title styles - now handled by AccordionPanel component */
 
 
 </style>

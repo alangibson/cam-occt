@@ -1,4 +1,5 @@
 <script lang="ts">
+  import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
 
   function handleNext() {
@@ -66,8 +67,7 @@
 
     <!-- Right Column - Simulation Stats and Controls -->
     <div class="right-column">
-      <div class="panel">
-        <h3 class="panel-title">Simulation Settings</h3>
+      <AccordionPanel title="Simulation Settings" isExpanded={true}>
         <div class="setting-group">
           <label>
             <input type="checkbox" checked disabled>
@@ -86,10 +86,9 @@
             Realistic timing
           </label>
         </div>
-      </div>
+      </AccordionPanel>
 
-      <div class="panel">
-        <h3 class="panel-title">Cut Statistics</h3>
+      <AccordionPanel title="Cut Statistics" isExpanded={true}>
         <div class="stats-grid">
           <div class="stat-item">
             <span class="stat-label">Total Length:</span>
@@ -108,19 +107,21 @@
             <span class="stat-value">-- mm</span>
           </div>
         </div>
-      </div>
+      </AccordionPanel>
 
-      <div class="panel next-stage-panel">
-        <button 
-          class="next-button"
-          on:click={handleNext}
-        >
-          Next: Export G-code
-        </button>
-        <p class="next-help">
-          Simulation complete! Ready to generate and export G-code.
-        </p>
-      </div>
+      <AccordionPanel title="Next Stage" isExpanded={true}>
+        <div class="next-stage-content">
+          <button 
+            class="next-button"
+            on:click={handleNext}
+          >
+            Next: Export G-code
+          </button>
+          <p class="next-help">
+            Simulation complete! Ready to generate and export G-code.
+          </p>
+        </div>
+      </AccordionPanel>
     </div>
   </div>
 </div>
@@ -276,20 +277,13 @@
     transition: width 0.3s ease;
   }
 
-  .panel {
-    background: #2d2d2d;
-    border: 1px solid #404040;
+  /* Removed .panel and .panel-title styles - now handled by AccordionPanel component */
+
+  .next-stage-content {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
     border-radius: 0.5rem;
     padding: 1rem;
-  }
-
-  .panel-title {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: white;
-    border-bottom: 1px solid #404040;
-    padding-bottom: 0.5rem;
   }
 
   .setting-group {
@@ -337,12 +331,7 @@
     font-weight: 600;
   }
 
-  .next-stage-panel {
-    margin-top: auto;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    color: white;
-    border: none;
-  }
+  /* Removed .next-stage-panel styles - now handled by next-stage-content within AccordionPanel */
 
   .next-button {
     width: 100%;

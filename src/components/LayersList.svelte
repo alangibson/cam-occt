@@ -57,8 +57,6 @@
 </script>
 
 <div class="layers-list">
-  <h3>Layers</h3>
-  
   {#if drawing && layers.length > 0}
     <div class="layers">
       {#each layers as layer}
@@ -88,10 +86,7 @@
     border-radius: 4px;
   }
   
-  h3 {
-    margin-top: 0;
-    margin-bottom: 1rem;
-  }
+  /* h3 header removed - title now handled by AccordionPanel */
   
   .layers {
     display: flex;

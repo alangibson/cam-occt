@@ -17,8 +17,6 @@
 </script>
 
 <div class="units-box">
-  <h3>Units</h3>
-  
   <div class="unit-selector">
     <label for="unit-dropdown">Display Units:</label>
     <select 
@@ -47,12 +45,7 @@
     padding: 1rem;
   }
   
-  .units-box h3 {
-    margin: 0 0 1rem 0;
-    color: #333;
-    font-size: 1rem;
-    font-weight: 600;
-  }
+  /* h3 header removed - title now handled by AccordionPanel */
   
   .unit-selector {
     display: flex;

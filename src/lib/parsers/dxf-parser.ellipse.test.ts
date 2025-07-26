@@ -73,32 +73,30 @@ EOF`;
     });
 
     it('should parse an ellipse with different orientation', async () => {
-      const dxfContent = `
-        0
-        SECTION
-        2
-        ENTITIES
-        0
-        ELLIPSE
-        10
-        0.0
-        20
-        0.0
-        30
-        0.0
-        11
-        0.0
-        21
-        30.0
-        31
-        0.0
-        40
-        0.8
-        0
-        ENDSEC
-        0
-        EOF
-      `;
+      const dxfContent = `0
+SECTION
+2
+ENTITIES
+0
+ELLIPSE
+10
+0.0
+20
+0.0
+30
+0.0
+11
+0.0
+21
+30.0
+31
+0.0
+40
+0.8
+0
+ENDSEC
+0
+EOF`;
 
       const drawing = await parseDXF(dxfContent);
       

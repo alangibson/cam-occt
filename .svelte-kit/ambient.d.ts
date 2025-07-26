@@ -36,7 +36,6 @@ declare module '$env/static/private' {
 	export const XDG_SESSION_TYPE: string;
 	export const GIT_ASKPASS: string;
 	export const npm_node_execpath: string;
-	export const BROWSER: string;
 	export const SHLVL: string;
 	export const npm_config_noproxy: string;
 	export const HOME: string;
@@ -57,7 +56,6 @@ declare module '$env/static/private' {
 	export const GIO_LAUNCHED_DESKTOP_FILE_PID: string;
 	export const COLOR: string;
 	export const DEBUGINFOD_URLS: string;
-	export const FORCE_COLOR: string;
 	export const GTK_IM_MODULE: string;
 	export const LOGNAME: string;
 	export const _: string;
@@ -70,7 +68,6 @@ declare module '$env/static/private' {
 	export const XDG_SESSION_ID: string;
 	export const OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: string;
 	export const npm_config_cache: string;
-	export const DEBUG_COLORS: string;
 	export const GNOME_DESKTOP_SESSION_ID: string;
 	export const WINDOWPATH: string;
 	export const npm_config_node_gyp: string;
@@ -103,7 +100,6 @@ declare module '$env/static/private' {
 	export const CLAUDECODE: string;
 	export const GPG_AGENT_INFO: string;
 	export const GJS_DEBUG_OUTPUT: string;
-	export const PLAYWRIGHT_TEST_BASE_URL: string;
 	export const VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 	export const QT_IM_MODULE: string;
 	export const XDG_VTNR: string;
@@ -120,7 +116,13 @@ declare module '$env/static/private' {
 	export const npm_command: string;
 	export const INIT_CWD: string;
 	export const EDITOR: string;
+	export const TEST: string;
+	export const VITEST: string;
 	export const NODE_ENV: string;
+	export const PROD: string;
+	export const DEV: string;
+	export const BASE_URL: string;
+	export const MODE: string;
 }
 
 /**
@@ -162,7 +164,6 @@ declare module '$env/dynamic/private' {
 		XDG_SESSION_TYPE: string;
 		GIT_ASKPASS: string;
 		npm_node_execpath: string;
-		BROWSER: string;
 		SHLVL: string;
 		npm_config_noproxy: string;
 		HOME: string;
@@ -183,7 +184,6 @@ declare module '$env/dynamic/private' {
 		GIO_LAUNCHED_DESKTOP_FILE_PID: string;
 		COLOR: string;
 		DEBUGINFOD_URLS: string;
-		FORCE_COLOR: string;
 		GTK_IM_MODULE: string;
 		LOGNAME: string;
 		_: string;
@@ -196,7 +196,6 @@ declare module '$env/dynamic/private' {
 		XDG_SESSION_ID: string;
 		OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: string;
 		npm_config_cache: string;
-		DEBUG_COLORS: string;
 		GNOME_DESKTOP_SESSION_ID: string;
 		WINDOWPATH: string;
 		npm_config_node_gyp: string;
@@ -229,7 +228,6 @@ declare module '$env/dynamic/private' {
 		CLAUDECODE: string;
 		GPG_AGENT_INFO: string;
 		GJS_DEBUG_OUTPUT: string;
-		PLAYWRIGHT_TEST_BASE_URL: string;
 		VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
 		QT_IM_MODULE: string;
 		XDG_VTNR: string;
@@ -246,7 +244,13 @@ declare module '$env/dynamic/private' {
 		npm_command: string;
 		INIT_CWD: string;
 		EDITOR: string;
+		TEST: string;
+		VITEST: string;
 		NODE_ENV: string;
+		PROD: string;
+		DEV: string;
+		BASE_URL: string;
+		MODE: string;
 		[key: `PUBLIC_${string}`]: undefined;
 		[key: `${string}`]: string | undefined;
 	}

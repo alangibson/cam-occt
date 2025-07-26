@@ -1,6 +1,7 @@
 <script lang="ts">
   import DrawingCanvas from '../DrawingCanvas.svelte';
   import LayersInfo from '../LayersInfo.svelte';
+  import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
   import { chainStore, setChains, setTolerance, selectChain } from '../../lib/stores/chains';
@@ -39,11 +40,11 @@
   $: partWarnings = $partStore.warnings;
   $: highlightedPartId = $partStore.highlightedPartId;
 
-  // Update Prepare stage overlay when chains are detected
-  $: if (detectedChains.length > 0) {
+  // Update Prepare stage overlay when chains are detected (but not during normalization)
+  $: if (!isNormalizing && detectedChains.length > 0) {
     const chainEndpoints = generateChainEndpoints(detectedChains);
     overlayStore.setChainEndpoints('prepare', chainEndpoints);
-  } else {
+  } else if (!isNormalizing) {
     overlayStore.clearChainEndpoints('prepare');
   }
 
@@ -152,18 +153,23 @@
       const newChains = detectShapeChains(normalizedShapes, { tolerance });
       setChains(newChains);
       
-      // Explicitly regenerate chain endpoints after normalization
-      if (newChains.length > 0) {
-        const chainEndpoints = generateChainEndpoints(newChains);
-        overlayStore.setChainEndpoints('prepare', chainEndpoints);
-      }
+      // Force update of overlay after a short delay to ensure drawing is updated
+      setTimeout(() => {
+        if (newChains.length > 0) {
+          const chainEndpoints = generateChainEndpoints(newChains);
+          overlayStore.setChainEndpoints('prepare', chainEndpoints);
+          console.log(`Updated overlay with ${chainEndpoints.length} chain endpoints after normalization.`);
+        } else {
+          overlayStore.clearChainEndpoints('prepare');
+        }
+        isNormalizing = false; // Reset flag after overlay is updated
+      }, 50); // Small delay to ensure all stores are updated
       
       console.log(`Normalized chains. Re-detected ${newChains.length} chains.`);
       
     } catch (error) {
       console.error('Error during chain normalization:', error);
-    } finally {
-      isNormalizing = false;
+      isNormalizing = false; // Reset flag on error
     }
   }
 
@@ -527,12 +533,11 @@
     <!-- Left Column -->
     <div class="left-column">
 
-      <div class="panel">
+      <AccordionPanel title="Layers" isExpanded={true}>
         <LayersInfo />
-      </div>
+      </AccordionPanel>
 
-      <div class="panel">
-        <h3 class="panel-title">Parts</h3>
+      <AccordionPanel title="Parts{detectedParts.length > 0 ? ` (${detectedParts.length} parts detected)` : ''}" isExpanded={true}>
         {#if detectedParts.length > 0}
           <div class="parts-list">
             {#each detectedParts as part, index}
@@ -571,10 +576,9 @@
             <p>No parts detected yet. Click "Detect Parts" to analyze chains.</p>
           </div>
         {/if}
-      </div>
+      </AccordionPanel>
 
-      <div class="panel">
-        <h3 class="panel-title">Chains</h3>
+      <AccordionPanel title="Chains{detectedChains.length > 0 ? ` (${detectedChains.length} chains with ${detectedChains.reduce((sum, chain) => sum + chain.shapes.length, 0)} connected shapes)` : ''}" isExpanded={true}>
         {#if detectedChains.length > 0}
           <div class="chain-summary">
             {#each chainNormalizationResults as result}
@@ -599,19 +603,21 @@
             <p>No chains detected yet. Click "Detect Chains" to analyze shapes.</p>
           </div>
         {/if}
-      </div>
+      </AccordionPanel>
 
-      <div class="panel next-stage-panel">
-        <button 
-          class="next-button"
-          on:click={handleNext}
-        >
-          Next: Program Cuts
-        </button>
-        <p class="next-help">
-          Set cutting parameters and generate tool paths.
-        </p>
-      </div>
+      <AccordionPanel title="Next Stage" isExpanded={true}>
+        <div class="next-stage-content">
+          <button 
+            class="next-button"
+            on:click={handleNext}
+          >
+            Next: Program Cuts
+          </button>
+          <p class="next-help">
+            Set cutting parameters and generate tool paths.
+          </p>
+        </div>
+      </AccordionPanel>
     </div>
 
     <!-- Center Column -->
@@ -619,18 +625,6 @@
       <div class="canvas-header">
         <div class="chain-detection-toolbar">
           <div class="toolbar-section">
-            <label class="input-label">
-              Tolerance (units):
-              <input 
-                type="number" 
-                bind:value={tolerance} 
-                min="0.001" 
-                max="10" 
-                step="0.001"
-                class="tolerance-input"
-              />
-            </label>
-            
             <button 
               class="detect-chains-button"
               on:click={handleDetectChains}
@@ -638,6 +632,12 @@
             >
               {isDetectingChains ? 'Detecting...' : 'Detect Chains'}
             </button>
+            
+            <div class="toolbar-separator" aria-hidden="true">
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L6 6L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
             
             <button 
               class="normalize-button"
@@ -647,6 +647,12 @@
               {isNormalizing ? 'Normalizing...' : 'Normalize Chains'}
             </button>
             
+            <div class="toolbar-separator" aria-hidden="true">
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L6 6L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            
             <button 
               class="tessellate-button"
               on:click={handleTessellateChains}
@@ -654,6 +660,12 @@
             >
               {isTessellating ? 'Tessellating...' : tessellationActive ? 'Clear Tessellation' : 'Tessellate Chains'}
             </button>
+            
+            <div class="toolbar-separator" aria-hidden="true">
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L6 6L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
             
             <button 
               class="detect-parts-button"
@@ -665,20 +677,7 @@
           </div>
           
 
-          {#if detectedChains.length > 0 || detectedParts.length > 0}
-            <div class="toolbar-results">
-              {#if detectedChains.length > 0}
-                <span class="chain-summary-inline">
-                  {detectedChains.length} chains with {detectedChains.reduce((sum, chain) => sum + chain.shapes.length, 0)} connected shapes
-                </span>
-              {/if}
-              {#if detectedParts.length > 0}
-                <span class="part-summary-inline">
-                  {detectedParts.length} parts detected
-                </span>
-              {/if}
-            </div>
-          {/if}
+          <!-- Toolbar notices moved to accordion panel titles -->
         </div>
       </div>
       <div class="canvas-container">
@@ -695,8 +694,7 @@
     <!-- Right Column -->
     <div class="right-column">
       {#if selectedChain && selectedChainAnalysis}
-        <div class="panel chain-detail-panel">
-          <h3 class="panel-title">Chain Details</h3>
+        <AccordionPanel title="Chain Details" isExpanded={true}>
           <div class="chain-detail">
             <div class="chain-detail-header">
               <span class="chain-id">{selectedChain.id}</span>
@@ -742,12 +740,11 @@
               </div>
             {/if}
           </div>
-        </div>
+        </AccordionPanel>
       {/if}
 
       {#if partWarnings.length > 0}
-        <div class="panel warning-panel">
-          <h3 class="panel-title">Part Detection Warnings</h3>
+        <AccordionPanel title="Part Detection Warnings" isExpanded={true}>
           <div class="warnings-list">
             {#each partWarnings as warning}
               <div class="warning-item">
@@ -760,12 +757,11 @@
               </div>
             {/each}
           </div>
-        </div>
+        </AccordionPanel>
       {/if}
 
       {#if chainTraversalIssues.length > 0}
-        <div class="panel traversal-warning-panel">
-          <h3 class="panel-title">Chain Traversal Issues</h3>
+        <AccordionPanel title="Chain Traversal Issues" isExpanded={true}>
           <div class="traversal-info">
             <p class="traversal-description">
               Chains should be traversable from start to end, with each shape connecting end-to-start with the next shape.
@@ -791,13 +787,11 @@
               </div>
             {/each}
           </div>
-        </div>
+        </AccordionPanel>
       {/if}
 
       <!-- Algorithm Parameters -->
-      <div class="panel algorithm-params-panel">
-        <h3 class="panel-title">Algorithm Parameters</h3>
-        
+      <AccordionPanel title="Algorithm Parameters" isExpanded={false}>
         <!-- Chain Detection Parameters -->
         <details class="param-group-details">
           <summary class="param-group-summary">Chain Detection</summary>
@@ -943,7 +937,7 @@
             </div>
           </div>
         </details>
-      </div>
+      </AccordionPanel>
 
       
       <!-- Hidden for now -->
@@ -986,6 +980,8 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    min-height: 0; /* Allow flex child to shrink */
+    flex-shrink: 0; /* Prevent column from shrinking */
   }
 
   .center-column {
@@ -1001,14 +997,20 @@
     border-left: 1px solid #e5e7eb;
     padding: 1rem;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0; /* Allow flex child to shrink */
+    flex-shrink: 0; /* Prevent column from shrinking */
   }
 
-  .panel {
-    background: white;
-    border: 1px solid #e5e7eb;
+  /* Removed .panel styles - now handled by AccordionPanel component */
+
+  .next-stage-content {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    color: white;
     border-radius: 0.5rem;
     padding: 1rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   }
 
   .canvas-header {
@@ -1023,12 +1025,7 @@
     background-color: white;
   }
 
-  .next-stage-panel {
-    margin-top: auto;
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-    color: white;
-    border: none;
-  }
+  /* Removed .next-stage-panel - now handled by next-stage-content within AccordionPanel */
 
   .next-button {
     width: 100%;
@@ -1056,29 +1053,11 @@
   }
 
 
-  .input-label {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
-  }
+  /* .input-label removed - tolerance input removed from toolbar */
 
-  .tolerance-input {
-    padding: 0.5rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    background-color: white;
-    transition: border-color 0.2s ease;
-  }
+  /* .tolerance-input removed - moved to Algorithm Parameters */
 
-  .tolerance-input:focus {
-    outline: none;
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-  }
+  /* .tolerance-input:focus removed - moved to Algorithm Parameters */
 
   .detect-chains-button {
     padding: 0.75rem 1rem;
@@ -1117,31 +1096,16 @@
     gap: 1rem;
   }
 
-  .toolbar-results {
-    display: flex;
-    align-items: center;
+  .toolbar-separator {
+    color: #d1d5db;
+    margin: 0 0.25rem;
   }
 
-  .chain-summary-inline {
-    font-size: 0.875rem;
-    color: #4b5563;
-    font-weight: 500;
-    padding: 0.5rem 0.75rem;
-    background-color: #f0f9ff;
-    border: 1px solid #0ea5e9;
-    border-radius: 0.375rem;
-  }
+  /* .toolbar-results removed - notices moved to accordion titles */
 
-  .part-summary-inline {
-    font-size: 0.875rem;
-    color: #4b5563;
-    font-weight: 500;
-    padding: 0.5rem 0.75rem;
-    background-color: #f0fdf4;
-    border: 1px solid #22c55e;
-    border-radius: 0.375rem;
-    margin-left: 0.5rem;
-  }
+  /* .chain-summary-inline removed - moved to accordion title */
+
+  /* .part-summary-inline removed - moved to accordion title */
 
   .detect-parts-button {
     padding: 0.75rem 1rem;
@@ -1206,15 +1170,7 @@
     cursor: not-allowed;
   }
 
-  /* Parts list styles */
-  .panel-title {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #f3f4f6;
-    padding-bottom: 0.5rem;
-  }
+  /* Parts list styles - .panel-title now handled by AccordionPanel component */
 
   .parts-list {
     display: flex;
@@ -1298,14 +1254,7 @@
     margin-left: 0.5rem;
   }
 
-  /* Warning styles */
-  .warning-panel {
-    border-left: 4px solid #f59e0b;
-  }
-
-  .warning-panel .panel-title {
-    color: #f59e0b;
-  }
+  /* Warning styles - panel styles now handled by AccordionPanel component */
 
   .warnings-list {
     display: flex;
@@ -1352,14 +1301,7 @@
     font-family: monospace;
   }
 
-  /* Chain traversal warning styles */
-  .traversal-warning-panel {
-    border-left: 4px solid #dc2626;
-  }
-
-  .traversal-warning-panel .panel-title {
-    color: #dc2626;
-  }
+  /* Chain traversal warning styles - panel styles now handled by AccordionPanel component */
 
   .traversal-info {
     margin-bottom: 1rem;
@@ -1482,14 +1424,7 @@
     font-size: 0.875rem;
   }
 
-  /* Chain detail panel styles */
-  .chain-detail-panel {
-    border-left: 4px solid #3b82f6;
-  }
-
-  .chain-detail-panel .panel-title {
-    color: #3b82f6;
-  }
+  /* Chain detail panel styles - panel styles now handled by AccordionPanel component */
 
   .chain-detail-header {
     display: flex;
@@ -1619,14 +1554,7 @@
     line-height: 1.4;
   }
 
-  /* Algorithm parameters styles */
-  .algorithm-params-panel {
-    border-left: 4px solid #8b5cf6;
-  }
-
-  .algorithm-params-panel .panel-title {
-    color: #8b5cf6;
-  }
+  /* Algorithm parameters styles - panel styles now handled by AccordionPanel component */
 
   .param-group-details {
     background-color: #f8fafc;

@@ -33,8 +33,6 @@
 </script>
 
 <div class="layers-info">
-  <h3>Layers</h3>
-  
   {#if drawing && layers.length > 0}
     <div class="layers">
       {#each layers as layer}
@@ -58,12 +56,7 @@
     padding: 0;
   }
   
-  h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #374151;
-  }
+  /* h3 header removed - title now handled by AccordionPanel */
   
   .layers {
     display: flex;

@@ -375,8 +375,11 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
           };
           
           // Add start and end parameters if they exist (ellipse arcs)
-          if (typeof entity.startAngle === 'number' && typeof entity.endAngle === 'number') {
+          // Note: DXF uses startAngle/endAngle but we use startParam/endParam internally
+          if (typeof entity.startAngle === 'number') {
             ellipse.startParam = entity.startAngle;
+          }
+          if (typeof entity.endAngle === 'number') {
             ellipse.endParam = entity.endAngle;
           }
           

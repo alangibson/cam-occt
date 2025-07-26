@@ -4,6 +4,7 @@
   import LayersList from '../LayersList.svelte';
   import ShapeProperties from '../ShapeProperties.svelte';
   import Units from '../Units.svelte';
+  import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
   import { overlayStore, generateShapePoints } from '../../lib/stores/overlay';
@@ -29,27 +30,28 @@
   <div class="edit-layout">
     <!-- Left Column -->
     <div class="left-column">
-      <div class="panel">
-        <h3 class="panel-title">Display Units</h3>
+      <AccordionPanel title="Display Units" isExpanded={true}>
         <Units />
-      </div>
+      </AccordionPanel>
       
-      <div class="panel">
+      <AccordionPanel title="Layers" isExpanded={true}>
         <LayersList />
-      </div>
+      </AccordionPanel>
 
-      <div class="panel next-stage-panel">
-        <button 
-          class="next-button"
-          on:click={handleNext}
-          disabled={!$drawingStore.drawing}
-        >
-          Next: Prepare Chains
-        </button>
-        <p class="next-help">
-          Ready to analyze chains and detect parts? Click to continue to the Prepare stage.
-        </p>
-      </div>
+      <AccordionPanel title="Next Stage" isExpanded={true}>
+        <div class="next-stage-content">
+          <button 
+            class="next-button"
+            on:click={handleNext}
+            disabled={!$drawingStore.drawing}
+          >
+            Next: Prepare Chains
+          </button>
+          <p class="next-help">
+            Ready to analyze chains and detect parts? Click to continue to the Prepare stage.
+          </p>
+        </div>
+      </AccordionPanel>
     </div>
 
     <!-- Center Column -->
@@ -64,10 +66,9 @@
 
     <!-- Right Column -->
     <div class="right-column">
-      <div class="panel">
-        <h3 class="panel-title">Shape Properties</h3>
+      <AccordionPanel title="Shape Properties" isExpanded={true}>
         <ShapeProperties />
-      </div>
+      </AccordionPanel>
     </div>
   </div>
 </div>
@@ -95,6 +96,8 @@
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    min-height: 0; /* Allow flex child to shrink */
+    flex-shrink: 0; /* Prevent column from shrinking */
   }
 
   .center-column {
@@ -110,24 +113,14 @@
     border-left: 1px solid #e5e7eb;
     padding: 1rem;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-height: 0; /* Allow flex child to shrink */
+    flex-shrink: 0; /* Prevent column from shrinking */
   }
 
-  .panel {
-    background: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    padding: 1rem;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
-  }
-
-  .panel-title {
-    margin: 0 0 1rem 0;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #374151;
-    border-bottom: 1px solid #f3f4f6;
-    padding-bottom: 0.5rem;
-  }
+  /* Removed .panel and .panel-title styles - now handled by AccordionPanel component */
 
   .toolbar-container {
     border-bottom: 1px solid #e5e7eb;
@@ -140,11 +133,11 @@
     background-color: white;
   }
 
-  .next-stage-panel {
-    margin-top: auto;
+  .next-stage-content {
     background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
     color: white;
-    border: none;
+    border-radius: 0.5rem;
+    padding: 1rem;
   }
 
 
