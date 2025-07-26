@@ -10,6 +10,7 @@
   import { analyzeChainTraversal, normalizeChain } from '../../lib/algorithms/chain-normalization';
   import { tessellationStore, type TessellationPoint } from '../../lib/stores/tessellation';
   import { tessellateShape } from '../../lib/utils/tessellation';
+  import { overlayStore, generateChainEndpoints } from '../../lib/stores/overlay';
   import type { Shape } from '../../types';
   import type { ShapeChain } from '../../lib/algorithms/chain-detection';
   import type { ChainNormalizationResult } from '../../lib/algorithms/chain-normalization';
@@ -37,6 +38,28 @@
   $: detectedParts = $partStore.parts;
   $: partWarnings = $partStore.warnings;
   $: highlightedPartId = $partStore.highlightedPartId;
+
+  // Update Prepare stage overlay when chains are detected
+  $: if (detectedChains.length > 0) {
+    const chainEndpoints = generateChainEndpoints(detectedChains);
+    overlayStore.setChainEndpoints('prepare', chainEndpoints);
+  } else {
+    overlayStore.clearChainEndpoints('prepare');
+  }
+
+  // Update Prepare stage overlay when tessellation changes
+  $: if ($tessellationStore.isActive && $tessellationStore.points.length > 0) {
+    // Convert tessellation store points to overlay format
+    const tessellationPoints = $tessellationStore.points.map(point => ({
+      x: point.x,
+      y: point.y,
+      shapeId: `${point.chainId}-${point.shapeIndex}`, // Create shapeId from chain and shape index
+      chainId: point.chainId
+    }));
+    overlayStore.setTessellationPoints('prepare', tessellationPoints);
+  } else {
+    overlayStore.clearTessellationPoints('prepare');
+  }
   
   // Chain normalization analysis
   let chainNormalizationResults: ChainNormalizationResult[] = [];
@@ -128,6 +151,12 @@
       // Re-detect chains after normalization to update the chain store
       const newChains = detectShapeChains(normalizedShapes, { tolerance });
       setChains(newChains);
+      
+      // Explicitly regenerate chain endpoints after normalization
+      if (newChains.length > 0) {
+        const chainEndpoints = generateChainEndpoints(newChains);
+        overlayStore.setChainEndpoints('prepare', chainEndpoints);
+      }
       
       console.log(`Normalized chains. Re-detected ${newChains.length} chains.`);
       
@@ -481,17 +510,16 @@
 
   // Chain selection functions
   function handleChainClick(chainId: string) {
-    if (selectedChainId === chainId) {
-      selectChain(null);
-    } else {
-      selectChain(chainId);
-    }
+    // Always select the clicked chain (normal selection logic)
+    selectChain(chainId);
   }
   
   // Tessellation is now handled by the imported tessellateShape function
 
-  // Auto-complete program stage (user can adjust parameters and continue)
-  workflowStore.completeStage('program');
+  // Auto-complete prepare stage when chains or parts are detected
+  $: if (detectedChains.length > 0 || detectedParts.length > 0) {
+    workflowStore.completeStage('prepare');
+  }
 </script>
 
 <div class="program-stage">
@@ -659,7 +687,7 @@
           treatChainsAsEntities={true}
           onChainClick={handleChainClick}
           disableDragging={true}
-          showChainEndpoints={detectedChains.length > 0}
+          currentStage="prepare"
         />
       </div>
     </div>

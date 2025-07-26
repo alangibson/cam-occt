@@ -6,15 +6,22 @@
   import Units from '../Units.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
+  import { overlayStore, generateShapePoints } from '../../lib/stores/overlay';
 
   function handleNext() {
     workflowStore.completeStage('edit');
-    workflowStore.setStage('program');
+    workflowStore.setStage('prepare');
   }
 
   // Auto-complete edit stage when drawing exists (user can continue editing and move to next stage anytime)
   $: if ($drawingStore.drawing) {
     workflowStore.completeStage('edit');
+  }
+
+  // Update Edit stage overlay when selected shapes change
+  $: if ($drawingStore.drawing && $drawingStore.selectedShapes) {
+    const shapePoints = generateShapePoints($drawingStore.drawing.shapes, $drawingStore.selectedShapes);
+    overlayStore.setShapePoints('edit', shapePoints);
   }
 </script>
 
@@ -37,10 +44,10 @@
           on:click={handleNext}
           disabled={!$drawingStore.drawing}
         >
-          Next: Program Tool Paths
+          Next: Prepare Chains
         </button>
         <p class="next-help">
-          Ready to create tool paths? Click to continue to the Program stage.
+          Ready to analyze chains and detect parts? Click to continue to the Prepare stage.
         </p>
       </div>
     </div>
@@ -51,7 +58,7 @@
         <ToolBar />
       </div>
       <div class="canvas-container">
-        <DrawingCanvas />
+        <DrawingCanvas currentStage="edit" />
       </div>
     </div>
 

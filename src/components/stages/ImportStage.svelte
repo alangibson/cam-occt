@@ -1,10 +1,27 @@
 <script lang="ts">
   import FileImport from '../FileImport.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
+  import { clearChains } from '../../lib/stores/chains';
+  import { clearParts } from '../../lib/stores/parts';
+  import { overlayStore } from '../../lib/stores/overlay';
+  import { tessellationStore } from '../../lib/stores/tessellation';
 
   function handleFileImported() {
+    // Reset all application state when a new file is imported
+    // This ensures clean state for the new drawing
+    
+    // Reset workflow state (except user settings)
+    workflowStore.reset();
+    
+    // Clear all stage-specific data
+    clearChains();
+    clearParts();
+    overlayStore.clearAllOverlays();
+    tessellationStore.clearTessellation();
+    
     // Mark import stage as complete
     workflowStore.completeStage('import');
+    
     // Auto-advance to edit stage after successful import
     setTimeout(() => {
       workflowStore.setStage('edit');
@@ -34,10 +51,7 @@
       </ul>
 
       <h3>Import Options</h3>
-      <ul>
-        <li><strong>Decompose polylines</strong> - Convert complex polylines into individual line and arc segments for better CAM processing</li>
-        <li><strong>Translate to positive quadrant</strong> - Move the drawing so all coordinates are positive, starting from (0,0)</li>
-      </ul>
+      <p>Configure how your drawing is processed during import using the options above.</p>
     </div>
   </div>
 </div>

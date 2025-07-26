@@ -22,8 +22,13 @@ describe('Workflow Components', () => {
       expect(module.default).toBeDefined();
     });
 
-    it('should import ProgramStage without errors', async () => {
-      const module = await import('./stages/ProgramStage.svelte');
+    it('should import PrepareStage without errors', async () => {
+      const module = await import('./stages/PrepareStage.svelte');
+      expect(module.default).toBeDefined();
+    });
+
+    it('should import NewProgramStage without errors', async () => {
+      const module = await import('./stages/NewProgramStage.svelte');
       expect(module.default).toBeDefined();
     });
 
@@ -44,12 +49,14 @@ describe('Workflow Components', () => {
       
       expect(getStageDisplayName('import')).toBe('Import');
       expect(getStageDisplayName('edit')).toBe('Edit');
+      expect(getStageDisplayName('prepare')).toBe('Prepare');
       expect(getStageDisplayName('program')).toBe('Program');
       expect(getStageDisplayName('simulate')).toBe('Simulate');
       expect(getStageDisplayName('export')).toBe('Export');
       
       expect(getStageDescription('import')).toContain('Import DXF or SVG');
       expect(getStageDescription('edit')).toContain('Edit drawing');
+      expect(getStageDescription('prepare')).toContain('Analyze chains');
       expect(getStageDescription('program')).toContain('Build tool paths');
       expect(getStageDescription('simulate')).toContain('Simulate cutting');
       expect(getStageDescription('export')).toContain('Generate and download');
@@ -65,9 +72,13 @@ describe('Workflow Components', () => {
       
       workflowStore.completeStage('import');
       workflowStore.setStage('edit');
-      expect(workflowStore.getNextStage()).toBe('program');
+      expect(workflowStore.getNextStage()).toBe('prepare');
       
       workflowStore.completeStage('edit');
+      workflowStore.setStage('prepare');
+      expect(workflowStore.getNextStage()).toBe('program');
+      
+      workflowStore.completeStage('prepare');
       workflowStore.setStage('program');
       expect(workflowStore.getNextStage()).toBe('simulate');
       

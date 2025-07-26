@@ -41,13 +41,13 @@ describe('Workflow Integration', () => {
       // Edit stage should be completable now
       workflowStore.completeStage('edit');
       expect(get(workflowStore).completedStages.has('edit')).toBe(true);
-      expect(get(workflowStore).canAdvanceTo('program')).toBe(true);
+      expect(get(workflowStore).canAdvanceTo('prepare')).toBe(true);
     });
   });
 
   describe('Full workflow progression', () => {
     it('should allow complete workflow progression with proper stages', () => {
-      const stages = ['import', 'edit', 'program', 'simulate', 'export'] as const;
+      const stages = ['import', 'edit', 'prepare', 'program', 'simulate', 'export'] as const;
       
       // Progress through each stage
       for (let i = 0; i < stages.length; i++) {
@@ -69,7 +69,7 @@ describe('Workflow Integration', () => {
       }
       
       // All stages should be completed
-      expect(get(workflowStore).completedStages.size).toBe(5);
+      expect(get(workflowStore).completedStages.size).toBe(6);
     });
   });
 
@@ -120,6 +120,8 @@ describe('Workflow Integration', () => {
       // Only after completing edit should program be accessible
       workflowStore.setStage('edit');
       workflowStore.completeStage('edit');
+      workflowStore.setStage('prepare');
+      workflowStore.completeStage('prepare');
       workflowStore.setStage('program');
       expect(get(workflowStore).currentStage).toBe('program'); // Now should work
     });

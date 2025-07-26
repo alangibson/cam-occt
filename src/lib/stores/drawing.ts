@@ -3,6 +3,37 @@ import type { Drawing, Shape, Point2D } from '../../types';
 import { clearChains } from './chains';
 import { clearParts } from './parts';
 
+// Import workflow store for state management
+let workflowStore: any = null;
+const getWorkflowStore = async () => {
+  if (!workflowStore) {
+    const { workflowStore: ws } = await import('./workflow');
+    workflowStore = ws;
+  }
+  return workflowStore;
+};
+
+// Helper function to reset downstream stages when drawing is modified
+const resetDownstreamStages = async (fromStage: 'edit' | 'prepare' = 'edit') => {
+  // Clear stage-specific data
+  clearChains();
+  clearParts();
+  
+  // Import and clear other stores
+  const { overlayStore } = await import('./overlay');
+  const { tessellationStore } = await import('./tessellation');
+  
+  overlayStore.clearStageOverlay('prepare');
+  overlayStore.clearStageOverlay('program');
+  overlayStore.clearStageOverlay('simulate');
+  overlayStore.clearStageOverlay('export');
+  tessellationStore.clearTessellation();
+  
+  // Reset workflow completion status for downstream stages
+  const ws = await getWorkflowStore();
+  ws.invalidateDownstreamStages(fromStage);
+};
+
 interface DrawingState {
   drawing: Drawing | null;
   selectedShapes: Set<string>;
@@ -33,9 +64,8 @@ function createDrawingStore() {
   return {
     subscribe,
     setDrawing: (drawing: Drawing, fileName?: string) => {
-      // Clear chains and parts when importing a new file
-      clearChains();
-      clearParts();
+      // Reset all application state when importing a new file
+      resetDownstreamStages('edit');
       
       return update(state => ({ 
         ...state, 
@@ -43,7 +73,11 @@ function createDrawingStore() {
         fileName: fileName || null,
         displayUnit: drawing.units, // Set display unit from drawing's detected units
         scale: 1, // Always start at 100% zoom
-        offset: { x: 0, y: 0 } // Reset offset
+        offset: { x: 0, y: 0 }, // Reset offset
+        selectedShapes: new Set(), // Clear selection
+        hoveredShape: null, // Clear hover state
+        isDragging: false, // Reset drag state
+        dragStart: null // Reset drag start
       }));
     },
     
@@ -71,6 +105,9 @@ function createDrawingStore() {
         shape => !state.selectedShapes.has(shape.id)
       );
       
+      // Reset downstream stages when shapes are deleted
+      resetDownstreamStages('edit');
+      
       return {
         ...state,
         drawing: { ...state.drawing, shapes },
@@ -88,6 +125,9 @@ function createDrawingStore() {
         return shape;
       });
       
+      // Reset downstream stages when shapes are moved
+      resetDownstreamStages('edit');
+      
       return {
         ...state,
         drawing: { ...state.drawing, shapes }
@@ -104,6 +144,9 @@ function createDrawingStore() {
         return shape;
       });
       
+      // Reset downstream stages when shapes are scaled
+      resetDownstreamStages('edit');
+      
       return {
         ...state,
         drawing: { ...state.drawing, shapes }
@@ -119,6 +162,9 @@ function createDrawingStore() {
         }
         return shape;
       });
+      
+      // Reset downstream stages when shapes are rotated
+      resetDownstreamStages('edit');
       
       return {
         ...state,
@@ -153,9 +199,8 @@ function createDrawingStore() {
     replaceAllShapes: (shapes: Shape[]) => update(state => {
       if (!state.drawing) return state;
       
-      // Clear chains and parts when shapes are replaced
-      clearChains();
-      clearParts();
+      // Reset downstream stages when shapes are replaced (this happens during prepare stage operations)
+      resetDownstreamStages('prepare');
       
       return {
         ...state,

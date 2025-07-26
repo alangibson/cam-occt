@@ -25,10 +25,17 @@ The application is organized around a clear 5-stage workflow that guides users f
 
 ### 3. Program Stage
 **Purpose**: Build tool paths that trace the drawing using cut parameters
-- Define cutting parameters (feed rates, pierce delays, lead-in/out)
-- Generate optimized tool paths from geometry
-- Apply cut sequencing and optimization algorithms
-- Preview programmed tool paths overlaid on drawing
+
+**Key Features**:
+- **Path Creation**: All paths are tool paths describing where the tool head will move
+- **Cut vs Rapids**: Paths that cut are "cut paths", non-cutting paths are "rapids"
+- **Path Components**: Each path consists of a chain + motion parameters
+- **Motion Parameters**: Minimally include speed (feed rate), optionally tool height (cut height)
+- **Plasma Cut Parameters**: Pierce Height (units), Pierce Delay (s), Arc voltage, Kerf Width (units), THC enable
+- **Path Enhancements**: Lead-in Length (units), Lead-out Length (units), Overcut Length (units)
+- **Default Behavior**: Display chains as paths with no attached cutting parameters initially
+- **Automatic Detection**: Auto-detect chains and parts from imported drawing geometry
+- **Interactive Parameters**: User-configurable tolerance and cutting parameters
 
 ### 4. Simulate Stage
 **Purpose**: Graphically simulate cutting process in real time
@@ -89,9 +96,14 @@ edit
 ```
 program
 ├─ left column
+│  ├─ chain detection controls (tolerance input, detect button)
+│  ├─ chains list (with status: open/closed, shape count)
+│  ├─ parts list (with hole count)
 ├─ center column
-│  ├─ programmed drawing image
+│  ├─ drawing canvas (chains displayed as paths, no dragging)
 ├─ right column
+│  ├─ cutting parameters (feed rate, pierce settings, etc.)
+│  ├─ path information (chain count, part count, cut paths)
 ```
 
 #### Simulate Stage

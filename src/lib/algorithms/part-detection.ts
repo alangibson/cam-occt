@@ -172,7 +172,7 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1,
 /**
  * Checks if a chain forms a closed loop
  */
-function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boolean {
+export function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boolean {
   if (chain.shapes.length === 0) return false;
   
   // Special case: single-shape circles are inherently closed

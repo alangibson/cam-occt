@@ -67,10 +67,19 @@ export interface Shape {
   selected?: boolean;
   originalType?: string; // Track original DXF entity type for converted shapes
   splineData?: SplineData; // Original spline data for converted spline shapes
+  metadata?: Record<string, any>; // Metadata for additional shape information (e.g., originalLayer)
+}
+
+export interface Layer {
+  shapes: Shape[];
+  name?: string;
+  visible?: boolean;
+  color?: string;
 }
 
 export interface Drawing {
   shapes: Shape[];
   bounds: BoundingBox;
   units: 'mm' | 'inch';
+  layers?: Record<string, Layer>; // Optional layer-based shape organization
 }

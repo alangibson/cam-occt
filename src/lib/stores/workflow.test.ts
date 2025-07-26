@@ -50,7 +50,7 @@ describe('Workflow Store', () => {
     });
 
     it('should allow progression through all stages sequentially', () => {
-      const stages: WorkflowStage[] = ['import', 'edit', 'program', 'simulate', 'export'];
+      const stages: WorkflowStage[] = ['import', 'edit', 'prepare', 'program', 'simulate', 'export'];
       
       for (let i = 0; i < stages.length; i++) {
         const currentStage = stages[i];
@@ -76,8 +76,9 @@ describe('Workflow Store', () => {
       workflowStore.completeStage('edit');
       
       const state = get(workflowStore);
-      expect(state.canAdvanceTo('program')).toBe(true);
-      expect(state.canAdvanceTo('simulate')).toBe(false); // Should not skip program
+      expect(state.canAdvanceTo('prepare')).toBe(true);
+      expect(state.canAdvanceTo('program')).toBe(false); // Should not skip prepare
+      expect(state.canAdvanceTo('simulate')).toBe(false);
       expect(state.canAdvanceTo('export')).toBe(false);
     });
   });
@@ -88,10 +89,12 @@ describe('Workflow Store', () => {
       
       workflowStore.completeStage('import');
       workflowStore.setStage('edit');
-      expect(workflowStore.getNextStage()).toBe('program');
+      expect(workflowStore.getNextStage()).toBe('prepare');
       
       // Progress through all stages to reach export
       workflowStore.completeStage('edit');
+      workflowStore.setStage('prepare');
+      workflowStore.completeStage('prepare');
       workflowStore.setStage('program');
       workflowStore.completeStage('program');
       workflowStore.setStage('simulate');
@@ -108,8 +111,12 @@ describe('Workflow Store', () => {
       expect(workflowStore.getPreviousStage()).toBe('import');
       
       workflowStore.completeStage('edit');
-      workflowStore.setStage('program');
+      workflowStore.setStage('prepare');
       expect(workflowStore.getPreviousStage()).toBe('edit');
+      
+      workflowStore.completeStage('prepare');
+      workflowStore.setStage('program');
+      expect(workflowStore.getPreviousStage()).toBe('prepare');
     });
   });
 

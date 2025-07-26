@@ -4,16 +4,18 @@
   import { chainStore } from '../lib/stores/chains';
   import { partStore } from '../lib/stores/parts';
   import { tessellationStore } from '../lib/stores/tessellation';
+  import { overlayStore } from '../lib/stores/overlay';
   import { getShapeChainId, getChainShapeIds, getSelectedChainShapeIds } from '../lib/stores/chains';
   import { getChainPartType, getPartChainIds } from '../lib/stores/parts';
   import type { Shape, Point2D } from '../types';
+  import type { WorkflowStage } from '../lib/stores/workflow';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
   
   export let respectLayerVisibility = true; // Default to true for Edit stage
   export let treatChainsAsEntities = false; // Default to false, true for Program stage
   export let onChainClick: ((chainId: string) => void) | null = null; // Callback for chain clicks
   export let disableDragging = false; // Default to false, true to disable dragging
-  export let showChainEndpoints = false; // Default to false, true to show chain start/end points
+  export let currentStage: WorkflowStage; // Current workflow stage for overlay rendering
   
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -33,6 +35,8 @@
   $: parts = $partStore.parts;
   $: highlightedPartId = $partStore.highlightedPartId;
   $: tessellationState = $tessellationStore;
+  $: overlayState = $overlayStore;
+  $: currentOverlay = overlayState.overlays[currentStage];
   
   // Get chain IDs that belong to the highlighted part
   $: highlightedChainIds = highlightedPartId ? getPartChainIds(highlightedPartId, parts) : [];
@@ -101,20 +105,11 @@
       
       drawShape(shape, isSelected, isHovered, chainId, partType);
       
-      // Draw origin/start/end points for selected shapes (but not in Program stage when treating chains as entities)
-      if (isSelected && !(treatChainsAsEntities)) {
-        drawShapePoints(shape);
-      }
     });
     
-    // Draw tessellation points if active
-    if (tessellationState.isActive && tessellationState.points.length > 0) {
-      drawTessellationPoints(tessellationState.points);
-    }
-    
-    // Draw chain start/end points if enabled
-    if (showChainEndpoints) {
-      drawChainEndpoints();
+    // Draw stage-specific overlays
+    if (currentOverlay) {
+      drawOverlays(currentOverlay);
     }
     
     ctx.restore();
@@ -583,59 +578,82 @@
     }
   }
   
-  function drawChainEndpoints() {
-    if (!showChainEndpoints || chains.length === 0) return;
+  
+  function drawOverlays(overlay: any) {
+    // Draw shape points (Edit stage)
+    if (overlay.shapePoints && overlay.shapePoints.length > 0) {
+      overlay.shapePoints.forEach((point: any) => {
+        drawOverlayPoint(point.x, point.y, point.type, 4 / totalScale);
+      });
+    }
     
-    const pointSize = 6 / totalScale; // Slightly larger than shape points for visibility
+    // Draw chain endpoints (Prepare stage)
+    if (overlay.chainEndpoints && overlay.chainEndpoints.length > 0) {
+      overlay.chainEndpoints.forEach((endpoint: any) => {
+        drawChainEndpoint(endpoint.x, endpoint.y, endpoint.type, 6 / totalScale);
+      });
+    }
     
-    chains.forEach(chain => {
-      if (chain.shapes.length === 0) return;
-      
-      const firstShape = chain.shapes[0];
-      const lastShape = chain.shapes[chain.shapes.length - 1];
-      
-      // Get chain start point (start of first shape)
-      const chainStartPoint = getShapeStartPoint(firstShape);
-      
-      // Get chain end point (end of last shape)
-      const chainEndPoint = getShapeEndPoint(lastShape);
-      
-      // Draw start point (bright green with white border)
-      if (chainStartPoint) {
-        ctx.save();
-        // White border
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(chainStartPoint.x, chainStartPoint.y, pointSize + 1 / totalScale, 0, 2 * Math.PI);
-        ctx.fill();
-        // Green center
-        ctx.fillStyle = '#10b981'; // Emerald green
-        ctx.beginPath();
-        ctx.arc(chainStartPoint.x, chainStartPoint.y, pointSize, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.restore();
-      }
-      
-      // Draw end point (bright red with white border) - only if different from start
-      if (chainEndPoint && (
-        !chainStartPoint || 
-        Math.abs(chainEndPoint.x - chainStartPoint.x) > 0.01 || 
-        Math.abs(chainEndPoint.y - chainStartPoint.y) > 0.01
-      )) {
-        ctx.save();
-        // White border
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(chainEndPoint.x, chainEndPoint.y, pointSize + 1 / totalScale, 0, 2 * Math.PI);
-        ctx.fill();
-        // Red center
-        ctx.fillStyle = '#ef4444'; // Red
-        ctx.beginPath();
-        ctx.arc(chainEndPoint.x, chainEndPoint.y, pointSize, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.restore();
-      }
-    });
+    // Draw tessellation points (Program stage)
+    if (overlay.tessellationPoints && overlay.tessellationPoints.length > 0) {
+      overlay.tessellationPoints.forEach((point: any) => {
+        drawTessellationPoint(point.x, point.y, 2 / totalScale);
+      });
+    }
+  }
+  
+  function drawOverlayPoint(x: number, y: number, type: string, size: number) {
+    ctx.save();
+    
+    switch (type) {
+      case 'origin':
+        ctx.fillStyle = '#0066ff'; // Blue
+        break;
+      case 'start':
+        ctx.fillStyle = '#00ff00'; // Green
+        break;
+      case 'end':
+        ctx.fillStyle = '#ff0000'; // Red
+        break;
+      default:
+        ctx.fillStyle = '#888888'; // Gray
+    }
+    
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.restore();
+  }
+  
+  function drawChainEndpoint(x: number, y: number, type: string, size: number) {
+    ctx.save();
+    
+    // Draw white border
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath();
+    ctx.arc(x, y, size + 1 / totalScale, 0, 2 * Math.PI);
+    ctx.fill();
+    
+    // Draw colored center
+    if (type === 'start') {
+      ctx.fillStyle = '#10b981'; // Emerald green
+    } else {
+      ctx.fillStyle = '#ef4444'; // Red
+    }
+    
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.restore();
+  }
+  
+  function drawTessellationPoint(x: number, y: number, size: number) {
+    ctx.save();
+    ctx.fillStyle = '#2563eb'; // Blue
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.restore();
   }
   
   function screenToWorld(screenPos: Point2D): Point2D {
@@ -688,7 +706,7 @@
         }
         // Check if point is within the arc's angular range
         const pointAngle = Math.atan2(point.y - arc.center.y, point.x - arc.center.x);
-        return isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle);
+        return isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle, arc.clockwise);
         
       case 'polyline':
         const polyline = shape.geometry as any;
@@ -712,7 +730,7 @@
               const distToCenter = distance(point, arc.center);
               if (Math.abs(distToCenter - arc.radius) < tolerance) {
                 const pointAngle = Math.atan2(point.y - arc.center.y, point.x - arc.center.x);
-                if (isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle)) {
+                if (isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle, arc.clockwise)) {
                   return true;
                 }
               }
@@ -736,7 +754,7 @@
               const distToCenter = distance(point, arc.center);
               if (Math.abs(distToCenter - arc.radius) < tolerance) {
                 const pointAngle = Math.atan2(point.y - arc.center.y, point.x - arc.center.x);
-                if (isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle)) {
+                if (isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle, arc.clockwise)) {
                   return true;
                 }
               }
@@ -807,7 +825,7 @@
     return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
   }
   
-  function isAngleInArcRange(angle: number, startAngle: number, endAngle: number): boolean {
+  function isAngleInArcRange(angle: number, startAngle: number, endAngle: number, clockwise: boolean = false): boolean {
     // Normalize angles to [0, 2π]
     const normalizeAngle = (a: number) => {
       while (a < 0) a += 2 * Math.PI;
@@ -819,11 +837,22 @@
     const normStart = normalizeAngle(startAngle);
     const normEnd = normalizeAngle(endAngle);
     
-    if (normStart <= normEnd) {
-      return normAngle >= normStart && normAngle <= normEnd;
+    if (clockwise) {
+      // For clockwise arcs, we traverse from start to end in clockwise direction
+      if (normStart >= normEnd) {
+        return normAngle <= normStart && normAngle >= normEnd;
+      } else {
+        // Arc crosses 0 degrees in clockwise direction
+        return normAngle <= normStart || normAngle >= normEnd;
+      }
     } else {
-      // Arc crosses 0 degrees
-      return normAngle >= normStart || normAngle <= normEnd;
+      // For counter-clockwise arcs (default behavior)
+      if (normStart <= normEnd) {
+        return normAngle >= normStart && normAngle <= normEnd;
+      } else {
+        // Arc crosses 0 degrees
+        return normAngle >= normStart || normAngle <= normEnd;
+      }
     }
   }
   

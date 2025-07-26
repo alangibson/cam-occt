@@ -23,6 +23,8 @@ function createWorkflowStore(): Writable<WorkflowState> & {
   getNextStage: () => WorkflowStage | null;
   getPreviousStage: () => WorkflowStage | null;
   reset: () => void;
+  resetFromStage: (stage: WorkflowStage) => void;
+  invalidateDownstreamStages: (fromStage: WorkflowStage) => void;
 } {
   const initialState: WorkflowState = {
     currentStage: 'import',
@@ -114,6 +116,67 @@ function createWorkflowStore(): Writable<WorkflowState> & {
           const currentIndex = WORKFLOW_ORDER.indexOf(stage);
           return currentIndex <= 0; // Only import stage accessible initially
         }
+      });
+    },
+
+    resetFromStage: (stage: WorkflowStage) => {
+      update(state => {
+        const stageIndex = WORKFLOW_ORDER.indexOf(stage);
+        const newCompleted = new Set<WorkflowStage>();
+        
+        // Keep only completed stages before the reset stage
+        for (const completedStage of state.completedStages) {
+          const completedIndex = WORKFLOW_ORDER.indexOf(completedStage);
+          if (completedIndex < stageIndex) {
+            newCompleted.add(completedStage);
+          }
+        }
+        
+        // If current stage is after reset stage, move back to reset stage
+        const currentIndex = WORKFLOW_ORDER.indexOf(state.currentStage);
+        const newCurrentStage = currentIndex > stageIndex ? stage : state.currentStage;
+        
+        return {
+          ...state,
+          currentStage: newCurrentStage,
+          completedStages: newCompleted,
+          canAdvanceTo: (targetStage: WorkflowStage) => {
+            const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
+            const completedUpTo = Math.max(
+              -1,
+              ...Array.from(newCompleted).map(s => WORKFLOW_ORDER.indexOf(s))
+            );
+            return targetIndex <= completedUpTo + 1;
+          }
+        };
+      });
+    },
+
+    invalidateDownstreamStages: (fromStage: WorkflowStage) => {
+      update(state => {
+        const fromIndex = WORKFLOW_ORDER.indexOf(fromStage);
+        const newCompleted = new Set<WorkflowStage>();
+        
+        // Keep only completed stages up to and including the fromStage
+        for (const completedStage of state.completedStages) {
+          const completedIndex = WORKFLOW_ORDER.indexOf(completedStage);
+          if (completedIndex <= fromIndex) {
+            newCompleted.add(completedStage);
+          }
+        }
+        
+        return {
+          ...state,
+          completedStages: newCompleted,
+          canAdvanceTo: (targetStage: WorkflowStage) => {
+            const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
+            const completedUpTo = Math.max(
+              -1,
+              ...Array.from(newCompleted).map(s => WORKFLOW_ORDER.indexOf(s))
+            );
+            return targetIndex <= completedUpTo + 1;
+          }
+        };
       });
     }
   };

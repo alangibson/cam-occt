@@ -89,21 +89,27 @@
   </button>
   
   <div class="options">
-    <label class="checkbox-label">
-      <input
-        type="checkbox"
-        bind:checked={decomposePolylines}
-      />
-      Decompose polylines
-    </label>
+    <div class="option-group">
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          bind:checked={decomposePolylines}
+        />
+        Decompose polylines
+      </label>
+      <p class="option-description">Convert complex polylines into individual line and arc segments for better CAM processing</p>
+    </div>
     
-    <label class="checkbox-label">
-      <input
-        type="checkbox"
-        bind:checked={translateToPositiveQuadrant}
-      />
-      Translate to positive quadrant
-    </label>
+    <div class="option-group">
+      <label class="checkbox-label">
+        <input
+          type="checkbox"
+          bind:checked={translateToPositiveQuadrant}
+        />
+        Translate to positive quadrant
+      </label>
+      <p class="option-description">Move the drawing so all coordinates are positive, starting from (0,0)</p>
+    </div>
   </div>
   
   {#if fileName}
@@ -157,7 +163,15 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
+    gap: 1rem;
+  }
+  
+  .option-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    max-width: 400px;
   }
   
   .checkbox-label {
@@ -167,9 +181,18 @@
     font-size: 0.9rem;
     color: #333;
     cursor: pointer;
+    font-weight: 500;
   }
   
   .checkbox-label input[type="checkbox"] {
     cursor: pointer;
+  }
+  
+  .option-description {
+    margin: 0;
+    font-size: 0.8rem;
+    color: #666;
+    text-align: center;
+    line-height: 1.3;
   }
 </style>

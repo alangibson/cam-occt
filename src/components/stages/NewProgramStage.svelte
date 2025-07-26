@@ -1,6 +1,14 @@
 <script lang="ts">
+  import DrawingCanvas from '../DrawingCanvas.svelte';
   import CuttingParameters from '../CuttingParameters.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
+  import { drawingStore } from '../../lib/stores/drawing';
+  import { chainStore } from '../../lib/stores/chains';
+  import { partStore } from '../../lib/stores/parts';
+  import { detectShapeChains } from '../../lib/algorithms/chain-detection';
+  import { detectParts, isChainClosed } from '../../lib/algorithms/part-detection';
+  import { setChains, setTolerance } from '../../lib/stores/chains';
+  import { setParts } from '../../lib/stores/parts';
   import type { CuttingParameters as CuttingParametersType } from '../../types';
 
   let cuttingParameters: CuttingParametersType = {
@@ -12,10 +20,55 @@
     leadInLength: 5,
     leadOutLength: 5
   };
+  
+  let tolerance = 0.1;
+
+  // Subscribe to stores
+  $: drawing = $drawingStore.drawing;
+  $: chains = $chainStore.chains;
+  $: parts = $partStore.parts;
+  $: chainTolerance = $chainStore.tolerance;
+
+  // Update tolerance when it changes
+  $: if (tolerance !== chainTolerance) {
+    setTolerance(tolerance);
+  }
+
+  function handleDetectChains() {
+    if (!drawing) return;
+    
+    const detectedChains = detectShapeChains(drawing.shapes, { tolerance });
+    setChains(detectedChains);
+  }
+
+  async function handleDetectParts() {
+    if (chains.length === 0) {
+      alert('Please detect chains first');
+      return;
+    }
+    
+    const result = await detectParts(chains, tolerance);
+    setParts(result.parts, result.warnings);
+  }
 
   function handleNext() {
     workflowStore.completeStage('program');
     workflowStore.setStage('simulate');
+  }
+
+  // Auto-detect chains when drawing changes
+  $: if (drawing && drawing.shapes.length > 0) {
+    handleDetectChains();
+  }
+
+  // Auto-detect parts when chains change
+  $: if (chains.length > 0) {
+    handleDetectParts();
+  }
+
+  // Helper function to check if a chain is closed
+  function isChainClosedHelper(chain: any): boolean {
+    return isChainClosed(chain, tolerance);
   }
 
   // Auto-complete program stage (user can adjust parameters and continue)
@@ -24,12 +77,57 @@
 
 <div class="program-stage">
   <div class="program-layout">
-    <!-- Left Column -->
+    <!-- Left Column - Parts and Chains -->
     <div class="left-column">
       <div class="panel">
-        <h3 class="panel-title">Cutting Parameters</h3>
-        <CuttingParameters bind:parameters={cuttingParameters} units="mm" />
+        <h3 class="panel-title">Chain Detection</h3>
+        <div class="tolerance-input">
+          <label for="tolerance">Tolerance ({$drawingStore.displayUnit}):</label>
+          <input
+            id="tolerance"
+            type="number"
+            bind:value={tolerance}
+            min="0.001"
+            max="10"
+            step="0.01"
+            class="tolerance-field"
+          />
+        </div>
+        <button class="detect-button" on:click={handleDetectChains}>
+          Detect Chains
+        </button>
       </div>
+
+      {#if chains.length > 0}
+        <div class="panel">
+          <h3 class="panel-title">Chains ({chains.length})</h3>
+          <div class="chain-list">
+            {#each chains as chain (chain.id)}
+              <div class="chain-item">
+                <span class="chain-name">Chain {chain.id.split('-')[1]}</span>
+                <span class="chain-info">{chain.shapes.length} shapes</span>
+                <span class="chain-status {isChainClosedHelper(chain) ? 'closed' : 'open'}">
+                  {isChainClosedHelper(chain) ? 'Closed' : 'Open'}
+                </span>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
+
+      {#if parts.length > 0}
+        <div class="panel">
+          <h3 class="panel-title">Parts ({parts.length})</h3>
+          <div class="parts-list">
+            {#each parts as part (part.id)}
+              <div class="part-item">
+                <span class="part-name">Part {part.id.split('-')[1]}</span>
+                <span class="part-info">{part.holes.length} holes</span>
+              </div>
+            {/each}
+          </div>
+        </div>
+      {/if}
 
       <div class="panel next-stage-panel">
         <button 
@@ -44,40 +142,47 @@
       </div>
     </div>
 
-    <!-- Center Column -->
+    <!-- Center Column - Drawing Canvas -->
     <div class="center-column">
-      <div class="canvas-header">
-        <h2>Tool Path Programming</h2>
-        <p>Set cutting parameters and generate tool paths for your parts.</p>
-      </div>
       <div class="canvas-container">
-        <!-- TODO: Add tool path visualization canvas here -->
-        <div class="placeholder-content">
-          <h3>Tool Path Generation</h3>
-          <p>Tool path generation and visualization will be implemented here.</p>
-          <ul>
-            <li>Generate cutting paths from detected parts</li>
-            <li>Apply cutting parameters</li>
-            <li>Optimize cut sequence</li>
-            <li>Preview tool paths</li>
-          </ul>
-        </div>
+        {#if drawing}
+          <DrawingCanvas 
+            treatChainsAsEntities={true}
+            disableDragging={true}
+            currentStage="program"
+          />
+        {:else}
+          <div class="no-drawing">
+            <h3>No Drawing Loaded</h3>
+            <p>Please import a drawing file to begin programming tool paths.</p>
+          </div>
+        {/if}
       </div>
     </div>
 
-    <!-- Right Column -->
+    <!-- Right Column - Cutting Parameters -->
     <div class="right-column">
       <div class="panel">
-        <h3 class="panel-title">Tool Path Information</h3>
-        <p class="placeholder-text">
-          Tool path generation and optimization features will be implemented here.
-        </p>
-        <ul class="info-list">
-          <li>Total cutting length: <strong>--</strong></li>
-          <li>Estimated cut time: <strong>--</strong></li>
-          <li>Number of pierces: <strong>--</strong></li>
-          <li>Tool path optimization: <strong>Enabled</strong></li>
-        </ul>
+        <h3 class="panel-title">Cutting Parameters</h3>
+        <CuttingParameters bind:parameters={cuttingParameters} units={$drawingStore.displayUnit || 'mm'} />
+      </div>
+      
+      <div class="panel">
+        <h3 class="panel-title">Path Information</h3>
+        <div class="path-info">
+          <div class="info-item">
+            <span class="info-label">Total Chains:</span>
+            <span class="info-value">{chains.length}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Total Parts:</span>
+            <span class="info-value">{parts.length}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Cut Paths:</span>
+            <span class="info-value">{chains.length} (default)</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -131,23 +236,40 @@
     box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
   }
 
-  .canvas-header {
-    padding: 1rem 2rem;
-    border-bottom: 1px solid #e5e7eb;
-    background-color: #fafafa;
+  .tolerance-input {
+    margin-bottom: 1rem;
   }
 
-  .canvas-header h2 {
-    margin: 0 0 0.5rem 0;
-    font-size: 1.25rem;
-    font-weight: 600;
+  .tolerance-input label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
     color: #374151;
   }
 
-  .canvas-header p {
-    margin: 0;
-    color: #6b7280;
+  .tolerance-field {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
     font-size: 0.875rem;
+  }
+
+  .detect-button {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+
+  .detect-button:hover {
+    background-color: #2563eb;
   }
 
   .canvas-container {
@@ -159,20 +281,82 @@
     justify-content: center;
   }
 
-  .placeholder-content {
+  .no-drawing {
     text-align: center;
     color: #6b7280;
     max-width: 400px;
   }
 
-  .placeholder-content h3 {
+  .no-drawing h3 {
     margin: 0 0 1rem 0;
     color: #374151;
   }
 
-  .placeholder-content ul {
-    text-align: left;
-    margin: 1rem 0;
+  .chain-list, .parts-list {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  .chain-item, .part-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f3f4f6;
+    font-size: 0.875rem;
+  }
+
+  .chain-item:last-child, .part-item:last-child {
+    border-bottom: none;
+  }
+
+  .chain-name, .part-name {
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .chain-info, .part-info {
+    color: #6b7280;
+    font-size: 0.75rem;
+  }
+
+  .chain-status {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+  }
+
+  .chain-status.closed {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+
+  .chain-status.open {
+    background-color: #fef3c7;
+    color: #92400e;
+  }
+
+  .path-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.875rem;
+  }
+
+  .info-label {
+    color: #6b7280;
+  }
+
+  .info-value {
+    font-weight: 500;
+    color: #374151;
   }
 
   .next-stage-panel {
@@ -216,30 +400,5 @@
     padding-bottom: 0.5rem;
   }
 
-  .placeholder-text {
-    color: #6b7280;
-    font-style: italic;
-    margin: 0 0 1rem 0;
-  }
 
-  .info-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .info-list li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #f3f4f6;
-    font-size: 0.875rem;
-    color: #6b7280;
-  }
-
-  .info-list li:last-child {
-    border-bottom: none;
-  }
-
-  .info-list strong {
-    color: #374151;
-  }
 </style>
