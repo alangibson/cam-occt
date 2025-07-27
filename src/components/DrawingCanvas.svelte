@@ -1037,6 +1037,9 @@
   $: if (ctx && scale) render();
   $: if (ctx && offset) render();
   $: if (ctx && displayUnit) render();
+  $: if (ctx && selectedChainId !== undefined) render();
+  $: if (ctx && highlightedPartId !== undefined) render();
+  $: if (ctx && highlightedChainIds) render();
 </script>
 
 <canvas

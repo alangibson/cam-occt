@@ -1,23 +1,12 @@
 <script lang="ts">
   import DrawingCanvas from '../DrawingCanvas.svelte';
-  import CuttingParameters from '../CuttingParameters.svelte';
+  import Operations from '../Operations.svelte';
   import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
   import { chainStore, selectChain } from '../../lib/stores/chains';
   import { partStore, highlightPart, clearHighlight } from '../../lib/stores/parts';
   import { isChainClosed } from '../../lib/algorithms/part-detection';
-  import type { CuttingParameters as CuttingParametersType } from '../../types';
-
-  let cuttingParameters: CuttingParametersType = {
-    feedRate: 1000,
-    pierceHeight: 3.8,
-    pierceDelay: 0.5,
-    cutHeight: 1.5,
-    kerf: 1.5,
-    leadInLength: 5,
-    leadOutLength: 5
-  };
   
   // Subscribe to stores
   $: drawing = $drawingStore.drawing;
@@ -137,10 +126,10 @@
       </div>
     </div>
 
-    <!-- Right Column - Cutting Parameters -->
+    <!-- Right Column - Operations -->
     <div class="right-column">
-      <AccordionPanel title="Cutting Parameters" isExpanded={true}>
-        <CuttingParameters bind:parameters={cuttingParameters} units={$drawingStore.displayUnit || 'mm'} />
+      <AccordionPanel title="Operations" isExpanded={true}>
+        <Operations />
       </AccordionPanel>
       
       <AccordionPanel title="Path Information" isExpanded={true}>

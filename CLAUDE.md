@@ -51,77 +51,6 @@ The application is organized around a clear 5-stage workflow that guides users f
 - Download G-code file for CNC machine
 - Export cutting reports and documentation
 
-## UI Layout Architecture
-
-The application uses a workflow-based UI layout with three main rows: Header, Body, and Footer.
-
-### Primary UI Hierarchy
-
-```
-window
-├─ header
-│  ├─ workflow stage breadcrumbs
-├─ body
-│  ├─ page for current workflow stage
-├─ footer
-│  ├─ drawing size
-│  ├─ zoom factor
-```
-
-### Workflow Stage Pages
-
-#### Import Stage
-```
-import
-├─ Import button
-├─ Drag and drop zone
-├─ Decompose polylines checkbox
-├─ Translate to positive quadrant checkbox
-```
-
-#### Edit Stage
-```
-edit
-├─ left column
-│  ├─ display units
-│  ├─ layers
-├─ center column
-│  ├─ toolbar
-│  ├─ drawing image
-├─ right column
-│  ├─ shape properties
-```
-
-#### Program Stage
-```
-program
-├─ left column
-│  ├─ chain detection controls (tolerance input, detect button)
-│  ├─ chains list (with status: open/closed, shape count)
-│  ├─ parts list (with hole count)
-├─ center column
-│  ├─ drawing canvas (chains displayed as paths, no dragging)
-├─ right column
-│  ├─ cutting parameters (feed rate, pierce settings, etc.)
-│  ├─ path information (chain count, part count, cut paths)
-```
-
-#### Simulate Stage
-```
-simulate
-├─ center column
-│  ├─ 3D simulation viewport
-├─ simulation controls
-```
-
-#### Export Stage
-```
-export
-├─ generate gcode button
-├─ generate gcode text area
-├─ download button
-```
-
 ### Layout Behavior
 
 - **Header**: Always visible, shows current workflow stage via breadcrumbs
@@ -131,12 +60,6 @@ export
 - **State Management**: Each stage maintains its own state while preserving data from previous stages
 
 ## Key Technical Context
-
-### Tractor Seat Mount Test File
-The "Tractor Seat Mount - Left.dxf" test file should produce 1 part with 12 holes:
-- 4 round holes (circles)
-- 8 holes formed by spline curves that create letter shapes
-- "Hole" in the context of part detection does not imply roundness - it refers to any closed chain that is contained within a part's outer boundary
 
 ### Chain Closure Tolerance
 **CRITICAL**: Use ONLY the user-set tolerance from the Program page for ALL chain closure detection. Do NOT implement "adaptive tolerance" or any other tolerance calculation based on chain size, complexity, or other factors. The user-set tolerance is the single source of truth for determining if chains are closed.
@@ -579,6 +502,31 @@ When adding new shape types:
 3. Add bounds calculation in `getShapePoints()` function
 4. Test selection behavior manually
 
+## Selection and Highlighting Synchronization
+
+**CRITICAL**: All selection and highlighting operations must be synchronized across all UI components:
+
+- **Part Highlighting**: When a part is highlighted in any component (Operations apply-to menu, Program stage parts list, etc.), the same part must be highlighted in:
+  - Drawing canvas (visual highlighting)
+  - Parts list in Program stage (highlighted background)
+  - Any other UI components showing part information
+
+- **Path/Chain Selection**: When a path (chain) is selected in any component, the same path must be selected in:
+  - Drawing canvas (visual selection styling)
+  - Paths list in Program stage (selected background)
+  - Any other UI components showing path information
+
+- **Implementation Requirements**:
+  - Use the shared store functions: `highlightPart(partId)`, `clearHighlight()` for parts
+  - Use the shared store functions: `selectChain(chainId)` for paths/chains
+  - Never create local selection state that doesn't sync with stores
+  - Always test that hover/selection in one component updates all other relevant components
+
+- **Testing Requirements**:
+  - Verify that hovering over a part in the Operations apply-to menu highlights the part in the drawing canvas
+  - Verify that hovering over a path in the Operations apply-to menu selects the path in the drawing canvas
+  - Test all selection interactions across multiple UI components to ensure synchronization
+
 ## Shape Color Scheme and Visual Behavior
 
 **CRITICAL**: The application uses a consistent color scheme for shape states:
@@ -1014,34 +962,9 @@ Proper geometric containment is essential for determining part/hole relationship
 
 ### Fallback and Simplification Approval Requirement
 
-**CRITICAL**: All fallbacks, workarounds, and geometric simplifications in algorithms must be explicitly approved by the user before implementation. This includes but is not limited to:
-
-- Bounding box containment as fallback for geometric operations
-- Adaptive tolerance calculations instead of user-set tolerances  
-- Polyline-to-edge oversimplifications that lose geometric detail
-- Any approximation methods that could affect geometric accuracy
-- Fallback algorithms when primary geometric operations fail
+**CRITICAL**: All fallbacks, workarounds, and geometric simplifications in algorithms must be explicitly approved by the user before implementation.
 
 The user must review and approve each proposed fallback or simplification to ensure it meets the application's accuracy requirements. Document all approved fallbacks with clear explanations of when and why they are used.
-
-### Correct Approach: Custom Geometric Algorithms
-
-Use custom geometric algorithms for mathematically sound containment:
-
-```typescript
-// CORRECT: Point-in-polygon containment test
-function isChainContained(innerChain: ShapeChain, outerChain: ShapeChain): boolean {
-  // Test if all points of inner chain are inside outer chain polygon
-  const innerPoints = extractChainPoints(innerChain);
-  return innerPoints.every(point => isPointInPolygon(point, outerChain));
-}
-
-// Ray casting algorithm for point-in-polygon test
-function isPointInPolygon(point: Point, chain: ShapeChain): boolean {
-  // Implementation using ray casting algorithm
-  // Returns true if point is inside the polygon formed by the chain
-}
-```
 
 ### Testing Requirements
 
@@ -1060,21 +983,6 @@ Incorrect approaches to avoid:
 - Bounding box-only containment (insufficient for complex shapes)
 - Size-based assumptions without geometric verification
 - Area ratios without proper containment validation
-
-## DXF Test Files and Expected Part Detection Results
-
-The following DXF files in `tests/dxf/` are used for testing part detection algorithms. Each file has specific expectations:
-
-| File | Expected Parts | Expected Holes | Current Status | Notes |
-|------|----------------|----------------|----------------|-------|
-| `1.dxf` | 2 parts | 0 holes | ❌ Detects 1 part | Simple geometry that should separate into 2 parts |
-| `2.dxf` | 2 parts | 0 holes | ✅ Correctly detects 2 parts | Working correctly |
-| `3.dxf` | 2 parts | 0 holes | ❌ Detects 1 part | Geometry issue preventing proper separation |
-| `1997.dxf` | 4 parts | 2 holes total | ✅ Correctly detects 4 parts with 2 holes | Chain-2 contains chain-3, chain-4 contains chain-5 |
-| `ADLER.dxf` | 9 parts | 1 hole total | ✅ Correctly detects 9 parts with 1 hole | Chain-5 contains chain-10 as hole |
-| `Tractor Seat Mount - Left.dxf` | 1 part | Multiple holes | ❌ Detects 4 parts | **Multi-layer file** - layers need to be squashed before detection |
-| `2013-11-08_test.dxf` | 1 part | 3 holes | ❌ Detects 3 parts | **Multi-layer file** - layers need to be squashed before detection |
-| `probleme.dxf` | 0 parts (warning) | 0 holes | ❌ No warning issued | Unclosed chains prevent part detection - should warn user |
 
 ### Multi-Layer DXF Files
 
