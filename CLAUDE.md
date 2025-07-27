@@ -71,6 +71,28 @@ The application is organized around a clear 5-stage workflow that guides users f
 
 **CRITICAL**: The drawing canvas must ALWAYS be kept up to date with the state the user sets in the left and right columns.
 
+## Drawing Canvas Origin Positioning
+
+**CRITICAL**: The drawing origin position on screen must remain consistent and predictable:
+
+### Fixed Origin Position
+- **Screen Position**: Drawing origin is positioned at 25% from left edge, 75% from top edge of canvas
+- **Independence**: Origin position is completely independent of left/right column widths
+- **Consistency**: Origin stays in the same screen position across all workflow stages
+- **User Control**: Origin position only changes when user pans (middle/right mouse button drag)
+
+### Implementation Details
+- **Canvas Transform**: Uses fixed percentage-based origin calculation instead of center-based
+- **Coordinate Conversion**: `screenToWorld()` function uses same fixed origin for accurate mouse interactions
+- **Zoom Behavior**: Zoom-to-mouse functionality maintains fixed origin reference point
+- **Resize Handling**: Canvas resizing no longer triggers offset adjustments - origin stays put
+
+### Benefits
+- **Predictable UX**: Users always know where the drawing origin will appear
+- **Layout Independence**: Column resizing doesn't affect drawing position
+- **Cross-Stage Consistency**: Same drawing appears in same screen location on all stages
+- **Pan-Only Movement**: Only user panning can change what's visible, not UI layout changes
+
 ### Canvas Reactivity Requirements
 - **Operations State**: Canvas highlighting must immediately reflect when operations are enabled/disabled
 - **Path State**: Green highlighting appears/disappears instantly when paths are created/deleted

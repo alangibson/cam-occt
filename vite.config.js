@@ -13,7 +13,11 @@ export default defineConfig({
 		watch: {
 			ignored: [
 				'**/docs/**',
-				'**/reference/**'
+				'**/reference/**',
+				'**/*.test.ts',
+				'**/*.test.js',
+				'**/*.spec.ts',
+				'**/*.spec.js'
 			]
 		}
 	},

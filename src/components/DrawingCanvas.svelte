@@ -103,17 +103,7 @@
         canvas.width = width;
         canvas.height = height;
         
-        // Adjust offset to keep drawing origin in the same screen position
-        if (prevWidth > 0 && prevHeight > 0) {
-          const deltaX = (width - prevWidth) / 2;
-          const deltaY = (height - prevHeight) / 2;
-          
-          // Update the offset in the drawing store to maintain origin position
-          drawingStore.setViewTransform(scale, {
-            x: offset.x + deltaX,
-            y: offset.y + deltaY
-          });
-        }
+        // No need to adjust offset anymore - origin position is now fixed
         
         // Re-render after resize
         if (ctx) {
@@ -148,9 +138,11 @@
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Set transform using current canvas dimensions
+    // Set transform using fixed origin position (25% from left, 75% from top)
     ctx.save();
-    ctx.translate(canvas.width / 2 + offset.x, canvas.height / 2 + offset.y);
+    const originX = canvas.width * 0.25 + offset.x;
+    const originY = canvas.height * 0.75 + offset.y;
+    ctx.translate(originX, originY);
     ctx.scale(totalScale, -totalScale); // Flip Y axis for CAD convention with physical scaling
     
     // Draw origin cross at (0,0)
@@ -748,10 +740,12 @@
   }
   
   function screenToWorld(screenPos: Point2D): Point2D {
-    // Convert screen coordinates to world coordinates
+    // Convert screen coordinates to world coordinates using fixed origin position
+    const originX = canvas.width * 0.25 + offset.x;
+    const originY = canvas.height * 0.75 + offset.y;
     return {
-      x: (screenPos.x - canvas.width / 2 - offset.x) / totalScale,
-      y: -(screenPos.y - canvas.height / 2 - offset.y) / totalScale
+      x: (screenPos.x - originX) / totalScale,
+      y: -(screenPos.y - originY) / totalScale
     };
   }
   
@@ -1116,13 +1110,16 @@
     const newPercent = Math.max(5, currentPercent + increment); // Minimum 5% zoom
     const newScale = newPercent / 100;
     
-    // Zoom towards mouse position
+    // Zoom towards mouse position using fixed origin
     const worldPos = screenToWorld(mousePos);
     const newTotalScale = newScale * physicalScale;
     
+    const originX = canvas.width * 0.25;
+    const originY = canvas.height * 0.75;
+    
     const newOffset = {
-      x: mousePos.x - canvas.width / 2 - worldPos.x * newTotalScale,
-      y: mousePos.y - canvas.height / 2 + worldPos.y * newTotalScale
+      x: mousePos.x - originX - worldPos.x * newTotalScale,
+      y: mousePos.y - originY + worldPos.y * newTotalScale
     };
     
     drawingStore.setViewTransform(newScale, newOffset);
