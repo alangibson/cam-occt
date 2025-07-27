@@ -1,6 +1,13 @@
 <script lang="ts">
   import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
+  import { onMount } from 'svelte';
+
+  // Resizable columns state
+  let rightColumnWidth = 280; // Default width in pixels
+  let isDraggingRight = false;
+  let startX = 0;
+  let startWidth = 0;
 
   function handleNext() {
     workflowStore.completeStage('simulate');
@@ -9,10 +16,61 @@
 
   // Auto-complete simulate stage (placeholder functionality)
   workflowStore.completeStage('simulate');
+
+  // Load column widths from localStorage on mount
+  onMount(() => {
+    const savedRightWidth = localStorage.getItem('cam-occt-simulate-right-column-width');
+    
+    if (savedRightWidth) {
+      rightColumnWidth = parseInt(savedRightWidth, 10);
+    }
+  });
+
+  // Save column widths to localStorage
+  function saveColumnWidths() {
+    localStorage.setItem('cam-occt-simulate-right-column-width', rightColumnWidth.toString());
+  }
+
+  // Right column resize handlers
+  function handleRightResizeStart(e: MouseEvent) {
+    isDraggingRight = true;
+    startX = e.clientX;
+    startWidth = rightColumnWidth;
+    document.addEventListener('mousemove', handleRightResize);
+    document.addEventListener('mouseup', handleRightResizeEnd);
+    e.preventDefault();
+  }
+
+  function handleRightResize(e: MouseEvent) {
+    if (!isDraggingRight) return;
+    const deltaX = startX - e.clientX; // Reverse delta for right column
+    const newWidth = Math.max(200, Math.min(600, startWidth + deltaX)); // Min 200px, max 600px
+    rightColumnWidth = newWidth;
+  }
+
+  function handleRightResizeEnd() {
+    isDraggingRight = false;
+    document.removeEventListener('mousemove', handleRightResize);
+    document.removeEventListener('mouseup', handleRightResizeEnd);
+    saveColumnWidths();
+  }
+
+  // Keyboard support for resize handles
+  function handleRightKeydown(e: KeyboardEvent) {
+    if (e.key === 'ArrowLeft') {
+      rightColumnWidth = Math.min(600, rightColumnWidth + 10);
+      saveColumnWidths();
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      rightColumnWidth = Math.max(200, rightColumnWidth - 10);
+      saveColumnWidths();
+      e.preventDefault();
+    }
+  }
 </script>
 
 <div class="simulate-stage">
-  <div class="simulate-layout">
+  <div class="simulate-layout" class:no-select={isDraggingRight}>
     <!-- Center Column - 3D Simulation Viewport -->
     <div class="center-column">
       <div class="simulation-header">
@@ -66,7 +124,16 @@
     </div>
 
     <!-- Right Column - Simulation Stats and Controls -->
-    <div class="right-column">
+    <div class="right-column" style="width: {rightColumnWidth}px;">
+      <!-- Right resize handle -->
+      <button 
+        class="resize-handle resize-handle-left" 
+        on:mousedown={handleRightResizeStart}
+        on:keydown={handleRightKeydown}
+        class:dragging={isDraggingRight}
+        aria-label="Resize right panel (Arrow keys to adjust)"
+        type="button"
+      ></button>
       <AccordionPanel title="Simulation Settings" isExpanded={true}>
         <div class="setting-group">
           <label>
@@ -149,11 +216,12 @@
   }
 
   .right-column {
-    width: 280px;
     background-color: #1f1f1f;
     border-left: 1px solid #404040;
     padding: 1rem;
     overflow-y: auto;
+    flex-shrink: 0; /* Prevent column from shrinking */
+    position: relative; /* For resize handle positioning */
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -356,5 +424,38 @@
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.4;
+  }
+
+  /* Resize handle styles */
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    border: none;
+    padding: 0;
+    z-index: 10;
+    transition: background-color 0.2s ease;
+  }
+
+  .resize-handle:hover {
+    background-color: #3b82f6;
+    opacity: 0.3;
+  }
+
+  .resize-handle.dragging {
+    background-color: #3b82f6;
+    opacity: 0.5;
+  }
+
+  .resize-handle-left {
+    left: -3px; /* Half of width to center on border */
+  }
+
+  /* Prevent text selection during resize */
+  .simulate-layout.no-select {
+    user-select: none;
   }
 </style>

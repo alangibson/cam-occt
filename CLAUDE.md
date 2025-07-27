@@ -870,6 +870,15 @@ interface PartDetectionWarning {
 
 **CRITICAL**: The application implements proper unit handling to ensure accurate physical representation of CAD drawings on screen.
 
+### Hard Requirement: Physical Size Accuracy at 100% Zoom
+
+**CRITICAL REQUIREMENT**: At 100% zoom (scale = 1), the drawing MUST appear on screen at the exact physical size reported in the footer. For example:
+- ADLER.dxf reports 186.2 × 60.9 mm in the footer
+- At 100% zoom with display units = mm, the drawing MUST measure exactly 186.2mm wide when measured with a physical ruler on screen
+- Column resizing, container changes, or any other UI operations MUST NOT affect the physical size of the drawing
+- The drawing size on screen is determined ONLY by: drawing geometry + display unit setting + zoom level
+- Container size changes should only affect how much of the drawing is visible (viewport), not the drawing's physical scale
+
 ### Unit System Architecture
 
 **Display Units vs Drawing Units**:

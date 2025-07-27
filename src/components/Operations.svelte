@@ -313,19 +313,18 @@
         <div class="operation-header">
           <span class="drag-handle">☰</span>
           <input
+            type="checkbox"
+            checked={operation.enabled}
+            onchange={(e) => updateOperationField(operation.id, 'enabled', e.currentTarget.checked)}
+            class="enabled-checkbox"
+            title="Enable/disable this operation"
+          />
+          <input
             type="text"
             value={operation.name}
             onchange={(e) => updateOperationField(operation.id, 'name', e.currentTarget.value)}
             class="operation-name-input"
           />
-          <label class="enabled-checkbox">
-            <input
-              type="checkbox"
-              checked={operation.enabled}
-              onchange={(e) => updateOperationField(operation.id, 'enabled', e.currentTarget.checked)}
-            />
-            Enabled
-          </label>
         </div>
         
         <div class="operation-details">
@@ -537,11 +536,9 @@
   }
   
   .enabled-checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    font-size: 0.875rem;
     cursor: pointer;
+    margin: 0 0.5rem;
+    transform: scale(1.2); /* Make checkbox slightly larger */
   }
   
   .operation-details {

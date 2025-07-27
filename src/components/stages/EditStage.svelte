@@ -1,5 +1,6 @@
 <script lang="ts">
-  import DrawingCanvas from '../DrawingCanvas.svelte';
+  import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
+  import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
   import ToolBar from '../ToolBar.svelte';
   import LayersList from '../LayersList.svelte';
   import ShapeProperties from '../ShapeProperties.svelte';
@@ -19,17 +20,19 @@
     workflowStore.completeStage('edit');
   }
 
-  // Update Edit stage overlay when selected shapes change
-  $: if ($drawingStore.drawing && $drawingStore.selectedShapes) {
+  // Update Edit stage overlay when selected shapes change (only when on edit stage)
+  $: if ($workflowStore.currentStage === 'edit' && $drawingStore.drawing && $drawingStore.selectedShapes) {
     const shapePoints = generateShapePoints($drawingStore.drawing.shapes, $drawingStore.selectedShapes);
     overlayStore.setShapePoints('edit', shapePoints);
   }
 </script>
 
 <div class="edit-stage">
-  <div class="edit-layout">
-    <!-- Left Column -->
-    <div class="left-column">
+  <ThreeColumnLayout 
+    leftColumnStorageKey="cam-occt-edit-left-column-width"
+    rightColumnStorageKey="cam-occt-edit-right-column-width"
+  >
+    <svelte:fragment slot="left">
       <AccordionPanel title="Display Units" isExpanded={true}>
         <Units />
       </AccordionPanel>
@@ -52,25 +55,21 @@
           </p>
         </div>
       </AccordionPanel>
-    </div>
+    </svelte:fragment>
 
-    <!-- Center Column -->
-    <div class="center-column">
+    <svelte:fragment slot="center">
       <div class="toolbar-container">
         <ToolBar />
       </div>
-      <div class="canvas-container">
-        <DrawingCanvas currentStage="edit" />
-      </div>
-    </div>
+      <DrawingCanvasContainer currentStage="edit" />
+    </svelte:fragment>
 
-    <!-- Right Column -->
-    <div class="right-column">
+    <svelte:fragment slot="right">
       <AccordionPanel title="Shape Properties" isExpanded={true}>
         <ShapeProperties />
       </AccordionPanel>
-    </div>
-  </div>
+    </svelte:fragment>
+  </ThreeColumnLayout>
 </div>
 
 <style>
@@ -81,56 +80,9 @@
     background-color: #f8f9fa;
   }
 
-  .edit-layout {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  .left-column {
-    width: 280px;
-    background-color: #f5f5f5;
-    border-right: 1px solid #e5e7eb;
-    padding: 1rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-height: 0; /* Allow flex child to shrink */
-    flex-shrink: 0; /* Prevent column from shrinking */
-  }
-
-  .center-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: white;
-  }
-
-  .right-column {
-    width: 280px;
-    background-color: #f5f5f5;
-    border-left: 1px solid #e5e7eb;
-    padding: 1rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-height: 0; /* Allow flex child to shrink */
-    flex-shrink: 0; /* Prevent column from shrinking */
-  }
-
-  /* Removed .panel and .panel-title styles - now handled by AccordionPanel component */
-
   .toolbar-container {
     border-bottom: 1px solid #e5e7eb;
     background-color: #fafafa;
-  }
-
-  .canvas-container {
-    flex: 1;
-    position: relative;
-    background-color: white;
   }
 
   .next-stage-content {
@@ -139,7 +91,6 @@
     border-radius: 0.5rem;
     padding: 1rem;
   }
-
 
   .next-button {
     width: 100%;
@@ -169,31 +120,5 @@
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.4;
-  }
-
-  /* Responsive design */
-  @media (max-width: 1200px) {
-    .left-column,
-    .right-column {
-      width: 240px;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .edit-layout {
-      flex-direction: column;
-    }
-
-    .left-column,
-    .right-column {
-      width: 100%;
-      height: auto;
-      max-height: 200px;
-    }
-
-    .center-column {
-      flex: 1;
-      min-height: 400px;
-    }
   }
 </style>

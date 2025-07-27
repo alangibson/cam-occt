@@ -3,6 +3,13 @@
   import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import type { CuttingParameters } from '../../types';
+  import { onMount } from 'svelte';
+
+  // Resizable columns state
+  let sideColumnWidth = 280; // Default width in pixels
+  let isDraggingSide = false;
+  let startX = 0;
+  let startWidth = 0;
 
   // Default cutting parameters for G-code generation
   let cuttingParameters: CuttingParameters = {
@@ -22,17 +29,77 @@
 
   // Auto-complete export stage
   workflowStore.completeStage('export');
+
+  // Load column widths from localStorage on mount
+  onMount(() => {
+    const savedSideWidth = localStorage.getItem('cam-occt-export-side-column-width');
+    
+    if (savedSideWidth) {
+      sideColumnWidth = parseInt(savedSideWidth, 10);
+    }
+  });
+
+  // Save column widths to localStorage
+  function saveColumnWidths() {
+    localStorage.setItem('cam-occt-export-side-column-width', sideColumnWidth.toString());
+  }
+
+  // Side column resize handlers
+  function handleSideResizeStart(e: MouseEvent) {
+    isDraggingSide = true;
+    startX = e.clientX;
+    startWidth = sideColumnWidth;
+    document.addEventListener('mousemove', handleSideResize);
+    document.addEventListener('mouseup', handleSideResizeEnd);
+    e.preventDefault();
+  }
+
+  function handleSideResize(e: MouseEvent) {
+    if (!isDraggingSide) return;
+    const deltaX = startX - e.clientX; // Reverse delta for right column
+    const newWidth = Math.max(200, Math.min(600, startWidth + deltaX)); // Min 200px, max 600px
+    sideColumnWidth = newWidth;
+  }
+
+  function handleSideResizeEnd() {
+    isDraggingSide = false;
+    document.removeEventListener('mousemove', handleSideResize);
+    document.removeEventListener('mouseup', handleSideResizeEnd);
+    saveColumnWidths();
+  }
+
+  // Keyboard support for resize handles
+  function handleSideKeydown(e: KeyboardEvent) {
+    if (e.key === 'ArrowLeft') {
+      sideColumnWidth = Math.min(600, sideColumnWidth + 10);
+      saveColumnWidths();
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      sideColumnWidth = Math.max(200, sideColumnWidth - 10);
+      saveColumnWidths();
+      e.preventDefault();
+    }
+  }
 </script>
 
 <div class="export-stage">
-  <div class="export-layout">
+  <div class="export-layout" class:no-select={isDraggingSide}>
     <!-- Main Content -->
     <div class="main-column">
       <GCodeExport parameters={cuttingParameters} />
     </div>
 
     <!-- Side Panel -->
-    <div class="side-column">
+    <div class="side-column" style="width: {sideColumnWidth}px;">
+      <!-- Side resize handle -->
+      <button 
+        class="resize-handle resize-handle-left" 
+        on:mousedown={handleSideResizeStart}
+        on:keydown={handleSideKeydown}
+        class:dragging={isDraggingSide}
+        aria-label="Resize side panel (Arrow keys to adjust)"
+        type="button"
+      ></button>
       <AccordionPanel title="Export Summary" isExpanded={true}>
         <div class="summary-grid">
           <div class="summary-item">
@@ -124,11 +191,12 @@
   }
 
   .side-column {
-    width: 320px;
     background-color: #f5f5f5;
     padding: 1rem;
     overflow-y: auto;
     display: flex;
+    flex-shrink: 0; /* Prevent column from shrinking */
+    position: relative; /* For resize handle positioning */
     flex-direction: column;
     gap: 1rem;
   }
@@ -239,22 +307,54 @@
     line-height: 1.4;
   }
 
-  /* Responsive design */
-  @media (max-width: 1200px) {
-    .side-column {
-      width: 280px;
-    }
+  /* Resize handle styles */
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    border: none;
+    padding: 0;
+    z-index: 10;
+    transition: background-color 0.2s ease;
   }
 
+  .resize-handle:hover {
+    background-color: #3b82f6;
+    opacity: 0.3;
+  }
+
+  .resize-handle.dragging {
+    background-color: #3b82f6;
+    opacity: 0.5;
+  }
+
+  .resize-handle-left {
+    left: -3px; /* Half of width to center on border */
+  }
+
+  /* Prevent text selection during resize */
+  .export-layout.no-select {
+    user-select: none;
+  }
+
+  /* Responsive design */
   @media (max-width: 768px) {
     .export-layout {
       flex-direction: column;
     }
 
     .side-column {
-      width: 100%;
+      width: 100% !important; /* Override dynamic width on mobile */
       height: auto;
       max-height: 300px;
+    }
+
+    /* Hide resize handles on mobile */
+    .resize-handle {
+      display: none;
     }
 
   }

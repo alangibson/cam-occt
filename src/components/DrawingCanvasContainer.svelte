@@ -1,0 +1,53 @@
+<script lang="ts">
+  import DrawingCanvas from './DrawingCanvas.svelte';
+  import type { WorkflowStage } from '../lib/stores/workflow';
+
+  export let respectLayerVisibility = true;
+  export let treatChainsAsEntities = false;
+  export let onChainClick: ((chainId: string) => void) | null = null;
+  export let disableDragging = false;
+  export let currentStage: WorkflowStage;
+  export let showToolbar = false;
+  export let toolbarContent: string | null = null;
+</script>
+
+<div class="canvas-container-wrapper">
+  {#if showToolbar && toolbarContent}
+    <div class="canvas-header">
+      {@html toolbarContent}
+    </div>
+  {/if}
+  
+  <div class="canvas-container">
+    <DrawingCanvas 
+      {respectLayerVisibility}
+      {treatChainsAsEntities}
+      {onChainClick}
+      {disableDragging}
+      {currentStage}
+    />
+  </div>
+</div>
+
+<style>
+  .canvas-container-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+  }
+
+  .canvas-header {
+    padding: 1rem 2rem;
+    border-bottom: 1px solid #e5e7eb;
+    background-color: #fafafa;
+  }
+
+  .canvas-container {
+    flex: 1;
+    position: relative;
+    background-color: white;
+    overflow: hidden; /* Prevent canvas from growing container */
+    min-height: 0; /* Allow flexbox to shrink */
+  }
+</style>

@@ -47,16 +47,56 @@
   $: physicalScale = drawing ? getPhysicalScaleFactor(drawing.units, displayUnit) : 1;
   $: totalScale = scale * physicalScale;
   
-  // Re-render when tessellation state changes
-  $: if (tessellationState) render();
+  // Consolidate all reactive render triggers
+  $: {
+    // List all dependencies that should trigger a re-render
+    drawing;
+    selectedShapes;
+    scale;
+    offset;
+    displayUnit;
+    selectedChainId;
+    highlightedPartId;
+    highlightedChainIds;
+    tessellationState;
+    currentOverlay;
+    
+    // Only render if we have a context
+    if (ctx) {
+      render();
+    }
+  }
+  
+  let canvasContainer: HTMLElement;
   
   onMount(() => {
     ctx = canvas.getContext('2d')!;
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
+    
+    // Set up resize observer to maintain proper canvas sizing
+    const resizeObserver = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        
+        // Update canvas size to match container
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Re-render after resize
+        if (ctx) {
+          render();
+        }
+      }
+    });
+    
+    if (canvasContainer) {
+      resizeObserver.observe(canvasContainer);
+    }
+    
+    // Initial render
+    render();
     
     return () => {
-      window.removeEventListener('resize', resizeCanvas);
+      resizeObserver.disconnect();
     };
   });
 
@@ -67,11 +107,6 @@
     }
   });
   
-  function resizeCanvas() {
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
-    render();
-  }
   
   function render() {
     if (!ctx || !drawing) return;
@@ -79,7 +114,7 @@
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Set transform
+    // Set transform using current canvas dimensions
     ctx.save();
     ctx.translate(canvas.width / 2 + offset.x, canvas.height / 2 + offset.y);
     ctx.scale(totalScale, -totalScale); // Flip Y axis for CAD convention with physical scaling
@@ -661,6 +696,7 @@
   }
   
   function screenToWorld(screenPos: Point2D): Point2D {
+    // Convert screen coordinates to world coordinates
     return {
       x: (screenPos.x - canvas.width / 2 - offset.x) / totalScale,
       y: -(screenPos.y - canvas.height / 2 - offset.y) / totalScale
@@ -1012,6 +1048,7 @@
     // Zoom towards mouse position
     const worldPos = screenToWorld(mousePos);
     const newTotalScale = newScale * physicalScale;
+    
     const newOffset = {
       x: mousePos.x - canvas.width / 2 - worldPos.x * newTotalScale,
       y: mousePos.y - canvas.height / 2 + worldPos.y * newTotalScale
@@ -1031,32 +1068,34 @@
     e.preventDefault();
   }
   
-  // Re-render when store changes
-  $: if (ctx && drawing) render();
-  $: if (ctx && selectedShapes) render();
-  $: if (ctx && scale) render();
-  $: if (ctx && offset) render();
-  $: if (ctx && displayUnit) render();
-  $: if (ctx && selectedChainId !== undefined) render();
-  $: if (ctx && highlightedPartId !== undefined) render();
-  $: if (ctx && highlightedChainIds) render();
+  // All reactive renders are now handled by the consolidated reactive block above
 </script>
 
-<canvas
-  bind:this={canvas}
-  class="drawing-canvas"
-  on:mousedown={handleMouseDown}
-  on:mousemove={handleMouseMove}
-  on:mouseup={handleMouseUp}
-  on:mouseleave={handleMouseUp}
-  on:wheel={handleWheel}
-  on:contextmenu={handleContextMenu}
-  tabindex="0"  
-  on:keydown={handleKeyDown}
-></canvas>
+<div bind:this={canvasContainer} class="canvas-container">
+  <canvas
+    bind:this={canvas}
+    class="drawing-canvas"
+    on:mousedown={handleMouseDown}
+    on:mousemove={handleMouseMove}
+    on:mouseup={handleMouseUp}
+    on:mouseleave={handleMouseUp}
+    on:wheel={handleWheel}
+    on:contextmenu={handleContextMenu}
+    tabindex="0"  
+    on:keydown={handleKeyDown}
+  ></canvas>
+</div>
 
 <style>
+  .canvas-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+  }
+  
   .drawing-canvas {
+    display: block; /* Important: prevent inline-block spacing issues */
     width: 100%;
     height: 100%;
     cursor: crosshair;

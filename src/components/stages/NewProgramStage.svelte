@@ -7,6 +7,7 @@
   import { chainStore, selectChain } from '../../lib/stores/chains';
   import { partStore, highlightPart, clearHighlight } from '../../lib/stores/parts';
   import { isChainClosed } from '../../lib/algorithms/part-detection';
+  import { onMount } from 'svelte';
   
   // Subscribe to stores
   $: drawing = $drawingStore.drawing;
@@ -14,6 +15,14 @@
   $: parts = $partStore.parts;
   $: selectedChainId = $chainStore.selectedChainId;
   $: highlightedPartId = $partStore.highlightedPartId;
+
+  // Resizable columns state
+  let leftColumnWidth = 280; // Default width in pixels
+  let rightColumnWidth = 280; // Default width in pixels
+  let isDraggingLeft = false;
+  let isDraggingRight = false;
+  let startX = 0;
+  let startWidth = 0;
 
   function handleNext() {
     workflowStore.completeStage('program');
@@ -43,14 +52,115 @@
     return isChainClosed(chain, 0.1); // Use default tolerance since this is display-only
   }
 
+  // Load column widths from localStorage on mount
+  onMount(() => {
+    const savedLeftWidth = localStorage.getItem('cam-occt-left-column-width');
+    const savedRightWidth = localStorage.getItem('cam-occt-right-column-width');
+    
+    if (savedLeftWidth) {
+      leftColumnWidth = parseInt(savedLeftWidth, 10);
+    }
+    if (savedRightWidth) {
+      rightColumnWidth = parseInt(savedRightWidth, 10);
+    }
+  });
+
+  // Save column widths to localStorage
+  function saveColumnWidths() {
+    localStorage.setItem('cam-occt-left-column-width', leftColumnWidth.toString());
+    localStorage.setItem('cam-occt-right-column-width', rightColumnWidth.toString());
+  }
+
+  // Left column resize handlers
+  function handleLeftResizeStart(e: MouseEvent) {
+    isDraggingLeft = true;
+    startX = e.clientX;
+    startWidth = leftColumnWidth;
+    document.addEventListener('mousemove', handleLeftResize);
+    document.addEventListener('mouseup', handleLeftResizeEnd);
+    e.preventDefault();
+  }
+
+  function handleLeftResize(e: MouseEvent) {
+    if (!isDraggingLeft) return;
+    const deltaX = e.clientX - startX;
+    const newWidth = Math.max(200, Math.min(600, startWidth + deltaX)); // Min 200px, max 600px
+    leftColumnWidth = newWidth;
+  }
+
+  function handleLeftResizeEnd() {
+    isDraggingLeft = false;
+    document.removeEventListener('mousemove', handleLeftResize);
+    document.removeEventListener('mouseup', handleLeftResizeEnd);
+    saveColumnWidths();
+  }
+
+  // Right column resize handlers
+  function handleRightResizeStart(e: MouseEvent) {
+    isDraggingRight = true;
+    startX = e.clientX;
+    startWidth = rightColumnWidth;
+    document.addEventListener('mousemove', handleRightResize);
+    document.addEventListener('mouseup', handleRightResizeEnd);
+    e.preventDefault();
+  }
+
+  function handleRightResize(e: MouseEvent) {
+    if (!isDraggingRight) return;
+    const deltaX = startX - e.clientX; // Reverse delta for right column
+    const newWidth = Math.max(200, Math.min(600, startWidth + deltaX)); // Min 200px, max 600px
+    rightColumnWidth = newWidth;
+  }
+
+  function handleRightResizeEnd() {
+    isDraggingRight = false;
+    document.removeEventListener('mousemove', handleRightResize);
+    document.removeEventListener('mouseup', handleRightResizeEnd);
+    saveColumnWidths();
+  }
+
+  // Keyboard support for resize handles
+  function handleLeftKeydown(e: KeyboardEvent) {
+    if (e.key === 'ArrowLeft') {
+      leftColumnWidth = Math.max(200, leftColumnWidth - 10);
+      saveColumnWidths();
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      leftColumnWidth = Math.min(600, leftColumnWidth + 10);
+      saveColumnWidths();
+      e.preventDefault();
+    }
+  }
+
+  function handleRightKeydown(e: KeyboardEvent) {
+    if (e.key === 'ArrowLeft') {
+      rightColumnWidth = Math.min(600, rightColumnWidth + 10);
+      saveColumnWidths();
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      rightColumnWidth = Math.max(200, rightColumnWidth - 10);
+      saveColumnWidths();
+      e.preventDefault();
+    }
+  }
+
   // Auto-complete program stage (user can adjust parameters and continue)
   workflowStore.completeStage('program');
 </script>
 
 <div class="program-stage">
-  <div class="program-layout">
+  <div class="program-layout" class:no-select={isDraggingLeft || isDraggingRight}>
     <!-- Left Column - Parts and Paths -->
-    <div class="left-column">
+    <div class="left-column" style="width: {leftColumnWidth}px;">
+      <!-- Left resize handle -->
+      <button 
+        class="resize-handle resize-handle-right" 
+        on:mousedown={handleLeftResizeStart}
+        on:keydown={handleLeftKeydown}
+        class:dragging={isDraggingLeft}
+        aria-label="Resize left panel (Arrow keys to adjust)"
+        type="button"
+      ></button>
 
       {#if chains.length > 0}
         <AccordionPanel title="Paths ({chains.length})" isExpanded={true}>
@@ -127,7 +237,16 @@
     </div>
 
     <!-- Right Column - Operations -->
-    <div class="right-column">
+    <div class="right-column" style="width: {rightColumnWidth}px;">
+      <!-- Right resize handle -->
+      <button 
+        class="resize-handle resize-handle-left" 
+        on:mousedown={handleRightResizeStart}
+        on:keydown={handleRightKeydown}
+        class:dragging={isDraggingRight}
+        aria-label="Resize right panel (Arrow keys to adjust)"
+        type="button"
+      ></button>
       <AccordionPanel title="Operations" isExpanded={true}>
         <Operations />
       </AccordionPanel>
@@ -185,7 +304,6 @@
   }
 
   .left-column {
-    width: 280px;
     background-color: #f5f5f5;
     border-right: 1px solid #e5e7eb;
     padding: 1rem;
@@ -195,6 +313,7 @@
     gap: 1rem;
     min-height: 0; /* Allow flex child to shrink */
     flex-shrink: 0; /* Prevent column from shrinking */
+    position: relative; /* For resize handle positioning */
   }
 
   .center-column {
@@ -205,7 +324,6 @@
   }
 
   .right-column {
-    width: 280px;
     background-color: #f5f5f5;
     border-left: 1px solid #e5e7eb;
     padding: 1rem;
@@ -215,6 +333,7 @@
     gap: 1rem;
     min-height: 0; /* Allow flex child to shrink */
     flex-shrink: 0; /* Prevent column from shrinking */
+    position: relative; /* For resize handle positioning */
   }
 
   /* Removed .panel styles - now handled by AccordionPanel component */
@@ -353,6 +472,43 @@
   }
 
   /* Removed .panel-title styles - now handled by AccordionPanel component */
+
+  /* Resize handle styles */
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    border: none;
+    padding: 0;
+    z-index: 10;
+    transition: background-color 0.2s ease;
+  }
+
+  .resize-handle:hover {
+    background-color: #3b82f6;
+    opacity: 0.3;
+  }
+
+  .resize-handle.dragging {
+    background-color: #3b82f6;
+    opacity: 0.5;
+  }
+
+  .resize-handle-right {
+    right: -3px; /* Half of width to center on border */
+  }
+
+  .resize-handle-left {
+    left: -3px; /* Half of width to center on border */
+  }
+
+  /* Prevent text selection during resize */
+  .program-layout.no-select {
+    user-select: none;
+  }
 
 
 </style>

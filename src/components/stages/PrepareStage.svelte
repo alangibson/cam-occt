@@ -17,7 +17,15 @@
   import type { ChainNormalizationResult } from '../../lib/algorithms/chain-normalization';
   import type { AlgorithmParameters } from '../../types/algorithm-parameters';
   import { DEFAULT_ALGORITHM_PARAMETERS } from '../../types/algorithm-parameters';
+  import { onMount } from 'svelte';
 
+  // Resizable columns state
+  let leftColumnWidth = 280; // Default width in pixels
+  let rightColumnWidth = 280; // Default width in pixels
+  let isDraggingLeft = false;
+  let isDraggingRight = false;
+  let startX = 0;
+  let startWidth = 0;
 
   // Chain detection parameters
   let tolerance = $chainStore.tolerance;
@@ -40,16 +48,16 @@
   $: partWarnings = $partStore.warnings;
   $: highlightedPartId = $partStore.highlightedPartId;
 
-  // Update Prepare stage overlay when chains are detected (but not during normalization)
-  $: if (!isNormalizing && detectedChains.length > 0) {
+  // Update Prepare stage overlay when chains are detected (but not during normalization, and only when on prepare stage)
+  $: if ($workflowStore.currentStage === 'prepare' && !isNormalizing && detectedChains.length > 0) {
     const chainEndpoints = generateChainEndpoints(detectedChains);
     overlayStore.setChainEndpoints('prepare', chainEndpoints);
-  } else if (!isNormalizing) {
+  } else if ($workflowStore.currentStage === 'prepare' && !isNormalizing) {
     overlayStore.clearChainEndpoints('prepare');
   }
 
-  // Update Prepare stage overlay when tessellation changes
-  $: if ($tessellationStore.isActive && $tessellationStore.points.length > 0) {
+  // Update Prepare stage overlay when tessellation changes (only when on prepare stage)
+  $: if ($workflowStore.currentStage === 'prepare' && $tessellationStore.isActive && $tessellationStore.points.length > 0) {
     // Convert tessellation store points to overlay format
     const tessellationPoints = $tessellationStore.points.map(point => ({
       x: point.x,
@@ -58,7 +66,7 @@
       chainId: point.chainId
     }));
     overlayStore.setTessellationPoints('prepare', tessellationPoints);
-  } else {
+  } else if ($workflowStore.currentStage === 'prepare') {
     overlayStore.clearTessellationPoints('prepare');
   }
   
@@ -153,14 +161,16 @@
       const newChains = detectShapeChains(normalizedShapes, { tolerance });
       setChains(newChains);
       
-      // Force update of overlay after a short delay to ensure drawing is updated
+      // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
       setTimeout(() => {
-        if (newChains.length > 0) {
-          const chainEndpoints = generateChainEndpoints(newChains);
-          overlayStore.setChainEndpoints('prepare', chainEndpoints);
-          console.log(`Updated overlay with ${chainEndpoints.length} chain endpoints after normalization.`);
-        } else {
-          overlayStore.clearChainEndpoints('prepare');
+        if ($workflowStore.currentStage === 'prepare') {
+          if (newChains.length > 0) {
+            const chainEndpoints = generateChainEndpoints(newChains);
+            overlayStore.setChainEndpoints('prepare', chainEndpoints);
+            console.log(`Updated overlay with ${chainEndpoints.length} chain endpoints after normalization.`);
+          } else {
+            overlayStore.clearChainEndpoints('prepare');
+          }
         }
         isNormalizing = false; // Reset flag after overlay is updated
       }, 50); // Small delay to ensure all stores are updated
@@ -526,12 +536,113 @@
   $: if (detectedChains.length > 0 || detectedParts.length > 0) {
     workflowStore.completeStage('prepare');
   }
+
+  // Load column widths from localStorage on mount
+  onMount(() => {
+    const savedLeftWidth = localStorage.getItem('cam-occt-prepare-left-column-width');
+    const savedRightWidth = localStorage.getItem('cam-occt-prepare-right-column-width');
+    
+    if (savedLeftWidth) {
+      leftColumnWidth = parseInt(savedLeftWidth, 10);
+    }
+    if (savedRightWidth) {
+      rightColumnWidth = parseInt(savedRightWidth, 10);
+    }
+  });
+
+  // Save column widths to localStorage
+  function saveColumnWidths() {
+    localStorage.setItem('cam-occt-prepare-left-column-width', leftColumnWidth.toString());
+    localStorage.setItem('cam-occt-prepare-right-column-width', rightColumnWidth.toString());
+  }
+
+  // Left column resize handlers
+  function handleLeftResizeStart(e: MouseEvent) {
+    isDraggingLeft = true;
+    startX = e.clientX;
+    startWidth = leftColumnWidth;
+    document.addEventListener('mousemove', handleLeftResize);
+    document.addEventListener('mouseup', handleLeftResizeEnd);
+    e.preventDefault();
+  }
+
+  function handleLeftResize(e: MouseEvent) {
+    if (!isDraggingLeft) return;
+    const deltaX = e.clientX - startX;
+    const newWidth = Math.max(200, Math.min(600, startWidth + deltaX)); // Min 200px, max 600px
+    leftColumnWidth = newWidth;
+  }
+
+  function handleLeftResizeEnd() {
+    isDraggingLeft = false;
+    document.removeEventListener('mousemove', handleLeftResize);
+    document.removeEventListener('mouseup', handleLeftResizeEnd);
+    saveColumnWidths();
+  }
+
+  // Right column resize handlers
+  function handleRightResizeStart(e: MouseEvent) {
+    isDraggingRight = true;
+    startX = e.clientX;
+    startWidth = rightColumnWidth;
+    document.addEventListener('mousemove', handleRightResize);
+    document.addEventListener('mouseup', handleRightResizeEnd);
+    e.preventDefault();
+  }
+
+  function handleRightResize(e: MouseEvent) {
+    if (!isDraggingRight) return;
+    const deltaX = startX - e.clientX; // Reverse delta for right column
+    const newWidth = Math.max(200, Math.min(600, startWidth + deltaX)); // Min 200px, max 600px
+    rightColumnWidth = newWidth;
+  }
+
+  function handleRightResizeEnd() {
+    isDraggingRight = false;
+    document.removeEventListener('mousemove', handleRightResize);
+    document.removeEventListener('mouseup', handleRightResizeEnd);
+    saveColumnWidths();
+  }
+
+  // Keyboard support for resize handles
+  function handleLeftKeydown(e: KeyboardEvent) {
+    if (e.key === 'ArrowLeft') {
+      leftColumnWidth = Math.max(200, leftColumnWidth - 10);
+      saveColumnWidths();
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      leftColumnWidth = Math.min(600, leftColumnWidth + 10);
+      saveColumnWidths();
+      e.preventDefault();
+    }
+  }
+
+  function handleRightKeydown(e: KeyboardEvent) {
+    if (e.key === 'ArrowLeft') {
+      rightColumnWidth = Math.min(600, rightColumnWidth + 10);
+      saveColumnWidths();
+      e.preventDefault();
+    } else if (e.key === 'ArrowRight') {
+      rightColumnWidth = Math.max(200, rightColumnWidth - 10);
+      saveColumnWidths();
+      e.preventDefault();
+    }
+  }
 </script>
 
 <div class="program-stage">
-  <div class="program-layout">
+  <div class="program-layout" class:no-select={isDraggingLeft || isDraggingRight}>
     <!-- Left Column -->
-    <div class="left-column">
+    <div class="left-column" style="width: {leftColumnWidth}px;">
+      <!-- Left resize handle -->
+      <button 
+        class="resize-handle resize-handle-right" 
+        on:mousedown={handleLeftResizeStart}
+        on:keydown={handleLeftKeydown}
+        class:dragging={isDraggingLeft}
+        aria-label="Resize left panel (Arrow keys to adjust)"
+        type="button"
+      ></button>
 
       <AccordionPanel title="Layers" isExpanded={true}>
         <LayersInfo />
@@ -692,7 +803,16 @@
     </div>
 
     <!-- Right Column -->
-    <div class="right-column">
+    <div class="right-column" style="width: {rightColumnWidth}px;">
+      <!-- Right resize handle -->
+      <button 
+        class="resize-handle resize-handle-left" 
+        on:mousedown={handleRightResizeStart}
+        on:keydown={handleRightKeydown}
+        class:dragging={isDraggingRight}
+        aria-label="Resize right panel (Arrow keys to adjust)"
+        type="button"
+      ></button>
       {#if selectedChain && selectedChainAnalysis}
         <AccordionPanel title="Chain Details" isExpanded={true}>
           <div class="chain-detail">
@@ -972,7 +1092,6 @@
   }
 
   .left-column {
-    width: 280px;
     background-color: #f5f5f5;
     border-right: 1px solid #e5e7eb;
     padding: 1rem;
@@ -982,6 +1101,7 @@
     gap: 1rem;
     min-height: 0; /* Allow flex child to shrink */
     flex-shrink: 0; /* Prevent column from shrinking */
+    position: relative; /* For resize handle positioning */
   }
 
   .center-column {
@@ -992,7 +1112,6 @@
   }
 
   .right-column {
-    width: 280px;
     background-color: #f5f5f5;
     border-left: 1px solid #e5e7eb;
     padding: 1rem;
@@ -1002,6 +1121,7 @@
     gap: 1rem;
     min-height: 0; /* Allow flex child to shrink */
     flex-shrink: 0; /* Prevent column from shrinking */
+    position: relative; /* For resize handle positioning */
   }
 
   /* Removed .panel styles - now handled by AccordionPanel component */
@@ -1023,6 +1143,8 @@
     flex: 1;
     position: relative;
     background-color: white;
+    overflow: hidden; /* Prevent canvas from growing container */
+    min-height: 0; /* Allow flexbox to shrink */
   }
 
   /* Removed .next-stage-panel - now handled by next-stage-content within AccordionPanel */
@@ -1628,5 +1750,67 @@
     line-height: 1.3;
     margin-top: 0.25rem;
     font-style: italic;
+  }
+
+  /* Resize handle styles */
+  .resize-handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    cursor: col-resize;
+    background: transparent;
+    border: none;
+    padding: 0;
+    z-index: 10;
+    transition: background-color 0.2s ease;
+  }
+
+  .resize-handle:hover {
+    background-color: #3b82f6;
+    opacity: 0.3;
+  }
+
+  .resize-handle.dragging {
+    background-color: #3b82f6;
+    opacity: 0.5;
+  }
+
+  .resize-handle-right {
+    right: -3px; /* Half of width to center on border */
+  }
+
+  .resize-handle-left {
+    left: -3px; /* Half of width to center on border */
+  }
+
+  /* Prevent text selection during resize */
+  .program-layout.no-select {
+    user-select: none;
+  }
+
+  @media (max-width: 1200px) {
+    .left-column,
+    .right-column {
+      width: 240px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .program-layout {
+      flex-direction: column;
+    }
+
+    .left-column,
+    .right-column {
+      width: 100%;
+      height: auto;
+      max-height: 200px;
+    }
+
+    .center-column {
+      flex: 1;
+      min-height: 400px;
+    }
   }
 </style>
