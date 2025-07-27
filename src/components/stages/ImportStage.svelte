@@ -50,8 +50,6 @@
         <li><strong>SVG</strong> - Scalable Vector Graphics with support for paths, shapes, and text</li>
       </ul>
 
-      <h3>Import Options</h3>
-      <p>Configure how your drawing is processed during import using the options above.</p>
     </div>
   </div>
 </div>

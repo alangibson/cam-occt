@@ -41,11 +41,11 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem;
+    padding: 0.5rem 1rem;
     cursor: pointer;
     transition: background-color 0.2s ease;
     flex-shrink: 0; /* Prevent header from being compressed */
-    min-height: 3rem; /* Ensure minimum visible height */
+    min-height: 2.5rem; /* Ensure minimum visible height */
   }
 
   .panel-header:hover {
@@ -73,6 +73,6 @@
   }
 
   .panel-content {
-    padding: 1rem;
+    padding: 0.75rem 1rem;
   }
 </style>

@@ -284,6 +284,33 @@ Based on the PRD, the following features need implementation:
    - Scaling and rotation tools
    - Undo/redo functionality
 
+## Shape Processing Algorithms
+
+**CRITICAL**: Shape processing algorithms are implemented as separate, standalone functions that operate independently of the DXF parser.
+
+### Algorithm Separation
+
+**Decompose Polylines Algorithm** (`src/lib/algorithms/decompose-polylines.ts`):
+- Converts polyline shapes into individual line and arc segments
+- Makes geometry easier to process for CAM operations
+- Each segment becomes an independent shape with unique ID
+- Preserves layer information and handles closed polylines
+- Available as toolbar button in Edit stage
+
+**Translate to Positive Quadrant Algorithm** (`src/lib/algorithms/translate-to-positive.ts`):
+- Translates all shapes to ensure they are in the positive quadrant
+- Calculates bounding box and moves minimum coordinates to (0,0)
+- Only translates when negative coordinates exist
+- Handles all shape types (line, circle, arc, polyline, ellipse)
+- Available as toolbar button in Edit stage
+
+### Algorithm Usage
+
+**DXF Import**: Algorithms are NOT automatically applied during file import
+**User Control**: Algorithms are only executed when user clicks toolbar buttons in Edit stage
+**Independence**: Algorithms work on any Shape[] array, not tied to DXF parsing
+**Testing**: Each algorithm has comprehensive test coverage
+
 ### DXF Parser Implementation Details
 
 #### Supported Entity Types

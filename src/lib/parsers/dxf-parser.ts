@@ -4,9 +4,10 @@ import type { Drawing, Shape, Point2D } from '../../types';
 import { generateId } from '../utils/id';
 
 interface DXFOptions {
+  squashLayers?: boolean;
+  // Legacy options (ignored - algorithms moved to separate functions)
   decomposePolylines?: boolean;
   translateToPositiveQuadrant?: boolean;
-  squashLayers?: boolean;
 }
 
 /**
@@ -111,30 +112,6 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
     }
   };
 
-  // Apply translation to positive quadrant if requested
-  if (options.translateToPositiveQuadrant && shapes.length > 0) {
-    const translation = {
-      x: -finalBounds.min.x,
-      y: -finalBounds.min.y
-    };
-    
-    // Only translate if there's a negative offset
-    if (translation.x > 0 || translation.y > 0) {
-      // Translate all shapes
-      shapes.forEach(shape => {
-        translateShape(shape, translation);
-      });
-      
-      // Update bounds after translation
-      finalBounds = {
-        min: { x: 0, y: 0 },
-        max: { 
-          x: finalBounds.max.x + translation.x, 
-          y: finalBounds.max.y + translation.y 
-        }
-      };
-    }
-  }
 
   return {
     shapes,
@@ -143,46 +120,6 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
   };
 }
 
-function translateShape(shape: Shape, translation: Point2D): void {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      line.start.x += translation.x;
-      line.start.y += translation.y;
-      line.end.x += translation.x;
-      line.end.y += translation.y;
-      break;
-      
-    case 'circle':
-    case 'arc':
-      const circle = shape.geometry as any;
-      circle.center.x += translation.x;
-      circle.center.y += translation.y;
-      break;
-      
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      // Translate points array
-      polyline.points.forEach((point: Point2D) => {
-        point.x += translation.x;
-        point.y += translation.y;
-      });
-      // Translate vertices array if it exists (bulge-aware polylines)
-      if (polyline.vertices) {
-        polyline.vertices.forEach((vertex: any) => {
-          vertex.x += translation.x;
-          vertex.y += translation.y;
-        });
-      }
-      break;
-      
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      ellipse.center.x += translation.x;
-      ellipse.center.y += translation.y;
-      break;
-  }
-}
 
 function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<string, any[]> = new Map(), blockBasePoints: Map<string, {x: number, y: number}> = new Map()): Shape | Shape[] | null {
   try {
@@ -328,30 +265,26 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
       case 'LWPOLYLINE':
       case 'POLYLINE':
         if (entity.vertices && Array.isArray(entity.vertices) && entity.vertices.length > 0) {
-          if (options.decomposePolylines) {
-            return decomposePolyline(entity, options);
-          } else {
-            // Original behavior - return as polyline but preserve bulge data
-            const vertices = entity.vertices
-              .filter((v: any) => v && typeof v.x === 'number' && typeof v.y === 'number')
-              .map((v: any) => ({
-                x: v.x,
-                y: v.y,
-                bulge: v.bulge || 0
-              }));
-            
-            if (vertices.length > 0) {
-              return {
-                id: generateId(),
-                type: 'polyline',
-                geometry: {
-                  points: vertices.map((v: any) => ({ x: v.x, y: v.y })), // Keep existing interface
-                  closed: entity.shape || entity.closed || false,
-                  vertices // Add bulge-aware vertices
-                },
-                ...getLayerInfo(entity, options)
-              };
-            }
+          // Return as polyline and preserve bulge data
+          const vertices = entity.vertices
+            .filter((v: any) => v && typeof v.x === 'number' && typeof v.y === 'number')
+            .map((v: any) => ({
+              x: v.x,
+              y: v.y,
+              bulge: v.bulge || 0
+            }));
+          
+          if (vertices.length > 0) {
+            return {
+              id: generateId(),
+              type: 'polyline',
+              geometry: {
+                points: vertices.map((v: any) => ({ x: v.x, y: v.y })), // Keep existing interface
+                closed: entity.shape || entity.closed || false,
+                vertices // Add bulge-aware vertices
+              },
+              ...getLayerInfo(entity, options)
+            };
           }
         }
         return null;
@@ -403,144 +336,6 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
   }
 }
 
-function decomposePolyline(entity: any, options: DXFOptions): Shape[] {
-  const shapes: Shape[] = [];
-  const vertices = entity.vertices;
-  const closed = entity.shape || entity.closed || false;
-  
-  if (!vertices || vertices.length < 2) {
-    return shapes;
-  }
-  
-  // Process each segment between consecutive vertices
-  for (let i = 0; i < vertices.length - 1; i++) {
-    const currentVertex = vertices[i];
-    const nextVertex = vertices[i + 1];
-    
-    // Skip invalid vertices
-    if (!currentVertex || !nextVertex || 
-        typeof currentVertex.x !== 'number' || typeof currentVertex.y !== 'number' ||
-        typeof nextVertex.x !== 'number' || typeof nextVertex.y !== 'number') {
-      continue;
-    }
-    
-    const start: Point2D = { x: currentVertex.x, y: currentVertex.y };
-    const end: Point2D = { x: nextVertex.x, y: nextVertex.y };
-    const bulge = currentVertex.bulge || 0;
-    
-    if (Math.abs(bulge) < 1e-10) {
-      // Straight line segment
-      shapes.push({
-        id: generateId(),
-        type: 'line',
-        geometry: { start, end },
-        ...getLayerInfo(entity, options)
-      });
-    } else {
-      // Arc segment - convert bulge to arc
-      const arc = bulgeToArc(start, end, bulge);
-      if (arc) {
-        shapes.push({
-          id: generateId(),
-          type: 'arc',
-          geometry: arc,
-          ...getLayerInfo(entity, options)
-        });
-      }
-    }
-  }
-  
-  // Handle closing segment for closed polylines
-  if (closed && vertices.length >= 3) {
-    const lastVertex = vertices[vertices.length - 1];
-    const firstVertex = vertices[0];
-    
-    if (lastVertex && firstVertex &&
-        typeof lastVertex.x === 'number' && typeof lastVertex.y === 'number' &&
-        typeof firstVertex.x === 'number' && typeof firstVertex.y === 'number') {
-      
-      const start: Point2D = { x: lastVertex.x, y: lastVertex.y };
-      const end: Point2D = { x: firstVertex.x, y: firstVertex.y };
-      const bulge = lastVertex.bulge || 0;
-      
-      if (Math.abs(bulge) < 1e-10) {
-        // Straight line segment
-        shapes.push({
-          id: generateId(),
-          type: 'line',
-          geometry: { start, end },
-          ...getLayerInfo(entity, options)
-        });
-      } else {
-        // Arc segment
-        const arc = bulgeToArc(start, end, bulge);
-        if (arc) {
-          shapes.push({
-            id: generateId(),
-            type: 'arc',
-            geometry: arc,
-            ...getLayerInfo(entity, options)
-          });
-        }
-      }
-    }
-  }
-  
-  return shapes;
-}
-
-function bulgeToArc(start: Point2D, end: Point2D, bulge: number): any | null {
-  if (Math.abs(bulge) < 1e-10) {
-    return null; // No arc, should be a line
-  }
-  
-  // Calculate chord vector and length
-  const dx = end.x - start.x;
-  const dy = end.y - start.y;
-  const chordLength = Math.sqrt(dx * dx + dy * dy);
-  
-  if (chordLength < 1e-10) {
-    return null; // Zero-length chord
-  }
-  
-  // Calculate included angle from bulge
-  // bulge = tan(θ/4), so θ = 4 * atan(bulge)
-  const theta = 4 * Math.atan(bulge); // Note: using bulge directly, not abs(bulge)
-  
-  // Calculate radius using the correct formula
-  const radius = Math.abs(chordLength / (2 * Math.sin(theta / 2)));
-  
-  // Calculate center point using the MetalHeadCAM algorithm
-  const chordMidX = (start.x + end.x) / 2;
-  const chordMidY = (start.y + end.y) / 2;
-  
-  // Distance from chord midpoint to arc center
-  const perpDist = radius * Math.cos(theta / 2);
-  
-  // Perpendicular angle - determines which side of chord the center is on
-  const perpAngle = Math.atan2(dy, dx) + (bulge > 0 ? Math.PI / 2 : -Math.PI / 2);
-  
-  // Arc center
-  const center = {
-    x: chordMidX + perpDist * Math.cos(perpAngle),
-    y: chordMidY + perpDist * Math.sin(perpAngle)
-  };
-  
-  // Calculate start and end angles
-  const startAngle = Math.atan2(start.y - center.y, start.x - center.x);
-  const endAngle = Math.atan2(end.y - center.y, end.x - center.x);
-  
-  // Determine if arc is clockwise or counter-clockwise
-  const clockwise = bulge < 0;
-  
-  return {
-    center,
-    radius,
-    startAngle,
-    endAngle,
-    clockwise
-  };
-}
 
 function updateBounds(shape: Shape, bounds: any): void {
   const points = getShapePoints(shape);

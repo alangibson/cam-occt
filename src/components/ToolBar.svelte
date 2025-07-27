@@ -1,5 +1,8 @@
 <script lang="ts">
   import { drawingStore } from '../lib/stores/drawing';
+  import { decomposePolylines } from '../lib/algorithms/decompose-polylines';
+  import { translateToPositiveQuadrant } from '../lib/algorithms/translate-to-positive';
+  import type { Shape, Point2D } from '../types';
   
   $: selectedCount = $drawingStore.selectedShapes.size;
   $: fileName = $drawingStore.fileName;
@@ -27,38 +30,78 @@
       );
     }
   }
+  
+  function handleDecomposePolylines() {
+    const drawing = $drawingStore.drawing;
+    if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
+      alert('No drawing loaded or no shapes to decompose.');
+      return;
+    }
+    
+    const decomposedShapes = decomposePolylines(drawing.shapes);
+    drawingStore.replaceAllShapes(decomposedShapes);
+  }
+  
+  function handleTranslateToPositive() {
+    const drawing = $drawingStore.drawing;
+    if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
+      alert('No drawing loaded or no shapes to translate.');
+      return;
+    }
+    
+    const translatedShapes = translateToPositiveQuadrant(drawing.shapes);
+    drawingStore.replaceAllShapes(translatedShapes);
+  }
 
 </script>
 
 <div class="toolbar">
   <div class="toolbar-left">
-    <button
-      on:click={() => drawingStore.deleteSelected()}
-      disabled={selectedCount === 0}
-    >
-      Delete ({selectedCount})
-    </button>
+    <div class="button-group">
+      <button
+        on:click={() => drawingStore.deleteSelected()}
+        disabled={selectedCount === 0}
+      >
+        Delete ({selectedCount})
+      </button>
+      
+      <button
+        on:click={handleScale}
+        disabled={selectedCount === 0}
+      >
+        Scale
+      </button>
+      
+      <button
+        on:click={handleRotate}
+        disabled={selectedCount === 0}
+      >
+        Rotate
+      </button>
+      
+      <button
+        on:click={() => drawingStore.clearSelection()}
+        disabled={selectedCount === 0}
+      >
+        Clear Selection
+      </button>
+    </div>
     
-    <button
-      on:click={handleScale}
-      disabled={selectedCount === 0}
-    >
-      Scale
-    </button>
-    
-    <button
-      on:click={handleRotate}
-      disabled={selectedCount === 0}
-    >
-      Rotate
-    </button>
-    
-    <button
-      on:click={() => drawingStore.clearSelection()}
-      disabled={selectedCount === 0}
-    >
-      Clear Selection
-    </button>
+    <div class="button-group">
+      <button
+        on:click={handleDecomposePolylines}
+        disabled={!$drawingStore.drawing}
+      >
+        Decompose Polylines
+      </button>
+      
+      <button
+        on:click={handleTranslateToPositive}
+        disabled={!$drawingStore.drawing}
+      >
+        Translate to Positive
+      </button>
+    </div>
   </div>
   
   <div class="toolbar-right">
@@ -79,6 +122,11 @@
   }
   
   .toolbar-left {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .button-group {
     display: flex;
     gap: 0.5rem;
   }

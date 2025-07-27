@@ -1110,8 +1110,11 @@
   function handleWheel(e: WheelEvent) {
     e.preventDefault();
     
-    const scaleFactor = e.deltaY > 0 ? 0.95 : 1.05;
-    const newScale = scale * scaleFactor;
+    // Calculate new scale in 5% increments
+    const currentPercent = Math.round(scale * 100);
+    const increment = e.deltaY > 0 ? -5 : 5;
+    const newPercent = Math.max(5, currentPercent + increment); // Minimum 5% zoom
+    const newScale = newPercent / 100;
     
     // Zoom towards mouse position
     const worldPos = screenToWorld(mousePos);
