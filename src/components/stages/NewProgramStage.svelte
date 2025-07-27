@@ -1,6 +1,7 @@
 <script lang="ts">
   import DrawingCanvas from '../DrawingCanvas.svelte';
   import Operations from '../Operations.svelte';
+  import Paths from '../Paths.svelte';
   import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
@@ -150,7 +151,7 @@
 
 <div class="program-stage">
   <div class="program-layout" class:no-select={isDraggingLeft || isDraggingRight}>
-    <!-- Left Column - Parts and Paths -->
+    <!-- Left Column - Parts and Chains -->
     <div class="left-column" style="width: {leftColumnWidth}px;">
       <!-- Left resize handle -->
       <button 
@@ -163,18 +164,18 @@
       ></button>
 
       {#if chains.length > 0}
-        <AccordionPanel title="Paths ({chains.length})" isExpanded={true}>
-          <div class="path-list">
+        <AccordionPanel title="Chains ({chains.length})" isExpanded={true}>
+          <div class="chain-list">
             {#each chains as chain (chain.id)}
               <div 
-                class="path-item {selectedChainId === chain.id ? 'selected' : ''}"
+                class="chain-item {selectedChainId === chain.id ? 'selected' : ''}"
                 role="button"
                 tabindex="0"
                 on:click={() => handleChainClick(chain.id)}
                 on:keydown={(e) => e.key === 'Enter' && handleChainClick(chain.id)}
               >
-                <span class="path-name">Path {chain.id.split('-')[1]}</span>
-                <span class="path-status {isChainClosedHelper(chain) ? 'closed' : 'open'}">
+                <span class="chain-name">Chain {chain.id.split('-')[1]}</span>
+                <span class="chain-status {isChainClosedHelper(chain) ? 'closed' : 'open'}">
                   {isChainClosedHelper(chain) ? 'Closed' : 'Open'}
                 </span>
               </div>
@@ -251,39 +252,8 @@
         <Operations />
       </AccordionPanel>
       
-      <AccordionPanel title="Path Information" isExpanded={true}>
-        <div class="path-info">
-          {#if selectedChainId}
-            {@const selectedChain = chains.find(c => c.id === selectedChainId)}
-            {#if selectedChain}
-              <div class="info-item">
-                <span class="info-label">Selected Path:</span>
-                <span class="info-value">Path {selectedChain.id.split('-')[1]}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Status:</span>
-                <span class="info-value">{isChainClosedHelper(selectedChain) ? 'Closed' : 'Open'}</span>
-              </div>
-              <div class="info-item">
-                <span class="info-label">Shapes:</span>
-                <span class="info-value">{selectedChain.shapes.length}</span>
-              </div>
-            {/if}
-          {:else}
-            <div class="info-item">
-              <span class="info-label">Total Paths:</span>
-              <span class="info-value">{chains.length}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Total Parts:</span>
-              <span class="info-value">{parts.length}</span>
-            </div>
-            <div class="info-item">
-              <span class="info-label">Instructions:</span>
-              <span class="info-value">Select a path to view details</span>
-            </div>
-          {/if}
-        </div>
+      <AccordionPanel title="Paths" isExpanded={true}>
+        <Paths />
       </AccordionPanel>
     </div>
   </div>
@@ -361,9 +331,9 @@
 
   /* .parts-list has no special styling - shows all parts without scrollbar */
   
-  /* .path-list has no special styling - shows all paths without scrollbar */
+  /* .chain-list has no special styling - shows all chains without scrollbar */
 
-  .path-item, .part-item {
+  .chain-item, .part-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -376,11 +346,11 @@
     transition: all 0.2s ease;
   }
 
-  .path-item:hover, .part-item:hover {
+  .chain-item:hover, .part-item:hover {
     background-color: #f3f4f6;
   }
 
-  .path-item.selected {
+  .chain-item.selected {
     background-color: #dbeafe;
     border-color: #3b82f6;
   }
@@ -390,53 +360,31 @@
     border-color: #f59e0b;
   }
 
-  .path-name, .part-name {
+  .chain-name, .part-name {
     font-weight: 500;
     color: #374151;
   }
 
-  .path-info, .part-info {
+  .part-info {
     color: #6b7280;
     font-size: 0.75rem;
   }
 
-  .path-status {
+  .chain-status {
     font-size: 0.75rem;
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-weight: 500;
   }
 
-  .path-status.closed {
+  .chain-status.closed {
     background-color: #dcfce7;
     color: #166534;
   }
 
-  .path-status.open {
+  .chain-status.open {
     background-color: #fef3c7;
     color: #92400e;
-  }
-
-  .path-info {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .info-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.875rem;
-  }
-
-  .info-label {
-    color: #6b7280;
-  }
-
-  .info-value {
-    font-weight: 500;
-    color: #374151;
   }
 
   .next-stage-content {

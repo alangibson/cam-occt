@@ -37,6 +37,59 @@ The application is organized around a clear 5-stage workflow that guides users f
 - **Automatic Detection**: Auto-detect chains and parts from imported drawing geometry
 - **Interactive Parameters**: User-configurable tolerance and cutting parameters
 
+## Operations and Paths Relationship
+
+**CRITICAL**: Understanding the relationship between Operations and Paths is fundamental to the Program Stage workflow:
+
+### Operations
+- **Operations** are user-defined instructions that specify HOW to cut geometry
+- An operation defines which tool to use and which chains/parts to cut
+- Operations contain cutting parameters (feed rate, pierce settings, etc.)
+- Operations are created by the user in the Operations box in the Program stage
+- Operations are ALWAYS automatically applied - no manual "apply" button needed
+
+### Paths  
+- **Paths** are automatically generated FROM operations when they are created or modified
+- Each operation targeting chains creates one path per chain
+- Each operation targeting parts creates paths for all chains that make up the part (shell + holes)
+- Paths represent the actual tool movement instructions
+- Paths are displayed in the Paths box in the Program stage below Operations
+
+### Visual Display
+- **Chains with paths are highlighted in GREEN** on the drawing canvas
+- **Selected paths are highlighted in DARK GREEN** on the drawing canvas
+- This allows users to visually see which geometry has tool paths generated
+
+### Workflow
+1. User creates operation and assigns it to chains or parts
+2. System automatically generates paths from the operation
+3. Chains with paths appear green on the canvas
+4. User can select/highlight paths to see them in dark green
+5. Paths contain all the tool movement data for G-code generation
+
+## Drawing Canvas Synchronization
+
+**CRITICAL**: The drawing canvas must ALWAYS be kept up to date with the state the user sets in the left and right columns.
+
+### Canvas Reactivity Requirements
+- **Operations State**: Canvas highlighting must immediately reflect when operations are enabled/disabled
+- **Path State**: Green highlighting appears/disappears instantly when paths are created/deleted
+- **Selection State**: Canvas selection must sync with selections in the left/right panels
+- **Real-time Updates**: Any change in the side panels must be immediately visible on the canvas
+
+### Synchronization Rules
+- **Disabled Operations**: Chains/parts associated with disabled operations must NOT appear green
+- **Deleted Operations**: Canvas must immediately remove highlighting when operations are deleted
+- **Path Generation**: New paths must immediately appear as green highlighting when operations are applied
+- **Selection Sync**: Hover/selection in panels must highlight corresponding geometry on canvas
+- **State Consistency**: Canvas state must never be out of sync with panel state
+
+### Implementation Notes
+- Use reactive statements (`$:`) to ensure canvas updates when stores change
+- Filter displayed paths based on both path existence AND operation enabled state
+- Remove paths from display when their parent operations no longer exist
+- Maintain strict synchronization between UI panels and canvas visualization
+
 ### 4. Simulate Stage
 **Purpose**: Graphically simulate cutting process in real time
 - 3D visualization of cutting simulation

@@ -2,7 +2,6 @@
 
 CAM-OCCT is a web-based Computer-Aided Manufacturing (CAM) application that converts SVG and DXF design files into optimized G-code for CNC plasma cutting operations. The application specifically targets LinuxCNC 2.9+ QtPlasmaC controllers.
 
-
 ## UI Layout Architecture
 
 The application uses a workflow-based UI layout with three main rows: Header, Body, and Footer.

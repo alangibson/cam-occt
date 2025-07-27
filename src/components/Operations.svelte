@@ -19,9 +19,12 @@
   // Apply to menu functionality  
   let showApplyToMenus: { [operationId: string]: boolean } = {};
   
-  // Hover highlighting for parts/paths
+  // Hover highlighting for parts/chains
   let hoveredPartId: string | null = null;
-  let hoveredPathId: string | null = null;
+  let hoveredChainId: string | null = null;
+  
+  // Track assigned targets
+  $: assignedTargets = operationsStore.getAssignedTargets();
   
   // Reactive statement to ensure proper tool store reactivity
   $: console.log('Tools reactive update:', $toolStore);
@@ -269,7 +272,7 @@
       return selectedParts.map(p => `Part ${p.id.split('-')[1]}`).join(', ');
     } else {
       const selectedChains = chains.filter(c => operation.targetIds.includes(c.id));
-      return selectedChains.map(c => `Path ${c.id.split('-')[1]}`).join(', ');
+      return selectedChains.map(c => `Chain ${c.id.split('-')[1]}`).join(', ');
     }
   }
   
@@ -283,10 +286,19 @@
     }
   }
   
-  function handlePathHover(pathId: string | null) {
-    hoveredPathId = pathId;
+  function handleChainHover(chainId: string | null) {
+    hoveredChainId = chainId;
     // Sync with chain selection in drawing canvas
-    selectChain(pathId);
+    selectChain(chainId);
+  }
+  
+  function isTargetAssignedToOther(targetId: string, targetType: 'parts' | 'chains', operationId: string): boolean {
+    const assigned = operationsStore.getAssignedTargets(operationId);
+    if (targetType === 'chains') {
+      return assigned.chains.has(targetId);
+    } else {
+      return assigned.parts.has(targetId);
+    }
   }
 </script>
 
@@ -399,28 +411,33 @@
                     </button>
                     <button
                       type="button"
-                      class="target-type-tab {operation.targetType === 'paths' ? 'active' : ''}"
-                      onclick={() => updateOperationField(operation.id, 'targetType', 'paths')}
+                      class="target-type-tab {operation.targetType === 'chains' ? 'active' : ''}"
+                      onclick={() => updateOperationField(operation.id, 'targetType', 'chains')}
                     >
-                      Paths ({chains.length})
+                      Chains ({chains.length})
                     </button>
                   </div>
                   
                   <div class="target-options">
                     {#if operation.targetType === 'parts'}
                       {#each parts as part (part.id)}
+                        {@const isAssigned = isTargetAssignedToOther(part.id, 'parts', operation.id)}
                         <label 
-                          class="target-option {hoveredPartId === part.id ? 'hovered' : ''}"
+                          class="target-option {hoveredPartId === part.id ? 'hovered' : ''} {isAssigned ? 'disabled' : ''}"
                           onmouseenter={() => handlePartHover(part.id)}
                           onmouseleave={() => handlePartHover(null)}
                         >
                           <input
                             type="checkbox"
                             checked={operation.targetIds.includes(part.id)}
+                            disabled={isAssigned}
                             onchange={() => toggleTargetSelection(operation.id, part.id)}
                           />
                           <span class="target-label">Part {part.id.split('-')[1]}</span>
                           <span class="target-info">({part.holes.length} holes)</span>
+                          {#if isAssigned}
+                            <span class="assigned-indicator">Assigned</span>
+                          {/if}
                         </label>
                       {/each}
                       {#if parts.length === 0}
@@ -428,22 +445,27 @@
                       {/if}
                     {:else}
                       {#each chains as chain (chain.id)}
+                        {@const isAssigned = isTargetAssignedToOther(chain.id, 'chains', operation.id)}
                         <label 
-                          class="target-option {hoveredPathId === chain.id ? 'hovered' : ''}"
-                          onmouseenter={() => handlePathHover(chain.id)}
-                          onmouseleave={() => handlePathHover(null)}
+                          class="target-option {hoveredChainId === chain.id ? 'hovered' : ''} {isAssigned ? 'disabled' : ''}"
+                          onmouseenter={() => handleChainHover(chain.id)}
+                          onmouseleave={() => handleChainHover(null)}
                         >
                           <input
                             type="checkbox"
                             checked={operation.targetIds.includes(chain.id)}
+                            disabled={isAssigned}
                             onchange={() => toggleTargetSelection(operation.id, chain.id)}
                           />
-                          <span class="target-label">Path {chain.id.split('-')[1]}</span>
+                          <span class="target-label">Chain {chain.id.split('-')[1]}</span>
                           <span class="target-info">({chain.shapes.length} shapes)</span>
+                          {#if isAssigned}
+                            <span class="assigned-indicator">Assigned</span>
+                          {/if}
                         </label>
                       {/each}
                       {#if chains.length === 0}
-                        <div class="no-targets">No paths available</div>
+                        <div class="no-targets">No chains available</div>
                       {/if}
                     {/if}
                   </div>
@@ -468,7 +490,7 @@
     {#if operations.length === 0}
       <div class="no-operations">
         <p>No operations created yet.</p>
-        <p>Operations define how tools are applied to parts or paths.</p>
+        <p>Operations define how tools are applied to parts or chains.</p>
       </div>
     {/if}
   </div>
@@ -684,6 +706,22 @@
   .target-option.hovered {
     background: #dbeafe;
     border-left: 3px solid #3b82f6;
+  }
+  
+  .target-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .target-option.disabled input {
+    cursor: not-allowed;
+  }
+  
+  .assigned-indicator {
+    margin-left: auto;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-style: italic;
   }
   
   .target-option :global(input[type=\"checkbox\"]) {

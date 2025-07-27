@@ -3,10 +3,13 @@
   import { drawingStore } from '../lib/stores/drawing';
   import { chainStore } from '../lib/stores/chains';
   import { partStore } from '../lib/stores/parts';
+  import { pathStore } from '../lib/stores/paths';
+  import { operationsStore } from '../lib/stores/operations';
   import { tessellationStore } from '../lib/stores/tessellation';
   import { overlayStore } from '../lib/stores/overlay';
   import { getShapeChainId, getChainShapeIds, clearChainSelection } from '../lib/stores/chains';
   import { getChainPartType, getPartChainIds, clearHighlight } from '../lib/stores/parts';
+  import { selectPath, clearPathHighlight } from '../lib/stores/paths';
   import type { Shape, Point2D } from '../types';
   import type { WorkflowStage } from '../lib/stores/workflow';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
@@ -35,6 +38,21 @@
   $: selectedChainId = $chainStore.selectedChainId;
   $: parts = $partStore.parts;
   $: highlightedPartId = $partStore.highlightedPartId;
+  $: pathsState = $pathStore;
+  $: operations = $operationsStore;
+  // Only show chains as having paths if their associated operations are enabled
+  $: chainsWithPaths = pathsState && operations ? [...new Set(
+    pathsState.paths
+      .filter(path => {
+        // Find the operation for this path
+        const operation = operations.find(op => op.id === path.operationId);
+        // Only include path if operation exists and is enabled
+        return operation && operation.enabled && path.enabled;
+      })
+      .map(p => p.chainId)
+  )] : [];
+  $: selectedPathId = pathsState?.selectedPathId;
+  $: highlightedPathId = pathsState?.highlightedPathId;
   $: tessellationState = $tessellationStore;
   $: overlayState = $overlayStore;
   $: currentOverlay = overlayState.overlays[currentStage];
@@ -77,9 +95,25 @@
       for (const entry of entries) {
         const { width, height } = entry.contentRect;
         
+        // Store previous canvas dimensions to calculate offset adjustment
+        const prevWidth = canvas.width;
+        const prevHeight = canvas.height;
+        
         // Update canvas size to match container
         canvas.width = width;
         canvas.height = height;
+        
+        // Adjust offset to keep drawing origin in the same screen position
+        if (prevWidth > 0 && prevHeight > 0) {
+          const deltaX = (width - prevWidth) / 2;
+          const deltaY = (height - prevHeight) / 2;
+          
+          // Update the offset in the drawing store to maintain origin position
+          drawingStore.setViewTransform(scale, {
+            x: offset.x + deltaX,
+            y: offset.y + deltaY
+          });
+        }
         
         // Re-render after resize
         if (ctx) {
@@ -344,13 +378,28 @@
     // Check if this shape is part of the selected chain
     const isChainSelected = chainId && selectedChainId === chainId;
     
-    // Priority: selected > hovered > chain selected > part highlighted > part type > chain > normal
+    // Check if this chain has paths (green highlighting)
+    const hasPath = chainId && chainsWithPaths.includes(chainId);
+    
+    // Check if this path is selected or highlighted
+    const isPathSelected = selectedPathId && pathsState.paths.some(p => p.id === selectedPathId && p.chainId === chainId);
+    const isPathHighlighted = highlightedPathId && pathsState.paths.some(p => p.id === highlightedPathId && p.chainId === chainId);
+    
+    // Priority: selected > hovered > path selected > path highlighted > chain selected > part highlighted > path (green) > part type > chain > normal
     if (isSelected) {
       ctx.strokeStyle = '#ff6600';
       ctx.lineWidth = 2 / totalScale;
     } else if (isHovered) {
       ctx.strokeStyle = '#ff6600';
       ctx.lineWidth = 1.5 / totalScale;
+    } else if (isPathSelected) {
+      ctx.strokeStyle = '#15803d'; // Dark green color for selected path
+      ctx.lineWidth = 3 / totalScale;
+    } else if (isPathHighlighted) {
+      ctx.strokeStyle = '#15803d'; // Dark green color for highlighted path
+      ctx.lineWidth = 3 / totalScale;
+      ctx.shadowColor = '#15803d';
+      ctx.shadowBlur = 4 / totalScale;
     } else if (isChainSelected) {
       ctx.strokeStyle = '#ff6600'; // Orange color for selected chain (same as selected shapes)
       ctx.lineWidth = 2 / totalScale;
@@ -359,6 +408,9 @@
       ctx.lineWidth = 2.5 / totalScale;
       ctx.shadowColor = '#f59e0b';
       ctx.shadowBlur = 3 / totalScale;
+    } else if (hasPath) {
+      ctx.strokeStyle = '#16a34a'; // Green color for chains with paths
+      ctx.lineWidth = 2 / totalScale;
     } else if (partType === 'shell') {
       ctx.strokeStyle = '#2563eb'; // Blue color for part shells
       ctx.lineWidth = 1.5 / totalScale;
@@ -945,6 +997,20 @@
           // Get the chain ID for this shape
           const chainId = getShapeChainId(shape.id, chains);
           
+          // Check if this chain has a path and handle path selection
+          if (chainId && chainsWithPaths.includes(chainId)) {
+            // Find the path for this chain
+            const pathForChain = pathsState.paths.find(p => p.chainId === chainId);
+            if (pathForChain) {
+              // Handle path selection
+              if (selectedPathId === pathForChain.id) {
+                pathStore.selectPath(null); // Deselect if already selected
+              } else {
+                pathStore.selectPath(pathForChain.id);
+              }
+            }
+          }
+          
           // Get all shapes in the chain
           const chainShapeIds = getChainShapeIds(shape.id, chains);
           
@@ -978,6 +1044,8 @@
         drawingStore.clearSelection();
         clearChainSelection();
         clearHighlight();
+        pathStore.selectPath(null);
+        clearPathHighlight();
       }
     }
   }
