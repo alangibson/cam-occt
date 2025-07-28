@@ -1,7 +1,6 @@
 <script lang="ts">
   import { createEventDispatcher } from 'svelte';
   import { parseDXF } from '../lib/parsers/dxf-parser';
-  import { parseSVG } from '../lib/parsers/svg-parser';
   import { drawingStore } from '../lib/stores/drawing';
   
   const dispatch = createEventDispatcher();
@@ -25,10 +24,8 @@
         
         if (file.name.toLowerCase().endsWith('.dxf')) {
           drawing = await parseDXF(content);
-        } else if (file.name.toLowerCase().endsWith('.svg')) {
-          drawing = parseSVG(content);
         } else {
-          alert('Unsupported file format. Please use DXF or SVG files.');
+          alert('Unsupported file format. Please use DXF files.');
           return;
         }
         
@@ -71,7 +68,7 @@
   <input
     bind:this={fileInput}
     type="file"
-    accept=".dxf,.svg"
+    accept=".dxf"
     on:change={(e) => handleFiles(e.currentTarget.files)}
     style="display: none;"
   />
@@ -80,7 +77,7 @@
     class="import-button"
     on:click={() => fileInput.click()}
   >
-    Import DXF/SVG
+    Import DXF
   </button>
   
   

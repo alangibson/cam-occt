@@ -58,6 +58,7 @@ declare module '$env/static/private' {
 	export const DEBUGINFOD_URLS: string;
 	export const GTK_IM_MODULE: string;
 	export const LOGNAME: string;
+	export const npm_config_run: string;
 	export const _: string;
 	export const npm_config_prefix: string;
 	export const npm_config_npm_version: string;
@@ -186,6 +187,7 @@ declare module '$env/dynamic/private' {
 		DEBUGINFOD_URLS: string;
 		GTK_IM_MODULE: string;
 		LOGNAME: string;
+		npm_config_run: string;
 		_: string;
 		npm_config_prefix: string;
 		npm_config_npm_version: string;

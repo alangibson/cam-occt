@@ -147,7 +147,7 @@ function convertBulgeToArc(start: any, end: any, bulge: number): any | null {
     const tolerance = Math.max(0.001, radius * 0.001);
     if (Math.abs(distToStart - radius) > tolerance || Math.abs(distToEnd - radius) > tolerance) {
       // Validation failed - this indicates a mathematical error
-      console.warn(`Bulge conversion validation failed: bulge=${bulge}, chord=${chordLength.toFixed(3)}, sagitta=${sagitta.toFixed(3)}, radius=${radius.toFixed(3)}`);
+      console.warn(`Bulge conversion validation failed: bulge=${bulge}, chord=${chordLength.toFixed(3)}, radius=${radius.toFixed(3)}`);
       console.warn(`Distance errors: start=${Math.abs(distToStart - radius).toFixed(6)}, end=${Math.abs(distToEnd - radius).toFixed(6)}, tolerance=${tolerance.toFixed(6)}`);
       return null;
     }

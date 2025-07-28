@@ -34,8 +34,7 @@
     <div class="import-header">
       <h1>Import Drawing</h1>
       <p class="import-description">
-        Upload your DXF or SVG drawing file to begin the CAM workflow.
-        Configure import options below to customize how your drawing is processed.
+        Upload your DXF drawing file to begin the CAM workflow.
       </p>
     </div>
 
@@ -43,14 +42,6 @@
       <FileImport on:fileImported={handleFileImported} />
     </div>
 
-    <div class="import-help">
-      <h3>Supported File Formats</h3>
-      <ul>
-        <li><strong>DXF</strong> - AutoCAD Drawing Exchange Format with full support for polylines, bulges, and units</li>
-        <li><strong>SVG</strong> - Scalable Vector Graphics with support for paths, shapes, and text</li>
-      </ul>
-
-    </div>
   </div>
 </div>
 
@@ -97,38 +88,6 @@
     padding: 2rem;
   }
 
-  .import-help {
-    padding: 1.5rem 2rem;
-    background-color: #f8f9fa;
-    border-top: 1px solid #e5e7eb;
-  }
-
-  .import-help h3 {
-    margin: 0 0 0.75rem 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #374151;
-  }
-
-  .import-help h3:not(:first-child) {
-    margin-top: 1.5rem;
-  }
-
-  .import-help ul {
-    margin: 0;
-    padding-left: 1.5rem;
-    color: #4b5563;
-  }
-
-  .import-help li {
-    margin-bottom: 0.5rem;
-    line-height: 1.5;
-  }
-
-  .import-help strong {
-    color: #374151;
-    font-weight: 600;
-  }
 
   /* Responsive design */
   @media (max-width: 768px) {
@@ -146,10 +105,6 @@
 
     .import-content {
       padding: 1.5rem;
-    }
-
-    .import-help {
-      padding: 1.25rem 1.5rem;
     }
   }
 </style>
