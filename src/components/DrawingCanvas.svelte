@@ -7,6 +7,7 @@
   import { operationsStore } from '../lib/stores/operations';
   import { tessellationStore } from '../lib/stores/tessellation';
   import { overlayStore } from '../lib/stores/overlay';
+  import { rapidStore } from '../lib/stores/rapids';
   import { getShapeChainId, getChainShapeIds, clearChainSelection } from '../lib/stores/chains';
   import { getChainPartType, getPartChainIds, clearHighlight } from '../lib/stores/parts';
   import { selectPath, clearPathHighlight } from '../lib/stores/paths';
@@ -56,6 +57,8 @@
   $: tessellationState = $tessellationStore;
   $: overlayState = $overlayStore;
   $: currentOverlay = overlayState.overlays[currentStage];
+  $: rapids = $rapidStore.rapids;
+  $: showRapids = $rapidStore.showRapids;
   
   // Get chain IDs that belong to the highlighted part
   $: highlightedChainIds = highlightedPartId ? getPartChainIds(highlightedPartId, parts) : [];
@@ -78,6 +81,8 @@
     highlightedChainIds;
     tessellationState;
     currentOverlay;
+    pathsState;
+    operations;
     
     // Only render if we have a context
     if (ctx) {
@@ -174,6 +179,12 @@
       
     });
     
+    // Draw rapids (light blue thin lines)
+    drawRapids();
+    
+    // Draw path endpoints (green start, red end)
+    drawPathEndpoints();
+    
     // Draw stage-specific overlays
     if (currentOverlay) {
       drawOverlays(currentOverlay);
@@ -199,6 +210,68 @@
     ctx.moveTo(0, -crossSize);
     ctx.lineTo(0, crossSize);
     ctx.stroke();
+  }
+  
+  function drawRapids() {
+    if (!showRapids || rapids.length === 0) return;
+    
+    ctx.save();
+    ctx.strokeStyle = '#00bfff'; // Light blue color
+    ctx.lineWidth = 0.5 / totalScale; // Thin line
+    ctx.setLineDash([5 / totalScale, 5 / totalScale]); // Dashed line
+    
+    rapids.forEach((rapid: { start: any; end: any }) => {
+      ctx.beginPath();
+      ctx.moveTo(rapid.start.x, rapid.start.y);
+      ctx.lineTo(rapid.end.x, rapid.end.y);
+      ctx.stroke();
+    });
+    
+    ctx.restore();
+  }
+  
+  function drawPathEndpoints() {
+    if (!pathsState || pathsState.paths.length === 0) return;
+    
+    const pointRadius = 3 / totalScale; // Fixed size regardless of zoom
+    
+    pathsState.paths.forEach(path => {
+      // Only draw endpoints for enabled paths with enabled operations
+      const operation = operations.find(op => op.id === path.operationId);
+      if (!operation || !operation.enabled || !path.enabled) return;
+      
+      // Get the chain for this path to find start/end points
+      const chain = chains.find(c => c.id === path.chainId);
+      if (!chain || chain.shapes.length === 0) return;
+      
+      // Get first and last shape in the chain
+      const firstShape = chain.shapes[0];
+      const lastShape = chain.shapes[chain.shapes.length - 1];
+      
+      if (!firstShape || !lastShape) return;
+      
+      // Get start point of first shape
+      const startPoint = getShapeStartPoint(firstShape);
+      if (startPoint) {
+        ctx.save();
+        ctx.fillStyle = '#00ff00'; // Green for start
+        ctx.beginPath();
+        ctx.arc(startPoint.x, startPoint.y, pointRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+      }
+      
+      // Get end point of last shape
+      const endPoint = getShapeEndPoint(lastShape);
+      if (endPoint) {
+        ctx.save();
+        ctx.fillStyle = '#ff0000'; // Red for end
+        ctx.beginPath();
+        ctx.arc(endPoint.x, endPoint.y, pointRadius, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+      }
+    });
   }
   
   function drawTessellationPoints(points: Array<{x: number, y: number}>) {

@@ -14,6 +14,8 @@ export default defineConfig({
 			ignored: [
 				'**/docs/**',
 				'**/reference/**',
+				'**/build/**',
+				'**/node_modules/**',
 				'**/*.test.ts',
 				'**/*.test.js',
 				'**/*.spec.ts',

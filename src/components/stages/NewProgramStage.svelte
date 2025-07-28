@@ -1,5 +1,6 @@
 <script lang="ts">
-  import DrawingCanvas from '../DrawingCanvas.svelte';
+  import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
+  import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
   import Operations from '../Operations.svelte';
   import Paths from '../Paths.svelte';
   import AccordionPanel from '../AccordionPanel.svelte';
@@ -8,7 +9,9 @@
   import { chainStore, selectChain } from '../../lib/stores/chains';
   import { partStore, highlightPart, clearHighlight } from '../../lib/stores/parts';
   import { isChainClosed } from '../../lib/algorithms/part-detection';
-  import { onMount } from 'svelte';
+  import { pathStore } from '../../lib/stores/paths';
+  import { rapidStore } from '../../lib/stores/rapids';
+  import { optimizeCutOrder } from '../../lib/algorithms/optimize-cut-order';
   
   // Subscribe to stores
   $: drawing = $drawingStore.drawing;
@@ -16,17 +19,11 @@
   $: parts = $partStore.parts;
   $: selectedChainId = $chainStore.selectedChainId;
   $: highlightedPartId = $partStore.highlightedPartId;
+  $: paths = $pathStore.paths;
+  $: rapids = $rapidStore.rapids;
 
-  // Resizable columns state
-  let leftColumnWidth = 280; // Default width in pixels
-  let rightColumnWidth = 280; // Default width in pixels
-  let isDraggingLeft = false;
-  let isDraggingRight = false;
-  let startX = 0;
-  let startWidth = 0;
 
   function handleNext() {
-    workflowStore.completeStage('program');
     workflowStore.setStage('simulate');
   }
 
@@ -53,116 +50,39 @@
     return isChainClosed(chain, 0.1); // Use default tolerance since this is display-only
   }
 
-  // Load column widths from localStorage on mount
-  onMount(() => {
-    const savedLeftWidth = localStorage.getItem('cam-occt-left-column-width');
-    const savedRightWidth = localStorage.getItem('cam-occt-right-column-width');
+  // Handle cut order optimization
+  function handleOptimizeCutOrder() {
+    if (!drawing || chains.length === 0 || paths.length === 0) {
+      console.warn('No drawing, chains, or paths available for optimization');
+      return;
+    }
+
+    // Create a map of chain IDs to chains for quick lookup
+    const chainMap = new Map();
+    chains.forEach(chain => {
+      chainMap.set(chain.id, chain);
+    });
+
+    // Optimize the cut order
+    const result = optimizeCutOrder(paths, chainMap, parts);
     
-    if (savedLeftWidth) {
-      leftColumnWidth = parseInt(savedLeftWidth, 10);
-    }
-    if (savedRightWidth) {
-      rightColumnWidth = parseInt(savedRightWidth, 10);
-    }
-  });
-
-  // Save column widths to localStorage
-  function saveColumnWidths() {
-    localStorage.setItem('cam-occt-left-column-width', leftColumnWidth.toString());
-    localStorage.setItem('cam-occt-right-column-width', rightColumnWidth.toString());
+    // Update the path order in the store
+    pathStore.reorderPaths(result.orderedPaths);
+    
+    // Update the rapids in the store
+    rapidStore.setRapids(result.rapids);
+    
+    console.log(`Optimized cut order: ${result.orderedPaths.length} paths, ${result.rapids.length} rapids, total distance: ${result.totalDistance.toFixed(2)} units`);
   }
 
-  // Left column resize handlers
-  function handleLeftResizeStart(e: MouseEvent) {
-    isDraggingLeft = true;
-    startX = e.clientX;
-    startWidth = leftColumnWidth;
-    document.addEventListener('mousemove', handleLeftResize);
-    document.addEventListener('mouseup', handleLeftResizeEnd);
-    e.preventDefault();
-  }
-
-  function handleLeftResize(e: MouseEvent) {
-    if (!isDraggingLeft) return;
-    const deltaX = e.clientX - startX;
-    const newWidth = Math.max(200, Math.min(600, startWidth + deltaX)); // Min 200px, max 600px
-    leftColumnWidth = newWidth;
-  }
-
-  function handleLeftResizeEnd() {
-    isDraggingLeft = false;
-    document.removeEventListener('mousemove', handleLeftResize);
-    document.removeEventListener('mouseup', handleLeftResizeEnd);
-    saveColumnWidths();
-  }
-
-  // Right column resize handlers
-  function handleRightResizeStart(e: MouseEvent) {
-    isDraggingRight = true;
-    startX = e.clientX;
-    startWidth = rightColumnWidth;
-    document.addEventListener('mousemove', handleRightResize);
-    document.addEventListener('mouseup', handleRightResizeEnd);
-    e.preventDefault();
-  }
-
-  function handleRightResize(e: MouseEvent) {
-    if (!isDraggingRight) return;
-    const deltaX = startX - e.clientX; // Reverse delta for right column
-    const newWidth = Math.max(200, Math.min(600, startWidth + deltaX)); // Min 200px, max 600px
-    rightColumnWidth = newWidth;
-  }
-
-  function handleRightResizeEnd() {
-    isDraggingRight = false;
-    document.removeEventListener('mousemove', handleRightResize);
-    document.removeEventListener('mouseup', handleRightResizeEnd);
-    saveColumnWidths();
-  }
-
-  // Keyboard support for resize handles
-  function handleLeftKeydown(e: KeyboardEvent) {
-    if (e.key === 'ArrowLeft') {
-      leftColumnWidth = Math.max(200, leftColumnWidth - 10);
-      saveColumnWidths();
-      e.preventDefault();
-    } else if (e.key === 'ArrowRight') {
-      leftColumnWidth = Math.min(600, leftColumnWidth + 10);
-      saveColumnWidths();
-      e.preventDefault();
-    }
-  }
-
-  function handleRightKeydown(e: KeyboardEvent) {
-    if (e.key === 'ArrowLeft') {
-      rightColumnWidth = Math.min(600, rightColumnWidth + 10);
-      saveColumnWidths();
-      e.preventDefault();
-    } else if (e.key === 'ArrowRight') {
-      rightColumnWidth = Math.max(200, rightColumnWidth - 10);
-      saveColumnWidths();
-      e.preventDefault();
-    }
-  }
-
-  // Auto-complete program stage (user can adjust parameters and continue)
-  workflowStore.completeStage('program');
 </script>
 
 <div class="program-stage">
-  <div class="program-layout" class:no-select={isDraggingLeft || isDraggingRight}>
-    <!-- Left Column - Parts and Chains -->
-    <div class="left-column" style="width: {leftColumnWidth}px;">
-      <!-- Left resize handle -->
-      <button 
-        class="resize-handle resize-handle-right" 
-        on:mousedown={handleLeftResizeStart}
-        on:keydown={handleLeftKeydown}
-        class:dragging={isDraggingLeft}
-        aria-label="Resize left panel (Arrow keys to adjust)"
-        type="button"
-      ></button>
-
+  <ThreeColumnLayout 
+    leftColumnStorageKey="cam-occt-program-left-column-width"
+    rightColumnStorageKey="cam-occt-program-right-column-width"
+  >
+    <svelte:fragment slot="left">
       {#if chains.length > 0}
         <AccordionPanel title="Chains ({chains.length})" isExpanded={true}>
           <div class="chain-list">
@@ -216,38 +136,31 @@
           </p>
         </div>
       </AccordionPanel>
-    </div>
+    </svelte:fragment>
 
-    <!-- Center Column - Drawing Canvas -->
-    <div class="center-column">
-      <div class="canvas-container">
-        {#if drawing}
-          <DrawingCanvas 
-            treatChainsAsEntities={true}
-            disableDragging={true}
-            onChainClick={handleChainClick}
-            currentStage="program"
-          />
-        {:else}
-          <div class="no-drawing">
-            <h3>No Drawing Loaded</h3>
-            <p>Please import a drawing file to begin programming tool paths.</p>
+    <svelte:fragment slot="center">
+      <div class="toolbar-container">
+        <div class="toolbar">
+          <div class="toolbar-left">
+            <button
+              on:click={handleOptimizeCutOrder}
+              disabled={!drawing || chains.length === 0}
+              class="toolbar-button"
+            >
+              Optimize cut order
+            </button>
           </div>
-        {/if}
+          <div class="toolbar-right">
+            {#if drawing && $drawingStore.fileName}
+              <span class="file-name">{$drawingStore.fileName}</span>
+            {/if}
+          </div>
+        </div>
       </div>
-    </div>
+      <DrawingCanvasContainer currentStage="program" />
+    </svelte:fragment>
 
-    <!-- Right Column - Operations -->
-    <div class="right-column" style="width: {rightColumnWidth}px;">
-      <!-- Right resize handle -->
-      <button 
-        class="resize-handle resize-handle-left" 
-        on:mousedown={handleRightResizeStart}
-        on:keydown={handleRightKeydown}
-        class:dragging={isDraggingRight}
-        aria-label="Resize right panel (Arrow keys to adjust)"
-        type="button"
-      ></button>
+    <svelte:fragment slot="right">
       <AccordionPanel title="Operations" isExpanded={true}>
         <Operations />
       </AccordionPanel>
@@ -255,8 +168,25 @@
       <AccordionPanel title="Paths" isExpanded={true}>
         <Paths />
       </AccordionPanel>
-    </div>
-  </div>
+
+      <AccordionPanel title="Cut Order" isExpanded={true}>
+        <div class="cut-order-list">
+          {#if rapids.length > 0}
+            {#each rapids as rapid, index (rapid.id)}
+              <div class="rapid-item">
+                <span class="rapid-index">{index + 1}.</span>
+                <span class="rapid-description">
+                  Rapid to ({rapid.end.x.toFixed(2)}, {rapid.end.y.toFixed(2)})
+                </span>
+              </div>
+            {/each}
+          {:else}
+            <p class="no-rapids">No cut order optimization applied yet. Click "Optimize cut order" to generate rapids.</p>
+          {/if}
+        </div>
+      </AccordionPanel>
+    </svelte:fragment>
+  </ThreeColumnLayout>
 </div>
 
 <style>
@@ -264,69 +194,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: #f8f9fa;
-  }
-
-  .program-layout {
-    display: flex;
-    flex: 1;
-    overflow: hidden;
-  }
-
-  .left-column {
-    background-color: #f5f5f5;
-    border-right: 1px solid #e5e7eb;
-    padding: 1rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-height: 0; /* Allow flex child to shrink */
-    flex-shrink: 0; /* Prevent column from shrinking */
-    position: relative; /* For resize handle positioning */
-  }
-
-  .center-column {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background-color: white;
-  }
-
-  .right-column {
-    background-color: #f5f5f5;
-    border-left: 1px solid #e5e7eb;
-    padding: 1rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    min-height: 0; /* Allow flex child to shrink */
-    flex-shrink: 0; /* Prevent column from shrinking */
-    position: relative; /* For resize handle positioning */
-  }
-
-  /* Removed .panel styles - now handled by AccordionPanel component */
-
-
-  .canvas-container {
-    flex: 1;
-    position: relative;
-    background-color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .no-drawing {
-    text-align: center;
-    color: #6b7280;
-    max-width: 400px;
-  }
-
-  .no-drawing h3 {
-    margin: 0 0 1rem 0;
-    color: #374151;
   }
 
   /* .parts-list has no special styling - shows all parts without scrollbar */
@@ -421,42 +288,90 @@
 
   /* Removed .panel-title styles - now handled by AccordionPanel component */
 
-  /* Resize handle styles */
-  .resize-handle {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 6px;
-    cursor: col-resize;
-    background: transparent;
-    border: none;
-    padding: 0;
-    z-index: 10;
-    transition: background-color 0.2s ease;
+
+  /* Toolbar styles */
+  .toolbar-container {
+    border-bottom: 1px solid #e5e7eb;
   }
 
-  .resize-handle:hover {
-    background-color: #3b82f6;
-    opacity: 0.3;
+  .toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #f5f5f5;
   }
-
-  .resize-handle.dragging {
-    background-color: #3b82f6;
+  
+  .toolbar-left {
+    display: flex;
+    gap: 0.5rem;
+  }
+  
+  .toolbar-right {
+    flex-shrink: 0;
+  }
+  
+  .toolbar-button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    background-color: white;
+    color: #374151;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .toolbar-button:hover:not(:disabled) {
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+  }
+  
+  .toolbar-button:disabled {
     opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  .file-name {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
   }
 
-  .resize-handle-right {
-    right: -3px; /* Half of width to center on border */
+  /* Cut Order section styles */
+  .cut-order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
-  .resize-handle-left {
-    left: -3px; /* Half of width to center on border */
+  .rapid-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background-color: #f9fafb;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
   }
 
-  /* Prevent text selection during resize */
-  .program-layout.no-select {
-    user-select: none;
+  .rapid-index {
+    font-weight: 600;
+    color: #374151;
+    min-width: 1.5rem;
   }
 
+  .rapid-description {
+    color: #6b7280;
+  }
+
+  .no-rapids {
+    color: #6b7280;
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 1rem;
+    margin: 0;
+  }
 
 </style>
