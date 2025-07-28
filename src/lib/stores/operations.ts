@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import { pathStore } from './paths';
 import { partStore } from './parts';
+import { workflowStore } from './workflow';
 import { get } from 'svelte/store';
 
 export interface Operation {
@@ -202,6 +203,14 @@ function generatePathsForOperation(operation: Operation) {
       }
     }
   });
+  
+  // Check if any paths exist and mark program stage as complete
+  setTimeout(() => {
+    const pathsState = get(pathStore);
+    if (pathsState.paths.length > 0) {
+      workflowStore.completeStage('program');
+    }
+  }, 100); // Small delay to ensure path store is updated
 }
 
 export const operationsStore = createOperationsStore();

@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import type { ShapeChain } from '../algorithms/chain-detection';
+import { workflowStore } from './workflow';
 
 export interface Path {
   id: string;
@@ -26,6 +27,16 @@ export interface PathsState {
   highlightedPathId: string | null;
 }
 
+// Helper function to check if program stage should be completed
+function checkProgramStageCompletion(paths: Path[]) {
+  if (paths.length > 0) {
+    workflowStore.completeStage('program');
+  } else {
+    // If no paths exist, invalidate stages after 'prepare'
+    workflowStore.invalidateDownstreamStages('prepare');
+  }
+}
+
 function createPathsStore() {
   const initialState: PathsState = {
     paths: [],
@@ -39,16 +50,23 @@ function createPathsStore() {
     subscribe,
     
     addPath: (path: Omit<Path, 'id'>) => {
-      update(state => ({
-        ...state,
-        paths: [
+      update(state => {
+        const newPaths = [
           ...state.paths,
           {
             ...path,
             id: crypto.randomUUID()
           }
-        ]
-      }));
+        ];
+        
+        // Check workflow completion
+        setTimeout(() => checkProgramStageCompletion(newPaths), 0);
+        
+        return {
+          ...state,
+          paths: newPaths
+        };
+      });
     },
     
     updatePath: (id: string, updates: Partial<Path>) => {
@@ -61,21 +79,35 @@ function createPathsStore() {
     },
     
     deletePath: (id: string) => {
-      update(state => ({
-        ...state,
-        paths: state.paths.filter(path => path.id !== id),
-        selectedPathId: state.selectedPathId === id ? null : state.selectedPathId,
-        highlightedPathId: state.highlightedPathId === id ? null : state.highlightedPathId
-      }));
+      update(state => {
+        const newPaths = state.paths.filter(path => path.id !== id);
+        
+        // Check workflow completion
+        setTimeout(() => checkProgramStageCompletion(newPaths), 0);
+        
+        return {
+          ...state,
+          paths: newPaths,
+          selectedPathId: state.selectedPathId === id ? null : state.selectedPathId,
+          highlightedPathId: state.highlightedPathId === id ? null : state.highlightedPathId
+        };
+      });
     },
     
     deletePathsByOperation: (operationId: string) => {
-      update(state => ({
-        ...state,
-        paths: state.paths.filter(path => path.operationId !== operationId),
-        selectedPathId: state.paths.some(p => p.operationId === operationId && p.id === state.selectedPathId) ? null : state.selectedPathId,
-        highlightedPathId: state.paths.some(p => p.operationId === operationId && p.id === state.highlightedPathId) ? null : state.highlightedPathId
-      }));
+      update(state => {
+        const newPaths = state.paths.filter(path => path.operationId !== operationId);
+        
+        // Check workflow completion
+        setTimeout(() => checkProgramStageCompletion(newPaths), 0);
+        
+        return {
+          ...state,
+          paths: newPaths,
+          selectedPathId: state.paths.some(p => p.operationId === operationId && p.id === state.selectedPathId) ? null : state.selectedPathId,
+          highlightedPathId: state.paths.some(p => p.operationId === operationId && p.id === state.highlightedPathId) ? null : state.highlightedPathId
+        };
+      });
     },
     
     selectPath: (pathId: string | null) => {
@@ -124,7 +156,11 @@ function createPathsStore() {
       return chainIds;
     },
     
-    reset: () => set(initialState)
+    reset: () => {
+      set(initialState);
+      // Check workflow completion (will invalidate since no paths)
+      setTimeout(() => checkProgramStageCompletion([]), 0);
+    }
   };
 }
 

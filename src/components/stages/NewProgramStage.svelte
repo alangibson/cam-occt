@@ -26,7 +26,9 @@
 
 
   function handleNext() {
-    workflowStore.setStage('simulate');
+    if ($workflowStore.canAdvanceTo('simulate')) {
+      workflowStore.setStage('simulate');
+    }
   }
 
   // Chain selection functions
@@ -146,12 +148,18 @@
         <div class="next-stage-content">
           <button 
             class="next-button"
+            class:disabled={!$workflowStore.canAdvanceTo('simulate')}
+            disabled={!$workflowStore.canAdvanceTo('simulate')}
             on:click={handleNext}
           >
             Next: Simulate Cutting
           </button>
           <p class="next-help">
-            Review your tool paths and simulate the cutting process.
+            {#if !$workflowStore.canAdvanceTo('simulate')}
+              Create at least one operation with paths to simulate the cutting process.
+            {:else}
+              Review your tool paths and simulate the cutting process.
+            {/if}
           </p>
         </div>
       </AccordionPanel>
@@ -301,9 +309,14 @@
     margin-bottom: 0.5rem;
   }
 
-  .next-button:hover {
+  .next-button:hover:not(:disabled) {
     background: rgba(255, 255, 255, 0.3);
     border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  .next-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   .next-help {

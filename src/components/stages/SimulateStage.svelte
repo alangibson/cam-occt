@@ -1,7 +1,18 @@
 <script lang="ts">
   import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
-  import { onMount } from 'svelte';
+  import { pathStore } from '../../lib/stores/paths';
+  import { rapidStore } from '../../lib/stores/rapids';
+  import { chainStore } from '../../lib/stores/chains';
+  import { operationsStore } from '../../lib/stores/operations';
+  import { drawingStore } from '../../lib/stores/drawing';
+  import { uiStore } from '../../lib/stores/ui';
+  import { onMount, onDestroy } from 'svelte';
+  import type { Shape, Point2D } from '../../types';
+  import type { ShapeChain } from '../../lib/algorithms/chain-detection';
+  import type { Path } from '../../lib/stores/paths';
+  import type { Rapid } from '../../lib/algorithms/optimize-cut-order';
+  import { getPhysicalScaleFactor } from '../../lib/utils/units';
 
   // Resizable columns state
   let rightColumnWidth = 280; // Default width in pixels
@@ -9,21 +20,753 @@
   let startX = 0;
   let startWidth = 0;
 
+  // Canvas and simulation state
+  let canvas: HTMLCanvasElement;
+  let ctx: CanvasRenderingContext2D;
+  let canvasContainer: HTMLDivElement;
+  let animationFrame: number;
+  let isDestroyed = false;
+  
+  // Simulation state
+  let isPlaying = false;
+  let isPaused = false;
+  let currentTime = 0;
+  let totalTime = 0;
+  let currentProgress = 0;
+  let currentOperation = 'Ready';
+  let lastFrameTime = 0;
+  
+  // Tool head position
+  let toolHeadPosition: Point2D = { x: 0, y: 0 };
+  
+  // Animation data
+  let animationSteps: Array<{
+    type: 'rapid' | 'cut';
+    path: Path | null;
+    rapid: Rapid | null;
+    startTime: number;
+    endTime: number;
+    distance: number;
+  }> = [];
+
+  // Store subscriptions
+  let pathStoreState: any;
+  let rapidStoreState: any;
+  let chainStoreState: any;
+  let operationsState: any;
+  let drawingState: any;
+  let uiState: any;
+  
+  // Unsubscribe functions
+  let unsubscribers: Array<() => void> = [];
+
+  // Canvas properties
+  let scale = 1.0;
+  let offsetX = 0;
+  let offsetY = 0;
+  let totalScale = 1.0;
+
   function handleNext() {
     workflowStore.completeStage('simulate');
     workflowStore.setStage('export');
   }
 
-  // Auto-complete simulate stage (placeholder functionality)
-  workflowStore.completeStage('simulate');
+  // Setup store subscriptions
+  function setupStoreSubscriptions() {
+    // Clear any existing subscriptions
+    unsubscribers.forEach(fn => fn());
+    unsubscribers = [];
+    
+    unsubscribers.push(
+      pathStore.subscribe(state => {
+        pathStoreState = state;
+        if (ctx) drawCanvas();
+      })
+    );
+    
+    unsubscribers.push(
+      rapidStore.subscribe(state => {
+        rapidStoreState = state;
+        if (ctx) drawCanvas();
+      })
+    );
+    
+    unsubscribers.push(
+      chainStore.subscribe(state => {
+        chainStoreState = state;
+        if (ctx) drawCanvas();
+      })
+    );
+    
+    unsubscribers.push(
+      operationsStore.subscribe(state => {
+        operationsState = state;
+        if (ctx) drawCanvas();
+      })
+    );
+    
+    unsubscribers.push(
+      drawingStore.subscribe(state => {
+        drawingState = state;
+        if (ctx) {
+          updateCanvasScale();
+          drawCanvas();
+        }
+      })
+    );
+    
+    unsubscribers.push(
+      uiStore.subscribe(state => {
+        uiState = state;
+        if (ctx) {
+          updateCanvasScale();
+          drawCanvas();
+        }
+      })
+    );
+  }
 
-  // Load column widths from localStorage on mount
+  // Resize canvas to fill container
+  function resizeCanvas() {
+    if (!canvas || !canvasContainer) return;
+    
+    const rect = canvasContainer.getBoundingClientRect();
+    canvas.width = rect.width;
+    canvas.height = rect.height;
+    
+    updateCanvasScale();
+    drawCanvas();
+  }
+
+  // Update canvas scaling and offset
+  function updateCanvasScale() {
+    if (!drawingState || !uiState) return;
+    
+    const physicalScale = getPhysicalScaleFactor(drawingState.units, uiState.displayUnit);
+    totalScale = scale * physicalScale;
+    
+    // Position origin at 25% from left, 75% from top
+    offsetX = canvas.width * 0.25;
+    offsetY = canvas.height * 0.75;
+  }
+
+  // Initialize simulation data
+  function initializeSimulation() {
+    if (!pathStoreState || !rapidStoreState) return;
+    
+    buildAnimationSteps();
+    resetSimulation();
+  }
+
+  // Build animation steps from paths and rapids
+  function buildAnimationSteps() {
+    animationSteps = [];
+    let currentTime = 0;
+    
+    // Get ordered paths and rapids
+    const orderedPaths = [...pathStoreState.paths].sort((a, b) => a.order - b.order);
+    const rapids = rapidStoreState.rapids;
+    
+    // Find starting position (first rapid start or first path start)
+    if (rapids.length > 0) {
+      toolHeadPosition = { ...rapids[0].start };
+    } else if (orderedPaths.length > 0) {
+      toolHeadPosition = getPathStartPoint(orderedPaths[0]);
+    }
+    
+    // Interleave paths and rapids
+    for (let i = 0; i < orderedPaths.length; i++) {
+      const path = orderedPaths[i];
+      
+      // Add rapid before this path (if exists)
+      if (i < rapids.length) {
+        const rapid = rapids[i];
+        const rapidDistance = Math.sqrt(
+          Math.pow(rapid.end.x - rapid.start.x, 2) + 
+          Math.pow(rapid.end.y - rapid.start.y, 2)
+        );
+        const rapidTime = (rapidDistance / 3000) * 60; // Convert to seconds (3000 units/min)
+        
+        animationSteps.push({
+          type: 'rapid',
+          path: null,
+          rapid,
+          startTime: currentTime,
+          endTime: currentTime + rapidTime,
+          distance: rapidDistance
+        });
+        
+        currentTime += rapidTime;
+      }
+      
+      // Add cut path
+      const pathDistance = getPathDistance(path);
+      const feedRate = path.feedRate || 1000; // Default feed rate
+      const cutTime = (pathDistance / feedRate) * 60; // Convert to seconds (feedRate is units/min)
+      
+      animationSteps.push({
+        type: 'cut',
+        path,
+        rapid: null,
+        startTime: currentTime,
+        endTime: currentTime + cutTime,
+        distance: pathDistance
+      });
+      
+      currentTime += cutTime;
+    }
+    
+    totalTime = currentTime;
+  }
+
+  // Get starting point of a path
+  function getPathStartPoint(path: Path): Point2D {
+    const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
+    if (!chain || chain.shapes.length === 0) return { x: 0, y: 0 };
+    
+    const firstShape = chain.shapes[0];
+    return getShapeStartPoint(firstShape);
+  }
+
+  // Get shape start point
+  function getShapeStartPoint(shape: Shape): Point2D {
+    switch (shape.type) {
+      case 'line':
+        const line = shape.geometry as any;
+        return line.start;
+      case 'circle':
+        const circle = shape.geometry as any;
+        return { x: circle.center.x + circle.radius, y: circle.center.y };
+      case 'arc':
+        const arc = shape.geometry as any;
+        const startAngle = arc.startAngle * Math.PI / 180;
+        return {
+          x: arc.center.x + arc.radius * Math.cos(startAngle),
+          y: arc.center.y + arc.radius * Math.sin(startAngle)
+        };
+      case 'polyline':
+        const polyline = shape.geometry as any;
+        return polyline.points.length > 0 ? { ...polyline.points[0] } : { x: 0, y: 0 };
+      case 'spline':
+        // For splines converted to polylines, check splineData first
+        if (shape.splineData && shape.splineData.controlPoints && shape.splineData.controlPoints.length > 0) {
+          return { ...shape.splineData.controlPoints[0] };
+        }
+        // Fall back to geometry if it's a polyline
+        const splineGeom = shape.geometry as any;
+        return splineGeom.points?.length > 0 ? { ...splineGeom.points[0] } : { x: 0, y: 0 };
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        return ellipse.center;
+      default:
+        return { x: 0, y: 0 };
+    }
+  }
+
+  // Calculate total distance of a path
+  function getPathDistance(path: Path): number {
+    const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
+    if (!chain) return 0;
+    
+    let totalDistance = 0;
+    for (const shape of chain.shapes) {
+      totalDistance += getShapeLength(shape);
+    }
+    return totalDistance;
+  }
+
+  // Calculate length of a shape
+  function getShapeLength(shape: Shape): number {
+    switch (shape.type) {
+      case 'line':
+        const line = shape.geometry as any;
+        return Math.sqrt(
+          Math.pow(line.end.x - line.start.x, 2) + 
+          Math.pow(line.end.y - line.start.y, 2)
+        );
+      case 'circle':
+        const circle = shape.geometry as any;
+        return 2 * Math.PI * circle.radius;
+      case 'arc':
+        const arc = shape.geometry as any;
+        const angleRange = Math.abs(arc.endAngle - arc.startAngle) * Math.PI / 180;
+        return angleRange * arc.radius;
+      case 'polyline':
+        const polyline = shape.geometry as any;
+        let polylineDistance = 0;
+        for (let i = 0; i < polyline.points.length - 1; i++) {
+          const p1 = polyline.points[i];
+          const p2 = polyline.points[i + 1];
+          polylineDistance += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+        }
+        return polylineDistance;
+      case 'spline':
+        // For splines converted to polylines, use splineData if available
+        if (shape.splineData && shape.splineData.controlPoints && shape.splineData.controlPoints.length > 1) {
+          let splineDistance = 0;
+          for (let i = 0; i < shape.splineData.controlPoints.length - 1; i++) {
+            const p1 = shape.splineData.controlPoints[i];
+            const p2 = shape.splineData.controlPoints[i + 1];
+            splineDistance += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+          }
+          return splineDistance;
+        }
+        // Fall back to geometry if it's a polyline
+        const splineGeom = shape.geometry as any;
+        let splineGeomDistance = 0;
+        if (splineGeom.points?.length > 1) {
+          for (let i = 0; i < splineGeom.points.length - 1; i++) {
+            const p1 = splineGeom.points[i];
+            const p2 = splineGeom.points[i + 1];
+            splineGeomDistance += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+          }
+        }
+        return splineGeomDistance;
+      case 'ellipse':
+        // Approximate ellipse perimeter (Ramanujan's approximation)
+        const ellipse = shape.geometry as any;
+        const majorRadius = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        const minorRadius = majorRadius * ellipse.minorToMajorRatio;
+        const h = Math.pow(majorRadius - minorRadius, 2) / Math.pow(majorRadius + minorRadius, 2);
+        return Math.PI * (majorRadius + minorRadius) * (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
+      default:
+        return 0;
+    }
+  }
+
+  // Reset simulation to beginning
+  function resetSimulation() {
+    isPlaying = false;
+    isPaused = false;
+    currentTime = 0;
+    currentProgress = 0;
+    currentOperation = 'Ready';
+    lastFrameTime = 0;
+    
+    // Reset tool head to starting position
+    if (animationSteps.length > 0) {
+      const firstStep = animationSteps[0];
+      if (firstStep.type === 'rapid' && firstStep.rapid) {
+        toolHeadPosition = { ...firstStep.rapid.start };
+      } else if (firstStep.type === 'cut' && firstStep.path) {
+        toolHeadPosition = getPathStartPoint(firstStep.path);
+      }
+    }
+    
+    drawCanvas();
+  }
+
+  // Simulation controls
+  function playSimulation() {
+    if (isPaused) {
+      isPaused = false;
+      lastFrameTime = 0; // Reset frame time when resuming
+    } else if (!isPlaying) {
+      isPlaying = true;
+      lastFrameTime = 0; // Reset frame time when starting
+    }
+    animate();
+  }
+
+  function pauseSimulation() {
+    isPaused = true;
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+    }
+  }
+
+  function stopSimulation() {
+    isPlaying = false;
+    isPaused = false;
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+    }
+    resetSimulation();
+  }
+
+  // Animation loop
+  function animate() {
+    if (!isPlaying || isPaused || isDestroyed) return;
+    
+    const now = performance.now() / 1000; // Convert to seconds
+    if (lastFrameTime === 0) {
+      lastFrameTime = now;
+    }
+    
+    const deltaTime = now - lastFrameTime;
+    lastFrameTime = now;
+    currentTime += deltaTime;
+    
+    if (currentTime >= totalTime) {
+      // Animation complete
+      currentTime = totalTime;
+      currentProgress = 100;
+      currentOperation = 'Complete';
+      isPlaying = false;
+      drawCanvas();
+      workflowStore.completeStage('simulate');
+      return;
+    }
+    
+    // Update tool head position and current operation
+    updateToolHeadPosition();
+    
+    // Update progress
+    currentProgress = totalTime > 0 ? (currentTime / totalTime) * 100 : 0;
+    
+    drawCanvas();
+    animationFrame = requestAnimationFrame(() => animate());
+  }
+
+  // Update tool head position based on current time
+  function updateToolHeadPosition() {
+    const currentStep = animationSteps.find(step => 
+      currentTime >= step.startTime && currentTime <= step.endTime
+    );
+    
+    if (!currentStep) return;
+    
+    const stepProgress = (currentTime - currentStep.startTime) / (currentStep.endTime - currentStep.startTime);
+    
+    if (currentStep.type === 'rapid' && currentStep.rapid) {
+      currentOperation = 'Rapid Movement';
+      const rapid = currentStep.rapid;
+      toolHeadPosition = {
+        x: rapid.start.x + (rapid.end.x - rapid.start.x) * stepProgress,
+        y: rapid.start.y + (rapid.end.y - rapid.start.y) * stepProgress
+      };
+    } else if (currentStep.type === 'cut' && currentStep.path) {
+      currentOperation = `Cutting (${currentStep.path.feedRate || 1000} units/min)`;
+      updateToolHeadOnPath(currentStep.path, stepProgress);
+    }
+  }
+
+  // Update tool head position along a cutting path
+  function updateToolHeadOnPath(path: Path, progress: number) {
+    const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
+    if (!chain || chain.shapes.length === 0) return;
+    
+    // Calculate total path length
+    const totalLength = getPathDistance(path);
+    const targetDistance = totalLength * progress;
+    
+    let currentDistance = 0;
+    for (const shape of chain.shapes) {
+      const shapeLength = getShapeLength(shape);
+      if (currentDistance + shapeLength >= targetDistance) {
+        // Tool head is on this shape
+        const shapeProgress = (targetDistance - currentDistance) / shapeLength;
+        toolHeadPosition = getPositionOnShape(shape, shapeProgress);
+        return;
+      }
+      currentDistance += shapeLength;
+    }
+  }
+
+  // Get position along a shape at given progress (0-1)
+  function getPositionOnShape(shape: Shape, progress: number): Point2D {
+    progress = Math.max(0, Math.min(1, progress)); // Clamp to 0-1
+    
+    switch (shape.type) {
+      case 'line':
+        const line = shape.geometry as any;
+        return {
+          x: line.start.x + (line.end.x - line.start.x) * progress,
+          y: line.start.y + (line.end.y - line.start.y) * progress
+        };
+      case 'circle':
+        const circle = shape.geometry as any;
+        const circleAngle = progress * 2 * Math.PI;
+        return {
+          x: circle.center.x + circle.radius * Math.cos(circleAngle),
+          y: circle.center.y + circle.radius * Math.sin(circleAngle)
+        };
+      case 'arc':
+        const arc = shape.geometry as any;
+        const startAngle = arc.startAngle * Math.PI / 180;
+        const endAngle = arc.endAngle * Math.PI / 180;
+        const arcAngle = startAngle + (endAngle - startAngle) * progress;
+        return {
+          x: arc.center.x + arc.radius * Math.cos(arcAngle),
+          y: arc.center.y + arc.radius * Math.sin(arcAngle)
+        };
+      case 'polyline':
+        const polyline = shape.geometry as any;
+        if (polyline.points.length < 2) return polyline.points[0] || { x: 0, y: 0 };
+        
+        // Find which segment we're on
+        const totalLength = getShapeLength(shape);
+        const targetDistance = totalLength * progress;
+        
+        let currentDistance = 0;
+        for (let i = 0; i < polyline.points.length - 1; i++) {
+          const p1 = polyline.points[i];
+          const p2 = polyline.points[i + 1];
+          const segmentLength = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+          
+          if (currentDistance + segmentLength >= targetDistance) {
+            const segmentProgress = (targetDistance - currentDistance) / segmentLength;
+            return {
+              x: p1.x + (p2.x - p1.x) * segmentProgress,
+              y: p1.y + (p2.y - p1.y) * segmentProgress
+            };
+          }
+          currentDistance += segmentLength;
+        }
+        return polyline.points[polyline.points.length - 1];
+      case 'spline':
+        // For splines, use control points if available, otherwise fall back to geometry
+        const controlPoints = shape.splineData?.controlPoints;
+        if (controlPoints && controlPoints.length >= 2) {
+          const splineIndex = Math.floor(progress * (controlPoints.length - 1));
+          const splineT = (progress * (controlPoints.length - 1)) - splineIndex;
+          const p1 = controlPoints[splineIndex];
+          const p2 = controlPoints[Math.min(splineIndex + 1, controlPoints.length - 1)];
+          return {
+            x: p1.x + (p2.x - p1.x) * splineT,
+            y: p1.y + (p2.y - p1.y) * splineT
+          };
+        }
+        // Fall back to geometry points
+        const splineGeom = shape.geometry as any;
+        if (splineGeom.points?.length >= 2) {
+          const splineIndex = Math.floor(progress * (splineGeom.points.length - 1));
+          const splineT = (progress * (splineGeom.points.length - 1)) - splineIndex;
+          const p1 = splineGeom.points[splineIndex];
+          const p2 = splineGeom.points[Math.min(splineIndex + 1, splineGeom.points.length - 1)];
+          return {
+            x: p1.x + (p2.x - p1.x) * splineT,
+            y: p1.y + (p2.y - p1.y) * splineT
+          };
+        }
+        return { x: 0, y: 0 };
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        const angle = progress * 2 * Math.PI;
+        const majorRadius = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        const minorRadius = majorRadius * ellipse.minorToMajorRatio;
+        return {
+          x: ellipse.center.x + majorRadius * Math.cos(angle),
+          y: ellipse.center.y + minorRadius * Math.sin(angle)
+        };
+      default:
+        return { x: 0, y: 0 };
+    }
+  }
+
+  // Draw the simulation canvas
+  function drawCanvas() {
+    if (!ctx || !canvas || isDestroyed) return;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Set up coordinate system
+    ctx.save();
+    ctx.translate(offsetX, offsetY);
+    ctx.scale(totalScale, -totalScale); // Flip Y axis for CAD coordinates
+    
+    // Draw all shapes in light gray
+    if (drawingState?.shapes) {
+      ctx.strokeStyle = '#666666';
+      ctx.lineWidth = 1 / totalScale;
+      
+      for (const shape of drawingState.shapes) {
+        drawShape(shape);
+      }
+    }
+    
+    // Draw paths in green
+    if (pathStoreState?.paths && chainStoreState?.chains) {
+      ctx.strokeStyle = '#00aa00';
+      ctx.lineWidth = 1.5 / totalScale;
+      
+      for (const path of pathStoreState.paths) {
+        const chain = chainStoreState.chains.find((c: any) => c.id === path.chainId);
+        if (chain) {
+          for (const shape of chain.shapes) {
+            drawShape(shape);
+          }
+        }
+      }
+    }
+    
+    // Draw rapids in blue
+    if (rapidStoreState?.rapids) {
+      ctx.strokeStyle = '#0066ff';
+      ctx.lineWidth = 1 / totalScale;
+      
+      for (const rapid of rapidStoreState.rapids) {
+        ctx.beginPath();
+        ctx.moveTo(rapid.start.x, rapid.start.y);
+        ctx.lineTo(rapid.end.x, rapid.end.y);
+        ctx.stroke();
+      }
+    }
+    
+    // Draw tool head as red cross
+    drawToolHead();
+    
+    ctx.restore();
+  }
+
+  // Draw a shape on the canvas
+  function drawShape(shape: Shape) {
+    ctx.save();
+    
+    switch (shape.type) {
+      case 'line':
+        const line = shape.geometry as any;
+        ctx.beginPath();
+        ctx.moveTo(line.start.x, line.start.y);
+        ctx.lineTo(line.end.x, line.end.y);
+        ctx.stroke();
+        break;
+      case 'circle':
+        const circle = shape.geometry as any;
+        ctx.beginPath();
+        ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, 2 * Math.PI);
+        ctx.stroke();
+        break;
+      case 'arc':
+        const arc = shape.geometry as any;
+        const startAngle = arc.startAngle * Math.PI / 180;
+        const endAngle = arc.endAngle * Math.PI / 180;
+        ctx.beginPath();
+        ctx.arc(arc.center.x, arc.center.y, arc.radius, startAngle, endAngle);
+        ctx.stroke();
+        break;
+      case 'polyline':
+        const polyline = shape.geometry as any;
+        if (polyline.points.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(polyline.points[0].x, polyline.points[0].y);
+          for (let i = 1; i < polyline.points.length; i++) {
+            ctx.lineTo(polyline.points[i].x, polyline.points[i].y);
+          }
+          ctx.stroke();
+        }
+        break;
+      case 'spline':
+        // Draw spline using controlPoints if available, otherwise use geometry
+        const controlPoints = shape.splineData?.controlPoints;
+        if (controlPoints && controlPoints.length > 1) {
+          ctx.beginPath();
+          ctx.moveTo(controlPoints[0].x, controlPoints[0].y);
+          for (let i = 1; i < controlPoints.length; i++) {
+            ctx.lineTo(controlPoints[i].x, controlPoints[i].y);
+          }
+          ctx.stroke();
+        } else {
+          const splineGeom = shape.geometry as any;
+          if (splineGeom.points?.length > 1) {
+            ctx.beginPath();
+            ctx.moveTo(splineGeom.points[0].x, splineGeom.points[0].y);
+            for (let i = 1; i < splineGeom.points.length; i++) {
+              ctx.lineTo(splineGeom.points[i].x, splineGeom.points[i].y);
+            }
+            ctx.stroke();
+          }
+        }
+        break;
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        // Draw ellipse approximation using multiple line segments
+        const majorRadius = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        const minorRadius = majorRadius * ellipse.minorToMajorRatio;
+        const segments = 32;
+        
+        ctx.beginPath();
+        for (let i = 0; i <= segments; i++) {
+          const angle = (i * 2 * Math.PI) / segments;
+          const x = ellipse.center.x + majorRadius * Math.cos(angle);
+          const y = ellipse.center.y + minorRadius * Math.sin(angle);
+          
+          if (i === 0) {
+            ctx.moveTo(x, y);
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+        ctx.stroke();
+        break;
+    }
+    
+    ctx.restore();
+  }
+
+  // Draw tool head as red cross
+  function drawToolHead() {
+    if (!toolHeadPosition) return;
+    
+    ctx.save();
+    ctx.strokeStyle = '#ff0000';
+    ctx.lineWidth = 2 / totalScale;
+    
+    const crossSize = 8 / totalScale;
+    
+    // Draw cross
+    ctx.beginPath();
+    ctx.moveTo(toolHeadPosition.x - crossSize, toolHeadPosition.y);
+    ctx.lineTo(toolHeadPosition.x + crossSize, toolHeadPosition.y);
+    ctx.moveTo(toolHeadPosition.x, toolHeadPosition.y - crossSize);
+    ctx.lineTo(toolHeadPosition.x, toolHeadPosition.y + crossSize);
+    ctx.stroke();
+    
+    ctx.restore();
+  }
+
+  // Format time in MM:SS format
+  function formatTime(seconds: number): string {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = Math.floor(seconds % 60);
+    return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+  }
+
+  // Load column widths from localStorage on mount and initialize canvas
   onMount(() => {
     const savedRightWidth = localStorage.getItem('cam-occt-simulate-right-column-width');
     
     if (savedRightWidth) {
       rightColumnWidth = parseInt(savedRightWidth, 10);
     }
+
+    // Initialize canvas
+    if (canvas) {
+      ctx = canvas.getContext('2d')!;
+      resizeCanvas();
+      setupStoreSubscriptions();
+      initializeSimulation();
+    }
+
+    // Add resize listener
+    window.addEventListener('resize', resizeCanvas);
+  });
+
+  onDestroy(() => {
+    // Mark component as destroyed
+    isDestroyed = true;
+    
+    // Cancel animation frame
+    if (animationFrame) {
+      cancelAnimationFrame(animationFrame);
+    }
+    
+    // Remove event listeners
+    window.removeEventListener('resize', resizeCanvas);
+    
+    // Unsubscribe from all stores
+    unsubscribers.forEach(fn => fn());
+    unsubscribers = [];
   });
 
   // Save column widths to localStorage
@@ -76,49 +819,36 @@
       <div class="simulation-header">
         <h2>3D Cutting Simulation</h2>
         <div class="simulation-controls">
-          <button class="control-btn" disabled>
+          <button class="control-btn" on:click={playSimulation} disabled={isPlaying && !isPaused}>
             <span>▶️</span> Play
           </button>
-          <button class="control-btn" disabled>
+          <button class="control-btn" on:click={pauseSimulation} disabled={!isPlaying || isPaused}>
             <span>⏸️</span> Pause
           </button>
-          <button class="control-btn" disabled>
+          <button class="control-btn" on:click={stopSimulation} disabled={!isPlaying && !isPaused}>
             <span>⏹️</span> Stop  
           </button>
-          <button class="control-btn" disabled>
+          <button class="control-btn" on:click={resetSimulation}>
             <span>⏮️</span> Reset
           </button>
         </div>
       </div>
 
-      <div class="simulation-viewport">
-        <div class="placeholder-3d">
-          <div class="placeholder-icon">🔧</div>
-          <h3>3D Simulation Viewport</h3>
-          <p>
-            This area will display a real-time 3D simulation of the cutting process.
-            The simulation will show:
-          </p>
-          <ul>
-            <li>Tool path execution in real-time</li>
-            <li>Torch pierce and cut operations</li>
-            <li>Material removal visualization</li>
-            <li>Cut timing and sequence</li>
-          </ul>
-          <p class="tech-note">
-            <strong>Implementation:</strong> Will use Three.js for 3D rendering and physics simulation.
-          </p>
-        </div>
+      <div class="simulation-viewport" bind:this={canvasContainer}>
+        <canvas 
+          bind:this={canvas}
+          class="simulation-canvas"
+        ></canvas>
       </div>
 
       <div class="simulation-progress">
         <div class="progress-info">
-          <span>Progress: <strong>0%</strong></span>
-          <span>Time: <strong>00:00 / 00:00</strong></span>
-          <span>Current Operation: <strong>Ready</strong></span>
+          <span>Progress: <strong>{currentProgress.toFixed(1)}%</strong></span>
+          <span>Time: <strong>{formatTime(currentTime)} / {formatTime(totalTime)}</strong></span>
+          <span>Current Operation: <strong>{currentOperation}</strong></span>
         </div>
         <div class="progress-bar">
-          <div class="progress-fill" style="width: 0%"></div>
+          <div class="progress-fill" style="width: {currentProgress}%"></div>
         </div>
       </div>
     </div>
@@ -275,48 +1005,17 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 2rem;
+    padding: 0;
+    position: relative;
   }
 
-  .placeholder-3d {
-    text-align: center;
-    max-width: 600px;
-    color: #ccc;
+  .simulation-canvas {
+    width: 100%;
+    height: 100%;
+    background: #2d2d2d;
+    border: 1px solid #404040;
   }
 
-  .placeholder-icon {
-    font-size: 4rem;
-    margin-bottom: 1rem;
-  }
-
-  .placeholder-3d h3 {
-    margin: 0 0 1rem 0;
-    font-size: 1.5rem;
-    color: white;
-  }
-
-  .placeholder-3d p {
-    margin: 0 0 1rem 0;
-    line-height: 1.6;
-    color: #aaa;
-  }
-
-  .placeholder-3d ul {
-    text-align: left;
-    margin: 1rem 0;
-    padding-left: 1.5rem;
-    color: #aaa;
-  }
-
-  .placeholder-3d li {
-    margin-bottom: 0.5rem;
-  }
-
-  .tech-note {
-    font-style: italic;
-    color: #888 !important;
-    font-size: 0.875rem;
-  }
 
   .simulation-progress {
     padding: 1rem 2rem;
