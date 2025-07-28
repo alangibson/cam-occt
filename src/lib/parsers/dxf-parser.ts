@@ -297,6 +297,8 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
         // 40: Ratio of minor axis to major axis
         // 41: Start parameter (for ellipse arcs) - optional
         // 42: End parameter (for ellipse arcs) - optional
+        
+        
         if (typeof entity.x === 'number' && typeof entity.y === 'number' &&
             typeof entity.majorX === 'number' && typeof entity.majorY === 'number' &&
             typeof entity.axisRatio === 'number') {

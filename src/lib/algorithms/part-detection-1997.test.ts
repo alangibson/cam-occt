@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '../parsers/dxf-parser';
+import { decomposePolylines } from './decompose-polylines';
 import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
 import fs from 'fs';
@@ -11,15 +12,19 @@ describe('1997.dxf Part Detection', () => {
     const dxfPath = path.join(process.cwd(), 'tests/dxf/1997.dxf');
     const dxfContent = fs.readFileSync(dxfPath, 'utf8');
     
-    // Parse DXF with polyline decomposition
-    const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
-    console.log(`DXF parsed: ${parsed.shapes.length} shapes`);
+    // Parse DXF (no decomposition in parser)
+    const parsed = await parseDXF(dxfContent);
+    console.log(`DXF parsed: ${parsed.shapes.length} shapes (before decomposition)`);
+    
+    // Decompose polylines separately
+    const decomposed = decomposePolylines(parsed.shapes);
+    console.log(`After decomposition: ${decomposed.length} shapes`);
     
     // Verify we have the expected number of shapes after decomposition
-    expect(parsed.shapes.length).toBeGreaterThan(400); // Should have ~454 line segments
+    expect(decomposed.length).toBeGreaterThan(400); // Should have ~454 line segments
     
-    // Detect chains with increased tolerance
-    const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+    // Detect chains using decomposed shapes
+    const chains = detectShapeChains(decomposed, { tolerance: 0.1 });
     console.log(`Chains detected: ${chains.length}`);
     
     // Log chain details
@@ -48,7 +53,7 @@ describe('1997.dxf Part Detection', () => {
     // Assertions
     expect(chains.length).toBe(6); // Expected: 6 chains
     expect(partResult.parts.length).toBe(4); // Expected: 4 parts
-    expect(parsed.shapes.length).toBeGreaterThan(0); // Should have shapes
+    expect(decomposed.length).toBeGreaterThan(0); // Should have shapes after decomposition
     
     // Additional validation: total holes across all parts
     const totalHoles = partResult.parts.reduce((sum, part) => sum + part.holes.length, 0);
@@ -62,13 +67,18 @@ describe('1997.dxf Part Detection', () => {
     const dxfPath = path.join(process.cwd(), 'tests/dxf/1997.dxf');
     const dxfContent = fs.readFileSync(dxfPath, 'utf8');
     
-    // This should not throw
-    const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+    // DXF parsing should not throw
+    const parsed = await parseDXF(dxfContent);
     expect(parsed).toBeDefined();
     expect(parsed.shapes).toBeDefined();
     
+    // Polyline decomposition should not throw
+    const decomposed = decomposePolylines(parsed.shapes);
+    expect(decomposed).toBeDefined();
+    expect(Array.isArray(decomposed)).toBe(true);
+    
     // Chain detection should not throw
-    const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
+    const chains = detectShapeChains(decomposed, { tolerance: 0.1 });
     expect(chains).toBeDefined();
     expect(Array.isArray(chains)).toBe(true);
     

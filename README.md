@@ -468,3 +468,138 @@ INSERT entities allow DXF files to reference reusable block definitions with tra
 - ✅ Verification of complex transformations including rotation, scaling, and translation
 - ✅ Base point offset testing ensures INSERT entities appear in correct positions
 - ✅ All 48 line entities correctly parsed and transformed (6 direct + 7 INSERT × 6 lines each)
+
+### Cutting Simulation Algorithm
+
+**Purpose**: Provide real-time visual simulation of the cutting process, allowing users to preview tool movement, verify cut sequences, and estimate cutting times before generating G-code.
+
+**Algorithm Definition**: 
+The simulation algorithm creates a time-based animation that moves a tool head marker along cutting paths and rapid movements at speeds that match the actual feed rates specified in the cutting parameters.
+
+#### Core Animation System
+
+**Real-Time Speed Matching**:
+- Tool head moves at the exact speed specified by feed rates (e.g., 100 mm/min = 100mm in 60 seconds)
+- Rapid movements use a fixed speed of 3000 mm/min for realistic previews
+- Animation runs at 1:1 real-time speed for accurate time estimation
+
+**Animation Step Generation**:
+1. **Path Ordering**: Retrieve ordered cutting paths and rapids from optimization algorithm
+2. **Time Calculation**: Calculate duration for each movement segment:
+   - **Cut paths**: `(pathDistance / feedRate) * 60` - converts units/min to seconds
+   - **Rapids**: `(rapidDistance / 3000) * 60` - fixed rapid speed conversion
+3. **Step Creation**: Build sequential animation steps with start/end times and movement data
+4. **Total Duration**: Sum all step durations for complete simulation time
+
+**Real-Time Animation Loop**:
+- Uses `performance.now()` for precise timing measurements
+- Calculates delta time between frames for smooth animation
+- Updates tool head position based on elapsed time within current animation step
+- Resets timing when starting/pausing to prevent time jumps
+
+#### Tool Head Movement Algorithm
+
+**Position Interpolation**: Calculate tool head position along complex geometry types:
+
+**Line Segments**:
+```typescript
+position = start + (end - start) * progress
+```
+
+**Circular Arcs**:
+```typescript
+angle = startAngle + (endAngle - startAngle) * progress
+position = center + radius * [cos(angle), sin(angle)]
+```
+
+**Polylines**: Walk along vertex sequences with distance-based progress tracking
+
+**Splines**: Use control point interpolation for smooth curved movement
+
+**Progress Tracking**:
+- Calculate cumulative distance along multi-shape chains
+- Determine which shape contains the current tool position
+- Interpolate position within the current shape based on remaining distance
+
+#### Visual Feedback System
+
+**Tool Head Representation**:
+- Red cross marker (±10 pixel size) indicating current tool position
+- Real-time position updates at 60fps for smooth movement
+- Proper coordinate transformation to match drawing scale and units
+
+**Operation Status Display**:
+- **"Ready"** - Simulation loaded but not started
+- **"Rapid Movement"** - Tool moving at rapid speed between cuts
+- **"Cutting (X units/min)"** - Tool cutting at specified feed rate
+- **"Complete"** - Simulation finished successfully
+
+**Progress Information**:
+- Real-time progress percentage based on elapsed vs. total time
+- Current time display in MM:SS format
+- Visual progress indicator for simulation completion
+
+#### Performance Optimizations
+
+**Efficient Shape Processing**:
+- Pre-calculate total distances for all paths during initialization
+- Cache shape geometry calculations to avoid repeated computations
+- Use efficient distance formulas optimized for each shape type
+
+**Memory Management**:
+- Proper cleanup of animation frames and store subscriptions
+- Prevention of memory leaks during component destruction
+- Safeguards against operations after component unmounting
+
+**Canvas Rendering**:
+- Efficient drawing updates only when position changes
+- Proper canvas coordinate transformations for zoom/pan support
+- Optimized redraw cycles to maintain 60fps performance
+
+#### Integration with CAM Workflow
+
+**Input Data Sources**:
+- **Paths**: Ordered cutting paths from operations store with feed rates
+- **Rapids**: Optimized rapid movements from cut order algorithm
+- **Chains**: Shape geometry data for tool movement calculation
+- **Drawing**: Canvas scaling and coordinate system information
+
+**Workflow Integration**:
+- Automatic stage completion when simulation finishes
+- Navigation controls respect workflow state management
+- Real-time synchronization with store updates
+
+**Quality Assurance**:
+- Accurate time estimation for production planning
+- Visual verification of cut sequences before G-code generation
+- Detection of potential cutting issues through real-time preview
+
+#### Technical Implementation
+
+**File Location**: `src/components/stages/SimulateStage.svelte`
+
+**Key Functions**:
+- `buildAnimationSteps()`: Convert paths/rapids into time-based animation data
+- `animate()`: Main real-time animation loop with precise timing
+- `updateToolHeadPosition()`: Calculate tool position for current time
+- `getPositionOnShape()`: Interpolate position along specific geometry types
+
+**State Management**:
+- Animation state (playing, paused, stopped) with proper controls
+- Real-time tool head position tracking
+- Progress and timing information for user feedback
+
+**Testing Coverage**:
+- Store subscription cleanup to prevent memory leaks
+- Navigation safety when leaving simulation stage
+- Animation timing accuracy and real-time speed matching
+
+#### Algorithm Complexity
+
+**Initialization**: O(n) where n is the number of paths and rapids
+**Animation Loop**: O(1) per frame - constant time position updates
+**Shape Interpolation**: O(1) for simple shapes, O(m) for polylines with m vertices
+
+**Memory Usage**: Linear with respect to number of animation steps (paths + rapids)
+
+This simulation system provides manufacturing professionals with accurate cutting previews, enabling confident G-code generation and optimal production planning.

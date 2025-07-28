@@ -114,36 +114,34 @@ EOF`;
 
   describe('Ellipse arc parsing', () => {
     it('should parse an ellipse arc with start and end parameters', async () => {
-      const dxfContent = `
-        0
-        SECTION
-        2
-        ENTITIES
-        0
-        ELLIPSE
-        10
-        50.0
-        20
-        75.0
-        30
-        0.0
-        11
-        25.0
-        21
-        0.0
-        31
-        0.0
-        40
-        0.6
-        41
-        0.0
-        42
-        1.570796327
-        0
-        ENDSEC
-        0
-        EOF
-      `;
+      const dxfContent = `0
+SECTION
+2
+ENTITIES
+0
+ELLIPSE
+10
+50.0
+20
+75.0
+30
+0.0
+11
+25.0
+21
+0.0
+31
+0.0
+40
+0.6
+41
+0.0
+42
+1.570796327
+0
+ENDSEC
+0
+EOF`;
 
       const drawing = await parseDXF(dxfContent);
       
@@ -161,36 +159,34 @@ EOF`;
     });
 
     it('should parse an ellipse arc spanning more than 180 degrees', async () => {
-      const dxfContent = `
-        0
-        SECTION
-        2
-        ENTITIES
-        0
-        ELLIPSE
-        10
-        0.0
-        20
-        0.0
-        30
-        0.0
-        11
-        40.0
-        21
-        0.0
-        31
-        0.0
-        40
-        0.75
-        41
-        0.5235987756
-        42
-        5.759586532
-        0
-        ENDSEC
-        0
-        EOF
-      `;
+      const dxfContent = `0
+SECTION
+2
+ENTITIES
+0
+ELLIPSE
+10
+0.0
+20
+0.0
+30
+0.0
+11
+40.0
+21
+0.0
+31
+0.0
+40
+0.75
+41
+0.5235987756
+42
+5.759586532
+0
+ENDSEC
+0
+EOF`;
 
       const drawing = await parseDXF(dxfContent);
       
@@ -210,66 +206,64 @@ EOF`;
 
   describe('Ellipse transformation in INSERT blocks', () => {
     it('should correctly transform ellipse center and major axis in INSERT block', async () => {
-      const dxfContent = `
-        0
-        SECTION
-        2
-        BLOCKS
-        0
-        BLOCK
-        2
-        TestBlock
-        10
-        0.0
-        20
-        0.0
-        30
-        0.0
-        0
-        ELLIPSE
-        10
-        10.0
-        20
-        20.0
-        30
-        0.0
-        11
-        15.0
-        21
-        0.0
-        31
-        0.0
-        40
-        0.5
-        0
-        ENDBLK
-        0
-        ENDSEC
-        0
-        SECTION
-        2
-        ENTITIES
-        0
-        INSERT
-        2
-        TestBlock
-        10
-        100.0
-        20
-        200.0
-        30
-        0.0
-        41
-        2.0
-        42
-        1.5
-        50
-        45.0
-        0
-        ENDSEC
-        0
-        EOF
-      `;
+      const dxfContent = `0
+SECTION
+2
+BLOCKS
+0
+BLOCK
+2
+TestBlock
+10
+0.0
+20
+0.0
+30
+0.0
+0
+ELLIPSE
+10
+10.0
+20
+20.0
+30
+0.0
+11
+15.0
+21
+0.0
+31
+0.0
+40
+0.5
+0
+ENDBLK
+0
+ENDSEC
+0
+SECTION
+2
+ENTITIES
+0
+INSERT
+2
+TestBlock
+10
+100.0
+20
+200.0
+30
+0.0
+41
+2.0
+42
+1.5
+50
+45.0
+0
+ENDSEC
+0
+EOF`;
 
       const drawing = await parseDXF(dxfContent);
       
@@ -294,32 +288,30 @@ EOF`;
 
   describe('Edge cases and validation', () => {
     it('should handle ellipse with circular ratio (ratio = 1)', async () => {
-      const dxfContent = `
-        0
-        SECTION
-        2
-        ENTITIES
-        0
-        ELLIPSE
-        10
-        0.0
-        20
-        0.0
-        30
-        0.0
-        11
-        20.0
-        21
-        0.0
-        31
-        0.0
-        40
-        1.0
-        0
-        ENDSEC
-        0
-        EOF
-      `;
+      const dxfContent = `0
+SECTION
+2
+ENTITIES
+0
+ELLIPSE
+10
+0.0
+20
+0.0
+30
+0.0
+11
+20.0
+21
+0.0
+31
+0.0
+40
+1.0
+0
+ENDSEC
+0
+EOF`;
 
       const drawing = await parseDXF(dxfContent);
       
@@ -333,32 +325,30 @@ EOF`;
     });
 
     it('should handle ellipse with very small ratio', async () => {
-      const dxfContent = `
-        0
-        SECTION
-        2
-        ENTITIES
-        0
-        ELLIPSE
-        10
-        0.0
-        20
-        0.0
-        30
-        0.0
-        11
-        50.0
-        21
-        0.0
-        31
-        0.0
-        40
-        0.1
-        0
-        ENDSEC
-        0
-        EOF
-      `;
+      const dxfContent = `0
+SECTION
+2
+ENTITIES
+0
+ELLIPSE
+10
+0.0
+20
+0.0
+30
+0.0
+11
+50.0
+21
+0.0
+31
+0.0
+40
+0.1
+0
+ENDSEC
+0
+EOF`;
 
       const drawing = await parseDXF(dxfContent);
       
@@ -372,24 +362,22 @@ EOF`;
     });
 
     it('should reject invalid ellipse with missing required parameters', async () => {
-      const dxfContent = `
-        0
-        SECTION
-        2
-        ENTITIES
-        0
-        ELLIPSE
-        10
-        0.0
-        20
-        0.0
-        30
-        0.0
-        0
-        ENDSEC
-        0
-        EOF
-      `;
+      const dxfContent = `0
+SECTION
+2
+ENTITIES
+0
+ELLIPSE
+10
+0.0
+20
+0.0
+30
+0.0
+0
+ENDSEC
+0
+EOF`;
 
       const drawing = await parseDXF(dxfContent);
       
@@ -399,32 +387,30 @@ EOF`;
 
   describe('Bounds calculation', () => {
     it('should calculate drawing bounds correctly for ellipses', async () => {
-      const dxfContent = `
-        0
-        SECTION
-        2
-        ENTITIES
-        0
-        ELLIPSE
-        10
-        100.0
-        20
-        200.0
-        30
-        0.0
-        11
-        50.0
-        21
-        0.0
-        31
-        0.0
-        40
-        0.5
-        0
-        ENDSEC
-        0
-        EOF
-      `;
+      const dxfContent = `0
+SECTION
+2
+ENTITIES
+0
+ELLIPSE
+10
+100.0
+20
+200.0
+30
+0.0
+11
+50.0
+21
+0.0
+31
+0.0
+40
+0.5
+0
+ENDSEC
+0
+EOF`;
 
       const drawing = await parseDXF(dxfContent);
       

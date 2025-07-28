@@ -214,6 +214,13 @@ This ensures all bugs are properly covered by tests and prevents regressions.
 - Do NOT create fallback methods or workarounds that mask the real problem
 - The goal is to have one consistent, working implementation, not multiple code paths
 
+**STRICTLY FORBIDDEN**: Creating workarounds, fallbacks, or disabling functionality when algorithms are broken:
+- Do NOT disable bulge-to-arc conversion and fall back to lines because the algorithm is incorrect
+- Do NOT create "temporary" solutions that change expected behavior 
+- Do NOT update tests to accept broken behavior instead of fixing the underlying algorithm
+- Fix the mathematical/algorithmic problems directly, even if complex
+- Broken algorithms must be fixed, not bypassed
+
 ## UI Changes and Testing
 
 **CRITICAL**: After making any changes to the UI (layout, components, styling, text content), you MUST:
@@ -382,6 +389,16 @@ Three.js handles all 3D visualization:
 - Selection and highlighting
 
 ### 8. G-code Generation
+
+**CRITICAL**: For G-code generation targeting LinuxCNC QtPlasmaC plasma controllers, refer to the comprehensive documentation at `reference/linuxcnc/QtPlasmaC.html` for complete specifications on:
+
+- QtPlasmaC-specific M-codes and G-codes
+- Torch height control (THC) implementation
+- Pierce delays and plasma control sequences
+- Ohmic sensing control
+- Cut height and pierce height management
+- Kerf width compensation integration
+- Arc voltage control and monitoring
 
 When generating G-code for LinuxCNC QtPlasmaC:
 - Use appropriate M-codes for plasma control

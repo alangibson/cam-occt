@@ -30,7 +30,10 @@
         safeZ: 10,
         rapidFeedRate: 5000,
         includeComments: true,
-        plasmaMode: true
+        plasmaMode: true,
+        materialNumber: 1, // Default material
+        enableTHC: true,
+        enableVelocityReduction: true
       });
       
       // Display the generated G-code

@@ -121,14 +121,17 @@
         </div>
       </AccordionPanel>
 
-      <AccordionPanel title="G-code Features" isExpanded={true}>
+      <AccordionPanel title="QtPlasmaC G-code Features" isExpanded={true}>
         <ul class="feature-list">
-          <li>✅ Torch height control (THC) commands</li>
-          <li>✅ Automatic pierce delay</li>
+          <li>✅ QtPlasmaC preamble codes (G21/G20, G64, M52)</li>
+          <li>✅ Torch height control (THC) with M62/M63</li>
+          <li>✅ Material selection with M190/M66</li>
+          <li>✅ HAL feed rate integration</li>
+          <li>✅ Velocity reduction for hole cutting</li>
+          <li>✅ Proper tool syntax (M3 $0 S1, M5 $0)</li>
+          <li>✅ Paused motion (adaptive feed control)</li>
           <li>✅ Lead-in and lead-out paths</li>
-          <li>✅ Optimized cut sequencing</li>
-          <li>✅ Rapid traverse movements</li>
-          <li>✅ Proper coordinate system</li>
+          <li>✅ Automatic pierce delays</li>
         </ul>
       </AccordionPanel>
 

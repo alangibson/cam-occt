@@ -1,5 +1,59 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
+import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive';
+import { decomposePolylines } from '../algorithms/decompose-polylines';
+import type { Shape, Point2D } from '../../types';
+
+// Helper function to calculate bounds for translated shapes
+function calculateBounds(shapes: Shape[]) {
+  if (shapes.length === 0) {
+    return { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
+  }
+  
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  
+  shapes.forEach(shape => {
+    const points = getShapePoints(shape);
+    points.forEach(point => {
+      minX = Math.min(minX, point.x);
+      maxX = Math.max(maxX, point.x);
+      minY = Math.min(minY, point.y);
+      maxY = Math.max(maxY, point.y);
+    });
+  });
+  
+  return {
+    min: { x: isFinite(minX) ? minX : 0, y: isFinite(minY) ? minY : 0 },
+    max: { x: isFinite(maxX) ? maxX : 0, y: isFinite(maxY) ? maxY : 0 }
+  };
+}
+
+// Helper function to get shape points
+function getShapePoints(shape: Shape): Point2D[] {
+  switch (shape.type) {
+    case 'line':
+      const line = shape.geometry as any;
+      return [line.start, line.end];
+    case 'circle':
+      const circle = shape.geometry as any;
+      return [
+        { x: circle.center.x - circle.radius, y: circle.center.y - circle.radius },
+        { x: circle.center.x + circle.radius, y: circle.center.y + circle.radius }
+      ];
+    case 'arc':
+      const arc = shape.geometry as any;
+      return [
+        { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
+        { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius }
+      ];
+    case 'polyline':
+      const polyline = shape.geometry as any;
+      return polyline.points || [];
+    default:
+      return [];
+  }
+}
 
 describe('DXF Unit Detection', () => {
   describe('$INSUNITS header variable parsing', () => {
@@ -295,9 +349,18 @@ ENDSEC
 0
 EOF`;
 
-      const drawing = await parseDXF(dxfWithNegativeCoords, { 
-        translateToPositiveQuadrant: true 
-      });
+      // Parse DXF (no translation in parser)
+      const parsed = await parseDXF(dxfWithNegativeCoords);
+      
+      // Apply translation separately
+      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
+      
+      // Create translated drawing
+      const drawing = {
+        ...parsed,
+        shapes: translatedShapes,
+        bounds: calculateBounds(translatedShapes)
+      };
 
       expect(drawing.units).toBe('inch');
       expect(drawing.bounds.min.x).toBe(0);
@@ -344,9 +407,17 @@ ENDSEC
 0
 EOF`;
 
-      const drawing = await parseDXF(dxfWithPolyline, { 
-        decomposePolylines: true 
-      });
+      // Parse DXF (no decomposition in parser)
+      const parsed = await parseDXF(dxfWithPolyline);
+      
+      // Apply decomposition separately
+      const decomposed = decomposePolylines(parsed.shapes);
+      
+      // Create decomposed drawing
+      const drawing = {
+        ...parsed,
+        shapes: decomposed
+      };
 
       expect(drawing.units).toBe('mm');
       expect(drawing.shapes.length).toBeGreaterThan(1); // Should be decomposed

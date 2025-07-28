@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
+import { decomposePolylines } from '../algorithms/decompose-polylines';
 import { readFileSync } from 'fs';
 import path from 'path';
 
@@ -9,7 +10,8 @@ describe('Bulge Rendering Fixes', () => {
       const dxfPath = path.resolve('tests/dxf/Polylinie.dxf');
       const dxfContent = readFileSync(dxfPath, 'utf-8');
       
-      const drawing = await parseDXF(dxfContent, { decomposePolylines: false });
+      // Parse DXF (no decomposition in parser)
+      const drawing = await parseDXF(dxfContent);
       
       console.log('Polylinie.dxf with bulges preserved:');
       console.log('Shapes:', drawing.shapes.length);
@@ -38,7 +40,17 @@ describe('Bulge Rendering Fixes', () => {
       const dxfPath = path.resolve('tests/dxf/Polylinie.dxf');
       const dxfContent = readFileSync(dxfPath, 'utf-8');
       
-      const drawing = await parseDXF(dxfContent, { decomposePolylines: true });
+      // Parse DXF (no decomposition in parser)
+      const parsed = await parseDXF(dxfContent);
+      
+      // Apply decomposition separately
+      const decomposed = decomposePolylines(parsed.shapes);
+      
+      // Create decomposed drawing
+      const drawing = {
+        ...parsed,
+        shapes: decomposed
+      };
       
       console.log('Polylinie.dxf decomposed:');
       console.log('Shapes:', drawing.shapes.length);
@@ -87,20 +99,35 @@ describe('Bulge Rendering Fixes', () => {
       expect(bulge).toBeLessThan(0); // Negative = CW
     });
     
-    it('should handle various bulge magnitudes', () => {
+    it('should handle various bulge magnitudes correctly', () => {
       const testBulges = [0.1, 0.5, 1.0, 2.0, -0.1, -0.5, -1.0, -2.0];
       
       testBulges.forEach(bulge => {
-        const theta = 4 * Math.atan(bulge);
-        const angleDegrees = (theta * 180) / Math.PI;
+        // According to AutoCAD DXF specification: bulge = tan(θ/4)
+        // Where θ is the included angle of the arc
+        const includedAngle = 4 * Math.atan(Math.abs(bulge));
+        const angleDegrees = (includedAngle * 180) / Math.PI;
+        const direction = bulge > 0 ? 'CCW' : 'CW';
         
-        console.log(`Bulge ${bulge} = ${angleDegrees.toFixed(1)}° (${bulge > 0 ? 'CCW' : 'CW'})`);
+        console.log(`Bulge ${bulge} = ${angleDegrees.toFixed(1)}° arc (${direction})`);
         
-        // Validate that the angle makes sense
-        if (bulge > 0) {
-          expect(angleDegrees).toBeGreaterThan(0);
-        } else if (bulge < 0) {
-          expect(angleDegrees).toBeLessThan(0);
+        // Validate mathematical properties
+        expect(typeof bulge).toBe('number');
+        expect(isFinite(bulge)).toBe(true);
+        expect(includedAngle).toBeGreaterThanOrEqual(0);
+        
+        // Special cases based on DXF specification
+        if (Math.abs(bulge) === 1.0) {
+          expect(angleDegrees).toBeCloseTo(180, 1); // Semicircle
+          console.log('  -> This is a semicircle (bulge = ±1)');
+        }
+        if (Math.abs(bulge) === 0.0) {
+          expect(angleDegrees).toBeCloseTo(0, 1); // Straight line
+          console.log('  -> This is a straight line (bulge = 0)');
+        }
+        if (Math.abs(bulge) > 1.0) {
+          expect(angleDegrees).toBeGreaterThan(180); // Greater than semicircle
+          console.log('  -> Arc > 180° (large arc)');
         }
       });
     });
@@ -111,8 +138,15 @@ describe('Bulge Rendering Fixes', () => {
       const dxfPath = path.resolve('tests/dxf/polylines_with_bulge.dxf');
       const dxfContent = readFileSync(dxfPath, 'utf-8');
       
-      const withBulges = await parseDXF(dxfContent, { decomposePolylines: false });
-      const decomposed = await parseDXF(dxfContent, { decomposePolylines: true });
+      // Parse DXF (no decomposition in parser)
+      const withBulges = await parseDXF(dxfContent);
+      
+      // Apply decomposition separately
+      const decomposedShapes = decomposePolylines(withBulges.shapes);
+      const decomposed = {
+        ...withBulges,
+        shapes: decomposedShapes
+      };
       
       console.log('Comparison test:');
       console.log(`With bulges: ${withBulges.shapes.length} shapes (${withBulges.shapes.map(s => s.type).join(', ')})`);
