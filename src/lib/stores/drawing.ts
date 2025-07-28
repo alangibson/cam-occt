@@ -22,12 +22,20 @@ const resetDownstreamStages = async (fromStage: 'edit' | 'prepare' = 'edit') => 
   // Import and clear other stores
   const { overlayStore } = await import('./overlay');
   const { tessellationStore } = await import('./tessellation');
+  const { pathStore } = await import('./paths');
+  const { operationsStore } = await import('./operations');
+  const { rapidStore } = await import('./rapids');
   
   overlayStore.clearStageOverlay('prepare');
   overlayStore.clearStageOverlay('program');
   overlayStore.clearStageOverlay('simulate');
   overlayStore.clearStageOverlay('export');
   tessellationStore.clearTessellation();
+  
+  // Clear program-specific stores
+  pathStore.reset();
+  operationsStore.reset();
+  rapidStore.reset();
   
   // Reset workflow completion status for downstream stages
   const ws = await getWorkflowStore();

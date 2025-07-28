@@ -15,7 +15,16 @@ export default defineConfig({
 	assetsInclude: ['**/*.wasm'],
 	server: {
 		watch: {
-			ignored: ['**/docs/**']
+			ignored: [
+				'**/docs/**',
+				'**/reference/**',
+				'**/build/**',
+				'**/node_modules/**',
+				'**/*.test.ts',
+				'**/*.test.js',
+				'**/*.spec.ts',
+				'**/*.spec.js'
+			]
 		}
 	}
 });

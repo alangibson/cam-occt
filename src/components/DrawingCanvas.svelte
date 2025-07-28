@@ -7,7 +7,7 @@
   import { operationsStore } from '../lib/stores/operations';
   import { tessellationStore } from '../lib/stores/tessellation';
   import { overlayStore } from '../lib/stores/overlay';
-  import { rapidStore } from '../lib/stores/rapids';
+  import { rapidStore, selectRapid, clearRapidHighlight } from '../lib/stores/rapids';
   import { getShapeChainId, getChainShapeIds, clearChainSelection } from '../lib/stores/chains';
   import { getChainPartType, getPartChainIds, clearHighlight } from '../lib/stores/parts';
   import { selectPath, clearPathHighlight } from '../lib/stores/paths';
@@ -59,6 +59,8 @@
   $: currentOverlay = overlayState.overlays[currentStage];
   $: rapids = $rapidStore.rapids;
   $: showRapids = $rapidStore.showRapids;
+  $: selectedRapidId = $rapidStore.selectedRapidId;
+  $: highlightedRapidId = $rapidStore.highlightedRapidId;
   
   // Get chain IDs that belong to the highlighted part
   $: highlightedChainIds = highlightedPartId ? getPartChainIds(highlightedPartId, parts) : [];
@@ -216,11 +218,27 @@
     if (!showRapids || rapids.length === 0) return;
     
     ctx.save();
-    ctx.strokeStyle = '#00bfff'; // Light blue color
-    ctx.lineWidth = 0.5 / totalScale; // Thin line
-    ctx.setLineDash([5 / totalScale, 5 / totalScale]); // Dashed line
     
-    rapids.forEach((rapid: { start: any; end: any }) => {
+    rapids.forEach((rapid: { id: string; start: any; end: any }) => {
+      // Determine visual state
+      const isSelected = selectedRapidId === rapid.id;
+      const isHighlighted = highlightedRapidId === rapid.id;
+      
+      // Set styling based on state
+      if (isSelected) {
+        ctx.strokeStyle = '#ff6600'; // Orange for selected (same as selected shapes)
+        ctx.lineWidth = 2 / totalScale; // Thicker line
+        ctx.setLineDash([]); // Solid line for selected
+      } else if (isHighlighted) {
+        ctx.strokeStyle = '#ff6600'; // Orange for highlighted
+        ctx.lineWidth = 1.5 / totalScale; // Medium thickness
+        ctx.setLineDash([3 / totalScale, 3 / totalScale]); // Shorter dashes
+      } else {
+        ctx.strokeStyle = '#00bfff'; // Light blue for normal
+        ctx.lineWidth = 0.5 / totalScale; // Thin line
+        ctx.setLineDash([5 / totalScale, 5 / totalScale]); // Normal dashes
+      }
+      
       ctx.beginPath();
       ctx.moveTo(rapid.start.x, rapid.start.y);
       ctx.lineTo(rapid.end.x, rapid.end.y);
@@ -845,6 +863,20 @@
     return null;
   }
   
+  function getRapidAtPoint(point: Point2D): { id: string; start: any; end: any } | null {
+    if (!showRapids || rapids.length === 0) return null;
+    
+    const tolerance = 5 / totalScale; // Fixed tolerance in screen pixels
+    
+    for (const rapid of rapids) {
+      if (distanceToLine(point, rapid.start, rapid.end) < tolerance) {
+        return rapid;
+      }
+    }
+    
+    return null;
+  }
+
   function isPointNearShape(point: Point2D, shape: Shape, tolerance: number): boolean {
     switch (shape.type) {
       case 'line':
@@ -1057,6 +1089,19 @@
     // Only handle shape selection with left mouse button
     if (e.button === 0) {
       const worldPos = screenToWorld(mousePos);
+      
+      // Check for rapid selection first (rapids are on top)
+      const rapid = getRapidAtPoint(worldPos);
+      if (rapid) {
+        // Handle rapid selection
+        if (selectedRapidId === rapid.id) {
+          selectRapid(null); // Deselect if already selected
+        } else {
+          selectRapid(rapid.id);
+        }
+        return; // Don't process shape selection if rapid was clicked
+      }
+      
       const shape = getShapeAtPoint(worldPos);
       
       if (shape) {
@@ -1113,6 +1158,8 @@
         clearHighlight();
         pathStore.selectPath(null);
         clearPathHighlight();
+        selectRapid(null);
+        clearRapidHighlight();
       }
     }
   }

@@ -10,7 +10,7 @@
   import { partStore, highlightPart, clearHighlight } from '../../lib/stores/parts';
   import { isChainClosed } from '../../lib/algorithms/part-detection';
   import { pathStore } from '../../lib/stores/paths';
-  import { rapidStore } from '../../lib/stores/rapids';
+  import { rapidStore, selectRapid, highlightRapid, clearRapidHighlight } from '../../lib/stores/rapids';
   import { optimizeCutOrder } from '../../lib/algorithms/optimize-cut-order';
   
   // Subscribe to stores
@@ -21,6 +21,8 @@
   $: highlightedPartId = $partStore.highlightedPartId;
   $: paths = $pathStore.paths;
   $: rapids = $rapidStore.rapids;
+  $: selectedRapidId = $rapidStore.selectedRapidId;
+  $: highlightedRapidId = $rapidStore.highlightedRapidId;
 
 
   function handleNext() {
@@ -48,6 +50,23 @@
   // Helper function to check if a chain is closed
   function isChainClosedHelper(chain: any): boolean {
     return isChainClosed(chain, 0.1); // Use default tolerance since this is display-only
+  }
+
+  // Rapid selection functions  
+  function handleRapidClick(rapidId: string) {
+    if (selectedRapidId === rapidId) {
+      selectRapid(null); // Deselect if already selected
+    } else {
+      selectRapid(rapidId);
+    }
+  }
+
+  function handleRapidMouseEnter(rapidId: string) {
+    highlightRapid(rapidId);
+  }
+
+  function handleRapidMouseLeave() {
+    clearRapidHighlight();
   }
 
   // Handle cut order optimization
@@ -147,7 +166,7 @@
               disabled={!drawing || chains.length === 0}
               class="toolbar-button"
             >
-              Optimize cut order
+              Apply Rapids
             </button>
           </div>
           <div class="toolbar-right">
@@ -173,7 +192,15 @@
         <div class="cut-order-list">
           {#if rapids.length > 0}
             {#each rapids as rapid, index (rapid.id)}
-              <div class="rapid-item">
+              <div 
+                class="rapid-item {selectedRapidId === rapid.id ? 'selected' : ''} {highlightedRapidId === rapid.id ? 'highlighted' : ''}"
+                role="button"
+                tabindex="0"
+                on:click={() => handleRapidClick(rapid.id)}
+                on:keydown={(e) => e.key === 'Enter' && handleRapidClick(rapid.id)}
+                on:mouseenter={() => handleRapidMouseEnter(rapid.id)}
+                on:mouseleave={handleRapidMouseLeave}
+              >
                 <span class="rapid-index">{index + 1}.</span>
                 <span class="rapid-description">
                   Rapid to ({rapid.end.x.toFixed(2)}, {rapid.end.y.toFixed(2)})
@@ -181,7 +208,7 @@
               </div>
             {/each}
           {:else}
-            <p class="no-rapids">No cut order optimization applied yet. Click "Optimize cut order" to generate rapids.</p>
+            <p class="no-rapids">No rapids applied yet. Click "Apply Rapids" to generate optimized cutting sequence.</p>
           {/if}
         </div>
       </AccordionPanel>
@@ -352,8 +379,25 @@
     gap: 0.5rem;
     padding: 0.5rem;
     background-color: #f9fafb;
+    border: 1px solid transparent;
     border-radius: 0.375rem;
     font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .rapid-item:hover {
+    background-color: #f3f4f6;
+  }
+
+  .rapid-item.highlighted {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+  }
+
+  .rapid-item.selected {
+    background-color: #dbeafe;
+    border-color: #3b82f6;
   }
 
   .rapid-index {

@@ -528,6 +528,16 @@ When adding new shape types:
 
 **CRITICAL**: All selection and highlighting operations must be synchronized across all UI components:
 
+### Core Selection Principle
+
+**FUNDAMENTAL RULE**: When any object is selected in a sidebar column (left or right), it MUST also be visually selected/highlighted on the drawing canvas. This applies to:
+- **Parts** selected in Parts list → highlighted on canvas
+- **Chains** selected in Chains list → highlighted on canvas  
+- **Paths** selected in Paths list → highlighted on canvas
+- **Rapids** selected in Cut Order list → highlighted on canvas
+
+This bidirectional synchronization ensures users always know which object they're working with across all UI components.
+
 - **Part Highlighting**: When a part is highlighted in any component (Operations apply-to menu, Program stage parts list, etc.), the same part must be highlighted in:
   - Drawing canvas (visual highlighting)
   - Parts list in Program stage (highlighted background)
@@ -538,15 +548,22 @@ When adding new shape types:
   - Paths list in Program stage (selected background)
   - Any other UI components showing path information
 
+- **Rapid Selection**: When a rapid is selected in any component (Cut Order box, etc.), the same rapid must be selected in:
+  - Drawing canvas (visual highlighting of the rapid line)
+  - Cut Order list in Program stage (selected background)
+  - Any other UI components showing rapid information
+
 - **Implementation Requirements**:
   - Use the shared store functions: `highlightPart(partId)`, `clearHighlight()` for parts
   - Use the shared store functions: `selectChain(chainId)` for paths/chains
+  - Use the shared store functions: `selectRapid(rapidId)`, `highlightRapid(rapidId)`, `clearRapidHighlight()` for rapids
   - Never create local selection state that doesn't sync with stores
   - Always test that hover/selection in one component updates all other relevant components
 
 - **Testing Requirements**:
   - Verify that hovering over a part in the Operations apply-to menu highlights the part in the drawing canvas
   - Verify that hovering over a path in the Operations apply-to menu selects the path in the drawing canvas
+  - Verify that clicking on a rapid in the Cut Order box selects and highlights the rapid line on the drawing canvas
   - Test all selection interactions across multiple UI components to ensure synchronization
 
 ## Shape Color Scheme and Visual Behavior
