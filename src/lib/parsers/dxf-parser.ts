@@ -27,7 +27,17 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
     parseString = dxfModule.parseString;
   }
   
-  const parsed = parseString(content);
+  let parsed;
+  try {
+    parsed = parseString(content);
+  } catch (error) {
+    console.error('Failed to parse DXF file:', error);
+    throw new Error(`DXF parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+  
+  if (!parsed) {
+    throw new Error('DXF parser returned null or undefined');
+  }
   const shapes: Shape[] = [];
   const bounds = {
     minX: Infinity,
@@ -82,20 +92,25 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
 
   // Process entities
   if (parsed && parsed.entities) {
-    parsed.entities.forEach((entity: any) => {
-      const result = convertDXFEntity(entity, options, blocks, blockBasePoints);
-      if (result) {
-        if (Array.isArray(result)) {
-          // Multiple shapes (decomposed polyline or INSERT entities)
-          result.forEach(shape => {
-            shapes.push(shape);
-            updateBounds(shape, bounds);
-          });
-        } else {
-          // Single shape
-          shapes.push(result);
-          updateBounds(result, bounds);
+    parsed.entities.forEach((entity: any, index: number) => {
+      try {
+        const result = convertDXFEntity(entity, options, blocks, blockBasePoints);
+        if (result) {
+          if (Array.isArray(result)) {
+            // Multiple shapes (decomposed polyline or INSERT entities)
+            result.forEach(shape => {
+              shapes.push(shape);
+              updateBounds(shape, bounds);
+            });
+          } else {
+            // Single shape
+            shapes.push(result);
+            updateBounds(result, bounds);
+          }
         }
+      } catch (error) {
+        console.error(`Failed to convert entity at index ${index} (type: ${entity?.type}):`, error);
+        // Continue processing other entities
       }
     });
   }
