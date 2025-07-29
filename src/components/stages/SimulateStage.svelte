@@ -669,6 +669,8 @@
           currentStage="simulate"
           disableDragging={true}
           respectLayerVisibility={false}
+          treatChainsAsEntities={true}
+          interactionMode="paths"
         />
       </div>
 

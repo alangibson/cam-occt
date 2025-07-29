@@ -9,6 +9,7 @@
   export let currentStage: WorkflowStage;
   export let showToolbar = false;
   export let toolbarContent: string | null = null;
+  export let interactionMode: 'shapes' | 'chains' | 'paths' = 'shapes';
 </script>
 
 <div class="canvas-container-wrapper">
@@ -25,6 +26,7 @@
       {onChainClick}
       {disableDragging}
       {currentStage}
+      {interactionMode}
     />
   </div>
 </div>

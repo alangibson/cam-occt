@@ -21,6 +21,7 @@
   export let onChainClick: ((chainId: string) => void) | null = null; // Callback for chain clicks
   export let disableDragging = false; // Default to false, true to disable dragging
   export let currentStage: WorkflowStage; // Current workflow stage for overlay rendering
+  export let interactionMode: 'shapes' | 'chains' | 'paths' = 'shapes'; // What type of objects can be selected
   
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -1232,8 +1233,40 @@
       const shape = getShapeAtPoint(worldPos);
       
       if (shape) {
-        if (treatChainsAsEntities) {
-          // Get the chain ID for this shape
+        if (interactionMode === 'shapes') {
+          // Edit mode - allow individual shape selection
+          if (!e.ctrlKey && !selectedShapes.has(shape.id)) {
+            drawingStore.clearSelection();
+          }
+          drawingStore.selectShape(shape.id, e.ctrlKey);
+        } else if (interactionMode === 'chains') {
+          // Program mode - only allow chain selection
+          const chainId = getShapeChainId(shape.id, chains);
+          if (chainId) {
+            // Get all shapes in the chain
+            const chainShapeIds = getChainShapeIds(shape.id, chains);
+            
+            // Check if any shape in the chain is already selected
+            const chainSelected = chainShapeIds.some(id => selectedShapes.has(id));
+            
+            if (!e.ctrlKey && !chainSelected) {
+              drawingStore.clearSelection();
+            }
+            
+            // Select/deselect all shapes in the chain
+            chainShapeIds.forEach(id => {
+              if (!selectedShapes.has(id) || !e.ctrlKey) {
+                drawingStore.selectShape(id, true); // Always multi-select for chains
+              }
+            });
+            
+            // Notify parent component about chain click
+            if (onChainClick) {
+              onChainClick(chainId);
+            }
+          }
+        } else if (interactionMode === 'paths') {
+          // Simulation mode - only allow path/rapid selection
           const chainId = getShapeChainId(shape.id, chains);
           
           // Check if this chain has a path and handle path selection
@@ -1241,7 +1274,7 @@
             // Find the path for this chain
             const pathForChain = pathsState.paths.find(p => p.chainId === chainId);
             if (pathForChain) {
-              // Handle path selection
+              // Handle path selection - don't select individual shapes
               if (selectedPathId === pathForChain.id) {
                 pathStore.selectPath(null); // Deselect if already selected
               } else {
@@ -1249,34 +1282,7 @@
               }
             }
           }
-          
-          // Get all shapes in the chain
-          const chainShapeIds = getChainShapeIds(shape.id, chains);
-          
-          // Check if any shape in the chain is already selected
-          const chainSelected = chainShapeIds.some(id => selectedShapes.has(id));
-          
-          if (!e.ctrlKey && !chainSelected) {
-            drawingStore.clearSelection();
-          }
-          
-          // Select/deselect all shapes in the chain
-          chainShapeIds.forEach(id => {
-            if (!selectedShapes.has(id) || !e.ctrlKey) {
-              drawingStore.selectShape(id, true); // Always multi-select for chains
-            }
-          });
-          
-          // Notify parent component about chain click
-          if (onChainClick && chainId) {
-            onChainClick(chainId);
-          }
-        } else {
-          // Original single-shape selection logic
-          if (!e.ctrlKey && !selectedShapes.has(shape.id)) {
-            drawingStore.clearSelection();
-          }
-          drawingStore.selectShape(shape.id, e.ctrlKey);
+          // Don't select individual shapes in paths mode
         }
       } else if (!e.ctrlKey) {
         // Clear all selections when clicking in empty space
@@ -1328,12 +1334,25 @@
         const worldPos = screenToWorld(newMousePos);
         const shape = getShapeAtPoint(worldPos);
         
-        if (treatChainsAsEntities && shape) {
-          // When treating chains as entities, we still only set the hovered shape to the actual shape
-          // The rendering logic will handle highlighting the whole chain
-          drawingStore.setHoveredShape(shape.id);
-        } else {
+        if (interactionMode === 'shapes') {
+          // Edit mode - show hover for individual shapes
           drawingStore.setHoveredShape(shape ? shape.id : null);
+        } else if (interactionMode === 'chains') {
+          // Program mode - show hover for chains (set to actual shape, rendering handles chain highlighting)
+          drawingStore.setHoveredShape(shape ? shape.id : null);
+        } else if (interactionMode === 'paths') {
+          // Simulation mode - don't show individual shape hover for selection purposes
+          // Only hover shapes that are part of selectable paths
+          if (shape) {
+            const chainId = getShapeChainId(shape.id, chains);
+            if (chainId && chainsWithPaths.includes(chainId)) {
+              drawingStore.setHoveredShape(shape.id);
+            } else {
+              drawingStore.setHoveredShape(null);
+            }
+          } else {
+            drawingStore.setHoveredShape(null);
+          }
         }
         hoverTimeout = null;
       }, 16); // ~60fps throttling (16ms)

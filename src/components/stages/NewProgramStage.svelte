@@ -188,7 +188,12 @@
           </div>
         </div>
       </div>
-      <DrawingCanvasContainer currentStage="program" />
+      <DrawingCanvasContainer 
+        currentStage="program" 
+        treatChainsAsEntities={true}
+        interactionMode="chains"
+        onChainClick={handleChainClick}
+      />
     </svelte:fragment>
 
     <svelte:fragment slot="right">
