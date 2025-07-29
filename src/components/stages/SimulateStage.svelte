@@ -428,7 +428,7 @@
       if (currentDistance + shapeLength >= targetDistance) {
         // Tool head is on this shape
         const shapeProgress = (targetDistance - currentDistance) / shapeLength;
-        toolHeadPosition = getPositionOnShape(shape, shapeProgress);
+        toolHeadPosition = getPositionOnShape(shape, shapeProgress, path.cutDirection);
         return;
       }
       currentDistance += shapeLength;
@@ -436,7 +436,7 @@
   }
 
   // Get position along a shape at given progress (0-1) - simplified
-  function getPositionOnShape(shape: Shape, progress: number): Point2D {
+  function getPositionOnShape(shape: Shape, progress: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D {
     progress = Math.max(0, Math.min(1, progress)); // Clamp to 0-1
     
     switch (shape.type) {
@@ -448,7 +448,16 @@
         };
       case 'circle':
         const circle = shape.geometry as any;
-        const circleAngle = progress * 2 * Math.PI;
+        let circleAngle: number;
+        
+        if (cutDirection === 'clockwise') {
+          // For clockwise, start at 0 (3 o'clock) and go negative
+          circleAngle = -progress * 2 * Math.PI;
+        } else {
+          // For counterclockwise (default), start at 0 and go positive
+          circleAngle = progress * 2 * Math.PI;
+        }
+        
         return {
           x: circle.center.x + circle.radius * Math.cos(circleAngle),
           y: circle.center.y + circle.radius * Math.sin(circleAngle)
@@ -539,10 +548,21 @@
         let param: number;
         if (typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number') {
           // It's an elliptical arc
-          param = ellipse.startParam + (ellipse.endParam - ellipse.startParam) * progress;
+          if (cutDirection === 'clockwise') {
+            // For clockwise, reverse the progress
+            param = ellipse.endParam - (ellipse.endParam - ellipse.startParam) * progress;
+          } else {
+            param = ellipse.startParam + (ellipse.endParam - ellipse.startParam) * progress;
+          }
         } else {
           // It's a full ellipse
-          param = progress * 2 * Math.PI;
+          if (cutDirection === 'clockwise') {
+            // For clockwise, start at 0 and go negative
+            param = -progress * 2 * Math.PI;
+          } else {
+            // For counterclockwise (default), start at 0 and go positive
+            param = progress * 2 * Math.PI;
+          }
         }
         
         // Calculate point on canonical ellipse (axes aligned)
