@@ -104,6 +104,19 @@
     return operation ? operation.name : 'Unknown Operation';
   }
   
+  function getCutDirectionDisplay(cutDirection: string): string {
+    switch (cutDirection) {
+      case 'clockwise':
+        return '↻ CW';
+      case 'counterclockwise':
+        return '↺ CCW';
+      case 'none':
+        return '— None';
+      default:
+        return '? Unknown';
+    }
+  }
+  
 </script>
 
 <div class="paths-container">
@@ -135,6 +148,7 @@
           <div class="path-info">
             <span class="operation-name">{getOperationName(path.operationId)}</span>
             <span class="tool-name">{getToolName(path.toolId)}</span>
+            <span class="cut-direction {path.cutDirection}">{getCutDirectionDisplay(path.cutDirection)}</span>
           </div>
           <div class="path-order">#{path.order}</div>
         </div>
@@ -238,6 +252,29 @@
   .tool-name {
     font-size: 0.75rem;
     color: #374151;
+  }
+  
+  .cut-direction {
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    white-space: nowrap;
+  }
+  
+  .cut-direction.clockwise {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  
+  .cut-direction.counterclockwise {
+    background: #dcfce7;
+    color: #166534;
+  }
+  
+  .cut-direction.none {
+    background: #f3f4f6;
+    color: #6b7280;
   }
   
   .path-order {

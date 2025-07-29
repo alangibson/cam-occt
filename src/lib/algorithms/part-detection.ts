@@ -230,9 +230,18 @@ function calculateNestingLevel(chainId: string, containmentMap: Map<string, stri
 export function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boolean {
   if (chain.shapes.length === 0) return false;
   
-  // Special case: single-shape circles are inherently closed
-  if (chain.shapes.length === 1 && chain.shapes[0].type === 'circle') {
-    return true;
+  // Special case: single-shape circles and ellipses are inherently closed
+  if (chain.shapes.length === 1) {
+    const shape = chain.shapes[0];
+    if (shape.type === 'circle') {
+      return true;
+    }
+    if (shape.type === 'ellipse') {
+      // Full ellipses are closed, elliptical arcs may not be
+      const ellipse = shape.geometry as any;
+      // If no start/end parameters, it's a full ellipse (closed)
+      return ellipse.startParam === undefined && ellipse.endParam === undefined;
+    }
   }
   
   // Get all endpoints from the shapes in the chain

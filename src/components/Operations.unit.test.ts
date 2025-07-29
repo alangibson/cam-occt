@@ -65,7 +65,8 @@ describe('Operations Store Integration', () => {
       targetType: 'parts',
       targetIds: [],
       enabled: true,
-      order: 1
+      order: 1,
+      cutDirection: 'counterclockwise'
     });
 
     const operations = get(operationsStore);

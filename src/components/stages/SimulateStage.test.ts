@@ -81,7 +81,8 @@ describe('SimulateStage store subscription cleanup', () => {
       toolId: 'test-tool',
       enabled: true,
       order: 1,
-      feedRate: 1000
+      feedRate: 1000,
+      cutDirection: 'counterclockwise'
     });
     
     rapidStore.setRapids([{

@@ -281,6 +281,27 @@
           }
           return 100; // Final fallback
         }
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        // Calculate major and minor axis lengths
+        const majorAxisLength = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+        
+        // Check if it's a full ellipse or elliptical arc
+        if (typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number') {
+          // It's an elliptical arc - use Ramanujan's approximation for the arc portion
+          const paramSpan = Math.abs(ellipse.endParam - ellipse.startParam);
+          const fullEllipsePerimeter = Math.PI * (3 * (majorAxisLength + minorAxisLength) - 
+            Math.sqrt((3 * majorAxisLength + minorAxisLength) * (majorAxisLength + 3 * minorAxisLength)));
+          return fullEllipsePerimeter * (paramSpan / (2 * Math.PI));
+        } else {
+          // It's a full ellipse - use Ramanujan's approximation for ellipse perimeter
+          return Math.PI * (3 * (majorAxisLength + minorAxisLength) - 
+            Math.sqrt((3 * majorAxisLength + minorAxisLength) * (majorAxisLength + 3 * minorAxisLength)));
+        }
       default:
         return 100; // Default fallback
     }
@@ -505,6 +526,37 @@
           }
           return { x: 0, y: 0 }; // Final fallback
         }
+      case 'ellipse':
+        const ellipse = shape.geometry as any;
+        // Calculate major and minor axis lengths
+        const majorAxisLength = Math.sqrt(
+          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+        );
+        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+        const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+        
+        let param: number;
+        if (typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number') {
+          // It's an elliptical arc
+          param = ellipse.startParam + (ellipse.endParam - ellipse.startParam) * progress;
+        } else {
+          // It's a full ellipse
+          param = progress * 2 * Math.PI;
+        }
+        
+        // Calculate point on canonical ellipse (axes aligned)
+        const canonicalX = majorAxisLength * Math.cos(param);
+        const canonicalY = minorAxisLength * Math.sin(param);
+        
+        // Rotate by major axis angle and translate to center
+        const cos = Math.cos(majorAxisAngle);
+        const sin = Math.sin(majorAxisAngle);
+        
+        return {
+          x: ellipse.center.x + canonicalX * cos - canonicalY * sin,
+          y: ellipse.center.y + canonicalX * sin + canonicalY * cos
+        };
       default:
         return { x: 0, y: 0 };
     }

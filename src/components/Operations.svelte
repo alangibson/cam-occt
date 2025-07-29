@@ -95,7 +95,8 @@
       targetType: 'parts',
       targetIds: [],
       enabled: true,
-      order: newOrder
+      order: newOrder,
+      cutDirection: 'counterclockwise'
     });
   }
   
@@ -387,6 +388,19 @@
           </div>
           
           <div class="field-group">
+            <label for="cut-direction-{operation.id}">Cut Direction:</label>
+            <select
+              id="cut-direction-{operation.id}"
+              value={operation.cutDirection}
+              onchange={(e) => updateOperationField(operation.id, 'cutDirection', e.currentTarget.value)}
+              class="cut-direction-select"
+            >
+              <option value="counterclockwise">Counterclockwise</option>
+              <option value="clockwise">Clockwise</option>
+            </select>
+          </div>
+          
+          <div class="field-group">
             <label for="apply-to-{operation.id}">Apply to:</label>
             <div class="apply-to-selector">
               <button 
@@ -565,7 +579,7 @@
   
   .operation-details {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     gap: 0.75rem;
     margin-bottom: 0.75rem;
   }
@@ -612,6 +626,27 @@
     font-size: 0.75rem;
     color: #6b7280;
     margin-left: 0.5rem;
+  }
+  
+  .cut-direction-select {
+    width: 100%;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    background: white;
+    cursor: pointer;
+  }
+  
+  .cut-direction-select:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+  }
+  
+  .cut-direction-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
   }
   
   .tool-dropdown,

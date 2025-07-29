@@ -10,6 +10,7 @@ export interface Path {
   toolId: string | null; // Reference to the tool used
   enabled: boolean;
   order: number; // Execution order within operation
+  cutDirection: 'clockwise' | 'counterclockwise' | 'none'; // Detected cut direction
   feedRate?: number; // Cutting speed
   pierceHeight?: number; // Height for pierce operation
   pierceDelay?: number; // Delay for pierce operation

@@ -34,7 +34,8 @@ describe('Optimize Cut Order', () => {
       operationId: 'op-1',
       toolId: 'tool-1',
       enabled: true,
-      order: 1
+      order: 1,
+      cutDirection: 'counterclockwise'
     };
 
     // Create a map of chains
@@ -88,7 +89,8 @@ describe('Optimize Cut Order', () => {
       operationId: 'op-1',
       toolId: 'tool-1',
       enabled: true,
-      order: 1
+      order: 1,
+      cutDirection: 'counterclockwise'
     };
 
     // Create a map of chains
@@ -168,7 +170,8 @@ describe('Optimize Cut Order', () => {
         operationId: 'op-1',
         toolId: 'tool-1',
         enabled: true,
-        order: index + 1
+        order: index + 1,
+        cutDirection: 'counterclockwise'
       });
     });
 

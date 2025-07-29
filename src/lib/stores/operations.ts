@@ -2,7 +2,9 @@ import { writable } from 'svelte/store';
 import { pathStore } from './paths';
 import { partStore } from './parts';
 import { workflowStore } from './workflow';
+import { chainStore } from './chains';
 import { get } from 'svelte/store';
+import { detectCutDirection } from '../algorithms/cut-direction';
 
 export interface Operation {
   id: string;
@@ -12,6 +14,7 @@ export interface Operation {
   targetIds: string[]; // IDs of parts or chains this operation applies to
   enabled: boolean;
   order: number; // Execution order
+  cutDirection: 'clockwise' | 'counterclockwise'; // Preferred cut direction
 }
 
 function createOperationsStore() {
@@ -153,6 +156,13 @@ function generatePathsForOperation(operation: Operation) {
   // Generate paths for each target
   operation.targetIds.forEach((targetId, index) => {
     if (operation.targetType === 'chains') {
+      // Use the operation's preferred cut direction
+      // For open paths, detect if they can support a direction, otherwise use 'none'
+      const chainsState = get(chainStore);
+      const chain = chainsState.chains.find(c => c.id === targetId);
+      const detectedDirection = chain ? detectCutDirection(chain, 0.1) : 'none';
+      const cutDirection = detectedDirection === 'none' ? 'none' : operation.cutDirection;
+      
       // Create one path per chain
       pathStore.addPath({
         name: `${operation.name} - Chain ${targetId.split('-')[1]}`,
@@ -160,7 +170,8 @@ function generatePathsForOperation(operation: Operation) {
         chainId: targetId,
         toolId: operation.toolId,
         enabled: true,
-        order: index + 1
+        order: index + 1,
+        cutDirection: cutDirection
       });
     } else if (operation.targetType === 'parts') {
       // For parts, create paths for all chains that make up the part
@@ -168,14 +179,22 @@ function generatePathsForOperation(operation: Operation) {
       const part = partsState.parts.find(p => p.id === targetId);
       
       if (part) {
-        // Create a path for the shell chain
+        // Get the chains state for cut direction detection
+        const chainsState = get(chainStore);
+        
+        // Create a path for the shell chain using operation's preferred direction
+        const shellChain = chainsState.chains.find(c => c.id === part.shell.chain.id);
+        const shellDetectedDirection = shellChain ? detectCutDirection(shellChain, 0.1) : 'none';
+        const shellCutDirection = shellDetectedDirection === 'none' ? 'none' : operation.cutDirection;
+        
         pathStore.addPath({
           name: `${operation.name} - Part ${targetId.split('-')[1]} (Shell)`,
           operationId: operation.id,
           chainId: part.shell.chain.id,
           toolId: operation.toolId,
           enabled: true,
-          order: index + 1
+          order: index + 1,
+          cutDirection: shellCutDirection
         });
         
         // Create paths for all hole chains (including nested holes)
@@ -183,13 +202,19 @@ function generatePathsForOperation(operation: Operation) {
         
         function processHoles(holes: any[], prefix: string = '') {
           holes.forEach((hole, holeIndex) => {
+            // Use operation's preferred cut direction for the hole chain
+            const holeChain = chainsState.chains.find(c => c.id === hole.chain.id);
+            const holeDetectedDirection = holeChain ? detectCutDirection(holeChain, 0.1) : 'none';
+            const holeCutDirection = holeDetectedDirection === 'none' ? 'none' : operation.cutDirection;
+            
             pathStore.addPath({
               name: `${operation.name} - Part ${targetId.split('-')[1]} ${prefix}(Hole ${holeIndex + 1})`,
               operationId: operation.id,
               chainId: hole.chain.id,
               toolId: operation.toolId,
               enabled: true,
-              order: pathOrder++
+              order: pathOrder++,
+              cutDirection: holeCutDirection
             });
             
             // Process nested holes if any
