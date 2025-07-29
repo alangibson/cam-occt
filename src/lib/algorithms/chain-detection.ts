@@ -217,7 +217,7 @@ function getShapePoints(shape: Shape): Point2D[] {
 /**
  * Checks if a single shape forms a closed loop
  */
-function isShapeClosed(shape: Shape, tolerance: number): boolean {
+export function isShapeClosed(shape: Shape, tolerance: number): boolean {
   switch (shape.type) {
     case 'circle':
       // Circles are always closed
@@ -227,6 +227,14 @@ function isShapeClosed(shape: Shape, tolerance: number): boolean {
       const polyline = shape.geometry as any;
       if (!polyline.points || polyline.points.length < 3) return false;
       
+      // CRITICAL FIX: For polylines, first check the explicit closed flag from DXF parsing
+      // This is especially important for polylines with bulges where the geometric
+      // first/last points don't represent the actual curve endpoints
+      if (typeof polyline.closed === 'boolean') {
+        return polyline.closed;
+      }
+      
+      // Fallback: geometric check for polylines without explicit closure information
       const firstPoint = polyline.points[0];
       const lastPoint = polyline.points[polyline.points.length - 1];
       

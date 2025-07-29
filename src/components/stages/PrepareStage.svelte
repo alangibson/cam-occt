@@ -284,19 +284,33 @@
   function isChainClosed(chain: ShapeChain): boolean {
     if (!chain || chain.shapes.length === 0) return false;
     
-    // Single circle is always closed
-    if (chain.shapes.length === 1 && chain.shapes[0].type === 'circle') {
-      return true;
+    // Single shape chains - check if the shape itself is closed
+    if (chain.shapes.length === 1) {
+      const shape = chain.shapes[0];
+      
+      // Single circle is always closed
+      if (shape.type === 'circle') {
+        return true;
+      }
+      
+      // Single full ellipse is always closed
+      if (shape.type === 'ellipse') {
+        const ellipse = shape.geometry as any;
+        // Full ellipses are closed, ellipse arcs are open
+        return !(typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number');
+      }
+      
+      // Single closed polyline
+      if (shape.type === 'polyline') {
+        const polyline = shape.geometry as any;
+        // Use the explicit closed flag from DXF parsing if available
+        if (typeof polyline.closed === 'boolean') {
+          return polyline.closed;
+        }
+      }
     }
     
-    // Single full ellipse is always closed
-    if (chain.shapes.length === 1 && chain.shapes[0].type === 'ellipse') {
-      const ellipse = chain.shapes[0].geometry as any;
-      // Full ellipses are closed, ellipse arcs are open
-      return !(typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number');
-    }
-    
-    // Check if first and last points connect
+    // Multi-shape chains - check if first and last points connect
     const firstShape = chain.shapes[0];
     const lastShape = chain.shapes[chain.shapes.length - 1];
     

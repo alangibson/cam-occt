@@ -263,13 +263,22 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
             }));
           
           if (vertices.length > 0) {
+            const isClosed = entity.shape || entity.closed || false;
+            const points = vertices.map((v: any) => ({ x: v.x, y: v.y }));
+            
+            // CRITICAL: For closed polylines, duplicate the first point at the end
+            // to ensure start and end points are coincident in our representation
+            if (isClosed && points.length > 0) {
+              points.push({ x: points[0].x, y: points[0].y });
+            }
+            
             return {
               id: generateId(),
               type: 'polyline',
               geometry: {
-                points: vertices.map((v: any) => ({ x: v.x, y: v.y })), // Keep existing interface
-                closed: entity.shape || entity.closed || false,
-                vertices // Add bulge-aware vertices
+                points,
+                closed: isClosed,
+                vertices // Add bulge-aware vertices (without duplication)
               },
               ...getLayerInfo(entity, options)
             };
