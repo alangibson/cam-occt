@@ -1,5 +1,6 @@
 import type { Shape, Point2D, Drawing, ToolPath, CuttingParameters } from '../../types';
 import { generateId } from '../utils/id';
+import { sampleNURBS } from '../geometry/nurbs';
 
 export function generateToolPaths(
   drawing: Drawing,
@@ -43,7 +44,8 @@ function generateShapeToolPath(
     leadIn,
     leadOut,
     isRapid: false,
-    parameters
+    parameters,
+    originalShape: shape // Preserve original shape for native G-code generation
   };
 }
 
@@ -64,6 +66,25 @@ function getShapePoints(shape: Shape): Point2D[] {
     case 'polyline':
       const polyline = shape.geometry as any;
       return polyline.points;
+      
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      return generateEllipsePoints(ellipse);
+      
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use NURBS sampling for tool path generation
+        return sampleNURBS(spline, 64); // Use good resolution for tool paths
+      } catch (error) {
+        // Fallback to fit points or control points if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints;
+        } else if (spline.controlPoints && spline.controlPoints.length > 0) {
+          return spline.controlPoints;
+        }
+        return [];
+      }
       
     default:
       return [];
@@ -96,6 +117,73 @@ function generateArcPoints(arc: any): Point2D[] {
       x: arc.center.x + arc.radius * Math.cos(angle),
       y: arc.center.y + arc.radius * Math.sin(angle)
     });
+  }
+  
+  return points;
+}
+
+function generateEllipsePoints(ellipse: any): Point2D[] {
+  const points: Point2D[] = [];
+  
+  // Calculate major and minor axis lengths
+  const majorAxisLength = Math.sqrt(
+    ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+    ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+  );
+  const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+  
+  // Calculate rotation angle of major axis
+  const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+  
+  // Determine if this is an ellipse arc or full ellipse
+  const isArc = typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number';
+  
+  if (isArc) {
+    // Ellipse arc
+    const startParam = ellipse.startParam!;
+    const endParam = ellipse.endParam!;
+    let paramSpan = endParam - startParam;
+    
+    // Handle parameter wrapping
+    if (paramSpan <= 0) paramSpan += 2 * Math.PI;
+    
+    const segments = Math.max(16, Math.ceil(64 * paramSpan / (2 * Math.PI)));
+    
+    for (let i = 0; i <= segments; i++) {
+      const param = startParam + (paramSpan * i) / segments;
+      
+      // Parametric ellipse equations
+      const x = majorAxisLength * Math.cos(param);
+      const y = minorAxisLength * Math.sin(param);
+      
+      // Rotate by major axis angle and translate to center
+      const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
+      const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
+      
+      points.push({
+        x: ellipse.center.x + rotatedX,
+        y: ellipse.center.y + rotatedY
+      });
+    }
+  } else {
+    // Full ellipse
+    const segments = 64; // Good resolution for tool paths
+    for (let i = 0; i < segments; i++) {
+      const param = (i * 2 * Math.PI) / segments;
+      
+      // Parametric ellipse equations
+      const x = majorAxisLength * Math.cos(param);
+      const y = minorAxisLength * Math.sin(param);
+      
+      // Rotate by major axis angle and translate to center
+      const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
+      const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
+      
+      points.push({
+        x: ellipse.center.x + rotatedX,
+        y: ellipse.center.y + rotatedY
+      });
+    }
   }
   
   return points;

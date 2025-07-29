@@ -48,6 +48,7 @@
       toolNumber: newToolNumber,
       toolName: `Tool ${newToolNumber}`,
       feedRate: 100,
+      rapidRate: 3000,
       pierceHeight: 3.8,
       pierceDelay: 0.5,
       arcVoltage: 120,
@@ -130,6 +131,7 @@
           <th>Tool #</th>
           <th>Name</th>
           <th>Feed Rate<br/>({displayUnit}/min)</th>
+          <th>Rapid Rate<br/>({displayUnit}/min)</th>
           <th>Pierce<br/>Height<br/>({displayUnit})</th>
           <th>Pierce<br/>Delay<br/>(sec)</th>
           <th>Arc<br/>Voltage<br/>(V)</th>
@@ -176,6 +178,15 @@
                 type="number"
                 value={tool.feedRate}
                 onchange={(e) => updateToolField(tool.id, 'feedRate', parseFloat(e.currentTarget.value))}
+                class="input-xs"
+                step="0.1"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                value={tool.rapidRate}
+                onchange={(e) => updateToolField(tool.id, 'rapidRate', parseFloat(e.currentTarget.value))}
                 class="input-xs"
                 step="0.1"
               />

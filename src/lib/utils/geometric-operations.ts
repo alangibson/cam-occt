@@ -7,6 +7,7 @@
 
 import type { ShapeChain } from '../algorithms/chain-detection';
 import type { Shape, Point2D } from '../../types';
+import { sampleNURBS } from '../geometry/nurbs';
 
 /**
  * Checks if one closed chain is completely contained within another closed chain
@@ -193,6 +194,21 @@ function getShapePoints(shape: Shape): Point2D[] {
       }
       
       return ellipsePoints;
+      
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use NURBS sampling for accurate polygon representation
+        return sampleNURBS(spline, 64); // Use more points for geometric accuracy
+      } catch (error) {
+        // Fallback to fit points or control points if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints;
+        } else if (spline.controlPoints && spline.controlPoints.length > 0) {
+          return spline.controlPoints;
+        }
+        return [];
+      }
       
     default:
       return [];

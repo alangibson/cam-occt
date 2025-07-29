@@ -18,6 +18,7 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection';
 import { normalizeChain } from './chain-normalization';
 import { detectParts } from './part-detection';
+import { evaluateNURBS } from '../geometry/nurbs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -217,6 +218,37 @@ function getShapeStartPoint(shape: any): any {
     case 'polyline':
       const polyline = shape.geometry as any;
       return polyline.points.length > 0 ? polyline.points[0] : null;
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=0
+        return evaluateNURBS(0, spline);
+      } catch (error) {
+        // Fallback to first control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[0];
+        }
+        return spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
+      }
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      // Calculate start point from ellipse parameters
+      const startParam = ellipse.startParam ?? 0;
+      const majorAxisLength = Math.sqrt(
+        Math.pow(ellipse.majorAxisEndpoint.x, 2) + 
+        Math.pow(ellipse.majorAxisEndpoint.y, 2)
+      );
+      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+      const rotation = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      
+      const x = majorAxisLength * Math.cos(startParam);
+      const y = minorAxisLength * Math.sin(startParam);
+      
+      // Rotate and translate to final position
+      return {
+        x: ellipse.center.x + x * Math.cos(rotation) - y * Math.sin(rotation),
+        y: ellipse.center.y + x * Math.sin(rotation) + y * Math.cos(rotation)
+      };
     default:
       return null;
   }
@@ -239,6 +271,37 @@ function getShapeEndPoint(shape: any): any {
     case 'polyline':
       const polyline = shape.geometry as any;
       return polyline.points.length > 0 ? polyline.points[polyline.points.length - 1] : null;
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=1
+        return evaluateNURBS(1, spline);
+      } catch (error) {
+        // Fallback to last control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[spline.fitPoints.length - 1];
+        }
+        return spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
+      }
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      // Calculate end point from ellipse parameters
+      const endParam = ellipse.endParam ?? (2 * Math.PI);
+      const majorAxisLength = Math.sqrt(
+        Math.pow(ellipse.majorAxisEndpoint.x, 2) + 
+        Math.pow(ellipse.majorAxisEndpoint.y, 2)
+      );
+      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+      const rotation = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      
+      const x = majorAxisLength * Math.cos(endParam);
+      const y = minorAxisLength * Math.sin(endParam);
+      
+      // Rotate and translate to final position
+      return {
+        x: ellipse.center.x + x * Math.cos(rotation) - y * Math.sin(rotation),
+        y: ellipse.center.y + x * Math.sin(rotation) + y * Math.cos(rotation)
+      };
     default:
       return null;
   }

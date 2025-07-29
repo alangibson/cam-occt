@@ -1,6 +1,7 @@
 import type { Shape, Point2D } from '../../types';
 import type { ChainDetectionParameters } from '../../types/algorithm-parameters';
 import { DEFAULT_CHAIN_DETECTION_PARAMETERS } from '../../types/algorithm-parameters';
+import { evaluateNURBS } from '../geometry/nurbs';
 
 export interface ChainDetectionOptions {
   tolerance: number;
@@ -136,6 +137,22 @@ function getShapePoints(shape: Shape): Point2D[] {
       const polyline = shape.geometry as any;
       return polyline.points || [];
     
+    case 'spline':
+      const spline = shape.geometry as any;
+      
+      // For chain detection, start with fit points or control points as fallback
+      const points: Point2D[] = [];
+      
+      // Use fit points if available (most accurate representation)
+      if (spline.fitPoints && spline.fitPoints.length > 0) {
+        points.push(...spline.fitPoints);
+      } else if (spline.controlPoints && spline.controlPoints.length > 0) {
+        // Fallback to control points if no fit points
+        points.push(...spline.controlPoints);
+      }
+      
+      return points;
+    
     case 'ellipse':
       const ellipse = shape.geometry as any;
       
@@ -234,6 +251,38 @@ function isShapeClosed(shape: Shape, tolerance: number): boolean {
       const ellipse = shape.geometry as any;
       // Full ellipses are closed, ellipse arcs are open
       return !(typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number');
+    
+    case 'spline':
+      const splineGeom = shape.geometry as any;
+      
+      // For splines, use proper NURBS evaluation to get actual start and end points
+      let splineFirstPoint: Point2D | null = null;
+      let splineLastPoint: Point2D | null = null;
+      
+      try {
+        // Use NURBS evaluation for accurate endpoints
+        splineFirstPoint = evaluateNURBS(0, splineGeom);
+        splineLastPoint = evaluateNURBS(1, splineGeom);
+      } catch (error) {
+        // Fallback to fit points if NURBS evaluation fails
+        if (splineGeom.fitPoints && splineGeom.fitPoints.length > 0) {
+          splineFirstPoint = splineGeom.fitPoints[0];
+          splineLastPoint = splineGeom.fitPoints[splineGeom.fitPoints.length - 1];
+        } else if (splineGeom.controlPoints && splineGeom.controlPoints.length > 0) {
+          // Final fallback to control points
+          splineFirstPoint = splineGeom.controlPoints[0];
+          splineLastPoint = splineGeom.controlPoints[splineGeom.controlPoints.length - 1];
+        }
+      }
+      
+      if (!splineFirstPoint || !splineLastPoint) return false;
+      
+      // Check if first and last points are within tolerance
+      const splineDistance = Math.sqrt(
+        Math.pow(splineFirstPoint.x - splineLastPoint.x, 2) + Math.pow(splineFirstPoint.y - splineLastPoint.y, 2)
+      );
+      
+      return splineDistance <= tolerance;
     
     default:
       return false;

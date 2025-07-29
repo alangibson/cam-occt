@@ -14,6 +14,7 @@ import type { ShapeChain } from './chain-detection';
 import type { Shape, Point2D } from '../../types';
 import type { ChainNormalizationParameters } from '../../types/algorithm-parameters';
 import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS } from '../../types/algorithm-parameters';
+import { evaluateNURBS } from '../geometry/nurbs';
 
 export interface ChainTraversalIssue {
   type: 'coincident_endpoints' | 'coincident_startpoints' | 'broken_traversal';
@@ -272,6 +273,39 @@ function getShapeStartPoint(shape: Shape): Point2D | null {
         y: circle.center.y
       };
     
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      // Calculate start point from ellipse parameters
+      const startParam = ellipse.startParam ?? 0;
+      const majorAxisLength = Math.sqrt(
+        Math.pow(ellipse.majorAxisEndpoint.x, 2) + 
+        Math.pow(ellipse.majorAxisEndpoint.y, 2)
+      );
+      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+      const rotation = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      
+      const x = majorAxisLength * Math.cos(startParam);
+      const y = minorAxisLength * Math.sin(startParam);
+      
+      // Rotate and translate to final position
+      return {
+        x: ellipse.center.x + x * Math.cos(rotation) - y * Math.sin(rotation),
+        y: ellipse.center.y + x * Math.sin(rotation) + y * Math.cos(rotation)
+      };
+    
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=0
+        return evaluateNURBS(0, spline);
+      } catch (error) {
+        // Fallback to first control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[0];
+        }
+        return spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
+      }
+    
     default:
       return null;
   }
@@ -305,6 +339,39 @@ function getShapeEndPoint(shape: Shape): Point2D | null {
         y: circle.center.y
       };
     
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      // Calculate end point from ellipse parameters
+      const endParam = ellipse.endParam ?? (2 * Math.PI);
+      const majorAxisLength = Math.sqrt(
+        Math.pow(ellipse.majorAxisEndpoint.x, 2) + 
+        Math.pow(ellipse.majorAxisEndpoint.y, 2)
+      );
+      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+      const rotation = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      
+      const x = majorAxisLength * Math.cos(endParam);
+      const y = minorAxisLength * Math.sin(endParam);
+      
+      // Rotate and translate to final position
+      return {
+        x: ellipse.center.x + x * Math.cos(rotation) - y * Math.sin(rotation),
+        y: ellipse.center.y + x * Math.sin(rotation) + y * Math.cos(rotation)
+      };
+    
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=1
+        return evaluateNURBS(1, spline);
+      } catch (error) {
+        // Fallback to last control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[spline.fitPoints.length - 1];
+        }
+        return spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
+      }
+    
     default:
       return null;
   }
@@ -329,6 +396,22 @@ function getAllShapePoints(shape: Shape): Point2D[] {
     const geometry = shape.geometry as any;
     if (geometry.center) {
       points.push(geometry.center);
+    }
+  }
+  
+  // Add center point for ellipses
+  if (shape.type === 'ellipse') {
+    const geometry = shape.geometry as any;
+    if (geometry.center) {
+      points.push(geometry.center);
+    }
+  }
+  
+  // For splines, add control points for geometric analysis
+  if (shape.type === 'spline') {
+    const geometry = shape.geometry as any;
+    if (geometry.controlPoints && geometry.controlPoints.length > 0) {
+      points.push(...geometry.controlPoints);
     }
   }
 
@@ -541,6 +624,42 @@ function reverseShape(shape: Shape): Shape {
       
     case 'circle':
       // Circles don't need reversal
+      break;
+      
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      // For ellipses, swap start and end parameters to reverse direction
+      const startParam = ellipse.startParam ?? 0;
+      const endParam = ellipse.endParam ?? (2 * Math.PI);
+      reversed.geometry = {
+        ...ellipse,
+        startParam: endParam,
+        endParam: startParam
+      };
+      break;
+      
+    case 'spline':
+      const spline = shape.geometry as any;
+      // Reverse splines by reversing control points and fit points
+      const reversedControlPoints = [...spline.controlPoints].reverse();
+      const reversedFitPoints = spline.fitPoints ? [...spline.fitPoints].reverse() : [];
+      
+      // For NURBS, we also need to reverse the knot vector if present
+      let reversedKnots = spline.knots || [];
+      if (reversedKnots.length > 0) {
+        // Reverse and remap knot vector to [0,1] domain
+        const maxKnotValue = reversedKnots[reversedKnots.length - 1];
+        reversedKnots = reversedKnots.map((knot: number) => maxKnotValue - knot).reverse();
+      }
+      
+      reversed.geometry = {
+        ...spline,
+        controlPoints: reversedControlPoints,
+        fitPoints: reversedFitPoints,
+        knots: reversedKnots,
+        // Weights don't need reversal, but need to be reordered with control points
+        weights: spline.weights ? [...spline.weights].reverse() : []
+      };
       break;
   }
   

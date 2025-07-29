@@ -18,6 +18,7 @@ export interface ToolPath {
   leadOut?: Point2D[];
   isRapid: boolean;
   parameters?: CuttingParameters;
+  originalShape?: Shape; // Preserve original shape for native G-code generation
 }
 
 export interface CutSequence {

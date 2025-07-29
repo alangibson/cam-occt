@@ -50,23 +50,23 @@ export interface Ellipse {
 
 export type GeometryType = 'line' | 'arc' | 'circle' | 'polyline' | 'spline' | 'ellipse';
 
-export interface SplineData {
+export interface Spline {
   controlPoints: Point2D[];
   knots: number[];
   weights: number[];
   degree: number;
   fitPoints: Point2D[];
+  closed: boolean;
 }
 
 export interface Shape {
   id: string;
   type: GeometryType;
-  geometry: Line | Arc | Circle | Polyline | Ellipse;
+  geometry: Line | Arc | Circle | Polyline | Ellipse | Spline;
   layer?: string;
   color?: string;
   selected?: boolean;
   originalType?: string; // Track original DXF entity type for converted shapes
-  splineData?: SplineData; // Original spline data for converted spline shapes
   metadata?: Record<string, any>; // Metadata for additional shape information (e.g., originalLayer)
 }
 

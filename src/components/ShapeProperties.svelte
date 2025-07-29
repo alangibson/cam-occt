@@ -222,54 +222,59 @@
         {/if}
       {/if}
       
-      {#if displayShape.originalType === 'spline' && displayShape.splineData}
-        {@const splineData = displayShape.splineData}
+      {#if displayShape.type === 'spline'}
+        {@const splineGeometry = displayShape.geometry as any}
         <div class="property-row">
           <span class="property-label">Degree:</span>
-          <span class="property-value">{splineData.degree}</span>
+          <span class="property-value">{splineGeometry.degree}</span>
         </div>
         
-        {#if splineData.controlPoints && splineData.controlPoints.length > 0}
+        {#if splineGeometry.controlPoints && splineGeometry.controlPoints.length > 0}
           <div class="property-row">
             <span class="property-label">Control Points:</span>
-            <span class="property-value">{splineData.controlPoints.length}</span>
+            <span class="property-value">{splineGeometry.controlPoints.length}</span>
           </div>
           <div class="spline-points">
-            {#each splineData.controlPoints.slice(0, 5) as point, index}
+            {#each splineGeometry.controlPoints.slice(0, 5) as point, index}
               <div class="property-row small">
                 <span class="property-label">  CP {index + 1}:</span>
                 <span class="property-value">({point.x.toFixed(2)}, {point.y.toFixed(2)})</span>
               </div>
             {/each}
-            {#if splineData.controlPoints.length > 5}
+            {#if splineGeometry.controlPoints.length > 5}
               <div class="property-row small">
                 <span class="property-label">  ...</span>
-                <span class="property-value">+{splineData.controlPoints.length - 5} more</span>
+                <span class="property-value">+{splineGeometry.controlPoints.length - 5} more</span>
               </div>
             {/if}
           </div>
         {/if}
         
-        {#if splineData.knots && splineData.knots.length > 0}
+        {#if splineGeometry.knots && splineGeometry.knots.length > 0}
           <div class="property-row">
             <span class="property-label">Knots:</span>
-            <span class="property-value">{splineData.knots.length}</span>
+            <span class="property-value">{splineGeometry.knots.length}</span>
           </div>
         {/if}
         
-        {#if splineData.weights && splineData.weights.length > 0}
+        {#if splineGeometry.weights && splineGeometry.weights.length > 0}
           <div class="property-row">
             <span class="property-label">Weights:</span>
-            <span class="property-value">{splineData.weights.length}</span>
+            <span class="property-value">{splineGeometry.weights.length}</span>
           </div>
         {/if}
         
-        {#if splineData.fitPoints && splineData.fitPoints.length > 0}
+        {#if splineGeometry.fitPoints && splineGeometry.fitPoints.length > 0}
           <div class="property-row">
             <span class="property-label">Fit Points:</span>
-            <span class="property-value">{splineData.fitPoints.length}</span>
+            <span class="property-value">{splineGeometry.fitPoints.length}</span>
           </div>
         {/if}
+        
+        <div class="property-row">
+          <span class="property-label">Closed:</span>
+          <span class="property-value">{splineGeometry.closed ? 'Yes' : 'No'}</span>
+        </div>
       {/if}
     </div>
     

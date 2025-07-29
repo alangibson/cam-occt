@@ -19,6 +19,7 @@ import {
 import type { PartDetectionParameters } from '../../types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../types/part-detection';
 import { normalizeChain } from './chain-normalization';
+import { evaluateNURBS, sampleNURBS } from '../geometry/nurbs';
 
 export interface PartHole {
   id: string;
@@ -101,35 +102,41 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1,
     console.log(`  ${child} is contained in ${parent}`);
   }
   
-  // SIMPLIFIED APPROACH: Only root-level chains (no parent) are parts
-  // Everything else contained within them are holes
-  const rootChains = closedChains.filter(chain => !containmentMap.has(chain.id));
-  console.log(`Found ${rootChains.length} root chains (parts): ${rootChains.map(c => c.id).join(', ')}`);
+  // HIERARCHICAL APPROACH: Support true nesting where parts can exist inside holes
+  // Level 0: Root shells (no parent) = parts
+  // Level 1: Chains inside parts = holes  
+  // Level 2: Chains inside holes = parts (nested parts)
+  // Level 3: Chains inside nested parts = holes
+  // And so on...
   
-  // Build part structures - each root chain is a part
+  const allPartChains = identifyPartChains(closedChains, containmentMap);
+  console.log(`Found ${allPartChains.length} part chains: ${allPartChains.map(c => c.id).join(', ')}`);
+  
+  // Build part structures - each part chain becomes a part
   const parts: DetectedPart[] = [];
   let partCounter = 1;
   
-  for (const rootChain of rootChains) {
-    // Find all chains directly contained within this root chain
+  for (const partChain of allPartChains) {
+    // Find all chains directly contained within this part chain (these become holes)
     const directHoles: ShapeChain[] = [];
     for (const [childId, parentId] of containmentMap.entries()) {
-      if (parentId === rootChain.id) {
+      if (parentId === partChain.id) {
         const holeChain = closedChains.find(c => c.id === childId);
-        if (holeChain) {
+        // Only add as hole if the child is not itself a part
+        if (holeChain && !allPartChains.some(p => p.id === childId)) {
           directHoles.push(holeChain);
         }
       }
     }
     
-    // Create simple part structure with shell and holes (no nested parts)
+    // Create part structure with shell and holes
     const part: DetectedPart = {
       id: `part-${partCounter}`,
       shell: {
         id: `shell-${partCounter}`,
-        chain: rootChain,
+        chain: partChain,
         type: 'shell',
-        boundingBox: chainBounds.get(rootChain.id)!,
+        boundingBox: chainBounds.get(partChain.id)!,
         holes: []
       },
       holes: directHoles.map((hole, idx) => ({
@@ -137,7 +144,7 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1,
         chain: hole,
         type: 'hole' as const,
         boundingBox: chainBounds.get(hole.id)!,
-        holes: [] // No nested holes - simple 2-level hierarchy
+        holes: [] // No nested holes in simple part structure
       }))
     };
     
@@ -167,6 +174,54 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1,
   }
   
   return { parts, warnings };
+}
+
+/**
+ * Identifies which chains are parts based on hierarchical nesting levels
+ * Rules:
+ * - Level 0 (no parent): Part
+ * - Level 1 (inside part): Hole 
+ * - Level 2 (inside hole): Part
+ * - Level 3 (inside nested part): Hole
+ * - And so on...
+ */
+function identifyPartChains(closedChains: ShapeChain[], containmentMap: Map<string, string>): ShapeChain[] {
+  const partChains: ShapeChain[] = [];
+  
+  // Calculate nesting level for each chain
+  const nestingLevels = new Map<string, number>();
+  
+  for (const chain of closedChains) {
+    const level = calculateNestingLevel(chain.id, containmentMap);
+    nestingLevels.set(chain.id, level);
+  }
+  
+  // Chains at even nesting levels (0, 2, 4, ...) are parts
+  // Chains at odd nesting levels (1, 3, 5, ...) are holes
+  for (const chain of closedChains) {
+    const level = nestingLevels.get(chain.id) || 0;
+    if (level % 2 === 0) {
+      partChains.push(chain);
+    }
+  }
+  
+  return partChains;
+}
+
+/**
+ * Calculates the nesting level of a chain (how many parents it has)
+ */
+function calculateNestingLevel(chainId: string, containmentMap: Map<string, string>): number {
+  let level = 0;
+  let currentId = chainId;
+  
+  // Traverse up the parent chain, counting levels
+  while (containmentMap.has(currentId)) {
+    level++;
+    currentId = containmentMap.get(currentId)!;
+  }
+  
+  return level;
 }
 
 /**
@@ -270,6 +325,19 @@ function getShapeStartPoint(shape: Shape): Point2D | null {
         y: circle.center.y
       };
     
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=0
+        return evaluateNURBS(0, spline);
+      } catch (error) {
+        // Fallback to first control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[0];
+        }
+        return spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
+      }
+    
     default:
       return null;
   }
@@ -302,6 +370,19 @@ function getShapeEndPoint(shape: Shape): Point2D | null {
         x: circle.center.x + circle.radius,
         y: circle.center.y
       };
+    
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=1
+        return evaluateNURBS(1, spline);
+      } catch (error) {
+        // Fallback to last control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[spline.fitPoints.length - 1];
+        }
+        return spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
+      }
     
     default:
       return null;
@@ -372,6 +453,34 @@ function getShapeBoundingBox(shape: Shape): BoundingBox {
       }
       
       return { minX, maxX, minY, maxY };
+    
+    case 'spline':
+      const spline = shape.geometry as any;
+      let splineMinX = Infinity, splineMaxX = -Infinity;
+      let splineMinY = Infinity, splineMaxY = -Infinity;
+      
+      // Try to use NURBS sampling for accurate bounds
+      let points;
+      try {
+        points = sampleNURBS(spline, 32); // Sample enough points for good bounds
+      } catch (error) {
+        // Fallback to fit points or control points
+        points = spline.fitPoints || spline.controlPoints || [];
+      }
+      
+      for (const point of points) {
+        splineMinX = Math.min(splineMinX, point.x);
+        splineMaxX = Math.max(splineMaxX, point.x);
+        splineMinY = Math.min(splineMinY, point.y);
+        splineMaxY = Math.max(splineMaxY, point.y);
+      }
+      
+      // If no points found, return zero bounding box
+      if (points.length === 0) {
+        return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+      }
+      
+      return { minX: splineMinX, maxX: splineMaxX, minY: splineMinY, maxY: splineMaxY };
     
     default:
       return { minX: 0, maxX: 0, minY: 0, maxY: 0 };

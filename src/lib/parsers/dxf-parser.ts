@@ -232,33 +232,21 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
         return null;
 
       case 'SPLINE':
-        // SPLINE entities are NURBS curves - convert to polyline by sampling points
+        // SPLINE entities are NURBS curves
         if (entity.controlPoints && Array.isArray(entity.controlPoints) && entity.controlPoints.length >= 2) {
-          try {
-            const sampledPoints = sampleSplinePoints(entity);
-            if (sampledPoints.length >= 2) {
-              return {
-                id: generateId(),
-                type: 'polyline',
-                geometry: {
-                  points: sampledPoints,
-                  closed: entity.closed || false
-                },
-                ...getLayerInfo(entity, options),
-                originalType: 'spline', // Keep track of original entity type
-                splineData: {
-                  controlPoints: entity.controlPoints || [],
-                  knots: entity.knots || [],
-                  weights: entity.weights || [],
-                  degree: entity.degree || 3,
-                  fitPoints: entity.fitPoints || []
-                }
-              };
-            }
-          } catch (error) {
-            console.warn('Error sampling SPLINE entity:', error);
-            return null;
-          }
+          return {
+            id: generateId(),
+            type: 'spline',
+            geometry: {
+              controlPoints: entity.controlPoints.map((p: any) => ({ x: p.x, y: p.y })),
+              knots: entity.knots || [],
+              weights: entity.weights || [],
+              degree: entity.degree || 3,
+              fitPoints: entity.fitPoints ? entity.fitPoints.map((p: any) => ({ x: p.x, y: p.y })) : [],
+              closed: entity.closed || false
+            },
+            ...getLayerInfo(entity, options)
+          };
         }
         return null;
 
@@ -352,101 +340,6 @@ function updateBounds(shape: Shape, bounds: any): void {
   });
 }
 
-// Sample points along a SPLINE (NURBS) curve to convert to polyline
-function sampleSplinePoints(splineEntity: any): Point2D[] {
-  const controlPoints = splineEntity.controlPoints;
-  const degree = splineEntity.degree || 3;
-  // const knots = splineEntity.knots; // Reserved for future NURBS implementation
-  
-  // Simple approach: if we have fit points, use them
-  if (splineEntity.fitPoints && splineEntity.fitPoints.length >= 2) {
-    return splineEntity.fitPoints.map((p: any) => ({ x: p.x, y: p.y }));
-  }
-  
-  // For now, implement a simple approach using control points
-  // For production use, we'd want proper NURBS evaluation
-  const sampledPoints: Point2D[] = [];
-  const numSamples = Math.max(16, controlPoints.length * 4); // Adaptive sampling
-  
-  if (degree === 1 || controlPoints.length <= 2) {
-    // Linear interpolation for degree 1 or simple cases
-    for (let i = 0; i < controlPoints.length; i++) {
-      sampledPoints.push({ x: controlPoints[i].x, y: controlPoints[i].y });
-    }
-  } else {
-    // Simple approximation: sample along the control polygon with smoothing
-    // This is not a true NURBS evaluation but provides a reasonable approximation
-    
-    // Start with first control point
-    sampledPoints.push({ x: controlPoints[0].x, y: controlPoints[0].y });
-    
-    // Sample intermediate points using a simple curve approximation
-    for (let i = 0; i < numSamples - 1; i++) {
-      const t = (i + 1) / numSamples;
-      const point = evaluateSimpleBSpline(controlPoints, degree, t);
-      if (point) {
-        sampledPoints.push(point);
-      }
-    }
-    
-    // End with last control point
-    const lastPoint = controlPoints[controlPoints.length - 1];
-    sampledPoints.push({ x: lastPoint.x, y: lastPoint.y });
-  }
-  
-  return sampledPoints;
-}
-
-// Simple B-spline evaluation (approximation)
-function evaluateSimpleBSpline(controlPoints: any[], degree: number, t: number): Point2D | null {
-  if (controlPoints.length === 0) return null;
-  
-  // Clamp t to [0, 1]
-  t = Math.max(0, Math.min(1, t));
-  
-  if (degree === 1 || controlPoints.length <= 2) {
-    // Linear interpolation
-    const index = t * (controlPoints.length - 1);
-    const i = Math.floor(index);
-    const j = Math.min(i + 1, controlPoints.length - 1);
-    const alpha = index - i;
-    
-    return {
-      x: controlPoints[i].x * (1 - alpha) + controlPoints[j].x * alpha,
-      y: controlPoints[i].y * (1 - alpha) + controlPoints[j].y * alpha
-    };
-  }
-  
-  // For higher degrees, use a simple approximation
-  // This is not true NURBS evaluation but works for basic cases
-  const n = controlPoints.length - 1;
-  let x = 0, y = 0;
-  
-  for (let i = 0; i <= n; i++) {
-    const basis = bernsteinBasis(n, i, t);
-    x += basis * controlPoints[i].x;
-    y += basis * controlPoints[i].y;
-  }
-  
-  return { x, y };
-}
-
-// Bernstein basis function (for Bezier curve approximation)
-function bernsteinBasis(n: number, i: number, t: number): number {
-  return binomialCoefficient(n, i) * Math.pow(t, i) * Math.pow(1 - t, n - i);
-}
-
-// Binomial coefficient calculation
-function binomialCoefficient(n: number, k: number): number {
-  if (k > n) return 0;
-  if (k === 0 || k === n) return 1;
-  
-  let result = 1;
-  for (let i = 0; i < k; i++) {
-    result = result * (n - i) / (i + 1);
-  }
-  return result;
-}
 
 function transformShape(shape: Shape, transform: {
   insertX: number;

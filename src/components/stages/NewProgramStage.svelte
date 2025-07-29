@@ -87,8 +87,12 @@
     // Optimize the cut order
     const result = optimizeCutOrder(paths, chainMap, parts);
     
-    // Update the path order in the store
-    pathStore.reorderPaths(result.orderedPaths);
+    // Update the path order in the store with corrected order property
+    const orderedPathsWithUpdatedOrder = result.orderedPaths.map((path, index) => ({
+      ...path,
+      order: index + 1
+    }));
+    pathStore.reorderPaths(orderedPathsWithUpdatedOrder);
     
     // Update the rapids in the store
     rapidStore.setRapids(result.rapids);

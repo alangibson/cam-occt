@@ -5,6 +5,7 @@
 
 import type { Shape, Point2D } from '../../types';
 import type { PartDetectionParameters } from '../../types/part-detection';
+import { sampleNURBS } from '../geometry/nurbs';
 
 export function tessellateShape(shape: Shape, params: PartDetectionParameters): Point2D[] {
   const points: Point2D[] = [];
@@ -126,6 +127,23 @@ export function tessellateShape(shape: Shape, params: PartDetectionParameters): 
             x: ellipse.center.x + rotatedX,
             y: ellipse.center.y + rotatedY
           });
+        }
+      }
+      break;
+      
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use NURBS sampling for accurate tessellation
+        // Use more points for better accuracy in part detection
+        const sampledPoints = sampleNURBS(spline, 32);
+        points.push(...sampledPoints);
+      } catch (error) {
+        // Fallback to fit points or control points if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          points.push(...spline.fitPoints);
+        } else if (spline.controlPoints && spline.controlPoints.length > 0) {
+          points.push(...spline.controlPoints);
         }
       }
       break;

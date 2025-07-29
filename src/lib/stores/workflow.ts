@@ -30,12 +30,15 @@ function createWorkflowStore(): Writable<WorkflowState> & {
     currentStage: 'import',
     completedStages: new Set(),
     canAdvanceTo: (stage: WorkflowStage) => {
-      const currentIndex = WORKFLOW_ORDER.indexOf(stage);
-      const completedUpTo = Math.max(
-        -1,
-        ...Array.from(initialState.completedStages).map(s => WORKFLOW_ORDER.indexOf(s))
-      );
-      return currentIndex <= completedUpTo + 1;
+      const targetIndex = WORKFLOW_ORDER.indexOf(stage);
+      
+      // For sequential workflow, all previous stages must be completed
+      for (let i = 0; i < targetIndex; i++) {
+        if (!initialState.completedStages.has(WORKFLOW_ORDER[i])) {
+          return false;
+        }
+      }
+      return true;
     }
   };
 
@@ -65,11 +68,14 @@ function createWorkflowStore(): Writable<WorkflowState> & {
           completedStages: newCompleted,
           canAdvanceTo: (targetStage: WorkflowStage) => {
             const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
-            const completedUpTo = Math.max(
-              -1,
-              ...Array.from(newCompleted).map(s => WORKFLOW_ORDER.indexOf(s))
-            );
-            return targetIndex <= completedUpTo + 1;
+            
+            // For sequential workflow, all previous stages must be completed
+            for (let i = 0; i < targetIndex; i++) {
+              if (!newCompleted.has(WORKFLOW_ORDER[i])) {
+                return false;
+              }
+            }
+            return true;
           }
         };
       });
@@ -113,8 +119,9 @@ function createWorkflowStore(): Writable<WorkflowState> & {
         currentStage: 'import',
         completedStages: new Set(),
         canAdvanceTo: (stage: WorkflowStage) => {
-          const currentIndex = WORKFLOW_ORDER.indexOf(stage);
-          return currentIndex <= 0; // Only import stage accessible initially
+          const targetIndex = WORKFLOW_ORDER.indexOf(stage);
+          // Only import stage (index 0) accessible initially
+          return targetIndex === 0;
         }
       });
     },
@@ -142,11 +149,14 @@ function createWorkflowStore(): Writable<WorkflowState> & {
           completedStages: newCompleted,
           canAdvanceTo: (targetStage: WorkflowStage) => {
             const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
-            const completedUpTo = Math.max(
-              -1,
-              ...Array.from(newCompleted).map(s => WORKFLOW_ORDER.indexOf(s))
-            );
-            return targetIndex <= completedUpTo + 1;
+            
+            // For sequential workflow, all previous stages must be completed
+            for (let i = 0; i < targetIndex; i++) {
+              if (!newCompleted.has(WORKFLOW_ORDER[i])) {
+                return false;
+              }
+            }
+            return true;
           }
         };
       });
@@ -170,11 +180,14 @@ function createWorkflowStore(): Writable<WorkflowState> & {
           completedStages: newCompleted,
           canAdvanceTo: (targetStage: WorkflowStage) => {
             const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
-            const completedUpTo = Math.max(
-              -1,
-              ...Array.from(newCompleted).map(s => WORKFLOW_ORDER.indexOf(s))
-            );
-            return targetIndex <= completedUpTo + 1;
+            
+            // For sequential workflow, all previous stages must be completed
+            for (let i = 0; i < targetIndex; i++) {
+              if (!newCompleted.has(WORKFLOW_ORDER[i])) {
+                return false;
+              }
+            }
+            return true;
           }
         };
       });

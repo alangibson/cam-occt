@@ -9,6 +9,7 @@ import type { ShapeChain } from '../algorithms/chain-detection';
 import type { Point2D, Shape } from '../../types';
 import type { PartDetectionParameters } from '../../types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../types/part-detection';
+import { evaluateNURBS, sampleNURBS } from '../geometry/nurbs';
 
 // Import bounding box calculation from part detection
 interface BoundingBox {
@@ -82,6 +83,34 @@ function getShapeBoundingBox(shape: Shape): BoundingBox {
       }
       
       return { minX, maxX, minY, maxY };
+    
+    case 'spline':
+      const spline = shape.geometry as any;
+      let splineMinX = Infinity, splineMaxX = -Infinity;
+      let splineMinY = Infinity, splineMaxY = -Infinity;
+      
+      // Try to use NURBS sampling for accurate bounds
+      let points;
+      try {
+        points = sampleNURBS(spline, 32); // Sample enough points for good bounds
+      } catch (error) {
+        // Fallback to fit points or control points
+        points = spline.fitPoints || spline.controlPoints || [];
+      }
+      
+      for (const point of points) {
+        splineMinX = Math.min(splineMinX, point.x);
+        splineMaxX = Math.max(splineMaxX, point.x);
+        splineMinY = Math.min(splineMinY, point.y);
+        splineMaxY = Math.max(splineMaxY, point.y);
+      }
+      
+      // If no points found, return zero bounding box
+      if (points.length === 0) {
+        return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+      }
+      
+      return { minX: splineMinX, maxX: splineMaxX, minY: splineMinY, maxY: splineMaxY };
     
     default:
       return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
@@ -171,6 +200,19 @@ function getShapeStartPoint(shape: any): Point2D | null {
         y: circle.center.y
       };
     
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=0
+        return evaluateNURBS(0, spline);
+      } catch (error) {
+        // Fallback to first control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[0];
+        }
+        return spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
+      }
+    
     default:
       return null;
   }
@@ -202,6 +244,19 @@ function getShapeEndPoint(shape: any): Point2D | null {
         x: circle.center.x + circle.radius,
         y: circle.center.y
       };
+    
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=1
+        return evaluateNURBS(1, spline);
+      } catch (error) {
+        // Fallback to last control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[spline.fitPoints.length - 1];
+        }
+        return spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
+      }
     
     default:
       return null;

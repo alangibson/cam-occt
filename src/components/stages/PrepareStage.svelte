@@ -17,6 +17,7 @@
   import type { ChainNormalizationResult } from '../../lib/algorithms/chain-normalization';
   import type { AlgorithmParameters } from '../../types/algorithm-parameters';
   import { DEFAULT_ALGORITHM_PARAMETERS } from '../../types/algorithm-parameters';
+  import { evaluateNURBS } from '../../lib/geometry/nurbs';
   import { onMount } from 'svelte';
 
   // Resizable columns state
@@ -368,6 +369,18 @@
             y: ellipse.center.y + rotatedStartY
           };
         }
+      case 'spline':
+        const spline = shape.geometry as any;
+        try {
+          // Use proper NURBS evaluation at parameter t=0
+          return evaluateNURBS(0, spline);
+        } catch (error) {
+          // Fallback to fit points or control points if NURBS evaluation fails
+          if (spline.fitPoints && spline.fitPoints.length > 0) {
+            return spline.fitPoints[0];
+          }
+          return spline.controlPoints && spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
+        }
       default:
         return null;
     }
@@ -429,6 +442,18 @@
             x: ellipse.center.x + rotatedEndX,
             y: ellipse.center.y + rotatedEndY
           };
+        }
+      case 'spline':
+        const spline = shape.geometry as any;
+        try {
+          // Use proper NURBS evaluation at parameter t=1
+          return evaluateNURBS(1, spline);
+        } catch (error) {
+          // Fallback to fit points or control points if NURBS evaluation fails
+          if (spline.fitPoints && spline.fitPoints.length > 0) {
+            return spline.fitPoints[spline.fitPoints.length - 1];
+          }
+          return spline.controlPoints && spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
         }
       default:
         return null;

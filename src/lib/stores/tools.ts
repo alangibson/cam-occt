@@ -5,6 +5,7 @@ export interface Tool {
   toolNumber: number;
   toolName: string;
   feedRate: number; // units/min
+  rapidRate: number; // units/min for rapid movements
   pierceHeight: number; // units
   pierceDelay: number; // seconds
   arcVoltage: number; // volts
@@ -58,6 +59,7 @@ export const toolStore = createToolStore();
 // Default tool values for new tools
 export const DEFAULT_TOOL_VALUES: Omit<Tool, 'id' | 'toolNumber' | 'toolName'> = {
   feedRate: 100,
+  rapidRate: 3000,
   pierceHeight: 3.8,
   pierceDelay: 0.5,
   arcVoltage: 120,

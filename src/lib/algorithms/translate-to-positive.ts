@@ -1,4 +1,5 @@
 import type { Shape, Point2D } from '../../types';
+import { sampleNURBS } from '../geometry/nurbs';
 
 /**
  * Translate all shapes to ensure they are in the positive quadrant
@@ -74,6 +75,15 @@ function getShapePoints(shape: Shape): Point2D[] {
         { x: ellipse.center.x - maxExtent, y: ellipse.center.y - maxExtent },
         { x: ellipse.center.x + maxExtent, y: ellipse.center.y + maxExtent }
       ];
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Sample points along the NURBS curve for accurate bounds
+        return sampleNURBS(spline, 20); // Use fewer points for bounds calculation
+      } catch (error) {
+        // Fallback to control points if NURBS evaluation fails
+        return spline.controlPoints || [];
+      }
     default:
       return [];
   }
@@ -126,6 +136,14 @@ function translateShape(shape: Shape, dx: number, dy: number): Shape {
         minorToMajorRatio: ellipse.minorToMajorRatio,
         startParam: ellipse.startParam,
         endParam: ellipse.endParam
+      };
+      break;
+    case 'spline':
+      const spline = shape.geometry as any;
+      translated.geometry = {
+        ...spline,
+        controlPoints: spline.controlPoints.map((p: Point2D) => ({ x: p.x + dx, y: p.y + dy })),
+        fitPoints: spline.fitPoints ? spline.fitPoints.map((p: Point2D) => ({ x: p.x + dx, y: p.y + dy })) : []
       };
       break;
     default:

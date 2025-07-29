@@ -7,6 +7,7 @@ import { writable } from 'svelte/store';
 import type { WorkflowStage } from './workflow';
 import type { Point2D, Shape } from '../../types';
 import type { ShapeChain } from '../algorithms/chain-detection';
+import { evaluateNURBS } from '../geometry/nurbs';
 
 export interface TessellationPoint {
   x: number;
@@ -29,11 +30,18 @@ export interface ChainEndpoint {
   chainId: string;
 }
 
+export interface ToolHead {
+  x: number;
+  y: number;
+  visible: boolean;
+}
+
 export interface DrawingOverlay {
   stage: WorkflowStage;
   shapePoints: ShapePoint[];
   chainEndpoints: ChainEndpoint[];
   tessellationPoints: TessellationPoint[];
+  toolHead?: ToolHead;
 }
 
 export interface OverlayState {
@@ -153,6 +161,37 @@ function createOverlayStore() {
           [stage]: {
             ...state.overlays[stage],
             tessellationPoints: []
+          }
+        }
+      }));
+    },
+
+    // Tool head management (Simulate stage)
+    setToolHead: (stage: WorkflowStage, position: Point2D) => {
+      update(state => ({
+        ...state,
+        overlays: {
+          ...state.overlays,
+          [stage]: {
+            ...state.overlays[stage],
+            toolHead: {
+              x: position.x,
+              y: position.y,
+              visible: true
+            }
+          }
+        }
+      }));
+    },
+
+    clearToolHead: (stage: WorkflowStage) => {
+      update(state => ({
+        ...state,
+        overlays: {
+          ...state.overlays,
+          [stage]: {
+            ...state.overlays[stage],
+            toolHead: undefined
           }
         }
       }));
@@ -290,6 +329,18 @@ function getShapeStartPoint(shape: Shape): Point2D | null {
       // For ellipse arcs, use startParam if available, otherwise start at parameter 0
       const startParam = ellipse.startParam !== undefined ? ellipse.startParam : 0;
       return getEllipsePointAtParameter(ellipse, startParam);
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=0
+        return evaluateNURBS(0, spline);
+      } catch (error) {
+        // Fallback to fit points or control points if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[0];
+        }
+        return spline.controlPoints && spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
+      }
     default:
       return null;
   }
@@ -320,6 +371,18 @@ function getShapeEndPoint(shape: Shape): Point2D | null {
       // For ellipse arcs, use endParam if available, otherwise end at parameter 2π
       const endParam = ellipse.endParam !== undefined ? ellipse.endParam : 2 * Math.PI;
       return getEllipsePointAtParameter(ellipse, endParam);
+    case 'spline':
+      const spline = shape.geometry as any;
+      try {
+        // Use proper NURBS evaluation at parameter t=1
+        return evaluateNURBS(1, spline);
+      } catch (error) {
+        // Fallback to fit points or control points if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints[spline.fitPoints.length - 1];
+        }
+        return spline.controlPoints && spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
+      }
     default:
       return null;
   }

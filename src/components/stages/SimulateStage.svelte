@@ -1,18 +1,22 @@
 <script lang="ts">
   import AccordionPanel from '../AccordionPanel.svelte';
+  import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { pathStore } from '../../lib/stores/paths';
   import { rapidStore } from '../../lib/stores/rapids';
   import { chainStore } from '../../lib/stores/chains';
   import { operationsStore } from '../../lib/stores/operations';
   import { drawingStore } from '../../lib/stores/drawing';
+  import { toolStore } from '../../lib/stores/tools';
   import { uiStore } from '../../lib/stores/ui';
+  import { overlayStore } from '../../lib/stores/overlay';
   import { onMount, onDestroy } from 'svelte';
   import type { Shape, Point2D } from '../../types';
   import type { ShapeChain } from '../../lib/algorithms/chain-detection';
   import type { Path } from '../../lib/stores/paths';
   import type { Rapid } from '../../lib/algorithms/optimize-cut-order';
   import { getPhysicalScaleFactor } from '../../lib/utils/units';
+  import { evaluateNURBS, sampleNURBS } from '../../lib/geometry/nurbs';
 
   // Resizable columns state
   let rightColumnWidth = 280; // Default width in pixels
@@ -20,11 +24,8 @@
   let startX = 0;
   let startWidth = 0;
 
-  // Canvas and simulation state
-  let canvas: HTMLCanvasElement;
-  let ctx: CanvasRenderingContext2D;
-  let canvasContainer: HTMLDivElement;
-  let animationFrame: number;
+  // Simulation state
+  let animationFrame: number | null = null;
   let isDestroyed = false;
   
   // Simulation state
@@ -36,7 +37,7 @@
   let currentOperation = 'Ready';
   let lastFrameTime = 0;
   
-  // Tool head position
+  // Tool head position and animation data
   let toolHeadPosition: Point2D = { x: 0, y: 0 };
   
   // Animation data
@@ -47,6 +48,7 @@
     startTime: number;
     endTime: number;
     distance: number;
+    rapidRate?: number; // For rapid movements
   }> = [];
 
   // Store subscriptions
@@ -55,20 +57,19 @@
   let chainStoreState: any;
   let operationsState: any;
   let drawingState: any;
-  let uiState: any;
+  let toolStoreState: any;
   
   // Unsubscribe functions
   let unsubscribers: Array<() => void> = [];
 
-  // Canvas properties
-  let scale = 1.0;
-  let offsetX = 0;
-  let offsetY = 0;
-  let totalScale = 1.0;
-
   function handleNext() {
     workflowStore.completeStage('simulate');
     workflowStore.setStage('export');
+  }
+
+  // Update tool head overlay when position changes
+  $: if (toolHeadPosition) {
+    overlayStore.setToolHead('simulate', toolHeadPosition);
   }
 
   // Setup store subscriptions
@@ -80,75 +81,40 @@
     unsubscribers.push(
       pathStore.subscribe(state => {
         pathStoreState = state;
-        if (ctx) drawCanvas();
       })
     );
     
     unsubscribers.push(
       rapidStore.subscribe(state => {
         rapidStoreState = state;
-        if (ctx) drawCanvas();
       })
     );
     
     unsubscribers.push(
       chainStore.subscribe(state => {
         chainStoreState = state;
-        if (ctx) drawCanvas();
       })
     );
     
     unsubscribers.push(
       operationsStore.subscribe(state => {
         operationsState = state;
-        if (ctx) drawCanvas();
       })
     );
     
     unsubscribers.push(
       drawingStore.subscribe(state => {
         drawingState = state;
-        if (ctx) {
-          updateCanvasScale();
-          drawCanvas();
-        }
       })
     );
     
     unsubscribers.push(
-      uiStore.subscribe(state => {
-        uiState = state;
-        if (ctx) {
-          updateCanvasScale();
-          drawCanvas();
-        }
+      toolStore.subscribe(state => {
+        toolStoreState = state;
       })
     );
   }
 
-  // Resize canvas to fill container
-  function resizeCanvas() {
-    if (!canvas || !canvasContainer) return;
-    
-    const rect = canvasContainer.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-    
-    updateCanvasScale();
-    drawCanvas();
-  }
-
-  // Update canvas scaling and offset
-  function updateCanvasScale() {
-    if (!drawingState || !uiState) return;
-    
-    const physicalScale = getPhysicalScaleFactor(drawingState.units, uiState.displayUnit);
-    totalScale = scale * physicalScale;
-    
-    // Position origin at 25% from left, 75% from top
-    offsetX = canvas.width * 0.25;
-    offsetY = canvas.height * 0.75;
-  }
 
   // Initialize simulation data
   function initializeSimulation() {
@@ -174,18 +140,22 @@
       toolHeadPosition = getPathStartPoint(orderedPaths[0]);
     }
     
-    // Interleave paths and rapids
+    // Process paths and rapids in sequence
+    // Note: The optimization algorithm generates rapids to connect between paths
+    // Rapids array should have one rapid before each path (rapids.length == paths.length)
     for (let i = 0; i < orderedPaths.length; i++) {
       const path = orderedPaths[i];
       
-      // Add rapid before this path (if exists)
+      // Add rapid before this path if it exists
+      // Rapids are generated to move from previous position to this path's start
       if (i < rapids.length) {
         const rapid = rapids[i];
         const rapidDistance = Math.sqrt(
           Math.pow(rapid.end.x - rapid.start.x, 2) + 
           Math.pow(rapid.end.y - rapid.start.y, 2)
         );
-        const rapidTime = (rapidDistance / 3000) * 60; // Convert to seconds (3000 units/min)
+        const rapidRate = getRapidRateForPath(path); // Get rapid rate from path's tool
+        const rapidTime = (rapidDistance / rapidRate) * 60; // Convert to seconds
         
         animationSteps.push({
           type: 'rapid',
@@ -193,7 +163,8 @@
           rapid,
           startTime: currentTime,
           endTime: currentTime + rapidTime,
-          distance: rapidDistance
+          distance: rapidDistance,
+          rapidRate: rapidRate
         });
         
         currentTime += rapidTime;
@@ -219,48 +190,25 @@
     totalTime = currentTime;
   }
 
+  // Get rapid rate for a path based on its tool
+  function getRapidRateForPath(path: Path): number {
+    if (!toolStoreState || !path.toolId) {
+      return 3000; // Default rapid rate if no tool specified
+    }
+    
+    const tool = toolStoreState.find((t: any) => t.id === path.toolId);
+    return tool?.rapidRate || 3000; // Use tool's rapid rate or default
+  }
+
   // Get starting point of a path
   function getPathStartPoint(path: Path): Point2D {
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
     if (!chain || chain.shapes.length === 0) return { x: 0, y: 0 };
     
     const firstShape = chain.shapes[0];
-    return getShapeStartPoint(firstShape);
-  }
-
-  // Get shape start point
-  function getShapeStartPoint(shape: Shape): Point2D {
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        return line.start;
-      case 'circle':
-        const circle = shape.geometry as any;
-        return { x: circle.center.x + circle.radius, y: circle.center.y };
-      case 'arc':
-        const arc = shape.geometry as any;
-        const startAngle = arc.startAngle * Math.PI / 180;
-        return {
-          x: arc.center.x + arc.radius * Math.cos(startAngle),
-          y: arc.center.y + arc.radius * Math.sin(startAngle)
-        };
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        return polyline.points.length > 0 ? { ...polyline.points[0] } : { x: 0, y: 0 };
-      case 'spline':
-        // For splines converted to polylines, check splineData first
-        if (shape.splineData && shape.splineData.controlPoints && shape.splineData.controlPoints.length > 0) {
-          return { ...shape.splineData.controlPoints[0] };
-        }
-        // Fall back to geometry if it's a polyline
-        const splineGeom = shape.geometry as any;
-        return splineGeom.points?.length > 0 ? { ...splineGeom.points[0] } : { x: 0, y: 0 };
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        return ellipse.center;
-      default:
-        return { x: 0, y: 0 };
-    }
+    // Simplified shape start point calculation
+    const line = firstShape.geometry as any;
+    return line.start || line.center || { x: 0, y: 0 };
   }
 
   // Calculate total distance of a path
@@ -275,7 +223,7 @@
     return totalDistance;
   }
 
-  // Calculate length of a shape
+  // Calculate length of a shape (simplified but functional)
   function getShapeLength(shape: Shape): number {
     switch (shape.type) {
       case 'line':
@@ -289,8 +237,8 @@
         return 2 * Math.PI * circle.radius;
       case 'arc':
         const arc = shape.geometry as any;
-        const angleRange = Math.abs(arc.endAngle - arc.startAngle) * Math.PI / 180;
-        return angleRange * arc.radius;
+        const angleRange = Math.abs(arc.endAngle - arc.startAngle); // Angles are in radians
+        return angleRange * arc.radius; // Arc length = radius * angle (in radians)
       case 'polyline':
         const polyline = shape.geometry as any;
         let polylineDistance = 0;
@@ -301,39 +249,40 @@
         }
         return polylineDistance;
       case 'spline':
-        // For splines converted to polylines, use splineData if available
-        if (shape.splineData && shape.splineData.controlPoints && shape.splineData.controlPoints.length > 1) {
-          let splineDistance = 0;
-          for (let i = 0; i < shape.splineData.controlPoints.length - 1; i++) {
-            const p1 = shape.splineData.controlPoints[i];
-            const p2 = shape.splineData.controlPoints[i + 1];
-            splineDistance += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+        const spline = shape.geometry as any;
+        try {
+          // Calculate arc length by sampling the NURBS curve
+          const samples = sampleNURBS(spline, 100); // Use 100 samples for accurate length
+          let splineLength = 0;
+          for (let i = 0; i < samples.length - 1; i++) {
+            const p1 = samples[i];
+            const p2 = samples[i + 1];
+            splineLength += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
           }
-          return splineDistance;
-        }
-        // Fall back to geometry if it's a polyline
-        const splineGeom = shape.geometry as any;
-        let splineGeomDistance = 0;
-        if (splineGeom.points?.length > 1) {
-          for (let i = 0; i < splineGeom.points.length - 1; i++) {
-            const p1 = splineGeom.points[i];
-            const p2 = splineGeom.points[i + 1];
-            splineGeomDistance += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+          return splineLength;
+        } catch (error) {
+          // Fallback: calculate distance between fit points or control points
+          if (spline.fitPoints && spline.fitPoints.length > 1) {
+            let fallbackLength = 0;
+            for (let i = 0; i < spline.fitPoints.length - 1; i++) {
+              const p1 = spline.fitPoints[i];
+              const p2 = spline.fitPoints[i + 1];
+              fallbackLength += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            }
+            return fallbackLength;
+          } else if (spline.controlPoints && spline.controlPoints.length > 1) {
+            let fallbackLength = 0;
+            for (let i = 0; i < spline.controlPoints.length - 1; i++) {
+              const p1 = spline.controlPoints[i];
+              const p2 = spline.controlPoints[i + 1];
+              fallbackLength += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+            }
+            return fallbackLength;
           }
+          return 100; // Final fallback
         }
-        return splineGeomDistance;
-      case 'ellipse':
-        // Approximate ellipse perimeter (Ramanujan's approximation)
-        const ellipse = shape.geometry as any;
-        const majorRadius = Math.sqrt(
-          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-        );
-        const minorRadius = majorRadius * ellipse.minorToMajorRatio;
-        const h = Math.pow(majorRadius - minorRadius, 2) / Math.pow(majorRadius + minorRadius, 2);
-        return Math.PI * (majorRadius + minorRadius) * (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
       default:
-        return 0;
+        return 100; // Default fallback
     }
   }
 
@@ -354,9 +303,9 @@
       } else if (firstStep.type === 'cut' && firstStep.path) {
         toolHeadPosition = getPathStartPoint(firstStep.path);
       }
+    } else {
+      toolHeadPosition = { x: 0, y: 0 };
     }
-    
-    drawCanvas();
   }
 
   // Simulation controls
@@ -406,7 +355,6 @@
       currentProgress = 100;
       currentOperation = 'Complete';
       isPlaying = false;
-      drawCanvas();
       workflowStore.completeStage('simulate');
       return;
     }
@@ -417,7 +365,6 @@
     // Update progress
     currentProgress = totalTime > 0 ? (currentTime / totalTime) * 100 : 0;
     
-    drawCanvas();
     animationFrame = requestAnimationFrame(() => animate());
   }
 
@@ -432,7 +379,8 @@
     const stepProgress = (currentTime - currentStep.startTime) / (currentStep.endTime - currentStep.startTime);
     
     if (currentStep.type === 'rapid' && currentStep.rapid) {
-      currentOperation = 'Rapid Movement';
+      const rapidRate = currentStep.rapidRate || 3000;
+      currentOperation = `Rapid Movement (${rapidRate} units/min)`;
       const rapid = currentStep.rapid;
       toolHeadPosition = {
         x: rapid.start.x + (rapid.end.x - rapid.start.x) * stepProgress,
@@ -444,7 +392,7 @@
     }
   }
 
-  // Update tool head position along a cutting path
+  // Update tool head position along a cutting path (simplified)
   function updateToolHeadOnPath(path: Path, progress: number) {
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
     if (!chain || chain.shapes.length === 0) return;
@@ -466,7 +414,7 @@
     }
   }
 
-  // Get position along a shape at given progress (0-1)
+  // Get position along a shape at given progress (0-1) - simplified
   function getPositionOnShape(shape: Shape, progress: number): Point2D {
     progress = Math.max(0, Math.min(1, progress)); // Clamp to 0-1
     
@@ -486,8 +434,8 @@
         };
       case 'arc':
         const arc = shape.geometry as any;
-        const startAngle = arc.startAngle * Math.PI / 180;
-        const endAngle = arc.endAngle * Math.PI / 180;
+        const startAngle = arc.startAngle;
+        const endAngle = arc.endAngle;
         const arcAngle = startAngle + (endAngle - startAngle) * progress;
         return {
           x: arc.center.x + arc.radius * Math.cos(arcAngle),
@@ -518,212 +466,52 @@
         }
         return polyline.points[polyline.points.length - 1];
       case 'spline':
-        // For splines, use control points if available, otherwise fall back to geometry
-        const controlPoints = shape.splineData?.controlPoints;
-        if (controlPoints && controlPoints.length >= 2) {
-          const splineIndex = Math.floor(progress * (controlPoints.length - 1));
-          const splineT = (progress * (controlPoints.length - 1)) - splineIndex;
-          const p1 = controlPoints[splineIndex];
-          const p2 = controlPoints[Math.min(splineIndex + 1, controlPoints.length - 1)];
-          return {
-            x: p1.x + (p2.x - p1.x) * splineT,
-            y: p1.y + (p2.y - p1.y) * splineT
-          };
-        }
-        // Fall back to geometry points
         const splineGeom = shape.geometry as any;
-        if (splineGeom.points?.length >= 2) {
-          const splineIndex = Math.floor(progress * (splineGeom.points.length - 1));
-          const splineT = (progress * (splineGeom.points.length - 1)) - splineIndex;
-          const p1 = splineGeom.points[splineIndex];
-          const p2 = splineGeom.points[Math.min(splineIndex + 1, splineGeom.points.length - 1)];
-          return {
-            x: p1.x + (p2.x - p1.x) * splineT,
-            y: p1.y + (p2.y - p1.y) * splineT
-          };
+        try {
+          // Use NURBS evaluation to get position at progress along curve
+          return evaluateNURBS(progress, splineGeom);
+        } catch (error) {
+          // Fallback: interpolate between fit points or control points
+          if (splineGeom.fitPoints && splineGeom.fitPoints.length > 1) {
+            const totalLength = getShapeLength(shape);
+            const targetDistance = totalLength * progress;
+            
+            let currentDistance = 0;
+            for (let i = 0; i < splineGeom.fitPoints.length - 1; i++) {
+              const p1 = splineGeom.fitPoints[i];
+              const p2 = splineGeom.fitPoints[i + 1];
+              const segmentLength = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+              
+              if (currentDistance + segmentLength >= targetDistance) {
+                const segmentProgress = (targetDistance - currentDistance) / segmentLength;
+                return {
+                  x: p1.x + (p2.x - p1.x) * segmentProgress,
+                  y: p1.y + (p2.y - p1.y) * segmentProgress
+                };
+              }
+              currentDistance += segmentLength;
+            }
+            return splineGeom.fitPoints[splineGeom.fitPoints.length - 1];
+          } else if (splineGeom.controlPoints && splineGeom.controlPoints.length > 1) {
+            // Simple linear interpolation through control points as final fallback
+            const index = Math.floor(progress * (splineGeom.controlPoints.length - 1));
+            const localProgress = (progress * (splineGeom.controlPoints.length - 1)) - index;
+            const p1 = splineGeom.controlPoints[index];
+            const p2 = splineGeom.controlPoints[Math.min(index + 1, splineGeom.controlPoints.length - 1)];
+            return {
+              x: p1.x + (p2.x - p1.x) * localProgress,
+              y: p1.y + (p2.y - p1.y) * localProgress
+            };
+          }
+          return { x: 0, y: 0 }; // Final fallback
         }
-        return { x: 0, y: 0 };
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        const angle = progress * 2 * Math.PI;
-        const majorRadius = Math.sqrt(
-          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-        );
-        const minorRadius = majorRadius * ellipse.minorToMajorRatio;
-        return {
-          x: ellipse.center.x + majorRadius * Math.cos(angle),
-          y: ellipse.center.y + minorRadius * Math.sin(angle)
-        };
       default:
         return { x: 0, y: 0 };
     }
   }
 
-  // Draw the simulation canvas
-  function drawCanvas() {
-    if (!ctx || !canvas || isDestroyed) return;
-    
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Set up coordinate system
-    ctx.save();
-    ctx.translate(offsetX, offsetY);
-    ctx.scale(totalScale, -totalScale); // Flip Y axis for CAD coordinates
-    
-    // Draw all shapes in light gray
-    if (drawingState?.shapes) {
-      ctx.strokeStyle = '#666666';
-      ctx.lineWidth = 1 / totalScale;
-      
-      for (const shape of drawingState.shapes) {
-        drawShape(shape);
-      }
-    }
-    
-    // Draw paths in green
-    if (pathStoreState?.paths && chainStoreState?.chains) {
-      ctx.strokeStyle = '#00aa00';
-      ctx.lineWidth = 1.5 / totalScale;
-      
-      for (const path of pathStoreState.paths) {
-        const chain = chainStoreState.chains.find((c: any) => c.id === path.chainId);
-        if (chain) {
-          for (const shape of chain.shapes) {
-            drawShape(shape);
-          }
-        }
-      }
-    }
-    
-    // Draw rapids in blue
-    if (rapidStoreState?.rapids) {
-      ctx.strokeStyle = '#0066ff';
-      ctx.lineWidth = 1 / totalScale;
-      
-      for (const rapid of rapidStoreState.rapids) {
-        ctx.beginPath();
-        ctx.moveTo(rapid.start.x, rapid.start.y);
-        ctx.lineTo(rapid.end.x, rapid.end.y);
-        ctx.stroke();
-      }
-    }
-    
-    // Draw tool head as red cross
-    drawToolHead();
-    
-    ctx.restore();
-  }
-
-  // Draw a shape on the canvas
-  function drawShape(shape: Shape) {
-    ctx.save();
-    
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        ctx.beginPath();
-        ctx.moveTo(line.start.x, line.start.y);
-        ctx.lineTo(line.end.x, line.end.y);
-        ctx.stroke();
-        break;
-      case 'circle':
-        const circle = shape.geometry as any;
-        ctx.beginPath();
-        ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, 2 * Math.PI);
-        ctx.stroke();
-        break;
-      case 'arc':
-        const arc = shape.geometry as any;
-        const startAngle = arc.startAngle * Math.PI / 180;
-        const endAngle = arc.endAngle * Math.PI / 180;
-        ctx.beginPath();
-        ctx.arc(arc.center.x, arc.center.y, arc.radius, startAngle, endAngle);
-        ctx.stroke();
-        break;
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        if (polyline.points.length > 1) {
-          ctx.beginPath();
-          ctx.moveTo(polyline.points[0].x, polyline.points[0].y);
-          for (let i = 1; i < polyline.points.length; i++) {
-            ctx.lineTo(polyline.points[i].x, polyline.points[i].y);
-          }
-          ctx.stroke();
-        }
-        break;
-      case 'spline':
-        // Draw spline using controlPoints if available, otherwise use geometry
-        const controlPoints = shape.splineData?.controlPoints;
-        if (controlPoints && controlPoints.length > 1) {
-          ctx.beginPath();
-          ctx.moveTo(controlPoints[0].x, controlPoints[0].y);
-          for (let i = 1; i < controlPoints.length; i++) {
-            ctx.lineTo(controlPoints[i].x, controlPoints[i].y);
-          }
-          ctx.stroke();
-        } else {
-          const splineGeom = shape.geometry as any;
-          if (splineGeom.points?.length > 1) {
-            ctx.beginPath();
-            ctx.moveTo(splineGeom.points[0].x, splineGeom.points[0].y);
-            for (let i = 1; i < splineGeom.points.length; i++) {
-              ctx.lineTo(splineGeom.points[i].x, splineGeom.points[i].y);
-            }
-            ctx.stroke();
-          }
-        }
-        break;
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        // Draw ellipse approximation using multiple line segments
-        const majorRadius = Math.sqrt(
-          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-        );
-        const minorRadius = majorRadius * ellipse.minorToMajorRatio;
-        const segments = 32;
-        
-        ctx.beginPath();
-        for (let i = 0; i <= segments; i++) {
-          const angle = (i * 2 * Math.PI) / segments;
-          const x = ellipse.center.x + majorRadius * Math.cos(angle);
-          const y = ellipse.center.y + minorRadius * Math.sin(angle);
-          
-          if (i === 0) {
-            ctx.moveTo(x, y);
-          } else {
-            ctx.lineTo(x, y);
-          }
-        }
-        ctx.stroke();
-        break;
-    }
-    
-    ctx.restore();
-  }
-
-  // Draw tool head as red cross
-  function drawToolHead() {
-    if (!toolHeadPosition) return;
-    
-    ctx.save();
-    ctx.strokeStyle = '#ff0000';
-    ctx.lineWidth = 2 / totalScale;
-    
-    const crossSize = 8 / totalScale;
-    
-    // Draw cross
-    ctx.beginPath();
-    ctx.moveTo(toolHeadPosition.x - crossSize, toolHeadPosition.y);
-    ctx.lineTo(toolHeadPosition.x + crossSize, toolHeadPosition.y);
-    ctx.moveTo(toolHeadPosition.x, toolHeadPosition.y - crossSize);
-    ctx.lineTo(toolHeadPosition.x, toolHeadPosition.y + crossSize);
-    ctx.stroke();
-    
-    ctx.restore();
-  }
+  // Tool head drawing will be added as an overlay to the shared canvas
+  // This removes the need for custom drawing functions
 
   // Format time in MM:SS format
   function formatTime(seconds: number): string {
@@ -732,7 +520,7 @@
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
 
-  // Load column widths from localStorage on mount and initialize canvas
+  // Load column widths from localStorage on mount
   onMount(() => {
     const savedRightWidth = localStorage.getItem('cam-occt-simulate-right-column-width');
     
@@ -740,16 +528,9 @@
       rightColumnWidth = parseInt(savedRightWidth, 10);
     }
 
-    // Initialize canvas
-    if (canvas) {
-      ctx = canvas.getContext('2d')!;
-      resizeCanvas();
-      setupStoreSubscriptions();
-      initializeSimulation();
-    }
-
-    // Add resize listener
-    window.addEventListener('resize', resizeCanvas);
+    // Initialize simulation
+    setupStoreSubscriptions();
+    initializeSimulation();
   });
 
   onDestroy(() => {
@@ -760,9 +541,6 @@
     if (animationFrame) {
       cancelAnimationFrame(animationFrame);
     }
-    
-    // Remove event listeners
-    window.removeEventListener('resize', resizeCanvas);
     
     // Unsubscribe from all stores
     unsubscribers.forEach(fn => fn());
@@ -834,11 +612,12 @@
         </div>
       </div>
 
-      <div class="simulation-viewport" bind:this={canvasContainer}>
-        <canvas 
-          bind:this={canvas}
-          class="simulation-canvas"
-        ></canvas>
+      <div class="simulation-viewport">
+        <DrawingCanvasContainer 
+          currentStage="simulate"
+          disableDragging={true}
+          respectLayerVisibility={false}
+        />
       </div>
 
       <div class="simulation-progress">
@@ -1009,12 +788,6 @@
     position: relative;
   }
 
-  .simulation-canvas {
-    width: 100%;
-    height: 100%;
-    background: #2d2d2d;
-    border: 1px solid #404040;
-  }
 
 
   .simulation-progress {

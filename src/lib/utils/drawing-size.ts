@@ -1,4 +1,5 @@
 import type { Drawing, Shape } from '../../types';
+import { sampleNURBS } from '../geometry/nurbs';
 
 export interface DrawingSize {
   width: number;
@@ -221,6 +222,79 @@ function getShapeBounds(shape: Shape): { min: { x: number; y: number }; max: { x
       return {
         min: { x: polyMinX, y: polyMinY },
         max: { x: polyMaxX, y: polyMaxY }
+      };
+
+    case 'ellipse':
+      const ellipse = shape.geometry as any;
+      if (!ellipse.center || !isFinite(ellipse.center.x) || !isFinite(ellipse.center.y) ||
+          !ellipse.majorAxisEndpoint || !isFinite(ellipse.majorAxisEndpoint.x) || 
+          !isFinite(ellipse.majorAxisEndpoint.y) || !isFinite(ellipse.minorToMajorRatio)) {
+        return null;
+      }
+
+      // Calculate major and minor axis lengths
+      const majorAxisLength = Math.sqrt(
+        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+        ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+      );
+      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+
+      // For a rotated ellipse, we need to find the actual bounding box
+      const angle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      const cos = Math.cos(angle);
+      const sin = Math.sin(angle);
+      
+      // Calculate the bounding box of the rotated ellipse
+      const halfWidth = Math.sqrt(majorAxisLength * majorAxisLength * cos * cos + 
+                                 minorAxisLength * minorAxisLength * sin * sin);
+      const halfHeight = Math.sqrt(majorAxisLength * majorAxisLength * sin * sin + 
+                                  minorAxisLength * minorAxisLength * cos * cos);
+
+      return {
+        min: { 
+          x: ellipse.center.x - halfWidth, 
+          y: ellipse.center.y - halfHeight 
+        },
+        max: { 
+          x: ellipse.center.x + halfWidth, 
+          y: ellipse.center.y + halfHeight 
+        }
+      };
+
+    case 'spline':
+      const spline = shape.geometry as any;
+      // Use NURBS evaluation for accurate bounds, fallback to control points
+      let points;
+      try {
+        points = sampleNURBS(spline, 50); // Sample enough points for good bounds
+      } catch (error) {
+        // Fallback to fit points or control points
+        points = spline.fitPoints && spline.fitPoints.length > 0 ? spline.fitPoints : spline.controlPoints;
+      }
+      
+      if (!points || points.length === 0) return null;
+
+      let splineMinX = Infinity;
+      let splineMaxX = -Infinity;
+      let splineMinY = Infinity;
+      let splineMaxY = -Infinity;
+
+      for (const point of points) {
+        if (point && isFinite(point.x) && isFinite(point.y)) {
+          splineMinX = Math.min(splineMinX, point.x);
+          splineMaxX = Math.max(splineMaxX, point.x);
+          splineMinY = Math.min(splineMinY, point.y);
+          splineMaxY = Math.max(splineMaxY, point.y);
+        }
+      }
+
+      if (!isFinite(splineMinX) || !isFinite(splineMaxX) || !isFinite(splineMinY) || !isFinite(splineMaxY)) {
+        return null;
+      }
+
+      return {
+        min: { x: splineMinX, y: splineMinY },
+        max: { x: splineMaxX, y: splineMaxY }
       };
 
     default:

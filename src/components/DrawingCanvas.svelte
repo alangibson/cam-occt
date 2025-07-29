@@ -11,6 +11,7 @@
   import { getShapeChainId, getChainShapeIds, clearChainSelection } from '../lib/stores/chains';
   import { getChainPartType, getPartChainIds, clearHighlight } from '../lib/stores/parts';
   import { selectPath, clearPathHighlight } from '../lib/stores/paths';
+  import { sampleNURBS, evaluateNURBS } from '../lib/geometry/nurbs';
   import type { Shape, Point2D } from '../types';
   import type { WorkflowStage } from '../lib/stores/workflow';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
@@ -451,6 +452,53 @@
     ctx.stroke();
   }
 
+  function drawSpline(spline: any) {
+    // Use proper NURBS evaluation for smooth curves
+    const sampledPoints = sampleNURBS(spline);
+    
+    if (sampledPoints.length < 2) return;
+    
+    ctx.beginPath();
+    ctx.moveTo(sampledPoints[0].x, sampledPoints[0].y);
+    
+    for (let i = 1; i < sampledPoints.length; i++) {
+      ctx.lineTo(sampledPoints[i].x, sampledPoints[i].y);
+    }
+    
+    if (spline.closed) {
+      ctx.closePath();
+    }
+    
+    ctx.stroke();
+    
+    // Optionally draw control points for debugging
+    // Enable by setting showSplineControlPoints = true
+    const showSplineControlPoints = false;
+    if (showSplineControlPoints) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
+      for (const cp of spline.controlPoints) {
+        ctx.beginPath();
+        ctx.arc(cp.x, cp.y, 4 / totalScale, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      
+      // Draw control polygon
+      ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
+      ctx.lineWidth = 1 / totalScale;
+      ctx.beginPath();
+      if (spline.controlPoints.length > 0) {
+        ctx.moveTo(spline.controlPoints[0].x, spline.controlPoints[0].y);
+        for (let i = 1; i < spline.controlPoints.length; i++) {
+          ctx.lineTo(spline.controlPoints[i].x, spline.controlPoints[i].y);
+        }
+      }
+      ctx.stroke();
+      
+      ctx.restore();
+    }
+  }
+
   function drawShape(shape: Shape, isSelected: boolean, isHovered: boolean = false, chainId: string | null = null, partType: 'shell' | 'hole' | null = null) {
     // Save context state
     ctx.save();
@@ -561,6 +609,11 @@
         const ellipse = shape.geometry as any;
         drawEllipse(ellipse);
         break;
+        
+      case 'spline':
+        const spline = shape.geometry as any;
+        drawSpline(spline);
+        break;
     }
     
     // Restore context state
@@ -618,6 +671,11 @@
       case 'ellipse':
         const ellipse = shape.geometry as any;
         return ellipse.center; // Origin is the center
+      
+      case 'spline':
+        const spline = shape.geometry as any;
+        // Origin is the first control point
+        return spline.controlPoints.length > 0 ? spline.controlPoints[0] : { x: 0, y: 0 };
       
       default:
         return { x: 0, y: 0 };
@@ -681,6 +739,19 @@
             x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
             y: ellipse.center.y + ellipse.majorAxisEndpoint.y
           };
+        }
+      
+      case 'spline':
+        const spline = shape.geometry as any;
+        // Use proper NURBS evaluation at parameter t=0
+        try {
+          return evaluateNURBS(0, spline); // Get exact start point at t=0
+        } catch (error) {
+          // Fallback to first control point if NURBS evaluation fails
+          if (spline.fitPoints && spline.fitPoints.length > 0) {
+            return spline.fitPoints[0];
+          }
+          return spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
         }
       
       default:
@@ -747,6 +818,19 @@
           };
         }
       
+      case 'spline':
+        const spline = shape.geometry as any;
+        // Use proper NURBS evaluation at parameter t=1
+        try {
+          return evaluateNURBS(1, spline); // Get exact end point at t=1
+        } catch (error) {
+          // Fallback to last control point if NURBS evaluation fails
+          if (spline.fitPoints && spline.fitPoints.length > 0) {
+            return spline.fitPoints[spline.fitPoints.length - 1];
+          }
+          return spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
+        }
+      
       default:
         return null;
     }
@@ -773,6 +857,11 @@
       overlay.tessellationPoints.forEach((point: any) => {
         drawTessellationPoint(point.x, point.y, 2 / totalScale);
       });
+    }
+    
+    // Draw tool head (Simulate stage)
+    if (overlay.toolHead && overlay.toolHead.visible) {
+      drawToolHead(overlay.toolHead.x, overlay.toolHead.y, 8 / totalScale);
     }
   }
   
@@ -827,6 +916,22 @@
     ctx.beginPath();
     ctx.arc(x, y, size, 0, 2 * Math.PI);
     ctx.fill();
+    ctx.restore();
+  }
+  
+  function drawToolHead(x: number, y: number, size: number) {
+    ctx.save();
+    ctx.strokeStyle = '#ff0000'; // Red
+    ctx.lineWidth = 2 / totalScale;
+    
+    // Draw cross
+    ctx.beginPath();
+    ctx.moveTo(x - size, y);
+    ctx.lineTo(x + size, y);
+    ctx.moveTo(x, y - size);
+    ctx.lineTo(x, y + size);
+    ctx.stroke();
+    
     ctx.restore();
   }
   
@@ -1006,6 +1111,28 @@
           // Full ellipse
           return Math.abs(distanceFromEllipse - 1) < tolerance / Math.min(majorAxisLength, minorAxisLength);
         }
+        
+      case 'spline':
+        const spline = shape.geometry as any;
+        // For hit testing, use properly evaluated NURBS points
+        const evaluatedPoints = sampleNURBS(spline, 50); // Use fewer points for hit testing performance
+        
+        if (!evaluatedPoints || evaluatedPoints.length < 2) return false;
+        
+        for (let i = 0; i < evaluatedPoints.length - 1; i++) {
+          if (distanceToLine(point, evaluatedPoints[i], evaluatedPoints[i + 1]) < tolerance) {
+            return true;
+          }
+        }
+        
+        // Check closing segment if spline is closed
+        if (spline.closed && evaluatedPoints.length > 2) {
+          if (distanceToLine(point, evaluatedPoints[evaluatedPoints.length - 1], evaluatedPoints[0]) < tolerance) {
+            return true;
+          }
+        }
+        
+        return false;
         
       default:
         return false;

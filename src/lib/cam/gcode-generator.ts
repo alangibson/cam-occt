@@ -1,4 +1,4 @@
-import type { ToolPath, GCodeCommand, Drawing } from '../../types';
+import type { ToolPath, GCodeCommand, Drawing, Shape } from '../../types';
 
 export interface GCodeOptions {
   units: 'mm' | 'inch';
@@ -9,6 +9,7 @@ export interface GCodeOptions {
   materialNumber?: number;
   enableTHC?: boolean;
   enableVelocityReduction?: boolean;
+  useNativeSplines?: boolean; // Enable LinuxCNC G5.1/G5.2 spline commands
 }
 
 export function generateGCode(
@@ -249,19 +250,24 @@ function generatePathCommands(
     });
   }
   
-  // Cut path
-  path.points.forEach((point, i) => {
-    if (i > 0) {
-      commands.push({
-        code: 'G1',
-        parameters: { 
-          X: point.x, 
-          Y: point.y
-          // Note: Using HAL feed rate, not explicit F parameter
-        }
-      });
-    }
-  });
+  // Cut path - use native splines if enabled and available
+  if (options.useNativeSplines && path.originalShape) {
+    commands.push(...generateNativeSplineCommands(path.originalShape, options));
+  } else {
+    // Fallback to linear interpolation
+    path.points.forEach((point, i) => {
+      if (i > 0) {
+        commands.push({
+          code: 'G1',
+          parameters: { 
+            X: point.x, 
+            Y: point.y
+            // Note: Using HAL feed rate, not explicit F parameter
+          }
+        });
+      }
+    });
+  }
   
   // Reset velocity after hole cutting
   if (options.plasmaMode && isHole && options.enableVelocityReduction !== false) {
@@ -374,6 +380,137 @@ function generateFooter(options: GCodeOptions): GCodeCommand[] {
     parameters: {},
     comment: 'Program end'
   });
+  
+  return commands;
+}
+
+function generateNativeSplineCommands(shape: Shape, options: GCodeOptions): GCodeCommand[] {
+  const commands: GCodeCommand[] = [];
+  
+  switch (shape.type) {
+    case 'spline':
+      const spline = shape.geometry as any;
+      
+      // Use G5.2/G5.3 NURBS commands for splines
+      if (spline.controlPoints && spline.controlPoints.length >= 2) {
+        if (options.includeComments) {
+          commands.push({
+            code: '',
+            parameters: {},
+            comment: 'Native NURBS spline (G5.2/G5.3)'
+          });
+        }
+        
+        // G5.2 - Open NURBS data block
+        const order = spline.degree || 3;
+        commands.push({
+          code: 'G5.2',
+          parameters: { 
+            P: spline.weights && spline.weights[0] ? spline.weights[0] : 1, 
+            L: order 
+          },
+          comment: 'Start NURBS block'
+        });
+        
+        // Add control points with weights
+        spline.controlPoints.forEach((point: any, i: number) => {
+          if (i > 0) { // Skip first point (already at start position)
+            const weight = spline.weights && spline.weights[i] ? spline.weights[i] : 1;
+            commands.push({
+              code: '',
+              parameters: { 
+                X: point.x, 
+                Y: point.y, 
+                P: weight 
+              }
+            });
+          }
+        });
+        
+        // G5.3 - Close NURBS data block
+        commands.push({
+          code: 'G5.3',
+          parameters: {},
+          comment: 'End NURBS block'
+        });
+      } else {
+        // Fallback: convert to linear segments if spline data is incomplete
+        if (options.includeComments) {
+          commands.push({
+            code: '',
+            parameters: {},
+            comment: 'Spline fallback to linear segments (incomplete NURBS data)'
+          });
+        }
+        // This would use the existing points array from the ToolPath
+        return [];
+      }
+      break;
+      
+    case 'arc':
+      // Use native arc commands (G2/G3) for arcs
+      const arc = shape.geometry as any;
+      if (options.includeComments) {
+        commands.push({
+          code: '',
+          parameters: {},
+          comment: 'Native arc command'
+        });
+      }
+      
+      // Calculate arc endpoint
+      const endX = arc.center.x + arc.radius * Math.cos(arc.endAngle);
+      const endY = arc.center.y + arc.radius * Math.sin(arc.endAngle);
+      
+      // Calculate center offsets from start point
+      const startX = arc.center.x + arc.radius * Math.cos(arc.startAngle);
+      const startY = arc.center.y + arc.radius * Math.sin(arc.startAngle);
+      const I = arc.center.x - startX;
+      const J = arc.center.y - startY;
+      
+      // Determine direction (clockwise vs counterclockwise)
+      const isClockwise = (arc.endAngle - arc.startAngle) < 0;
+      
+      commands.push({
+        code: isClockwise ? 'G2' : 'G3',
+        parameters: { 
+          X: endX, 
+          Y: endY, 
+          I: I, 
+          J: J 
+        },
+        comment: `${isClockwise ? 'Clockwise' : 'Counterclockwise'} arc`
+      });
+      break;
+      
+    case 'circle':
+      // Convert full circles to arc commands
+      const circle = shape.geometry as any;
+      if (options.includeComments) {
+        commands.push({
+          code: '',
+          parameters: {},
+          comment: 'Native circle (full arc)'
+        });
+      }
+      
+      // Full circle as 360-degree arc
+      commands.push({
+        code: 'G2', // Clockwise full circle
+        parameters: { 
+          X: circle.center.x + circle.radius, 
+          Y: circle.center.y, 
+          I: -circle.radius, 
+          J: 0 
+        },
+        comment: 'Full circle'
+      });
+      break;
+      
+    default:
+      // For other shapes (line, polyline, ellipse), return empty array to use linear fallback
+      return [];
+  }
   
   return commands;
 }
