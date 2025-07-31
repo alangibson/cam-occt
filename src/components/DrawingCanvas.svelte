@@ -12,6 +12,8 @@
   import { getChainPartType, getPartChainIds, clearHighlight } from '../lib/stores/parts';
   import { selectPath, clearPathHighlight } from '../lib/stores/paths';
   import { sampleNURBS, evaluateNURBS } from '../lib/geometry/nurbs';
+  import { calculateLeads } from '../lib/algorithms/lead-calculation';
+  import { leadWarningsStore } from '../lib/stores/lead-warnings';
   import type { Shape, Point2D } from '../types';
   import type { WorkflowStage } from '../lib/stores/workflow';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
@@ -189,6 +191,9 @@
     // Draw path endpoints (green start, red end)
     drawPathEndpoints();
     
+    // Draw lead-ins and lead-outs
+    drawLeads();
+    
     // Draw stage-specific overlays
     if (currentOverlay) {
       drawOverlays(currentOverlay);
@@ -292,6 +297,94 @@
         ctx.restore();
       }
     });
+  }
+  
+  function drawLeads() {
+    if (!pathsState || pathsState.paths.length === 0) return;
+    
+    pathsState.paths.forEach(path => {
+      // Only draw leads for enabled paths with enabled operations
+      const operation = operations.find(op => op.id === path.operationId);
+      if (!operation || !operation.enabled || !path.enabled) return;
+      
+      // Skip if both leads are disabled
+      if (path.leadInType === 'none' && path.leadOutType === 'none') return;
+      
+      // Get the chain for this path
+      const chain = chains.find(c => c.id === path.chainId);
+      if (!chain || chain.shapes.length === 0) return;
+      
+      // Get the part if the path is part of a part
+      let part = null;
+      if (operation.targetType === 'parts') {
+        part = parts?.find(p => 
+          p.shell.chain.id === path.chainId || 
+          p.holes.some((h: any) => h.chain.id === path.chainId)
+        );
+      }
+      
+      try {
+        // Calculate leads
+        const leadInConfig = {
+          type: path.leadInType || 'none',
+          length: path.leadInLength || 0
+        };
+        const leadOutConfig = {
+          type: path.leadOutType || 'none', 
+          length: path.leadOutLength || 0
+        };
+        
+        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part || undefined);
+        
+        // Handle lead warnings
+        if (leadResult.warnings && leadResult.warnings.length > 0) {
+          // Clear previous warnings for this path first
+          leadWarningsStore.clearWarningsForChain(path.chainId);
+          
+          // Add new warnings
+          leadResult.warnings.forEach(warningMessage => {
+            const isLeadIn = warningMessage.includes('Lead-in');
+            leadWarningsStore.addWarning({
+              operationId: path.operationId,
+              chainId: path.chainId,
+              message: warningMessage,
+              type: isLeadIn ? 'lead-in' : 'lead-out'
+            });
+          });
+        }
+        
+        // Draw lead-in
+        if (leadResult.leadIn && leadResult.leadIn.points.length > 1) {
+          drawLeadGeometry(leadResult.leadIn.points, '#9333ea'); // Purple for lead-in
+        }
+        
+        // Draw lead-out
+        if (leadResult.leadOut && leadResult.leadOut.points.length > 1) {
+          drawLeadGeometry(leadResult.leadOut.points, '#dc2626'); // Red for lead-out
+        }
+      } catch (error) {
+        console.warn('Failed to calculate leads for path:', path.name, error);
+      }
+    });
+  }
+  
+  function drawLeadGeometry(points: Array<{x: number, y: number}>, color: string) {
+    if (points.length < 2) return;
+    
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.5 / totalScale; // Slightly thicker than normal lines
+    ctx.setLineDash([5 / totalScale, 5 / totalScale]); // Dashed line to distinguish from main path
+    
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    
+    for (let i = 1; i < points.length; i++) {
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+    
+    ctx.stroke();
+    ctx.restore();
   }
   
   function drawTessellationPoints(points: Array<{x: number, y: number}>) {

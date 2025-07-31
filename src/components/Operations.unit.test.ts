@@ -66,7 +66,11 @@ describe('Operations Store Integration', () => {
       targetIds: [],
       enabled: true,
       order: 1,
-      cutDirection: 'counterclockwise'
+      cutDirection: 'counterclockwise',
+      leadInType: 'none',
+      leadInLength: 5,
+      leadOutType: 'none',
+      leadOutLength: 5
     });
 
     const operations = get(operationsStore);

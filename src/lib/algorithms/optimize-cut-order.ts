@@ -3,6 +3,7 @@ import type { ShapeChain } from './chain-detection';
 import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../../types';
 import type { DetectedPart } from './part-detection';
 import { evaluateNURBS } from '../geometry/nurbs';
+import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 
 /**
  * Rapids are the non-cutting paths that connect cut paths.
@@ -34,6 +35,72 @@ function getChainStartPoint(chain: ShapeChain): Point2D {
   
   const firstShape = chain.shapes[0];
   return getShapeStartPoint(firstShape);
+}
+
+/**
+ * Get the effective start point of a path, accounting for lead-in geometry.
+ * If the path has a lead-in, returns the lead-in start point.
+ * Otherwise, returns the chain start point.
+ */
+function getPathStartPoint(path: Path, chain: ShapeChain, part?: DetectedPart): Point2D {
+  // Check if path has lead-in
+  if (path.leadInType && path.leadInType !== 'none' && path.leadInLength && path.leadInLength > 0) {
+    try {
+      const leadInConfig: LeadInConfig = {
+        type: path.leadInType,
+        length: path.leadInLength
+      };
+      const leadOutConfig: LeadOutConfig = {
+        type: path.leadOutType || 'none',
+        length: path.leadOutLength || 0
+      };
+      
+      const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+      
+      if (leadResult.leadIn && leadResult.leadIn.points.length > 0) {
+        // Return the first point of the lead-in (start of lead-in)
+        return leadResult.leadIn.points[0];
+      }
+    } catch (error) {
+      console.warn('Failed to calculate lead-in for path:', path.name, error);
+    }
+  }
+  
+  // Fallback to chain start point
+  return getChainStartPoint(chain);
+}
+
+/**
+ * Get the effective end point of a path, accounting for lead-out geometry.
+ * If the path has a lead-out, returns the lead-out end point.
+ * Otherwise, returns the chain end point.
+ */
+function getPathEndPoint(path: Path, chain: ShapeChain, part?: DetectedPart): Point2D {
+  // Check if path has lead-out
+  if (path.leadOutType && path.leadOutType !== 'none' && path.leadOutLength && path.leadOutLength > 0) {
+    try {
+      const leadInConfig: LeadInConfig = {
+        type: path.leadInType || 'none',
+        length: path.leadInLength || 0
+      };
+      const leadOutConfig: LeadOutConfig = {
+        type: path.leadOutType,
+        length: path.leadOutLength
+      };
+      
+      const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+      
+      if (leadResult.leadOut && leadResult.leadOut.points.length > 0) {
+        // Return the last point of the lead-out (end of lead-out)
+        return leadResult.leadOut.points[leadResult.leadOut.points.length - 1];
+      }
+    } catch (error) {
+      console.warn('Failed to calculate lead-out for path:', path.name, error);
+    }
+  }
+  
+  // Fallback to chain end point
+  return getChainEndPoint(chain);
 }
 
 /**
@@ -185,6 +252,26 @@ function nearestNeighborTSP(
   parts: DetectedPart[],
   startPoint: Point2D
 ): OptimizationResult {
+  // Create a map of part ID to part for efficient lookup
+  const partMap = new Map<string, DetectedPart>();
+  for (const part of parts) {
+    partMap.set(part.id, part);
+  }
+  
+  // Helper function to find the part that contains a given chain
+  function findPartForChain(chainId: string): DetectedPart | undefined {
+    for (const part of parts) {
+      if (part.shell.chain.id === chainId) {
+        return part;
+      }
+      for (const hole of part.holes) {
+        if (hole.chain.id === chainId) {
+          return part;
+        }
+      }
+    }
+    return undefined;
+  }
   const orderedPaths: Path[] = [];
   const rapids: Rapid[] = [];
   const unvisited = new Set(paths);
@@ -243,7 +330,8 @@ function nearestNeighborTSP(
       const chain = chains.get(path.chainId);
       if (!chain) continue;
       
-      const startPoint = getChainStartPoint(chain);
+      const part = findPartForChain(path.chainId);
+      const startPoint = getPathStartPoint(path, chain, part);
       const dist = distance(currentPoint, startPoint);
       
       if (dist < nearestDistance) {
@@ -256,7 +344,8 @@ function nearestNeighborTSP(
     
     // Add rapid from current point to path start
     const chain = chains.get(nearestPath.chainId)!;
-    const pathStart = getChainStartPoint(chain);
+    const part = findPartForChain(nearestPath.chainId);
+    const pathStart = getPathStartPoint(nearestPath, chain, part);
     
     rapids.push({
       id: crypto.randomUUID(),
@@ -272,7 +361,7 @@ function nearestNeighborTSP(
     unvisited.delete(nearestPath);
     
     // Update current point to path end
-    currentPoint = getChainEndPoint(chain);
+    currentPoint = getPathEndPoint(nearestPath, chain, part);
     
     // Remove from unprocessed list
     const index = pathsWithoutPart.indexOf(nearestPath);
@@ -314,7 +403,8 @@ function nearestNeighborTSP(
         const chain = chains.get(path.chainId);
         if (!chain) continue;
         
-        const startPoint = getChainStartPoint(chain);
+        const part = findPartForChain(path.chainId);
+        const startPoint = getPathStartPoint(path, chain, part);
         const dist = distance(currentPoint, startPoint);
         
         if (dist < nearestDistance) {
@@ -327,7 +417,8 @@ function nearestNeighborTSP(
       
       // Add rapid and path
       const chain = chains.get(nearestPath.chainId)!;
-      const pathStart = getChainStartPoint(chain);
+      const part = findPartForChain(nearestPath.chainId);
+      const pathStart = getPathStartPoint(nearestPath, chain, part);
       
       rapids.push({
         id: crypto.randomUUID(),
@@ -339,7 +430,7 @@ function nearestNeighborTSP(
       totalDistance += nearestDistance;
       orderedPaths.push(nearestPath);
       unvisited.delete(nearestPath);
-      currentPoint = getChainEndPoint(chain);
+      currentPoint = getPathEndPoint(nearestPath, chain, part);
       
       // Remove from holes list
       const index = holePaths.indexOf(nearestPath);
@@ -351,7 +442,8 @@ function nearestNeighborTSP(
     // Process shell last
     if (shellPath && unvisited.has(shellPath)) {
       const chain = chains.get(shellPath.chainId)!;
-      const pathStart = getChainStartPoint(chain);
+      const part = findPartForChain(shellPath.chainId);
+      const pathStart = getPathStartPoint(shellPath, chain, part);
       const dist = distance(currentPoint, pathStart);
       
       rapids.push({
@@ -364,7 +456,7 @@ function nearestNeighborTSP(
       totalDistance += dist;
       orderedPaths.push(shellPath);
       unvisited.delete(shellPath);
-      currentPoint = getChainEndPoint(chain);
+      currentPoint = getPathEndPoint(shellPath, chain, part);
     }
   }
 

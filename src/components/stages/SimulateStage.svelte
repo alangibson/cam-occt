@@ -17,6 +17,8 @@
   import type { Rapid } from '../../lib/algorithms/optimize-cut-order';
   import { getPhysicalScaleFactor } from '../../lib/utils/units';
   import { evaluateNURBS, sampleNURBS } from '../../lib/geometry/nurbs';
+  import { calculateLeads, type LeadInConfig, type LeadOutConfig } from '../../lib/algorithms/lead-calculation';
+  import type { DetectedPart } from '../../lib/algorithms/part-detection';
 
   // Resizable columns state
   let rightColumnWidth = 280; // Default width in pixels
@@ -200,27 +202,133 @@
     return tool?.rapidRate || 3000; // Use tool's rapid rate or default
   }
 
-  // Get starting point of a path
+  // Get starting point of a path, accounting for lead-in
   function getPathStartPoint(path: Path): Point2D {
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
     if (!chain || chain.shapes.length === 0) return { x: 0, y: 0 };
     
+    // Check if path has lead-in
+    if (path.leadInType && path.leadInType !== 'none' && path.leadInLength && path.leadInLength > 0) {
+      try {
+        // Find the part that contains this chain
+        const part = findPartForChain(path.chainId);
+        
+        const leadInConfig: LeadInConfig = {
+          type: path.leadInType,
+          length: path.leadInLength
+        };
+        const leadOutConfig: LeadOutConfig = {
+          type: path.leadOutType || 'none',
+          length: path.leadOutLength || 0
+        };
+        
+        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+        
+        if (leadResult.leadIn && leadResult.leadIn.points.length > 0) {
+          // Return the first point of the lead-in (start of lead-in)
+          return leadResult.leadIn.points[0];
+        }
+      } catch (error) {
+        console.warn('Failed to calculate lead-in for path:', path.name, error);
+      }
+    }
+    
+    // Fallback to chain start point
     const firstShape = chain.shapes[0];
     // Simplified shape start point calculation
     const line = firstShape.geometry as any;
     return line.start || line.center || { x: 0, y: 0 };
   }
+  
+  // Get ending point of a path, accounting for lead-out
+  function getPathEndPoint(path: Path): Point2D {
+    const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
+    if (!chain || chain.shapes.length === 0) return { x: 0, y: 0 };
+    
+    // Check if path has lead-out
+    if (path.leadOutType && path.leadOutType !== 'none' && path.leadOutLength && path.leadOutLength > 0) {
+      try {
+        // Find the part that contains this chain
+        const part = findPartForChain(path.chainId);
+        
+        const leadInConfig: LeadInConfig = {
+          type: path.leadInType || 'none',
+          length: path.leadInLength || 0
+        };
+        const leadOutConfig: LeadOutConfig = {
+          type: path.leadOutType,
+          length: path.leadOutLength
+        };
+        
+        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+        
+        if (leadResult.leadOut && leadResult.leadOut.points.length > 0) {
+          // Return the last point of the lead-out (end of lead-out)
+          return leadResult.leadOut.points[leadResult.leadOut.points.length - 1];
+        }
+      } catch (error) {
+        console.warn('Failed to calculate lead-out for path:', path.name, error);
+      }
+    }
+    
+    // Fallback to chain end point
+    const lastShape = chain.shapes[chain.shapes.length - 1];
+    // Simplified shape end point calculation
+    const line = lastShape.geometry as any;
+    return line.end || line.center || { x: 0, y: 0 };
+  }
+  
+  // Helper function to find the part that contains a given chain
+  function findPartForChain(chainId: string): DetectedPart | undefined {
+    // We need to get parts from somewhere - this might need to be added to the store subscriptions
+    // For now, return undefined (will use fallback behavior)
+    return undefined;
+  }
 
-  // Calculate total distance of a path
+  // Calculate total distance of a path, including lead-in and lead-out
   function getPathDistance(path: Path): number {
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
     if (!chain) return 0;
     
-    let totalDistance = 0;
+    // Calculate chain distance
+    let chainDistance = 0;
     for (const shape of chain.shapes) {
-      totalDistance += getShapeLength(shape);
+      chainDistance += getShapeLength(shape);
     }
-    return totalDistance;
+    
+    // Add lead distances if present
+    let leadInDistance = 0;
+    let leadOutDistance = 0;
+    
+    try {
+      if ((path.leadInType && path.leadInType !== 'none' && path.leadInLength && path.leadInLength > 0) ||
+          (path.leadOutType && path.leadOutType !== 'none' && path.leadOutLength && path.leadOutLength > 0)) {
+        
+        const part = findPartForChain(path.chainId);
+        
+        const leadInConfig: LeadInConfig = {
+          type: path.leadInType || 'none',
+          length: path.leadInLength || 0
+        };
+        const leadOutConfig: LeadOutConfig = {
+          type: path.leadOutType || 'none',
+          length: path.leadOutLength || 0
+        };
+        
+        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+        
+        if (leadResult.leadIn && leadResult.leadIn.points.length > 1) {
+          leadInDistance = calculatePolylineLength(leadResult.leadIn.points);
+        }
+        if (leadResult.leadOut && leadResult.leadOut.points.length > 1) {
+          leadOutDistance = calculatePolylineLength(leadResult.leadOut.points);
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to calculate lead distances for path:', path.name, error);
+    }
+    
+    return leadInDistance + chainDistance + leadOutDistance;
   }
 
   // Calculate length of a shape (simplified but functional)
@@ -413,13 +521,114 @@
     }
   }
 
-  // Update tool head position along a cutting path (simplified)
+  // Update tool head position along a cutting path, including lead-in and lead-out
   function updateToolHeadOnPath(path: Path, progress: number) {
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
     if (!chain || chain.shapes.length === 0) return;
     
-    // Calculate total path length
-    const totalLength = getPathDistance(path);
+    // Get lead geometry if available
+    let leadInGeometry: Point2D[] = [];
+    let leadOutGeometry: Point2D[] = [];
+    
+    try {
+      if ((path.leadInType && path.leadInType !== 'none' && path.leadInLength && path.leadInLength > 0) ||
+          (path.leadOutType && path.leadOutType !== 'none' && path.leadOutLength && path.leadOutLength > 0)) {
+        
+        const part = findPartForChain(path.chainId);
+        
+        const leadInConfig: LeadInConfig = {
+          type: path.leadInType || 'none',
+          length: path.leadInLength || 0
+        };
+        const leadOutConfig: LeadOutConfig = {
+          type: path.leadOutType || 'none',
+          length: path.leadOutLength || 0
+        };
+        
+        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+        
+        if (leadResult.leadIn && leadResult.leadIn.points.length > 1) {
+          leadInGeometry = leadResult.leadIn.points;
+        }
+        if (leadResult.leadOut && leadResult.leadOut.points.length > 1) {
+          leadOutGeometry = leadResult.leadOut.points;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to calculate leads for simulation:', path.name, error);
+    }
+    
+    // Calculate lengths
+    const leadInLength = calculatePolylineLength(leadInGeometry);
+    const chainLength = getChainDistance(chain);
+    const leadOutLength = calculatePolylineLength(leadOutGeometry);
+    const totalLength = leadInLength + chainLength + leadOutLength;
+    
+    const targetDistance = totalLength * progress;
+    
+    // Determine which section we're in
+    if (targetDistance <= leadInLength && leadInGeometry.length > 1) {
+      // We're in the lead-in
+      const leadInProgress = leadInLength > 0 ? targetDistance / leadInLength : 0;
+      toolHeadPosition = getPositionOnPolyline(leadInGeometry, leadInProgress);
+    } else if (targetDistance <= leadInLength + chainLength) {
+      // We're in the main chain
+      const chainTargetDistance = targetDistance - leadInLength;
+      const chainProgress = chainLength > 0 ? chainTargetDistance / chainLength : 0;
+      toolHeadPosition = getPositionOnChain(chain, chainProgress, path.cutDirection);
+    } else {
+      // We're in the lead-out
+      const leadOutTargetDistance = targetDistance - leadInLength - chainLength;
+      const leadOutProgress = leadOutLength > 0 ? leadOutTargetDistance / leadOutLength : 0;
+      toolHeadPosition = getPositionOnPolyline(leadOutGeometry, leadOutProgress);
+    }
+  }
+  
+  // Calculate the length of a polyline (for leads)
+  function calculatePolylineLength(points: Point2D[]): number {
+    if (points.length < 2) return 0;
+    
+    let length = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      length += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+    }
+    return length;
+  }
+  
+  // Get position along a polyline (for leads)
+  function getPositionOnPolyline(points: Point2D[], progress: number): Point2D {
+    if (points.length === 0) return { x: 0, y: 0 };
+    if (points.length === 1) return points[0];
+    
+    progress = Math.max(0, Math.min(1, progress));
+    
+    const totalLength = calculatePolylineLength(points);
+    const targetDistance = totalLength * progress;
+    
+    let currentDistance = 0;
+    for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      const segmentLength = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+      
+      if (currentDistance + segmentLength >= targetDistance) {
+        const segmentProgress = segmentLength > 0 ? (targetDistance - currentDistance) / segmentLength : 0;
+        return {
+          x: p1.x + (p2.x - p1.x) * segmentProgress,
+          y: p1.y + (p2.y - p1.y) * segmentProgress
+        };
+      }
+      currentDistance += segmentLength;
+    }
+    
+    return points[points.length - 1];
+  }
+  
+  // Get position along a chain (original chain geometry)
+  function getPositionOnChain(chain: ShapeChain, progress: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D {
+    const totalLength = getChainDistance(chain);
     const targetDistance = totalLength * progress;
     
     let currentDistance = 0;
@@ -427,12 +636,27 @@
       const shapeLength = getShapeLength(shape);
       if (currentDistance + shapeLength >= targetDistance) {
         // Tool head is on this shape
-        const shapeProgress = (targetDistance - currentDistance) / shapeLength;
-        toolHeadPosition = getPositionOnShape(shape, shapeProgress, path.cutDirection);
-        return;
+        const shapeProgress = shapeLength > 0 ? (targetDistance - currentDistance) / shapeLength : 0;
+        return getPositionOnShape(shape, shapeProgress, cutDirection);
       }
       currentDistance += shapeLength;
     }
+    
+    // Fallback to last shape end
+    if (chain.shapes.length > 0) {
+      return getPositionOnShape(chain.shapes[chain.shapes.length - 1], 1.0, cutDirection);
+    }
+    
+    return { x: 0, y: 0 };
+  }
+  
+  // Calculate total distance of a chain
+  function getChainDistance(chain: ShapeChain): number {
+    let totalDistance = 0;
+    for (const shape of chain.shapes) {
+      totalDistance += getShapeLength(shape);
+    }
+    return totalDistance;
   }
 
   // Get position along a shape at given progress (0-1) - simplified

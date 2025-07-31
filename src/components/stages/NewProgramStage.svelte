@@ -11,6 +11,7 @@
   import { isChainClosed } from '../../lib/algorithms/part-detection';
   import { pathStore } from '../../lib/stores/paths';
   import { rapidStore, selectRapid, highlightRapid, clearRapidHighlight } from '../../lib/stores/rapids';
+  import { leadWarningsStore } from '../../lib/stores/lead-warnings';
   import { optimizeCutOrder } from '../../lib/algorithms/optimize-cut-order';
   
   // Subscribe to stores
@@ -23,6 +24,7 @@
   $: rapids = $rapidStore.rapids;
   $: selectedRapidId = $rapidStore.selectedRapidId;
   $: highlightedRapidId = $rapidStore.highlightedRapidId;
+  $: leadWarnings = $leadWarningsStore.warnings;
 
 
   function handleNext() {
@@ -229,6 +231,24 @@
           {/if}
         </div>
       </AccordionPanel>
+
+      {#if leadWarnings.length > 0}
+        <AccordionPanel title="Lead Warnings ({leadWarnings.length})" isExpanded={true}>
+          <div class="lead-warnings-list">
+            {#each leadWarnings as warning (warning.id)}
+              <div class="warning-item">
+                <div class="warning-header">
+                  <span class="warning-type {warning.type === 'lead-in' ? 'lead-in' : 'lead-out'}">
+                    {warning.type === 'lead-in' ? '◉' : '◎'} {warning.type === 'lead-in' ? 'Lead-in' : 'Lead-out'}
+                  </span>
+                  <span class="warning-chain">Chain {warning.chainId.split('-')[1]}</span>
+                </div>
+                <p class="warning-message">{warning.message}</p>
+              </div>
+            {/each}
+          </div>
+        </AccordionPanel>
+      {/if}
     </svelte:fragment>
   </ThreeColumnLayout>
 </div>
@@ -438,6 +458,60 @@
     text-align: center;
     padding: 1rem;
     margin: 0;
+  }
+
+  /* Lead Warnings section styles */
+  .lead-warnings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .warning-item {
+    padding: 0.75rem;
+    background-color: #fef3c7;
+    border: 1px solid #f59e0b;
+    border-radius: 0.375rem;
+    border-left: 4px solid #f59e0b;
+  }
+
+  .warning-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+  }
+
+  .warning-type {
+    font-weight: 600;
+    font-size: 0.875rem;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .warning-type.lead-in {
+    color: #9333ea;
+  }
+
+  .warning-type.lead-out {
+    color: #dc2626;
+  }
+
+  .warning-chain {
+    font-size: 0.75rem;
+    color: #92400e;
+    background-color: rgba(245, 158, 11, 0.1);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+  }
+
+  .warning-message {
+    margin: 0;
+    font-size: 0.875rem;
+    color: #92400e;
+    line-height: 1.4;
   }
 
 </style>

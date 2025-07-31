@@ -5,6 +5,7 @@ import { workflowStore } from './workflow';
 import { chainStore } from './chains';
 import { get } from 'svelte/store';
 import { detectCutDirection } from '../algorithms/cut-direction';
+import { leadWarningsStore } from './lead-warnings';
 
 export interface Operation {
   id: string;
@@ -15,6 +16,10 @@ export interface Operation {
   enabled: boolean;
   order: number; // Execution order
   cutDirection: 'clockwise' | 'counterclockwise'; // Preferred cut direction
+  leadInType: 'arc' | 'line' | 'none'; // Lead-in type
+  leadInLength: number; // Lead-in length (units)
+  leadOutType: 'arc' | 'line' | 'none'; // Lead-out type
+  leadOutLength: number; // Lead-out length (units)
 }
 
 function createOperationsStore() {
@@ -48,6 +53,8 @@ function createOperationsStore() {
         // Always regenerate paths when operation changes
         const operation = newOperations.find(op => op.id === id);
         if (operation) {
+          // Clear existing lead warnings for this operation before regenerating
+          leadWarningsStore.clearWarningsForOperation(id);
           setTimeout(() => generatePathsForOperation(operation), 0);
         }
         
@@ -58,6 +65,8 @@ function createOperationsStore() {
     deleteOperation: (id: string) => {
       // Remove all paths created by this operation
       pathStore.deletePathsByOperation(id);
+      // Clear any lead warnings for this operation
+      leadWarningsStore.clearWarningsForOperation(id);
       update(operations => operations.filter(op => op.id !== id));
     },
     
@@ -171,7 +180,11 @@ function generatePathsForOperation(operation: Operation) {
         toolId: operation.toolId,
         enabled: true,
         order: index + 1,
-        cutDirection: cutDirection
+        cutDirection: cutDirection,
+        leadInType: operation.leadInType,
+        leadInLength: operation.leadInLength,
+        leadOutType: operation.leadOutType,
+        leadOutLength: operation.leadOutLength
       });
     } else if (operation.targetType === 'parts') {
       // For parts, create paths for all chains that make up the part
@@ -194,7 +207,11 @@ function generatePathsForOperation(operation: Operation) {
           toolId: operation.toolId,
           enabled: true,
           order: index + 1,
-          cutDirection: shellCutDirection
+          cutDirection: shellCutDirection,
+          leadInType: operation.leadInType,
+          leadInLength: operation.leadInLength,
+          leadOutType: operation.leadOutType,
+          leadOutLength: operation.leadOutLength
         });
         
         // Create paths for all hole chains (including nested holes)
@@ -214,7 +231,11 @@ function generatePathsForOperation(operation: Operation) {
               toolId: operation.toolId,
               enabled: true,
               order: pathOrder++,
-              cutDirection: holeCutDirection
+              cutDirection: holeCutDirection,
+              leadInType: operation.leadInType,
+              leadInLength: operation.leadInLength,
+              leadOutType: operation.leadOutType,
+              leadOutLength: operation.leadOutLength
             });
             
             // Process nested holes if any

@@ -96,7 +96,11 @@
       targetIds: [],
       enabled: true,
       order: newOrder,
-      cutDirection: 'counterclockwise'
+      cutDirection: 'counterclockwise',
+      leadInType: 'none',
+      leadInLength: 5,
+      leadOutType: 'none',
+      leadOutLength: 5
     });
   }
   
@@ -489,6 +493,69 @@
           </div>
         </div>
         
+        <!-- Lead-in and Lead-out Settings -->
+        <div class="lead-settings">
+          <div class="lead-group">
+            <div class="field-group">
+              <label for="lead-in-type-{operation.id}">Lead-in:</label>
+              <select
+                id="lead-in-type-{operation.id}"
+                value={operation.leadInType}
+                onchange={(e) => updateOperationField(operation.id, 'leadInType', e.currentTarget.value)}
+                class="lead-select"
+              >
+                <option value="none">None</option>
+                <option value="arc">Arc</option>
+                <option value="line">Line</option>
+              </select>
+            </div>
+            {#if operation.leadInType !== 'none'}
+              <div class="field-group">
+                <label for="lead-in-length-{operation.id}">Length (units):</label>
+                <input
+                  id="lead-in-length-{operation.id}"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={operation.leadInLength}
+                  onchange={(e) => updateOperationField(operation.id, 'leadInLength', parseFloat(e.currentTarget.value) || 0)}
+                  class="lead-input"
+                />
+              </div>
+            {/if}
+          </div>
+          
+          <div class="lead-group">
+            <div class="field-group">
+              <label for="lead-out-type-{operation.id}">Lead-out:</label>
+              <select
+                id="lead-out-type-{operation.id}"
+                value={operation.leadOutType}
+                onchange={(e) => updateOperationField(operation.id, 'leadOutType', e.currentTarget.value)}
+                class="lead-select"
+              >
+                <option value="none">None</option>
+                <option value="arc">Arc</option>
+                <option value="line">Line</option>
+              </select>
+            </div>
+            {#if operation.leadOutType !== 'none'}
+              <div class="field-group">
+                <label for="lead-out-length-{operation.id}">Length (units):</label>
+                <input
+                  id="lead-out-length-{operation.id}"
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  value={operation.leadOutLength}
+                  onchange={(e) => updateOperationField(operation.id, 'leadOutLength', parseFloat(e.currentTarget.value) || 0)}
+                  class="lead-input"
+                />
+              </div>
+            {/if}
+          </div>
+        </div>
+        
         
         <div class="operation-actions">
           <button onclick={() => duplicateOperation(operation.id)} class="btn btn-secondary btn-xs" title="Duplicate operation">
@@ -844,5 +911,62 @@
   .btn-xs {
     padding: 0.125rem 0.375rem;
     font-size: 0.75rem;
+  }
+  
+  /* Lead settings */
+  .lead-settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .lead-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .lead-select {
+    width: 100%;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    background: white;
+    cursor: pointer;
+  }
+  
+  .lead-select:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+  }
+  
+  .lead-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+  
+  .lead-input {
+    width: 100%;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    background: white;
+  }
+  
+  .lead-input:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+  }
+  
+  .lead-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
   }
 </style>

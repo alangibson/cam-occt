@@ -18,7 +18,9 @@ export interface Path {
   kerfWidth?: number; // Kerf compensation width
   thcEnabled?: boolean; // Torch height control
   leadInLength?: number; // Lead-in length
+  leadInType?: 'arc' | 'line' | 'none'; // Lead-in type
   leadOutLength?: number; // Lead-out length
+  leadOutType?: 'arc' | 'line' | 'none'; // Lead-out type
   overcutLength?: number; // Overcut length
 }
 
