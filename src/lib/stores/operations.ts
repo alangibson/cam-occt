@@ -18,8 +18,12 @@ export interface Operation {
   cutDirection: 'clockwise' | 'counterclockwise'; // Preferred cut direction
   leadInType: 'arc' | 'line' | 'none'; // Lead-in type
   leadInLength: number; // Lead-in length (units)
+  leadInFlipSide: boolean; // Flip which side of the chain the lead-in is on
+  leadInAngle: number; // Manual rotation angle for lead-in (degrees, 0-360)
   leadOutType: 'arc' | 'line' | 'none'; // Lead-out type
   leadOutLength: number; // Lead-out length (units)
+  leadOutFlipSide: boolean; // Flip which side of the chain the lead-out is on
+  leadOutAngle: number; // Manual rotation angle for lead-out (degrees, 0-360)
 }
 
 function createOperationsStore() {
@@ -183,8 +187,12 @@ function generatePathsForOperation(operation: Operation) {
         cutDirection: cutDirection,
         leadInType: operation.leadInType,
         leadInLength: operation.leadInLength,
+        leadInFlipSide: operation.leadInFlipSide,
+        leadInAngle: operation.leadInAngle,
         leadOutType: operation.leadOutType,
-        leadOutLength: operation.leadOutLength
+        leadOutLength: operation.leadOutLength,
+        leadOutFlipSide: operation.leadOutFlipSide,
+        leadOutAngle: operation.leadOutAngle
       });
     } else if (operation.targetType === 'parts') {
       // For parts, create paths for all chains that make up the part
@@ -210,8 +218,12 @@ function generatePathsForOperation(operation: Operation) {
           cutDirection: shellCutDirection,
           leadInType: operation.leadInType,
           leadInLength: operation.leadInLength,
+          leadInFlipSide: operation.leadInFlipSide,
+          leadInAngle: operation.leadInAngle,
           leadOutType: operation.leadOutType,
-          leadOutLength: operation.leadOutLength
+          leadOutLength: operation.leadOutLength,
+          leadOutFlipSide: operation.leadOutFlipSide,
+          leadOutAngle: operation.leadOutAngle
         });
         
         // Create paths for all hole chains (including nested holes)
@@ -234,8 +246,12 @@ function generatePathsForOperation(operation: Operation) {
               cutDirection: holeCutDirection,
               leadInType: operation.leadInType,
               leadInLength: operation.leadInLength,
+              leadInFlipSide: operation.leadInFlipSide,
+              leadInAngle: operation.leadInAngle,
               leadOutType: operation.leadOutType,
-              leadOutLength: operation.leadOutLength
+              leadOutLength: operation.leadOutLength,
+              leadOutFlipSide: operation.leadOutFlipSide,
+              leadOutAngle: operation.leadOutAngle
             });
             
             // Process nested holes if any

@@ -215,11 +215,13 @@
         
         const leadInConfig: LeadInConfig = {
           type: path.leadInType,
-          length: path.leadInLength
+          length: path.leadInLength,
+          flipSide: path.leadInFlipSide || false
         };
         const leadOutConfig: LeadOutConfig = {
           type: path.leadOutType || 'none',
-          length: path.leadOutLength || 0
+          length: path.leadOutLength || 0,
+          flipSide: path.leadOutFlipSide || false
         };
         
         const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
@@ -253,11 +255,13 @@
         
         const leadInConfig: LeadInConfig = {
           type: path.leadInType || 'none',
-          length: path.leadInLength || 0
+          length: path.leadInLength || 0,
+          flipSide: path.leadInFlipSide || false
         };
         const leadOutConfig: LeadOutConfig = {
           type: path.leadOutType,
-          length: path.leadOutLength
+          length: path.leadOutLength,
+          flipSide: path.leadOutFlipSide || false
         };
         
         const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
@@ -308,11 +312,13 @@
         
         const leadInConfig: LeadInConfig = {
           type: path.leadInType || 'none',
-          length: path.leadInLength || 0
+          length: path.leadInLength || 0,
+          flipSide: path.leadInFlipSide || false
         };
         const leadOutConfig: LeadOutConfig = {
           type: path.leadOutType || 'none',
-          length: path.leadOutLength || 0
+          length: path.leadOutLength || 0,
+          flipSide: path.leadOutFlipSide || false
         };
         
         const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
@@ -538,11 +544,13 @@
         
         const leadInConfig: LeadInConfig = {
           type: path.leadInType || 'none',
-          length: path.leadInLength || 0
+          length: path.leadInLength || 0,
+          flipSide: path.leadInFlipSide || false
         };
         const leadOutConfig: LeadOutConfig = {
           type: path.leadOutType || 'none',
-          length: path.leadOutLength || 0
+          length: path.leadOutLength || 0,
+          flipSide: path.leadOutFlipSide || false
         };
         
         const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
@@ -631,20 +639,27 @@
     const totalLength = getChainDistance(chain);
     const targetDistance = totalLength * progress;
     
+    // Determine shape order based on cut direction
+    const shapes = cutDirection === 'counterclockwise' ? [...chain.shapes].reverse() : chain.shapes;
+    
     let currentDistance = 0;
-    for (const shape of chain.shapes) {
+    for (const shape of shapes) {
       const shapeLength = getShapeLength(shape);
       if (currentDistance + shapeLength >= targetDistance) {
         // Tool head is on this shape
         const shapeProgress = shapeLength > 0 ? (targetDistance - currentDistance) / shapeLength : 0;
-        return getPositionOnShape(shape, shapeProgress, cutDirection);
+        // For counterclockwise cuts, reverse the shape progress as well
+        const adjustedProgress = cutDirection === 'counterclockwise' ? 1.0 - shapeProgress : shapeProgress;
+        return getPositionOnShape(shape, adjustedProgress, cutDirection);
       }
       currentDistance += shapeLength;
     }
     
     // Fallback to last shape end
-    if (chain.shapes.length > 0) {
-      return getPositionOnShape(chain.shapes[chain.shapes.length - 1], 1.0, cutDirection);
+    if (shapes.length > 0) {
+      const lastShape = shapes[shapes.length - 1];
+      const fallbackProgress = cutDirection === 'counterclockwise' ? 0.0 : 1.0;
+      return getPositionOnShape(lastShape, fallbackProgress, cutDirection);
     }
     
     return { x: 0, y: 0 };
@@ -666,10 +681,21 @@
     switch (shape.type) {
       case 'line':
         const line = shape.geometry as any;
-        return {
-          x: line.start.x + (line.end.x - line.start.x) * progress,
-          y: line.start.y + (line.end.y - line.start.y) * progress
-        };
+        
+        // Respect cut direction for lines
+        if (cutDirection === 'clockwise') {
+          // Reverse direction: go from end to start
+          return {
+            x: line.end.x + (line.start.x - line.end.x) * progress,
+            y: line.end.y + (line.start.y - line.end.y) * progress
+          };
+        } else {
+          // Default/counterclockwise: go from start to end
+          return {
+            x: line.start.x + (line.end.x - line.start.x) * progress,
+            y: line.start.y + (line.end.y - line.start.y) * progress
+          };
+        }
       case 'circle':
         const circle = shape.geometry as any;
         let circleAngle: number;
@@ -688,9 +714,16 @@
         };
       case 'arc':
         const arc = shape.geometry as any;
-        const startAngle = arc.startAngle;
-        const endAngle = arc.endAngle;
-        const arcAngle = startAngle + (endAngle - startAngle) * progress;
+        let arcAngle: number;
+        
+        if (cutDirection === 'clockwise') {
+          // For clockwise, go from endAngle to startAngle
+          arcAngle = arc.endAngle + (arc.startAngle - arc.endAngle) * progress;
+        } else {
+          // For counterclockwise (default), go from startAngle to endAngle
+          arcAngle = arc.startAngle + (arc.endAngle - arc.startAngle) * progress;
+        }
+        
         return {
           x: arc.center.x + arc.radius * Math.cos(arcAngle),
           y: arc.center.y + arc.radius * Math.sin(arcAngle)
@@ -699,14 +732,17 @@
         const polyline = shape.geometry as any;
         if (polyline.points.length < 2) return polyline.points[0] || { x: 0, y: 0 };
         
+        // Respect cut direction for polylines
+        const points = cutDirection === 'clockwise' ? [...polyline.points].reverse() : polyline.points;
+        
         // Find which segment we're on
         const totalLength = getShapeLength(shape);
         const targetDistance = totalLength * progress;
         
         let currentDistance = 0;
-        for (let i = 0; i < polyline.points.length - 1; i++) {
-          const p1 = polyline.points[i];
-          const p2 = polyline.points[i + 1];
+        for (let i = 0; i < points.length - 1; i++) {
+          const p1 = points[i];
+          const p2 = points[i + 1];
           const segmentLength = Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
           
           if (currentDistance + segmentLength >= targetDistance) {
@@ -718,7 +754,7 @@
           }
           currentDistance += segmentLength;
         }
-        return polyline.points[polyline.points.length - 1];
+        return points[points.length - 1];
       case 'spline':
         const splineGeom = shape.geometry as any;
         try {

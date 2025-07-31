@@ -12,6 +12,7 @@
   import { tessellationStore, type TessellationPoint } from '../../lib/stores/tessellation';
   import { tessellateShape } from '../../lib/utils/tessellation';
   import { overlayStore, generateChainEndpoints } from '../../lib/stores/overlay';
+  import { optimizeStartPoints } from '../../lib/algorithms/optimize-start-points';
   import type { Shape } from '../../types';
   import type { ShapeChain } from '../../lib/algorithms/chain-detection';
   import type { ChainNormalizationResult } from '../../lib/algorithms/chain-normalization';
@@ -33,6 +34,7 @@
   let isDetectingChains = false;
   let isDetectingParts = false;
   let isNormalizing = false;
+  let isOptimizingStarts = false;
   let isTessellating = false;
 
   // Algorithm parameters
@@ -181,6 +183,53 @@
     } catch (error) {
       console.error('Error during chain normalization:', error);
       isNormalizing = false; // Reset flag on error
+    }
+  }
+
+  async function handleOptimizeStarts() {
+    const currentDrawing = $drawingStore.drawing;
+    if (!currentDrawing || !currentDrawing.shapes) {
+      console.warn('No drawing available to optimize');
+      return;
+    }
+
+    if (detectedChains.length === 0) {
+      console.warn('No chains detected. Please detect chains first.');
+      return;
+    }
+
+    isOptimizingStarts = true;
+    
+    try {
+      // Optimize start points for all chains
+      const optimizedShapes = optimizeStartPoints(detectedChains, tolerance);
+      
+      // Update the drawing store with optimized shapes
+      drawingStore.replaceAllShapes(optimizedShapes);
+      
+      // Re-detect chains after optimization to update the chain store
+      const newChains = detectShapeChains(optimizedShapes, { tolerance });
+      setChains(newChains);
+      
+      // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
+      setTimeout(() => {
+        if ($workflowStore.currentStage === 'prepare') {
+          if (newChains.length > 0) {
+            const chainEndpoints = generateChainEndpoints(newChains);
+            overlayStore.setChainEndpoints('prepare', chainEndpoints);
+            console.log(`Updated overlay with ${chainEndpoints.length} chain endpoints after optimization.`);
+          } else {
+            overlayStore.clearChainEndpoints('prepare');
+          }
+        }
+        isOptimizingStarts = false; // Reset flag after overlay is updated
+      }, 50); // Small delay to ensure all stores are updated
+      
+      console.log(`Optimized start points. Re-detected ${newChains.length} chains.`);
+      
+    } catch (error) {
+      console.error('Error during start point optimization:', error);
+      isOptimizingStarts = false; // Reset flag on error
     }
   }
 
@@ -804,6 +853,20 @@
             </div>
             
             <button 
+              class="optimize-starts-button"
+              on:click={handleOptimizeStarts}
+              disabled={isOptimizingStarts || detectedChains.length === 0}
+            >
+              {isOptimizingStarts ? 'Optimizing...' : 'Optimize Starts'}
+            </button>
+            
+            <div class="toolbar-separator" aria-hidden="true">
+              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L6 6L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            
+            <button 
               class="tessellate-button"
               on:click={handleTessellateChains}
               disabled={isTessellating || detectedChains.length === 0}
@@ -1306,6 +1369,27 @@
   }
 
   .normalize-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+  }
+
+  .optimize-starts-button {
+    padding: 0.75rem 1rem;
+    background-color: #10b981;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+  }
+
+  .optimize-starts-button:hover:not(:disabled) {
+    background-color: #059669;
+  }
+
+  .optimize-starts-button:disabled {
     background-color: #9ca3af;
     cursor: not-allowed;
   }

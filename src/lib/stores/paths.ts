@@ -19,8 +19,12 @@ export interface Path {
   thcEnabled?: boolean; // Torch height control
   leadInLength?: number; // Lead-in length
   leadInType?: 'arc' | 'line' | 'none'; // Lead-in type
+  leadInFlipSide?: boolean; // Flip which side of the chain the lead-in is on
+  leadInAngle?: number; // Manual rotation angle for lead-in (degrees, 0-360)
   leadOutLength?: number; // Lead-out length
   leadOutType?: 'arc' | 'line' | 'none'; // Lead-out type
+  leadOutFlipSide?: boolean; // Flip which side of the chain the lead-out is on
+  leadOutAngle?: number; // Manual rotation angle for lead-out (degrees, 0-360)
   overcutLength?: number; // Overcut length
 }
 

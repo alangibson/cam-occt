@@ -230,7 +230,7 @@ function calculateNestingLevel(chainId: string, containmentMap: Map<string, stri
 export function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boolean {
   if (chain.shapes.length === 0) return false;
   
-  // Special case: single-shape circles and ellipses are inherently closed
+  // Special case: single-shape circles, ellipses, and closed polylines are inherently closed
   if (chain.shapes.length === 1) {
     const shape = chain.shapes[0];
     if (shape.type === 'circle') {
@@ -241,6 +241,14 @@ export function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boole
       const ellipse = shape.geometry as any;
       // If no start/end parameters, it's a full ellipse (closed)
       return ellipse.startParam === undefined && ellipse.endParam === undefined;
+    }
+    if (shape.type === 'polyline') {
+      // Check the explicit closed flag from DXF parsing
+      const polyline = shape.geometry as any;
+      if (typeof polyline.closed === 'boolean' && polyline.closed === true) {
+        return true; // Explicitly closed polylines are definitely closed
+      }
+      // If closed is false or undefined, fall through to geometric check
     }
   }
   

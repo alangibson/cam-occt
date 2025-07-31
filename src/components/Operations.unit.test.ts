@@ -69,8 +69,12 @@ describe('Operations Store Integration', () => {
       cutDirection: 'counterclockwise',
       leadInType: 'none',
       leadInLength: 5,
+      leadInFlipSide: false,
+      leadInAngle: 0,
       leadOutType: 'none',
-      leadOutLength: 5
+      leadOutLength: 5,
+      leadOutFlipSide: false,
+      leadOutAngle: 0
     });
 
     const operations = get(operationsStore);

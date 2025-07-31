@@ -194,6 +194,9 @@
     // Draw lead-ins and lead-outs
     drawLeads();
     
+    // Draw chevron arrows along paths
+    drawPathChevrons();
+    
     // Draw stage-specific overlays
     if (currentOverlay) {
       drawOverlays(currentOverlay);
@@ -327,11 +330,15 @@
         // Calculate leads
         const leadInConfig = {
           type: path.leadInType || 'none',
-          length: path.leadInLength || 0
+          length: path.leadInLength || 0,
+          flipSide: path.leadInFlipSide || false,
+          angle: path.leadInAngle
         };
         const leadOutConfig = {
           type: path.leadOutType || 'none', 
-          length: path.leadOutLength || 0
+          length: path.leadOutLength || 0,
+          flipSide: path.leadOutFlipSide || false,
+          angle: path.leadOutAngle
         };
         
         const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part || undefined);
@@ -385,6 +392,276 @@
     
     ctx.stroke();
     ctx.restore();
+  }
+  
+  function drawPathChevrons() {
+    if (!pathsState || pathsState.paths.length === 0) return;
+    
+    pathsState.paths.forEach(path => {
+      // Only draw chevrons for enabled paths with enabled operations
+      const operation = operations.find(op => op.id === path.operationId);
+      if (!operation || !operation.enabled || !path.enabled) return;
+      
+      // Get the chain for this path
+      const chain = chains.find(c => c.id === path.chainId);
+      if (!chain || chain.shapes.length === 0) return;
+      
+      // Sample points along the path
+      const pathPoints = samplePathPoints(chain, 50, path.cutDirection); // Sample 50 points along the path
+      if (pathPoints.length < 2) return;
+      
+      // Draw chevron arrows at regular intervals
+      const chevronSpacing = 20; // Draw a chevron every 20 sample points
+      const chevronSize = 8 / totalScale; // Size of chevrons in world units
+      
+      for (let i = chevronSpacing; i < pathPoints.length - chevronSpacing; i += chevronSpacing) {
+        const currentPoint = pathPoints[i];
+        const nextPoint = pathPoints[i + 1];
+        
+        // Calculate direction vector
+        const dx = nextPoint.x - currentPoint.x;
+        const dy = nextPoint.y - currentPoint.y;
+        const length = Math.sqrt(dx * dx + dy * dy);
+        
+        if (length > 0) {
+          // Normalize direction vector
+          const dirX = dx / length;
+          const dirY = dy / length;
+          
+          // Calculate perpendicular vector for chevron wings
+          const perpX = -dirY;
+          const perpY = dirX;
+          
+          drawChevronArrow(currentPoint, dirX, dirY, perpX, perpY, chevronSize);
+        }
+      }
+    });
+  }
+  
+  function drawChevronArrow(center: Point2D, dirX: number, dirY: number, perpX: number, perpY: number, size: number) {
+    ctx.save();
+    ctx.strokeStyle = '#16a34a'; // Green color to match path color
+    ctx.lineWidth = 1.5 / totalScale;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    
+    // Calculate chevron wing points (90 degree angle between wings)
+    const wingLength = size * 0.7;
+    const backOffset = size * 0.3;
+    
+    // Wing points: 45 degrees on each side of the direction vector
+    const wing1X = center.x - backOffset * dirX + wingLength * (dirX * Math.cos(Math.PI / 4) + perpX * Math.sin(Math.PI / 4));
+    const wing1Y = center.y - backOffset * dirY + wingLength * (dirY * Math.cos(Math.PI / 4) + perpY * Math.sin(Math.PI / 4));
+    
+    const wing2X = center.x - backOffset * dirX + wingLength * (dirX * Math.cos(Math.PI / 4) - perpX * Math.sin(Math.PI / 4));
+    const wing2Y = center.y - backOffset * dirY + wingLength * (dirY * Math.cos(Math.PI / 4) - perpY * Math.sin(Math.PI / 4));
+    
+    const tipX = center.x + size * 0.4 * dirX;
+    const tipY = center.y + size * 0.4 * dirY;
+    
+    // Draw the chevron (two lines forming arrow shape)
+    ctx.beginPath();
+    ctx.moveTo(wing1X, wing1Y);
+    ctx.lineTo(tipX, tipY);
+    ctx.lineTo(wing2X, wing2Y);
+    ctx.stroke();
+    
+    ctx.restore();
+  }
+  
+  function samplePathPoints(chain: any, numSamples: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D[] {
+    const points: Point2D[] = [];
+    
+    if (!chain.shapes || chain.shapes.length === 0) return points;
+    
+    // Determine the order to traverse shapes based on cut direction
+    const shapes = cutDirection === 'counterclockwise' ? [...chain.shapes].reverse() : chain.shapes;
+    
+    // For each shape in the chain, sample points along it
+    for (const shape of shapes) {
+      const shapePoints = sampleShapePoints(shape, Math.max(2, Math.floor(numSamples / chain.shapes.length)), cutDirection === 'counterclockwise');
+      points.push(...shapePoints);
+    }
+    
+    return points;
+  }
+  
+  function sampleShapePoints(shape: Shape, numSamples: number, reverse: boolean = false): Point2D[] {
+    const points: Point2D[] = [];
+    
+    switch (shape.type) {
+      case 'line':
+        const line = shape.geometry as any;
+        for (let i = 0; i <= numSamples; i++) {
+          const t = reverse ? 1 - (i / numSamples) : i / numSamples;
+          points.push({
+            x: line.start.x + t * (line.end.x - line.start.x),
+            y: line.start.y + t * (line.end.y - line.start.y)
+          });
+        }
+        break;
+        
+      case 'arc':
+        const arc = shape.geometry as any;
+        let startAngle = arc.startAngle;
+        let endAngle = arc.endAngle;
+        
+        // Handle angle wrapping for proper arc direction
+        if (arc.clockwise) {
+          while (endAngle > startAngle) endAngle -= 2 * Math.PI;
+        } else {
+          while (endAngle < startAngle) endAngle += 2 * Math.PI;
+        }
+        
+        // If reverse is true, swap start and end angles
+        if (reverse) {
+          [startAngle, endAngle] = [endAngle, startAngle];
+        }
+        
+        for (let i = 0; i <= numSamples; i++) {
+          const t = i / numSamples;
+          const angle = startAngle + t * (endAngle - startAngle);
+          points.push({
+            x: arc.center.x + arc.radius * Math.cos(angle),
+            y: arc.center.y + arc.radius * Math.sin(angle)
+          });
+        }
+        break;
+        
+      case 'circle':
+        const circle = shape.geometry as any;
+        for (let i = 0; i <= numSamples; i++) {
+          const t = reverse ? 1 - (i / numSamples) : i / numSamples;
+          const angle = t * 2 * Math.PI;
+          points.push({
+            x: circle.center.x + circle.radius * Math.cos(angle),
+            y: circle.center.y + circle.radius * Math.sin(angle)
+          });
+        }
+        break;
+        
+      case 'polyline':
+        const polyline = shape.geometry as any;
+        let vertices = polyline.vertices || polyline.points?.map((p: any) => ({ ...p, bulge: 0 })) || [];
+        
+        if (vertices.length < 2) break;
+        
+        // If reverse is true, reverse the vertex order and adjust bulge signs
+        if (reverse) {
+          vertices = [...vertices].reverse();
+          // When reversing, bulge factors need to be negated and shifted
+          for (let i = 0; i < vertices.length - 1; i++) {
+            const originalBulge = vertices[i + 1].bulge || 0; // Take bulge from next vertex in original order
+            vertices[i].bulge = -originalBulge; // Negate bulge for reverse direction
+          }
+        }
+        
+        // Sample along each segment
+        const segmentSamples = Math.max(1, Math.floor(numSamples / vertices.length));
+        
+        for (let i = 0; i < vertices.length - 1; i++) {
+          const currentVertex = vertices[i];
+          const nextVertex = vertices[i + 1];
+          const bulge = currentVertex.bulge || 0;
+          
+          if (Math.abs(bulge) < 1e-10) {
+            // Straight line segment
+            for (let j = 0; j <= segmentSamples; j++) {
+              const t = j / segmentSamples;
+              points.push({
+                x: currentVertex.x + t * (nextVertex.x - currentVertex.x),
+                y: currentVertex.y + t * (nextVertex.y - currentVertex.y)
+              });
+            }
+          } else {
+            // Arc segment
+            const arcSegment = bulgeToArc(currentVertex, nextVertex, bulge);
+            if (arcSegment) {
+              let startAngle = arcSegment.startAngle;
+              let endAngle = arcSegment.endAngle;
+              
+              if (arcSegment.clockwise) {
+                while (endAngle > startAngle) endAngle -= 2 * Math.PI;
+              } else {
+                while (endAngle < startAngle) endAngle += 2 * Math.PI;
+              }
+              
+              for (let j = 0; j <= segmentSamples; j++) {
+                const t = j / segmentSamples;
+                const angle = startAngle + t * (endAngle - startAngle);
+                points.push({
+                  x: arcSegment.center.x + arcSegment.radius * Math.cos(angle),
+                  y: arcSegment.center.y + arcSegment.radius * Math.sin(angle)
+                });
+              }
+            }
+          }
+        }
+        
+        // Handle closing segment for closed polylines
+        if (polyline.closed && vertices.length >= 3) {
+          const lastVertex = vertices[vertices.length - 1];
+          const firstVertex = vertices[0];
+          const bulge = lastVertex.bulge || 0;
+          
+          if (Math.abs(bulge) < 1e-10) {
+            for (let j = 0; j <= segmentSamples; j++) {
+              const t = j / segmentSamples;
+              points.push({
+                x: lastVertex.x + t * (firstVertex.x - lastVertex.x),
+                y: lastVertex.y + t * (firstVertex.y - lastVertex.y)
+              });
+            }
+          } else {
+            const arcSegment = bulgeToArc(lastVertex, firstVertex, bulge);
+            if (arcSegment) {
+              let startAngle = arcSegment.startAngle;
+              let endAngle = arcSegment.endAngle;
+              
+              if (arcSegment.clockwise) {
+                while (endAngle > startAngle) endAngle -= 2 * Math.PI;
+              } else {
+                while (endAngle < startAngle) endAngle += 2 * Math.PI;
+              }
+              
+              for (let j = 0; j <= segmentSamples; j++) {
+                const t = j / segmentSamples;
+                const angle = startAngle + t * (endAngle - startAngle);
+                points.push({
+                  x: arcSegment.center.x + arcSegment.radius * Math.cos(angle),
+                  y: arcSegment.center.y + arcSegment.radius * Math.sin(angle)
+                });
+              }
+            }
+          }
+        }
+        break;
+        
+      case 'spline':
+        const spline = shape.geometry as any;
+        const splinePoints = sampleNURBS(spline, numSamples);
+        if (reverse) {
+          points.push(...splinePoints.reverse());
+        } else {
+          points.push(...splinePoints);
+        }
+        break;
+        
+      default:
+        // For unsupported shapes, just add start and end points if available
+        const startPoint = getShapeStartPoint(shape);
+        const endPoint = getShapeEndPoint(shape);
+        if (reverse) {
+          if (endPoint) points.push(endPoint);
+          if (startPoint && startPoint !== endPoint) points.push(startPoint);
+        } else {
+          if (startPoint) points.push(startPoint);
+          if (endPoint && endPoint !== startPoint) points.push(endPoint);
+        }
+        break;
+    }
+    
+    return points;
   }
   
   function drawTessellationPoints(points: Array<{x: number, y: number}>) {

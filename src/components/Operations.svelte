@@ -99,8 +99,12 @@
       cutDirection: 'counterclockwise',
       leadInType: 'none',
       leadInLength: 5,
+      leadInFlipSide: false,
+      leadInAngle: 0,
       leadOutType: 'none',
-      leadOutLength: 5
+      leadOutLength: 5,
+      leadOutFlipSide: false,
+      leadOutAngle: 0
     });
   }
   
@@ -522,6 +526,31 @@
                   class="lead-input"
                 />
               </div>
+              <div class="field-group">
+                <label for="lead-in-angle-{operation.id}">Angle (degrees):</label>
+                <input
+                  id="lead-in-angle-{operation.id}"
+                  type="number"
+                  min="0"
+                  max="360"
+                  step="1"
+                  value={operation.leadInAngle || 0}
+                  onchange={(e) => updateOperationField(operation.id, 'leadInAngle', parseFloat(e.currentTarget.value) || 0)}
+                  class="lead-input"
+                  placeholder="Auto"
+                />
+              </div>
+              <div class="field-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={operation.leadInFlipSide}
+                    onchange={(e) => updateOperationField(operation.id, 'leadInFlipSide', e.currentTarget.checked)}
+                    class="lead-checkbox"
+                  />
+                  Flip side
+                </label>
+              </div>
             {/if}
           </div>
           
@@ -551,6 +580,31 @@
                   onchange={(e) => updateOperationField(operation.id, 'leadOutLength', parseFloat(e.currentTarget.value) || 0)}
                   class="lead-input"
                 />
+              </div>
+              <div class="field-group">
+                <label for="lead-out-angle-{operation.id}">Angle (degrees):</label>
+                <input
+                  id="lead-out-angle-{operation.id}"
+                  type="number"
+                  min="0"
+                  max="360"
+                  step="1"
+                  value={operation.leadOutAngle || 0}
+                  onchange={(e) => updateOperationField(operation.id, 'leadOutAngle', parseFloat(e.currentTarget.value) || 0)}
+                  class="lead-input"
+                  placeholder="Auto"
+                />
+              </div>
+              <div class="field-group">
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    checked={operation.leadOutFlipSide}
+                    onchange={(e) => updateOperationField(operation.id, 'leadOutFlipSide', e.currentTarget.checked)}
+                    class="lead-checkbox"
+                  />
+                  Flip side
+                </label>
               </div>
             {/if}
           </div>
@@ -968,5 +1022,20 @@
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #374151;
+    cursor: pointer;
+  }
+
+  .lead-checkbox {
+    cursor: pointer;
+    transform: scale(1.1);
   }
 </style>

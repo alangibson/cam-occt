@@ -48,11 +48,15 @@ function getPathStartPoint(path: Path, chain: ShapeChain, part?: DetectedPart): 
     try {
       const leadInConfig: LeadInConfig = {
         type: path.leadInType,
-        length: path.leadInLength
+        length: path.leadInLength,
+        flipSide: path.leadInFlipSide || false,
+        angle: path.leadInAngle
       };
       const leadOutConfig: LeadOutConfig = {
         type: path.leadOutType || 'none',
-        length: path.leadOutLength || 0
+        length: path.leadOutLength || 0,
+        flipSide: path.leadOutFlipSide || false,
+        angle: path.leadOutAngle
       };
       
       const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
@@ -81,11 +85,15 @@ function getPathEndPoint(path: Path, chain: ShapeChain, part?: DetectedPart): Po
     try {
       const leadInConfig: LeadInConfig = {
         type: path.leadInType || 'none',
-        length: path.leadInLength || 0
+        length: path.leadInLength || 0,
+        flipSide: path.leadInFlipSide || false,
+        angle: path.leadInAngle
       };
       const leadOutConfig: LeadOutConfig = {
         type: path.leadOutType,
-        length: path.leadOutLength
+        length: path.leadOutLength,
+        flipSide: path.leadOutFlipSide || false,
+        angle: path.leadOutAngle
       };
       
       const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);

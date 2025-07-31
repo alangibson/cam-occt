@@ -7,11 +7,15 @@ export type LeadType = 'arc' | 'line' | 'none';
 export interface LeadInConfig {
   type: LeadType;
   length: number; // For arc: length along the arc
+  flipSide?: boolean; // Flip which side of the chain the lead is on
+  angle?: number; // Manual rotation angle (degrees, 0-360). If undefined, auto-calculated
 }
 
 export interface LeadOutConfig {
   type: LeadType;
   length: number; // For arc: length along the arc
+  flipSide?: boolean; // Flip which side of the chain the lead is on
+  angle?: number; // Manual rotation angle (degrees, 0-360). If undefined, auto-calculated
 }
 
 export interface LeadGeometry {
@@ -110,9 +114,9 @@ function calculateLead(
   warnings: string[] = []
 ): LeadGeometry | undefined {
   if (config.type === 'arc') {
-    return calculateArcLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings);
+    return calculateArcLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings, config.flipSide, config.angle);
   } else if (config.type === 'line') {
-    return calculateLineLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings);
+    return calculateLineLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings, config.flipSide, config.angle);
   }
   return undefined;
 }
@@ -133,14 +137,16 @@ function calculateArcLead(
   isShell: boolean,
   cutDirection: 'clockwise' | 'counterclockwise' | 'none',
   part?: DetectedPart,
-  warnings: string[] = []
+  warnings: string[] = [],
+  flipSide: boolean = false,
+  manualAngle?: number
 ): LeadGeometry {
   
   // Get the tangent direction at the point
   const tangent = getChainTangent(chain, point, isLeadIn);
   
   // Calculate the base normal direction considering cut direction
-  const baseCurveDirection = getLeadCurveDirection(tangent, isHole, isShell, cutDirection, chain, point, part, arcLength);
+  const baseCurveDirection = getLeadCurveDirection(tangent, isHole, isShell, cutDirection, chain, point, part, arcLength, flipSide);
 
   // Calculate arc parameters with 90-degree maximum sweep
   const maxSweepAngle = Math.PI / 2; // 90 degrees
@@ -155,9 +161,27 @@ function calculateArcLead(
   // Ensure we don't exceed 90 degrees
   const actualSweepAngle = Math.min(sweepAngle, maxSweepAngle);
   
-  // Try different curve directions up to 360 degrees to avoid solid areas
-  const rotationStep = 5 * Math.PI / 180; // 5 degrees in radians
-  const maxRotations = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
+  // Determine curve direction strategy: manual absolute angle or automatic optimization
+  let curveDirectionsToTry: { x: number; y: number }[];
+  
+  if (manualAngle !== undefined) {
+    // Use manual angle as absolute direction (unit circle: 0° = right, 90° = up, etc.)
+    // Note: Y-axis is flipped in CAD coordinates, so negate Y component
+    const manualAngleRad = (manualAngle * Math.PI) / 180;
+    const absoluteDirection = {
+      x: Math.cos(manualAngleRad),
+      y: -Math.sin(manualAngleRad)  // Negate Y for CAD coordinate system
+    };
+    curveDirectionsToTry = [absoluteDirection];
+  } else {
+    // Try different curve directions up to 360 degrees to avoid solid areas
+    const rotationStep = 5 * Math.PI / 180; // 5 degrees in radians
+    const maxRotations = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
+    curveDirectionsToTry = Array.from({ length: maxRotations }, (_, i) => {
+      const rotationAngle = i * rotationStep;
+      return rotateCurveDirection(baseCurveDirection, rotationAngle);
+    });
+  }
   
   // Try full length first, then shorter lengths if needed
   const lengthAttempts = [1.0, 0.75, 0.5, 0.25]; // Try 100%, 75%, 50%, 25% of original length
@@ -167,11 +191,7 @@ function calculateArcLead(
     const adjustedRadius = adjustedArcLength / maxSweepAngle;
     const adjustedSweepAngle = Math.min(adjustedArcLength / adjustedRadius, maxSweepAngle);
     
-    for (let rotation = 0; rotation < maxRotations; rotation++) {
-      const rotationAngle = rotation * rotationStep;
-      
-      // Rotate the curve direction
-      const curveDirection = rotateCurveDirection(baseCurveDirection, rotationAngle);
+    for (const curveDirection of curveDirectionsToTry) {
       
       // Calculate arc center position for perfect tangency
       const arcCenter: Point2D = {
@@ -256,18 +276,38 @@ function calculateLineLead(
   isShell: boolean,
   cutDirection: 'clockwise' | 'counterclockwise' | 'none',
   part?: DetectedPart,
-  warnings: string[] = []
+  warnings: string[] = [],
+  flipSide: boolean = false,
+  manualAngle?: number
 ): LeadGeometry {
   
   // Get the tangent direction at the point
   const tangent = getChainTangent(chain, point, isLeadIn);
   
   // Calculate the base normal direction considering cut direction
-  const baseLeadDirection = getLeadCurveDirection(tangent, isHole, isShell, cutDirection, chain, point, part, lineLength);
+  const baseLeadDirection = getLeadCurveDirection(tangent, isHole, isShell, cutDirection, chain, point, part, lineLength, flipSide);
   
-  // Try different lead directions up to 360 degrees to avoid solid areas
-  const rotationStep = 5 * Math.PI / 180; // 5 degrees in radians
-  const maxRotations = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
+  // Determine lead direction strategy: manual absolute angle or automatic optimization
+  let leadDirectionsToTry: { x: number; y: number }[];
+  
+  if (manualAngle !== undefined) {
+    // Use manual angle as absolute direction (unit circle: 0° = right, 90° = up, etc.)
+    // Note: Y-axis is flipped in CAD coordinates, so negate Y component
+    const manualAngleRad = (manualAngle * Math.PI) / 180;
+    const absoluteDirection = {
+      x: Math.cos(manualAngleRad),
+      y: -Math.sin(manualAngleRad)  // Negate Y for CAD coordinate system
+    };
+    leadDirectionsToTry = [absoluteDirection];
+  } else {
+    // Try different lead directions up to 360 degrees to avoid solid areas
+    const rotationStep = 5 * Math.PI / 180; // 5 degrees in radians
+    const maxRotations = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
+    leadDirectionsToTry = Array.from({ length: maxRotations }, (_, i) => {
+      const rotationAngle = i * rotationStep;
+      return rotateCurveDirection(baseLeadDirection, rotationAngle);
+    });
+  }
   
   // Try full length first, then shorter lengths if needed
   const lengthAttempts = [1.0, 0.75, 0.5, 0.25]; // Try 100%, 75%, 50%, 25% of original length
@@ -275,11 +315,7 @@ function calculateLineLead(
   for (const lengthFactor of lengthAttempts) {
     const adjustedLineLength = lineLength * lengthFactor;
     
-    for (let rotation = 0; rotation < maxRotations; rotation++) {
-      const rotationAngle = rotation * rotationStep;
-      
-      // Rotate the lead direction
-      const leadDirection = rotateCurveDirection(baseLeadDirection, rotationAngle);
+    for (const leadDirection of leadDirectionsToTry) {
       
       // Generate line points
       const points = generateTangentLinePoints(
@@ -670,11 +706,14 @@ function getLeadCurveDirection(
   chain: ShapeChain,
   point: Point2D,
   part?: DetectedPart,
-  leadLength?: number
+  leadLength?: number,
+  flipSide: boolean = false
 ): Point2D {
   // Base normal directions (perpendicular to tangent)
   const leftNormal = { x: -tangent.y, y: tangent.x };   // 90° counterclockwise
   const rightNormal = { x: tangent.y, y: -tangent.x };  // 90° clockwise
+
+  let selectedDirection: Point2D = leftNormal; // Default fallback
 
   // Use cut direction to determine lead placement for proper tangency
   if (cutDirection !== 'none') {
@@ -683,72 +722,84 @@ function getLeadCurveDirection(
       // Check if there are nearby holes that could provide better lead placement
       const nearbyHoleDirection = getNearbyHoleDirection(chain, point, tangent, part, leadLength);
       if (nearbyHoleDirection) {
-        return nearbyHoleDirection;
+        selectedDirection = nearbyHoleDirection;
+      } else {
+        // Default: leads should be placed outside the part
+        // For clockwise cuts: lead curves to maintain clockwise flow
+        // For counterclockwise cuts: lead curves to maintain counterclockwise flow
+        selectedDirection = cutDirection === 'clockwise' ? rightNormal : leftNormal;
       }
-      
-      // Default: leads should be placed outside the part
-      // For clockwise cuts: lead curves to maintain clockwise flow
-      // For counterclockwise cuts: lead curves to maintain counterclockwise flow
-      return cutDirection === 'clockwise' ? rightNormal : leftNormal;
     }
     
     // For holes (inner boundaries):
-    if (isHole) {
+    else if (isHole) {
       // Leads should be placed inside the hole (away from solid material)
       // For clockwise holes: lead curves opposite to shell direction
       // For counterclockwise holes: lead curves opposite to shell direction
-      return cutDirection === 'clockwise' ? leftNormal : rightNormal;
+      selectedDirection = cutDirection === 'clockwise' ? leftNormal : rightNormal;
     }
     
     // For chains without part context, still respect cut direction
-    if (!isHole && !isShell) {
+    else if (!isHole && !isShell) {
       // Default behavior: assume it's an outer boundary
-      return cutDirection === 'clockwise' ? rightNormal : leftNormal;
+      selectedDirection = cutDirection === 'clockwise' ? rightNormal : leftNormal;
     }
   }
-
   // Fallback: If no cut direction is specified, use geometric analysis
-  // For shells, try to place leads outward
-  if (isShell) {
-    const outwardNormal = calculateLocalOutwardNormal(chain, point, tangent);
-    if (outwardNormal) {
-      return outwardNormal;
+  else {
+    // For shells, try to place leads outward
+    if (isShell) {
+      const outwardNormal = calculateLocalOutwardNormal(chain, point, tangent);
+      if (outwardNormal) {
+        selectedDirection = outwardNormal;
+      } else {
+        selectedDirection = leftNormal; // Default fallback
+      }
+    }
+    // For holes, try to place leads inward
+    else if (isHole) {
+      const outwardNormal = calculateLocalOutwardNormal(chain, point, tangent);
+      if (outwardNormal) {
+        // For holes, we want the opposite of outward (inward)
+        selectedDirection = { x: -outwardNormal.x, y: -outwardNormal.y };
+      } else {
+        selectedDirection = leftNormal; // Default fallback
+      }
+    }
+    // Final fallback: use centroid-based approach
+    else {
+      const centroid = calculateChainCentroid(chain);
+      const toCentroid = {
+        x: centroid.x - point.x,
+        y: centroid.y - point.y
+      };
+
+      const toCentroidLen = Math.sqrt(toCentroid.x * toCentroid.x + toCentroid.y * toCentroid.y);
+      if (toCentroidLen > 0) {
+        toCentroid.x /= toCentroidLen;
+        toCentroid.y /= toCentroidLen;
+      }
+
+      if (isHole) {
+        const leftDot = leftNormal.x * toCentroid.x + leftNormal.y * toCentroid.y;
+        const rightDot = rightNormal.x * toCentroid.x + rightNormal.y * toCentroid.y;
+        selectedDirection = leftDot > rightDot ? leftNormal : rightNormal;
+      } else if (isShell) {
+        const leftDot = leftNormal.x * toCentroid.x + leftNormal.y * toCentroid.y;
+        const rightDot = rightNormal.x * toCentroid.x + rightNormal.y * toCentroid.y;
+        selectedDirection = leftDot < rightDot ? leftNormal : rightNormal;
+      } else {
+        selectedDirection = leftNormal;
+      }
     }
   }
 
-  // For holes, try to place leads inward
-  if (isHole) {
-    const outwardNormal = calculateLocalOutwardNormal(chain, point, tangent);
-    if (outwardNormal) {
-      // For holes, we want the opposite of outward (inward)
-      return { x: -outwardNormal.x, y: -outwardNormal.y };
-    }
+  // Apply flip if requested
+  if (flipSide) {
+    selectedDirection = { x: -selectedDirection.x, y: -selectedDirection.y };
   }
 
-  // Final fallback: use centroid-based approach
-  const centroid = calculateChainCentroid(chain);
-  const toCentroid = {
-    x: centroid.x - point.x,
-    y: centroid.y - point.y
-  };
-
-  const toCentroidLen = Math.sqrt(toCentroid.x * toCentroid.x + toCentroid.y * toCentroid.y);
-  if (toCentroidLen > 0) {
-    toCentroid.x /= toCentroidLen;
-    toCentroid.y /= toCentroidLen;
-  }
-
-  if (isHole) {
-    const leftDot = leftNormal.x * toCentroid.x + leftNormal.y * toCentroid.y;
-    const rightDot = rightNormal.x * toCentroid.x + rightNormal.y * toCentroid.y;
-    return leftDot > rightDot ? leftNormal : rightNormal;
-  } else if (isShell) {
-    const leftDot = leftNormal.x * toCentroid.x + leftNormal.y * toCentroid.y;
-    const rightDot = rightNormal.x * toCentroid.x + rightNormal.y * toCentroid.y;
-    return leftDot < rightDot ? leftNormal : rightNormal;
-  }
-
-  return leftNormal;
+  return selectedDirection;
 }
 
 /**

@@ -26,6 +26,32 @@
   $: highlightedRapidId = $rapidStore.highlightedRapidId;
   $: leadWarnings = $leadWarningsStore.warnings;
 
+  // Track previous hash to prevent infinite loops
+  let previousPathsHash = '';
+  let isOptimizing = false;
+  
+  // Automatically recalculate rapids when paths change
+  // We only react to lead-related changes, not order changes to avoid loops
+  $: {
+    // Only include properties that affect lead geometry, not order
+    const pathsHash = paths.map(p => 
+      `${p.id}:${p.leadInType}:${p.leadInLength}:${p.leadInFlipSide}:${p.leadInAngle}:${p.leadOutType}:${p.leadOutLength}:${p.leadOutFlipSide}:${p.leadOutAngle}:${p.enabled}`
+    ).join('|');
+    
+    // Only trigger if the hash actually changed and we have the necessary data
+    if (pathsHash !== previousPathsHash && paths.length > 0 && chains.length > 0 && drawing && !isOptimizing) {
+      previousPathsHash = pathsHash;
+      // Use setTimeout to avoid recursive updates and ensure all stores are synced
+      setTimeout(() => {
+        isOptimizing = true;
+        handleOptimizeCutOrder();
+        // Reset flag after a short delay to allow for store updates
+        setTimeout(() => {
+          isOptimizing = false;
+        }, 100);
+      }, 0);
+    }
+  }
 
   function handleNext() {
     if ($workflowStore.canAdvanceTo('simulate')) {
