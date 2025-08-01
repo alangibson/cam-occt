@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { detectShapeChains } from './chain-detection';
 import type { Shape } from '../../types';
+import { CutDirection, LeadType } from '../types/direction';
 
 // Helper function to create ellipse shapes
 function createEllipse(
@@ -76,7 +77,7 @@ describe('Chain Detection - Ellipse Support', () => {
       // Create a line that connects to the ellipse arc's start point (30, 0)
       const line: Shape = {
         id: 'line1',
-        type: 'line',
+        type: LeadType.LINE,
         geometry: {
           start: { x: 30, y: 0 },
           end: { x: 50, y: 20 }
@@ -112,7 +113,7 @@ describe('Chain Detection - Ellipse Support', () => {
       // Line connecting to arc end point
       const line: Shape = {
         id: 'line1',
-        type: 'line',
+        type: LeadType.LINE,
         geometry: {
           start: { x: 0, y: 20 }, // Arc end point
           end: { x: 30, y: 50 }
@@ -142,7 +143,7 @@ describe('Chain Detection - Ellipse Support', () => {
         createEllipse('arc1', { x: 50, y: 50 }, { x: 30, y: 0 }, 0.7, 0, Math.PI), // Arc
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 20, y: 50 }, // Near arc start
             end: { x: 0, y: 0 } // Connects to ellipse1 center

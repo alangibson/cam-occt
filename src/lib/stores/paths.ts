@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import type { ShapeChain } from '../algorithms/chain-detection';
 import { workflowStore } from './workflow';
+import { CutDirection, LeadType } from '../types/direction';
 
 export interface Path {
   id: string;
@@ -10,7 +11,7 @@ export interface Path {
   toolId: string | null; // Reference to the tool used
   enabled: boolean;
   order: number; // Execution order within operation
-  cutDirection: 'clockwise' | 'counterclockwise' | 'none'; // Detected cut direction
+  cutDirection: CutDirection; // Detected cut direction
   feedRate?: number; // Cutting speed
   pierceHeight?: number; // Height for pierce operation
   pierceDelay?: number; // Delay for pierce operation
@@ -18,11 +19,11 @@ export interface Path {
   kerfWidth?: number; // Kerf compensation width
   thcEnabled?: boolean; // Torch height control
   leadInLength?: number; // Lead-in length
-  leadInType?: 'arc' | 'line' | 'none'; // Lead-in type
+  leadInType?: LeadType; // Lead-in type
   leadInFlipSide?: boolean; // Flip which side of the chain the lead-in is on
   leadInAngle?: number; // Manual rotation angle for lead-in (degrees, 0-360)
   leadOutLength?: number; // Lead-out length
-  leadOutType?: 'arc' | 'line' | 'none'; // Lead-out type
+  leadOutType?: LeadType; // Lead-out type
   leadOutFlipSide?: boolean; // Flip which side of the chain the lead-out is on
   leadOutAngle?: number; // Manual rotation angle for lead-out (degrees, 0-360)
   overcutLength?: number; // Overcut length

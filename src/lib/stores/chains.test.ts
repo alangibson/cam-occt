@@ -3,21 +3,22 @@ import { get } from 'svelte/store';
 import { chainStore, setChains, clearChains, setTolerance, getShapeChainId, getChainShapeIds, getChainById } from './chains';
 import type { ShapeChain } from '../algorithms/chain-detection';
 import { generateId } from '../utils/id';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Chain Store', () => {
   const mockChains: ShapeChain[] = [
     {
       id: 'chain-1',
       shapes: [
-        { id: 'shape-1', type: 'line', geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } } },
-        { id: 'shape-2', type: 'line', geometry: { start: { x: 10, y: 0 }, end: { x: 20, y: 0 } } }
+        { id: 'shape-1', type: LeadType.LINE, geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } } },
+        { id: 'shape-2', type: LeadType.LINE, geometry: { start: { x: 10, y: 0 }, end: { x: 20, y: 0 } } }
       ]
     },
     {
       id: 'chain-2', 
       shapes: [
         { id: 'shape-3', type: 'circle', geometry: { center: { x: 50, y: 50 }, radius: 5 } },
-        { id: 'shape-4', type: 'line', geometry: { start: { x: 55, y: 50 }, end: { x: 65, y: 50 } } }
+        { id: 'shape-4', type: LeadType.LINE, geometry: { start: { x: 55, y: 50 }, end: { x: 65, y: 50 } } }
       ]
     }
   ];

@@ -4,6 +4,7 @@ import type { Path } from '../stores/paths';
 import type { ShapeChain } from './chain-detection';
 import type { Shape, Ellipse, Spline } from '../../types';
 import type { DetectedPart } from './part-detection';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Optimize Cut Order', () => {
   it('should handle ellipse shapes in chains', () => {
@@ -35,7 +36,7 @@ describe('Optimize Cut Order', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 1,
-      cutDirection: 'counterclockwise'
+      cutDirection: CutDirection.COUNTERCLOCKWISE
     };
 
     // Create a map of chains
@@ -90,7 +91,7 @@ describe('Optimize Cut Order', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 1,
-      cutDirection: 'counterclockwise'
+      cutDirection: CutDirection.COUNTERCLOCKWISE
     };
 
     // Create a map of chains
@@ -171,7 +172,7 @@ describe('Optimize Cut Order', () => {
         toolId: 'tool-1',
         enabled: true,
         order: index + 1,
-        cutDirection: 'counterclockwise'
+        cutDirection: CutDirection.COUNTERCLOCKWISE
       });
     });
 

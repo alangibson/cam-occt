@@ -2,13 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
 import type { ShapeChain } from './chain-detection';
 import type { Shape } from '../../types';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Chain Normalization', () => {
   // Helper function to create a line shape
   function createLine(id: string, start: { x: number; y: number }, end: { x: number; y: number }): Shape {
     return {
       id,
-      type: 'line',
+      type: LeadType.LINE,
       geometry: { start, end }
     } as Shape;
   }
@@ -219,7 +220,7 @@ describe('Chain Normalization', () => {
       function createArc(id: string, center: { x: number; y: number }, radius: number, startAngle: number, endAngle: number, clockwise: boolean = false): Shape {
         return {
           id,
-          type: 'arc',
+          type: LeadType.ARC,
           geometry: {
             center,
             radius,

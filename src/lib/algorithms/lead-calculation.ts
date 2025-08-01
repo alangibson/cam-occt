@@ -1,8 +1,8 @@
 import type { Point2D } from '../../types/geometry';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
-
-export type LeadType = 'arc' | 'line' | 'none';
+import { LeadType, CutDirection } from '../types/direction';
+import { validateLeadConfiguration, type LeadValidationResult } from './lead-validation';
 
 export interface LeadInConfig {
   type: LeadType;
@@ -27,6 +27,7 @@ export interface LeadResult {
   leadIn?: LeadGeometry;
   leadOut?: LeadGeometry;
   warnings?: string[];
+  validation?: LeadValidationResult;
 }
 
 /**
@@ -38,11 +39,31 @@ export function calculateLeads(
   chain: ShapeChain,
   leadInConfig: LeadInConfig,
   leadOutConfig: LeadOutConfig,
-  cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'none',
+  cutDirection: CutDirection = CutDirection.NONE,
   part?: DetectedPart
 ): LeadResult {
   const result: LeadResult = {};
   const warnings: string[] = [];
+
+  // 1. VALIDATION PIPELINE - Run comprehensive validation first
+  const validation = validateLeadConfiguration(
+    { leadIn: leadInConfig, leadOut: leadOutConfig, cutDirection },
+    chain,
+    part
+  );
+  
+  result.validation = validation;
+  
+  // Add validation warnings to the result
+  if (validation.warnings.length > 0) {
+    warnings.push(...validation.warnings);
+  }
+  
+  // If validation fails with errors, return early with validation results
+  if (!validation.isValid && validation.severity === 'error') {
+    result.warnings = warnings;
+    return result;
+  }
 
   // Skip if no leads requested
   if (leadInConfig.type === 'none' && leadOutConfig.type === 'none') {
@@ -109,13 +130,13 @@ function calculateLead(
   isLeadIn: boolean,
   isHole: boolean,
   isShell: boolean,
-  cutDirection: 'clockwise' | 'counterclockwise' | 'none',
+  cutDirection: CutDirection,
   part?: DetectedPart,
   warnings: string[] = []
 ): LeadGeometry | undefined {
-  if (config.type === 'arc') {
+  if (config.type === LeadType.ARC) {
     return calculateArcLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings, config.flipSide, config.angle);
-  } else if (config.type === 'line') {
+  } else if (config.type === LeadType.LINE) {
     return calculateLineLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings, config.flipSide, config.angle);
   }
   return undefined;
@@ -135,7 +156,7 @@ function calculateArcLead(
   isLeadIn: boolean,
   isHole: boolean,
   isShell: boolean,
-  cutDirection: 'clockwise' | 'counterclockwise' | 'none',
+  cutDirection: CutDirection,
   part?: DetectedPart,
   warnings: string[] = [],
   flipSide: boolean = false,
@@ -166,11 +187,11 @@ function calculateArcLead(
   
   if (manualAngle !== undefined) {
     // Use manual angle as absolute direction (unit circle: 0° = right, 90° = up, etc.)
-    // Note: Y-axis is flipped in CAD coordinates, so negate Y component
+    // Work in world coordinates (Y+ up), canvas rendering will handle coordinate conversion
     const manualAngleRad = (manualAngle * Math.PI) / 180;
     const absoluteDirection = {
       x: Math.cos(manualAngleRad),
-      y: -Math.sin(manualAngleRad)  // Negate Y for CAD coordinate system
+      y: Math.sin(manualAngleRad)  // Use standard unit circle (Y+ up for world coordinates)
     };
     curveDirectionsToTry = [absoluteDirection];
   } else {
@@ -200,21 +221,34 @@ function calculateArcLead(
       };
 
       // Generate arc points ensuring tangency
-      const points = generateTangentArcPoints(
-        arcCenter,
-        adjustedRadius,
-        point,
-        adjustedSweepAngle,
-        isLeadIn,
-        tangent,
-        curveDirection
-      );
+      let points: Point2D[];
+      if (manualAngle !== undefined) {
+        // For manual angles, use simpler arc generation that respects the angle
+        points = generateSimpleArcPoints(
+          arcCenter,
+          adjustedRadius,
+          point,
+          adjustedSweepAngle,
+          isLeadIn,
+          curveDirection
+        );
+      } else {
+        points = generateTangentArcPoints(
+          arcCenter,
+          adjustedRadius,
+          point,
+          adjustedSweepAngle,
+          isLeadIn,
+          tangent,
+          curveDirection
+        );
+      }
 
       // If no part context, use the first valid lead
       if (!part) {
         return {
           points,
-          type: 'arc'
+          type: LeadType.ARC
         };
       }
 
@@ -225,7 +259,7 @@ function calculateArcLead(
       if (!intersectsSolid) {
         return {
           points,
-          type: 'arc'
+          type: LeadType.ARC
         };
       }
     }
@@ -245,19 +279,32 @@ function calculateArcLead(
     y: point.y + baseCurveDirection.y * radius
   };
 
-  const points = generateTangentArcPoints(
-    arcCenter,
-    radius,
-    point,
-    actualSweepAngle,
-    isLeadIn,
-    tangent,
-    baseCurveDirection
-  );
+  let points: Point2D[];
+  if (manualAngle !== undefined) {
+    // For manual angles, use simpler arc generation that respects the angle
+    points = generateSimpleArcPoints(
+      arcCenter,
+      radius,
+      point,
+      actualSweepAngle,
+      isLeadIn,
+      baseCurveDirection
+    );
+  } else {
+    points = generateTangentArcPoints(
+      arcCenter,
+      radius,
+      point,
+      actualSweepAngle,
+      isLeadIn,
+      tangent,
+      baseCurveDirection
+    );
+  }
 
   return {
     points,
-    type: 'arc'
+    type: LeadType.ARC
   };
 }
 
@@ -274,7 +321,7 @@ function calculateLineLead(
   isLeadIn: boolean,
   isHole: boolean,
   isShell: boolean,
-  cutDirection: 'clockwise' | 'counterclockwise' | 'none',
+  cutDirection: CutDirection,
   part?: DetectedPart,
   warnings: string[] = [],
   flipSide: boolean = false,
@@ -292,11 +339,11 @@ function calculateLineLead(
   
   if (manualAngle !== undefined) {
     // Use manual angle as absolute direction (unit circle: 0° = right, 90° = up, etc.)
-    // Note: Y-axis is flipped in CAD coordinates, so negate Y component
+    // Work in world coordinates (Y+ up), canvas rendering will handle coordinate conversion
     const manualAngleRad = (manualAngle * Math.PI) / 180;
     const absoluteDirection = {
       x: Math.cos(manualAngleRad),
-      y: -Math.sin(manualAngleRad)  // Negate Y for CAD coordinate system
+      y: Math.sin(manualAngleRad)  // Use standard unit circle (Y+ up for world coordinates)
     };
     leadDirectionsToTry = [absoluteDirection];
   } else {
@@ -330,7 +377,7 @@ function calculateLineLead(
       if (!part) {
         return {
           points,
-          type: 'line'
+          type: LeadType.LINE
         };
       }
 
@@ -341,7 +388,7 @@ function calculateLineLead(
       if (!intersectsSolid) {
         return {
           points,
-          type: 'line'
+          type: LeadType.LINE
         };
       }
     }
@@ -365,8 +412,68 @@ function calculateLineLead(
 
   return {
     points,
-    type: 'line'
+    type: LeadType.LINE
   };
+}
+
+/**
+ * Generate points along a simple arc lead that respects manual angles.
+ * This is used when manual angles are specified to avoid complex tangency calculations.
+ */
+function generateSimpleArcPoints(
+  center: Point2D,
+  radius: number,
+  connectionPoint: Point2D,
+  sweepAngle: number,
+  isLeadIn: boolean,
+  direction: Point2D
+): Point2D[] {
+  const points: Point2D[] = [];
+  const segments = Math.max(8, Math.ceil(sweepAngle * radius / 2)); // Approximate 2mm segments
+
+  // Calculate the angle of the connection point relative to the arc center
+  const connectionAngle = Math.atan2(
+    connectionPoint.y - center.y, 
+    connectionPoint.x - center.x
+  );
+
+  if (isLeadIn) {
+    // Lead-in: arc starts away from connection and ends at connection point
+    const startAngle = connectionAngle - sweepAngle; // Start earlier in the arc
+    
+    for (let i = 0; i <= segments; i++) {
+      const t = i / segments;
+      const angle = startAngle + t * sweepAngle; // Sweep from start to connection
+      
+      if (i === segments) {
+        // Ensure last point is exactly the connection point
+        points.push(connectionPoint);
+      } else {
+        points.push({
+          x: center.x + radius * Math.cos(angle),
+          y: center.y + radius * Math.sin(angle)
+        });
+      }
+    }
+  } else {
+    // Lead-out: arc starts at connection point and curves away
+    for (let i = 0; i <= segments; i++) {
+      const t = i / segments;
+      const angle = connectionAngle + t * sweepAngle; // Sweep from connection outward
+      
+      if (i === 0) {
+        // Ensure first point is exactly the connection point
+        points.push(connectionPoint);
+      } else {
+        points.push({
+          x: center.x + radius * Math.cos(angle),
+          y: center.y + radius * Math.sin(angle)
+        });
+      }
+    }
+  }
+
+  return points;
 }
 
 /**
@@ -509,9 +616,10 @@ function generateTangentLinePoints(
   
   if (isLeadIn) {
     // Lead-in: line starts away from connection and ends at connection point
+    // leadDirection points FROM connection TO start, so we ADD it for lead-in
     const startPoint: Point2D = {
-      x: connectionPoint.x - leadDirection.x * lineLength,
-      y: connectionPoint.y - leadDirection.y * lineLength
+      x: connectionPoint.x + leadDirection.x * lineLength,
+      y: connectionPoint.y + leadDirection.y * lineLength
     };
     
     // Generate points along the line (start to connection)
@@ -530,6 +638,7 @@ function generateTangentLinePoints(
     }
   } else {
     // Lead-out: line starts at connection point and extends away
+    // leadDirection points FROM connection TO end, so we ADD it for lead-out
     const endPoint: Point2D = {
       x: connectionPoint.x + leadDirection.x * lineLength,
       y: connectionPoint.y + leadDirection.y * lineLength
@@ -702,7 +811,7 @@ function getLeadCurveDirection(
   tangent: Point2D,
   isHole: boolean,
   isShell: boolean,
-  cutDirection: 'clockwise' | 'counterclockwise' | 'none',
+  cutDirection: CutDirection,
   chain: ShapeChain,
   point: Point2D,
   part?: DetectedPart,
@@ -727,7 +836,7 @@ function getLeadCurveDirection(
         // Default: leads should be placed outside the part
         // For clockwise cuts: lead curves to maintain clockwise flow
         // For counterclockwise cuts: lead curves to maintain counterclockwise flow
-        selectedDirection = cutDirection === 'clockwise' ? rightNormal : leftNormal;
+        selectedDirection = cutDirection === CutDirection.CLOCKWISE ? rightNormal : leftNormal;
       }
     }
     
@@ -736,13 +845,13 @@ function getLeadCurveDirection(
       // Leads should be placed inside the hole (away from solid material)
       // For clockwise holes: lead curves opposite to shell direction
       // For counterclockwise holes: lead curves opposite to shell direction
-      selectedDirection = cutDirection === 'clockwise' ? leftNormal : rightNormal;
+      selectedDirection = cutDirection === CutDirection.CLOCKWISE ? leftNormal : rightNormal;
     }
     
     // For chains without part context, still respect cut direction
     else if (!isHole && !isShell) {
       // Default behavior: assume it's an outer boundary
-      selectedDirection = cutDirection === 'clockwise' ? rightNormal : leftNormal;
+      selectedDirection = cutDirection === CutDirection.CLOCKWISE ? rightNormal : leftNormal;
     }
   }
   // Fallback: If no cut direction is specified, use geometric analysis

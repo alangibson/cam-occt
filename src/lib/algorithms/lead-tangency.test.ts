@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
 import type { Shape } from '../../types/geometry';
@@ -9,7 +10,7 @@ describe('Lead Tangency Tests', () => {
   function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): ShapeChain {
     const shape: Shape = {
       id: 'shape1',
-      type: 'line',
+      type: LeadType.LINE,
       geometry: { start, end },
       layer: 'layer1'
     };
@@ -47,8 +48,8 @@ describe('Lead Tangency Tests', () => {
     it('should create tangent lead-in for horizontal line', () => {
       // Horizontal line from (0,0) to (10,0)
       const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-      const leadIn: LeadInConfig = { type: 'arc', length: 5 };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -80,8 +81,8 @@ describe('Lead Tangency Tests', () => {
     it('should create tangent lead-out for horizontal line', () => {
       // Horizontal line from (0,0) to (10,0)
       const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-      const leadIn: LeadInConfig = { type: 'none', length: 0 };
-      const leadOut: LeadOutConfig = { type: 'arc', length: 5 };
+      const leadIn: LeadInConfig = { type: LeadType.NONE, length: 0 };
+      const leadOut: LeadOutConfig = { type: LeadType.ARC, length: 5 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -113,8 +114,8 @@ describe('Lead Tangency Tests', () => {
     it('should create tangent lead for circle', () => {
       // Circle at (5, 5) with radius 3
       const chain = createCircleChain({ x: 5, y: 5 }, 3);
-      const leadIn: LeadInConfig = { type: 'arc', length: 4 };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 4 };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -161,13 +162,13 @@ describe('Lead Tangency Tests', () => {
         holes: [{ id: 'hole1', chain: holeChain, type: 'hole', boundingBox: { minX: 4, maxX: 6, minY: 4, maxY: 6 }, holes: [] }]
       };
 
-      const leadConfig: LeadInConfig = { type: 'arc', length: 2 };
+      const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 2 };
       
       // Test shell lead
-      const shellResult = calculateLeads(shellChain, leadConfig, { type: 'none', length: 0 }, shellPart);
+      const shellResult = calculateLeads(shellChain, leadConfig, { type: LeadType.NONE, length: 0 }, CutDirection.NONE, shellPart);
       
       // Test hole lead  
-      const holeResult = calculateLeads(holeChain, leadConfig, { type: 'none', length: 0 }, holeInShellPart);
+      const holeResult = calculateLeads(holeChain, leadConfig, { type: LeadType.NONE, length: 0 }, CutDirection.NONE, holeInShellPart);
       
       expect(shellResult.leadIn).toBeDefined();
       expect(holeResult.leadIn).toBeDefined();
@@ -194,8 +195,8 @@ describe('Lead Tangency Tests', () => {
     it('should generate arc with correct length', () => {
       const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
       const targetLength = 5;
-      const leadIn: LeadInConfig = { type: 'arc', length: targetLength };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: targetLength };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -217,8 +218,8 @@ describe('Lead Tangency Tests', () => {
     it('should respect 90-degree maximum sweep', () => {
       const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
       const veryLongLength = 1000; // This would require > 90° if radius is small
-      const leadIn: LeadInConfig = { type: 'arc', length: veryLongLength };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: veryLongLength };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       

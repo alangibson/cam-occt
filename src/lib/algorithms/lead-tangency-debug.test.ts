@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { Shape } from '../../types/geometry';
 
@@ -7,7 +8,7 @@ describe('Lead Tangency Debug', () => {
   function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): ShapeChain {
     const shape: Shape = {
       id: 'shape1',
-      type: 'line',
+      type: LeadType.LINE,
       geometry: { start, end },
       layer: 'layer1'
     };
@@ -21,8 +22,8 @@ describe('Lead Tangency Debug', () => {
   it('should debug horizontal line lead-in geometry', () => {
     // Horizontal line from (0,0) to (10,0)
     const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-    const leadIn: LeadInConfig = { type: 'arc', length: 5 };
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     const result = calculateLeads(chain, leadIn, leadOut);
     

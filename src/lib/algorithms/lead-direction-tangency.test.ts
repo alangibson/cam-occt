@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 
 describe('Lead Direction and Cut Direction Tangency', () => {
@@ -53,12 +54,12 @@ describe('Lead Direction and Cut Direction Tangency', () => {
   }
 
   // Helper to get the tangent direction based on cut direction
-  function getExpectedTangentDirection(shape: any, cutDirection: 'clockwise' | 'counterclockwise'): number {
+  function getExpectedTangentDirection(shape: any, cutDirection: CutDirection.CLOCKWISE | 'counterclockwise'): number {
     if (shape.type === 'circle') {
       // For circles, tangent should be perpendicular to radius
       // Clockwise cuts go in one direction, counterclockwise in the opposite
       const radiusAngle = 0; // Starting at rightmost point
-      return cutDirection === 'clockwise' 
+      return cutDirection === CutDirection.CLOCKWISE 
         ? radiusAngle - Math.PI / 2  // 90° clockwise from radius
         : radiusAngle + Math.PI / 2; // 90° counterclockwise from radius
     }
@@ -75,8 +76,8 @@ describe('Lead Direction and Cut Direction Tangency', () => {
     const clockwiseCircle = createCircleChain(center, radius, true);
     console.log('\nTesting CLOCKWISE circle cut:');
     
-    const leadInConfig: LeadInConfig = { type: 'arc', length: 10 };
-    const leadOutConfig: LeadOutConfig = { type: 'arc', length: 10 };
+    const leadInConfig: LeadInConfig = { type: LeadType.ARC, length: 10 };
+    const leadOutConfig: LeadOutConfig = { type: LeadType.ARC, length: 10 };
     
     const clockwiseResult = calculateLeads(clockwiseCircle, leadInConfig, leadOutConfig);
     
@@ -117,8 +118,8 @@ describe('Lead Direction and Cut Direction Tangency', () => {
     const clockwiseRect = createRectangleChain(10, 10, 40, 30, true);
     console.log('\nTesting CLOCKWISE rectangle cut:');
     
-    const leadInConfig: LeadInConfig = { type: 'arc', length: 8 };
-    const leadOutConfig: LeadOutConfig = { type: 'none', length: 0 };
+    const leadInConfig: LeadInConfig = { type: LeadType.ARC, length: 8 };
+    const leadOutConfig: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     const clockwiseResult = calculateLeads(clockwiseRect, leadInConfig, leadOutConfig);
     

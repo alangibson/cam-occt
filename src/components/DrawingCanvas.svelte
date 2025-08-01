@@ -14,6 +14,8 @@
   import { sampleNURBS, evaluateNURBS } from '../lib/geometry/nurbs';
   import { calculateLeads } from '../lib/algorithms/lead-calculation';
   import { leadWarningsStore } from '../lib/stores/lead-warnings';
+  import { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
+  import LeadVisualization from './LeadVisualization.svelte';
   import type { Shape, Point2D } from '../types';
   import type { WorkflowStage } from '../lib/stores/workflow';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
@@ -31,6 +33,8 @@
   let isMouseDown = false;
   let dragStart: Point2D | null = null;
   let mouseButton = 0; // Track which mouse button was pressed
+  let coordinator: CoordinateTransformer;
+  let leadVisualization: LeadVisualization;
   
   $: drawing = $drawingStore.drawing;
   $: selectedShapes = $drawingStore.selectedShapes;
@@ -74,6 +78,11 @@
   $: physicalScale = drawing ? getPhysicalScaleFactor(drawing.units, displayUnit) : 1;
   $: totalScale = scale * physicalScale;
   
+  // Update coordinate transformer when parameters change
+  $: if (canvas && coordinator) {
+    coordinator.updateTransform(scale, offset, physicalScale);
+  }
+  
   // Consolidate all reactive render triggers
   $: {
     // List all dependencies that should trigger a re-render
@@ -101,6 +110,14 @@
   onMount(() => {
     ctx = canvas.getContext('2d')!;
     
+    // Initialize coordinate transformer
+    coordinator = new CoordinateTransformer(
+      canvas,
+      scale,
+      offset,
+      physicalScale
+    );
+    
     // Set up resize observer to maintain proper canvas sizing
     const resizeObserver = new ResizeObserver(entries => {
       for (const entry of entries) {
@@ -113,6 +130,11 @@
         // Update canvas size to match container
         canvas.width = width;
         canvas.height = height;
+        
+        // Update coordinate transformer canvas dimensions
+        if (coordinator) {
+          coordinator.updateCanvas(canvas);
+        }
         
         // No need to adjust offset anymore - origin position is now fixed
         
@@ -149,12 +171,11 @@
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Set transform using fixed origin position (25% from left, 75% from top)
+    // Set transform using coordinate transformer
     ctx.save();
-    const originX = canvas.width * 0.25 + offset.x;
-    const originY = canvas.height * 0.75 + offset.y;
-    ctx.translate(originX, originY);
-    ctx.scale(totalScale, -totalScale); // Flip Y axis for CAD convention with physical scaling
+    const screenOrigin = coordinator.getScreenOrigin();
+    ctx.translate(screenOrigin.x, screenOrigin.y);
+    ctx.scale(coordinator.getTotalScale(), -coordinator.getTotalScale()); // Flip Y axis for CAD convention
     
     // Draw origin cross at (0,0)
     drawOriginCross();
@@ -206,10 +227,10 @@
   }
   
   function drawOriginCross() {
-    const crossSize = 20 / totalScale; // Fixed size regardless of zoom
+    const crossSize = coordinator.screenToWorldDistance(20); // Fixed size regardless of zoom
     
     ctx.strokeStyle = '#888888';
-    ctx.lineWidth = 1 / totalScale;
+    ctx.lineWidth = coordinator.screenToWorldDistance(1);
     
     // Draw horizontal line
     ctx.beginPath();
@@ -237,16 +258,18 @@
       // Set styling based on state
       if (isSelected) {
         ctx.strokeStyle = '#ff6600'; // Orange for selected (same as selected shapes)
-        ctx.lineWidth = 2 / totalScale; // Thicker line
+        ctx.lineWidth = coordinator.screenToWorldDistance(2); // Thicker line
         ctx.setLineDash([]); // Solid line for selected
       } else if (isHighlighted) {
         ctx.strokeStyle = '#ff6600'; // Orange for highlighted
-        ctx.lineWidth = 1.5 / totalScale; // Medium thickness
-        ctx.setLineDash([3 / totalScale, 3 / totalScale]); // Shorter dashes
+        ctx.lineWidth = coordinator.screenToWorldDistance(1.5); // Medium thickness
+        const dashSize = coordinator.screenToWorldDistance(3);
+        ctx.setLineDash([dashSize, dashSize]); // Shorter dashes
       } else {
         ctx.strokeStyle = '#00bfff'; // Light blue for normal
-        ctx.lineWidth = 0.5 / totalScale; // Thin line
-        ctx.setLineDash([5 / totalScale, 5 / totalScale]); // Normal dashes
+        ctx.lineWidth = coordinator.screenToWorldDistance(0.5); // Thin line
+        const dashSize = coordinator.screenToWorldDistance(5);
+        ctx.setLineDash([dashSize, dashSize]); // Normal dashes
       }
       
       ctx.beginPath();
@@ -261,7 +284,7 @@
   function drawPathEndpoints() {
     if (!pathsState || pathsState.paths.length === 0) return;
     
-    const pointRadius = 3 / totalScale; // Fixed size regardless of zoom
+    const pointRadius = coordinator.screenToWorldDistance(3); // Fixed size regardless of zoom
     
     pathsState.paths.forEach(path => {
       // Only draw endpoints for enabled paths with enabled operations
@@ -303,96 +326,10 @@
   }
   
   function drawLeads() {
-    if (!pathsState || pathsState.paths.length === 0) return;
-    
-    pathsState.paths.forEach(path => {
-      // Only draw leads for enabled paths with enabled operations
-      const operation = operations.find(op => op.id === path.operationId);
-      if (!operation || !operation.enabled || !path.enabled) return;
-      
-      // Skip if both leads are disabled
-      if (path.leadInType === 'none' && path.leadOutType === 'none') return;
-      
-      // Get the chain for this path
-      const chain = chains.find(c => c.id === path.chainId);
-      if (!chain || chain.shapes.length === 0) return;
-      
-      // Get the part if the path is part of a part
-      let part = null;
-      if (operation.targetType === 'parts') {
-        part = parts?.find(p => 
-          p.shell.chain.id === path.chainId || 
-          p.holes.some((h: any) => h.chain.id === path.chainId)
-        );
-      }
-      
-      try {
-        // Calculate leads
-        const leadInConfig = {
-          type: path.leadInType || 'none',
-          length: path.leadInLength || 0,
-          flipSide: path.leadInFlipSide || false,
-          angle: path.leadInAngle
-        };
-        const leadOutConfig = {
-          type: path.leadOutType || 'none', 
-          length: path.leadOutLength || 0,
-          flipSide: path.leadOutFlipSide || false,
-          angle: path.leadOutAngle
-        };
-        
-        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part || undefined);
-        
-        // Handle lead warnings
-        if (leadResult.warnings && leadResult.warnings.length > 0) {
-          // Clear previous warnings for this path first
-          leadWarningsStore.clearWarningsForChain(path.chainId);
-          
-          // Add new warnings
-          leadResult.warnings.forEach(warningMessage => {
-            const isLeadIn = warningMessage.includes('Lead-in');
-            leadWarningsStore.addWarning({
-              operationId: path.operationId,
-              chainId: path.chainId,
-              message: warningMessage,
-              type: isLeadIn ? 'lead-in' : 'lead-out'
-            });
-          });
-        }
-        
-        // Draw lead-in
-        if (leadResult.leadIn && leadResult.leadIn.points.length > 1) {
-          drawLeadGeometry(leadResult.leadIn.points, '#9333ea'); // Purple for lead-in
-        }
-        
-        // Draw lead-out
-        if (leadResult.leadOut && leadResult.leadOut.points.length > 1) {
-          drawLeadGeometry(leadResult.leadOut.points, '#dc2626'); // Red for lead-out
-        }
-      } catch (error) {
-        console.warn('Failed to calculate leads for path:', path.name, error);
-      }
-    });
+    if (!leadVisualization) return;
+    leadVisualization.drawLeads();
   }
   
-  function drawLeadGeometry(points: Array<{x: number, y: number}>, color: string) {
-    if (points.length < 2) return;
-    
-    ctx.save();
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5 / totalScale; // Slightly thicker than normal lines
-    ctx.setLineDash([5 / totalScale, 5 / totalScale]); // Dashed line to distinguish from main path
-    
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    
-    for (let i = 1; i < points.length; i++) {
-      ctx.lineTo(points[i].x, points[i].y);
-    }
-    
-    ctx.stroke();
-    ctx.restore();
-  }
   
   function drawPathChevrons() {
     if (!pathsState || pathsState.paths.length === 0) return;
@@ -412,7 +349,7 @@
       
       // Draw chevron arrows at regular intervals
       const chevronSpacing = 20; // Draw a chevron every 20 sample points
-      const chevronSize = 8 / totalScale; // Size of chevrons in world units
+      const chevronSize = coordinator.screenToWorldDistance(8); // Size of chevrons in world units
       
       for (let i = chevronSpacing; i < pathPoints.length - chevronSpacing; i += chevronSpacing) {
         const currentPoint = pathPoints[i];
@@ -441,7 +378,7 @@
   function drawChevronArrow(center: Point2D, dirX: number, dirY: number, perpX: number, perpY: number, size: number) {
     ctx.save();
     ctx.strokeStyle = '#16a34a'; // Green color to match path color
-    ctx.lineWidth = 1.5 / totalScale;
+    ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     
@@ -670,7 +607,7 @@
     // Set blue color for tessellation points
     ctx.fillStyle = '#2563eb'; // Blue color
     
-    const pointRadius = 2 / totalScale; // Fixed size regardless of zoom
+    const pointRadius = coordinator.screenToWorldDistance(2); // Fixed size regardless of zoom
     
     for (const point of points) {
       ctx.beginPath();
@@ -850,13 +787,13 @@
       ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
       for (const cp of spline.controlPoints) {
         ctx.beginPath();
-        ctx.arc(cp.x, cp.y, 4 / totalScale, 0, 2 * Math.PI);
+        ctx.arc(cp.x, cp.y, coordinator.screenToWorldDistance(4), 0, 2 * Math.PI);
         ctx.fill();
       }
       
       // Draw control polygon
       ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
-      ctx.lineWidth = 1 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(1);
       ctx.beginPath();
       if (spline.controlPoints.length > 0) {
         ctx.moveTo(spline.controlPoints[0].x, spline.controlPoints[0].y);
@@ -890,41 +827,41 @@
     // Priority: selected > hovered > path selected > path highlighted > chain selected > part highlighted > path (green) > part type > chain > normal
     if (isSelected) {
       ctx.strokeStyle = '#ff6600';
-      ctx.lineWidth = 2 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(2);
     } else if (isHovered) {
       ctx.strokeStyle = '#ff6600';
-      ctx.lineWidth = 1.5 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     } else if (isPathSelected) {
       ctx.strokeStyle = '#15803d'; // Dark green color for selected path
-      ctx.lineWidth = 3 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(3);
     } else if (isPathHighlighted) {
       ctx.strokeStyle = '#15803d'; // Dark green color for highlighted path
-      ctx.lineWidth = 3 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(3);
       ctx.shadowColor = '#15803d';
-      ctx.shadowBlur = 4 / totalScale;
+      ctx.shadowBlur = coordinator.screenToWorldDistance(4);
     } else if (isChainSelected) {
       ctx.strokeStyle = '#ff6600'; // Orange color for selected chain (same as selected shapes)
-      ctx.lineWidth = 2 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(2);
     } else if (isPartHighlighted) {
       ctx.strokeStyle = '#f59e0b'; // Amber color for highlighted part
-      ctx.lineWidth = 2.5 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(2.5);
       ctx.shadowColor = '#f59e0b';
-      ctx.shadowBlur = 3 / totalScale;
+      ctx.shadowBlur = coordinator.screenToWorldDistance(3);
     } else if (hasPath) {
       ctx.strokeStyle = '#16a34a'; // Green color for chains with paths
-      ctx.lineWidth = 2 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(2);
     } else if (partType === 'shell') {
       ctx.strokeStyle = '#2563eb'; // Blue color for part shells
-      ctx.lineWidth = 1.5 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     } else if (partType === 'hole') {
       ctx.strokeStyle = '#93c5fd'; // Lighter blue color for holes
-      ctx.lineWidth = 1.5 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     } else if (chainId) {
       ctx.strokeStyle = '#2563eb'; // Blue color for chained shapes (fallback)
-      ctx.lineWidth = 1.5 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     } else {
       ctx.strokeStyle = '#000000';
-      ctx.lineWidth = 1 / totalScale;
+      ctx.lineWidth = coordinator.screenToWorldDistance(1);
     }
     
     switch (shape.type) {
@@ -992,7 +929,7 @@
   }
   
   function drawShapePoints(shape: Shape) {
-    const pointSize = 4 / totalScale; // Fixed size regardless of zoom
+    const pointSize = coordinator.screenToWorldDistance(4); // Fixed size regardless of zoom
     
     // Get points using the same logic as ShapeProperties component
     const origin = getShapeOrigin(shape);
@@ -1212,27 +1149,27 @@
     // Draw shape points (Edit stage)
     if (overlay.shapePoints && overlay.shapePoints.length > 0) {
       overlay.shapePoints.forEach((point: any) => {
-        drawOverlayPoint(point.x, point.y, point.type, 4 / totalScale);
+        drawOverlayPoint(point.x, point.y, point.type, coordinator.screenToWorldDistance(4));
       });
     }
     
     // Draw chain endpoints (Prepare stage)
     if (overlay.chainEndpoints && overlay.chainEndpoints.length > 0) {
       overlay.chainEndpoints.forEach((endpoint: any) => {
-        drawChainEndpoint(endpoint.x, endpoint.y, endpoint.type, 6 / totalScale);
+        drawChainEndpoint(endpoint.x, endpoint.y, endpoint.type, coordinator.screenToWorldDistance(6));
       });
     }
     
     // Draw tessellation points (Program stage)
     if (overlay.tessellationPoints && overlay.tessellationPoints.length > 0) {
       overlay.tessellationPoints.forEach((point: any) => {
-        drawTessellationPoint(point.x, point.y, 2 / totalScale);
+        drawTessellationPoint(point.x, point.y, coordinator.screenToWorldDistance(2));
       });
     }
     
     // Draw tool head (Simulate stage)
     if (overlay.toolHead && overlay.toolHead.visible) {
-      drawToolHead(overlay.toolHead.x, overlay.toolHead.y, 8 / totalScale);
+      drawToolHead(overlay.toolHead.x, overlay.toolHead.y, coordinator.screenToWorldDistance(8));
     }
   }
   
@@ -1265,7 +1202,7 @@
     // Draw white border
     ctx.fillStyle = '#ffffff';
     ctx.beginPath();
-    ctx.arc(x, y, size + 1 / totalScale, 0, 2 * Math.PI);
+    ctx.arc(x, y, size + coordinator.screenToWorldDistance(1), 0, 2 * Math.PI);
     ctx.fill();
     
     // Draw colored center
@@ -1293,7 +1230,7 @@
   function drawToolHead(x: number, y: number, size: number) {
     ctx.save();
     ctx.strokeStyle = '#ff0000'; // Red
-    ctx.lineWidth = 2 / totalScale;
+    ctx.lineWidth = coordinator.screenToWorldDistance(2);
     
     // Draw cross
     ctx.beginPath();
@@ -1307,20 +1244,14 @@
   }
   
   function screenToWorld(screenPos: Point2D): Point2D {
-    // Convert screen coordinates to world coordinates using fixed origin position
-    const originX = canvas.width * 0.25 + offset.x;
-    const originY = canvas.height * 0.75 + offset.y;
-    return {
-      x: (screenPos.x - originX) / totalScale,
-      y: -(screenPos.y - originY) / totalScale
-    };
+    return coordinator.screenToWorld(screenPos);
   }
   
   function getShapeAtPoint(point: Point2D): Shape | null {
     if (!drawing) return null;
     
     // Simple hit testing - check if point is near shape
-    const tolerance = 5 / totalScale;
+    const tolerance = coordinator.screenToWorldDistance(5);
     
     for (const shape of drawing.shapes) {
       // Check if layer is visible before hit testing (only if respectLayerVisibility is true)
@@ -1342,7 +1273,7 @@
   function getRapidAtPoint(point: Point2D): { id: string; start: any; end: any } | null {
     if (!showRapids || rapids.length === 0) return null;
     
-    const tolerance = 5 / totalScale; // Fixed tolerance in screen pixels
+    const tolerance = coordinator.screenToWorldDistance(5); // Fixed tolerance in screen pixels
     
     for (const rapid of rapids) {
       if (distanceToLine(point, rapid.start, rapid.end) < tolerance) {
@@ -1676,8 +1607,8 @@
       if (mouseButton === 0 && selectedShapes.size > 0 && !disableDragging) {
         // Move selected shapes with left mouse button (only if dragging is enabled)
         const worldDelta = {
-          x: (newMousePos.x - mousePos.x) / totalScale,
-          y: -(newMousePos.y - mousePos.y) / totalScale
+          x: coordinator.screenToWorldDistance(newMousePos.x - mousePos.x),
+          y: -coordinator.screenToWorldDistance(newMousePos.y - mousePos.y)
         };
         
         drawingStore.moveShapes(Array.from(selectedShapes), worldDelta);
@@ -1746,17 +1677,8 @@
     const newPercent = Math.max(5, currentPercent + increment); // Minimum 5% zoom
     const newScale = newPercent / 100;
     
-    // Zoom towards mouse position using fixed origin
-    const worldPos = screenToWorld(mousePos);
-    const newTotalScale = newScale * physicalScale;
-    
-    const originX = canvas.width * 0.25;
-    const originY = canvas.height * 0.75;
-    
-    const newOffset = {
-      x: mousePos.x - originX - worldPos.x * newTotalScale,
-      y: mousePos.y - originY + worldPos.y * newTotalScale
-    };
+    // Zoom towards mouse position using coordinate transformer
+    const newOffset = coordinator.calculateZoomOffset(mousePos, scale, newScale);
     
     drawingStore.setViewTransform(newScale, newOffset);
   }
@@ -1788,6 +1710,19 @@
     tabindex="0"  
     on:keydown={handleKeyDown}
   ></canvas>
+  
+  <!-- Lead Visualization Component -->
+  <LeadVisualization
+    bind:this={leadVisualization}
+    {ctx}
+    {coordinator}
+    paths={pathsState?.paths || []}
+    {operations}
+    parts={parts || []}
+    chains={chains || []}
+    {currentStage}
+    isSimulating={currentStage === 'simulate'}
+  />
 </div>
 
 <style>

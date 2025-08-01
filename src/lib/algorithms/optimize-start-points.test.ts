@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import type { Shape } from '../../types';
 import type { ShapeChain } from './chain-detection';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('optimizeStartPoints', () => {
   const tolerance = 0.1;
@@ -11,7 +12,7 @@ describe('optimizeStartPoints', () => {
     const shapes: Shape[] = [
       {
         id: 'line1',
-        type: 'line',
+        type: LeadType.LINE,
         geometry: {
           start: { x: 0, y: 0 },
           end: { x: 10, y: 0 }
@@ -19,7 +20,7 @@ describe('optimizeStartPoints', () => {
       },
       {
         id: 'line2',
-        type: 'line',
+        type: LeadType.LINE,
         geometry: {
           start: { x: 10, y: 0 },
           end: { x: 5, y: 8.66 }
@@ -27,7 +28,7 @@ describe('optimizeStartPoints', () => {
       },
       {
         id: 'line3',
-        type: 'line',
+        type: LeadType.LINE,
         geometry: {
           start: { x: 5, y: 8.66 },
           end: { x: 0, y: 0 }
@@ -63,7 +64,7 @@ describe('optimizeStartPoints', () => {
     const shapes: Shape[] = [
       {
         id: 'arc1',
-        type: 'arc',
+        type: LeadType.ARC,
         geometry: {
           center: { x: 0, y: 0 },
           radius: 10,
@@ -149,7 +150,7 @@ describe('optimizeStartPoints', () => {
       },
       {
         id: 'line1',
-        type: 'line',
+        type: LeadType.LINE,
         geometry: {
           start: { x: 10, y: 0 },
           end: { x: 0, y: 0 }
@@ -182,7 +183,7 @@ describe('optimizeStartPoints', () => {
     const shapes: Shape[] = [
       {
         id: 'line1',
-        type: 'line',
+        type: LeadType.LINE,
         geometry: {
           start: { x: 0, y: 0 },
           end: { x: 10, y: 0 }
@@ -190,7 +191,7 @@ describe('optimizeStartPoints', () => {
       },
       {
         id: 'line2',
-        type: 'line',
+        type: LeadType.LINE,
         geometry: {
           start: { x: 10, y: 0 },
           end: { x: 20, y: 10 }
@@ -245,7 +246,7 @@ describe('optimizeStartPoints', () => {
       shapes: [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 0, y: 0 },
             end: { x: 10, y: 0 }
@@ -253,7 +254,7 @@ describe('optimizeStartPoints', () => {
         },
         {
           id: 'line2',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 10, y: 0 },
             end: { x: 0, y: 0 }
@@ -267,7 +268,7 @@ describe('optimizeStartPoints', () => {
       shapes: [
         {
           id: 'line3',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 20, y: 0 },
             end: { x: 30, y: 0 }

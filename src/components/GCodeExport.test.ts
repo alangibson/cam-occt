@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { generateToolPaths } from '../lib/cam/path-generator';
 import { generateGCode } from '../lib/cam/gcode-generator';
+import { CutDirection, LeadType } from '$lib/types/direction';
 
 // Mock the modules
 vi.mock('../lib/cam/path-generator');
@@ -13,7 +14,7 @@ describe('GCodeExport Component Logic', () => {
         shapes: [
           { 
             id: '1', 
-            type: 'line' as const, 
+            type: LeadType.LINE as const, 
             geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
             layer: '0'
           }

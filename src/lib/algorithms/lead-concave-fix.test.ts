@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
 import type { Shape, Point2D } from '../../types/geometry';
@@ -47,7 +48,7 @@ describe('Lead Concave Area Fix', () => {
     for (let i = 0; i < points.length - 1; i++) {
       shapes.push({
         id: `line${i}`,
-        type: 'line',
+        type: LeadType.LINE,
         geometry: { start: points[i], end: points[i + 1] },
         layer: 'layer1'
       });
@@ -75,10 +76,10 @@ describe('Lead Concave Area Fix', () => {
       holes: []
     };
 
-    const leadIn: LeadInConfig = { type: 'arc', length: 5 };
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
-    const result = calculateLeads(chain, leadIn, leadOut, part);
+    const result = calculateLeads(chain, leadIn, leadOut, CutDirection.NONE, part);
     
     expect(result.leadIn).toBeDefined();
     const points = result.leadIn!.points;
@@ -134,7 +135,7 @@ describe('Lead Concave Area Fix', () => {
     for (let i = 0; i < points.length - 1; i++) {
       shapes.push({
         id: `line${i}`,
-        type: 'line',
+        type: LeadType.LINE,
         geometry: { start: points[i], end: points[i + 1] },
         layer: 'layer1'
       });
@@ -143,7 +144,7 @@ describe('Lead Concave Area Fix', () => {
     // Close the shape
     shapes.push({
       id: 'line_close',
-      type: 'line',
+      type: LeadType.LINE,
       geometry: { start: points[points.length - 1], end: points[0] },
       layer: 'layer1'
     });
@@ -162,8 +163,8 @@ describe('Lead Concave Area Fix', () => {
       holes: []
     };
 
-    const leadIn: LeadInConfig = { type: 'arc', length: 3 };
-    const result = calculateLeads(chain, leadIn, { type: 'none', length: 0 }, part);
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 3 };
+    const result = calculateLeads(chain, leadIn, { type: LeadType.NONE, length: 0 }, CutDirection.NONE, part);
     
     expect(result.leadIn).toBeDefined();
     

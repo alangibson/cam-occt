@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { generateToolPaths } from './path-generator';
 import type { Drawing, CuttingParameters } from '../../types';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('generateToolPaths', () => {
   const mockParameters: CuttingParameters = {
@@ -18,7 +19,7 @@ describe('generateToolPaths', () => {
       shapes: [
         {
           id: 'shape1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 0, y: 0 },
             end: { x: 100, y: 0 }
@@ -52,7 +53,7 @@ describe('generateToolPaths', () => {
       shapes: [
         {
           id: 'shape1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 0, y: 0 },
             end: { x: 100, y: 0 }
@@ -77,7 +78,7 @@ describe('generateToolPaths', () => {
       shapes: [
         {
           id: 'shape1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 0, y: 0 },
             end: { x: 100, y: 0 }

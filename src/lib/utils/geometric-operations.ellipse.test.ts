@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { isChainGeometricallyContained, isPointInPolygon, calculatePolygonArea } from './geometric-operations';
 import type { Shape, Ellipse } from '../../types';
 import type { ShapeChain } from '../algorithms/chain-detection';
+import { CutDirection, LeadType } from '../types/direction';
 
 // Helper function to create ellipse shapes for testing
 function createEllipseShape(
@@ -184,22 +185,22 @@ describe('Geometric Operations - Ellipse support', () => {
       const rectLines: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: { start: { x: -60, y: -40 }, end: { x: 60, y: -40 } }
         },
         {
           id: 'line2', 
-          type: 'line',
+          type: LeadType.LINE,
           geometry: { start: { x: 60, y: -40 }, end: { x: 60, y: 40 } }
         },
         {
           id: 'line3',
-          type: 'line', 
+          type: LeadType.LINE, 
           geometry: { start: { x: 60, y: 40 }, end: { x: -60, y: 40 } }
         },
         {
           id: 'line4',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: { start: { x: -60, y: 40 }, end: { x: -60, y: -40 } }
         }
       ];

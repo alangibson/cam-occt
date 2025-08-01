@@ -3,6 +3,7 @@ import { pathStore } from '$lib/stores/paths';
 import { chainStore, clearChains, clearChainSelection, setChains } from '$lib/stores/chains';
 import type { ShapeChain } from '$lib/algorithms/chain-detection';
 import type { Shape } from '../../types';
+import { CutDirection, LeadType } from '$lib/types/direction';
 
 describe('SimulateStage Cut Direction', () => {
   beforeEach(() => {
@@ -40,7 +41,7 @@ describe('SimulateStage Cut Direction', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 1,
-      cutDirection: 'clockwise',
+      cutDirection: CutDirection.CLOCKWISE,
       feedRate: 1000
     });
 
@@ -51,7 +52,7 @@ describe('SimulateStage Cut Direction', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 2,
-      cutDirection: 'counterclockwise',
+      cutDirection: CutDirection.COUNTERCLOCKWISE,
       feedRate: 1000
     });
 
@@ -108,7 +109,7 @@ describe('SimulateStage Cut Direction', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 3,
-      cutDirection: 'clockwise',
+      cutDirection: CutDirection.CLOCKWISE,
       feedRate: 1000
     });
 
@@ -119,7 +120,7 @@ describe('SimulateStage Cut Direction', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 4,
-      cutDirection: 'counterclockwise',
+      cutDirection: CutDirection.COUNTERCLOCKWISE,
       feedRate: 1000
     });
 
@@ -155,7 +156,7 @@ describe('SimulateStage Cut Direction', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 5,
-      cutDirection: 'none',
+      cutDirection: CutDirection.NONE,
       feedRate: 1000
     });
 

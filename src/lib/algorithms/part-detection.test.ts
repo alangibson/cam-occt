@@ -2,13 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { detectParts } from './part-detection';
 import type { ShapeChain } from './chain-detection';
 import { generateId } from '../utils/id';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Part Detection Algorithm', () => {
   // Helper function to create test shapes
   function createLine(startX: number, startY: number, endX: number, endY: number) {
     return {
       id: generateId(),
-      type: 'line' as const,
+      type: LeadType.LINE as const,
       geometry: {
         start: { x: startX, y: startY },
         end: { x: endX, y: endY }

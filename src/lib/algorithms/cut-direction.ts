@@ -1,7 +1,6 @@
 import type { ShapeChain } from './chain-detection';
 import type { Shape, Point2D, Line, Arc, Circle, Polyline, Spline, Ellipse } from '../../types/geometry';
-
-export type CutDirection = 'clockwise' | 'counterclockwise' | 'none';
+import { CutDirection } from '../types/direction';
 
 /**
  * Detects the cut direction of a chain using the shoelace formula (signed area calculation).
@@ -15,7 +14,7 @@ export type CutDirection = 'clockwise' | 'counterclockwise' | 'none';
  */
 export function detectCutDirection(chain: ShapeChain, tolerance: number = 0.1): CutDirection {
   if (!chain || !chain.shapes || chain.shapes.length === 0) {
-    return 'none';
+    return CutDirection.NONE;
   }
 
   // Check if chain is closed by comparing first and last points
@@ -23,21 +22,21 @@ export function detectCutDirection(chain: ShapeChain, tolerance: number = 0.1): 
   const lastPoint = getShapeEndPoint(chain.shapes[chain.shapes.length - 1]);
   
   if (!isPointsClosed(firstPoint, lastPoint, tolerance)) {
-    return 'none'; // Open paths don't have a natural cut direction
+    return CutDirection.NONE; // Open paths don't have a natural cut direction
   }
 
   // Get all points from the chain
   const points = getChainPoints(chain);
   
   if (points.length < 3) {
-    return 'none'; // Need at least 3 points to determine direction
+    return CutDirection.NONE; // Need at least 3 points to determine direction
   }
 
   // Calculate signed area using shoelace formula
   const signedArea = calculateSignedArea(points);
   
   // Positive area = counterclockwise, negative area = clockwise
-  return signedArea > 0 ? 'counterclockwise' : 'clockwise';
+  return signedArea > 0 ? CutDirection.COUNTERCLOCKWISE : CutDirection.CLOCKWISE;
 }
 
 /**

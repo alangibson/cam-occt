@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import type { Shape } from '../../types';
 import type { ShapeChain } from './chain-detection';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('optimizeStartPoints - ADLER.dxf scenario', () => {
   const tolerance = 0.1;
@@ -63,7 +64,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
       shapes: [
         {
           id: 'line-1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 100, y: 0 },
             end: { x: 110, y: 0 }

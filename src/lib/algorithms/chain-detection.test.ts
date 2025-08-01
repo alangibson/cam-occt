@@ -2,13 +2,14 @@ import { describe, it, expect } from 'vitest';
 import { detectShapeChains } from './chain-detection';
 import type { Shape } from '../../types';
 import { generateId } from '../utils/id';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Chain Detection Algorithm', () => {
   // Helper function to create test shapes
   function createLine(startX: number, startY: number, endX: number, endY: number): Shape {
     return {
       id: generateId(),
-      type: 'line',
+      type: LeadType.LINE,
       geometry: {
         start: { x: startX, y: startY },
         end: { x: endX, y: endY }
@@ -30,7 +31,7 @@ describe('Chain Detection Algorithm', () => {
   function createArc(centerX: number, centerY: number, radius: number, startAngle: number, endAngle: number): Shape {
     return {
       id: generateId(),
-      type: 'arc',
+      type: LeadType.ARC,
       geometry: {
         center: { x: centerX, y: centerY },
         radius,

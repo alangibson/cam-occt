@@ -5,6 +5,7 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('ADLER.dxf Part 5 Lead Fix', () => {
   // Helper to check if a point is inside a polygon using ray casting
@@ -75,10 +76,10 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
     }
     
     // Test lead generation for the shell chain
-    const leadIn: LeadInConfig = { type: 'arc', length: 10 }; // Moderate lead length
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 }; // Moderate lead length
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
-    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, part5);
+    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.NONE, part5);
     
     expect(result.leadIn).toBeDefined();
     const leadPoints = result.leadIn!.points;
@@ -149,8 +150,8 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
     console.log('\nTesting multiple lead lengths for Part 5:');
     
     for (const length of leadLengths) {
-      const leadIn: LeadInConfig = { type: 'arc', length };
-      const result = calculateLeads(part5.shell.chain, leadIn, { type: 'none', length: 0 }, part5);
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length };
+      const result = calculateLeads(part5.shell.chain, leadIn, { type: LeadType.NONE, length: 0 }, CutDirection.NONE, part5);
       
       if (!result.leadIn) continue;
       

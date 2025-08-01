@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
 import type { Shape } from '../../types/geometry';
@@ -9,7 +10,7 @@ describe('calculateLeads', () => {
   function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): ShapeChain {
     const shape: Shape = {
       id: 'shape1',
-      type: 'line',
+      type: LeadType.LINE,
       geometry: { start, end },
       layer: 'layer1'
     };
@@ -38,8 +39,8 @@ describe('calculateLeads', () => {
   describe('no leads', () => {
     it('should return empty result when both leads are none', () => {
       const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-      const leadIn: LeadInConfig = { type: 'none', length: 0 };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.NONE, length: 0 };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -51,8 +52,8 @@ describe('calculateLeads', () => {
   describe('arc leads', () => {
     it('should calculate arc lead-in for horizontal line', () => {
       const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-      const leadIn: LeadInConfig = { type: 'arc', length: 5 };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -69,8 +70,8 @@ describe('calculateLeads', () => {
 
     it('should calculate arc lead-out for horizontal line', () => {
       const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-      const leadIn: LeadInConfig = { type: 'none', length: 0 };
-      const leadOut: LeadOutConfig = { type: 'arc', length: 5 };
+      const leadIn: LeadInConfig = { type: LeadType.NONE, length: 0 };
+      const leadOut: LeadOutConfig = { type: LeadType.ARC, length: 5 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -87,8 +88,8 @@ describe('calculateLeads', () => {
 
     it('should limit arc sweep to 90 degrees', () => {
       const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-      const leadIn: LeadInConfig = { type: 'arc', length: 100 }; // Very long arc
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 100 }; // Very long arc
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -108,8 +109,8 @@ describe('calculateLeads', () => {
 
     it('should calculate lead for circle', () => {
       const chain = createCircleChain({ x: 5, y: 5 }, 3);
-      const leadIn: LeadInConfig = { type: 'arc', length: 4 };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 4 };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -134,10 +135,10 @@ describe('calculateLeads', () => {
         holes: [{ id: 'hole1', chain: holeChain, type: 'hole', boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 }, holes: [] }]
       };
       
-      const leadIn: LeadInConfig = { type: 'arc', length: 2 };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 2 };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
-      const result = calculateLeads(holeChain, leadIn, leadOut, part);
+      const result = calculateLeads(holeChain, leadIn, leadOut, CutDirection.NONE, part);
       
       expect(result.leadIn).toBeDefined();
       
@@ -164,10 +165,10 @@ describe('calculateLeads', () => {
         holes: []
       };
       
-      const leadIn: LeadInConfig = { type: 'arc', length: 2 };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 2 };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
-      const result = calculateLeads(shellChain, leadIn, leadOut, part);
+      const result = calculateLeads(shellChain, leadIn, leadOut, CutDirection.NONE, part);
       
       expect(result.leadIn).toBeDefined();
       
@@ -193,8 +194,8 @@ describe('calculateLeads', () => {
         shapes: []
       };
       
-      const leadIn: LeadInConfig = { type: 'arc', length: 5 };
-      const leadOut: LeadOutConfig = { type: 'arc', length: 5 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
+      const leadOut: LeadOutConfig = { type: LeadType.ARC, length: 5 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       
@@ -204,8 +205,8 @@ describe('calculateLeads', () => {
 
     it('should handle zero length leads', () => {
       const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-      const leadIn: LeadInConfig = { type: 'arc', length: 0 };
-      const leadOut: LeadOutConfig = { type: 'arc', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 0 };
+      const leadOut: LeadOutConfig = { type: LeadType.ARC, length: 0 };
       
       const result = calculateLeads(chain, leadIn, leadOut);
       

@@ -7,6 +7,7 @@ import { chainStore } from '../../lib/stores/chains';
 import { operationsStore } from '../../lib/stores/operations';
 import { drawingStore } from '../../lib/stores/drawing';
 import { uiStore } from '../../lib/stores/ui';
+import { CutDirection, LeadType } from '$lib/types/direction';
 
 describe('SimulateStage store subscription cleanup', () => {
   beforeEach(() => {
@@ -82,7 +83,7 @@ describe('SimulateStage store subscription cleanup', () => {
       enabled: true,
       order: 1,
       feedRate: 1000,
-      cutDirection: 'counterclockwise'
+      cutDirection: CutDirection.COUNTERCLOCKWISE
     });
     
     rapidStore.setRapids([{

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
 import type { Shape, Point2D } from '../../types/geometry';
@@ -9,7 +10,7 @@ describe('Lead Geometry Debug', () => {
   function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): ShapeChain {
     const shape: Shape = {
       id: 'shape1',
-      type: 'line',
+      type: LeadType.LINE,
       geometry: { start, end },
       layer: 'layer1'
     };
@@ -30,8 +31,8 @@ describe('Lead Geometry Debug', () => {
     const shellChain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
     
     // No part context - should generate a basic lead
-    const leadIn: LeadInConfig = { type: 'arc', length: 5 };
-    const result = calculateLeads(shellChain, leadIn, { type: 'none', length: 0 });
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
+    const result = calculateLeads(shellChain, leadIn, { type: LeadType.NONE, length: 0 });
     
     expect(result.leadIn).toBeDefined();
     const points = result.leadIn!.points;
@@ -91,8 +92,8 @@ describe('Lead Geometry Debug', () => {
     });
 
     // Generate a lead for this shell
-    const leadIn: LeadInConfig = { type: 'arc', length: 20 };
-    const result = calculateLeads(shellChain, leadIn, { type: 'none', length: 0 }, part);
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 20 };
+    const result = calculateLeads(shellChain, leadIn, { type: LeadType.NONE, length: 0 }, CutDirection.NONE, part);
     
     expect(result.leadIn).toBeDefined();
     const points = result.leadIn!.points;

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Lead Direction Debug', () => {
   it('should debug cut direction logic', () => {
@@ -24,8 +25,8 @@ describe('Lead Direction Debug', () => {
       }]
     };
     
-    const leadConfig: LeadInConfig = { type: 'arc', length: 5 };
-    const noLeadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 5 };
+    const noLeadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     // Create a simple part context to make it a shell
     const simplePart = {
@@ -39,7 +40,7 @@ describe('Lead Direction Debug', () => {
     };
     
     console.log('\n--- Testing with no cut direction ---');
-    const noneResult = calculateLeads(squareChain, leadConfig, noLeadOut, 'none', simplePart);
+    const noneResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.NONE, simplePart);
     if (noneResult.leadIn) {
       const start = noneResult.leadIn.points[0];
       const end = noneResult.leadIn.points[noneResult.leadIn.points.length - 1];
@@ -47,7 +48,7 @@ describe('Lead Direction Debug', () => {
     }
     
     console.log('\n--- Testing with clockwise cut direction ---');
-    const clockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, 'clockwise', simplePart);
+    const clockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.CLOCKWISE, simplePart);
     if (clockwiseResult.leadIn) {
       const start = clockwiseResult.leadIn.points[0];
       const end = clockwiseResult.leadIn.points[clockwiseResult.leadIn.points.length - 1];
@@ -55,7 +56,7 @@ describe('Lead Direction Debug', () => {
     }
     
     console.log('\n--- Testing with counterclockwise cut direction ---');
-    const counterclockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, 'counterclockwise', simplePart);
+    const counterclockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.COUNTERCLOCKWISE, simplePart);
     if (counterclockwiseResult.leadIn) {
       const start = counterclockwiseResult.leadIn.points[0];
       const end = counterclockwiseResult.leadIn.points[counterclockwiseResult.leadIn.points.length - 1];
@@ -100,14 +101,14 @@ describe('Lead Direction Debug', () => {
       }]
     };
     
-    const leadConfig: LeadInConfig = { type: 'arc', length: 5 };
-    const noLeadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 5 };
+    const noLeadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     // Test without any part context
     console.log('\n--- Testing without part context ---');
-    const noneResult = calculateLeads(squareChain, leadConfig, noLeadOut, 'none');
-    const clockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, 'clockwise');
-    const counterclockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, 'counterclockwise');
+    const noneResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.NONE);
+    const clockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.CLOCKWISE);
+    const counterclockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.COUNTERCLOCKWISE);
     
     const positions = [noneResult, clockwiseResult, counterclockwiseResult].map(r => 
       r.leadIn ? `(${r.leadIn.points[0].x.toFixed(3)}, ${r.leadIn.points[0].y.toFixed(3)})` : 'none'

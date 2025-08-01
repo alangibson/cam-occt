@@ -5,6 +5,7 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('ADLER Part 5 Cut Direction Analysis', () => {
   // Helper to check if a point is inside a polygon using ray casting
@@ -85,8 +86,8 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     console.log('-------|-----------|---------|-----');
     
     for (const length of testLengths) {
-      const leadIn: LeadInConfig = { type: 'arc', length };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
       let results: Array<{ direction: string; solidPoints: number; warnings: number }> = [];
       
@@ -118,7 +119,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     
     // Test with very short leads
     console.log('\nTesting very short leads:');
-    const shortResult = calculateLeads(part5.shell.chain, { type: 'arc', length: 1 }, { type: 'none', length: 0 }, 'counterclockwise', part5);
+    const shortResult = calculateLeads(part5.shell.chain, { type: LeadType.ARC, length: 1 }, { type: LeadType.NONE, length: 0 }, CutDirection.COUNTERCLOCKWISE, part5);
     
     if (shortResult.leadIn) {
       let solidPoints = 0;
@@ -150,7 +151,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     // Analyze the shell geometry
     const shellShape = part5.shell.chain.shapes[0];
     if (shellShape.type === 'polyline') {
-      const points = shellShape.geometry.points;
+      const points = (shellShape.geometry as any).points;
       
       console.log(`Shell has ${points.length} points`);
       console.log(`Connection point: (${points[0].x.toFixed(3)}, ${points[0].y.toFixed(3)})`);
@@ -182,13 +183,13 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     if (part5.holes.length > 0) {
       const holeShape = part5.holes[0].chain.shapes[0];
       if (holeShape.type === 'polyline') {
-        const holePoints = holeShape.geometry.points;
+        const holePoints = (holeShape.geometry as any).points;
         const holeCenter = {
-          x: holePoints.reduce((sum, p) => sum + p.x, 0) / holePoints.length,
-          y: holePoints.reduce((sum, p) => sum + p.y, 0) / holePoints.length
+          x: holePoints.reduce((sum: number, p: any) => sum + p.x, 0) / holePoints.length,
+          y: holePoints.reduce((sum: number, p: any) => sum + p.y, 0) / holePoints.length
         };
         
-        const connectionPoint = shellShape.geometry.points[0];
+        const connectionPoint = (shellShape.geometry as any).points[0];
         const distToHole = Math.sqrt(
           (connectionPoint.x - holeCenter.x) ** 2 + 
           (connectionPoint.y - holeCenter.y) ** 2

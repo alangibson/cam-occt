@@ -5,6 +5,7 @@
   import { partStore, highlightPart, clearHighlight } from '$lib/stores/parts';
   import { flip } from 'svelte/animate';
   import { onMount } from 'svelte';
+  import { CutDirection, LeadType } from '$lib/types/direction';
   
   let operations: Operation[] = [];
   let chains: any[] = [];
@@ -88,22 +89,39 @@
     const newOrder = operations.length > 0 
       ? Math.max(...operations.map(op => op.order)) + 1 
       : 1;
+
+    // Auto-populate targetIds based on current selection
+    let targetType = 'parts';
+    let targetIds: string[] = [];
+
+    // Check if a part is highlighted
+    const highlightedPartId = $partStore.highlightedPartId;
+    if (highlightedPartId) {
+      targetType = 'parts';
+      targetIds = [highlightedPartId];
+    } 
+    // Check if a chain is selected  
+    else {
+      const selectedChainId = $chainStore.selectedChainId;
+      if (selectedChainId) {
+        targetType = 'chains';
+        targetIds = [selectedChainId];
+      }
+    }
       
     operationsStore.addOperation({
       name: `Operation ${newOrder}`,
       toolId: $toolStore.length > 0 ? $toolStore[0].id : null,
-      targetType: 'parts',
-      targetIds: [],
+      targetType,
+      targetIds,
       enabled: true,
       order: newOrder,
-      cutDirection: 'counterclockwise',
-      leadInType: 'none',
+      cutDirection: CutDirection.COUNTERCLOCKWISE,
+      leadInType: LeadType.NONE,
       leadInLength: 5,
-      leadInFlipSide: false,
       leadInAngle: 0,
-      leadOutType: 'none',
+      leadOutType: LeadType.NONE,
       leadOutLength: 5,
-      leadOutFlipSide: false,
       leadOutAngle: 0
     });
   }
@@ -407,8 +425,11 @@
               <option value="clockwise">Clockwise</option>
             </select>
           </div>
-          
-          <div class="field-group">
+        </div>
+        
+        <!-- Apply to section on its own row -->
+        <div class="operation-row">
+          <div class="field-group apply-to-row">
             <label for="apply-to-{operation.id}">Apply to:</label>
             <div class="apply-to-selector">
               <button 
@@ -540,17 +561,6 @@
                   placeholder="Auto"
                 />
               </div>
-              <div class="field-group">
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={operation.leadInFlipSide}
-                    onchange={(e) => updateOperationField(operation.id, 'leadInFlipSide', e.currentTarget.checked)}
-                    class="lead-checkbox"
-                  />
-                  Flip side
-                </label>
-              </div>
             {/if}
           </div>
           
@@ -594,17 +604,6 @@
                   class="lead-input"
                   placeholder="Auto"
                 />
-              </div>
-              <div class="field-group">
-                <label class="checkbox-label">
-                  <input
-                    type="checkbox"
-                    checked={operation.leadOutFlipSide}
-                    onchange={(e) => updateOperationField(operation.id, 'leadOutFlipSide', e.currentTarget.checked)}
-                    class="lead-checkbox"
-                  />
-                  Flip side
-                </label>
               </div>
             {/if}
           </div>
@@ -1024,18 +1023,17 @@
     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
   }
 
-  .checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #374151;
-    cursor: pointer;
+
+  /* Apply to row styling */
+  .apply-to-row {
+    width: 100%;
   }
 
-  .lead-checkbox {
-    cursor: pointer;
-    transform: scale(1.1);
+  .apply-to-row .apply-to-selector {
+    width: 100%;
+  }
+
+  .operation-row {
+    margin-top: 0.75rem;
   }
 </style>

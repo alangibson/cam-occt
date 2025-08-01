@@ -5,6 +5,7 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Lead Cut Direction Fix', () => {
   // Helper to check if a point is inside a polygon using ray casting
@@ -101,12 +102,12 @@ describe('Lead Cut Direction Fix', () => {
       return;
     }
     
-    const leadIn: LeadInConfig = { type: 'arc', length: 10 };
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 };
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     // Test clockwise cut direction
     console.log('\nTesting CLOCKWISE cut direction:');
-    const clockwiseResult = calculateLeads(part5.shell.chain, leadIn, leadOut, 'clockwise', part5);
+    const clockwiseResult = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.CLOCKWISE, part5);
     
     let clockwiseSolidPoints = 0;
     if (clockwiseResult.leadIn) {
@@ -129,7 +130,7 @@ describe('Lead Cut Direction Fix', () => {
     
     // Test counterclockwise cut direction
     console.log('\nTesting COUNTERCLOCKWISE cut direction:');
-    const counterclockwiseResult = calculateLeads(part5.shell.chain, leadIn, leadOut, 'counterclockwise', part5);
+    const counterclockwiseResult = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.COUNTERCLOCKWISE, part5);
     
     let counterclockwiseSolidPoints = 0;
     if (counterclockwiseResult.leadIn) {
@@ -173,17 +174,17 @@ describe('Lead Cut Direction Fix', () => {
     
     if (!part5) return;
     
-    const leadIn: LeadInConfig = { type: 'arc', length: 10 };
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 };
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     // Test with no cut direction (old behavior)
-    const noCutDirResult = calculateLeads(part5.shell.chain, leadIn, leadOut, 'none', part5);
+    const noCutDirResult = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.NONE, part5);
     
     // Test with clockwise cut direction
-    const clockwiseResult = calculateLeads(part5.shell.chain, leadIn, leadOut, 'clockwise', part5);
+    const clockwiseResult = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.CLOCKWISE, part5);
     
     // Test with counterclockwise cut direction  
-    const counterclockwiseResult = calculateLeads(part5.shell.chain, leadIn, leadOut, 'counterclockwise', part5);
+    const counterclockwiseResult = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.COUNTERCLOCKWISE, part5);
     
     let noCutDirSolid = 0, clockwiseSolid = 0, counterclockwiseSolid = 0;
     
@@ -248,12 +249,12 @@ describe('Lead Cut Direction Fix', () => {
       }]
     };
     
-    const leadConfig: LeadInConfig = { type: 'arc', length: 5 };
-    const noLeadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 5 };
+    const noLeadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     // Test clockwise vs counterclockwise
-    const clockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, 'clockwise');
-    const counterclockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, 'counterclockwise');
+    const clockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.CLOCKWISE);
+    const counterclockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.COUNTERCLOCKWISE);
     
     console.log('Square test results:');
     

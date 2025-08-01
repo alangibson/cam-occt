@@ -19,6 +19,7 @@
   import { evaluateNURBS, sampleNURBS } from '../../lib/geometry/nurbs';
   import { calculateLeads, type LeadInConfig, type LeadOutConfig } from '../../lib/algorithms/lead-calculation';
   import type { DetectedPart } from '../../lib/algorithms/part-detection';
+  import { LeadType } from '../../lib/types/direction';
 
   // Resizable columns state
   let rightColumnWidth = 280; // Default width in pixels
@@ -219,7 +220,7 @@
           flipSide: path.leadInFlipSide || false
         };
         const leadOutConfig: LeadOutConfig = {
-          type: path.leadOutType || 'none',
+          type: path.leadOutType || LeadType.NONE,
           length: path.leadOutLength || 0,
           flipSide: path.leadOutFlipSide || false
         };
@@ -254,7 +255,7 @@
         const part = findPartForChain(path.chainId);
         
         const leadInConfig: LeadInConfig = {
-          type: path.leadInType || 'none',
+          type: path.leadInType || LeadType.NONE,
           length: path.leadInLength || 0,
           flipSide: path.leadInFlipSide || false
         };
@@ -311,12 +312,12 @@
         const part = findPartForChain(path.chainId);
         
         const leadInConfig: LeadInConfig = {
-          type: path.leadInType || 'none',
+          type: path.leadInType || LeadType.NONE,
           length: path.leadInLength || 0,
           flipSide: path.leadInFlipSide || false
         };
         const leadOutConfig: LeadOutConfig = {
-          type: path.leadOutType || 'none',
+          type: path.leadOutType || LeadType.NONE,
           length: path.leadOutLength || 0,
           flipSide: path.leadOutFlipSide || false
         };
@@ -543,12 +544,12 @@
         const part = findPartForChain(path.chainId);
         
         const leadInConfig: LeadInConfig = {
-          type: path.leadInType || 'none',
+          type: path.leadInType || LeadType.NONE,
           length: path.leadInLength || 0,
           flipSide: path.leadInFlipSide || false
         };
         const leadOutConfig: LeadOutConfig = {
-          type: path.leadOutType || 'none',
+          type: path.leadOutType || LeadType.NONE,
           length: path.leadOutLength || 0,
           flipSide: path.leadOutFlipSide || false
         };

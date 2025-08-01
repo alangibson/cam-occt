@@ -4,6 +4,7 @@ import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } fro
 import type { DetectedPart } from './part-detection';
 import { evaluateNURBS } from '../geometry/nurbs';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { LeadType } from '../types/direction';
 
 /**
  * Rapids are the non-cutting paths that connect cut paths.
@@ -53,7 +54,7 @@ function getPathStartPoint(path: Path, chain: ShapeChain, part?: DetectedPart): 
         angle: path.leadInAngle
       };
       const leadOutConfig: LeadOutConfig = {
-        type: path.leadOutType || 'none',
+        type: path.leadOutType || LeadType.NONE,
         length: path.leadOutLength || 0,
         flipSide: path.leadOutFlipSide || false,
         angle: path.leadOutAngle
@@ -84,7 +85,7 @@ function getPathEndPoint(path: Path, chain: ShapeChain, part?: DetectedPart): Po
   if (path.leadOutType && path.leadOutType !== 'none' && path.leadOutLength && path.leadOutLength > 0) {
     try {
       const leadInConfig: LeadInConfig = {
-        type: path.leadInType || 'none',
+        type: path.leadInType || LeadType.NONE,
         length: path.leadInLength || 0,
         flipSide: path.leadInFlipSide || false,
         angle: path.leadInAngle

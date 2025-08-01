@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { toolStore, type Tool } from '$lib/stores/tools';
 import { operationsStore } from '$lib/stores/operations';
+import { CutDirection, LeadType } from '$lib/types/direction';
 
 describe('Operations Store Integration', () => {
   beforeEach(() => {
@@ -66,12 +67,12 @@ describe('Operations Store Integration', () => {
       targetIds: [],
       enabled: true,
       order: 1,
-      cutDirection: 'counterclockwise',
-      leadInType: 'none',
+      cutDirection: CutDirection.COUNTERCLOCKWISE,
+      leadInType: LeadType.NONE,
       leadInLength: 5,
       leadInFlipSide: false,
       leadInAngle: 0,
-      leadOutType: 'none',
+      leadOutType: LeadType.NONE,
       leadOutLength: 5,
       leadOutFlipSide: false,
       leadOutAngle: 0

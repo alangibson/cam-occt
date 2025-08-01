@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { decomposePolylines } from './decompose-polylines';
 import type { Shape } from '../../types';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Decompose Polylines Algorithm', () => {
   describe('Basic Functionality', () => {
@@ -68,7 +69,7 @@ describe('Decompose Polylines Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 0, y: 0 },
             end: { x: 10, y: 10 }
@@ -178,7 +179,7 @@ describe('Decompose Polylines Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: { start: { x: 0, y: 0 }, end: { x: 5, y: 5 } }
         },
         {

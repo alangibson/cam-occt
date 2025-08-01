@@ -5,6 +5,7 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Lead Hole Placement Fix', () => {
   // Helper to check if a point is inside a polygon using ray casting
@@ -132,11 +133,11 @@ describe('Lead Hole Placement Fix', () => {
     console.log(`- Hole center: (${((holeMinX + holeMaxX)/2).toFixed(1)}, ${((holeMinY + holeMaxY)/2).toFixed(1)})`);
     
     // Test 1-unit lead (should easily fit in hole)
-    const leadIn: LeadInConfig = { type: 'arc', length: 1 };
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 1 };
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     console.log('\nTesting 1-unit lead:');
-    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, 'clockwise', part5);
+    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.CLOCKWISE, part5);
     
     expect(result.leadIn).toBeDefined();
     const leadPoints = result.leadIn!.points;
@@ -176,7 +177,7 @@ describe('Lead Hole Placement Fix', () => {
     }
     
     // The algorithm should correctly detect unreachable holes and warn user
-    const warningResult = calculateLeads(part5.shell.chain, leadIn, leadOut, 'clockwise', part5);
+    const warningResult = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.CLOCKWISE, part5);
     expect(warningResult.warnings?.length).toBeGreaterThan(0); // Should warn about solid area leads
   });
 
@@ -193,11 +194,11 @@ describe('Lead Hole Placement Fix', () => {
     if (!part5) return;
     
     // Use a 10-unit lead (max reach = 30 units) which should be able to use the hole at 28.2 units
-    const leadIn: LeadInConfig = { type: 'arc', length: 10 };
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 };
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     console.log('Testing 10-unit lead (max reach ~30 units for 28.2-unit distant hole):');
-    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, 'clockwise', part5);
+    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.CLOCKWISE, part5);
     
     expect(result.leadIn).toBeDefined();
     const leadPoints = result.leadIn!.points;
@@ -239,7 +240,7 @@ describe('Lead Hole Placement Fix', () => {
     // Get connection point (start of shell chain)
     const shellShape = part5.shell.chain.shapes[0];
     const connectionPoint = shellShape.type === 'polyline' 
-      ? shellShape.geometry.points[0]
+      ? (shellShape.geometry as any).points[0]
       : { x: 0, y: 0 }; // fallback
     
     console.log(`Connection point: (${connectionPoint.x.toFixed(3)}, ${connectionPoint.y.toFixed(3)})`);
@@ -247,8 +248,8 @@ describe('Lead Hole Placement Fix', () => {
     // Get hole center
     const holePolygon = getPolygonFromChain(part5.holes[0].chain);
     const holeCenter = {
-      x: holePolygon.reduce((sum, p) => sum + p.x, 0) / holePolygon.length,
-      y: holePolygon.reduce((sum, p) => sum + p.y, 0) / holePolygon.length
+      x: holePolygon.reduce((sum: number, p: any) => sum + p.x, 0) / holePolygon.length,
+      y: holePolygon.reduce((sum: number, p: any) => sum + p.y, 0) / holePolygon.length
     };
     
     console.log(`Hole center: (${holeCenter.x.toFixed(3)}, ${holeCenter.y.toFixed(3)})`);

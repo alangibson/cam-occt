@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { translateToPositiveQuadrant } from './translate-to-positive';
 import type { Shape } from '../../types';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Translate to Positive Quadrant Algorithm', () => {
   describe('Basic Functionality', () => {
@@ -8,7 +9,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: -10, y: -5 },
             end: { x: 0, y: 5 }
@@ -28,7 +29,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 5, y: 10 },
             end: { x: 15, y: 20 }
@@ -46,7 +47,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: -5, y: 10 },
             end: { x: 5, y: 20 }
@@ -66,7 +67,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 5, y: -10 },
             end: { x: 15, y: 0 }
@@ -110,7 +111,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'arc1',
-          type: 'arc',
+          type: LeadType.ARC,
           geometry: {
             center: { x: -10, y: -8 },
             radius: 3,
@@ -220,7 +221,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: -5, y: -3 },
             end: { x: 0, y: 0 }
@@ -262,7 +263,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: 0, y: 0 },
             end: { x: 10, y: 10 }
@@ -280,7 +281,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: -5, y: -5 },
             end: { x: -5, y: -5 } // Same point
@@ -300,7 +301,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: -5, y: -5 },
             end: { x: 0, y: 0 }
@@ -325,7 +326,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const shapes: Shape[] = [
         {
           id: 'line1',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: {
             start: { x: -0.001, y: 5 },
             end: { x: 10, y: 15 }

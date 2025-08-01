@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
 import type { Shape, Point2D } from '../../types/geometry';
@@ -16,25 +17,25 @@ describe('Lead Solid Area Avoidance', () => {
     const shapes: Shape[] = [
       {
         id: `${id}_bottom`,
-        type: 'line',
+        type: LeadType.LINE,
         geometry: { start: { x: minX, y: minY }, end: { x: maxX, y: minY } },
         layer: 'layer1'
       },
       {
         id: `${id}_right`,
-        type: 'line',
+        type: LeadType.LINE,
         geometry: { start: { x: maxX, y: minY }, end: { x: maxX, y: maxY } },
         layer: 'layer1'
       },
       {
         id: `${id}_top`,
-        type: 'line',
+        type: LeadType.LINE,
         geometry: { start: { x: maxX, y: maxY }, end: { x: minX, y: maxY } },
         layer: 'layer1'
       },
       {
         id: `${id}_left`,
-        type: 'line',
+        type: LeadType.LINE,
         geometry: { start: { x: minX, y: maxY }, end: { x: minX, y: minY } },
         layer: 'layer1'
       }
@@ -97,10 +98,10 @@ describe('Lead Solid Area Avoidance', () => {
         }]
       };
 
-      const leadIn: LeadInConfig = { type: 'arc', length: 20 };
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 20 };
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
-      const result = calculateLeads(shellChain, leadIn, leadOut, part);
+      const result = calculateLeads(shellChain, leadIn, leadOut, CutDirection.NONE, part);
       
       expect(result.leadIn).toBeDefined();
       const points = result.leadIn!.points;
@@ -150,10 +151,10 @@ describe('Lead Solid Area Avoidance', () => {
         }]
       };
 
-      const leadIn: LeadInConfig = { type: 'arc', length: 10 }; // Shorter lead
-      const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 }; // Shorter lead
+      const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
-      const result = calculateLeads(holeChain, leadIn, leadOut, part);
+      const result = calculateLeads(holeChain, leadIn, leadOut, CutDirection.NONE, part);
       
       expect(result.leadIn).toBeDefined();
       const points = result.leadIn!.points;
@@ -216,10 +217,10 @@ describe('Lead Solid Area Avoidance', () => {
       };
 
       // Test leads for both holes with reasonable length
-      const leadConfig: LeadInConfig = { type: 'arc', length: 12 };
+      const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 12 };
       
-      const result1 = calculateLeads(hole1Chain, leadConfig, { type: 'none', length: 0 }, part);
-      const result2 = calculateLeads(hole2Chain, leadConfig, { type: 'none', length: 0 }, part);
+      const result1 = calculateLeads(hole1Chain, leadConfig, { type: LeadType.NONE, length: 0 }, CutDirection.NONE, part);
+      const result2 = calculateLeads(hole2Chain, leadConfig, { type: LeadType.NONE, length: 0 }, CutDirection.NONE, part);
       
       expect(result1.leadIn).toBeDefined();
       expect(result2.leadIn).toBeDefined();
@@ -269,10 +270,10 @@ describe('Lead Solid Area Avoidance', () => {
     it('should provide mechanism to rotate lead direction', () => {
       // This test verifies that we can rotate the curve direction for leads
       const shellChain = createRectangleChain('shell', 0, 0, 50, 50);
-      const leadIn: LeadInConfig = { type: 'arc', length: 10 };
+      const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 };
       
       // Generate leads with default direction
-      const result1 = calculateLeads(shellChain, leadIn, { type: 'none', length: 0 });
+      const result1 = calculateLeads(shellChain, leadIn, { type: LeadType.NONE, length: 0 });
       expect(result1.leadIn).toBeDefined();
       
       const points1 = result1.leadIn!.points;

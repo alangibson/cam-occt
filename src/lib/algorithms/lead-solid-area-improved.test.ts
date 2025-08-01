@@ -5,6 +5,7 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
   it('should properly detect solid areas using point-in-polygon for ADLER.dxf Part 5', async () => {
@@ -28,10 +29,10 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     if (!part5) return;
     
     // Test lead generation for the shell chain with improved algorithm
-    const leadIn: LeadInConfig = { type: 'arc', length: 5 }; // Shorter lead to test
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 }; // Shorter lead to test
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
-    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, part5);
+    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.NONE, part5);
     
     expect(result.leadIn).toBeDefined();
     expect(result.leadIn!.points.length).toBeGreaterThan(0);
@@ -73,10 +74,10 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     }
     
     // Test both lead-in and lead-out with challenging parameters
-    const leadIn: LeadInConfig = { type: 'arc', length: 20 }; // Long lead
-    const leadOut: LeadOutConfig = { type: 'arc', length: 20 }; // Long lead
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 20 }; // Long lead
+    const leadOut: LeadOutConfig = { type: LeadType.ARC, length: 20 }; // Long lead
     
-    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, part5);
+    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.NONE, part5);
     
     if (result.warnings && result.warnings.length > 0) {
       console.log('Both leads warnings:');
@@ -111,10 +112,10 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     if (!part5) return;
     
     // Test with a very long lead that should definitely intersect
-    const leadIn: LeadInConfig = { type: 'arc', length: 50 }; // Very long lead
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 50 }; // Very long lead
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
-    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, part5);
+    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.NONE, part5);
     
     // Should generate a warning for such a long lead in a constrained space
     expect(result.warnings).toBeDefined();

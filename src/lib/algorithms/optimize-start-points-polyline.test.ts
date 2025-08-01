@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import type { Shape } from '../../types';
 import type { ShapeChain } from './chain-detection';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('optimizeStartPoints - polyline splitting', () => {
   const tolerance = 0.1;
@@ -81,7 +82,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
       },
       {
         id: 'closing-line',
-        type: 'line',
+        type: LeadType.LINE,
         geometry: {
           start: { x: 10, y: 10 },
           end: { x: 0, y: 0 }

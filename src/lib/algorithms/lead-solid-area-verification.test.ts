@@ -5,6 +5,7 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('Lead Solid Area Verification - Catch the Error', () => {
   // Helper to check if a point is inside a polygon using ray casting
@@ -111,10 +112,10 @@ describe('Lead Solid Area Verification - Catch the Error', () => {
     console.log(`Part 5 has ${part5.holes.length} holes`);
     
     // Test lead generation for the shell chain
-    const leadIn: LeadInConfig = { type: 'arc', length: 10 }; // Standard lead length
-    const leadOut: LeadOutConfig = { type: 'none', length: 0 };
+    const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 }; // Standard lead length
+    const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
-    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, 'clockwise', part5);
+    const result = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.CLOCKWISE, part5);
     
     expect(result.leadIn).toBeDefined();
     const leadPoints = result.leadIn!.points;
