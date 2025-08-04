@@ -1,10 +1,48 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import WorkflowBreadcrumbs from '../components/WorkflowBreadcrumbs.svelte';
   import WorkflowContainer from '../components/WorkflowContainer.svelte';
   import Footer from '../components/Footer.svelte';
   import ToolTable from '../components/ToolTable.svelte';
   import { workflowStore } from '../lib/stores/workflow';
   import { uiStore } from '../lib/stores/ui';
+  import { 
+    restoreApplicationState, 
+    setupAutoSave,
+    saveApplicationState 
+  } from '../lib/stores/persistence';
+  import { migrateLegacyData } from '../lib/utils/migration';
+  
+  let cleanupAutoSave: (() => void) | null = null;
+  
+  onMount(() => {
+    // Migrate any legacy localStorage data
+    migrateLegacyData();
+    
+    // Restore state from localStorage on app load
+    const restored = restoreApplicationState();
+    if (restored) {
+      console.log('Application state restored from previous session');
+    }
+    
+    // Setup auto-save for all state changes
+    cleanupAutoSave = setupAutoSave();
+    
+    // Save state when page is about to unload
+    const handleBeforeUnload = () => {
+      saveApplicationState();
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    
+    // Cleanup function
+    return () => {
+      if (cleanupAutoSave) {
+        cleanupAutoSave();
+      }
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  });
 </script>
 
 <div class="app">

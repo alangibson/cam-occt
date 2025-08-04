@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import type { ShapeChain } from '../algorithms/chain-detection';
+import type { Point2D } from '../../types';
 import { workflowStore } from './workflow';
 import { CutDirection, LeadType } from '../types/direction';
 
@@ -27,6 +28,29 @@ export interface Path {
   leadOutFlipSide?: boolean; // Flip which side of the chain the lead-out is on
   leadOutAngle?: number; // Manual rotation angle for lead-out (degrees, 0-360)
   overcutLength?: number; // Overcut length
+  
+  // Calculated lead geometry (persisted to avoid recalculation)
+  calculatedLeadIn?: {
+    points: Point2D[];
+    type: LeadType;
+    generatedAt: string; // ISO timestamp
+    version: string; // Algorithm version for invalidation
+  };
+  calculatedLeadOut?: {
+    points: Point2D[];
+    type: LeadType;
+    generatedAt: string; // ISO timestamp
+    version: string; // Algorithm version for invalidation
+  };
+  
+  // Lead validation results (persisted)
+  leadValidation?: {
+    isValid: boolean;
+    warnings: string[];
+    errors: string[];
+    severity: 'info' | 'warning' | 'error';
+    validatedAt: string; // ISO timestamp
+  };
 }
 
 export interface PathsState {
@@ -164,10 +188,80 @@ function createPathsStore() {
       return chainIds;
     },
     
+    // Update lead geometry for a path
+    updatePathLeadGeometry: (pathId: string, leadGeometry: {
+      leadIn?: { points: Point2D[]; type: LeadType; };
+      leadOut?: { points: Point2D[]; type: LeadType; };
+      validation?: { isValid: boolean; warnings: string[]; errors: string[]; severity: 'info' | 'warning' | 'error'; };
+    }) => {
+      const timestamp = new Date().toISOString();
+      const version = '1.0.0'; // Lead calculation algorithm version
+      
+      update(state => ({
+        ...state,
+        paths: state.paths.map(path => {
+          if (path.id !== pathId) return path;
+          
+          const updates: Partial<Path> = {};
+          
+          if (leadGeometry.leadIn) {
+            updates.calculatedLeadIn = {
+              points: leadGeometry.leadIn.points,
+              type: leadGeometry.leadIn.type,
+              generatedAt: timestamp,
+              version
+            };
+          }
+          
+          if (leadGeometry.leadOut) {
+            updates.calculatedLeadOut = {
+              points: leadGeometry.leadOut.points,
+              type: leadGeometry.leadOut.type,
+              generatedAt: timestamp,
+              version
+            };
+          }
+          
+          if (leadGeometry.validation) {
+            updates.leadValidation = {
+              ...leadGeometry.validation,
+              validatedAt: timestamp
+            };
+          }
+          
+          return { ...path, ...updates };
+        })
+      }));
+    },
+    
+    // Clear calculated lead geometry (force recalculation)
+    clearPathLeadGeometry: (pathId: string) => {
+      update(state => ({
+        ...state,
+        paths: state.paths.map(path => 
+          path.id === pathId 
+            ? { 
+                ...path, 
+                calculatedLeadIn: undefined, 
+                calculatedLeadOut: undefined, 
+                leadValidation: undefined 
+              }
+            : path
+        )
+      }));
+    },
+    
     reset: () => {
       set(initialState);
       // Check workflow completion (will invalidate since no paths)
       setTimeout(() => checkProgramStageCompletion([]), 0);
+    },
+    
+    // Restore state from persistence (preserves IDs and calculated data)
+    restore: (pathsState: PathsState) => {
+      set(pathsState);
+      // Check workflow completion
+      setTimeout(() => checkProgramStageCompletion(pathsState.paths), 0);
     }
   };
 }

@@ -31,29 +31,9 @@
   $: console.log('Tools reactive update:', $toolStore);
   $: availableTools = $toolStore;
   
-  // Load operations and tools from localStorage on mount
+  // Tools and operations are now handled by the main persistence system
   onMount(() => {
-    // Load tools first to ensure they're available
-    const savedTools = localStorage.getItem('cam-occt-tools');
-    if (savedTools) {
-      try {
-        const parsedTools = JSON.parse(savedTools);
-        toolStore.reorderTools(parsedTools);
-      } catch (e) {
-        console.error('Failed to load tools from localStorage:', e);
-      }
-    }
-    
-    // Load operations
-    const savedOperations = localStorage.getItem('cam-occt-operations');
-    if (savedOperations) {
-      try {
-        const parsedOperations = JSON.parse(savedOperations);
-        operationsStore.reorderOperations(parsedOperations);
-      } catch (e) {
-        console.error('Failed to load operations from localStorage:', e);
-      }
-    }
+    // No need to load from localStorage anymore - handled by main persistence system
     
     // Add click-outside handler to close dropdowns
     function handleClickOutside(event: MouseEvent) {
@@ -77,10 +57,7 @@
   // Subscribe to stores and save operations to localStorage
   operationsStore.subscribe(value => {
     operations = value;
-    // Save to localStorage whenever operations change
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('cam-occt-operations', JSON.stringify(value));
-    }
+    // Operations are now saved by the main persistence system
   });
   chainStore.subscribe(state => chains = state.chains);
   partStore.subscribe(state => parts = state.parts);

@@ -13,6 +13,7 @@
   import { tessellateShape } from '../../lib/utils/tessellation';
   import { overlayStore, generateChainEndpoints } from '../../lib/stores/overlay';
   import { optimizeStartPoints } from '../../lib/algorithms/optimize-start-points';
+  import { prepareStageStore } from '../../lib/stores/prepare-stage';
   import type { Shape } from '../../types';
   import type { ShapeChain } from '../../lib/algorithms/chain-detection';
   import type { ChainNormalizationResult } from '../../lib/algorithms/chain-normalization';
@@ -21,9 +22,9 @@
   import { evaluateNURBS } from '../../lib/geometry/nurbs';
   import { onMount } from 'svelte';
 
-  // Resizable columns state
-  let leftColumnWidth = 280; // Default width in pixels
-  let rightColumnWidth = 280; // Default width in pixels
+  // Resizable columns state - initialize from store, update local variables during drag
+  let leftColumnWidth = $prepareStageStore.leftColumnWidth;
+  let rightColumnWidth = $prepareStageStore.rightColumnWidth;
   let isDraggingLeft = false;
   let isDraggingRight = false;
   let startX = 0;
@@ -37,12 +38,14 @@
   let isOptimizingStarts = false;
   let isTessellating = false;
 
-  // Algorithm parameters
-  let algorithmParams: AlgorithmParameters = { ...DEFAULT_ALGORITHM_PARAMETERS };
+  // Algorithm parameters - use store for persistence
+  $: algorithmParams = $prepareStageStore.algorithmParams;
   
   // Keep tolerance input synchronized with chain detection parameters
   $: {
-    algorithmParams.chainDetection.tolerance = tolerance;
+    if (algorithmParams.chainDetection.tolerance !== tolerance) {
+      prepareStageStore.updateAlgorithmParam('chainDetection', { tolerance });
+    }
   }
   
   // Reactive chain and part data
@@ -73,8 +76,8 @@
     overlayStore.clearTessellationPoints('prepare');
   }
   
-  // Chain normalization analysis
-  let chainNormalizationResults: ChainNormalizationResult[] = [];
+  // Chain normalization analysis - use store for persistence
+  $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
   
   // Chain selection state
   $: selectedChainId = $chainStore.selectedChainId;
@@ -87,9 +90,10 @@
   // Auto-analyze chains for traversal issues when chains change
   $: {
     if (detectedChains.length > 0) {
-      chainNormalizationResults = analyzeChainTraversal(detectedChains, algorithmParams.chainNormalization);
+      const newResults = analyzeChainTraversal(detectedChains, algorithmParams.chainNormalization);
+      prepareStageStore.setChainNormalizationResults(newResults);
     } else {
-      chainNormalizationResults = [];
+      prepareStageStore.clearChainNormalizationResults();
       selectChain(null);
     }
   }
@@ -625,23 +629,11 @@
     workflowStore.completeStage('prepare');
   }
 
-  // Load column widths from localStorage on mount
-  onMount(() => {
-    const savedLeftWidth = localStorage.getItem('cam-occt-prepare-left-column-width');
-    const savedRightWidth = localStorage.getItem('cam-occt-prepare-right-column-width');
-    
-    if (savedLeftWidth) {
-      leftColumnWidth = parseInt(savedLeftWidth, 10);
-    }
-    if (savedRightWidth) {
-      rightColumnWidth = parseInt(savedRightWidth, 10);
-    }
-  });
-
-  // Save column widths to localStorage
+  // Column widths are now persisted via the prepare stage store - no need for localStorage
+  
+  // Save column widths to store
   function saveColumnWidths() {
-    localStorage.setItem('cam-occt-prepare-left-column-width', leftColumnWidth.toString());
-    localStorage.setItem('cam-occt-prepare-right-column-width', rightColumnWidth.toString());
+    prepareStageStore.setColumnWidths(leftColumnWidth, rightColumnWidth);
   }
 
   // Left column resize handlers

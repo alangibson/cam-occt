@@ -7,6 +7,7 @@ import { get } from 'svelte/store';
 import { detectCutDirection } from '../algorithms/cut-direction';
 import { leadWarningsStore } from './lead-warnings';
 import { CutDirection, LeadType } from '../types/direction';
+import { calculateAndStoreOperationLeads } from '../utils/lead-persistence-utils';
 
 export interface Operation {
   id: string;
@@ -274,6 +275,11 @@ function generatePathsForOperation(operation: Operation) {
       workflowStore.completeStage('program');
     }
   }, 100); // Small delay to ensure path store is updated
+  
+  // Calculate and store lead geometry for all paths in this operation
+  setTimeout(() => {
+    calculateAndStoreOperationLeads(operation);
+  }, 150); // Delay to ensure paths are created first
 }
 
 export const operationsStore = createOperationsStore();

@@ -215,7 +215,23 @@ function createDrawingStore() {
         drawing: { ...state.drawing, shapes },
         selectedShapes: new Set() // Clear selection since shape IDs may have changed
       };
-    })
+    }),
+    
+    // Special method for restoring state without resetting downstream stages
+    restoreDrawing: (drawing: Drawing, fileName: string | null, scale: number, offset: Point2D, displayUnit: 'mm' | 'inch', selectedShapes: Set<string>, hoveredShape: string | null) => {
+      return update(state => ({ 
+        ...state,
+        drawing,
+        fileName,
+        scale,
+        offset,
+        displayUnit,
+        selectedShapes,
+        hoveredShape,
+        isDragging: false,
+        dragStart: null
+      }));
+    }
   };
 }
 

@@ -25,6 +25,7 @@ function createWorkflowStore(): Writable<WorkflowState> & {
   reset: () => void;
   resetFromStage: (stage: WorkflowStage) => void;
   invalidateDownstreamStages: (fromStage: WorkflowStage) => void;
+  restore: (currentStage: WorkflowStage, completedStages: WorkflowStage[]) => void;
 } {
   const initialState: WorkflowState = {
     currentStage: 'import',
@@ -190,6 +191,26 @@ function createWorkflowStore(): Writable<WorkflowState> & {
             return true;
           }
         };
+      });
+    },
+
+    // Restore workflow state from persistence (bypasses validation)
+    restore: (currentStage: WorkflowStage, completedStages: WorkflowStage[]) => {
+      const completedSet = new Set(completedStages);
+      set({
+        currentStage,
+        completedStages: completedSet,
+        canAdvanceTo: (targetStage: WorkflowStage) => {
+          const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
+          
+          // For sequential workflow, all previous stages must be completed
+          for (let i = 0; i < targetIndex; i++) {
+            if (!completedSet.has(WORKFLOW_ORDER[i])) {
+              return false;
+            }
+          }
+          return true;
+        }
       });
     }
   };

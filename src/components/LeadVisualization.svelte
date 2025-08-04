@@ -6,6 +6,7 @@
   import type { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
   import type { Point2D } from '../types';
   import { LeadType } from '../lib/types/direction';
+  import { getCachedLeadGeometry, hasValidCachedLeads } from '../lib/utils/lead-persistence-utils';
 
   // Props
   export let ctx: CanvasRenderingContext2D;
@@ -71,10 +72,24 @@
   }
 
   /**
-   * Calculate lead geometry for a path
+   * Calculate lead geometry for a path (with caching)
    */
   function calculatePathLeads(path: Path, operation: Operation) {
     try {
+      // First check if we have valid cached lead geometry
+      if (hasValidCachedLeads(path)) {
+        const cached = getCachedLeadGeometry(path);
+        console.log(`Using cached lead geometry for path ${path.name}`);
+        return {
+          leadIn: cached.leadIn,
+          leadOut: cached.leadOut,
+          warnings: cached.validation?.warnings || []
+        };
+      }
+
+      // Fall back to dynamic calculation if no valid cache
+      console.log(`Calculating lead geometry dynamically for path ${path.name}`);
+
       // Get the chain for this path
       const chain = chains.find(c => c.id === path.chainId);
       if (!chain || chain.shapes.length === 0) return null;

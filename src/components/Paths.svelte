@@ -18,23 +18,8 @@
     highlightedPathId = state.highlightedPathId;
   });
   
-  // Load paths from localStorage on mount and save changes
-  onMount(() => {
-    const savedPaths = localStorage.getItem('cam-occt-paths');
-    if (savedPaths) {
-      try {
-        const parsedPaths = JSON.parse(savedPaths);
-        pathStore.reorderPaths(parsedPaths);
-      } catch (e) {
-        console.error('Failed to load paths from localStorage:', e);
-      }
-    }
-  });
-  
-  // Save paths to localStorage whenever they change
-  $: if (typeof window !== 'undefined' && paths) {
-    localStorage.setItem('cam-occt-paths', JSON.stringify(paths));
-  }
+  // Paths are now handled by the main persistence system
+  // No need for component-level localStorage anymore
   
   
   function handlePathClick(pathId: string) {
