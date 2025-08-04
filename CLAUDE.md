@@ -184,16 +184,28 @@ The application is organized around a clear 5-stage workflow that guides users f
 
 ```
 cam-occt/
-├── src/                   # Source code (to be created)
+├── src/                   # Source code
 │   ├── lib/               # Shared libraries and utilities
 │   ├── routes/            # SvelteKit routes
 │   └── app.html           # Main HTML template
-├── tests/                  # Test files
+├── tests/                 # Test files
 │   ├── dxf/               # DXF test files for testing import functionality
-│   └── e2e/               # End-to-end Playwright tests (to be created)
+│   └── e2e/               # End-to-end Playwright tests
 ├── reference/             # Reference implementations and third-party library docs
-└── package.json           # Project dependencies and scripts
+├── scripts/               # Build scripts, migrations, and utilities (if needed)
+├── package.json           # Project dependencies and scripts
+├── tsconfig.json          # TypeScript configuration
+├── vite.config.js         # Vite configuration
+├── svelte.config.js       # SvelteKit configuration
+├── playwright.config.ts   # Playwright configuration
+└── vitest.config.ts       # Vitest configuration
 ```
+
+**Root Directory Rules**:
+- **ONLY configuration files** should exist in the root (package.json, tsconfig.json, *.config.*)
+- **NO test files** in root - they go in src/ alongside code or in tests/
+- **NO temporary scripts** in root - use scripts/ directory or delete after use
+- **NO debug files** in root - convert to proper tests
 
 ## Bug Fix Process
 
@@ -283,6 +295,21 @@ This ensures all bugs are properly covered by tests and prevents regressions.
 
 #### Test Data
 - Use DXF files from `tests/dxf/` for import testing
+
+#### Test File Organization Rules
+
+**CRITICAL**: Test files must be properly organized to maintain a clean codebase:
+
+1. **NO test files in the root directory** - Test files (*.test.*, *.spec.*, test-*.*, debug-*.*) MUST be placed in their proper locations
+2. **Unit tests go alongside source files** - `src/lib/foo.ts` → `src/lib/foo.test.ts`
+3. **Integration tests go in test directories** - Complex integration tests go in relevant subdirectories
+4. **E2E tests go in tests/e2e/** - All end-to-end tests must be in the dedicated e2e directory
+5. **Test utilities go in test directories** - Helper functions and utilities for tests go alongside the tests that use them
+
+**FORBIDDEN**: Creating test files in the root directory for any reason, including:
+- Quick debugging scripts (use proper test files instead)
+- Temporary test files (create them in the proper location from the start)
+- Migration or utility scripts (these should be in a tools/ or scripts/ directory if needed temporarily)
 
 ### 3. Available Scripts
 
@@ -456,6 +483,30 @@ Use feature detection for:
 3. Benchmark performance with test files
 4. Add UI controls and feedback
 5. Document algorithm behavior
+
+### Working with Temporary Scripts and Utilities
+
+**CRITICAL**: Temporary scripts and utilities must be properly managed:
+
+1. **Migration Scripts**: If you need to create migration scripts (e.g., for updating test formats), place them in a `scripts/` or `tools/` directory
+2. **Debug Scripts**: Debug scripts should be converted to proper unit tests in the appropriate location
+3. **Cleanup Required**: After running any migration or utility script, it MUST be either:
+   - Deleted if it's a one-time use script
+   - Moved to `scripts/` directory if it might be needed again
+   - Converted to a proper npm script in package.json if it's a recurring task
+4. **NO orphaned files**: Never leave utility scripts, test files, or temporary files in the root directory
+
+**FORBIDDEN**: Leaving any of these files in the root directory:
+- Migration scripts (migrate-*.*, fix-*.*, update-*.*)
+- Debug files (debug-*.*, test-*.*, tmp-*.*)
+- Utility scripts (*.cjs, *.mjs in root that aren't config files)
+- Temporary test files
+
+**Best Practice**: When creating any temporary file:
+1. Create it in the appropriate directory from the start
+2. Add a clear comment at the top explaining its purpose
+3. Delete it immediately after use OR move it to proper location
+4. Never commit temporary files to version control
 
 ## Performance Guidelines
 

@@ -29,10 +29,8 @@ declare module '$env/static/private' {
 	export const GJS_DEBUG_TOPICS: string;
 	export const LESSOPEN: string;
 	export const USER: string;
-	export const CLAUDE_CODE_ENTRYPOINT: string;
 	export const npm_config_user_agent: string;
 	export const XDG_SEAT: string;
-	export const GIT_EDITOR: string;
 	export const XDG_SESSION_TYPE: string;
 	export const GIT_ASKPASS: string;
 	export const npm_node_execpath: string;
@@ -66,7 +64,6 @@ declare module '$env/static/private' {
 	export const USERNAME: string;
 	export const TERM: string;
 	export const XDG_SESSION_ID: string;
-	export const OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: string;
 	export const npm_config_cache: string;
 	export const GNOME_DESKTOP_SESSION_ID: string;
 	export const WINDOWPATH: string;
@@ -76,7 +73,6 @@ declare module '$env/static/private' {
 	export const GTK3_MODULES: string;
 	export const NODE: string;
 	export const npm_package_name: string;
-	export const COREPACK_ENABLE_AUTO_PIN: string;
 	export const XDG_RUNTIME_DIR: string;
 	export const GDK_BACKEND: string;
 	export const DISPLAY: string;
@@ -97,7 +93,6 @@ declare module '$env/static/private' {
 	export const QT_ACCESSIBILITY: string;
 	export const GDMSESSION: string;
 	export const LESSCLOSE: string;
-	export const CLAUDECODE: string;
 	export const GPG_AGENT_INFO: string;
 	export const GJS_DEBUG_OUTPUT: string;
 	export const VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
@@ -157,10 +152,8 @@ declare module '$env/dynamic/private' {
 		GJS_DEBUG_TOPICS: string;
 		LESSOPEN: string;
 		USER: string;
-		CLAUDE_CODE_ENTRYPOINT: string;
 		npm_config_user_agent: string;
 		XDG_SEAT: string;
-		GIT_EDITOR: string;
 		XDG_SESSION_TYPE: string;
 		GIT_ASKPASS: string;
 		npm_node_execpath: string;
@@ -194,7 +187,6 @@ declare module '$env/dynamic/private' {
 		USERNAME: string;
 		TERM: string;
 		XDG_SESSION_ID: string;
-		OTEL_EXPORTER_OTLP_METRICS_TEMPORALITY_PREFERENCE: string;
 		npm_config_cache: string;
 		GNOME_DESKTOP_SESSION_ID: string;
 		WINDOWPATH: string;
@@ -204,7 +196,6 @@ declare module '$env/dynamic/private' {
 		GTK3_MODULES: string;
 		NODE: string;
 		npm_package_name: string;
-		COREPACK_ENABLE_AUTO_PIN: string;
 		XDG_RUNTIME_DIR: string;
 		GDK_BACKEND: string;
 		DISPLAY: string;
@@ -225,7 +216,6 @@ declare module '$env/dynamic/private' {
 		QT_ACCESSIBILITY: string;
 		GDMSESSION: string;
 		LESSCLOSE: string;
-		CLAUDECODE: string;
 		GPG_AGENT_INFO: string;
 		GJS_DEBUG_OUTPUT: string;
 		VSCODE_GIT_ASKPASS_EXTRA_ARGS: string;
