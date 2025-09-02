@@ -14,6 +14,10 @@
   import { overlayStore, generateChainEndpoints } from '../../lib/stores/overlay';
   import { optimizeStartPoints } from '../../lib/algorithms/optimize-start-points';
   import { prepareStageStore } from '../../lib/stores/prepare-stage';
+  import { decomposePolylines } from '../../lib/algorithms/decompose-polylines';
+  import { translateToPositiveQuadrant } from '../../lib/algorithms/translate-to-positive';
+  import { joinColinearLinesInChains } from '../../lib/algorithms/join-colinear-lines';
+  import { TOLERANCE } from '../../lib/constants';
   import type { Shape, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../../lib/types';
   import type { Chain } from '../../lib/algorithms/chain-detection';
   import type { ChainNormalizationParameters } from '../../lib/types/algorithm-parameters';
@@ -476,6 +480,55 @@
   
   // Tessellation is now handled by the imported tessellateShape function
 
+  function handleDecomposePolylines() {
+    const drawing = $drawingStore.drawing;
+    if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
+      alert('No drawing loaded or no shapes to decompose.');
+      return;
+    }
+    
+    const decomposedShapes = decomposePolylines(drawing.shapes);
+    drawingStore.replaceAllShapes(decomposedShapes);
+  }
+  
+  function handleTranslateToPositive() {
+    const drawing = $drawingStore.drawing;
+    if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
+      alert('No drawing loaded or no shapes to translate.');
+      return;
+    }
+    
+    const translatedShapes = translateToPositiveQuadrant(drawing.shapes);
+    drawingStore.replaceAllShapes(translatedShapes);
+  }
+  
+  function handleJoinColinearLines() {
+    const drawing = $drawingStore.drawing;
+    if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
+      alert('No drawing loaded or no shapes to join.');
+      return;
+    }
+    
+    try {
+      // First detect chains from current shapes
+      const chains = detectShapeChains(drawing.shapes, { tolerance: TOLERANCE });
+      
+      // Join collinear lines in the chains
+      const joinedChains = joinColinearLinesInChains(chains, TOLERANCE);
+      
+      // Extract all shapes from the joined chains
+      const allJoinedShapes = joinedChains.flatMap(chain => chain.shapes);
+      
+      // Update the drawing with the joined shapes
+      drawingStore.replaceAllShapes(allJoinedShapes);
+      
+      console.log(`Line joining complete. Original: ${drawing.shapes.length} shapes, Joined: ${allJoinedShapes.length} shapes`);
+    } catch (error) {
+      console.error('Error joining colinear lines:', error);
+      alert('Error joining colinear lines. Check console for details.');
+    }
+  }
+
   // Auto-complete prepare stage when chains or parts are detected
   $: if (detectedChains.length > 0 || detectedParts.length > 0) {
     workflowStore.completeStage('prepare');
@@ -665,78 +718,6 @@
 
     <!-- Center Column -->
     <div class="center-column">
-      <div class="canvas-header">
-        <div class="chain-detection-toolbar">
-          <div class="toolbar-section">
-            <button 
-              class="detect-chains-button"
-              on:click={handleDetectChains}
-              disabled={isDetectingChains}
-            >
-              {isDetectingChains ? 'Detecting...' : 'Detect Chains'}
-            </button>
-            
-            <div class="toolbar-separator" aria-hidden="true">
-              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L6 6L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            
-            <button 
-              class="normalize-button"
-              on:click={handleNormalizeChains}
-              disabled={isNormalizing || detectedChains.length === 0}
-            >
-              {isNormalizing ? 'Normalizing...' : 'Normalize Chains'}
-            </button>
-            
-            <div class="toolbar-separator" aria-hidden="true">
-              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L6 6L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            
-            <button 
-              class="optimize-starts-button"
-              on:click={handleOptimizeStarts}
-              disabled={isOptimizingStarts || detectedChains.length === 0}
-            >
-              {isOptimizingStarts ? 'Optimizing...' : 'Optimize Starts'}
-            </button>
-            
-            <div class="toolbar-separator" aria-hidden="true">
-              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L6 6L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            
-            <button 
-              class="tessellate-button"
-              on:click={handleTessellateChains}
-              disabled={isTessellating || detectedChains.length === 0}
-            >
-              {isTessellating ? 'Tessellating...' : tessellationActive ? 'Clear Tessellation' : 'Tessellate Chains'}
-            </button>
-            
-            <div class="toolbar-separator" aria-hidden="true">
-              <svg width="8" height="12" viewBox="0 0 8 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 1L6 6L1 11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              </svg>
-            </div>
-            
-            <button 
-              class="detect-parts-button"
-              on:click={handleDetectParts}
-              disabled={isDetectingParts || detectedChains.length === 0}
-            >
-              {isDetectingParts ? 'Detecting...' : 'Detect Parts'}
-            </button>
-          </div>
-          
-
-          <!-- Toolbar notices moved to accordion panel titles -->
-        </div>
-      </div>
       <div class="canvas-container">
         <DrawingCanvas 
           respectLayerVisibility={false} 
@@ -759,6 +740,277 @@
         aria-label="Resize right panel (Arrow keys to adjust)"
         type="button"
       ></button>
+
+      <AccordionPanel title="Prepare" isExpanded={true}>
+        <!-- Decompose Polylines -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">
+            <button 
+              class="action-title-button"
+              on:click|stopPropagation={handleDecomposePolylines}
+              disabled={!$drawingStore.drawing}
+            >
+              Decompose Polylines
+            </button>
+          </summary>
+          <div class="param-group-content">
+            <div class="prepare-action-description">
+              Converts complex polylines into individual line and arc segments for better processing.
+            </div>
+          </div>
+        </details>
+
+        <!-- Join Co-linear Lines -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">
+            <button 
+              class="action-title-button"
+              on:click|stopPropagation={handleJoinColinearLines}
+              disabled={!$drawingStore.drawing}
+            >
+              Join Co-linear Lines
+            </button>
+          </summary>
+          <div class="param-group-content">
+            <div class="prepare-action-description">
+              Combines adjacent line segments that are perfectly aligned into single lines to simplify geometry.
+            </div>
+          </div>
+        </details>
+
+        <!-- Translate to Positive -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">
+            <button 
+              class="action-title-button"
+              on:click|stopPropagation={handleTranslateToPositive}
+              disabled={!$drawingStore.drawing}
+            >
+              Translate to Positive
+            </button>
+          </summary>
+          <div class="param-group-content">
+            <div class="prepare-action-description">
+              Moves all shapes so the drawing origin is in the positive quadrant (bottom-left corner).
+            </div>
+          </div>
+        </details>
+
+        <!-- Detect Chains -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">
+            <button 
+              class="action-title-button"
+              on:click|stopPropagation={handleDetectChains}
+              disabled={isDetectingChains}
+            >
+              {isDetectingChains ? 'Detecting...' : 'Detect Chains'}
+            </button>
+          </summary>
+          <div class="param-group-content">
+            <div class="prepare-action-description">
+              Analyzes shapes to find connected sequences that form continuous cutting paths.
+            </div>
+            <label class="param-label">
+              Connection Tolerance:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.chainDetection.tolerance} 
+                min="0.001" 
+                max="10" 
+                step="0.001"
+                class="param-input"
+                title="Distance tolerance for connecting shapes into chains."
+              />
+              <div class="param-description">
+                Maximum distance between shape endpoints to be considered connected. 
+                Higher values will connect shapes that are further apart, potentially creating longer chains. 
+                Lower values require more precise endpoint alignment.
+              </div>
+            </label>
+          </div>
+        </details>
+
+        <!-- Normalize Chains -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">
+            <button 
+              class="action-title-button"
+              on:click|stopPropagation={handleNormalizeChains}
+              disabled={isNormalizing || detectedChains.length === 0}
+            >
+              {isNormalizing ? 'Normalizing...' : 'Normalize Chains'}
+            </button>
+          </summary>
+          <div class="param-group-content">
+            <div class="prepare-action-description">
+              Ensures all shapes in chains are oriented consistently for proper traversal.
+            </div>
+            <label class="param-label">
+              Traversal Tolerance:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.chainNormalization.traversalTolerance} 
+                min="0.001" 
+                max="1.0" 
+                step="0.001"
+                class="param-input"
+                title="Tolerance for floating point comparison in traversal analysis."
+              />
+              <div class="param-description">
+                Precision tolerance for checking if shape endpoints align during chain traversal analysis. 
+                Smaller values require more precise alignment between consecutive shapes. 
+                Used to determine if chains can be traversed end-to-start without gaps.
+              </div>
+            </label>
+            
+            <label class="param-label">
+              Max Traversal Attempts:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.chainNormalization.maxTraversalAttempts} 
+                min="1" 
+                max="10" 
+                step="1"
+                class="param-input"
+                title="Maximum number of traversal attempts per chain."
+              />
+              <div class="param-description">
+                Limits how many different starting points the algorithm tries when analyzing chain traversal. 
+                Higher values are more thorough but slower for complex chains. 
+                Lower values improve performance but may miss valid traversal paths.
+              </div>
+            </label>
+          </div>
+        </details>
+
+        <!-- Optimize Starts -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">
+            <button 
+              class="action-title-button"
+              on:click|stopPropagation={handleOptimizeStarts}
+              disabled={isOptimizingStarts || detectedChains.length === 0}
+            >
+              {isOptimizingStarts ? 'Optimizing...' : 'Optimize Starts'}
+            </button>
+          </summary>
+          <div class="param-group-content">
+            <div class="prepare-action-description">
+              Adjusts chain starting points to minimize rapid movement and cutting time.
+            </div>
+          </div>
+        </details>
+
+        <!-- Tessellate Chains -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">
+            <button 
+              class="action-title-button"
+              on:click|stopPropagation={handleTessellateChains}
+              disabled={isTessellating || detectedChains.length === 0}
+            >
+              {isTessellating ? 'Tessellating...' : tessellationActive ? 'Clear Tessellation' : 'Tessellate Chains'}
+            </button>
+          </summary>
+          <div class="param-group-content">
+            <div class="prepare-action-description">
+              Generates visualization points along chain paths for analysis and debugging.
+            </div>
+          </div>
+        </details>
+
+        <!-- Detect Parts -->
+        <details class="param-group-details">
+          <summary class="param-group-summary">
+            <button 
+              class="action-title-button"
+              on:click|stopPropagation={handleDetectParts}
+              disabled={isDetectingParts || detectedChains.length === 0}
+            >
+              {isDetectingParts ? 'Detecting...' : 'Detect Parts'}
+            </button>
+          </summary>
+          <div class="param-group-content">
+            <div class="prepare-action-description">
+              Identifies parts (outer shells with inner holes) from closed chains for advanced cutting operations.
+            </div>
+            <div class="param-grid">
+              <label class="param-label">
+                Circle Points:
+                <input 
+                  type="number" 
+                  bind:value={algorithmParams.partDetection.circleTessellationPoints} 
+                  min="8" 
+                  max="128" 
+                  step="1"
+                  class="param-input"
+                  title="Number of points to tessellate circles into. Higher = better precision but slower."
+                />
+                <div class="param-description">
+                  Number of straight line segments used to approximate circles for geometric operations. 
+                  Higher values provide better accuracy for containment detection but slower performance. 
+                  Increase for complex files with precision issues.
+                </div>
+              </label>
+              
+              <label class="param-label">
+                Min Arc Points:
+                <input 
+                  type="number" 
+                  bind:value={algorithmParams.partDetection.minArcTessellationPoints} 
+                  min="4" 
+                  max="64" 
+                  step="1"
+                  class="param-input"
+                  title="Minimum number of points for arc tessellation."
+                />
+                <div class="param-description">
+                  Minimum number of points for arc tessellation, regardless of arc length. 
+                  Ensures even very small arcs have adequate geometric representation. 
+                  Higher values improve precision for tiny arc segments.
+                </div>
+              </label>
+              
+              <label class="param-label">
+                Arc Precision:
+                <input 
+                  type="number" 
+                  bind:value={algorithmParams.partDetection.arcTessellationDensity} 
+                  min="0.01" 
+                  max="0.5" 
+                  step="0.01"
+                  class="param-input"
+                  title="Arc tessellation density factor. Smaller = more points."
+                />
+                <div class="param-description">
+                  Controls how finely arcs are divided into line segments (radians per point). 
+                  Smaller values create more points and better precision. 
+                  Larger values use fewer points for faster processing but less accuracy.
+                </div>
+              </label>
+              
+              <label class="param-label">
+                Decimal Precision:
+                <input 
+                  type="number" 
+                  bind:value={algorithmParams.partDetection.decimalPrecision} 
+                  min="1" 
+                  max="6" 
+                  step="1"
+                  class="param-input"
+                  title="Decimal precision for coordinate rounding."
+                />
+                <div class="param-description">
+                  Number of decimal places for coordinate rounding to avoid floating-point errors. 
+                  Higher values preserve more precision but may cause numerical instability. 
+                  Lower values improve robustness but may lose fine geometric details.
+                </div>
+              </label>
+            </div>
+          </div>
+        </details>
+      </AccordionPanel>
       {#if selectedChain && selectedChainAnalysis}
         <AccordionPanel title="Chain Details" isExpanded={true}>
           <div class="chain-detail">
@@ -856,156 +1108,6 @@
         </AccordionPanel>
       {/if}
 
-      <!-- Algorithm Parameters -->
-      <AccordionPanel title="Algorithm Parameters" isExpanded={false}>
-        <!-- Chain Detection Parameters -->
-        <details class="param-group-details">
-          <summary class="param-group-summary">Chain Detection</summary>
-          <div class="param-group-content">
-            <label class="param-label">
-              Connection Tolerance:
-              <input 
-                type="number" 
-                bind:value={algorithmParams.chainDetection.tolerance} 
-                min="0.001" 
-                max="10" 
-                step="0.001"
-                class="param-input"
-                title="Distance tolerance for connecting shapes into chains."
-              />
-              <div class="param-description">
-                Maximum distance between shape endpoints to be considered connected. 
-                Higher values will connect shapes that are further apart, potentially creating longer chains. 
-                Lower values require more precise endpoint alignment.
-              </div>
-            </label>
-          </div>
-        </details>
-
-        <!-- Chain Normalization Parameters -->
-        <details class="param-group-details">
-          <summary class="param-group-summary">Chain Normalization</summary>
-          <div class="param-group-content">
-            <label class="param-label">
-              Traversal Tolerance:
-              <input 
-                type="number" 
-                bind:value={algorithmParams.chainNormalization.traversalTolerance} 
-                min="0.001" 
-                max="1.0" 
-                step="0.001"
-                class="param-input"
-                title="Tolerance for floating point comparison in traversal analysis."
-              />
-              <div class="param-description">
-                Precision tolerance for checking if shape endpoints align during chain traversal analysis. 
-                Smaller values require more precise alignment between consecutive shapes. 
-                Used to determine if chains can be traversed end-to-start without gaps.
-              </div>
-            </label>
-            
-            <label class="param-label">
-              Max Traversal Attempts:
-              <input 
-                type="number" 
-                bind:value={algorithmParams.chainNormalization.maxTraversalAttempts} 
-                min="1" 
-                max="10" 
-                step="1"
-                class="param-input"
-                title="Maximum number of traversal attempts per chain."
-              />
-              <div class="param-description">
-                Limits how many different starting points the algorithm tries when analyzing chain traversal. 
-                Higher values are more thorough but slower for complex chains. 
-                Lower values improve performance but may miss valid traversal paths.
-              </div>
-            </label>
-          </div>
-        </details>
-
-        <!-- Part Detection Parameters -->
-        <details class="param-group-details">
-          <summary class="param-group-summary">Part Detection</summary>
-          <div class="param-group-content">
-            <div class="param-grid">
-              <label class="param-label">
-                Circle Points:
-                <input 
-                  type="number" 
-                  bind:value={algorithmParams.partDetection.circleTessellationPoints} 
-                  min="8" 
-                  max="128" 
-                  step="1"
-                  class="param-input"
-                  title="Number of points to tessellate circles into. Higher = better precision but slower."
-                />
-                <div class="param-description">
-                  Number of straight line segments used to approximate circles for geometric operations. 
-                  Higher values provide better accuracy for containment detection but slower performance. 
-                  Increase for complex files with precision issues.
-                </div>
-              </label>
-              
-              <label class="param-label">
-                Min Arc Points:
-                <input 
-                  type="number" 
-                  bind:value={algorithmParams.partDetection.minArcTessellationPoints} 
-                  min="4" 
-                  max="64" 
-                  step="1"
-                  class="param-input"
-                  title="Minimum number of points for arc tessellation."
-                />
-                <div class="param-description">
-                  Minimum number of points for arc tessellation, regardless of arc length. 
-                  Ensures even very small arcs have adequate geometric representation. 
-                  Higher values improve precision for tiny arc segments.
-                </div>
-              </label>
-              
-              <label class="param-label">
-                Arc Precision:
-                <input 
-                  type="number" 
-                  bind:value={algorithmParams.partDetection.arcTessellationDensity} 
-                  min="0.01" 
-                  max="0.5" 
-                  step="0.01"
-                  class="param-input"
-                  title="Arc tessellation density factor. Smaller = more points."
-                />
-                <div class="param-description">
-                  Controls how finely arcs are divided into line segments (radians per point). 
-                  Smaller values create more points and better precision. 
-                  Larger values use fewer points for faster processing but less accuracy.
-                </div>
-              </label>
-              
-              <label class="param-label">
-                Decimal Precision:
-                <input 
-                  type="number" 
-                  bind:value={algorithmParams.partDetection.decimalPrecision} 
-                  min="1" 
-                  max="6" 
-                  step="1"
-                  class="param-input"
-                  title="Decimal precision for coordinate rounding."
-                />
-                <div class="param-description">
-                  Number of decimal places for coordinate rounding to avoid floating-point errors. 
-                  Higher values preserve more precision but may cause numerical instability. 
-                  Lower values improve robustness but may lose fine geometric details.
-                </div>
-              </label>
-            </div>
-          </div>
-        </details>
-      </AccordionPanel>
-
-      
       <!-- Hidden for now -->
       <!-- <div class="panel">
         <h3 class="panel-title">Tool Path Information</h3>
@@ -1079,12 +1181,6 @@
     padding: 1rem;
   }
 
-  .canvas-header {
-    padding: 1rem 2rem;
-    border-bottom: 1px solid #e5e7eb;
-    background-color: #fafafa;
-  }
-
   .canvas-container {
     flex: 1;
     position: relative;
@@ -1120,15 +1216,9 @@
     line-height: 1.4;
   }
 
-
-  /* .input-label removed - tolerance input removed from toolbar */
-
-  /* .tolerance-input removed - moved to Algorithm Parameters */
-
-  /* .tolerance-input:focus removed - moved to Algorithm Parameters */
-
-  .detect-chains-button {
-    padding: 0.75rem 1rem;
+  /* Prepare action button in summary */
+  .action-title-button {
+    padding: 0.5rem 1rem;
     background-color: #4f46e5;
     color: white;
     border: none;
@@ -1136,128 +1226,35 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
-    font-size: 0.875rem;
+    font-size: 0.75rem;
+    flex-shrink: 0;
   }
 
-  .detect-chains-button:hover:not(:disabled) {
+  .action-title-button:hover:not(:disabled) {
     background-color: #4338ca;
   }
 
-  .detect-chains-button:disabled {
+  .action-title-button:disabled {
     background-color: #9ca3af;
     cursor: not-allowed;
+    color: #6b7280;
+  }
+
+  .prepare-action-description {
+    font-size: 0.75rem;
+    color: #6b7280;
+    line-height: 1.4;
+    margin: 0;
   }
 
 
-  /* Toolbar styles */
-  .chain-detection-toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.75rem 1rem;
-  }
+  /* .input-label removed - tolerance input removed from toolbar */
 
-  .toolbar-section {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-  }
+  /* .tolerance-input removed - moved to Algorithm Parameters */
 
-  .toolbar-separator {
-    color: #d1d5db;
-    margin: 0 0.25rem;
-  }
+  /* .tolerance-input:focus removed - moved to Algorithm Parameters */
 
-  /* .toolbar-results removed - notices moved to accordion titles */
-
-  /* .chain-summary-inline removed - moved to accordion title */
-
-  /* .part-summary-inline removed - moved to accordion title */
-
-  .detect-parts-button {
-    padding: 0.75rem 1rem;
-    background-color: #22c55e;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
-  }
-
-  .detect-parts-button:hover:not(:disabled) {
-    background-color: #16a34a;
-  }
-
-  .detect-parts-button:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-  }
-
-  .normalize-button {
-    padding: 0.75rem 1rem;
-    background-color: #f59e0b;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
-  }
-
-  .normalize-button:hover:not(:disabled) {
-    background-color: #d97706;
-  }
-
-  .normalize-button:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-  }
-
-  .optimize-starts-button {
-    padding: 0.75rem 1rem;
-    background-color: #10b981;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
-  }
-
-  .optimize-starts-button:hover:not(:disabled) {
-    background-color: #059669;
-  }
-
-  .optimize-starts-button:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-  }
-
-  .tessellate-button {
-    padding: 0.75rem 1rem;
-    background-color: #8b5cf6;
-    color: white;
-    border: none;
-    border-radius: 0.375rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
-  }
-
-  .tessellate-button:hover:not(:disabled) {
-    background-color: #7c3aed;
-  }
-
-  .tessellate-button:disabled {
-    background-color: #9ca3af;
-    cursor: not-allowed;
-  }
+  /* Toolbar styles removed - buttons moved to Prepare box */
 
   /* Parts list styles - .panel-title now handled by AccordionPanel component */
 
@@ -1666,10 +1663,37 @@
     background-color: #f1f5f9;
     border-bottom: 1px solid #e2e8f0;
     transition: background-color 0.2s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   .param-group-summary:hover {
     background-color: #e2e8f0;
+  }
+
+  .param-group-summary::marker {
+    content: none;
+  }
+
+  .param-group-summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .param-group-summary::after {
+    content: '';
+    width: 8px;
+    height: 12px;
+    background-image: url("data:image/svg+xml,%3Csvg width='8' height='12' viewBox='0 0 8 12' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L1 11' stroke='%23374151' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: center;
+    transform: rotate(0deg);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .param-group-details[open] .param-group-summary::after {
+    transform: rotate(90deg);
   }
 
   .param-group-content {
