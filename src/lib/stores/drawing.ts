@@ -51,6 +51,7 @@ export interface DrawingState {
   drawing: Drawing | null;
   selectedShapes: Set<string>;
   hoveredShape: string | null;
+  selectedOffsetShape: Shape | null;
   isDragging: boolean;
   dragStart: Point2D | null;
   scale: number;
@@ -76,11 +77,14 @@ function createDrawingStore(): {
   setDisplayUnit: (unit: 'mm' | 'inch') => void;
   replaceAllShapes: (shapes: Shape[]) => void;
   restoreDrawing: (drawing: Drawing, fileName: string | null, scale: number, offset: Point2D, displayUnit: 'mm' | 'inch', selectedShapes: Set<string>, hoveredShape: string | null) => void;
+  selectOffsetShape: (shape: Shape | null) => void;
+  clearOffsetShapeSelection: () => void;
 } {
   const { subscribe, update } = writable<DrawingState>({
     drawing: null,
     selectedShapes: new Set(),
     hoveredShape: null,
+    selectedOffsetShape: null,
     isDragging: false,
     dragStart: null,
     scale: 1,
@@ -252,7 +256,18 @@ function createDrawingStore(): {
         isDragging: false,
         dragStart: null
       }));
-    }
+    },
+    
+    selectOffsetShape: (shape: Shape | null) => update(state => ({
+      ...state,
+      selectedOffsetShape: shape,
+      selectedShapes: new Set() // Clear regular shape selection when selecting offset shape
+    })),
+    
+    clearOffsetShapeSelection: () => update(state => ({
+      ...state,
+      selectedOffsetShape: null
+    }))
   };
 }
 

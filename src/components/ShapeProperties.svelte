@@ -7,16 +7,20 @@
   $: drawing = $drawingStore.drawing;
   $: selectedShapes = $drawingStore.selectedShapes;
   $: hoveredShape = $drawingStore.hoveredShape;
+  $: selectedOffsetShape = $drawingStore.selectedOffsetShape;
   
-  // Get the shape to display - prioritize selected shape over hovered
-  $: displayShape = drawing && selectedShapes.size > 0 
-    ? drawing.shapes.find(shape => selectedShapes.has(shape.id))
-    : (drawing && hoveredShape 
-        ? drawing.shapes.find(shape => shape.id === hoveredShape)
-        : null);
+  // Get the shape to display - prioritize offset shape, then selected shape, then hovered
+  $: displayShape = selectedOffsetShape 
+    ? selectedOffsetShape
+    : (drawing && selectedShapes.size > 0 
+        ? drawing.shapes.find(shape => selectedShapes.has(shape.id))
+        : (drawing && hoveredShape 
+            ? drawing.shapes.find(shape => shape.id === hoveredShape)
+            : null));
   
-  // Determine if we're showing hovered vs selected
-  $: isShowingHovered = displayShape && selectedShapes.size === 0 && hoveredShape === displayShape.id;
+  // Determine display type
+  $: isShowingOffset = displayShape === selectedOffsetShape && selectedOffsetShape !== null;
+  $: isShowingHovered = !isShowingOffset && displayShape && selectedShapes.size === 0 && hoveredShape === displayShape?.id;
   
   function getShapeOrigin(shape: Shape): Point2D {
     switch (shape.type) {
@@ -237,7 +241,9 @@
       {/if}
     </div>
     
-    {#if isShowingHovered}
+    {#if isShowingOffset}
+      <p class="offset-info">Showing offset shape</p>
+    {:else if isShowingHovered}
       <p class="hover-info">Showing hovered shape (click to select)</p>
     {:else if selectedShapes.size > 1}
       <p class="multi-selection">
@@ -326,6 +332,14 @@
     margin-top: 1rem;
     font-size: 0.9rem;
     color: #0066ff;
+    font-style: italic;
+    text-align: center;
+  }
+  
+  .offset-info {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #10b981;
     font-style: italic;
     text-align: center;
   }

@@ -25,6 +25,7 @@
   import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../lib/types';
   import type { WorkflowStage } from '../lib/stores/workflow';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
+  import { normalizeAngle } from '../lib/utils/polygon-geometry-shared';
   
   export let respectLayerVisibility = true; // Default to true for Edit stage
   export let treatChainsAsEntities = false; // Default to false, true for Program stage
@@ -45,6 +46,7 @@
   $: drawing = $drawingStore.drawing;
   $: selectedShapes = $drawingStore.selectedShapes;
   $: hoveredShape = $drawingStore.hoveredShape;
+  $: selectedOffsetShape = $drawingStore.selectedOffsetShape;
   $: scale = $drawingStore.scale;
   $: offset = $drawingStore.offset;
   $: layerVisibility = $drawingStore.layerVisibility;
@@ -329,27 +331,39 @@
         ctx.shadowColor = 'transparent'; // Reset shadow
         ctx.shadowBlur = 0;
         
-        // Set styling based on selection state with proper hierarchy
-        if (isPathSelected) {
-          ctx.strokeStyle = pathColors.selectedDark; // Dark green for selected (highest priority)
-          ctx.lineWidth = coordinator.screenToWorldDistance(3); // 3px selected paths
-        } else if (isPathHighlighted) {
-          ctx.strokeStyle = pathColors.highlighted; // Dark green for highlighted
-          ctx.lineWidth = coordinator.screenToWorldDistance(2.5);
-          ctx.shadowColor = pathColors.highlighted;
-          ctx.shadowBlur = coordinator.screenToWorldDistance(4);
-        } else {
-          ctx.strokeStyle = pathColors.offsetGreen; // Green for offset paths
-          ctx.lineWidth = coordinator.screenToWorldDistance(2); // 2px offset paths
-        }
-        
         // Maintain professional line appearance
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         
         path.calculatedOffset.offsetShapes.forEach((shape, index) => {
           try {
+            // Check if this specific offset shape is selected
+            const isOffsetShapeSelected = selectedOffsetShape && selectedOffsetShape.id === shape.id;
+            
+            // Set styling based on selection state with proper hierarchy
+            if (isOffsetShapeSelected) {
+              ctx.strokeStyle = '#ff6600'; // Orange for selected offset shape
+              ctx.lineWidth = coordinator.screenToWorldDistance(2); // 2px selected offset shape
+            } else if (isPathSelected) {
+              ctx.strokeStyle = pathColors.selectedDark; // Dark green for selected path
+              ctx.lineWidth = coordinator.screenToWorldDistance(3); // 3px selected paths
+            } else if (isPathHighlighted) {
+              ctx.strokeStyle = pathColors.highlighted; // Dark green for highlighted
+              ctx.lineWidth = coordinator.screenToWorldDistance(2.5);
+              ctx.shadowColor = pathColors.highlighted;
+              ctx.shadowBlur = coordinator.screenToWorldDistance(4);
+            } else {
+              ctx.strokeStyle = pathColors.offsetGreen; // Green for offset paths
+              ctx.lineWidth = coordinator.screenToWorldDistance(2); // 2px offset paths
+            }
+            
             drawShape(shape);
+            
+            // Reset shadow after each shape if it was applied
+            if (isPathHighlighted && !isOffsetShapeSelected) {
+              ctx.shadowColor = 'transparent';
+              ctx.shadowBlur = 0;
+            }
           } catch (error) {
             console.warn(`Error rendering offset shape ${index} for path ${path.id}:`, error);
           }
@@ -734,8 +748,8 @@
       arc.center.x,
       arc.center.y,
       arc.radius,
-      arc.startAngle,
-      arc.endAngle,
+      normalizeAngle(arc.startAngle),
+      normalizeAngle(arc.endAngle),
       arc.clockwise
     );
     ctx.stroke();
@@ -1047,6 +1061,31 @@
     return null;
   }
   
+  function getOffsetShapeAtPoint(point: Point2D): { shape: Shape; pathId: string } | null {
+    if (!pathsState?.paths) return null;
+    
+    const tolerance = coordinator.screenToWorldDistance(5);
+    
+    // Iterate through all paths that have calculated offsets
+    for (const path of pathsState.paths) {
+      // Only check enabled paths with offset shapes
+      if (!path.enabled || !path.calculatedOffset?.offsetShapes) continue;
+      
+      // Check if the operation for this path is enabled
+      const operation = operations.find(op => op.id === path.operationId);
+      if (!operation || !operation.enabled) continue;
+      
+      // Check each offset shape for proximity to the point
+      for (const offsetShape of path.calculatedOffset.offsetShapes) {
+        if (isPointNearShape(point, offsetShape, tolerance)) {
+          return { shape: offsetShape, pathId: path.id };
+        }
+      }
+    }
+    
+    return null;
+  }
+  
   function getRapidAtPoint(point: Point2D): { id: string; start: any; end: any } | null {
     if (!showRapids || rapids.length === 0) return null;
     
@@ -1268,6 +1307,19 @@
           selectRapid(rapid.id);
         }
         return; // Don't process shape selection if rapid was clicked
+      }
+      
+      // In Program stage, check for offset shape selection
+      if (interactionMode === 'chains' && currentStage === 'program') {
+        const offsetHit = getOffsetShapeAtPoint(worldPos);
+        if (offsetHit) {
+          // Select the offset shape
+          drawingStore.selectOffsetShape(offsetHit.shape);
+          return; // Don't process regular shape selection
+        } else {
+          // Clear offset shape selection if clicking elsewhere
+          drawingStore.clearOffsetShapeSelection();
+        }
       }
       
       const shape = getShapeAtPoint(worldPos);

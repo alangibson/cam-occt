@@ -4,6 +4,7 @@
   import Operations from '../Operations.svelte';
   import Paths from '../Paths.svelte';
   import AccordionPanel from '../AccordionPanel.svelte';
+  import ShapeProperties from '../ShapeProperties.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
   import { chainStore, selectChain } from '../../lib/stores/chains';
@@ -258,6 +259,10 @@
     <svelte:fragment slot="right">
       <AccordionPanel title="Operations" isExpanded={true}>
         <Operations />
+      </AccordionPanel>
+
+      <AccordionPanel title="Shape Properties" isExpanded={true}>
+        <ShapeProperties />
       </AccordionPanel>
 
       <AccordionPanel title="Problems ({offsetWarnings.length})" isExpanded={true}>
