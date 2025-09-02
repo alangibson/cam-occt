@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { drawingStore } from '../lib/stores/drawing';
-  import { calculateDrawingSize, type DrawingSize } from '../lib/utils/drawing-size';
+  import { calculateDrawingSize, type DrawingSize } from '../lib/algorithms/drawing-size/drawing-size';
   
   $: drawing = $drawingStore.drawing;
   $: scale = $drawingStore.scale;

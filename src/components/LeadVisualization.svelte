@@ -4,7 +4,7 @@
   import type { DetectedPart } from '../lib/algorithms/part-detection';
   import { calculateLeads, type LeadInConfig, type LeadOutConfig } from '../lib/algorithms/lead-calculation';
   import type { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
-  import type { Point2D } from '../types';
+  import type { Point2D } from '../lib/types';
   import { LeadType } from '../lib/types/direction';
   import { getCachedLeadGeometry, hasValidCachedLeads } from '../lib/utils/lead-persistence-utils';
 

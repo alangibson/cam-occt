@@ -2,7 +2,7 @@
   import GCodeExport from '../GCodeExport.svelte';
   import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
-  import type { CuttingParameters } from '../../types';
+  import type { CuttingParameters } from '../../lib/types';
   import { onMount } from 'svelte';
 
   // Resizable columns state
@@ -86,7 +86,7 @@
   <div class="export-layout" class:no-select={isDraggingSide}>
     <!-- Main Content -->
     <div class="main-column">
-      <GCodeExport parameters={cuttingParameters} />
+      <GCodeExport />
     </div>
 
     <!-- Side Panel -->

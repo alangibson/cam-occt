@@ -3,6 +3,7 @@ import { parseDXF } from './dxf-parser';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
 import { readFileSync } from 'fs';
 import path from 'path';
+import type { Line, Arc } from '../types/geometry';
 
 describe('Polyline Decomposition', () => {
   it('should decompose polylines with bulges into lines and arcs', async () => {
@@ -16,11 +17,7 @@ describe('Polyline Decomposition', () => {
     // Decompose polylines separately  
     const decomposed = decomposePolylines(drawingOriginal.shapes);
     
-    console.log('Original (polylines):', drawingOriginal.shapes.length, 'shapes');
-    console.log('Shape types:', drawingOriginal.shapes.map(s => s.type));
     
-    console.log('Decomposed:', decomposed.length, 'shapes');
-    console.log('Shape types:', decomposed.map(s => s.type));
     
     // Should have more shapes when decomposed
     expect(decomposed.length).toBeGreaterThan(drawingOriginal.shapes.length);
@@ -60,7 +57,7 @@ describe('Polyline Decomposition', () => {
     
     // Lines should have valid start and end points
     lines.forEach(line => {
-      const geometry = line.geometry as any;
+      const geometry = line.geometry as Line;
       expect(geometry.start).toBeDefined();
       expect(geometry.end).toBeDefined();
       expect(typeof geometry.start.x).toBe('number');
@@ -84,7 +81,7 @@ describe('Polyline Decomposition', () => {
     if (arcs.length > 0) {
       // Arcs should have valid geometry (if arc conversion is implemented)
       arcs.forEach(arc => {
-        const geometry = arc.geometry as any;
+        const geometry = arc.geometry as Arc;
         expect(geometry.center).toBeDefined();
         expect(geometry.radius).toBeDefined();
         expect(geometry.startAngle).toBeDefined();
@@ -100,7 +97,6 @@ describe('Polyline Decomposition', () => {
       });
     } else {
       // Current implementation: bulges are converted to lines for now
-      console.log('Note: Bulge-to-arc conversion not yet implemented, using lines instead');
       expect(decomposed.filter(s => s.type === 'line').length).toBeGreaterThan(0);
     }
   });

@@ -50,7 +50,6 @@ describe('Workflow Stage Persistence', () => {
     // Verify current state before saving
     const unsubscribe2 = workflowStore.subscribe(state => { workflowState = state; });
     unsubscribe2();
-    console.log('Final state before save:', workflowState.currentStage, 'completed:', Array.from(workflowState.completedStages));
     
     expect(workflowState.currentStage).toBe('program');
     expect(workflowState.completedStages.has('import')).toBe(true);
@@ -59,12 +58,9 @@ describe('Workflow Stage Persistence', () => {
 
     // Save application state
     await saveApplicationState();
-    console.log('✅ Saved application state with current stage: program');
     
     // Debug: Check what was actually saved
     const savedData = JSON.parse(localStorageMock.getItem('cam-occt-state') || '{}');
-    console.log('Saved currentStage:', savedData.currentStage);
-    console.log('Saved completedStages:', savedData.completedStages);
 
     // Reset workflow to simulate fresh app load
     workflowStore.reset();
@@ -75,9 +71,7 @@ describe('Workflow Stage Persistence', () => {
     expect(workflowState.currentStage).toBe('import'); // Back to initial
 
     // Restore application state
-    console.log('Restoring application state...');
     await restoreApplicationState();
-    console.log('Application state restored');
 
     // Verify stage was restored correctly
     const unsubscribe4 = workflowStore.subscribe(state => { workflowState = state; });
@@ -87,7 +81,6 @@ describe('Workflow Stage Persistence', () => {
     expect(workflowState.completedStages.has('edit')).toBe(true);
     expect(workflowState.completedStages.has('prepare')).toBe(true);
 
-    console.log('✅ Current stage successfully restored to: program');
   });
 
   it('should handle different workflow stages correctly', async () => {
@@ -128,7 +121,6 @@ describe('Workflow Stage Persistence', () => {
       unsubscribe();
       expect(workflowState.currentStage).toBe(testCase.stage);
       
-      console.log(`✅ Stage ${testCase.stage} persistence verified`);
     }
   });
 
@@ -160,6 +152,5 @@ describe('Workflow Stage Persistence', () => {
     expect(workflowState.completedStages.has('program')).toBe(true);
     expect(workflowState.completedStages.has('simulate')).toBe(false); // Current stage, not completed
 
-    console.log('✅ Completed stages persistence verified');
   });
 });

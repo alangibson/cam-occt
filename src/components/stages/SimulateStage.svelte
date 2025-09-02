@@ -1,4 +1,19 @@
 <script lang="ts">
+  /**
+   * SimulateStage Component
+   * 
+   * This component provides 3D cutting simulation with support for offset paths.
+   * When paths have calculated offsets (from kerf compensation), the simulation
+   * automatically uses the offset geometry for:
+   * - Tool head movement and animation
+   * - Distance and timing calculations  
+   * - Lead-in/out calculations
+   * 
+   * The visual rendering shows:
+   * - Offset paths as solid green lines (when present)
+   * - Original paths as dashed green reference lines
+   * - Automatic fallback to original paths when no offset exists
+   */
   import AccordionPanel from '../AccordionPanel.svelte';
   import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
@@ -11,12 +26,13 @@
   import { uiStore } from '../../lib/stores/ui';
   import { overlayStore } from '../../lib/stores/overlay';
   import { onMount, onDestroy } from 'svelte';
-  import type { Shape, Point2D } from '../../types';
-  import type { ShapeChain } from '../../lib/algorithms/chain-detection';
+  import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../../lib/types';
+  import type { Chain } from '../../lib/algorithms/chain-detection';
   import type { Path } from '../../lib/stores/paths';
   import type { Rapid } from '../../lib/algorithms/optimize-cut-order';
   import { getPhysicalScaleFactor } from '../../lib/utils/units';
   import { evaluateNURBS, sampleNURBS } from '../../lib/geometry/nurbs';
+  import { polylineToPoints } from '$lib/geometry/polyline';
   import { calculateLeads, type LeadInConfig, type LeadOutConfig } from '../../lib/algorithms/lead-calculation';
   import type { DetectedPart } from '../../lib/algorithms/part-detection';
   import { LeadType } from '../../lib/types/direction';
@@ -203,16 +219,34 @@
     return tool?.rapidRate || 3000; // Use tool's rapid rate or default
   }
 
-  // Get starting point of a path, accounting for lead-in
+  /**
+   * Get starting point of a path, accounting for lead-in and offset.
+   * When a path has calculated offset geometry (from kerf compensation), 
+   * this function uses the offset shapes instead of the original chain shapes.
+   * Falls back to original chain shapes when no offset exists.
+   * @param path - The path to get the starting point for
+   * @returns The starting point coordinates
+   */
   function getPathStartPoint(path: Path): Point2D {
-    const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
-    if (!chain || chain.shapes.length === 0) return { x: 0, y: 0 };
+    // Check if path has offset geometry from kerf compensation
+    // If offset exists, use offset shapes; otherwise fall back to original chain shapes
+    const shapes = path.calculatedOffset?.offsetShapes || 
+                   chainStoreState?.chains?.find((c: any) => c.id === path.chainId)?.shapes;
+    
+    if (!shapes || shapes.length === 0) return { x: 0, y: 0 };
     
     // Check if path has lead-in
     if (path.leadInType && path.leadInType !== 'none' && path.leadInLength && path.leadInLength > 0) {
       try {
         // Find the part that contains this chain
         const part = findPartForChain(path.chainId);
+        
+        // Use offset shapes if available
+        const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
+        if (!chain) return { x: 0, y: 0 };
+        
+        const chainForLeads = path.calculatedOffset ? 
+          { ...chain, shapes: path.calculatedOffset.offsetShapes } : chain;
         
         const leadInConfig: LeadInConfig = {
           type: path.leadInType,
@@ -225,7 +259,7 @@
           flipSide: path.leadOutFlipSide || false
         };
         
-        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+        const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
         
         if (leadResult.leadIn && leadResult.leadIn.points.length > 0) {
           // Return the first point of the lead-in (start of lead-in)
@@ -237,16 +271,27 @@
     }
     
     // Fallback to chain start point
-    const firstShape = chain.shapes[0];
+    const firstShape = shapes[0];
     // Simplified shape start point calculation
-    const line = firstShape.geometry as any;
-    return line.start || line.center || { x: 0, y: 0 };
+    const line = firstShape.geometry as Line;
+    return line.start || { x: 0, y: 0 };
   }
   
-  // Get ending point of a path, accounting for lead-out
+  /**
+   * Get ending point of a path, accounting for lead-out and offset.
+   * When a path has calculated offset geometry (from kerf compensation),
+   * this function uses the offset shapes instead of the original chain shapes.
+   * Falls back to original chain shapes when no offset exists.
+   * @param path - The path to get the ending point for
+   * @returns The ending point coordinates
+   */
   function getPathEndPoint(path: Path): Point2D {
+    // Check if path has offset geometry
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
-    if (!chain || chain.shapes.length === 0) return { x: 0, y: 0 };
+    if (!chain) return { x: 0, y: 0 };
+    
+    const shapes = path.calculatedOffset?.offsetShapes || chain.shapes;
+    if (shapes.length === 0) return { x: 0, y: 0 };
     
     // Check if path has lead-out
     if (path.leadOutType && path.leadOutType !== 'none' && path.leadOutLength && path.leadOutLength > 0) {
@@ -265,7 +310,10 @@
           flipSide: path.leadOutFlipSide || false
         };
         
-        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+        const chainForLeads = path.calculatedOffset ? 
+          { ...chain, shapes: path.calculatedOffset.offsetShapes } : chain;
+        
+        const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
         
         if (leadResult.leadOut && leadResult.leadOut.points.length > 0) {
           // Return the last point of the lead-out (end of lead-out)
@@ -277,10 +325,10 @@
     }
     
     // Fallback to chain end point
-    const lastShape = chain.shapes[chain.shapes.length - 1];
+    const lastShape = shapes[shapes.length - 1];
     // Simplified shape end point calculation
-    const line = lastShape.geometry as any;
-    return line.end || line.center || { x: 0, y: 0 };
+    const line = lastShape.geometry as Line;
+    return line.end || { x: 0, y: 0 };
   }
   
   // Helper function to find the part that contains a given chain
@@ -290,14 +338,23 @@
     return undefined;
   }
 
-  // Calculate total distance of a path, including lead-in and lead-out
+  /**
+   * Calculate total distance of a path, including lead-in and lead-out.
+   * Uses offset shapes when available (from kerf compensation),
+   * otherwise falls back to original chain shapes.
+   * @param path - The path to calculate distance for
+   * @returns Total path distance including leads
+   */
   function getPathDistance(path: Path): number {
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
     if (!chain) return 0;
     
+    // Use offset shapes if available
+    const shapes = path.calculatedOffset?.offsetShapes || chain.shapes;
+    
     // Calculate chain distance
     let chainDistance = 0;
-    for (const shape of chain.shapes) {
+    for (const shape of shapes) {
       chainDistance += getShapeLength(shape);
     }
     
@@ -322,7 +379,10 @@
           flipSide: path.leadOutFlipSide || false
         };
         
-        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+        const chainForLeads = path.calculatedOffset ? 
+          { ...chain, shapes: path.calculatedOffset.offsetShapes } : chain;
+        
+        const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
         
         if (leadResult.leadIn && leadResult.leadIn.points.length > 1) {
           leadInDistance = calculatePolylineLength(leadResult.leadIn.points);
@@ -342,29 +402,30 @@
   function getShapeLength(shape: Shape): number {
     switch (shape.type) {
       case 'line':
-        const line = shape.geometry as any;
+        const line = shape.geometry as Line;
         return Math.sqrt(
           Math.pow(line.end.x - line.start.x, 2) + 
           Math.pow(line.end.y - line.start.y, 2)
         );
       case 'circle':
-        const circle = shape.geometry as any;
+        const circle = shape.geometry as Circle;
         return 2 * Math.PI * circle.radius;
       case 'arc':
-        const arc = shape.geometry as any;
+        const arc = shape.geometry as Arc;
         const angleRange = Math.abs(arc.endAngle - arc.startAngle); // Angles are in radians
         return angleRange * arc.radius; // Arc length = radius * angle (in radians)
       case 'polyline':
-        const polyline = shape.geometry as any;
+        const polyline = shape.geometry as Polyline;
+        const polylinePoints = polylineToPoints(polyline);
         let polylineDistance = 0;
-        for (let i = 0; i < polyline.points.length - 1; i++) {
-          const p1 = polyline.points[i];
-          const p2 = polyline.points[i + 1];
+        for (let i = 0; i < polylinePoints.length - 1; i++) {
+          const p1 = polylinePoints[i];
+          const p2 = polylinePoints[i + 1];
           polylineDistance += Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
         }
         return polylineDistance;
       case 'spline':
-        const spline = shape.geometry as any;
+        const spline = shape.geometry as Spline;
         try {
           // Calculate arc length by sampling the NURBS curve
           const samples = sampleNURBS(spline, 100); // Use 100 samples for accurate length
@@ -397,7 +458,7 @@
           return 100; // Final fallback
         }
       case 'ellipse':
-        const ellipse = shape.geometry as any;
+        const ellipse = shape.geometry as Ellipse;
         // Calculate major and minor axis lengths
         const majorAxisLength = Math.sqrt(
           ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
@@ -528,10 +589,21 @@
     }
   }
 
-  // Update tool head position along a cutting path, including lead-in and lead-out
+  /**
+   * Update tool head position along a cutting path, including lead-in and lead-out.
+   * This function handles paths with offset geometry from kerf compensation,
+   * automatically using offset shapes when available and falling back to
+   * original chain shapes when no offset exists.
+   * @param path - The path being simulated
+   * @param progress - Progress along the path (0-1)
+   */
   function updateToolHeadOnPath(path: Path, progress: number) {
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
-    if (!chain || chain.shapes.length === 0) return;
+    if (!chain) return;
+    
+    // Use offset shapes if available
+    const shapes = path.calculatedOffset?.offsetShapes || chain.shapes;
+    if (shapes.length === 0) return;
     
     // Get lead geometry if available
     let leadInGeometry: Point2D[] = [];
@@ -554,7 +626,10 @@
           flipSide: path.leadOutFlipSide || false
         };
         
-        const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+        const chainForLeads = path.calculatedOffset ? 
+          { ...chain, shapes: path.calculatedOffset.offsetShapes } : chain;
+        
+        const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
         
         if (leadResult.leadIn && leadResult.leadIn.points.length > 1) {
           leadInGeometry = leadResult.leadIn.points;
@@ -569,7 +644,7 @@
     
     // Calculate lengths
     const leadInLength = calculatePolylineLength(leadInGeometry);
-    const chainLength = getChainDistance(chain);
+    const chainLength = getChainDistance({ ...chain, shapes }); // Use offset shapes if available
     const leadOutLength = calculatePolylineLength(leadOutGeometry);
     const totalLength = leadInLength + chainLength + leadOutLength;
     
@@ -584,7 +659,7 @@
       // We're in the main chain
       const chainTargetDistance = targetDistance - leadInLength;
       const chainProgress = chainLength > 0 ? chainTargetDistance / chainLength : 0;
-      toolHeadPosition = getPositionOnChain(chain, chainProgress, path.cutDirection);
+      toolHeadPosition = getPositionOnChain({ ...chain, shapes }, chainProgress, path.cutDirection);
     } else {
       // We're in the lead-out
       const leadOutTargetDistance = targetDistance - leadInLength - chainLength;
@@ -636,7 +711,7 @@
   }
   
   // Get position along a chain (original chain geometry)
-  function getPositionOnChain(chain: ShapeChain, progress: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D {
+  function getPositionOnChain(chain: Chain, progress: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D {
     const totalLength = getChainDistance(chain);
     const targetDistance = totalLength * progress;
     
@@ -667,7 +742,7 @@
   }
   
   // Calculate total distance of a chain
-  function getChainDistance(chain: ShapeChain): number {
+  function getChainDistance(chain: Chain): number {
     let totalDistance = 0;
     for (const shape of chain.shapes) {
       totalDistance += getShapeLength(shape);
@@ -681,7 +756,7 @@
     
     switch (shape.type) {
       case 'line':
-        const line = shape.geometry as any;
+        const line = shape.geometry as Line;
         
         // Respect cut direction for lines
         if (cutDirection === 'clockwise') {
@@ -698,7 +773,7 @@
           };
         }
       case 'circle':
-        const circle = shape.geometry as any;
+        const circle = shape.geometry as Circle;
         let circleAngle: number;
         
         if (cutDirection === 'clockwise') {
@@ -714,7 +789,7 @@
           y: circle.center.y + circle.radius * Math.sin(circleAngle)
         };
       case 'arc':
-        const arc = shape.geometry as any;
+        const arc = shape.geometry as Arc;
         let arcAngle: number;
         
         if (cutDirection === 'clockwise') {
@@ -730,11 +805,12 @@
           y: arc.center.y + arc.radius * Math.sin(arcAngle)
         };
       case 'polyline':
-        const polyline = shape.geometry as any;
-        if (polyline.points.length < 2) return polyline.points[0] || { x: 0, y: 0 };
+        const polyline = shape.geometry as Polyline;
+        const polylinePoints = polylineToPoints(polyline);
+        if (polylinePoints.length < 2) return polylinePoints[0] || { x: 0, y: 0 };
         
         // Respect cut direction for polylines
-        const points = cutDirection === 'clockwise' ? [...polyline.points].reverse() : polyline.points;
+        const points = cutDirection === 'clockwise' ? [...polylinePoints].reverse() : polylinePoints;
         
         // Find which segment we're on
         const totalLength = getShapeLength(shape);
@@ -757,7 +833,7 @@
         }
         return points[points.length - 1];
       case 'spline':
-        const splineGeom = shape.geometry as any;
+        const splineGeom = shape.geometry as Spline;
         try {
           // Use NURBS evaluation to get position at progress along curve
           return evaluateNURBS(progress, splineGeom);
@@ -797,7 +873,7 @@
           return { x: 0, y: 0 }; // Final fallback
         }
       case 'ellipse':
-        const ellipse = shape.geometry as any;
+        const ellipse = shape.geometry as Ellipse;
         // Calculate major and minor axis lengths
         const majorAxisLength = Math.sqrt(
           ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 

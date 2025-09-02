@@ -3,7 +3,7 @@ import { validateLeadConfiguration, type LeadValidationResult } from './lead-val
 import { LeadType, CutDirection } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
-import type { Shape } from '../../types/geometry';
+import type { Shape } from '../../lib/types/geometry';
 
 describe('Lead Validation Pipeline', () => {
   // Helper to create a simple line chain

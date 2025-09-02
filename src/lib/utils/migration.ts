@@ -11,10 +11,10 @@
 export function migrateLegacyData(): void {
   console.log('Checking for legacy localStorage data to migrate...');
   
-  let needsMigration = false;
+  let needsMigration: boolean = false;
   
   // Check for legacy localStorage keys
-  const legacyKeys = [
+  const legacyKeys: string[] = [
     'cam-occt-operations',
     'cam-occt-paths', 
     'cam-occt-tools',
@@ -22,10 +22,10 @@ export function migrateLegacyData(): void {
     'cam-occt-prepare-right-column-width'
   ];
   
-  const legacyData: Record<string, any> = {};
+  const legacyData: Record<string, unknown> = {};
   
   for (const key of legacyKeys) {
-    const data = localStorage.getItem(key);
+    const data: string | null = localStorage.getItem(key);
     if (data) {
       needsMigration = true;
       try {
@@ -66,7 +66,7 @@ export function migrateLegacyData(): void {
  * Check if legacy data exists
  */
 export function hasLegacyData(): boolean {
-  const legacyKeys = [
+  const legacyKeys: string[] = [
     'cam-occt-operations',
     'cam-occt-paths',
     'cam-occt-tools',

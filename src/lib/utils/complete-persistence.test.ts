@@ -39,7 +39,6 @@ describe('Complete Persistence Integration', () => {
   });
 
   it('should persist and restore complete application state including stage and lead geometry', async () => {
-    console.log('🚀 Starting complete persistence test...');
 
     // 1. Setup drawing and chains
     const testDrawing = {
@@ -84,9 +83,7 @@ describe('Complete Persistence Integration', () => {
     let debugWorkflow: any = null;
     const debugUnsub = workflowStore.subscribe(state => { debugWorkflow = state; });
     debugUnsub();
-    console.log('After workflow setup:', debugWorkflow.currentStage, 'completed:', Array.from(debugWorkflow.completedStages));
 
-    console.log('✅ Set up drawing and progressed to program stage');
 
     // 3. Create operation with lead settings
     const testOperation = {
@@ -138,7 +135,6 @@ describe('Complete Persistence Integration', () => {
       }
     });
 
-    console.log('✅ Created operation and added lead geometry');
 
     // 5. Verify current state before saving
     let workflowState: any = null;
@@ -149,7 +145,6 @@ describe('Complete Persistence Integration', () => {
     unsubscribe3();
     const pathWithLeads = pathsState.paths[0];
 
-    console.log('Current workflow state:', workflowState.currentStage, 'completed:', Array.from(workflowState.completedStages));
     
     expect(workflowState.currentStage).toBe('program');
     expect(workflowState.completedStages.has('import')).toBe(true);
@@ -159,11 +154,9 @@ describe('Complete Persistence Integration', () => {
     expect(pathWithLeads.calculatedLeadOut).toBeDefined();
     expect(pathWithLeads.leadValidation).toBeDefined();
 
-    console.log('✅ Verified complete state before saving');
 
     // 6. Save complete application state
     await saveApplicationState();
-    console.log('✅ Saved complete application state');
 
     // 7. Reset everything to simulate fresh app start
     pathStore.reset();
@@ -179,11 +172,9 @@ describe('Complete Persistence Integration', () => {
     expect(workflowState.currentStage).toBe('import'); // Reset to initial
     expect(pathsState.paths).toHaveLength(0); // No paths
 
-    console.log('✅ Reset all stores to simulate fresh app start');
 
     // 8. Restore complete application state
     await restoreApplicationState();
-    console.log('✅ Restored complete application state');
 
     // 9. Verify everything was restored correctly
     const unsubscribe6 = workflowStore.subscribe(state => { workflowState = state; });
@@ -228,11 +219,6 @@ describe('Complete Persistence Integration', () => {
     expect(restoredPath.leadValidation.warnings).toContain('Lead may be close to material edge');
     expect(restoredPath.leadValidation.severity).toBe('warning');
 
-    console.log('🎉 Complete persistence test passed!');
-    console.log('✅ Workflow stage restored correctly: program');
-    console.log('✅ Lead geometry preserved through browser session');
-    console.log('✅ All lead parameters and validation data intact');
-    console.log('✅ User will return to exactly where they left off');
 
   }, 10000); // 10 second timeout for async operations
 });

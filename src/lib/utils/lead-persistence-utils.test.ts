@@ -257,6 +257,75 @@ describe('Lead Persistence Utils', () => {
       );
     });
 
+    it('should use offset geometry when calculatedOffset is present', async () => {
+      const { calculateLeads } = await import('../algorithms/lead-calculation');
+      const { pathStore } = await import('../stores/paths');
+      
+      const pathWithOffset: Path = {
+        ...mockPath,
+        calculatedOffset: {
+          offsetShapes: [
+            { id: 'offset-shape-1', type: 'line', geometry: { start: { x: 0, y: -2 }, end: { x: 10, y: -2 } } }
+          ],
+          originalShapes: [
+            { id: 'shape-1', type: 'line', geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } } }
+          ],
+          direction: 'inset',
+          kerfWidth: 4,
+          generatedAt: '2023-01-01T12:00:00.000Z',
+          version: '1.0.0'
+        }
+      };
+
+      await calculateAndStorePathLeads(pathWithOffset, mockOperation, mockChain, []);
+
+      // Verify that calculateLeads was called with offset chain geometry
+      expect(calculateLeads).toHaveBeenCalledWith(
+        expect.objectContaining({
+          id: 'chain-1_offset_temp',
+          shapes: pathWithOffset.calculatedOffset!.offsetShapes
+        }),
+        expect.any(Object), // leadInConfig
+        expect.any(Object), // leadOutConfig
+        CutDirection.CLOCKWISE,
+        undefined
+      );
+
+      expect(pathStore.updatePathLeadGeometry).toHaveBeenCalled();
+    });
+
+    it('should use original geometry when calculatedOffset has empty shapes', async () => {
+      const { calculateLeads } = await import('../algorithms/lead-calculation');
+      const { pathStore } = await import('../stores/paths');
+      
+      const pathWithEmptyOffset: Path = {
+        ...mockPath,
+        calculatedOffset: {
+          offsetShapes: [], // Empty offset shapes
+          originalShapes: [
+            { id: 'shape-1', type: 'line', geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } } }
+          ],
+          direction: 'inset',
+          kerfWidth: 4,
+          generatedAt: '2023-01-01T12:00:00.000Z',
+          version: '1.0.0'
+        }
+      };
+
+      await calculateAndStorePathLeads(pathWithEmptyOffset, mockOperation, mockChain, []);
+
+      // Verify that calculateLeads was called with original chain (not offset)
+      expect(calculateLeads).toHaveBeenCalledWith(
+        mockChain, // Should use original chain
+        expect.any(Object), // leadInConfig
+        expect.any(Object), // leadOutConfig
+        CutDirection.CLOCKWISE,
+        undefined
+      );
+
+      expect(pathStore.updatePathLeadGeometry).toHaveBeenCalled();
+    });
+
     it('should skip calculation when both leads are disabled', async () => {
       const pathNoLeads: Path = {
         ...mockPath,

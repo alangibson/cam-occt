@@ -1,0 +1,195 @@
+/**
+ * Shape Bounding Box Utilities
+ * 
+ * Consolidates bounding box calculation functions that were duplicated across:
+ * - geometric-containment-jsts.ts
+ * - part-detection.ts
+ */
+
+import type { Chain } from '../algorithms/chain-detection';
+import type { Point2D, Shape, Line, Circle, Arc, Polyline, Ellipse, Spline } from '../types';
+import { polylineToPoints } from '../geometry/polyline';
+import { sampleNURBS } from '../geometry/nurbs';
+
+export interface BoundingBox {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+}
+
+/**
+ * Calculates the bounding box of a chain by aggregating bounds of all shapes
+ */
+export function calculateChainBoundingBox(chain: Chain): BoundingBox {
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  
+  for (const shape of chain.shapes) {
+    const shapeBounds = getShapeBoundingBox(shape);
+    minX = Math.min(minX, shapeBounds.minX);
+    maxX = Math.max(maxX, shapeBounds.maxX);
+    minY = Math.min(minY, shapeBounds.minY);
+    maxY = Math.max(maxY, shapeBounds.maxY);
+  }
+  
+  return { minX, maxX, minY, maxY };
+}
+
+/**
+ * Gets the bounding box of a single shape
+ */
+export function getShapeBoundingBox(shape: Shape): BoundingBox {
+  switch (shape.type) {
+    case 'line':
+      const line = shape.geometry as Line;
+      return {
+        minX: Math.min(line.start.x, line.end.x),
+        maxX: Math.max(line.start.x, line.end.x),
+        minY: Math.min(line.start.y, line.end.y),
+        maxY: Math.max(line.start.y, line.end.y)
+      };
+    
+    case 'circle':
+      const circle = shape.geometry as Circle;
+      return {
+        minX: circle.center.x - circle.radius,
+        maxX: circle.center.x + circle.radius,
+        minY: circle.center.y - circle.radius,
+        maxY: circle.center.y + circle.radius
+      };
+    
+    case 'arc':
+      const arc = shape.geometry as Arc;
+      // For simplicity, use circle bounding box (conservative)
+      return {
+        minX: arc.center.x - arc.radius,
+        maxX: arc.center.x + arc.radius,
+        minY: arc.center.y - arc.radius,
+        maxY: arc.center.y + arc.radius
+      };
+    
+    case 'polyline':
+      return calculatePolylineBoundingBox(shape.geometry as Polyline);
+    
+    case 'spline':
+      return calculateSplineBoundingBox(shape.geometry as Spline);
+    
+    default:
+      return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+  }
+}
+
+/**
+ * Calculates the bounding box of a spline using NURBS sampling
+ */
+export function calculateSplineBoundingBox(spline: Spline): BoundingBox {
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  
+  // Try to use NURBS sampling for accurate bounds
+  let points: Point2D[];
+  try {
+    points = sampleNURBS(spline, 32); // Sample enough points for good bounds
+  } catch {
+    // Fallback to fit points or control points
+    points = spline.fitPoints || spline.controlPoints || [];
+  }
+  
+  for (const point of points) {
+    minX = Math.min(minX, point.x);
+    maxX = Math.max(maxX, point.x);
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  }
+  
+  // If no points found, return zero bounding box
+  if (points.length === 0) {
+    return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+  }
+  
+  return { minX, maxX, minY, maxY };
+}
+
+/**
+ * Calculates the bounding box of a polyline
+ */
+export function calculatePolylineBoundingBox(polyline: Polyline): BoundingBox {
+  let minX = Infinity, maxX = -Infinity;
+  let minY = Infinity, maxY = -Infinity;
+  
+  for (const point of polylineToPoints(polyline)) {
+    minX = Math.min(minX, point.x);
+    maxX = Math.max(maxX, point.x);
+    minY = Math.min(minY, point.y);
+    maxY = Math.max(maxY, point.y);
+  }
+  
+  return { minX, maxX, minY, maxY };
+}
+
+/**
+ * Get all significant points from a shape for bounding box calculation
+ * Consolidated from translate-to-positive.ts and dxf-parser.ts
+ */
+export function getShapePointsForBounds(shape: Shape): Point2D[] {
+  switch (shape.type) {
+    case 'line':
+      const line: Line = shape.geometry as Line;
+      return [line.start, line.end];
+      
+    case 'circle':
+      const circle: Circle = shape.geometry as Circle;
+      return [
+        { x: circle.center.x - circle.radius, y: circle.center.y - circle.radius },
+        { x: circle.center.x + circle.radius, y: circle.center.y + circle.radius }
+      ];
+      
+    case 'arc':
+      const arc: Arc = shape.geometry as Arc;
+      return [
+        { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
+        { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius }
+      ];
+      
+    case 'polyline':
+      const polyline: Polyline = shape.geometry as Polyline;
+      return polylineToPoints(polyline);
+      
+    case 'ellipse':
+      const ellipse: Ellipse = shape.geometry as Ellipse;
+      // Calculate bounding box points for ellipse
+      const majorAxisLength: number = Math.sqrt(
+        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
+        ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+      );
+      const minorAxisLength: number = majorAxisLength * ellipse.minorToMajorRatio;
+      
+      // For bounding box calculation, we need the extent of the ellipse
+      // This is an approximation - true ellipse bounds calculation is more complex
+      const maxExtent: number = Math.max(majorAxisLength, minorAxisLength);
+      
+      return [
+        { x: ellipse.center.x - maxExtent, y: ellipse.center.y - maxExtent },
+        { x: ellipse.center.x + maxExtent, y: ellipse.center.y + maxExtent }
+      ];
+      
+    case 'spline':
+      const spline: Spline = shape.geometry as Spline;
+      try {
+        // Sample points along the NURBS curve for accurate bounds
+        return sampleNURBS(spline, 20); // Use fewer points for bounds calculation
+      } catch {
+        // Fallback to fit points or control points if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+          return spline.fitPoints;
+        } else if (spline.controlPoints && spline.controlPoints.length > 0) {
+          return spline.controlPoints;
+        }
+        return [];
+      }
+      
+    default:
+      return [];
+  }
+}

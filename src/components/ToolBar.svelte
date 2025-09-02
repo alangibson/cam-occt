@@ -2,7 +2,10 @@
   import { drawingStore } from '../lib/stores/drawing';
   import { decomposePolylines } from '../lib/algorithms/decompose-polylines';
   import { translateToPositiveQuadrant } from '../lib/algorithms/translate-to-positive';
-  import type { Shape, Point2D } from '../types';
+  import { joinColinearLinesInChains } from '../lib/algorithms/join-colinear-lines';
+  import { detectShapeChains } from '../lib/algorithms/chain-detection';
+  import { TOLERANCE } from '../lib/constants';
+  import type { Shape, Point2D } from '../lib/types';
   
   $: selectedCount = $drawingStore.selectedShapes.size;
   $: fileName = $drawingStore.fileName;
@@ -52,6 +55,33 @@
     const translatedShapes = translateToPositiveQuadrant(drawing.shapes);
     drawingStore.replaceAllShapes(translatedShapes);
   }
+  
+  function handleJoinColinearLines() {
+    const drawing = $drawingStore.drawing;
+    if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
+      alert('No drawing loaded or no shapes to join.');
+      return;
+    }
+    
+    try {
+      // First detect chains from current shapes
+      const chains = detectShapeChains(drawing.shapes, { tolerance: TOLERANCE });
+      
+      // Join collinear lines in the chains
+      const joinedChains = joinColinearLinesInChains(chains, TOLERANCE);
+      
+      // Extract all shapes from the joined chains
+      const allJoinedShapes = joinedChains.flatMap(chain => chain.shapes);
+      
+      // Update the drawing with the joined shapes
+      drawingStore.replaceAllShapes(allJoinedShapes);
+      
+      console.log(`Line joining complete. Original: ${drawing.shapes.length} shapes, Joined: ${allJoinedShapes.length} shapes`);
+    } catch (error) {
+      console.error('Error joining colinear lines:', error);
+      alert('Error joining colinear lines. Check console for details.');
+    }
+  }
 
 </script>
 
@@ -93,6 +123,13 @@
         disabled={!$drawingStore.drawing}
       >
         Decompose Polylines
+      </button>
+      
+      <button
+        on:click={handleJoinColinearLines}
+        disabled={!$drawingStore.drawing}
+      >
+        Join Co-linear Lines
       </button>
       
       <button

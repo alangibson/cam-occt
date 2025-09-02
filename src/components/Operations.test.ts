@@ -37,7 +37,6 @@ describe('Operations Component', () => {
 
     // Verify tool was added to store
     const toolsInStore = get(toolStore);
-    console.log('Tools in store:', toolsInStore);
     expect(toolsInStore).toHaveLength(1);
     expect(toolsInStore[0].toolName).toBe('Test Tool 1');
 
@@ -61,7 +60,6 @@ describe('Operations Component', () => {
 
     // Look for the tool in the dropdown
     const toolOptions = container.querySelectorAll('.tool-option');
-    console.log('Tool options found:', toolOptions.length);
     
     // Should have at least "No Tool" + our test tool
     expect(toolOptions.length).toBeGreaterThanOrEqual(2);

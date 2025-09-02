@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { pathStore } from '$lib/stores/paths';
 import { chainStore, clearChains, clearChainSelection, setChains } from '$lib/stores/chains';
 import type { ShapeChain } from '$lib/algorithms/chain-detection';
-import type { Shape } from '../../types';
+import type { Shape } from '../../lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 
 describe('SimulateStage Cut Direction', () => {

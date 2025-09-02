@@ -67,8 +67,6 @@ EOF`;
       // Should be exactly 186.2 inches on screen when displayed as inches
       expect(physicalInchesOnScreen).toBeCloseTo(186.2, 1);
       
-      console.log(`ADLER.DXF mm display: ${drawingWidthMm}mm geometry → ${physicalPixelsMm.toFixed(1)} pixels → ${physicalMmOnScreen.toFixed(1)}mm on screen`);
-      console.log(`ADLER.DXF inch display: ${drawingWidthMm}mm geometry → ${physicalPixelsInch.toFixed(1)} pixels → ${physicalInchesOnScreen.toFixed(1)}" on screen`);
     });
 
     it('should scale drawing size based on display unit setting', async () => {
@@ -175,8 +173,6 @@ EOF`;
       const mmOnScreen = mmPixels / (96 / 25.4);
       expect(mmOnScreen).toBeCloseTo(2.5, 2);
       
-      console.log(`Inch DXF inch display: ${drawingWidthInches}" geometry → ${inchPixels} pixels → ${inchesOnScreen.toFixed(2)}" on screen`);
-      console.log(`Inch DXF mm display: ${drawingWidthInches}" geometry → ${mmPixels.toFixed(1)} pixels → ${mmOnScreen.toFixed(2)}mm on screen`);
     });
   });
 
@@ -226,7 +222,6 @@ EOF`;
         
         expect(mmOnScreen).toBeCloseTo(expectedMmOnScreen, 1);
         
-        console.log(`Zoom ${zoom * 100}%: ${drawingWidthMm}mm geometry → ${mmOnScreen.toFixed(1)}mm on screen`);
       });
 
       // Test with inch display - should be much larger at same zoom

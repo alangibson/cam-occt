@@ -5,3 +5,8 @@ build/
 test-results/
 playwright-report/
 *.png
+test-output/
+.svelte-kit/ambient.d.ts
+tests/output
+report/
+coverage/

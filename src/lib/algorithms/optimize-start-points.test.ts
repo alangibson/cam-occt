@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
-import type { Shape } from '../../types';
+import type { Shape } from '../../lib/types';
 import type { ShapeChain } from './chain-detection';
 import { CutDirection, LeadType } from '../types/direction';
+import type { Line, Arc } from '../types/geometry';
+import { createPolylineFromVertices } from '../geometry/polyline';
 
 describe('optimizeStartPoints', () => {
   const tolerance = 0.1;
@@ -52,7 +54,7 @@ describe('optimizeStartPoints', () => {
     expect(firstShape.id).toContain('split-2');
     
     // The midpoint of line1 should be at (5, 0)
-    const firstGeom = firstShape.geometry as any;
+    const firstGeom = firstShape.geometry as Line;
     expect(firstGeom.start.x).toBeCloseTo(5);
     expect(firstGeom.start.y).toBeCloseTo(0);
     expect(firstGeom.end.x).toBeCloseTo(10);
@@ -64,38 +66,25 @@ describe('optimizeStartPoints', () => {
     const shapes: Shape[] = [
       {
         id: 'arc1',
-        type: LeadType.ARC,
+        type: 'arc',
         geometry: {
           center: { x: 0, y: 0 },
           radius: 10,
           startAngle: 0,
-          endAngle: Math.PI / 2
+          endAngle: Math.PI / 2,
+          clockwise: false
         }
       },
-      {
-        id: 'polyline1',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 0, y: 10 },
-            { x: 0, y: 5 },
-            { x: 0, y: 0 }
-          ],
-          closed: false
-        }
-      },
-      {
-        id: 'polyline2',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 0, y: 0 },
-            { x: 5, y: 0 },
-            { x: 10, y: 0 }
-          ],
-          closed: false
-        }
-      }
+      createPolylineFromVertices([
+        { x: 0, y: 10, bulge: 0 },
+        { x: 0, y: 5, bulge: 0 },
+        { x: 0, y: 0, bulge: 0 }
+      ], false, { id: 'polyline1' }),
+      createPolylineFromVertices([
+        { x: 0, y: 0, bulge: 0 },
+        { x: 5, y: 0, bulge: 0 },
+        { x: 10, y: 0, bulge: 0 }
+      ], false, { id: 'polyline2' })
     ];
 
     const chain: ShapeChain = {
@@ -121,8 +110,8 @@ describe('optimizeStartPoints', () => {
     expect(secondArc).toBeDefined();
     
     // The midpoint angle should be PI/4 (45 degrees)
-    const firstGeom = firstArc!.geometry as any;
-    const secondGeom = secondArc!.geometry as any;
+    const firstGeom = firstArc!.geometry as Arc;
+    const secondGeom = secondArc!.geometry as Arc;
     expect(firstGeom.startAngle).toBeCloseTo(0);
     expect(firstGeom.endAngle).toBeCloseTo(Math.PI / 4);
     expect(secondGeom.startAngle).toBeCloseTo(Math.PI / 4);

@@ -1,19 +1,22 @@
 /**
  * Lead Persistence Utilities
  * 
- * Helper functions to calculate and store lead geometry in paths for persistence
+ * Helper functions to calculate and store lead geometry in paths for persistence.
+ * When kerf compensation is enabled and offset geometry exists, leads are calculated
+ * using the offset shapes instead of the original chain geometry.
  */
 
-import type { Path } from '../stores/paths';
+import type { Path, PathsState } from '../stores/paths';
 import type { Operation } from '../stores/operations';
-import type { DetectedPart } from '../algorithms/part-detection';
-import type { ShapeChain } from '../algorithms/chain-detection';
-import { calculateLeads, type LeadInConfig, type LeadOutConfig } from '../algorithms/lead-calculation';
+import type { DetectedPart, PartHole } from '../algorithms/part-detection';
+import type { Chain } from '../algorithms/chain-detection';
+import { calculateLeads } from '../algorithms/lead-calculation';
 import { LeadType } from '../types/direction';
+import { createLeadInConfig, createLeadOutConfig } from './lead-config-utils';
 import { pathStore } from '../stores/paths';
 import { get } from 'svelte/store';
-import { chainStore } from '../stores/chains';
-import { partStore } from '../stores/parts';
+import { chainStore, type ChainStore } from '../stores/chains';
+import { partStore, type PartStore } from '../stores/parts';
 
 /**
  * Calculate and store lead geometry for a path
@@ -21,7 +24,7 @@ import { partStore } from '../stores/parts';
 export async function calculateAndStorePathLeads(
   path: Path,
   operation: Operation,
-  chain: ShapeChain,
+  chain: Chain,
   parts: DetectedPart[]
 ): Promise<void> {
   try {
@@ -31,32 +34,31 @@ export async function calculateAndStorePathLeads(
     }
 
     // Get the part if the path is part of a part
-    let part = null;
+    let part: DetectedPart | undefined;
     if (operation.targetType === 'parts') {
       part = parts?.find(p => 
         p.shell.chain.id === path.chainId || 
-        p.holes.some((h: any) => h.chain.id === path.chainId)
+        p.holes.some((h: PartHole) => h.chain.id === path.chainId)
       );
     }
 
     // Get lead configurations with proper defaults
-    const leadInConfig: LeadInConfig = {
-      type: path.leadInType || LeadType.NONE,
-      length: path.leadInLength || 0,
-      flipSide: path.leadInFlipSide || false,
-      angle: path.leadInAngle
-    };
+    const leadInConfig = createLeadInConfig(path);
+    const leadOutConfig = createLeadOutConfig(path);
 
-    const leadOutConfig: LeadOutConfig = {
-      type: path.leadOutType || LeadType.NONE,
-      length: path.leadOutLength || 0,
-      flipSide: path.leadOutFlipSide || false,
-      angle: path.leadOutAngle
-    };
+    // Use offset geometry for lead calculation if available
+    let leadCalculationChain: Chain = chain;
+    if (path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0) {
+      // Create a temporary chain from offset shapes
+      leadCalculationChain = {
+        id: chain.id + '_offset_temp',
+        shapes: path.calculatedOffset.offsetShapes
+      };
+    }
 
-    // Calculate leads
-    const leadResult = calculateLeads(
-      chain,
+    // Calculate leads using the appropriate chain (original or offset)
+    const leadResult: ReturnType<typeof calculateLeads> = calculateLeads(
+      leadCalculationChain,
       leadInConfig,
       leadOutConfig,
       path.cutDirection,
@@ -103,18 +105,19 @@ export async function calculateAndStorePathLeads(
     console.log(`Calculated and stored leads for path ${path.name}:`, {
       leadInPoints: leadResult.leadIn?.points?.length || 0,
       leadOutPoints: leadResult.leadOut?.points?.length || 0,
-      warnings: leadResult.warnings?.length || 0
+      warnings: leadResult.warnings?.length || 0,
+      usedOffsetGeometry: !!(path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0)
     });
 
   } catch (error) {
-    console.error(`Failed to calculate leads for path ${path.name}:`, error);
+    console.log(`Failed to calculate leads for path ${path.name}:`, error);
     
     // Store error information
     pathStore.updatePathLeadGeometry(path.id, {
       validation: {
         isValid: false,
         warnings: [],
-        errors: [error instanceof Error ? error.message : 'Unknown error'],
+        errors: [error instanceof Error ? (error as Error).message : 'Unknown error'],
         severity: 'error'
       }
     });
@@ -125,23 +128,23 @@ export async function calculateAndStorePathLeads(
  * Check if path has valid cached lead geometry
  */
 export function hasValidCachedLeads(path: Path): boolean {
-  const currentVersion = '1.0.0'; // Should match the version in paths.ts
+  const currentVersion: string = '1.0.0'; // Should match the version in paths.ts
   
   // Check if we have cached lead geometry
-  const hasLeadIn = path.calculatedLeadIn && 
+  const hasLeadIn: boolean | undefined = path.calculatedLeadIn && 
     path.calculatedLeadIn.version === currentVersion &&
     path.calculatedLeadIn.points.length > 0;
     
-  const hasLeadOut = path.calculatedLeadOut && 
+  const hasLeadOut: boolean | undefined = path.calculatedLeadOut && 
     path.calculatedLeadOut.version === currentVersion &&
     path.calculatedLeadOut.points.length > 0;
 
   // For lead-in: either no lead needed OR we have valid cached geometry that matches the type
-  const leadInMatches = (path.leadInType === 'none' || path.leadInType === LeadType.NONE) ? true :
+  const leadInMatches: boolean | undefined = (path.leadInType === LeadType.NONE) ? true :
     (hasLeadIn && path.calculatedLeadIn?.type === path.leadInType);
     
   // For lead-out: either no lead needed OR we have valid cached geometry that matches the type  
-  const leadOutMatches = (path.leadOutType === 'none' || path.leadOutType === LeadType.NONE) ? true :
+  const leadOutMatches: boolean | undefined = (path.leadOutType === LeadType.NONE) ? true :
     (hasLeadOut && path.calculatedLeadOut?.type === path.leadOutType);
 
   return Boolean(leadInMatches && leadOutMatches);
@@ -170,18 +173,18 @@ export function getCachedLeadGeometry(path: Path) {
 export async function calculateAndStoreOperationLeads(operation: Operation): Promise<void> {
   try {
     // Get current state
-    const pathsState = get(pathStore);
-    const chainsState = get(chainStore);
-    const partsState = get(partStore);
+    const pathsState: PathsState = get(pathStore);
+    const chainsState: ChainStore = get(chainStore);
+    const partsState: PartStore = get(partStore);
     
     // Find all paths for this operation
-    const operationPaths = pathsState.paths.filter(p => p.operationId === operation.id);
+    const operationPaths: Path[] = pathsState.paths.filter(p => p.operationId === operation.id);
     
     console.log(`Calculating leads for ${operationPaths.length} paths in operation ${operation.name}`);
     
     // Calculate leads for each path
-    const calculations = operationPaths.map(async (path) => {
-      const chain = chainsState.chains.find(c => c.id === path.chainId);
+    const calculations: Promise<void>[] = operationPaths.map(async (path) => {
+      const chain: Chain | undefined = chainsState.chains.find((c: Chain) => c.id === path.chainId);
       if (chain) {
         await calculateAndStorePathLeads(path, operation, chain, partsState.parts);
       }
@@ -192,6 +195,6 @@ export async function calculateAndStoreOperationLeads(operation: Operation): Pro
     
     console.log(`Completed lead calculations for operation ${operation.name}`);
   } catch (error) {
-    console.error(`Failed to calculate leads for operation ${operation.name}:`, error);
+    console.log(`Failed to calculate leads for operation ${operation.name}:`, error);
   }
 }

@@ -151,7 +151,7 @@ export class DirectionUtils {
   ): number {
     if (fromSystem === toSystem) return angle;
 
-    let radians = unit === AngleUnit.DEGREES ? this.degreesToRadians(angle) : angle;
+    let radians: number = unit === AngleUnit.DEGREES ? this.degreesToRadians(angle) : angle;
 
     // Convert from source coordinate system to standard (unit circle)
     if (fromSystem === CoordinateSystem.SCREEN) {
@@ -244,21 +244,21 @@ export class DirectionUtils {
 /**
  * Type guards for runtime type checking
  */
-export const isLeadType = (value: any): value is LeadType => {
-  return Object.values(LeadType).includes(value);
+export const isLeadType: (value: unknown) => value is LeadType = (value: unknown): value is LeadType => {
+  return Object.values(LeadType).includes(value as LeadType);
 };
 
-export const isCutDirection = (value: any): value is CutDirection => {
-  return Object.values(CutDirection).includes(value);
+export const isCutDirection: (value: unknown) => value is CutDirection = (value: unknown): value is CutDirection => {
+  return Object.values(CutDirection).includes(value as CutDirection);
 };
 
-export const isGeometricDirection = (value: any): value is GeometricDirection => {
-  return Object.values(GeometricDirection).includes(value);
+export const isGeometricDirection: (value: unknown) => value is GeometricDirection = (value: unknown): value is GeometricDirection => {
+  return Object.values(GeometricDirection).includes(value as GeometricDirection);
 };
 
 /**
  * Default values for common use cases
  */
-export const DEFAULT_CUT_DIRECTION = CutDirection.NONE;
-export const DEFAULT_LEAD_TYPE = LeadType.NONE;
-export const DEFAULT_COORDINATE_SYSTEM = CoordinateSystem.WORLD;
+export const DEFAULT_CUT_DIRECTION: CutDirection = CutDirection.NONE;
+export const DEFAULT_LEAD_TYPE: LeadType = LeadType.NONE;
+export const DEFAULT_COORDINATE_SYSTEM: CoordinateSystem = CoordinateSystem.WORLD;

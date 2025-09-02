@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import type { Line } from '../types/geometry';
 
 describe('DXF Parser - INSERT Entities', () => {
   it('should parse INSERT entities from Blocktest.dxf', async () => {
@@ -15,12 +16,9 @@ describe('DXF Parser - INSERT Entities', () => {
     // - 7 INSERT entities, each referencing Block_0 which contains 6 lines
     // - One INSERT (handle 96) at (0,0) with no transformation creates duplicate square
     // - So we have 8 total squares: 1 original + 7 INSERT transformations
-    console.log('Parsed drawing shapes:', drawing.shapes.length);
-    console.log('Shape types:', drawing.shapes.map(s => s.type));
     
     // Count shapes by type
     const lineShapes = drawing.shapes.filter(s => s.type === 'line');
-    console.log('LINE shapes found:', lineShapes.length);
     
     // We expect exactly 48 line shapes (6 direct + 7 INSERT entities * 6 lines each)
     expect(lineShapes.length).toBe(48);
@@ -35,13 +33,13 @@ describe('DXF Parser - INSERT Entities', () => {
     
     drawing.shapes.forEach(shape => {
       if (shape.type === 'line') {
-        const line = shape.geometry as any;
+        const line: import("$lib/types/geometry").Line = shape.geometry as Line;
         
         // Calculate the center of the line's bounding box (represents the square center)
-        const minX = Math.min(line.start.x, line.end.x);
-        const maxX = Math.max(line.start.x, line.end.x);
-        const minY = Math.min(line.start.y, line.end.y);
-        const maxY = Math.max(line.start.y, line.end.y);
+        const minX: number = Math.min(line.start.x, line.end.x);
+        const maxX: number = Math.max(line.start.x, line.end.x);
+        const minY: number = Math.min(line.start.y, line.end.y);
+        const maxY: number = Math.max(line.start.y, line.end.y);
         
         // For square detection, use the midpoint between extremes
         const squareCenterX = (minX + maxX) / 2;
@@ -50,7 +48,7 @@ describe('DXF Parser - INSERT Entities', () => {
         // Find existing square group or create new one
         let found = false;
         for (const center of squareCenters) {
-          const distance = Math.sqrt(
+          const distance: number = Math.sqrt(
             Math.pow(squareCenterX - center.x, 2) + 
             Math.pow(squareCenterY - center.y, 2)
           );
@@ -74,9 +72,7 @@ describe('DXF Parser - INSERT Entities', () => {
     // Filter to actual squares (should have 6 lines each)
     const actualSquares = squareCenters.filter(s => s.count >= 6);
     
-    console.log('Visual squares identified:', actualSquares.length);
     actualSquares.forEach((square, i) => {
-      console.log(`Square ${i + 1}: center (${square.x.toFixed(1)}, ${square.y.toFixed(1)}) with ${square.count} lines`);
     });
     
     // Should have 8 visually distinct squares
@@ -95,13 +91,12 @@ describe('DXF Parser - INSERT Entities', () => {
     const uniquePositions = new Set();
     drawing.shapes.forEach(shape => {
       if (shape.type === 'line') {
-        const line = shape.geometry as any;
+        const line: import("$lib/types/geometry").Line = shape.geometry as Line;
         const posKey = `${line.start.x.toFixed(2)},${line.start.y.toFixed(2)}`;
         uniquePositions.add(posKey);
       }
     });
     
-    console.log('Unique start positions found:', uniquePositions.size);
     
     // We should have many unique positions due to different INSERT transformations
     expect(uniquePositions.size).toBeGreaterThan(10);
@@ -117,23 +112,14 @@ describe('DXF Parser - INSERT Entities', () => {
     
     const parsed = parseString(dxfContent);
     
-    console.log('Raw DXF parse result structure:');
-    console.log('- Has entities:', !!parsed.entities);
-    console.log('- Entity count:', parsed.entities ? parsed.entities.length : 0);
-    console.log('- Has blocks:', !!parsed.blocks);
-    console.log('- Block names:', parsed.blocks ? Object.keys(parsed.blocks) : []);
     
     if (parsed.entities) {
       const entityTypes = parsed.entities.map((e: any) => e.type);
-      console.log('- Entity types:', entityTypes);
       
       const insertEntities = parsed.entities.filter((e: any) => e.type === 'INSERT');
-      console.log('- INSERT entities count:', insertEntities.length);
       
       if (insertEntities.length > 0) {
-        console.log('- All INSERT entities:');
         insertEntities.forEach((entity: any, i: number) => {
-          console.log(`  INSERT ${i}:`, JSON.stringify(entity, null, 2));
         });
       }
     }
@@ -141,10 +127,7 @@ describe('DXF Parser - INSERT Entities', () => {
     if (parsed.blocks) {
       for (const blockName in parsed.blocks) {
         const block = parsed.blocks[blockName];
-        console.log(`- Block "${blockName}":`, block);
         if (block && block.entities) {
-          console.log(`  - ${blockName} entities:`, block.entities.length);
-          console.log(`  - ${blockName} entity types:`, block.entities.map((e: any) => e.type));
         }
       }
     }
@@ -225,13 +208,9 @@ EOF`;
     
     const drawing = await parseDXF(simpleDxf);
     
-    console.log('Simple DXF shapes:', drawing.shapes.length);
-    console.log('Shape types:', drawing.shapes.map(s => s.type));
     
     if (drawing.shapes.length > 0 && drawing.shapes[0].type === 'line') {
-      const line = drawing.shapes[0].geometry as any;
-      console.log('Transformed line start:', line.start);
-      console.log('Transformed line end:', line.end);
+      const line: import("$lib/types/geometry").Line = drawing.shapes[0].geometry as Line;
       
       // The line should be transformed: scaled by 2, rotated by 45°, translated by (5,5)
       // Original line: (0,0) to (10,0)

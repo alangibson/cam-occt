@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { generateGCode } from './gcode-generator';
-import type { ToolPath, Drawing } from '../../types';
+import type { ToolPath, Drawing, Shape, Arc, Circle, Spline } from '../../lib/types';
 
 describe('generateGCode', () => {
   const mockDrawing: Drawing = {
@@ -96,5 +96,344 @@ describe('generateGCode', () => {
     });
     
     expect(gcode).toContain('G20'); // Imperial units
+  });
+
+  describe('edge cases and advanced features', () => {
+    it('should handle empty paths array', () => {
+      const gcode = generateGCode([], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: false,
+        plasmaMode: true
+      });
+      
+      expect(gcode).toContain('G21'); // Should still have header
+      expect(gcode).toContain('M2'); // Should still have footer
+      expect(gcode).not.toContain('(Path 1)'); // No path comments
+    });
+
+    it('should handle rapid movements', () => {
+      const rapidPath: ToolPath = {
+        ...mockPath,
+        id: 'rapid1',
+        isRapid: true,
+        parameters: undefined,
+        leadIn: undefined,
+        leadOut: undefined
+      };
+      
+      const gcode = generateGCode([rapidPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true
+      });
+      
+      // Current implementation treats rapids as regular paths but without parameters
+      // This test verifies that it handles undefined parameters gracefully
+      expect(gcode).toContain('G0'); // Should contain rapid moves
+      expect(gcode).toContain('G1'); // Should contain linear moves for the path
+    });
+
+    it('should handle paths without lead-in/lead-out', () => {
+      const simpleToolPath: ToolPath = {
+        ...mockPath,
+        leadIn: undefined,
+        leadOut: undefined
+      };
+      
+      const gcode = generateGCode([simpleToolPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true
+      });
+      
+      expect(gcode).toContain('M3'); // Should still pierce
+      expect(gcode).toContain('M5'); // Should still turn off
+    });
+
+    it('should handle material selection and THC features', () => {
+      const gcode = generateGCode([mockPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true,
+        materialNumber: 5,
+        enableTHC: true,
+        enableVelocityReduction: true
+      });
+      
+      expect(gcode).toContain('M190 P5'); // Material selection
+      expect(gcode).toContain('M66'); // Wait for material change
+      expect(gcode).toContain('M68 E3 Q0'); // Velocity control
+      expect(gcode).toContain('M190 P-1'); // Return to default material
+    });
+
+    it('should disable velocity reduction when requested', () => {
+      const gcode = generateGCode([mockPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true,
+        enableVelocityReduction: false
+      });
+      
+      expect(gcode).not.toContain('M68 E3'); // No velocity commands
+      expect(gcode).not.toContain('M67 E3'); // No velocity reduction
+    });
+
+    it('should detect and handle hole cutting with velocity reduction', () => {
+      const holeToolPath: ToolPath = {
+        ...mockPath,
+        points: [
+          { x: 10, y: 10 },
+          { x: 20, y: 10 },
+          { x: 20, y: 20 },
+          { x: 10, y: 20 },
+          { x: 10, y: 10 } // Closed path (hole)
+        ]
+      };
+      
+      const gcode = generateGCode([holeToolPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true,
+        enableVelocityReduction: true
+      });
+      
+      expect(gcode).toContain('M67 E3 Q60'); // Reduce velocity for hole
+      expect(gcode).toContain('M67 E3 Q0'); // Reset velocity after hole
+    });
+
+    it('should handle missing pierce parameters gracefully', () => {
+      const pathWithoutParams: ToolPath = {
+        ...mockPath,
+        parameters: undefined
+      };
+      
+      const gcode = generateGCode([pathWithoutParams], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true
+      });
+      
+      // Should not crash and should include basic commands
+      expect(gcode).toContain('G0'); // Rapid moves
+      expect(gcode).toContain('G1'); // Linear moves
+    });
+
+    it('should handle native spline commands when enabled', () => {
+      const splineShape: Shape = {
+        id: 'spline1',
+        type: 'spline',
+        layer: 'test',
+        geometry: {
+          controlPoints: [
+            { x: 0, y: 0 },
+            { x: 10, y: 5 },
+            { x: 20, y: 0 }
+          ],
+          weights: [1, 1, 1],
+          knots: [0, 0, 0, 1, 1, 1],
+          degree: 2
+        } as Spline
+      };
+
+      const splineToolPath: ToolPath = {
+        ...mockPath,
+        originalShape: splineShape
+      };
+      
+      const gcode = generateGCode([splineToolPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true,
+        useNativeSplines: true
+      });
+      
+      expect(gcode).toContain('G5.2'); // NURBS start
+      expect(gcode).toContain('G5.3'); // NURBS end
+      expect(gcode).toContain('Native NURBS spline');
+    });
+
+    it('should handle native arc commands when enabled', () => {
+      const arcShape: Shape = {
+        id: 'arc1',
+        type: 'arc',
+        layer: 'test',
+        geometry: {
+          center: { x: 10, y: 10 },
+          radius: 5,
+          startAngle: 0,
+          endAngle: Math.PI / 2,
+          clockwise: false
+        } as Arc
+      };
+
+      const arcToolPath: ToolPath = {
+        ...mockPath,
+        originalShape: arcShape
+      };
+      
+      const gcode = generateGCode([arcToolPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true,
+        useNativeSplines: true
+      });
+      
+      expect(gcode).toContain('G3'); // Counterclockwise arc
+      expect(gcode).toContain('Native arc command');
+    });
+
+    it('should handle native circle commands when enabled', () => {
+      const circleShape: Shape = {
+        id: 'circle1',
+        type: 'circle',
+        layer: 'test',
+        geometry: {
+          center: { x: 10, y: 10 },
+          radius: 5
+        } as Circle
+      };
+
+      const circleToolPath: ToolPath = {
+        ...mockPath,
+        originalShape: circleShape
+      };
+      
+      const gcode = generateGCode([circleToolPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true,
+        useNativeSplines: true
+      });
+      
+      expect(gcode).toContain('G2'); // Clockwise full circle
+      expect(gcode).toContain('Native circle');
+    });
+
+    it('should handle incomplete spline data with fallback', () => {
+      const incompleteSpline: Shape = {
+        id: 'incomplete-spline',
+        type: 'spline',
+        layer: 'test',
+        geometry: {
+          controlPoints: [{ x: 0, y: 0 }], // Insufficient points
+          weights: undefined,
+          knots: undefined,
+          degree: 2
+        } as Spline
+      };
+
+      const splineToolPath: ToolPath = {
+        ...mockPath,
+        originalShape: incompleteSpline
+      };
+      
+      const gcode = generateGCode([splineToolPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true,
+        useNativeSplines: true
+      });
+      
+      // With insufficient control points, the spline generation should return empty array
+      // and fall back to using the points array from the ToolPath
+      expect(gcode).not.toContain('G5.2'); // Should not use NURBS
+      expect(gcode).toContain('G1'); // Should use linear moves instead
+    });
+
+    it('should format coordinates with proper precision', () => {
+      const precisionPath: ToolPath = {
+        ...mockPath,
+        leadIn: undefined,
+        leadOut: undefined,
+        points: [
+          { x: 1.123456789, y: 2.987654321 },
+          { x: 10.000001, y: 20.999999 }
+        ]
+      };
+      
+      const gcode = generateGCode([precisionPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10.123456,
+        rapidFeedRate: 5000,
+        includeComments: false,
+        plasmaMode: true
+      });
+      
+      // Check that coordinates appear with proper precision somewhere in the output
+      // The exact formatting depends on how the path is processed
+      const lines = gcode.split('\n');
+      const hasCoordinateFormatting = lines.some(line => 
+        line.includes('X1.1235') || line.includes('Y2.9877')
+      );
+      
+      // Check Z coordinate precision (should be 3 decimal places for non-coordinates)
+      expect(gcode).toContain('Z10.123');
+      
+      // Verify that coordinates exist in the output (may be processed differently)
+      expect(gcode).toContain('X1.1235');
+      expect(gcode).toContain('Y2.9877');
+    });
+
+    it('should handle QtPlasmaC-specific tool syntax', () => {
+      const gcode = generateGCode([mockPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true
+      });
+      
+      expect(gcode).toContain('M3 $0'); // QtPlasmaC plasma on syntax
+      expect(gcode).toContain('M5 $0'); // QtPlasmaC plasma off syntax
+    });
+
+    it('should generate proper HAL feed rate command', () => {
+      const gcode = generateGCode([mockPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: true
+      });
+      
+      expect(gcode).toContain('F#<_hal[plasmac.cut-feed-rate]>'); // HAL feed rate
+    });
+
+    it('should not include plasma commands in non-plasma mode', () => {
+      const gcode = generateGCode([mockPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        plasmaMode: false
+      });
+      
+      expect(gcode).not.toContain('M3'); // No plasma on
+      expect(gcode).not.toContain('M5'); // No plasma off
+      expect(gcode).not.toContain('G4'); // No pierce delay
+      expect(gcode).not.toContain('M52'); // No paused motion
+    });
   });
 });

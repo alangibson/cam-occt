@@ -155,7 +155,6 @@ describe('Persistence Integration - Lead Geometry', () => {
     expect(pathWithLeads.leadValidation?.warnings).toContain('Test warning');
 
     // Save application state
-    console.log('Saving paths:', pathWithLeads);
     await saveApplicationState();
 
     // Clear stores to simulate fresh app load  
@@ -175,7 +174,6 @@ describe('Persistence Integration - Lead Geometry', () => {
     let restoredState: any = null;
     const unsubscribe4 = pathStore.subscribe(state => { restoredState = state; });
     unsubscribe4();
-    console.log('Restored paths:', restoredState?.paths?.length, restoredState?.paths);
     expect(restoredState?.paths).toHaveLength(1);
 
     const restoredPath = restoredState.paths[0];
@@ -201,6 +199,5 @@ describe('Persistence Integration - Lead Geometry', () => {
     expect(restoredPath.leadValidation?.severity).toBe('warning');
     expect(restoredPath.leadValidation?.validatedAt).toBeDefined();
 
-    console.log('✅ Lead geometry persistence integration test passed');
   }, 10000); // 10 second timeout for async operations
 });

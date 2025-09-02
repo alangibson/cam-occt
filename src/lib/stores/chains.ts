@@ -1,8 +1,8 @@
 import { writable } from 'svelte/store';
-import type { ShapeChain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection';
 
-interface ChainStore {
-  chains: ShapeChain[];
+export interface ChainStore {
+  chains: Chain[];
   tolerance: number;
   selectedChainId: string | null;
 }
@@ -13,10 +13,10 @@ const initialState: ChainStore = {
   selectedChainId: null
 };
 
-export const chainStore = writable<ChainStore>(initialState);
+export const chainStore: ReturnType<typeof writable<ChainStore>> = writable<ChainStore>(initialState);
 
 // Helper functions
-export function setChains(chains: ShapeChain[]) {
+export function setChains(chains: Chain[]) {
   chainStore.update(state => ({
     ...state,
     chains
@@ -38,7 +38,7 @@ export function setTolerance(tolerance: number) {
 }
 
 // Helper to check if a shape is part of any chain
-export function getShapeChainId(shapeId: string, chains: ShapeChain[]): string | null {
+export function getShapeChainId(shapeId: string, chains: Chain[]): string | null {
   for (const chain of chains) {
     if (chain.shapes.some(shape => shape.id === shapeId)) {
       return chain.id;
@@ -48,7 +48,7 @@ export function getShapeChainId(shapeId: string, chains: ShapeChain[]): string |
 }
 
 // Helper to get all shape IDs in the same chain
-export function getChainShapeIds(shapeId: string, chains: ShapeChain[]): string[] {
+export function getChainShapeIds(shapeId: string, chains: Chain[]): string[] {
   for (const chain of chains) {
     if (chain.shapes.some(shape => shape.id === shapeId)) {
       return chain.shapes.map(shape => shape.id);
@@ -58,7 +58,7 @@ export function getChainShapeIds(shapeId: string, chains: ShapeChain[]): string[
 }
 
 // Helper to get chain by ID
-export function getChainById(chainId: string, chains: ShapeChain[]): ShapeChain | null {
+export function getChainById(chainId: string, chains: Chain[]): Chain | null {
   return chains.find(chain => chain.id === chainId) || null;
 }
 
@@ -78,9 +78,9 @@ export function clearChainSelection() {
 }
 
 // Helper to get shape IDs for the selected chain
-export function getSelectedChainShapeIds(selectedChainId: string | null, chains: ShapeChain[]): string[] {
+export function getSelectedChainShapeIds(selectedChainId: string | null, chains: Chain[]): string[] {
   if (!selectedChainId) return [];
   
-  const chain = getChainById(selectedChainId, chains);
+  const chain: Chain | null = getChainById(selectedChainId, chains);
   return chain ? chain.shapes.map(shape => shape.id) : [];
 }

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/svelte';
 import DrawingCanvas from './DrawingCanvas.svelte';
 import { drawingStore } from '../lib/stores/drawing';
-import type { Shape, Drawing, Ellipse } from '../types';
+import type { Shape, Drawing, Ellipse } from '../lib/types';
 
 // Mock canvas context
 const mockCanvasContext = {

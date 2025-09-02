@@ -3,24 +3,27 @@
  * Based on MetalHeadCAM reference implementation
  */
 
-import type { Shape, Point2D } from '../../types';
-import type { PartDetectionParameters } from '../../types/part-detection';
+import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../../lib/types';
+import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { sampleNURBS } from '../geometry/nurbs';
+import { polylineToVertices, polylineToPoints } from '../geometry/polyline';
+import { calculateEllipsePoint } from './ellipse-utils';
+
 
 export function tessellateShape(shape: Shape, params: PartDetectionParameters): Point2D[] {
   const points: Point2D[] = [];
   
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry as any;
+      const line: Line = shape.geometry as Line;
       points.push(line.start, line.end);
       break;
       
     case 'circle':
-      const circle = shape.geometry as any;
-      const numPoints = params.circleTessellationPoints;
-      for (let i = 0; i < numPoints; i++) {
-        const angle = (i / numPoints) * 2 * Math.PI;
+      const circle: Circle = shape.geometry as Circle;
+      const numPoints: number = params.circleTessellationPoints;
+      for (let i: number = 0; i < numPoints; i++) {
+        const angle: number = (i / numPoints) * 2 * Math.PI;
         points.push({
           x: circle.center.x + circle.radius * Math.cos(angle),
           y: circle.center.y + circle.radius * Math.sin(angle)
@@ -29,10 +32,10 @@ export function tessellateShape(shape: Shape, params: PartDetectionParameters): 
       break;
       
     case 'arc':
-      const arc = shape.geometry as any;
+      const arc: Arc = shape.geometry as Arc;
       
       // Calculate the angular difference (sweep)
-      let deltaAngle = arc.endAngle - arc.startAngle;
+      let deltaAngle: number = arc.endAngle - arc.startAngle;
       
       // Adjust deltaAngle based on clockwise flag
       // DXF arcs are counterclockwise by default unless clockwise flag is set
@@ -48,13 +51,13 @@ export function tessellateShape(shape: Shape, params: PartDetectionParameters): 
         }
       }
       
-      const arcSpan = Math.abs(deltaAngle);
-      const numArcPoints = Math.max(params.minArcTessellationPoints, Math.round(arcSpan / params.arcTessellationDensity));
+      const arcSpan: number = Math.abs(deltaAngle);
+      const numArcPoints: number = Math.max(params.minArcTessellationPoints, Math.round(arcSpan / params.arcTessellationDensity));
       
-      for (let i = 0; i <= numArcPoints; i++) {
-        const t = i / numArcPoints;
+      for (let i: number = 0; i <= numArcPoints; i++) {
+        const t: number = i / numArcPoints;
         // Calculate angle using the corrected deltaAngle
-        const theta = arc.startAngle + t * deltaAngle;
+        const theta: number = arc.startAngle + t * deltaAngle;
         points.push({
           x: arc.center.x + arc.radius * Math.cos(theta),
           y: arc.center.y + arc.radius * Math.sin(theta)
@@ -63,82 +66,66 @@ export function tessellateShape(shape: Shape, params: PartDetectionParameters): 
       break;
       
     case 'polyline':
-      const polyline = shape.geometry as any;
-      if (polyline.vertices && polyline.vertices.length > 0) {
-        polyline.vertices.forEach((vertex: any) => {
+      const polyline: Polyline = shape.geometry as Polyline;
+      const vertices: { x: number; y: number }[] | null = polylineToVertices(polyline);
+      if (vertices && vertices.length > 0) {
+        vertices.forEach((vertex: { x: number; y: number }) => {
           points.push({ x: vertex.x, y: vertex.y });
         });
-      } else if (polyline.points && polyline.points.length > 0) {
-        points.push(...polyline.points);
+      } else {
+        const polylinePoints: Point2D[] = polylineToPoints(polyline);
+        points.push(...polylinePoints);
       }
       break;
       
     case 'ellipse':
-      const ellipse = shape.geometry as any;
-      const majorAxisLength = Math.sqrt(
+      const ellipse: Ellipse = shape.geometry as Ellipse;
+      const majorAxisLength: number = Math.sqrt(
         ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
         ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
       );
-      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-      const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      const minorAxisLength: number = majorAxisLength * ellipse.minorToMajorRatio;
+      const majorAxisAngle: number = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
       
-      const isArc = typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number';
+      const isArc: boolean = typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number';
       
-      if (isArc) {
+      if (isArc && ellipse.startParam !== undefined && ellipse.endParam !== undefined) {
         // Ellipse arc - use similar logic to circular arcs
-        let deltaParam = ellipse.endParam - ellipse.startParam;
+        let deltaParam: number = ellipse.endParam - ellipse.startParam;
         
         // For ellipses, we assume counterclockwise by default
         if (deltaParam < 0) {
           deltaParam += 2 * Math.PI;
         }
         
-        const paramSpan = Math.abs(deltaParam);
-        const numEllipsePoints = Math.max(8, Math.round(paramSpan / (Math.PI / 16)));
+        const paramSpan: number = Math.abs(deltaParam);
+        const numEllipsePoints: number = Math.max(8, Math.round(paramSpan / (Math.PI / 16)));
         
-        for (let i = 0; i <= numEllipsePoints; i++) {
-          const t = i / numEllipsePoints;
-          const param = ellipse.startParam + t * deltaParam;
+        for (let i: number = 0; i <= numEllipsePoints; i++) {
+          const t: number = i / numEllipsePoints;
+          const param: number = ellipse.startParam + t * deltaParam;
           
-          const x = majorAxisLength * Math.cos(param);
-          const y = minorAxisLength * Math.sin(param);
-          
-          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
-          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
-          
-          points.push({
-            x: ellipse.center.x + rotatedX,
-            y: ellipse.center.y + rotatedY
-          });
+          points.push(calculateEllipsePoint(ellipse, param, majorAxisLength, minorAxisLength, majorAxisAngle));
         }
       } else {
         // Full ellipse
-        const numEllipsePoints = 32;
-        for (let i = 0; i < numEllipsePoints; i++) {
-          const param = (i / numEllipsePoints) * 2 * Math.PI;
+        const numEllipsePoints: number = 32;
+        for (let i: number = 0; i < numEllipsePoints; i++) {
+          const param: number = (i / numEllipsePoints) * 2 * Math.PI;
           
-          const x = majorAxisLength * Math.cos(param);
-          const y = minorAxisLength * Math.sin(param);
-          
-          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
-          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
-          
-          points.push({
-            x: ellipse.center.x + rotatedX,
-            y: ellipse.center.y + rotatedY
-          });
+          points.push(calculateEllipsePoint(ellipse, param, majorAxisLength, minorAxisLength, majorAxisAngle));
         }
       }
       break;
       
     case 'spline':
-      const spline = shape.geometry as any;
+      const spline: Spline = shape.geometry as Spline;
       try {
         // Use NURBS sampling for accurate tessellation
         // Use more points for better accuracy in part detection
-        const sampledPoints = sampleNURBS(spline, 32);
+        const sampledPoints: Point2D[] = sampleNURBS(spline, 32);
         points.push(...sampledPoints);
-      } catch (error) {
+      } catch {
         // Fallback to fit points or control points if NURBS evaluation fails
         if (spline.fitPoints && spline.fitPoints.length > 0) {
           points.push(...spline.fitPoints);

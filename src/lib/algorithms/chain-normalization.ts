@@ -10,11 +10,11 @@
  * - Shapes with coincident points that break traversal order
  */
 
-import type { ShapeChain } from './chain-detection';
-import type { Shape, Point2D } from '../../types';
-import type { ChainNormalizationParameters } from '../../types/algorithm-parameters';
-import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS } from '../../types/algorithm-parameters';
-import { evaluateNURBS } from '../geometry/nurbs';
+import type { Chain } from './chain-detection';
+import type { Shape, Point2D, Arc, Circle, Ellipse, Spline } from '../types';
+import type { ChainNormalizationParameters } from '../types/algorithm-parameters';
+import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS } from '../types/algorithm-parameters';
+import { getShapeStartPoint, getShapeEndPoint, reverseShape } from '$lib/geometry';
 
 export interface ChainTraversalIssue {
   type: 'coincident_endpoints' | 'coincident_startpoints' | 'broken_traversal';
@@ -36,14 +36,14 @@ export interface ChainNormalizationResult {
 /**
  * Analyzes all chains for traversal issues
  */
-export function analyzeChainTraversal(chains: ShapeChain[], params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): ChainNormalizationResult[] {
+export function analyzeChainTraversal(chains: Chain[], params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): ChainNormalizationResult[] {
   return chains.map(chain => analyzeChainTraversalIssues(chain, params));
 }
 
 /**
  * Analyzes a single chain for traversal issues
  */
-function analyzeChainTraversalIssues(chain: ShapeChain, params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): ChainNormalizationResult {
+function analyzeChainTraversalIssues(chain: Chain, params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): ChainNormalizationResult {
   const issues: ChainTraversalIssue[] = [];
   
   if (chain.shapes.length < 2) {
@@ -56,16 +56,16 @@ function analyzeChainTraversalIssues(chain: ShapeChain, params: ChainNormalizati
   }
 
   // Check if we can traverse the chain properly (end-to-start connectivity)
-  const traversalPath = attemptChainTraversal(chain, params);
+  const traversalPath: { canTraverse: boolean; path: number[] } = attemptChainTraversal(chain, params);
   
   if (!traversalPath.canTraverse) {
     // Find specific issues that prevent traversal
-    const detectedIssues = detectSpecificTraversalIssues(chain);
+    const detectedIssues: ChainTraversalIssue[] = detectSpecificTraversalIssues(chain);
     issues.push(...detectedIssues);
   }
 
   // Also check for coincident points that might indicate improper connections
-  const coincidentIssues = detectCoincidentPointIssues(chain);
+  const coincidentIssues: ChainTraversalIssue[] = detectCoincidentPointIssues(chain);
   issues.push(...coincidentIssues);
 
   return {
@@ -79,16 +79,16 @@ function analyzeChainTraversalIssues(chain: ShapeChain, params: ChainNormalizati
 /**
  * Attempts to traverse a chain following end-to-start connectivity
  */
-function attemptChainTraversal(chain: ShapeChain, params: ChainNormalizationParameters): { canTraverse: boolean; path: number[] } {
+function attemptChainTraversal(chain: Chain, params: ChainNormalizationParameters): { canTraverse: boolean; path: number[] } {
   if (chain.shapes.length === 0) return { canTraverse: true, path: [] };
   if (chain.shapes.length === 1) return { canTraverse: true, path: [0] };
 
-  const { traversalTolerance, maxTraversalAttempts } = params;
+  const { traversalTolerance, maxTraversalAttempts }: { traversalTolerance: number; maxTraversalAttempts: number } = params;
 
   // Try starting from each shape to find a valid traversal path (limit attempts)
-  const maxAttempts = Math.min(maxTraversalAttempts, chain.shapes.length);
-  for (let startIndex = 0; startIndex < maxAttempts; startIndex++) {
-    const result = attemptTraversalFromStart(chain, startIndex, traversalTolerance);
+  const maxAttempts: number = Math.min(maxTraversalAttempts, chain.shapes.length);
+  for (let startIndex: number = 0; startIndex < maxAttempts; startIndex++) {
+    const result: { canTraverse: boolean; path: number[] } = attemptTraversalFromStart(chain, startIndex, traversalTolerance);
     if (result.canTraverse) {
       return result;
     }
@@ -101,29 +101,24 @@ function attemptChainTraversal(chain: ShapeChain, params: ChainNormalizationPara
 /**
  * Attempts traversal starting from a specific shape index
  */
-function attemptTraversalFromStart(chain: ShapeChain, startIndex: number, tolerance: number): { canTraverse: boolean; path: number[] } {
+function attemptTraversalFromStart(chain: Chain, startIndex: number, tolerance: number): { canTraverse: boolean; path: number[] } {
   const path: number[] = [startIndex];
-  let currentShapeIndex = startIndex;
-  const usedShapes = new Set<number>([startIndex]);
+  let currentShapeIndex: number = startIndex;
+  const usedShapes: Set<number> = new Set<number>([startIndex]);
 
   while (path.length < chain.shapes.length) {
-    const currentShape = chain.shapes[currentShapeIndex];
-    const currentEndPoint = getShapeEndPoint(currentShape);
-    
-    if (!currentEndPoint) {
-      // Can't get end point, traversal fails
-      return { canTraverse: false, path };
-    }
+    const currentShape: Shape = chain.shapes[currentShapeIndex];
+    const currentEndPoint: Point2D = getShapeEndPoint(currentShape);
 
     // Find next shape whose start point connects to current end point
-    let nextShapeIndex = -1;
-    for (let i = 0; i < chain.shapes.length; i++) {
+    let nextShapeIndex: number = -1;
+    for (let i: number = 0; i < chain.shapes.length; i++) {
       if (usedShapes.has(i)) continue;
       
-      const candidateShape = chain.shapes[i];
-      const candidateStartPoint = getShapeStartPoint(candidateShape);
+      const candidateShape: Shape = chain.shapes[i];
+      const candidateStartPoint: Point2D = getShapeStartPoint(candidateShape);
       
-      if (candidateStartPoint && pointsAreClose(currentEndPoint, candidateStartPoint, tolerance)) {
+      if (pointsAreClose(currentEndPoint, candidateStartPoint, tolerance)) {
         nextShapeIndex = i;
         break;
       }
@@ -145,22 +140,22 @@ function attemptTraversalFromStart(chain: ShapeChain, startIndex: number, tolera
 /**
  * Detects specific issues that prevent proper traversal
  */
-function detectSpecificTraversalIssues(chain: ShapeChain): ChainTraversalIssue[] {
+function detectSpecificTraversalIssues(chain: Chain): ChainTraversalIssue[] {
   const issues: ChainTraversalIssue[] = [];
-  const tolerance = 0.01;
+  const tolerance: number = 0.01;
 
-  for (let i = 0; i < chain.shapes.length; i++) {
-    for (let j = i + 1; j < chain.shapes.length; j++) {
-      const shape1 = chain.shapes[i];
-      const shape2 = chain.shapes[j];
+  for (let i: number = 0; i < chain.shapes.length; i++) {
+    for (let j: number = i + 1; j < chain.shapes.length; j++) {
+      const shape1: Shape = chain.shapes[i];
+      const shape2: Shape = chain.shapes[j];
 
-      const shape1Start = getShapeStartPoint(shape1);
-      const shape1End = getShapeEndPoint(shape1);
-      const shape2Start = getShapeStartPoint(shape2);
-      const shape2End = getShapeEndPoint(shape2);
+      const shape1Start: Point2D = getShapeStartPoint(shape1);
+      const shape1End: Point2D = getShapeEndPoint(shape1);
+      const shape2Start: Point2D = getShapeStartPoint(shape2);
+      const shape2End: Point2D = getShapeEndPoint(shape2);
 
       // Check for coincident end points (both shapes end at same point)
-      if (shape1End && shape2End && pointsAreClose(shape1End, shape2End, tolerance)) {
+      if (pointsAreClose(shape1End, shape2End, tolerance)) {
         issues.push({
           type: 'coincident_endpoints',
           chainId: chain.id,
@@ -173,7 +168,7 @@ function detectSpecificTraversalIssues(chain: ShapeChain): ChainTraversalIssue[]
       }
 
       // Check for coincident start points (both shapes start at same point)
-      if (shape1Start && shape2Start && pointsAreClose(shape1Start, shape2Start, tolerance)) {
+      if (pointsAreClose(shape1Start, shape2Start, tolerance)) {
         issues.push({
           type: 'coincident_startpoints',
           chainId: chain.id,
@@ -193,35 +188,35 @@ function detectSpecificTraversalIssues(chain: ShapeChain): ChainTraversalIssue[]
 /**
  * Detects coincident point issues that might indicate connection problems
  */
-function detectCoincidentPointIssues(chain: ShapeChain): ChainTraversalIssue[] {
+function detectCoincidentPointIssues(chain: Chain): ChainTraversalIssue[] {
   const issues: ChainTraversalIssue[] = [];
-  const tolerance = 0.01;
+  const tolerance: number = 0.01;
 
   // Look for shapes that have coincident points but are not in proper traversal order
-  for (let i = 0; i < chain.shapes.length; i++) {
-    const shape1 = chain.shapes[i];
+  for (let i: number = 0; i < chain.shapes.length; i++) {
+    const shape1: Shape = chain.shapes[i];
     
-    for (let j = i + 1; j < chain.shapes.length; j++) {
-      const shape2 = chain.shapes[j];
+    for (let j: number = i + 1; j < chain.shapes.length; j++) {
+      const shape2: Shape = chain.shapes[j];
       
       // Skip sequent shapes (they should connect)
       // Special case: first and last shapes are sequent if the chain is closed
       if (Math.abs(i - j) === 1) continue;
       if ((i === 0 && j === chain.shapes.length - 1) || (j === 0 && i === chain.shapes.length - 1)) {
         // Check if this is a closed chain by seeing if first and last shapes connect
-        const firstShape = chain.shapes[0];
-        const lastShape = chain.shapes[chain.shapes.length - 1];
-        const firstStart = getShapeStartPoint(firstShape);
-        const lastEnd = getShapeEndPoint(lastShape);
+        const firstShape: Shape = chain.shapes[0];
+        const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
+        const firstStart: Point2D = getShapeStartPoint(firstShape);
+        const lastEnd: Point2D = getShapeEndPoint(lastShape);
         
-        if (firstStart && lastEnd && pointsAreClose(firstStart, lastEnd, tolerance)) {
+        if (pointsAreClose(firstStart, lastEnd, tolerance)) {
           // This is a closed chain, so first and last shapes are effectively sequent
           continue;
         }
       }
 
-      const shape1Points = getAllShapePoints(shape1);
-      const shape2Points = getAllShapePoints(shape2);
+      const shape1Points: Point2D[] = getAllShapePoints(shape1);
+      const shape2Points: Point2D[] = getAllShapePoints(shape2);
 
       // Check for any coincident points between non-sequent shapes
       for (const point1 of shape1Points) {
@@ -245,137 +240,6 @@ function detectCoincidentPointIssues(chain: ShapeChain): ChainTraversalIssue[] {
   return issues;
 }
 
-/**
- * Gets the start point of a shape
- */
-function getShapeStartPoint(shape: Shape): Point2D | null {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return line.start;
-    
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points.length > 0 ? polyline.points[0] : null;
-    
-    case 'arc':
-      const arc = shape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-      };
-    
-    case 'circle':
-      // For circles, start and end are the same (rightmost point)
-      const circle = shape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      // Calculate start point from ellipse parameters
-      const startParam = ellipse.startParam ?? 0;
-      const majorAxisLength = Math.sqrt(
-        Math.pow(ellipse.majorAxisEndpoint.x, 2) + 
-        Math.pow(ellipse.majorAxisEndpoint.y, 2)
-      );
-      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-      const rotation = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
-      
-      const x = majorAxisLength * Math.cos(startParam);
-      const y = minorAxisLength * Math.sin(startParam);
-      
-      // Rotate and translate to final position
-      return {
-        x: ellipse.center.x + x * Math.cos(rotation) - y * Math.sin(rotation),
-        y: ellipse.center.y + x * Math.sin(rotation) + y * Math.cos(rotation)
-      };
-    
-    case 'spline':
-      const spline = shape.geometry as any;
-      try {
-        // Use proper NURBS evaluation at parameter t=0
-        return evaluateNURBS(0, spline);
-      } catch (error) {
-        // Fallback to first control point if NURBS evaluation fails
-        if (spline.fitPoints && spline.fitPoints.length > 0) {
-          return spline.fitPoints[0];
-        }
-        return spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
-      }
-    
-    default:
-      return null;
-  }
-}
-
-/**
- * Gets the end point of a shape
- */
-function getShapeEndPoint(shape: Shape): Point2D | null {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return line.end;
-    
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points.length > 0 ? polyline.points[polyline.points.length - 1] : null;
-    
-    case 'arc':
-      const arc = shape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-      };
-    
-    case 'circle':
-      // For circles, start and end are the same (rightmost point)
-      const circle = shape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      // Calculate end point from ellipse parameters
-      const endParam = ellipse.endParam ?? (2 * Math.PI);
-      const majorAxisLength = Math.sqrt(
-        Math.pow(ellipse.majorAxisEndpoint.x, 2) + 
-        Math.pow(ellipse.majorAxisEndpoint.y, 2)
-      );
-      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-      const rotation = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
-      
-      const x = majorAxisLength * Math.cos(endParam);
-      const y = minorAxisLength * Math.sin(endParam);
-      
-      // Rotate and translate to final position
-      return {
-        x: ellipse.center.x + x * Math.cos(rotation) - y * Math.sin(rotation),
-        y: ellipse.center.y + x * Math.sin(rotation) + y * Math.cos(rotation)
-      };
-    
-    case 'spline':
-      const spline = shape.geometry as any;
-      try {
-        // Use proper NURBS evaluation at parameter t=1
-        return evaluateNURBS(1, spline);
-      } catch (error) {
-        // Fallback to last control point if NURBS evaluation fails
-        if (spline.fitPoints && spline.fitPoints.length > 0) {
-          return spline.fitPoints[spline.fitPoints.length - 1];
-        }
-        return spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
-      }
-    
-    default:
-      return null;
-  }
-}
 
 /**
  * Gets all significant points from a shape (start, end, center for arcs/circles)
@@ -383,17 +247,17 @@ function getShapeEndPoint(shape: Shape): Point2D | null {
 function getAllShapePoints(shape: Shape): Point2D[] {
   const points: Point2D[] = [];
   
-  const start = getShapeStartPoint(shape);
-  const end = getShapeEndPoint(shape);
+  const start: Point2D = getShapeStartPoint(shape);
+  const end: Point2D = getShapeEndPoint(shape);
   
-  if (start) points.push(start);
-  if (end && (!start || start.x !== end.x || start.y !== end.y)) {
+  points.push(start);
+  if (start.x !== end.x || start.y !== end.y) {
     points.push(end);
   }
 
   // Add center points for arcs and circles
   if (shape.type === 'arc' || shape.type === 'circle') {
-    const geometry = shape.geometry as any;
+    const geometry: Arc | Circle = shape.geometry as Arc | Circle;
     if (geometry.center) {
       points.push(geometry.center);
     }
@@ -401,7 +265,7 @@ function getAllShapePoints(shape: Shape): Point2D[] {
   
   // Add center point for ellipses
   if (shape.type === 'ellipse') {
-    const geometry = shape.geometry as any;
+    const geometry: Ellipse = shape.geometry as Ellipse;
     if (geometry.center) {
       points.push(geometry.center);
     }
@@ -409,7 +273,7 @@ function getAllShapePoints(shape: Shape): Point2D[] {
   
   // For splines, add control points for geometric analysis
   if (shape.type === 'spline') {
-    const geometry = shape.geometry as any;
+    const geometry: Spline = shape.geometry as Spline;
     if (geometry.controlPoints && geometry.controlPoints.length > 0) {
       points.push(...geometry.controlPoints);
     }
@@ -422,20 +286,20 @@ function getAllShapePoints(shape: Shape): Point2D[] {
  * Checks if two points are close within tolerance
  */
 function pointsAreClose(p1: Point2D, p2: Point2D, tolerance: number): boolean {
-  const distance = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+  const distance: number = Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
   return distance < tolerance;
 }
 
 /**
  * Generates a human-readable description of chain analysis results
  */
-function generateChainDescription(chain: ShapeChain, issues: ChainTraversalIssue[], canTraverse: boolean): string {
+function generateChainDescription(chain: Chain, issues: ChainTraversalIssue[], canTraverse: boolean): string {
   if (issues.length === 0) {
     return `Chain ${chain.id} (${chain.shapes.length} shapes): No traversal issues detected. Chain can be traversed properly.`;
   }
 
-  const issueCount = issues.length;
-  const traversalStatus = canTraverse ? 'can be traversed' : 'cannot be traversed properly';
+  const issueCount: number = issues.length;
+  const traversalStatus: string = canTraverse ? 'can be traversed' : 'cannot be traversed properly';
   
   return `Chain ${chain.id} (${chain.shapes.length} shapes): ${issueCount} issue${issueCount === 1 ? '' : 's'} detected. Chain ${traversalStatus}.`;
 }
@@ -443,15 +307,15 @@ function generateChainDescription(chain: ShapeChain, issues: ChainTraversalIssue
 /**
  * Normalizes a chain by reordering and reversing shapes for proper traversal
  */
-export function normalizeChain(chain: ShapeChain, params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): ShapeChain {
+export function normalizeChain(chain: Chain, params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): Chain {
   if (chain.shapes.length <= 1) {
     return chain;
   }
 
-  const { traversalTolerance } = params;
+  const { traversalTolerance }: { traversalTolerance: number } = params;
   
   // First, try to find a valid traversal order by building the chain step by step
-  const normalizedShapes = buildOptimalTraversalOrder(chain.shapes, traversalTolerance);
+  const normalizedShapes: Shape[] = buildOptimalTraversalOrder(chain.shapes, traversalTolerance);
   
   return {
     ...chain,
@@ -465,18 +329,60 @@ export function normalizeChain(chain: ShapeChain, params: ChainNormalizationPara
 function buildOptimalTraversalOrder(shapes: Shape[], tolerance: number): Shape[] {
   if (shapes.length <= 1) return shapes;
   
+  let bestResult: Shape[] = shapes; // Default fallback
+  let bestScore: number = 0; // Number of connected shapes
+  
   // Try each shape as a potential starting point
-  for (let startIdx = 0; startIdx < shapes.length; startIdx++) {
-    const result = buildChainFromStartingShape(shapes, startIdx, tolerance);
+  for (let startIdx: number = 0; startIdx < shapes.length; startIdx++) {
+    const result: Shape[] = buildChainFromStartingShape(shapes, startIdx, tolerance);
+    
     if (result.length === shapes.length) {
-      // Successfully connected all shapes
+      // Successfully connected all shapes - perfect result
       return result;
+    }
+    
+    // Keep track of the best partial result
+    if (result.length > bestScore) {
+      bestScore = result.length;
+      bestResult = result;
     }
   }
   
-  // If no perfect traversal found, return shapes as-is
-  console.warn('Could not find perfect traversal order for all shapes');
-  return shapes;
+  // If no perfect traversal found, try with larger tolerance for loose connections
+  if (bestScore < shapes.length && tolerance < 1.0) {
+    const relaxedTolerance: number = Math.min(tolerance * 3, 1.0);
+    console.log(`Trying relaxed tolerance ${relaxedTolerance} for chain normalization`);
+    
+    for (let startIdx: number = 0; startIdx < shapes.length; startIdx++) {
+      const result: Shape[] = buildChainFromStartingShape(shapes, startIdx, relaxedTolerance);
+      
+      if (result.length === shapes.length) {
+        console.log(`Successfully normalized chain with relaxed tolerance`);
+        return result;
+      }
+      
+      if (result.length > bestScore) {
+        bestScore = result.length;
+        bestResult = result;
+      }
+    }
+  }
+  
+  // If we still don't have all shapes, try to add remaining shapes in order
+  if (bestScore < shapes.length) {
+    const remainingShapes: Shape[] = shapes.filter(shape => 
+      !bestResult.some(resultShape => resultShape.id === shape.id)
+    );
+    
+    console.log(`Adding ${remainingShapes.length} disconnected shapes to best partial chain`);
+    bestResult = [...bestResult, ...remainingShapes];
+  }
+  
+  if (bestScore < shapes.length) {
+    console.log(`Could not find perfect traversal order: connected ${bestScore}/${shapes.length} shapes`);
+  }
+  
+  return bestResult;
 }
 
 /**
@@ -484,7 +390,7 @@ function buildOptimalTraversalOrder(shapes: Shape[], tolerance: number): Shape[]
  */
 function buildChainFromStartingShape(shapes: Shape[], startIdx: number, tolerance: number): Shape[] {
   const result: Shape[] = [];
-  const usedIndices = new Set<number>();
+  const usedIndices: Set<number> = new Set<number>();
   
   // Add the starting shape
   result.push(shapes[startIdx]);
@@ -492,37 +398,56 @@ function buildChainFromStartingShape(shapes: Shape[], startIdx: number, toleranc
   
   // Build the rest of the chain
   while (result.length < shapes.length) {
-    const lastShape = result[result.length - 1];
-    const lastEndPoint = getShapeEndPoint(lastShape);
+    const lastShape: Shape = result[result.length - 1];
+    const lastEndPoint: Point2D = getShapeEndPoint(lastShape);
     
     if (!lastEndPoint) break;
     
-    let foundConnection = false;
+    let foundConnection: boolean = false;
+    let bestCandidate: { index: number; shape: Shape; distance: number } | null = null;
     
     // Look for a shape that can connect to the end of our current chain
-    for (let i = 0; i < shapes.length; i++) {
+    for (let i: number = 0; i < shapes.length; i++) {
       if (usedIndices.has(i)) continue;
       
-      const candidateShape = shapes[i];
-      const candidateStart = getShapeStartPoint(candidateShape);
-      const candidateEnd = getShapeEndPoint(candidateShape);
+      const candidateShape: Shape = shapes[i];
+      const candidateStart: Point2D = getShapeStartPoint(candidateShape);
+      const candidateEnd: Point2D = getShapeEndPoint(candidateShape);
       
-      // Check if candidate connects at its start point (normal connection)
-      if (candidateStart && pointsAreClose(lastEndPoint, candidateStart, tolerance)) {
-        result.push(candidateShape);
-        usedIndices.add(i);
-        foundConnection = true;
-        break;
+      // Calculate distances for both potential connections
+      if (candidateStart) {
+        const distance: number = Math.sqrt(
+          Math.pow(lastEndPoint.x - candidateStart.x, 2) + 
+          Math.pow(lastEndPoint.y - candidateStart.y, 2)
+        );
+        
+        if (distance < tolerance) {
+          if (!bestCandidate || distance < bestCandidate.distance) {
+            bestCandidate = { index: i, shape: candidateShape, distance };
+          }
+        }
       }
       
-      // Check if candidate connects at its end point (needs reversal)
-      if (candidateEnd && pointsAreClose(lastEndPoint, candidateEnd, tolerance)) {
-        const reversedShape = reverseShape(candidateShape);
-        result.push(reversedShape);
-        usedIndices.add(i);
-        foundConnection = true;
-        break;
+      if (candidateEnd) {
+        const distance: number = Math.sqrt(
+          Math.pow(lastEndPoint.x - candidateEnd.x, 2) + 
+          Math.pow(lastEndPoint.y - candidateEnd.y, 2)
+        );
+        
+        if (distance < tolerance) {
+          const reversedShape: Shape = reverseShape(candidateShape);
+          if (!bestCandidate || distance < bestCandidate.distance) {
+            bestCandidate = { index: i, shape: reversedShape, distance };
+          }
+        }
       }
+    }
+    
+    // Use the best connection found
+    if (bestCandidate) {
+      result.push(bestCandidate.shape);
+      usedIndices.add(bestCandidate.index);
+      foundConnection = true;
     }
     
     if (!foundConnection) {
@@ -534,134 +459,3 @@ function buildChainFromStartingShape(shapes: Shape[], startIdx: number, toleranc
   return result;
 }
 
-/**
- * Finds the best starting shape (one with a free start point)
- */
-function findBestStartingShape(shapes: Shape[], tolerance: number): number {
-  for (let i = 0; i < shapes.length; i++) {
-    const shapeStart = getShapeStartPoint(shapes[i]);
-    if (!shapeStart) continue;
-    
-    // Check if any other shape ends at this start point
-    let hasIncomingConnection = false;
-    for (let j = 0; j < shapes.length; j++) {
-      if (i === j) continue;
-      const otherEnd = getShapeEndPoint(shapes[j]);
-      if (otherEnd && pointsAreClose(shapeStart, otherEnd, tolerance)) {
-        hasIncomingConnection = true;
-        break;
-      }
-    }
-    
-    if (!hasIncomingConnection) {
-      return i; // This shape has a free start point
-    }
-  }
-  
-  return -1; // No shape with free start point found
-}
-
-/**
- * Reverses a shape (swaps start and end points)
- */
-function reverseShape(shape: Shape): Shape {
-  const reversed = { ...shape };
-  
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      reversed.geometry = {
-        start: line.end,
-        end: line.start
-      };
-      break;
-      
-    case 'arc':
-      const arc = shape.geometry as any;
-      // For arcs, we swap start and end angles and flip the clockwise flag 
-      // to maintain the same sweep direction while reversing traversal
-      reversed.geometry = {
-        ...arc,
-        startAngle: arc.endAngle,
-        endAngle: arc.startAngle,
-        clockwise: !arc.clockwise
-      };
-      break;
-      
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      const reversedPoints = [...polyline.points].reverse();
-      
-      let reversedVertices;
-      if (polyline.vertices && polyline.vertices.length > 0) {
-        // Reverse vertices array and negate bulge values to maintain arc directions
-        reversedVertices = [...polyline.vertices].reverse().map((vertex: any, index: number) => {
-          // When reversing, we need to negate the bulge value to maintain the arc direction
-          return {
-            x: vertex.x,
-            y: vertex.y,
-            bulge: -(vertex.bulge || 0)
-          };
-        });
-        
-        // For closed polylines, adjust the bulge handling at the connection point
-        if (reversedVertices.length > 1) {
-          // Shift bulges because in a reversed polyline, the bulge applies to the previous segment
-          const lastBulge = reversedVertices[0].bulge;
-          for (let i = 0; i < reversedVertices.length - 1; i++) {
-            reversedVertices[i].bulge = reversedVertices[i + 1].bulge;
-          }
-          reversedVertices[reversedVertices.length - 1].bulge = lastBulge;
-        }
-      }
-      
-      reversed.geometry = {
-        ...polyline,
-        points: reversedPoints,
-        vertices: reversedVertices
-      };
-      break;
-      
-    case 'circle':
-      // Circles don't need reversal
-      break;
-      
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      // For ellipses, swap start and end parameters to reverse direction
-      const startParam = ellipse.startParam ?? 0;
-      const endParam = ellipse.endParam ?? (2 * Math.PI);
-      reversed.geometry = {
-        ...ellipse,
-        startParam: endParam,
-        endParam: startParam
-      };
-      break;
-      
-    case 'spline':
-      const spline = shape.geometry as any;
-      // Reverse splines by reversing control points and fit points
-      const reversedControlPoints = [...spline.controlPoints].reverse();
-      const reversedFitPoints = spline.fitPoints ? [...spline.fitPoints].reverse() : [];
-      
-      // For NURBS, we also need to reverse the knot vector if present
-      let reversedKnots = spline.knots || [];
-      if (reversedKnots.length > 0) {
-        // Reverse and remap knot vector to [0,1] domain
-        const maxKnotValue = reversedKnots[reversedKnots.length - 1];
-        reversedKnots = reversedKnots.map((knot: number) => maxKnotValue - knot).reverse();
-      }
-      
-      reversed.geometry = {
-        ...spline,
-        controlPoints: reversedControlPoints,
-        fitPoints: reversedFitPoints,
-        knots: reversedKnots,
-        // Weights don't need reversal, but need to be reordered with control points
-        weights: spline.weights ? [...spline.weights].reverse() : []
-      };
-      break;
-  }
-  
-  return reversed;
-}

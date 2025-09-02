@@ -1,13 +1,39 @@
 import { writable } from 'svelte/store';
-import { pathStore } from './paths';
+import { pathStore, type Path } from './paths';
 import { partStore } from './parts';
 import { workflowStore } from './workflow';
 import { chainStore } from './chains';
+import { toolStore } from './tools';
 import { get } from 'svelte/store';
 import { detectCutDirection } from '../algorithms/cut-direction';
 import { leadWarningsStore } from './lead-warnings';
+import { offsetWarningsStore } from './offset-warnings';
 import { CutDirection, LeadType } from '../types/direction';
 import { calculateAndStoreOperationLeads } from '../utils/lead-persistence-utils';
+import type { DetectedPart, PartHole } from '$lib/algorithms/part-detection';
+import type { Chain } from '$lib/algorithms/chain-detection';
+import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
+import { offsetChain } from '../algorithms/offset-calculation/chain/offset';
+import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
+import type { Shape } from '../types';
+
+interface OffsetCalculation {
+  offsetShapes: Shape[];
+  originalShapes: Shape[];
+  direction: OffsetDirection;
+  kerfWidth: number;
+  generatedAt: string;
+  version: string;
+  gapFills?: GapFillingResult[];
+}
+
+// Helper function to calculate offset for a chain
+interface ChainOffsetResult {
+  offsetShapes: Shape[];
+  originalShapes: Shape[];
+  kerfWidth: number;
+  gapFills?: GapFillingResult[];
+}
 
 export interface Operation {
   id: string;
@@ -26,9 +52,21 @@ export interface Operation {
   leadOutLength: number; // Lead-out length (units)
   leadOutFlipSide: boolean; // Flip which side of the chain the lead-out is on
   leadOutAngle: number; // Manual rotation angle for lead-out (degrees, 0-360)
+  kerfCompensation?: OffsetDirection; // Kerf compensation direction (none, inset, outset)
 }
 
-function createOperationsStore() {
+function createOperationsStore(): {
+  subscribe: (run: (value: Operation[]) => void) => () => void;
+  addOperation: (operation: Omit<Operation, 'id'>) => void;
+  updateOperation: (id: string, updates: Partial<Operation>) => void;
+  deleteOperation: (id: string) => void;
+  reorderOperations: (newOrder: Operation[]) => void;
+  duplicateOperation: (id: string) => void;
+  applyOperation: (operationId: string) => void;
+  applyAllOperations: () => void;
+  reset: () => void;
+  getAssignedTargets: (excludeOperationId?: string) => { chains: Set<string>, parts: Set<string> };
+} {
   const { subscribe, set, update } = writable<Operation[]>([]);
 
   return {
@@ -36,7 +74,7 @@ function createOperationsStore() {
     
     addOperation: (operation: Omit<Operation, 'id'>) => {
       update(operations => {
-        const newOperation = {
+        const newOperation: Operation = {
           ...operation,
           id: crypto.randomUUID()
         };
@@ -52,15 +90,16 @@ function createOperationsStore() {
     
     updateOperation: (id: string, updates: Partial<Operation>) => {
       update(operations => {
-        const newOperations = operations.map(op => 
+        const newOperations: Operation[] = operations.map(op => 
           op.id === id ? { ...op, ...updates } : op
         );
         
         // Always regenerate paths when operation changes
-        const operation = newOperations.find(op => op.id === id);
+        const operation: Operation | undefined = newOperations.find(op => op.id === id);
         if (operation) {
-          // Clear existing lead warnings for this operation before regenerating
+          // Clear existing warnings for this operation before regenerating
           leadWarningsStore.clearWarningsForOperation(id);
+          offsetWarningsStore.clearWarningsForOperation(id);
           setTimeout(() => generatePathsForOperation(operation), 0);
         }
         
@@ -71,8 +110,9 @@ function createOperationsStore() {
     deleteOperation: (id: string) => {
       // Remove all paths created by this operation
       pathStore.deletePathsByOperation(id);
-      // Clear any lead warnings for this operation
+      // Clear any warnings for this operation
       leadWarningsStore.clearWarningsForOperation(id);
+      offsetWarningsStore.clearWarningsForOperation(id);
       update(operations => operations.filter(op => op.id !== id));
     },
     
@@ -82,7 +122,7 @@ function createOperationsStore() {
     
     duplicateOperation: (id: string) => {
       update(operations => {
-        const operation = operations.find(op => op.id === id);
+        const operation: Operation | undefined = operations.find(op => op.id === id);
         if (!operation) return operations;
         
         const newOperation: Operation = {
@@ -103,7 +143,7 @@ function createOperationsStore() {
     
     applyOperation: (operationId: string) => {
       update(operations => {
-        const operation = operations.find(op => op.id === operationId);
+        const operation: Operation | undefined = operations.find(op => op.id === operationId);
         if (operation && operation.enabled) {
           generatePathsForOperation(operation);
         }
@@ -117,7 +157,7 @@ function createOperationsStore() {
         pathStore.reset();
         
         // Apply all enabled operations in order
-        const enabledOperations = operations
+        const enabledOperations: Operation[] = operations
           .filter(op => op.enabled)
           .sort((a, b) => a.order - b.order);
           
@@ -133,10 +173,10 @@ function createOperationsStore() {
     
     // Get all target IDs that are already assigned to operations
     getAssignedTargets: (excludeOperationId?: string): { chains: Set<string>, parts: Set<string> } => {
-      let assignedChains = new Set<string>();
-      let assignedParts = new Set<string>();
+      const assignedChains: Set<string> = new Set<string>();
+      const assignedParts: Set<string> = new Set<string>();
       
-      const unsubscribe = subscribe(operations => {
+      const unsubscribe: () => void = subscribe(operations => {
         operations.forEach(op => {
           // Skip the excluded operation (for when checking during edit)
           if (excludeOperationId && op.id === excludeOperationId) return;
@@ -158,6 +198,89 @@ function createOperationsStore() {
   };
 }
 
+function calculateChainOffset(
+  chain: Chain,
+  kerfCompensation: OffsetDirection,
+  toolId: string | null,
+  operationId: string,
+  chainId: string
+): ChainOffsetResult | null {
+  if (!kerfCompensation || kerfCompensation === 'none' || !toolId) {
+    return null;
+  }
+
+  // Get tool to determine kerf width
+  const tools = get(toolStore);
+  const tool = tools.find(t => t.id === toolId);
+  if (!tool) {
+    console.warn('Tool not found for kerf compensation');
+    return null;
+  }
+  if (!tool.kerfWidth || tool.kerfWidth <= 0) {
+    console.warn(`Tool "${tool.toolName}" has no kerf width set`);
+    return null;
+  }
+
+  // Calculate offset distance (kerf/2)
+  const offsetDistance: number = tool.kerfWidth / 2;
+  
+  try {
+    // Call offset calculation
+    // For inset, use negative distance; for outset, use positive
+    const direction: number = kerfCompensation === 'inset' ? -1 : 1;
+    const offsetResult = offsetChain(chain, offsetDistance * direction, {
+      tolerance: 0.1,
+      maxExtension: 50,
+      snapThreshold: 0.5
+    });
+    
+    if (!offsetResult.success) {
+      console.warn('Offset calculation failed', offsetResult.errors);
+      return null;
+    }
+
+    // Clear any existing offset warnings for this operation/chain combination
+    offsetWarningsStore.clearWarningsForChain(chainId);
+    
+    // Add any warnings from the offset calculation
+    if (offsetResult.warnings && offsetResult.warnings.length > 0) {
+      offsetWarningsStore.addWarningsFromChainOffset(operationId, chainId, offsetResult.warnings);
+    }
+
+    // Use the appropriate offset chain based on direction
+    let selectedChain: Shape[];
+    let selectedGapFills: GapFillingResult[] | undefined;
+    
+    if (kerfCompensation === 'inset') {
+      selectedChain = offsetResult.innerChain?.shapes || [];
+      selectedGapFills = offsetResult.innerChain?.gapFills;
+    } else {
+      selectedChain = offsetResult.outerChain?.shapes || [];
+      selectedGapFills = offsetResult.outerChain?.gapFills;
+    }
+    
+    if (!selectedChain || selectedChain.length === 0) {
+      console.warn('No appropriate offset chain found for direction:', kerfCompensation);
+      return null;
+    }
+
+
+    // offsetChain already returns polylines correctly for single polyline inputs
+    // No additional wrapping needed
+    const finalOffsetShapes: Shape[] = selectedChain;
+
+    return {
+      offsetShapes: finalOffsetShapes,
+      originalShapes: chain.shapes,
+      kerfWidth: tool.kerfWidth,
+      gapFills: selectedGapFills
+    };
+  } catch (error) {
+    console.error('Error calculating offset:', error);
+    return null;
+  }
+}
+
 // Function to generate paths from an operation
 function generatePathsForOperation(operation: Operation) {
   // Remove existing paths for this operation
@@ -173,10 +296,35 @@ function generatePathsForOperation(operation: Operation) {
     if (operation.targetType === 'chains') {
       // Use the operation's preferred cut direction
       // For open paths, detect if they can support a direction, otherwise use 'none'
-      const chainsState = get(chainStore);
-      const chain = chainsState.chains.find(c => c.id === targetId);
-      const detectedDirection = chain ? detectCutDirection(chain, 0.1) : CutDirection.NONE;
-      const cutDirection = detectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
+      const chainsState: { chains: Chain[] } = get(chainStore);
+      const chain: Chain | undefined = chainsState.chains.find(c => c.id === targetId);
+      const detectedDirection: CutDirection = chain ? detectCutDirection(chain, 0.1) : CutDirection.NONE;
+      const cutDirection: CutDirection = detectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
+      
+      // Auto-detect kerf compensation if not manually set
+      let kerfCompensation: OffsetDirection = operation.kerfCompensation || 'none';
+      if (!operation.kerfCompensation || operation.kerfCompensation === 'none') {
+        // For standalone chains, default to none unless user specifies
+        // Auto-detection only happens for parts
+        kerfCompensation = 'none';
+      }
+      
+      // Calculate offset if kerf compensation is enabled
+      let calculatedOffset: OffsetCalculation | undefined = undefined;
+      if (kerfCompensation !== 'none' && chain && operation.toolId) {
+        const offsetResult = calculateChainOffset(chain, kerfCompensation, operation.toolId, operation.id, targetId);
+        if (offsetResult) {
+          calculatedOffset = {
+            offsetShapes: offsetResult.offsetShapes,
+            originalShapes: offsetResult.originalShapes,
+            direction: kerfCompensation,
+            kerfWidth: offsetResult.kerfWidth,
+            generatedAt: new Date().toISOString(),
+            version: '1.0.0',
+            gapFills: offsetResult.gapFills
+          };
+        }
+      }
       
       // Create one path per chain
       pathStore.addPath({
@@ -194,21 +342,47 @@ function generatePathsForOperation(operation: Operation) {
         leadOutType: operation.leadOutType,
         leadOutLength: operation.leadOutLength,
         leadOutFlipSide: operation.leadOutFlipSide,
-        leadOutAngle: operation.leadOutAngle
+        leadOutAngle: operation.leadOutAngle,
+        kerfCompensation: kerfCompensation,
+        calculatedOffset: calculatedOffset
       });
     } else if (operation.targetType === 'parts') {
       // For parts, create paths for all chains that make up the part
-      const partsState = get(partStore);
-      const part = partsState.parts.find(p => p.id === targetId);
+      const partsState: { parts: DetectedPart[] } = get(partStore);
+      const part: DetectedPart | undefined = partsState.parts.find(p => p.id === targetId);
       
       if (part) {
         // Get the chains state for cut direction detection
-        const chainsState = get(chainStore);
+        const chainsState: { chains: Chain[] } = get(chainStore);
         
         // Create a path for the shell chain using operation's preferred direction
-        const shellChain = chainsState.chains.find(c => c.id === part.shell.chain.id);
-        const shellDetectedDirection = shellChain ? detectCutDirection(shellChain, 0.1) : CutDirection.NONE;
-        const shellCutDirection = shellDetectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
+        const shellChain: Chain | undefined = chainsState.chains.find(c => c.id === part.shell.chain.id);
+        const shellDetectedDirection: CutDirection = shellChain ? detectCutDirection(shellChain, 0.1) : CutDirection.NONE;
+        const shellCutDirection: CutDirection = shellDetectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
+        
+        // Auto-detect kerf compensation for shell (outer boundary) if not manually set
+        let shellKerfCompensation: OffsetDirection = operation.kerfCompensation || 'outset';
+        if (!operation.kerfCompensation || operation.kerfCompensation === 'none') {
+          // For shells (outer boundaries), default to outset
+          shellKerfCompensation = 'outset';
+        }
+        
+        // Calculate offset for shell if kerf compensation is enabled
+        let shellCalculatedOffset: OffsetCalculation | undefined = undefined;
+        if (shellKerfCompensation !== 'none' && shellChain && operation.toolId) {
+          const offsetResult = calculateChainOffset(shellChain, shellKerfCompensation, operation.toolId, operation.id, part.shell.chain.id);
+          if (offsetResult) {
+            shellCalculatedOffset = {
+              offsetShapes: offsetResult.offsetShapes,
+              originalShapes: offsetResult.originalShapes,
+              direction: shellKerfCompensation,
+              kerfWidth: offsetResult.kerfWidth,
+              generatedAt: new Date().toISOString(),
+              version: '1.0.0',
+              gapFills: offsetResult.gapFills
+            };
+          }
+        }
         
         pathStore.addPath({
           name: `${operation.name} - Part ${targetId.split('-')[1]} (Shell)`,
@@ -225,18 +399,44 @@ function generatePathsForOperation(operation: Operation) {
           leadOutType: operation.leadOutType,
           leadOutLength: operation.leadOutLength,
           leadOutFlipSide: operation.leadOutFlipSide,
-          leadOutAngle: operation.leadOutAngle
+          leadOutAngle: operation.leadOutAngle,
+          kerfCompensation: shellKerfCompensation,
+          calculatedOffset: shellCalculatedOffset
         });
         
         // Create paths for all hole chains (including nested holes)
-        let pathOrder = index + 1;
+        let pathOrder: number = index + 1;
         
-        function processHoles(holes: any[], prefix: string = '') {
+        function processHoles(holes: PartHole[], prefix: string = '') {
           holes.forEach((hole, holeIndex) => {
             // Use operation's preferred cut direction for the hole chain
-            const holeChain = chainsState.chains.find(c => c.id === hole.chain.id);
-            const holeDetectedDirection = holeChain ? detectCutDirection(holeChain, 0.1) : CutDirection.NONE;
-            const holeCutDirection = holeDetectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
+            const holeChain: Chain | undefined = chainsState.chains.find(c => c.id === hole.chain.id);
+            const holeDetectedDirection: CutDirection = holeChain ? detectCutDirection(holeChain, 0.1) : CutDirection.NONE;
+            const holeCutDirection: CutDirection = holeDetectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
+            
+            // Auto-detect kerf compensation for hole (inner boundary) if not manually set
+            let holeKerfCompensation: OffsetDirection = operation.kerfCompensation || 'inset';
+            if (!operation.kerfCompensation || operation.kerfCompensation === 'none') {
+              // For holes (inner boundaries), default to inset
+              holeKerfCompensation = 'inset';
+            }
+            
+            // Calculate offset for hole if kerf compensation is enabled
+            let holeCalculatedOffset: OffsetCalculation | undefined = undefined;
+            if (holeKerfCompensation !== 'none' && holeChain && operation.toolId) {
+              const offsetResult = calculateChainOffset(holeChain, holeKerfCompensation, operation.toolId, operation.id, hole.chain.id);
+              if (offsetResult) {
+                holeCalculatedOffset = {
+                  offsetShapes: offsetResult.offsetShapes,
+                  originalShapes: offsetResult.originalShapes,
+                  direction: holeKerfCompensation,
+                  kerfWidth: offsetResult.kerfWidth,
+                  generatedAt: new Date().toISOString(),
+                  version: '1.0.0',
+                  gapFills: offsetResult.gapFills
+                };
+              }
+            }
             
             pathStore.addPath({
               name: `${operation.name} - Part ${targetId.split('-')[1]} ${prefix}(Hole ${holeIndex + 1})`,
@@ -253,7 +453,9 @@ function generatePathsForOperation(operation: Operation) {
               leadOutType: operation.leadOutType,
               leadOutLength: operation.leadOutLength,
               leadOutFlipSide: operation.leadOutFlipSide,
-              leadOutAngle: operation.leadOutAngle
+              leadOutAngle: operation.leadOutAngle,
+              kerfCompensation: holeKerfCompensation,
+              calculatedOffset: holeCalculatedOffset
             });
             
             // Process nested holes if any
@@ -270,7 +472,7 @@ function generatePathsForOperation(operation: Operation) {
   
   // Check if any paths exist and mark program stage as complete
   setTimeout(() => {
-    const pathsState = get(pathStore);
+    const pathsState: { paths: Path[] } = get(pathStore);
     if (pathsState.paths.length > 0) {
       workflowStore.completeStage('program');
     }
@@ -282,4 +484,4 @@ function generatePathsForOperation(operation: Operation) {
   }, 150); // Delay to ensure paths are created first
 }
 
-export const operationsStore = createOperationsStore();
+export const operationsStore: ReturnType<typeof createOperationsStore> = createOperationsStore();

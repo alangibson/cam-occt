@@ -1,29 +1,20 @@
 import { describe, it, expect } from 'vitest';
 import { drawingStore } from './drawing';
-import type { Shape, Point2D } from '../../types';
+import { createPolylineFromVertices, polylineToPoints, polylineToVertices } from '../geometry/polyline';
+import type { Shape, Point2D } from '../../lib/types';
 
 describe('Polyline Dragging Bug Fixes', () => {
   describe('moveShape function', () => {
     it('should move polylines with bulges correctly', () => {
       // Create a polyline with bulge data (similar to ADLER.dxf)
-      const polylineShape: Shape = {
+      const polylineShape: Shape = createPolylineFromVertices([
+          { x: 0, y: 0, bulge: 0.5 },  // Arc segment
+          { x: 100, y: 0, bulge: 0 },  // Straight segment
+          { x: 100, y: 100, bulge: 0 }
+        ], false, {
         id: 'test-polyline-1',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 0, y: 0 },
-            { x: 100, y: 0 },
-            { x: 100, y: 100 }
-          ],
-          closed: false,
-          vertices: [
-            { x: 0, y: 0, bulge: 0.5 },  // Arc segment
-            { x: 100, y: 0, bulge: 0 },  // Straight segment
-            { x: 100, y: 100, bulge: 0 }
-          ]
-        },
-        layer: '0'
-      };
+        layer: '0',
+      });
 
       const delta: Point2D = { x: 50, y: 25 };
 
@@ -48,37 +39,40 @@ describe('Polyline Dragging Bug Fixes', () => {
       const geometry = movedPolyline.geometry;
 
       // Verify points array was moved
-      expect(geometry.points).toEqual([
-        { x: 50, y: 25 },
-        { x: 150, y: 25 },
-        { x: 150, y: 125 }
-      ]);
+      const points = polylineToPoints(geometry);
+      expect(points).toHaveLength(3);
+      expect(points[0].x).toBeCloseTo(50, 10);
+      expect(points[0].y).toBeCloseTo(25, 10);
+      expect(points[1].x).toBeCloseTo(150, 10);
+      expect(points[1].y).toBeCloseTo(25, 10);
+      expect(points[2].x).toBeCloseTo(150, 10);
+      expect(points[2].y).toBeCloseTo(125, 10);
 
       // Verify vertices array was moved (preserving bulge data)
-      expect(geometry.vertices).toEqual([
-        { x: 50, y: 25, bulge: 0.5 },
-        { x: 150, y: 25, bulge: 0 },
-        { x: 150, y: 125, bulge: 0 }
-      ]);
+      const vertices = polylineToVertices(geometry);
+      expect(vertices).toHaveLength(3);
+      expect(vertices[0].x).toBeCloseTo(50, 10);
+      expect(vertices[0].y).toBeCloseTo(25, 10);
+      expect(vertices[0].bulge).toBeCloseTo(0.5, 10);
+      expect(vertices[1].x).toBeCloseTo(150, 10);
+      expect(vertices[1].y).toBeCloseTo(25, 10);
+      expect(vertices[1].bulge).toBeCloseTo(0, 10);
+      expect(vertices[2].x).toBeCloseTo(150, 10);
+      expect(vertices[2].y).toBeCloseTo(125, 10);
+      expect(vertices[2].bulge).toBeCloseTo(0, 10);
 
       unsubscribe();
     });
 
     it('should handle polylines without vertices array', () => {
       // Create a simple polyline without bulge data
-      const simplePolyline: Shape = {
+      const simplePolyline: Shape = createPolylineFromVertices([
+        { x: 0, y: 0 },
+        { x: 50, y: 50 }
+      ], false, {
         id: 'test-polyline-2',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 0, y: 0 },
-            { x: 50, y: 50 }
-          ],
-          closed: false
-          // No vertices array
-        },
         layer: '0'
-      };
+      });
 
       const delta: Point2D = { x: 10, y: 20 };
 
@@ -99,13 +93,18 @@ describe('Polyline Dragging Bug Fixes', () => {
       const geometry = movedPolyline.geometry;
 
       // Verify points array was moved
-      expect(geometry.points).toEqual([
+      const points = polylineToPoints(geometry);
+      expect(points).toEqual([
         { x: 10, y: 20 },
         { x: 60, y: 70 }
       ]);
 
-      // Verify vertices array remains undefined
-      expect(geometry.vertices).toBeUndefined();
+      // Verify vertices can still be obtained (will have bulge: 0 for all vertices)
+      const vertices = polylineToVertices(geometry);
+      expect(vertices).toEqual([
+        { x: 10, y: 20, bulge: 0 },
+        { x: 60, y: 70, bulge: 0 }
+      ]);
 
       unsubscribe();
     });
@@ -113,22 +112,13 @@ describe('Polyline Dragging Bug Fixes', () => {
 
   describe('Scale and rotate operations', () => {
     it('should scale polylines with bulges correctly', () => {
-      const polylineShape: Shape = {
+      const polylineShape: Shape = createPolylineFromVertices([
+          { x: 0, y: 0, bulge: 1.0 },  // Semicircle
+          { x: 100, y: 0, bulge: 0 }
+        ], false, {
         id: 'test-polyline-3',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 0, y: 0 },
-            { x: 100, y: 0 }
-          ],
-          closed: false,
-          vertices: [
-            { x: 0, y: 0, bulge: 1.0 },  // Semicircle
-            { x: 100, y: 0, bulge: 0 }
-          ]
-        },
         layer: '0'
-      };
+      });
 
       const scaleFactor = 2.0;
       const origin: Point2D = { x: 0, y: 0 };
@@ -150,38 +140,35 @@ describe('Polyline Dragging Bug Fixes', () => {
       const geometry = scaledPolyline.geometry;
 
       // Verify both arrays were scaled
-      expect(geometry.points).toEqual([
-        { x: 0, y: 0 },
-        { x: 200, y: 0 }
-      ]);
+      const points = polylineToPoints(geometry);
+      expect(points).toHaveLength(2);
+      expect(points[0].x).toBeCloseTo(0, 10);
+      expect(points[0].y).toBeCloseTo(0, 10);
+      expect(points[1].x).toBeCloseTo(200, 10);
+      expect(points[1].y).toBeCloseTo(0, 10);
 
-      expect(geometry.vertices).toEqual([
-        { x: 0, y: 0, bulge: 1.0 },  // Bulge preserved
-        { x: 200, y: 0, bulge: 0 }
-      ]);
+      const vertices = polylineToVertices(geometry);
+      expect(vertices).toHaveLength(2);
+      expect(vertices[0].x).toBeCloseTo(0, 10);
+      expect(vertices[0].y).toBeCloseTo(0, 10);
+      expect(vertices[0].bulge).toBeCloseTo(1.0, 10);  // Bulge preserved
+      expect(vertices[1].x).toBeCloseTo(200, 10);
+      expect(vertices[1].y).toBeCloseTo(0, 10);
+      expect(vertices[1].bulge).toBeCloseTo(0, 10);
 
       unsubscribe();
     });
 
     it('should rotate polylines with bulges correctly', () => {
-      const polylineShape: Shape = {
+      const polylineShape: Shape = createPolylineFromVertices([
+          { x: 100, y: 0, bulge: 0.5 },
+          { x: 200, y: 0, bulge: 0 }
+        ], false, {
         id: 'test-polyline-4',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 100, y: 0 },
-            { x: 200, y: 0 }
-          ],
-          closed: false,
-          vertices: [
-            { x: 100, y: 0, bulge: 0.5 },
-            { x: 200, y: 0, bulge: 0 }
-          ]
-        },
         layer: '0'
-      };
+      });
 
-      const angle = Math.PI / 2; // 90 degrees
+      const angle: number = Math.PI / 2; // 90 degrees
       const origin: Point2D = { x: 0, y: 0 };
 
       drawingStore.setDrawing({
@@ -201,18 +188,20 @@ describe('Polyline Dragging Bug Fixes', () => {
       const geometry = rotatedPolyline.geometry;
 
       // After 90° rotation around origin, (100,0) becomes (0,100) and (200,0) becomes (0,200)
-      expect(geometry.points[0].x).toBeCloseTo(0, 5);
-      expect(geometry.points[0].y).toBeCloseTo(100, 5);
-      expect(geometry.points[1].x).toBeCloseTo(0, 5);
-      expect(geometry.points[1].y).toBeCloseTo(200, 5);
+      const points = polylineToPoints(geometry);
+      expect(points[0].x).toBeCloseTo(0, 5);
+      expect(points[0].y).toBeCloseTo(100, 5);
+      expect(points[1].x).toBeCloseTo(0, 5);
+      expect(points[1].y).toBeCloseTo(200, 5);
 
       // Verify vertices array was also rotated with bulge preserved
-      expect(geometry.vertices[0].x).toBeCloseTo(0, 5);
-      expect(geometry.vertices[0].y).toBeCloseTo(100, 5);
-      expect(geometry.vertices[0].bulge).toBe(0.5);
-      expect(geometry.vertices[1].x).toBeCloseTo(0, 5);
-      expect(geometry.vertices[1].y).toBeCloseTo(200, 5);
-      expect(geometry.vertices[1].bulge).toBe(0);
+      const vertices = polylineToVertices(geometry);
+      expect(vertices[0].x).toBeCloseTo(0, 5);
+      expect(vertices[0].y).toBeCloseTo(100, 5);
+      expect(vertices[0].bulge).toBe(0.5);
+      expect(vertices[1].x).toBeCloseTo(0, 5);
+      expect(vertices[1].y).toBeCloseTo(200, 5);
+      expect(vertices[1].bulge).toBe(0);
 
       unsubscribe();
     });
@@ -221,28 +210,16 @@ describe('Polyline Dragging Bug Fixes', () => {
   describe('Integration test', () => {
     it('should handle complete move/scale/rotate workflow for ADLER.dxf-like polylines', () => {
       // Simulate a complex polyline similar to what might be found in ADLER.dxf
-      const complexPolyline: Shape = {
+      const complexPolyline: Shape = createPolylineFromVertices([
+          { x: 0, y: 0, bulge: 0.2 },     // Slight arc
+          { x: 50, y: 0, bulge: -0.5 },   // CW arc  
+          { x: 100, y: 50, bulge: 0 },    // Straight line
+          { x: 50, y: 100, bulge: 0.8 },  // Large CCW arc
+          { x: 0, y: 50, bulge: 0 }       // Closing straight line
+        ], true, {
         id: 'adler-like-polyline',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 0, y: 0 },
-            { x: 50, y: 0 },
-            { x: 100, y: 50 },
-            { x: 50, y: 100 },
-            { x: 0, y: 50 }
-          ],
-          closed: true,
-          vertices: [
-            { x: 0, y: 0, bulge: 0.2 },     // Slight arc
-            { x: 50, y: 0, bulge: -0.5 },   // CW arc  
-            { x: 100, y: 50, bulge: 0 },    // Straight line
-            { x: 50, y: 100, bulge: 0.8 },  // Large CCW arc
-            { x: 0, y: 50, bulge: 0 }       // Closing straight line
-          ]
-        },
         layer: 'PARTS'
-      };
+      });
 
       drawingStore.setDrawing({
         shapes: [complexPolyline],
@@ -262,13 +239,23 @@ describe('Polyline Dragging Bug Fixes', () => {
       let movedPolyline = currentDrawing.shapes[0];
       
       // Verify all vertices moved correctly with bulges preserved
-      expect(movedPolyline.geometry.vertices).toEqual([
-        { x: 25, y: 15, bulge: 0.2 },
-        { x: 75, y: 15, bulge: -0.5 },
-        { x: 125, y: 65, bulge: 0 },
-        { x: 75, y: 115, bulge: 0.8 },
-        { x: 25, y: 65, bulge: 0 }
-      ]);
+      const movedVertices = polylineToVertices(movedPolyline.geometry);
+      expect(movedVertices).toHaveLength(5);
+      expect(movedVertices[0].x).toBeCloseTo(25, 10);
+      expect(movedVertices[0].y).toBeCloseTo(15, 10);
+      expect(movedVertices[0].bulge).toBeCloseTo(0.2, 10);
+      expect(movedVertices[1].x).toBeCloseTo(75, 10);
+      expect(movedVertices[1].y).toBeCloseTo(15, 10);
+      expect(movedVertices[1].bulge).toBeCloseTo(-0.5, 10);
+      expect(movedVertices[2].x).toBeCloseTo(125, 10);
+      expect(movedVertices[2].y).toBeCloseTo(65, 10);
+      expect(movedVertices[2].bulge).toBeCloseTo(0, 10);
+      expect(movedVertices[3].x).toBeCloseTo(75, 10);
+      expect(movedVertices[3].y).toBeCloseTo(115, 10);
+      expect(movedVertices[3].bulge).toBeCloseTo(0.8, 10);
+      expect(movedVertices[4].x).toBeCloseTo(25, 10);
+      expect(movedVertices[4].y).toBeCloseTo(65, 10);
+      expect(movedVertices[4].bulge).toBeCloseTo(0, 10);
 
       // Test 2: Scale the moved polyline
       const scaleFactor = 1.5;
@@ -278,10 +265,13 @@ describe('Polyline Dragging Bug Fixes', () => {
       movedPolyline = currentDrawing.shapes[0];
       
       // First vertex should remain at origin, others should be scaled
-      expect(movedPolyline.geometry.vertices[0]).toEqual({ x: 25, y: 15, bulge: 0.2 });
-      expect(movedPolyline.geometry.vertices[1].x).toBeCloseTo(100, 5); // 25 + (75-25)*1.5
-      expect(movedPolyline.geometry.vertices[1].y).toBeCloseTo(15, 5);   // 15 + (15-15)*1.5
-      expect(movedPolyline.geometry.vertices[1].bulge).toBe(-0.5); // Bulge preserved
+      const scaledVertices = polylineToVertices(movedPolyline.geometry);
+      expect(scaledVertices[0].x).toBeCloseTo(25, 10);
+      expect(scaledVertices[0].y).toBeCloseTo(15, 10);
+      expect(scaledVertices[0].bulge).toBeCloseTo(0.2, 10);
+      expect(scaledVertices[1].x).toBeCloseTo(100, 5); // 25 + (75-25)*1.5
+      expect(scaledVertices[1].y).toBeCloseTo(15, 5);   // 15 + (15-15)*1.5
+      expect(scaledVertices[1].bulge).toBeCloseTo(-0.5, 10); // Bulge preserved
 
       // Test 3: Rotate the scaled polyline
       const rotateAngle = Math.PI / 4; // 45 degrees
@@ -291,13 +281,17 @@ describe('Polyline Dragging Bug Fixes', () => {
       movedPolyline = currentDrawing.shapes[0];
       
       // First vertex should remain at rotation origin
-      expect(movedPolyline.geometry.vertices[0].x).toBeCloseTo(25, 5);
-      expect(movedPolyline.geometry.vertices[0].y).toBeCloseTo(15, 5);
-      expect(movedPolyline.geometry.vertices[0].bulge).toBe(0.2); // Bulge preserved
+      const finalVertices = polylineToVertices(movedPolyline.geometry);
+      expect(finalVertices[0].x).toBeCloseTo(25, 5);
+      expect(finalVertices[0].y).toBeCloseTo(15, 5);
+      expect(finalVertices[0].bulge).toBeCloseTo(0.2, 10); // Bulge preserved
 
       // All bulge values should be preserved throughout transformations
-      const finalBulges = movedPolyline.geometry.vertices.map((v: any) => v.bulge);
-      expect(finalBulges).toEqual([0.2, -0.5, 0, 0.8, 0]);
+      expect(finalVertices[0].bulge).toBeCloseTo(0.2, 10);
+      expect(finalVertices[1].bulge).toBeCloseTo(-0.5, 10);
+      expect(finalVertices[2].bulge).toBeCloseTo(0, 10);
+      expect(finalVertices[3].bulge).toBeCloseTo(0.8, 10);
+      expect(finalVertices[4].bulge).toBeCloseTo(0, 10);
 
       unsubscribe();
     });

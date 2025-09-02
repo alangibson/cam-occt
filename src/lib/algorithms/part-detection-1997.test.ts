@@ -14,39 +14,30 @@ describe('1997.dxf Part Detection', () => {
     
     // Parse DXF (no decomposition in parser)
     const parsed = await parseDXF(dxfContent);
-    console.log(`DXF parsed: ${parsed.shapes.length} shapes (before decomposition)`);
     
     // Decompose polylines separately
     const decomposed = decomposePolylines(parsed.shapes);
-    console.log(`After decomposition: ${decomposed.length} shapes`);
     
     // Verify we have the expected number of shapes after decomposition
     expect(decomposed.length).toBeGreaterThan(400); // Should have ~454 line segments
     
     // Detect chains using decomposed shapes
     const chains = detectShapeChains(decomposed, { tolerance: 0.1 });
-    console.log(`Chains detected: ${chains.length}`);
     
     // Log chain details
     chains.forEach((chain, i) => {
-      console.log(`Chain ${i + 1}: ${chain.shapes.length} shapes, ID: ${chain.id}`);
     });
     
     // Detect parts
     const partResult = await detectParts(chains);
-    console.log(`Parts detected: ${partResult.parts.length}`);
-    console.log(`Warnings: ${partResult.warnings.length}`);
     
     // Log part details
     partResult.parts.forEach((part, i) => {
-      console.log(`Part ${i + 1}: Shell with ${part.holes.length} holes`);
     });
     
     // Log warnings if any
     if (partResult.warnings.length > 0) {
-      console.log('Warnings:');
       partResult.warnings.forEach((warning, i) => {
-        console.log(`${i + 1}. ${warning.message}`);
       });
     }
     
@@ -57,7 +48,6 @@ describe('1997.dxf Part Detection', () => {
     
     // Additional validation: total holes across all parts
     const totalHoles = partResult.parts.reduce((sum, part) => sum + part.holes.length, 0);
-    console.log(`Total holes across all parts: ${totalHoles}`);
     
     // Since we have 6 chains and 4 parts, we should have 2 holes total (6 - 4 = 2)
     expect(totalHoles).toBe(2);

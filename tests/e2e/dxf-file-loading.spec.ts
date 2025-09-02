@@ -47,7 +47,7 @@ test.describe('DXF File Loading Tests', () => {
       
       // Wait for the page to be ready
       await page.waitForLoadState('networkidle');
-      await expect(page.locator('button:has-text("Import DXF/SVG")')).toBeVisible();
+      await expect(page.locator('button:has-text("Import DXF")')).toBeVisible();
       
       // Read the DXF file content
       const dxfContent = readFileSync(dxfFile, 'utf-8');

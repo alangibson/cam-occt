@@ -1,7 +1,10 @@
-import type { ShapeChain } from './chain-detection';
+import type { Chain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
 import { LeadType, CutDirection } from '../types/direction';
 import type { LeadInConfig, LeadOutConfig } from './lead-calculation';
+import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import type { Shape } from '$lib/types';
+import { getShapeBoundingBox } from '../utils/shape-bounds-utils';
 
 export interface LeadValidationResult {
   isValid: boolean;
@@ -22,16 +25,16 @@ export interface LeadConfig {
  */
 export function validateLeadConfiguration(
   config: LeadConfig,
-  chain: ShapeChain,
+  chain: Chain,
   part?: DetectedPart
 ): LeadValidationResult {
   const warnings: string[] = [];
   const suggestions: string[] = [];
   let severity: 'info' | 'warning' | 'error' = 'info';
-  let isValid = true;
+  let isValid: boolean = true;
 
   // 1. Basic configuration validation
-  const basicValidation = validateBasicConfiguration(config);
+  const basicValidation: LeadValidationResult = validateBasicConfiguration(config);
   warnings.push(...basicValidation.warnings);
   suggestions.push(...(basicValidation.suggestions || []));
   if (basicValidation.severity === 'warning' && severity === 'info') {
@@ -42,7 +45,7 @@ export function validateLeadConfiguration(
   }
 
   // 2. Chain geometry validation
-  const chainValidation = validateChainGeometry(chain, config);
+  const chainValidation: LeadValidationResult = validateChainGeometry(chain, config);
   warnings.push(...chainValidation.warnings);
   suggestions.push(...(chainValidation.suggestions || []));
   if (chainValidation.severity === 'warning' && severity === 'info') {
@@ -54,7 +57,7 @@ export function validateLeadConfiguration(
 
   // 3. Part context validation
   if (part) {
-    const partValidation = validatePartContext(config, chain, part);
+    const partValidation: LeadValidationResult = validatePartContext(config, chain, part);
     warnings.push(...partValidation.warnings);
     suggestions.push(...(partValidation.suggestions || []));
     if (partValidation.severity === 'warning' && severity === 'info') {
@@ -66,7 +69,7 @@ export function validateLeadConfiguration(
   }
 
   // 4. Lead length validation
-  const lengthValidation = validateLeadLengths(config, chain, part);
+  const lengthValidation: LeadValidationResult = validateLeadLengths(config);
   warnings.push(...lengthValidation.warnings);
   suggestions.push(...(lengthValidation.suggestions || []));
   if (lengthValidation.severity === 'warning' && severity === 'info') {
@@ -74,7 +77,7 @@ export function validateLeadConfiguration(
   }
 
   // 5. Cut direction compatibility
-  const directionValidation = validateCutDirectionCompatibility(config, chain);
+  const directionValidation: LeadValidationResult = validateCutDirectionCompatibility(config, chain);
   warnings.push(...directionValidation.warnings);
   suggestions.push(...(directionValidation.suggestions || []));
   if (directionValidation.severity === 'warning' && severity === 'info') {
@@ -95,7 +98,7 @@ export function validateLeadConfiguration(
 function validateBasicConfiguration(config: LeadConfig): LeadValidationResult {
   const warnings: string[] = [];
   const suggestions: string[] = [];
-  let isValid = true;
+  let isValid: boolean = true;
   let severity: 'info' | 'warning' | 'error' = 'info';
 
   // Check for negative lengths
@@ -147,10 +150,10 @@ function validateBasicConfiguration(config: LeadConfig): LeadValidationResult {
 /**
  * Validate chain geometry constraints
  */
-function validateChainGeometry(chain: ShapeChain, config: LeadConfig): LeadValidationResult {
+function validateChainGeometry(chain: Chain, config: LeadConfig): LeadValidationResult {
   const warnings: string[] = [];
   const suggestions: string[] = [];
-  let isValid = true;
+  let isValid: boolean = true;
   let severity: 'info' | 'warning' | 'error' = 'info';
 
   // Check if chain is empty
@@ -163,8 +166,8 @@ function validateChainGeometry(chain: ShapeChain, config: LeadConfig): LeadValid
   }
 
   // Check for very small chains where leads might be problematic
-  const chainBounds = calculateChainBounds(chain);
-  const chainSize = Math.max(chainBounds.width, chainBounds.height);
+  const chainBounds: { width: number; height: number; minX: number; maxX: number; minY: number; maxY: number } = calculateChainBounds(chain);
+  const chainSize: number = Math.max(chainBounds.width, chainBounds.height);
 
   // Check lead-in length relative to chain size
   if (config.leadIn.type !== LeadType.NONE && config.leadIn.length > chainSize * 2) {
@@ -195,16 +198,16 @@ function validateChainGeometry(chain: ShapeChain, config: LeadConfig): LeadValid
  */
 function validatePartContext(
   config: LeadConfig,
-  chain: ShapeChain,
+  chain: Chain,
   part: DetectedPart
 ): LeadValidationResult {
   const warnings: string[] = [];
   const suggestions: string[] = [];
-  let isValid = true;
+  const isValid: boolean = true;
   let severity: 'info' | 'warning' | 'error' = 'info';
 
-  const isHole = part.holes.some(h => h.chain.id === chain.id);
-  const isShell = part.shell.chain.id === chain.id;
+  const isHole: boolean = part.holes.some(h => h.chain.id === chain.id);
+  const isShell: boolean = part.shell.chain.id === chain.id;
 
   if (!isHole && !isShell) {
     warnings.push('Chain is not recognized as part of the specified part');
@@ -215,16 +218,17 @@ function validatePartContext(
 
   // Check for potential collision issues with holes
   if (isShell && part.holes.length > 0) {
-    const shellBounds = calculateChainBounds(chain);
+    const shellBounds: { width: number; height: number; minX: number; maxX: number; minY: number; maxY: number } = calculateChainBounds(chain);
     
     // Check if leads might intersect with holes
     for (const hole of part.holes) {
-      const holeBounds = calculateChainBounds(hole.chain);
-      const maxLeadLength = Math.max(config.leadIn.length, config.leadOut.length);
+      const holeBounds: { width: number; height: number; minX: number; maxX: number; minY: number; maxY: number } = calculateChainBounds(hole.chain);
+      const maxLeadLength: number = Math.max(config.leadIn.length, config.leadOut.length);
       
-      // Simple proximity check - if hole is close to shell edge and leads are long
-      const minDistanceToShell = calculateMinDistanceBetweenBounds(shellBounds, holeBounds);
-      if (minDistanceToShell < maxLeadLength * 0.5) {
+      // Simple proximity check - only warn for extremely close holes with very long leads
+      // Let actual solid area detection handle most cases
+      const minDistanceToShell: number = calculateMinDistanceBetweenBounds(shellBounds, holeBounds);
+      if (minDistanceToShell < 1.0 && maxLeadLength > 50) { // Only warn for very close holes and very long leads
         warnings.push(`Lead may intersect with nearby hole (${hole.id})`);
         suggestions.push('Consider reducing lead length or adjusting lead angle');
         severity = 'warning';
@@ -246,15 +250,14 @@ function validatePartContext(
  */
 function validateLeadLengths(
   config: LeadConfig,
-  chain: ShapeChain,
-  part?: DetectedPart
 ): LeadValidationResult {
   const warnings: string[] = [];
   const suggestions: string[] = [];
   let severity: 'info' | 'warning' | 'error' = 'info';
 
+  // TODO remove this magic number
   // Check for very long leads
-  const maxRecommendedLength = 50; // Arbitrary but reasonable limit
+  const maxRecommendedLength: number = 50; // Arbitrary but reasonable limit
   
   if (config.leadIn.length > maxRecommendedLength) {
     warnings.push(`Lead-in length (${config.leadIn.length}) is very long`);
@@ -269,7 +272,7 @@ function validateLeadLengths(
   }
 
   // Check for very short but non-zero leads
-  const minRecommendedLength = 0.5;
+  const minRecommendedLength: number = 0.5;
   
   if (config.leadIn.type !== LeadType.NONE && config.leadIn.length > 0 && config.leadIn.length < minRecommendedLength) {
     warnings.push(`Lead-in length (${config.leadIn.length}) is very short`);
@@ -291,14 +294,14 @@ function validateLeadLengths(
  */
 function validateCutDirectionCompatibility(
   config: LeadConfig,
-  chain: ShapeChain
+  chain: Chain
 ): LeadValidationResult {
   const warnings: string[] = [];
   const suggestions: string[] = [];
   let severity: 'info' | 'warning' | 'error' = 'info';
 
   // Check if cut direction is specified for closed chains
-  const isClosed = isChainClosed(chain);
+  const isClosed: boolean = isChainClosed(chain);
   
   if (isClosed && config.cutDirection === CutDirection.NONE) {
     warnings.push('Closed chain detected but cut direction is "none"');
@@ -334,19 +337,19 @@ function validateCutDirectionCompatibility(
 /**
  * Helper: Calculate bounding box for a chain
  */
-function calculateChainBounds(chain: ShapeChain): { width: number; height: number; minX: number; maxX: number; minY: number; maxY: number } {
+function calculateChainBounds(chain: Chain): { width: number; height: number; minX: number; maxX: number; minY: number; maxY: number } {
   if (!chain.shapes || chain.shapes.length === 0) {
     return { width: 0, height: 0, minX: 0, maxX: 0, minY: 0, maxY: 0 };
   }
 
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
+  let minX: number = Infinity;
+  let maxX: number = -Infinity;
+  let minY: number = Infinity;
+  let maxY: number = -Infinity;
 
   for (const shape of chain.shapes) {
     // Get shape bounds based on type
-    const bounds = getShapeBounds(shape);
+    const bounds = getShapeBoundingBox(shape);
     minX = Math.min(minX, bounds.minX);
     maxX = Math.max(maxX, bounds.maxX);
     minY = Math.min(minY, bounds.minY);
@@ -363,53 +366,6 @@ function calculateChainBounds(chain: ShapeChain): { width: number; height: numbe
   };
 }
 
-/**
- * Helper: Get bounds for a single shape
- */
-function getShapeBounds(shape: any): { minX: number; maxX: number; minY: number; maxY: number } {
-  switch (shape.type) {
-    case 'line':
-      return {
-        minX: Math.min(shape.geometry.start.x, shape.geometry.end.x),
-        maxX: Math.max(shape.geometry.start.x, shape.geometry.end.x),
-        minY: Math.min(shape.geometry.start.y, shape.geometry.end.y),
-        maxY: Math.max(shape.geometry.start.y, shape.geometry.end.y)
-      };
-    
-    case 'circle':
-      return {
-        minX: shape.geometry.center.x - shape.geometry.radius,
-        maxX: shape.geometry.center.x + shape.geometry.radius,
-        minY: shape.geometry.center.y - shape.geometry.radius,
-        maxY: shape.geometry.center.y + shape.geometry.radius
-      };
-    
-    case 'arc':
-      // Simplified - use center ± radius (not precise but good enough for validation)
-      return {
-        minX: shape.geometry.center.x - shape.geometry.radius,
-        maxX: shape.geometry.center.x + shape.geometry.radius,
-        minY: shape.geometry.center.y - shape.geometry.radius,
-        maxY: shape.geometry.center.y + shape.geometry.radius
-      };
-    
-    case 'polyline':
-      if (shape.geometry.points && shape.geometry.points.length > 0) {
-        const xs = shape.geometry.points.map((p: any) => p.x);
-        const ys = shape.geometry.points.map((p: any) => p.y);
-        return {
-          minX: Math.min(...xs),
-          maxX: Math.max(...xs),
-          minY: Math.min(...ys),
-          maxY: Math.max(...ys)
-        };
-      }
-      break;
-  }
-
-  // Fallback for unknown shape types
-  return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-}
 
 /**
  * Helper: Calculate minimum distance between two bounding boxes
@@ -418,77 +374,37 @@ function calculateMinDistanceBetweenBounds(
   bounds1: { minX: number; maxX: number; minY: number; maxY: number },
   bounds2: { minX: number; maxX: number; minY: number; maxY: number }
 ): number {
-  const dx = Math.max(0, Math.max(bounds1.minX - bounds2.maxX, bounds2.minX - bounds1.maxX));
-  const dy = Math.max(0, Math.max(bounds1.minY - bounds2.maxY, bounds2.minY - bounds1.maxY));
+  const dx: number = Math.max(0, Math.max(bounds1.minX - bounds2.maxX, bounds2.minX - bounds1.maxX));
+  const dy: number = Math.max(0, Math.max(bounds1.minY - bounds2.maxY, bounds2.minY - bounds1.maxY));
   return Math.sqrt(dx * dx + dy * dy);
 }
 
 /**
  * Helper: Check if a chain is closed
  */
-function isChainClosed(chain: ShapeChain): boolean {
+function isChainClosed(chain: Chain): boolean {
   if (!chain.shapes || chain.shapes.length === 0) {
     return false;
   }
 
   // For single circles or arcs, they are inherently closed
   if (chain.shapes.length === 1) {
-    const shape = chain.shapes[0];
+    const shape: Shape = chain.shapes[0];
     return shape.type === 'circle';
   }
 
   // For multiple shapes, check if end connects to start
-  const firstShape = chain.shapes[0];
-  const lastShape = chain.shapes[chain.shapes.length - 1];
+  const firstShape: Shape = chain.shapes[0];
+  const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
 
-  const startPoint = getShapeStartPoint(firstShape);
-  const endPoint = getShapeEndPoint(lastShape);
+  const startPoint: { x: number; y: number } = getShapeStartPoint(firstShape);
+  const endPoint: { x: number; y: number } = getShapeEndPoint(lastShape);
 
-  if (!startPoint || !endPoint) {
-    return false;
-  }
-
-  const tolerance = 0.1; // Small tolerance for floating point comparison
-  const distance = Math.sqrt(
+  const tolerance: number = 0.1; // Small tolerance for floating point comparison
+  const distance: number = Math.sqrt(
     Math.pow(startPoint.x - endPoint.x, 2) + Math.pow(startPoint.y - endPoint.y, 2)
   );
 
   return distance < tolerance;
 }
 
-/**
- * Helper: Get start point of a shape
- */
-function getShapeStartPoint(shape: any): { x: number; y: number } | null {
-  switch (shape.type) {
-    case 'line':
-      return shape.geometry.start;
-    case 'circle':
-      return { x: shape.geometry.center.x + shape.geometry.radius, y: shape.geometry.center.y };
-    case 'arc':
-      return shape.geometry.start || { x: shape.geometry.center.x + shape.geometry.radius, y: shape.geometry.center.y };
-    case 'polyline':
-      return shape.geometry.points && shape.geometry.points.length > 0 ? shape.geometry.points[0] : null;
-    default:
-      return null;
-  }
-}
-
-/**
- * Helper: Get end point of a shape
- */
-function getShapeEndPoint(shape: any): { x: number; y: number } | null {
-  switch (shape.type) {
-    case 'line':
-      return shape.geometry.end;
-    case 'circle':
-      return { x: shape.geometry.center.x + shape.geometry.radius, y: shape.geometry.center.y };
-    case 'arc':
-      return shape.geometry.end || { x: shape.geometry.center.x + shape.geometry.radius, y: shape.geometry.center.y };
-    case 'polyline':
-      return shape.geometry.points && shape.geometry.points.length > 0 ? 
-        shape.geometry.points[shape.geometry.points.length - 1] : null;
-    default:
-      return null;
-  }
-}

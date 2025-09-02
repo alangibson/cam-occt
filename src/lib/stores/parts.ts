@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
-import type { DetectedPart, PartDetectionWarning } from '../algorithms/part-detection';
+import type { DetectedPart, PartDetectionWarning, PartHole } from '../algorithms/part-detection';
 
-interface PartStore {
+export interface PartStore {
   parts: DetectedPart[];
   warnings: PartDetectionWarning[];
   highlightedPartId: string | null;
@@ -13,7 +13,7 @@ const initialState: PartStore = {
   highlightedPartId: null
 };
 
-export const partStore = writable<PartStore>(initialState);
+export const partStore: ReturnType<typeof writable<PartStore>> = writable<PartStore>(initialState);
 
 // Helper functions
 export function setParts(parts: DetectedPart[], warnings: PartDetectionWarning[] = []) {
@@ -50,7 +50,7 @@ export function clearHighlight() {
 
 // Helper to get all chain IDs that belong to a specific part
 export function getPartChainIds(partId: string, parts: DetectedPart[]): string[] {
-  const part = parts.find(p => p.id === partId);
+  const part: DetectedPart | undefined = parts.find(p => p.id === partId);
   if (!part) return [];
   
   const chainIds: string[] = [];
@@ -59,7 +59,7 @@ export function getPartChainIds(partId: string, parts: DetectedPart[]): string[]
   chainIds.push(part.shell.chain.id);
   
   // Add all hole chain IDs recursively
-  function addHoleChainIds(holes: any[]) {
+  function addHoleChainIds(holes: PartHole[]): void {
     for (const hole of holes) {
       chainIds.push(hole.chain.id);
       if (hole.holes) {
@@ -88,7 +88,7 @@ export function getChainPartType(chainId: string, parts: DetectedPart[]): 'shell
   return null;
 }
 
-function isChainInHoles(chainId: string, holes: any[]): boolean {
+function isChainInHoles(chainId: string, holes: PartHole[]): boolean {
   for (const hole of holes) {
     if (hole.chain.id === chainId) {
       return true;

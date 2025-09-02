@@ -3,6 +3,8 @@ import { detectShapeChains, isShapeClosed } from './chain-detection';
 import { parseDXF } from '../parsers/dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { polylineToPoints, polylineToVertices } from '../geometry/polyline';
+import type { Polyline } from '../types/geometry';
 
 describe('Comprehensive Closed Polyline with Bulges Test', () => {
   it('should correctly handle closed polylines with bulges end-to-end', async () => {
@@ -19,23 +21,23 @@ describe('Comprehensive Closed Polyline with Bulges Test', () => {
     expect(drawing.shapes[1].type).toBe('polyline');
     
     // Extract the polylines for detailed inspection
-    const polyline1 = drawing.shapes[0].geometry as any;
-    const polyline2 = drawing.shapes[1].geometry as any;
+    const polyline1 = drawing.shapes[0].geometry as Polyline;
+    const polyline2 = drawing.shapes[1].geometry as Polyline;
     
     // 1. Check that polylines are marked as closed in the geometry
     expect(polyline1.closed).toBe(true);
     expect(polyline2.closed).toBe(true);
     
     // 2. Check that points array has been modified to have coincident start/end points
-    const poly1Points = polyline1.points || [];
-    const poly2Points = polyline2.points || [];
+    const poly1Points = polylineToPoints(polyline1);
+    const poly2Points = polylineToPoints(polyline2);
     
     // For closed polylines, the first and last points should now be coincident
     if (poly1Points.length > 0) {
       const firstPoint = poly1Points[0];
       const lastPoint = poly1Points[poly1Points.length - 1];
       
-      const distance = Math.sqrt(
+      const distance: number = Math.sqrt(
         Math.pow(firstPoint.x - lastPoint.x, 2) + 
         Math.pow(firstPoint.y - lastPoint.y, 2)
       );
@@ -48,7 +50,7 @@ describe('Comprehensive Closed Polyline with Bulges Test', () => {
       const firstPoint = poly2Points[0];
       const lastPoint = poly2Points[poly2Points.length - 1];
       
-      const distance = Math.sqrt(
+      const distance: number = Math.sqrt(
         Math.pow(firstPoint.x - lastPoint.x, 2) + 
         Math.pow(firstPoint.y - lastPoint.y, 2)
       );
@@ -78,19 +80,19 @@ describe('Comprehensive Closed Polyline with Bulges Test', () => {
       
       // Single shape chain - should check the shape's closed flag
       if (shape.type === 'polyline') {
-        const polyline = shape.geometry as any;
+        const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
         expect(polyline.closed).toBe(true);
       }
     }
     
     // 6. Verify vertices are preserved correctly (for bulge rendering)
-    expect(polyline1.vertices).toBeDefined();
-    expect(polyline2.vertices).toBeDefined();
-    expect(polyline1.vertices.length).toBe(4); // Original vertices without duplication
-    expect(polyline2.vertices.length).toBe(4);
+    const poly1Vertices = polylineToVertices(polyline1);
+    const poly2Vertices = polylineToVertices(polyline2);
+    expect(poly1Vertices.length).toBe(4); // Original vertices without duplication
+    expect(poly2Vertices.length).toBe(4);
     
     // Points array should have one more point than vertices for closed polylines
-    expect(poly1Points.length).toBe(polyline1.vertices.length + 1);
-    expect(poly2Points.length).toBe(polyline2.vertices.length + 1);
+    expect(poly1Points.length).toBe(poly1Vertices.length + 1);
+    expect(poly2Points.length).toBe(poly2Vertices.length + 1);
   });
 });

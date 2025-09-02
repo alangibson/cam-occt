@@ -41,14 +41,9 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     // 1. Find a valid position without warnings, OR
     // 2. Generate warnings if no valid position exists after trying all rotations
     
-    console.log('ADLER Part 5 Lead Test Results:');
-    console.log(`- Lead points generated: ${result.leadIn!.points.length}`);
-    console.log(`- Warnings generated: ${result.warnings ? result.warnings.length : 0}`);
     
     if (result.warnings && result.warnings.length > 0) {
-      console.log('Warnings:');
       result.warnings.forEach((warning, i) => {
-        console.log(`  ${i + 1}. ${warning}`);
       });
       
       // If warnings are generated, they should be informative
@@ -69,7 +64,6 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     const part5 = partResult.parts[4];
     
     if (!part5) {
-      console.log('Part 5 not found, skipping test');
       return;
     }
     
@@ -80,9 +74,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     const result = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.NONE, part5);
     
     if (result.warnings && result.warnings.length > 0) {
-      console.log('Both leads warnings:');
       result.warnings.forEach((warning, i) => {
-        console.log(`  ${i + 1}. ${warning}`);
       });
       
       // Check that warnings properly identify lead-in vs lead-out

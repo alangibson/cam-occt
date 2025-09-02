@@ -1,13 +1,14 @@
-import type { Shape, Point2D } from '../../types';
-import type { ChainDetectionParameters } from '../../types/algorithm-parameters';
-import { DEFAULT_CHAIN_DETECTION_PARAMETERS } from '../../types/algorithm-parameters';
+import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../types';
+// Unused imports removed to fix lint warnings
 import { evaluateNURBS } from '../geometry/nurbs';
+import { polylineToPoints } from '../geometry/polyline';
+import { calculateSquaredDistance } from '../utils/math-utils';
 
 export interface ChainDetectionOptions {
   tolerance: number;
 }
 
-export interface ShapeChain {
+export interface Chain {
   id: string;
   shapes: Shape[];
 }
@@ -22,15 +23,15 @@ export interface ShapeChain {
  * 
  * Algorithm uses Union-Find (Disjoint Set) data structure for efficient chain detection.
  */
-export function detectShapeChains(shapes: Shape[], options: ChainDetectionOptions = { tolerance: 0.05 }): ShapeChain[] {
+export function detectShapeChains(shapes: Shape[], options: ChainDetectionOptions = { tolerance: 0.05 }): Chain[] {
   if (shapes.length === 0) return [];
 
-  const { tolerance } = options;
-  const unionFind = new UnionFind(shapes.length);
+  const { tolerance }: { tolerance: number } = options;
+  const unionFind: UnionFind = new UnionFind(shapes.length);
 
   // Compare each pair of shapes for connectivity
-  for (let i = 0; i < shapes.length; i++) {
-    for (let j = i + 1; j < shapes.length; j++) {
+  for (let i: number = 0; i < shapes.length; i++) {
+    for (let j: number = i + 1; j < shapes.length; j++) {
       if (areShapesConnected(shapes[i], shapes[j], tolerance)) {
         unionFind.union(i, j);
       }
@@ -38,9 +39,9 @@ export function detectShapeChains(shapes: Shape[], options: ChainDetectionOption
   }
 
   // Group shapes by their root component
-  const chainGroups = new Map<number, number[]>();
-  for (let i = 0; i < shapes.length; i++) {
-    const root = unionFind.find(i);
+  const chainGroups: Map<number, number[]> = new Map<number, number[]>();
+  for (let i: number = 0; i < shapes.length; i++) {
+    const root: number = unionFind.find(i);
     if (!chainGroups.has(root)) {
       chainGroups.set(root, []);
     }
@@ -48,8 +49,8 @@ export function detectShapeChains(shapes: Shape[], options: ChainDetectionOption
   }
 
   // Convert to ShapeChain objects
-  const chains: ShapeChain[] = [];
-  let chainId = 1;
+  const chains: Chain[] = [];
+  let chainId: number = 1;
   
   for (const [, shapeIndices] of chainGroups) {
     if (shapeIndices.length > 1) {
@@ -60,7 +61,7 @@ export function detectShapeChains(shapes: Shape[], options: ChainDetectionOption
       });
     } else if (shapeIndices.length === 1) {
       // Single shape - ALL single shapes form chains (both open and closed)
-      const singleShape = shapes[shapeIndices[0]];
+      const singleShape: Shape = shapes[shapeIndices[0]];
       chains.push({
         id: `chain-${chainId++}`,
         shapes: [singleShape]
@@ -75,8 +76,8 @@ export function detectShapeChains(shapes: Shape[], options: ChainDetectionOption
  * Check if two shapes are connected (any point from shape A overlaps with any point from shape B within tolerance)
  */
 function areShapesConnected(shapeA: Shape, shapeB: Shape, tolerance: number): boolean {
-  const pointsA = getShapePoints(shapeA);
-  const pointsB = getShapePoints(shapeB);
+  const pointsA: Point2D[] = getShapePoints(shapeA);
+  const pointsB: Point2D[] = getShapePoints(shapeB);
 
   // Check if any point from shape A is within tolerance of any point from shape B
   for (const pointA of pointsA) {
@@ -94,9 +95,7 @@ function areShapesConnected(shapeA: Shape, shapeB: Shape, tolerance: number): bo
  * Check if two points are within the specified tolerance distance
  */
 function arePointsWithinTolerance(pointA: Point2D, pointB: Point2D, tolerance: number): boolean {
-  const dx = pointA.x - pointB.x;
-  const dy = pointA.y - pointB.y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
+  const distance: number = Math.sqrt(calculateSquaredDistance(pointA, pointB));
   return distance <= tolerance;
 }
 
@@ -106,11 +105,11 @@ function arePointsWithinTolerance(pointA: Point2D, pointB: Point2D, tolerance: n
 function getShapePoints(shape: Shape): Point2D[] {
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry as any;
+      const line: Line = shape.geometry as Line;
       return [line.start, line.end];
     
     case 'circle':
-      const circle = shape.geometry as any;
+      const circle: Circle = shape.geometry as Circle;
       // For circles, use key points around the circumference
       return [
         { x: circle.center.x + circle.radius, y: circle.center.y }, // Right
@@ -121,11 +120,11 @@ function getShapePoints(shape: Shape): Point2D[] {
       ];
     
     case 'arc':
-      const arc = shape.geometry as any;
-      const startX = arc.center.x + arc.radius * Math.cos(arc.startAngle);
-      const startY = arc.center.y + arc.radius * Math.sin(arc.startAngle);
-      const endX = arc.center.x + arc.radius * Math.cos(arc.endAngle);
-      const endY = arc.center.y + arc.radius * Math.sin(arc.endAngle);
+      const arc: Arc = shape.geometry as Arc;
+      const startX: number = arc.center.x + arc.radius * Math.cos(arc.startAngle);
+      const startY: number = arc.center.y + arc.radius * Math.sin(arc.startAngle);
+      const endX: number = arc.center.x + arc.radius * Math.cos(arc.endAngle);
+      const endY: number = arc.center.y + arc.radius * Math.sin(arc.endAngle);
       
       return [
         { x: startX, y: startY }, // Start point
@@ -134,11 +133,11 @@ function getShapePoints(shape: Shape): Point2D[] {
       ];
     
     case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points || [];
+      const polyline: Polyline = shape.geometry as Polyline;
+      return polylineToPoints(polyline);
     
     case 'spline':
-      const spline = shape.geometry as any;
+      const spline: Spline = shape.geometry as Spline;
       
       // For chain detection, start with fit points or control points as fallback
       const points: Point2D[] = [];
@@ -154,34 +153,34 @@ function getShapePoints(shape: Shape): Point2D[] {
       return points;
     
     case 'ellipse':
-      const ellipse = shape.geometry as any;
+      const ellipse: Ellipse = shape.geometry as Ellipse;
       
       // Calculate major and minor axis lengths
-      const majorAxisLength = Math.sqrt(
+      const majorAxisLength: number = Math.sqrt(
         ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
         ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
       );
-      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+      const minorAxisLength: number = majorAxisLength * ellipse.minorToMajorRatio;
       
       // Calculate rotation angle of major axis
-      const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      const majorAxisAngle: number = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
       
       if (typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number') {
         // Ellipse arc - return start and end points
-        const startParam = ellipse.startParam;
-        const endParam = ellipse.endParam;
+        const startParam: number = ellipse.startParam;
+        const endParam: number = ellipse.endParam;
         
         // Calculate start point
-        const startX = majorAxisLength * Math.cos(startParam);
-        const startY = minorAxisLength * Math.sin(startParam);
-        const rotatedStartX = startX * Math.cos(majorAxisAngle) - startY * Math.sin(majorAxisAngle);
-        const rotatedStartY = startX * Math.sin(majorAxisAngle) + startY * Math.cos(majorAxisAngle);
+        const startX: number = majorAxisLength * Math.cos(startParam);
+        const startY: number = minorAxisLength * Math.sin(startParam);
+        const rotatedStartX: number = startX * Math.cos(majorAxisAngle) - startY * Math.sin(majorAxisAngle);
+        const rotatedStartY: number = startX * Math.sin(majorAxisAngle) + startY * Math.cos(majorAxisAngle);
         
         // Calculate end point
-        const endX = majorAxisLength * Math.cos(endParam);
-        const endY = minorAxisLength * Math.sin(endParam);
-        const rotatedEndX = endX * Math.cos(majorAxisAngle) - endY * Math.sin(majorAxisAngle);
-        const rotatedEndY = endX * Math.sin(majorAxisAngle) + endY * Math.cos(majorAxisAngle);
+        const endX: number = majorAxisLength * Math.cos(endParam);
+        const endY: number = minorAxisLength * Math.sin(endParam);
+        const rotatedEndX: number = endX * Math.cos(majorAxisAngle) - endY * Math.sin(majorAxisAngle);
+        const rotatedEndY: number = endX * Math.sin(majorAxisAngle) + endY * Math.cos(majorAxisAngle);
         
         return [
           { x: ellipse.center.x + rotatedStartX, y: ellipse.center.y + rotatedStartY }, // Start point
@@ -193,11 +192,11 @@ function getShapePoints(shape: Shape): Point2D[] {
         const points: Point2D[] = [];
         
         // Sample key points around the ellipse perimeter (0°, 90°, 180°, 270°)
-        for (let angle = 0; angle < 2 * Math.PI; angle += Math.PI / 2) {
-          const x = majorAxisLength * Math.cos(angle);
-          const y = minorAxisLength * Math.sin(angle);
-          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
-          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
+        for (let angle: number = 0; angle < 2 * Math.PI; angle += Math.PI / 2) {
+          const x: number = majorAxisLength * Math.cos(angle);
+          const y: number = minorAxisLength * Math.sin(angle);
+          const rotatedX: number = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
+          const rotatedY: number = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
           
           points.push({
             x: ellipse.center.x + rotatedX,
@@ -224,8 +223,9 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
       return true;
     
     case 'polyline':
-      const polyline = shape.geometry as any;
-      if (!polyline.points || polyline.points.length < 3) return false;
+      const polyline: Polyline = shape.geometry as Polyline;
+      const points: Point2D[] = polylineToPoints(polyline);
+      if (!points || points.length < 3) return false;
       
       // CRITICAL FIX: For polylines, first check the explicit closed flag from DXF parsing
       // This is especially important for polylines with bulges where the geometric
@@ -235,13 +235,13 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
       }
       
       // Fallback: geometric check for polylines without explicit closure information
-      const firstPoint = polyline.points[0];
-      const lastPoint = polyline.points[polyline.points.length - 1];
+      const firstPoint: Point2D = points[0];
+      const lastPoint: Point2D = points[points.length - 1];
       
       if (!firstPoint || !lastPoint) return false;
       
       // Check if first and last points are within tolerance
-      const distance = Math.sqrt(
+      const distance: number = Math.sqrt(
         Math.pow(firstPoint.x - lastPoint.x, 2) + Math.pow(firstPoint.y - lastPoint.y, 2)
       );
       
@@ -256,12 +256,12 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
       return false;
     
     case 'ellipse':
-      const ellipse = shape.geometry as any;
+      const ellipse: Ellipse = shape.geometry as Ellipse;
       // Full ellipses are closed, ellipse arcs are open
       return !(typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number');
     
     case 'spline':
-      const splineGeom = shape.geometry as any;
+      const splineGeom: Spline = shape.geometry as Spline;
       
       // For splines, use proper NURBS evaluation to get actual start and end points
       let splineFirstPoint: Point2D | null = null;
@@ -271,7 +271,7 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
         // Use NURBS evaluation for accurate endpoints
         splineFirstPoint = evaluateNURBS(0, splineGeom);
         splineLastPoint = evaluateNURBS(1, splineGeom);
-      } catch (error) {
+      } catch {
         // Fallback to fit points if NURBS evaluation fails
         if (splineGeom.fitPoints && splineGeom.fitPoints.length > 0) {
           splineFirstPoint = splineGeom.fitPoints[0];
@@ -286,14 +286,14 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
       if (!splineFirstPoint || !splineLastPoint) return false;
       
       // Check if first and last points are within tolerance
-      const splineDistance = Math.sqrt(
+      const splineDistance: number = Math.sqrt(
         Math.pow(splineFirstPoint.x - splineLastPoint.x, 2) + Math.pow(splineFirstPoint.y - splineLastPoint.y, 2)
       );
       
       return splineDistance <= tolerance;
     
     default:
-      return false;
+      throw new Error(`Unknown type ${shape.type}`)
   }
 }
 
@@ -317,8 +317,8 @@ class UnionFind {
   }
 
   union(x: number, y: number): boolean {
-    const rootX = this.find(x);
-    const rootY = this.find(y);
+    const rootX: number = this.find(x);
+    const rootY: number = this.find(y);
 
     if (rootX === rootY) return false; // Already in same set
 

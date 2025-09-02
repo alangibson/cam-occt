@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
-import type { Shape } from '../../types';
+import { createPolylineFromVertices, polylineToPoints } from '$lib/geometry/polyline';
+import type { Shape } from '../../lib/types';
+import type { Polyline } from '../../lib/types/geometry';
 import type { ShapeChain } from './chain-detection';
 import { CutDirection, LeadType } from '../types/direction';
 
@@ -9,28 +11,14 @@ describe('optimizeStartPoints - polyline splitting', () => {
 
   it('should split a 2-point polyline at its midpoint', () => {
     const shapes: Shape[] = [
-      {
-        id: 'polyline1',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 0, y: 0 },
-            { x: 10, y: 0 }
-          ],
-          closed: false
-        }
-      },
-      {
-        id: 'polyline2',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 10, y: 0 },
-            { x: 0, y: 0 }
-          ],
-          closed: false
-        }
-      }
+      createPolylineFromVertices([
+        { x: 0, y: 0 },
+        { x: 10, y: 0 }
+      ], false, { id: 'polyline1' }),
+      createPolylineFromVertices([
+        { x: 10, y: 0 },
+        { x: 0, y: 0 }
+      ], false, { id: 'polyline2' })
     ];
 
     const chain: ShapeChain = {
@@ -51,35 +39,31 @@ describe('optimizeStartPoints - polyline splitting', () => {
     const firstHalf = splitPieces.find(s => s.id.includes('split-1'));
     const secondHalf = splitPieces.find(s => s.id.includes('split-2'));
     
-    const firstGeom = firstHalf!.geometry as any;
-    const secondGeom = secondHalf!.geometry as any;
+    const firstGeom = firstHalf!.geometry as Polyline;
+    const secondGeom = secondHalf!.geometry as Polyline;
     
+    const firstPoints = polylineToPoints(firstGeom);
+    const secondPoints = polylineToPoints(secondGeom);
+  
     // First half: (0,0) to (5,0)
-    expect(firstGeom.points[0]).toEqual({ x: 0, y: 0 });
-    expect(firstGeom.points[1].x).toBeCloseTo(5);
-    expect(firstGeom.points[1].y).toBeCloseTo(0);
+    expect(firstPoints[0]).toEqual({ x: 0, y: 0 });
+    expect(firstPoints[1].x).toBeCloseTo(5);
+    expect(firstPoints[1].y).toBeCloseTo(0);
     
     // Second half: (5,0) to (10,0)
-    expect(secondGeom.points[0].x).toBeCloseTo(5);
-    expect(secondGeom.points[0].y).toBeCloseTo(0);
-    expect(secondGeom.points[1]).toEqual({ x: 10, y: 0 });
+    expect(secondPoints[0].x).toBeCloseTo(5);
+    expect(secondPoints[0].y).toBeCloseTo(0);
+    expect(secondPoints[1]).toEqual({ x: 10, y: 0 });
   });
 
   it('should split a multi-point polyline at its path midpoint', () => {
     // Create a polyline that forms an L shape
     const shapes: Shape[] = [
-      {
-        id: 'L-polyline',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 0, y: 0 },
-            { x: 10, y: 0 },
-            { x: 10, y: 10 }
-          ],
-          closed: false
-        }
-      },
+      createPolylineFromVertices([
+        { x: 0, y: 0 },
+        { x: 10, y: 0 },
+        { x: 10, y: 10 }
+      ], false, { id: 'L-polyline' }),
       {
         id: 'closing-line',
         type: LeadType.LINE,
@@ -103,11 +87,11 @@ describe('optimizeStartPoints - polyline splitting', () => {
     
     // The line from (10,10) to (0,0) has length √200 ≈ 14.14
     // Midpoint would be at (5, 5)
-    const firstHalf = splitLines.find(s => s.id.includes('split-1'));
-    const secondHalf = splitLines.find(s => s.id.includes('split-2'));
+    const firstHalf: Shape | undefined = splitLines.find(s => s.id.includes('split-1'));
+    const secondHalf: Shape | undefined = splitLines.find(s => s.id.includes('split-2'));
     
-    const firstGeom = firstHalf!.geometry as any;
-    const secondGeom = secondHalf!.geometry as any;
+    const firstGeom = firstHalf!.geometry as Polyline;
+    const secondGeom = secondHalf!.geometry as Polyline;
     
     // First half should go from (10,10) to (5,5)
     expect(firstGeom.start).toEqual({ x: 10, y: 10 });
@@ -123,30 +107,16 @@ describe('optimizeStartPoints - polyline splitting', () => {
   it('should split a complex polyline at the correct midpoint along its path', () => {
     // Create a polyline with uneven segment lengths
     const shapes: Shape[] = [
-      {
-        id: 'complex-polyline',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 0, y: 0 },
-            { x: 3, y: 0 },    // segment length: 3
-            { x: 3, y: 4 },    // segment length: 4
-            { x: 8, y: 4 }     // segment length: 5
-          ],
-          closed: false
-        }
-      },
-      {
-        id: 'closing-polyline',
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: 8, y: 4 },
-            { x: 0, y: 0 }
-          ],
-          closed: false
-        }
-      }
+      createPolylineFromVertices([
+        { x: 0, y: 0 },
+        { x: 3, y: 0 },    // segment length: 3
+        { x: 3, y: 4 },    // segment length: 4
+        { x: 8, y: 4 }     // segment length: 5
+      ], false, { id: 'complex-polyline' }),
+      createPolylineFromVertices([
+        { x: 8, y: 4 },
+        { x: 0, y: 0 }
+      ], false, { id: 'closing-polyline' })
     ];
 
     const chain: ShapeChain = {
@@ -166,19 +136,121 @@ describe('optimizeStartPoints - polyline splitting', () => {
     const firstHalf = splitPolylines.find(s => s.id.includes('split-1'));
     const secondHalf = splitPolylines.find(s => s.id.includes('split-2'));
     
-    const firstGeom = firstHalf!.geometry as any;
-    const secondGeom = secondHalf!.geometry as any;
+    const firstGeom = firstHalf!.geometry as Polyline;
+    const secondGeom = secondHalf!.geometry as Polyline;
+    
+    const firstPoints = polylineToPoints(firstGeom);
+    const secondPoints = polylineToPoints(secondGeom);
     
     // First half should go from (8,4) to (4,2)
-    expect(firstGeom.points.length).toBe(2);
-    expect(firstGeom.points[0]).toEqual({ x: 8, y: 4 });
-    expect(firstGeom.points[1].x).toBeCloseTo(4);
-    expect(firstGeom.points[1].y).toBeCloseTo(2);
+    expect(firstPoints.length).toBe(2);
+    expect(firstPoints[0]).toEqual({ x: 8, y: 4 });
+    expect(firstPoints[1].x).toBeCloseTo(4);
+    expect(firstPoints[1].y).toBeCloseTo(2);
     
     // Second half should go from (4,2) to (0,0)
-    expect(secondGeom.points.length).toBe(2);
-    expect(secondGeom.points[0].x).toBeCloseTo(4);
-    expect(secondGeom.points[0].y).toBeCloseTo(2);
-    expect(secondGeom.points[1]).toEqual({ x: 0, y: 0 });
+    expect(secondPoints.length).toBe(2);
+    expect(secondPoints[0].x).toBeCloseTo(4);
+    expect(secondPoints[0].y).toBeCloseTo(2);
+    expect(secondPoints[1]).toEqual({ x: 0, y: 0 });
+  });
+
+  it('should preserve arcs when splitting polylines with arc segments', () => {
+    // Create a polyline with both line and arc segments (like from DXF bulge data)
+    const polylineWithArcs: Shape = {
+      id: 'polyline-with-arcs',
+      type: 'polyline',
+      geometry: {
+        closed: true, // Make it closed so it can be optimized
+        shapes: [
+          {
+            id: 'line1',
+            type: 'line',
+            geometry: {
+              start: { x: 0, y: 0 },
+              end: { x: 10, y: 0 }
+            }
+          },
+          {
+            id: 'arc1',
+            type: 'arc',
+            geometry: {
+              center: { x: 10, y: 5 },
+              radius: 5,
+              startAngle: -Math.PI / 2,
+              endAngle: Math.PI / 2,
+              clockwise: false
+            }
+          },
+          {
+            id: 'line2',
+            type: 'line',
+            geometry: {
+              start: { x: 10, y: 10 },
+              end: { x: 0, y: 0 } // Connect back to start to form closed shape
+            }
+          }
+        ]
+      }
+    };
+
+    const chain: ShapeChain = {
+      id: 'chain-with-arcs',
+      shapes: [polylineWithArcs]
+    };
+
+    const result = optimizeStartPoints([chain], tolerance);
+    
+    // Should have optimized the polyline by splitting it into two pieces
+    expect(result.length).toBe(2); // Should have exactly 2 polyline halves
+    
+    // Find the split polyline pieces
+    const polylinePieces = result.filter(s => s.type === 'polyline' && s.id.includes('polyline-with-arcs-split'));
+    expect(polylinePieces.length).toBe(2);
+    
+    // Verify that both pieces are polylines with shapes
+    polylinePieces.forEach(piece => {
+      expect(piece.type).toBe('polyline');
+      const geom = piece.geometry as Polyline;
+      expect(geom.shapes).toBeDefined();
+      expect(geom.shapes.length).toBeGreaterThan(0);
+      
+      // Check that arc geometry is preserved
+      const hasArc = geom.shapes.some(shape => shape.type === 'arc');
+      const hasLine = geom.shapes.some(shape => shape.type === 'line');
+      
+      // At least one piece should contain the original arc (not converted to line)
+      if (hasArc) {
+        const arcShape = geom.shapes.find(shape => shape.type === 'arc')!;
+        const arcGeom = arcShape.geometry as any;
+        
+        // Verify arc properties are preserved
+        expect(arcGeom.center).toBeDefined();
+        expect(arcGeom.radius).toBeDefined();
+        expect(arcGeom.startAngle).toBeDefined();
+        expect(arcGeom.endAngle).toBeDefined();
+        expect(typeof arcGeom.radius).toBe('number');
+      }
+    });
+    
+    // Verify no shapes were converted from arc to line
+    const allShapes = result.flatMap(s => {
+      if (s.type === 'polyline') {
+        return (s.geometry as Polyline).shapes || [];
+      }
+      return [s];
+    });
+    
+    const arcShapes = allShapes.filter(s => s.type === 'arc');
+    expect(arcShapes.length).toBeGreaterThanOrEqual(1); // Should still have arc(s)
+    
+    // Verify arc properties are intact
+    arcShapes.forEach(arc => {
+      const geom = arc.geometry as any;
+      expect(geom.center).toBeDefined();
+      expect(geom.radius).toBe(5); // Should preserve original radius
+      expect(typeof geom.startAngle).toBe('number');
+      expect(typeof geom.endAngle).toBe('number');
+    });
   });
 });

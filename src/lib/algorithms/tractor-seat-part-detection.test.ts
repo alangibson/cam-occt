@@ -4,6 +4,8 @@ import path from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
+import { polylineToPoints } from '$lib/geometry/polyline';
+import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 
 describe('Tractor Seat Mount Part Detection', () => {
   it('should detect 1 part with multiple holes for Tractor Seat Mount - Left.dxf', async () => {
@@ -41,13 +43,11 @@ describe('Tractor Seat Mount Part Detection', () => {
       let distance = 0;
       let tolerance = 0.01;
       let isClosed = false;
-      if (firstStart && lastEnd) {
-        distance = Math.sqrt(
-          Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
-        );
-        tolerance = calculateClosureTolerance(chain, distance);
-        isClosed = distance < tolerance;
-      }
+      distance = Math.sqrt(
+        Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
+      );
+      tolerance = calculateClosureTolerance(chain, distance);
+      isClosed = distance < tolerance;
 
       console.log(`Chain ${chain.id}: ${chain.shapes.length} shapes, distance: ${distance.toFixed(6)}, tolerance: ${tolerance.toFixed(6)}, closed: ${isClosed}`);
     }
@@ -76,14 +76,11 @@ describe('Tractor Seat Mount Part Detection', () => {
       const firstStart = getShapeStartPoint(firstShape);
       const lastEnd = getShapeEndPoint(lastShape);
       
-      if (firstStart && lastEnd) {
-        const distance = Math.sqrt(
-          Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
-        );
-        const tolerance = calculateClosureTolerance(chain, distance);
-        return distance < tolerance;
-      }
-      return false;
+      const distance: number = Math.sqrt(
+        Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
+      );
+      const tolerance = calculateClosureTolerance(chain, distance);
+      return distance < tolerance;
     });
 
     console.log(`Closed chains: ${closedChains.length}`);
@@ -141,7 +138,7 @@ function calculateChainBoundingBox(chain: any): any {
 function getShapeBoundingBox(shape: any): any {
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry;
+      const line: import("$lib/types/geometry").Line = shape.geometry;
       return {
         minX: Math.min(line.start.x, line.end.x),
         maxX: Math.max(line.start.x, line.end.x),
@@ -150,7 +147,7 @@ function getShapeBoundingBox(shape: any): any {
       };
     
     case 'circle':
-      const circle = shape.geometry;
+      const circle: import("$lib/types/geometry").Circle = shape.geometry;
       return {
         minX: circle.center.x - circle.radius,
         maxX: circle.center.x + circle.radius,
@@ -159,7 +156,7 @@ function getShapeBoundingBox(shape: any): any {
       };
     
     case 'arc':
-      const arc = shape.geometry;
+      const arc: import("$lib/types/geometry").Arc = shape.geometry;
       // Simplified: use circle bounding box
       return {
         minX: arc.center.x - arc.radius,
@@ -169,9 +166,9 @@ function getShapeBoundingBox(shape: any): any {
       };
     
     case 'polyline':
-      const polyline = shape.geometry;
+      const polyline: import("$lib/types/geometry").Polyline = shape.geometry;
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      for (const point of polyline.points) {
+      for (const point of polylineToPoints(polyline)) {
         minX = Math.min(minX, point.x);
         maxX = Math.max(maxX, point.x);
         minY = Math.min(minY, point.y);
@@ -184,60 +181,3 @@ function getShapeBoundingBox(shape: any): any {
   }
 }
 
-function getShapeStartPoint(shape: any): { x: number; y: number } | null {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return line.start;
-    
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points.length > 0 ? polyline.points[0] : null;
-    
-    case 'arc':
-      const arc = shape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-      };
-    
-    case 'circle':
-      const circle = shape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    
-    default:
-      return null;
-  }
-}
-
-function getShapeEndPoint(shape: any): { x: number; y: number } | null {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return line.end;
-    
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points.length > 0 ? polyline.points[polyline.points.length - 1] : null;
-    
-    case 'arc':
-      const arc = shape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-      };
-    
-    case 'circle':
-      const circle = shape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    
-    default:
-      return null;
-  }
-}

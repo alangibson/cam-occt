@@ -14,12 +14,14 @@
   import { overlayStore, generateChainEndpoints } from '../../lib/stores/overlay';
   import { optimizeStartPoints } from '../../lib/algorithms/optimize-start-points';
   import { prepareStageStore } from '../../lib/stores/prepare-stage';
-  import type { Shape } from '../../types';
-  import type { ShapeChain } from '../../lib/algorithms/chain-detection';
-  import type { ChainNormalizationResult } from '../../lib/algorithms/chain-normalization';
-  import type { AlgorithmParameters } from '../../types/algorithm-parameters';
-  import { DEFAULT_ALGORITHM_PARAMETERS } from '../../types/algorithm-parameters';
+  import type { Shape, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../../lib/types';
+  import type { Chain } from '../../lib/algorithms/chain-detection';
+  import type { ChainNormalizationParameters } from '../../lib/types/algorithm-parameters';
+  import type { AlgorithmParameters } from '../../lib/types/algorithm-parameters';
+  import { DEFAULT_ALGORITHM_PARAMETERS } from '../../lib/types/algorithm-parameters';
   import { evaluateNURBS } from '../../lib/geometry/nurbs';
+  import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+  import { polylineToPoints } from '$lib/geometry/polyline';
   import { onMount } from 'svelte';
 
   // Resizable columns state - initialize from store, update local variables during drag
@@ -68,7 +70,7 @@
     const tessellationPoints = $tessellationStore.points.map(point => ({
       x: point.x,
       y: point.y,
-      shapeId: `${point.chainId}-${point.shapeIndex}`, // Create shapeId from chain and shape index
+      shapeId: point.shapeId, // Use existing shapeId from tessellation store
       chainId: point.chainId
     }));
     overlayStore.setTessellationPoints('prepare', tessellationPoints);
@@ -264,8 +266,7 @@
                 x: point.x,
                 y: point.y,
                 chainId: chain.id,
-                shapeIndex,
-                pointIndex
+                shapeId: `${chain.id}-shape-${shapeIndex}`
               });
             }
           }
@@ -334,7 +335,7 @@
   }
 
   // Chain analysis functions
-  function isChainClosed(chain: ShapeChain): boolean {
+  function isChainClosed(chain: Chain): boolean {
     if (!chain || chain.shapes.length === 0) return false;
     
     // Single shape chains - check if the shape itself is closed
@@ -348,14 +349,14 @@
       
       // Single full ellipse is always closed
       if (shape.type === 'ellipse') {
-        const ellipse = shape.geometry as any;
+        const ellipse = shape.geometry as Ellipse;
         // Full ellipses are closed, ellipse arcs are open
         return !(typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number');
       }
       
       // Single closed polyline
       if (shape.type === 'polyline') {
-        const polyline = shape.geometry as any;
+        const polyline = shape.geometry as Polyline;
         // Use the explicit closed flag from DXF parsing if available
         if (typeof polyline.closed === 'boolean') {
           return polyline.closed;
@@ -370,8 +371,6 @@
     const firstStart = getShapeStartPoint(firstShape);
     const lastEnd = getShapeEndPoint(lastShape);
     
-    if (!firstStart || !lastEnd) return false;
-    
     const distance = Math.sqrt(
       Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
     );
@@ -380,154 +379,7 @@
     return distance < tolerance;
   }
 
-  function getShapeStartPoint(shape: Shape): {x: number, y: number} | null {
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        return line.start;
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        return polyline.points.length > 0 ? polyline.points[0] : null;
-      case 'arc':
-        const arc = shape.geometry as any;
-        return {
-          x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-          y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-        };
-      case 'circle':
-        const circle = shape.geometry as any;
-        return {
-          x: circle.center.x + circle.radius,
-          y: circle.center.y
-        };
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        
-        // Calculate major and minor axis lengths
-        const majorAxisLength = Math.sqrt(
-          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-        );
-        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-        
-        // Calculate rotation angle of major axis
-        const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
-        
-        if (typeof ellipse.startParam === 'number') {
-          // Ellipse arc - return actual start point
-          const startX = majorAxisLength * Math.cos(ellipse.startParam);
-          const startY = minorAxisLength * Math.sin(ellipse.startParam);
-          const rotatedStartX = startX * Math.cos(majorAxisAngle) - startY * Math.sin(majorAxisAngle);
-          const rotatedStartY = startX * Math.sin(majorAxisAngle) + startY * Math.cos(majorAxisAngle);
-          
-          return {
-            x: ellipse.center.x + rotatedStartX,
-            y: ellipse.center.y + rotatedStartY
-          };
-        } else {
-          // Full ellipse - return rightmost point (0 radians)
-          const startX = majorAxisLength;
-          const startY = 0;
-          const rotatedStartX = startX * Math.cos(majorAxisAngle) - startY * Math.sin(majorAxisAngle);
-          const rotatedStartY = startX * Math.sin(majorAxisAngle) + startY * Math.cos(majorAxisAngle);
-          
-          return {
-            x: ellipse.center.x + rotatedStartX,
-            y: ellipse.center.y + rotatedStartY
-          };
-        }
-      case 'spline':
-        const spline = shape.geometry as any;
-        try {
-          // Use proper NURBS evaluation at parameter t=0
-          return evaluateNURBS(0, spline);
-        } catch (error) {
-          // Fallback to fit points or control points if NURBS evaluation fails
-          if (spline.fitPoints && spline.fitPoints.length > 0) {
-            return spline.fitPoints[0];
-          }
-          return spline.controlPoints && spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
-        }
-      default:
-        return null;
-    }
-  }
-
-  function getShapeEndPoint(shape: Shape): {x: number, y: number} | null {
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        return line.end;
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        const points = polyline.points;
-        return points.length > 0 ? points[points.length - 1] : null;
-      case 'arc':
-        const arc = shape.geometry as any;
-        return {
-          x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-          y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-        };
-      case 'circle':
-        const circle = shape.geometry as any;
-        return {
-          x: circle.center.x + circle.radius,
-          y: circle.center.y
-        };
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        
-        // Calculate major and minor axis lengths
-        const majorAxisLength = Math.sqrt(
-          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-        );
-        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-        
-        // Calculate rotation angle of major axis
-        const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
-        
-        if (typeof ellipse.endParam === 'number') {
-          // Ellipse arc - return actual end point
-          const endX = majorAxisLength * Math.cos(ellipse.endParam);
-          const endY = minorAxisLength * Math.sin(ellipse.endParam);
-          const rotatedEndX = endX * Math.cos(majorAxisAngle) - endY * Math.sin(majorAxisAngle);
-          const rotatedEndY = endX * Math.sin(majorAxisAngle) + endY * Math.cos(majorAxisAngle);
-          
-          return {
-            x: ellipse.center.x + rotatedEndX,
-            y: ellipse.center.y + rotatedEndY
-          };
-        } else {
-          // Full ellipse - return rightmost point (same as start for closed shape)
-          const endX = majorAxisLength;
-          const endY = 0;
-          const rotatedEndX = endX * Math.cos(majorAxisAngle) - endY * Math.sin(majorAxisAngle);
-          const rotatedEndY = endX * Math.sin(majorAxisAngle) + endY * Math.cos(majorAxisAngle);
-          
-          return {
-            x: ellipse.center.x + rotatedEndX,
-            y: ellipse.center.y + rotatedEndY
-          };
-        }
-      case 'spline':
-        const spline = shape.geometry as any;
-        try {
-          // Use proper NURBS evaluation at parameter t=1
-          return evaluateNURBS(1, spline);
-        } catch (error) {
-          // Fallback to fit points or control points if NURBS evaluation fails
-          if (spline.fitPoints && spline.fitPoints.length > 0) {
-            return spline.fitPoints[spline.fitPoints.length - 1];
-          }
-          return spline.controlPoints && spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
-        }
-      default:
-        return null;
-    }
-  }
-
-  function calculateChainBoundingBox(chain: ShapeChain): {minX: number, maxX: number, minY: number, maxY: number} {
+  function calculateChainBoundingBox(chain: Chain): {minX: number, maxX: number, minY: number, maxY: number} {
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
     
     for (const shape of chain.shapes) {
@@ -544,7 +396,7 @@
   function getShapeBoundingBox(shape: Shape): {minX: number, maxX: number, minY: number, maxY: number} {
     switch (shape.type) {
       case 'line':
-        const line = shape.geometry as any;
+        const line = shape.geometry as Line;
         return {
           minX: Math.min(line.start.x, line.end.x),
           maxX: Math.max(line.start.x, line.end.x),
@@ -552,7 +404,7 @@
           maxY: Math.max(line.start.y, line.end.y)
         };
       case 'circle':
-        const circle = shape.geometry as any;
+        const circle = shape.geometry as Circle;
         return {
           minX: circle.center.x - circle.radius,
           maxX: circle.center.x + circle.radius,
@@ -560,7 +412,7 @@
           maxY: circle.center.y + circle.radius
         };
       case 'arc':
-        const arc = shape.geometry as any;
+        const arc = shape.geometry as Arc;
         return {
           minX: arc.center.x - arc.radius,
           maxX: arc.center.x + arc.radius,
@@ -568,9 +420,9 @@
           maxY: arc.center.y + arc.radius
         };
       case 'polyline':
-        const polyline = shape.geometry as any;
+        const polyline = shape.geometry as Polyline;
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-        for (const point of polyline.points || []) {
+        for (const point of polylineToPoints(polyline)) {
           minX = Math.min(minX, point.x);
           maxX = Math.max(maxX, point.x);
           minY = Math.min(minY, point.y);
@@ -578,7 +430,7 @@
         }
         return { minX, maxX, minY, maxY };
       case 'ellipse':
-        const ellipse = shape.geometry as any;
+        const ellipse = shape.geometry as Ellipse;
         
         // Calculate major and minor axis lengths
         const majorAxisLength = Math.sqrt(

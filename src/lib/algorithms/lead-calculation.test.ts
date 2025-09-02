@@ -3,7 +3,7 @@ import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-ca
 import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
-import type { Shape } from '../../types/geometry';
+import type { Shape } from '../../lib/types/geometry';
 
 describe('calculateLeads', () => {
   // Helper to create a simple line chain
@@ -147,7 +147,7 @@ describe('calculateLeads', () => {
       const points = result.leadIn?.points || [];
       
       // Check that lead points are inside the circle (distance from center < radius)
-      for (let i = 0; i < points.length - 1; i++) { // Exclude last point which is on the circle
+      for (let i: number = 0; i < points.length - 1; i++) { // Exclude last point which is on the circle
         const point = points[i];
         const distFromCenter = Math.sqrt(
           Math.pow(point.x - 5, 2) + Math.pow(point.y - 5, 2)
@@ -177,7 +177,7 @@ describe('calculateLeads', () => {
       const points = result.leadIn?.points || [];
       
       // Check that lead points are outside the circle (distance from center > radius)
-      for (let i = 0; i < points.length - 1; i++) { // Exclude last point which is on the circle
+      for (let i: number = 0; i < points.length - 1; i++) { // Exclude last point which is on the circle
         const point = points[i];
         const distFromCenter = Math.sqrt(
           Math.pow(point.x - 5, 2) + Math.pow(point.y - 5, 2)

@@ -6,6 +6,7 @@
   import { flip } from 'svelte/animate';
   import { onMount } from 'svelte';
   import { CutDirection, LeadType } from '$lib/types/direction';
+  import type { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
   
   let operations: Operation[] = [];
   let chains: any[] = [];
@@ -68,7 +69,7 @@
       : 1;
 
     // Auto-populate targetIds based on current selection
-    let targetType = 'parts';
+    let targetType: 'parts' | 'chains' = 'parts';
     let targetIds: string[] = [];
 
     // Check if a part is highlighted
@@ -97,9 +98,12 @@
       leadInType: LeadType.NONE,
       leadInLength: 5,
       leadInAngle: 0,
+      leadInFlipSide: false,
       leadOutType: LeadType.NONE,
       leadOutLength: 5,
-      leadOutAngle: 0
+      leadOutAngle: 0,
+      leadOutFlipSide: false,
+      kerfCompensation: 'none'
     });
   }
   
@@ -586,6 +590,22 @@
           </div>
         </div>
         
+        <!-- Kerf Compensation Settings -->
+        <div class="kerf-compensation-row">
+          <div class="field-group">
+            <label for="kerf-compensation-{operation.id}">Kerf Compensation:</label>
+            <select
+              id="kerf-compensation-{operation.id}"
+              value={operation.kerfCompensation || 'none'}
+              onchange={(e) => updateOperationField(operation.id, 'kerfCompensation', e.currentTarget.value)}
+              class="lead-select"
+            >
+              <option value="none">None</option>
+              <option value="inset">Inset</option>
+              <option value="outset">Outset</option>
+            </select>
+          </div>
+        </div>
         
         <div class="operation-actions">
           <button onclick={() => duplicateOperation(operation.id)} class="btn btn-secondary btn-xs" title="Duplicate operation">
@@ -1012,5 +1032,16 @@
 
   .operation-row {
     margin-top: 0.75rem;
+  }
+
+  /* Kerf compensation row styling */
+  .kerf-compensation-row {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+  }
+
+  .kerf-compensation-row .field-group {
+    max-width: 200px;
   }
 </style>

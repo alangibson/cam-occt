@@ -25,7 +25,7 @@ test.describe('Application Loading', () => {
     await expect(page.locator('footer')).toBeVisible();
     
     // Check that key components are visible
-    await expect(page.locator('button:has-text("Import DXF/SVG")')).toBeVisible();
+    await expect(page.locator('button:has-text("Import DXF")')).toBeVisible();
     await expect(page.locator('h3:has-text("Cutting Parameters")')).toBeVisible();
     await expect(page.locator('button:has-text("Generate G-Code")')).toBeVisible();
     
@@ -51,7 +51,7 @@ test.describe('Application Loading', () => {
     await expect(importArea).toBeVisible();
     
     // The import button should be clickable
-    const importButton = page.locator('button:has-text("Import DXF/SVG")');
+    const importButton = page.locator('button:has-text("Import DXF")');
     await expect(importButton).toBeEnabled();
   });
 });

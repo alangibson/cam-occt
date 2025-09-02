@@ -50,7 +50,7 @@ describe('Workflow Integration', () => {
       const stages = ['import', 'edit', 'prepare', 'program', 'simulate', 'export'] as const;
       
       // Progress through each stage
-      for (let i = 0; i < stages.length; i++) {
+      for (let i: number = 0; i < stages.length; i++) {
         const currentStage = stages[i];
         
         // Should be able to set current stage

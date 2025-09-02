@@ -1,8 +1,10 @@
 import { writable } from 'svelte/store';
-import type { ShapeChain } from '../algorithms/chain-detection';
-import type { Point2D } from '../../types';
+// Removed unused Chain import
+import type { Point2D, Shape } from '../../lib/types';
 import { workflowStore } from './workflow';
 import { CutDirection, LeadType } from '../types/direction';
+import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
+import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
 
 export interface Path {
   id: string;
@@ -51,6 +53,20 @@ export interface Path {
     severity: 'info' | 'warning' | 'error';
     validatedAt: string; // ISO timestamp
   };
+  
+  // Kerf compensation fields
+  kerfCompensation?: OffsetDirection; // Direction of kerf compensation
+  
+  // Calculated offset geometry (persisted to avoid recalculation)
+  calculatedOffset?: {
+    offsetShapes: Shape[]; // The offset chain shapes
+    originalShapes: Shape[]; // The original unmodified chain shapes
+    direction: OffsetDirection; // The direction that was applied
+    kerfWidth: number; // The kerf width used for calculation
+    generatedAt: string; // ISO timestamp
+    version: string; // Algorithm version for invalidation
+    gapFills?: GapFillingResult[];
+  };
 }
 
 export interface PathsState {
@@ -83,7 +99,7 @@ function createPathsStore() {
     
     addPath: (path: Omit<Path, 'id'>) => {
       update(state => {
-        const newPaths = [
+        const newPaths: Path[] = [
           ...state.paths,
           {
             ...path,
@@ -112,7 +128,7 @@ function createPathsStore() {
     
     deletePath: (id: string) => {
       update(state => {
-        const newPaths = state.paths.filter(path => path.id !== id);
+        const newPaths: Path[] = state.paths.filter(path => path.id !== id);
         
         // Check workflow completion
         setTimeout(() => checkProgramStageCompletion(newPaths), 0);
@@ -128,7 +144,7 @@ function createPathsStore() {
     
     deletePathsByOperation: (operationId: string) => {
       update(state => {
-        const newPaths = state.paths.filter(path => path.operationId !== operationId);
+        const newPaths: Path[] = state.paths.filter(path => path.operationId !== operationId);
         
         // Check workflow completion
         setTimeout(() => checkProgramStageCompletion(newPaths), 0);
@@ -172,7 +188,7 @@ function createPathsStore() {
     
     getPathsByChain: (chainId: string) => {
       let currentPaths: Path[] = [];
-      const unsubscribe = subscribe(state => {
+      const unsubscribe: () => void = subscribe(state => {
         currentPaths = state.paths.filter(path => path.chainId === chainId);
       });
       unsubscribe();
@@ -181,7 +197,7 @@ function createPathsStore() {
     
     getChainsWithPaths: () => {
       let chainIds: string[] = [];
-      const unsubscribe = subscribe(state => {
+      const unsubscribe: () => void = subscribe(state => {
         chainIds = [...new Set(state.paths.map(path => path.chainId))];
       });
       unsubscribe();
@@ -194,8 +210,8 @@ function createPathsStore() {
       leadOut?: { points: Point2D[]; type: LeadType; };
       validation?: { isValid: boolean; warnings: string[]; errors: string[]; severity: 'info' | 'warning' | 'error'; };
     }) => {
-      const timestamp = new Date().toISOString();
-      const version = '1.0.0'; // Lead calculation algorithm version
+      const timestamp: string = new Date().toISOString();
+      const version: string = '1.0.0'; // Lead calculation algorithm version
       
       update(state => ({
         ...state,
@@ -251,6 +267,51 @@ function createPathsStore() {
       }));
     },
     
+    // Update offset geometry for a path
+    updatePathOffsetGeometry: (pathId: string, offsetGeometry: {
+      offsetShapes: Shape[];
+      originalShapes: Shape[];
+      direction: OffsetDirection;
+      kerfWidth: number;
+    }) => {
+      const timestamp: string = new Date().toISOString();
+      const version: string = '1.0.0'; // Offset calculation algorithm version
+      
+      update(state => ({
+        ...state,
+        paths: state.paths.map(path => {
+          if (path.id !== pathId) return path;
+          
+          return {
+            ...path,
+            calculatedOffset: {
+              offsetShapes: offsetGeometry.offsetShapes,
+              originalShapes: offsetGeometry.originalShapes,
+              direction: offsetGeometry.direction,
+              kerfWidth: offsetGeometry.kerfWidth,
+              generatedAt: timestamp,
+              version
+            }
+          };
+        })
+      }));
+    },
+    
+    // Clear calculated offset geometry (force recalculation)
+    clearPathOffsetGeometry: (pathId: string) => {
+      update(state => ({
+        ...state,
+        paths: state.paths.map(path =>
+          path.id === pathId
+            ? {
+                ...path,
+                calculatedOffset: undefined
+              }
+            : path
+        )
+      }));
+    },
+    
     reset: () => {
       set(initialState);
       // Check workflow completion (will invalidate since no paths)
@@ -266,7 +327,7 @@ function createPathsStore() {
   };
 }
 
-export const pathStore = createPathsStore();
+export const pathStore: ReturnType<typeof createPathsStore> = createPathsStore();
 
 // Helper functions for path selection
 export function selectPath(pathId: string | null) {

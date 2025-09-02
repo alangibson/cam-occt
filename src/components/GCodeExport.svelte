@@ -1,12 +1,14 @@
 <script lang="ts">
-  import { generateToolPaths } from '../lib/cam/path-generator';
+  import { pathsToToolPaths } from '../lib/cam/path-to-toolpath';
   import { generateGCode } from '../lib/cam/gcode-generator';
   import { drawingStore } from '../lib/stores/drawing';
-  import type { CuttingParameters } from '../types';
-  
-  export let parameters: CuttingParameters;
+  import { pathStore } from '../lib/stores/paths';
+  import { chainStore } from '../lib/stores/chains';
+  import type { CuttingParameters } from '../lib/types';
   
   $: drawing = $drawingStore.drawing;
+  $: paths = $pathStore.paths;
+  $: chains = $chainStore.chains;
   
   let generatedGCode = '';
   let isGenerating = false;
@@ -17,12 +19,23 @@
       return;
     }
     
+    if (paths.length === 0) {
+      alert('No paths available. Please create operations first.');
+      return;
+    }
+    
     isGenerating = true;
     generatedGCode = '';
     
     try {
-      // Generate tool paths
-      const toolPaths = generateToolPaths(drawing, parameters);
+      // Create a map of chain IDs to their shapes
+      const chainShapes = new Map();
+      chains.forEach(chain => {
+        chainShapes.set(chain.id, chain.shapes);
+      });
+      
+      // Convert paths to tool paths (uses offset geometry when available)
+      const toolPaths = pathsToToolPaths(paths, chainShapes);
       
       // Generate G-code
       const gcode = generateGCode(toolPaths, drawing, {

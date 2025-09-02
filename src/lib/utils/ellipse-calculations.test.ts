@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { Point2D } from '../../types';
+import type { Point2D } from '../../lib/types';
 
 interface Ellipse {
   center: Point2D;
@@ -46,8 +46,8 @@ function getEllipsePointAtParameter(ellipse: Ellipse, parameter: number): Point2
   const cosParam = Math.cos(parameter);
   const sinParam = Math.sin(parameter);
   
-  const x = cosParam * majorAxisLength * majorAxisUnit.x + sinParam * minorAxisLength * minorAxisUnit.x;
-  const y = cosParam * majorAxisLength * majorAxisUnit.y + sinParam * minorAxisLength * minorAxisUnit.y;
+  const x: number = cosParam * majorAxisLength * majorAxisUnit.x + sinParam * minorAxisLength * minorAxisUnit.x;
+  const y: number = cosParam * majorAxisLength * majorAxisUnit.y + sinParam * minorAxisLength * minorAxisUnit.y;
   
   // Translate to ellipse center
   return {
@@ -104,8 +104,6 @@ describe('Ellipse Point Calculations', () => {
     // Using counterclockwise rotation: (-2, 0) normalized to (-1, 0)
     // So at parameter π/2, we should be at (-1, 0)
     const pointPI2 = getEllipsePointAtParameter(ellipse, Math.PI / 2);
-    console.log('Debug: pointPI2 =', pointPI2);
-    console.log('Debug: Expected x=-1, y=0 (counterclockwise from major axis)');
     expect(pointPI2.x).toBeCloseTo(-1, 5); // Should be at negative minor radius
     expect(pointPI2.y).toBeCloseTo(0, 5); // Should be at center y
   });

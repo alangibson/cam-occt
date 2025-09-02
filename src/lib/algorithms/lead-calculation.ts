@@ -1,8 +1,11 @@
-import type { Point2D } from '../../types/geometry';
-import type { ShapeChain } from './chain-detection';
+import type { Point2D, Polyline, Line, Arc, Circle, Shape } from '../types/geometry';
+import type { Chain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
 import { LeadType, CutDirection } from '../types/direction';
 import { validateLeadConfiguration, type LeadValidationResult } from './lead-validation';
+import { isPointInPolygon } from '../utils/geometric-operations';
+import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import { polylineToPoints } from '../geometry/polyline';
 
 export interface LeadInConfig {
   type: LeadType;
@@ -36,7 +39,7 @@ export interface LeadResult {
  * Lead direction respects the cut direction for proper tangency.
  */
 export function calculateLeads(
-  chain: ShapeChain,
+  chain: Chain,
   leadInConfig: LeadInConfig,
   leadOutConfig: LeadOutConfig,
   cutDirection: CutDirection = CutDirection.NONE,
@@ -46,7 +49,7 @@ export function calculateLeads(
   const warnings: string[] = [];
 
   // 1. VALIDATION PIPELINE - Run comprehensive validation first
-  const validation = validateLeadConfiguration(
+  const validation: LeadValidationResult = validateLeadConfiguration(
     { leadIn: leadInConfig, leadOut: leadOutConfig, cutDirection },
     chain,
     part
@@ -71,12 +74,12 @@ export function calculateLeads(
   }
 
   // Determine if chain is a hole or shell
-  const isHole = part ? part.holes.some((h: any) => h.chain.id === chain.id) : false;
-  const isShell = part ? part.shell.chain.id === chain.id : false;
+  const isHole: boolean = part ? part.holes.some((h: DetectedPart['holes'][0]) => h.chain.id === chain.id) : false;
+  const isShell: boolean = part ? part.shell.chain.id === chain.id : false;
 
   // Get chain start and end points
-  const startPoint = getChainStartPoint(chain);
-  const endPoint = getChainEndPoint(chain);
+  const startPoint: Point2D | null = getChainStartPoint(chain);
+  const endPoint: Point2D | null = getChainEndPoint(chain);
 
   if (!startPoint || !endPoint) {
     return result;
@@ -124,7 +127,7 @@ export function calculateLeads(
  * Calculate a single lead (in or out).
  */
 function calculateLead(
-  chain: ShapeChain,
+  chain: Chain,
   point: Point2D,
   config: LeadInConfig | LeadOutConfig,
   isLeadIn: boolean,
@@ -150,7 +153,7 @@ function calculateLead(
  * If no clear path is found after 360 degrees of rotation, adds a warning.
  */
 function calculateArcLead(
-  chain: ShapeChain,
+  chain: Chain,
   point: Point2D,
   arcLength: number,
   isLeadIn: boolean,
@@ -164,23 +167,23 @@ function calculateArcLead(
 ): LeadGeometry {
   
   // Get the tangent direction at the point
-  const tangent = getChainTangent(chain, point, isLeadIn);
+  const tangent: Point2D = getChainTangent(chain, point, isLeadIn);
   
   // Calculate the base normal direction considering cut direction
-  const baseCurveDirection = getLeadCurveDirection(tangent, isHole, isShell, cutDirection, chain, point, part, arcLength, flipSide);
+  const baseCurveDirection: Point2D = getLeadCurveDirection(tangent, isHole, isShell, cutDirection, chain, point, part, arcLength, flipSide);
 
   // Calculate arc parameters with 90-degree maximum sweep
-  const maxSweepAngle = Math.PI / 2; // 90 degrees
+  const maxSweepAngle: number = Math.PI / 2; // 90 degrees
   
   // For a given arc length and maximum sweep, calculate minimum radius
-  const minRadius = arcLength / maxSweepAngle;
+  const minRadius: number = arcLength / maxSweepAngle;
   
   // Use the minimum radius and adjust sweep angle to get exact arc length
-  const radius = minRadius;
-  const sweepAngle = arcLength / radius; // This will be <= 90 degrees
+  const radius: number = minRadius;
+  const sweepAngle: number = arcLength / radius; // This will be <= 90 degrees
   
   // Ensure we don't exceed 90 degrees
-  const actualSweepAngle = Math.min(sweepAngle, maxSweepAngle);
+  const actualSweepAngle: number = Math.min(sweepAngle, maxSweepAngle);
   
   // Determine curve direction strategy: manual absolute angle or automatic optimization
   let curveDirectionsToTry: { x: number; y: number }[];
@@ -188,29 +191,29 @@ function calculateArcLead(
   if (manualAngle !== undefined) {
     // Use manual angle as absolute direction (unit circle: 0° = right, 90° = up, etc.)
     // Work in world coordinates (Y+ up), canvas rendering will handle coordinate conversion
-    const manualAngleRad = (manualAngle * Math.PI) / 180;
-    const absoluteDirection = {
+    const manualAngleRad: number = (manualAngle * Math.PI) / 180;
+    const absoluteDirection: Point2D = {
       x: Math.cos(manualAngleRad),
       y: Math.sin(manualAngleRad)  // Use standard unit circle (Y+ up for world coordinates)
     };
     curveDirectionsToTry = [absoluteDirection];
   } else {
     // Try different curve directions up to 360 degrees to avoid solid areas
-    const rotationStep = 5 * Math.PI / 180; // 5 degrees in radians
-    const maxRotations = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
+    const rotationStep: number = 5 * Math.PI / 180; // 5 degrees in radians
+    const maxRotations: number = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
     curveDirectionsToTry = Array.from({ length: maxRotations }, (_, i) => {
-      const rotationAngle = i * rotationStep;
+      const rotationAngle: number = i * rotationStep;
       return rotateCurveDirection(baseCurveDirection, rotationAngle);
     });
   }
   
   // Try full length first, then shorter lengths if needed
-  const lengthAttempts = [1.0, 0.75, 0.5, 0.25]; // Try 100%, 75%, 50%, 25% of original length
+  const lengthAttempts: number[] = [1.0, 0.75, 0.5, 0.25]; // Try 100%, 75%, 50%, 25% of original length
   
   for (const lengthFactor of lengthAttempts) {
-    const adjustedArcLength = arcLength * lengthFactor;
-    const adjustedRadius = adjustedArcLength / maxSweepAngle;
-    const adjustedSweepAngle = Math.min(adjustedArcLength / adjustedRadius, maxSweepAngle);
+    const adjustedArcLength: number = arcLength * lengthFactor;
+    const adjustedRadius: number = adjustedArcLength / maxSweepAngle;
+    const adjustedSweepAngle: number = Math.min(adjustedArcLength / adjustedRadius, maxSweepAngle);
     
     for (const curveDirection of curveDirectionsToTry) {
       
@@ -253,8 +256,8 @@ function calculateArcLead(
       }
 
       // Check if this lead avoids solid areas using proper point-in-polygon detection
-      const solidPointCount = countSolidAreaPoints(points, part, point);
-      const intersectsSolid = solidPointCount > 0;
+      const solidPointCount: number = countSolidAreaPoints(points, part, point);
+      const intersectsSolid: boolean = solidPointCount > 0;
       
       if (!intersectsSolid) {
         return {
@@ -268,8 +271,8 @@ function calculateArcLead(
 
   // If no rotation avoids solid areas after trying all angles and lengths, add a warning
   if (part) {
-    const leadType = isLeadIn ? 'Lead-in' : 'Lead-out';
-    const shapeType = isHole ? 'hole' : (isShell ? 'shell' : 'shape');
+    const leadType: string = isLeadIn ? 'Lead-in' : 'Lead-out';
+    const shapeType: string = isHole ? 'hole' : (isShell ? 'shell' : 'shape');
     warnings.push(`${leadType} for ${shapeType} intersects solid material and cannot be avoided. Consider reducing lead length or manually adjusting the path.`);
   }
 
@@ -315,7 +318,7 @@ function calculateArcLead(
  * If no clear path is found after 360 degrees of rotation, adds a warning.
  */
 function calculateLineLead(
-  chain: ShapeChain,
+  chain: Chain,
   point: Point2D,
   lineLength: number,
   isLeadIn: boolean,
@@ -329,10 +332,10 @@ function calculateLineLead(
 ): LeadGeometry {
   
   // Get the tangent direction at the point
-  const tangent = getChainTangent(chain, point, isLeadIn);
+  const tangent: Point2D = getChainTangent(chain, point, isLeadIn);
   
   // Calculate the base normal direction considering cut direction
-  const baseLeadDirection = getLeadCurveDirection(tangent, isHole, isShell, cutDirection, chain, point, part, lineLength, flipSide);
+  const baseLeadDirection: Point2D = getLeadCurveDirection(tangent, isHole, isShell, cutDirection, chain, point, part, lineLength, flipSide);
   
   // Determine lead direction strategy: manual absolute angle or automatic optimization
   let leadDirectionsToTry: { x: number; y: number }[];
@@ -340,32 +343,32 @@ function calculateLineLead(
   if (manualAngle !== undefined) {
     // Use manual angle as absolute direction (unit circle: 0° = right, 90° = up, etc.)
     // Work in world coordinates (Y+ up), canvas rendering will handle coordinate conversion
-    const manualAngleRad = (manualAngle * Math.PI) / 180;
-    const absoluteDirection = {
+    const manualAngleRad: number = (manualAngle * Math.PI) / 180;
+    const absoluteDirection: Point2D = {
       x: Math.cos(manualAngleRad),
       y: Math.sin(manualAngleRad)  // Use standard unit circle (Y+ up for world coordinates)
     };
     leadDirectionsToTry = [absoluteDirection];
   } else {
     // Try different lead directions up to 360 degrees to avoid solid areas
-    const rotationStep = 5 * Math.PI / 180; // 5 degrees in radians
-    const maxRotations = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
+    const rotationStep: number = 5 * Math.PI / 180; // 5 degrees in radians
+    const maxRotations: number = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
     leadDirectionsToTry = Array.from({ length: maxRotations }, (_, i) => {
-      const rotationAngle = i * rotationStep;
+      const rotationAngle: number = i * rotationStep;
       return rotateCurveDirection(baseLeadDirection, rotationAngle);
     });
   }
   
   // Try full length first, then shorter lengths if needed
-  const lengthAttempts = [1.0, 0.75, 0.5, 0.25]; // Try 100%, 75%, 50%, 25% of original length
+  const lengthAttempts: number[] = [1.0, 0.75, 0.5, 0.25]; // Try 100%, 75%, 50%, 25% of original length
   
   for (const lengthFactor of lengthAttempts) {
-    const adjustedLineLength = lineLength * lengthFactor;
+    const adjustedLineLength: number = lineLength * lengthFactor;
     
     for (const leadDirection of leadDirectionsToTry) {
       
       // Generate line points
-      const points = generateTangentLinePoints(
+      const points: Point2D[] = generateTangentLinePoints(
         point,
         adjustedLineLength,
         isLeadIn,
@@ -382,8 +385,8 @@ function calculateLineLead(
       }
 
       // Check if this lead avoids solid areas using proper point-in-polygon detection
-      const solidPointCount = countSolidAreaPoints(points, part, point);
-      const intersectsSolid = solidPointCount > 0;
+      const solidPointCount: number = countSolidAreaPoints(points, part, point);
+      const intersectsSolid: boolean = solidPointCount > 0;
       
       if (!intersectsSolid) {
         return {
@@ -396,13 +399,13 @@ function calculateLineLead(
 
   // If no rotation avoids solid areas after trying all angles and lengths, add a warning
   if (part) {
-    const leadType = isLeadIn ? 'Lead-in' : 'Lead-out';
-    const shapeType = isHole ? 'hole' : (isShell ? 'shell' : 'shape');
+    const leadType: string = isLeadIn ? 'Lead-in' : 'Lead-out';
+    const shapeType: string = isHole ? 'hole' : (isShell ? 'shell' : 'shape');
     warnings.push(`${leadType} for ${shapeType} intersects solid material and cannot be avoided. Consider reducing lead length or manually adjusting the path.`);
   }
 
   // Return the base direction as fallback
-  const points = generateTangentLinePoints(
+  const points: Point2D[] = generateTangentLinePoints(
     point,
     lineLength,
     isLeadIn,
@@ -426,24 +429,24 @@ function generateSimpleArcPoints(
   connectionPoint: Point2D,
   sweepAngle: number,
   isLeadIn: boolean,
-  direction: Point2D
+  _direction: Point2D
 ): Point2D[] {
   const points: Point2D[] = [];
-  const segments = Math.max(8, Math.ceil(sweepAngle * radius / 2)); // Approximate 2mm segments
+  const segments: number = Math.max(8, Math.ceil(sweepAngle * radius / 2)); // Approximate 2mm segments
 
   // Calculate the angle of the connection point relative to the arc center
-  const connectionAngle = Math.atan2(
+  const connectionAngle: number = Math.atan2(
     connectionPoint.y - center.y, 
     connectionPoint.x - center.x
   );
 
   if (isLeadIn) {
     // Lead-in: arc starts away from connection and ends at connection point
-    const startAngle = connectionAngle - sweepAngle; // Start earlier in the arc
+    const startAngle: number = connectionAngle - sweepAngle; // Start earlier in the arc
     
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
-      const angle = startAngle + t * sweepAngle; // Sweep from start to connection
+    for (let i: number = 0; i <= segments; i++) {
+      const t: number = i / segments;
+      const angle: number = startAngle + t * sweepAngle; // Sweep from start to connection
       
       if (i === segments) {
         // Ensure last point is exactly the connection point
@@ -457,9 +460,9 @@ function generateSimpleArcPoints(
     }
   } else {
     // Lead-out: arc starts at connection point and curves away
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
-      const angle = connectionAngle + t * sweepAngle; // Sweep from connection outward
+    for (let i: number = 0; i <= segments; i++) {
+      const t: number = i / segments;
+      const angle: number = connectionAngle + t * sweepAngle; // Sweep from connection outward
       
       if (i === 0) {
         // Ensure first point is exactly the connection point
@@ -490,33 +493,27 @@ function generateTangentArcPoints(
   curveDirection: Point2D
 ): Point2D[] {
   const points: Point2D[] = [];
-  const segments = Math.max(8, Math.ceil(sweepAngle * radius / 2)); // Approximate 2mm segments
-
-  // Calculate the angle of the connection point relative to the arc center
-  const connectionAngle = Math.atan2(
-    connectionPoint.y - center.y, 
-    connectionPoint.x - center.x
-  );
+  const segments: number = Math.max(8, Math.ceil(sweepAngle * radius / 2)); // Approximate 2mm segments
 
   // For a truly tangent arc, we need to ensure the tangent direction at the connection point
   // matches the chain tangent. The tangent to a circle at any point is perpendicular to the
   // radius at that point.
   
   // Calculate what the tangent angle should be at the connection point
-  const tangentAngle = Math.atan2(tangent.y, tangent.x);
+  const tangentAngle: number = Math.atan2(tangent.y, tangent.x);
   
   // The radius angle at the connection point should be perpendicular to the tangent
   // So radius angle = tangent angle ± 90°
-  const radiusAngle1 = tangentAngle + Math.PI / 2;
-  const radiusAngle2 = tangentAngle - Math.PI / 2;
+  const radiusAngle1: number = tangentAngle + Math.PI / 2;
+  const radiusAngle2: number = tangentAngle - Math.PI / 2;
   
   // Choose the radius angle that points from connection point toward the calculated center
-  const actualRadiusAngle = Math.atan2(center.y - connectionPoint.y, center.x - connectionPoint.x);
+  const actualRadiusAngle: number = Math.atan2(center.y - connectionPoint.y, center.x - connectionPoint.x);
   
   // Determine which radius angle is closer to the actual one
-  const diff1 = Math.abs(normalizeAngle(radiusAngle1 - actualRadiusAngle));
-  const diff2 = Math.abs(normalizeAngle(radiusAngle2 - actualRadiusAngle));
-  const correctRadiusAngle = diff1 < diff2 ? radiusAngle1 : radiusAngle2;
+  const diff1: number = Math.abs(normalizeAngle(radiusAngle1 - actualRadiusAngle));
+  const diff2: number = Math.abs(normalizeAngle(radiusAngle2 - actualRadiusAngle));
+  const correctRadiusAngle: number = diff1 < diff2 ? radiusAngle1 : radiusAngle2;
   
   // Adjust the arc center to ensure perfect tangency
   const adjustedCenter: Point2D = {
@@ -526,11 +523,11 @@ function generateTangentArcPoints(
 
   // Determine sweep direction based on the curve direction relative to tangent
   // Cross product: tangent × curveDirection. If positive, curveDirection is to the left of tangent
-  const crossProduct = tangent.x * curveDirection.y - tangent.y * curveDirection.x;
-  const sweepCounterClockwise = crossProduct > 0;
+  const crossProduct: number = tangent.x * curveDirection.y - tangent.y * curveDirection.x;
+  const sweepCounterClockwise: boolean = crossProduct > 0;
 
   // For perfect tangency, the connection point angle relative to the adjusted center
-  const connectionAngleFromAdjustedCenter = Math.atan2(
+  const connectionAngleFromAdjustedCenter: number = Math.atan2(
     connectionPoint.y - adjustedCenter.y,
     connectionPoint.x - adjustedCenter.x
   );
@@ -538,13 +535,13 @@ function generateTangentArcPoints(
   // Generate arc points using the adjusted center
   if (isLeadIn) {
     // Lead-in: arc starts away from connection and ends at connection point
-    const startAngle = sweepCounterClockwise 
+    const startAngle: number = sweepCounterClockwise 
       ? connectionAngleFromAdjustedCenter - sweepAngle  // Start behind connection point
       : connectionAngleFromAdjustedCenter + sweepAngle; // Start ahead of connection point
     
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
-      const angle = sweepCounterClockwise 
+    for (let i: number = 0; i <= segments; i++) {
+      const t: number = i / segments;
+      const angle: number = sweepCounterClockwise 
         ? startAngle + t * sweepAngle     // Sweep counter-clockwise to connection
         : startAngle - t * sweepAngle;    // Sweep clockwise to connection
       
@@ -554,8 +551,8 @@ function generateTangentArcPoints(
       } else if (i === segments - 1) {
         // Special handling for second-to-last point to ensure tangency
         // Position it along the tangent direction from the connection point
-        const segmentLength = radius * sweepAngle / segments; // Approximate segment length
-        const backwardTangent = { x: -tangent.x, y: -tangent.y }; // Opposite direction
+        const segmentLength: number = radius * sweepAngle / segments; // Approximate segment length
+        const backwardTangent: Point2D = { x: -tangent.x, y: -tangent.y }; // Opposite direction
         points.push({
           x: connectionPoint.x + backwardTangent.x * segmentLength,
           y: connectionPoint.y + backwardTangent.y * segmentLength
@@ -569,9 +566,9 @@ function generateTangentArcPoints(
     }
   } else {
     // Lead-out: arc starts at connection point and curves away
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
-      const angle = sweepCounterClockwise 
+    for (let i: number = 0; i <= segments; i++) {
+      const t: number = i / segments;
+      const angle: number = sweepCounterClockwise 
         ? connectionAngleFromAdjustedCenter + t * sweepAngle  // Sweep counter-clockwise from connection
         : connectionAngleFromAdjustedCenter - t * sweepAngle; // Sweep clockwise from connection
       
@@ -581,7 +578,7 @@ function generateTangentArcPoints(
       } else if (i === 1) {
         // Special handling for second point to ensure tangency
         // Position it along the tangent direction from the connection point
-        const segmentLength = radius * sweepAngle / segments; // Approximate segment length
+        const segmentLength: number = radius * sweepAngle / segments; // Approximate segment length
         points.push({
           x: connectionPoint.x + tangent.x * segmentLength,
           y: connectionPoint.y + tangent.y * segmentLength
@@ -623,9 +620,9 @@ function generateTangentLinePoints(
     };
     
     // Generate points along the line (start to connection)
-    const segments = Math.max(2, Math.ceil(lineLength / 2)); // Approximate 2mm segments, minimum 2 points
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
+    const segments: number = Math.max(2, Math.ceil(lineLength / 2)); // Approximate 2mm segments, minimum 2 points
+    for (let i: number = 0; i <= segments; i++) {
+      const t: number = i / segments;
       if (i === segments) {
         // Ensure last point is exactly the connection point
         points.push(connectionPoint);
@@ -645,9 +642,9 @@ function generateTangentLinePoints(
     };
     
     // Generate points along the line (connection to end)
-    const segments = Math.max(2, Math.ceil(lineLength / 2)); // Approximate 2mm segments, minimum 2 points
-    for (let i = 0; i <= segments; i++) {
-      const t = i / segments;
+    const segments: number = Math.max(2, Math.ceil(lineLength / 2)); // Approximate 2mm segments, minimum 2 points
+    for (let i: number = 0; i <= segments; i++) {
+      const t: number = i / segments;
       if (i === 0) {
         // Ensure first point is exactly the connection point
         points.push(connectionPoint);
@@ -675,94 +672,61 @@ function normalizeAngle(angle: number): number {
 /**
  * Get the start point of a chain.
  */
-function getChainStartPoint(chain: ShapeChain): Point2D | null {
+function getChainStartPoint(chain: Chain): Point2D | null {
   if (chain.shapes.length === 0) return null;
   
-  const firstShape = chain.shapes[0];
-  switch (firstShape.type) {
-    case 'line':
-      return (firstShape.geometry as any).start;
-    case 'arc':
-      // Arc start point calculation
-      const arc = firstShape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-      };
-    case 'circle':
-      // For circles, use the rightmost point as start
-      const circle = firstShape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    case 'polyline':
-      return (firstShape.geometry as any).points[0];
-    default:
-      return null;
+  const firstShape: Shape = chain.shapes[0];
+  try {
+    return getShapeStartPoint(firstShape);
+  } catch (error) {
+    console.warn('Error getting start point for shape:', firstShape, error);
+    return null;
   }
 }
 
 /**
  * Get the end point of a chain.
  */
-function getChainEndPoint(chain: ShapeChain): Point2D | null {
+function getChainEndPoint(chain: Chain): Point2D | null {
   if (chain.shapes.length === 0) return null;
   
-  const lastShape = chain.shapes[chain.shapes.length - 1];
-  switch (lastShape.type) {
-    case 'line':
-      return (lastShape.geometry as any).end;
-    case 'arc':
-      // Arc end point calculation
-      const arc = lastShape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-      };
-    case 'circle':
-      // For circles, end point is same as start point
-      const circle = lastShape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    case 'polyline':
-      const points = (lastShape.geometry as any).points;
-      return points[points.length - 1];
-    default:
-      return null;
+  const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
+  try {
+    return getShapeEndPoint(lastShape);
+  } catch (error) {
+    console.warn('Error getting end point for shape:', lastShape, error);
+    return null;
   }
 }
 
 /**
  * Get the tangent direction at a point on the chain.
  */
-function getChainTangent(chain: ShapeChain, point: Point2D, isStart: boolean): Point2D {
+function getChainTangent(chain: Chain, point: Point2D, isStart: boolean): Point2D {
   if (chain.shapes.length === 0) {
     return { x: 1, y: 0 }; // Default to horizontal
   }
 
-  const shape = isStart ? chain.shapes[0] : chain.shapes[chain.shapes.length - 1];
+  const shape: Shape = isStart ? chain.shapes[0] : chain.shapes[chain.shapes.length - 1];
   
   switch (shape.type) {
     case 'line':
       // Line tangent is just the line direction
-      const line = shape.geometry as any;
-      const dx = line.end.x - line.start.x;
-      const dy = line.end.y - line.start.y;
-      const len = Math.sqrt(dx * dx + dy * dy);
+      const line: import("$lib/types/geometry").Line = shape.geometry as Line;
+      const dx: number = line.end.x - line.start.x;
+      const dy: number = line.end.y - line.start.y;
+      const len: number = Math.sqrt(dx * dx + dy * dy);
       return len > 0 ? { x: dx / len, y: dy / len } : { x: 1, y: 0 };
 
     case 'arc':
       // Arc tangent is perpendicular to radius at the point
-      const arc = shape.geometry as any;
-      const angle = isStart ? arc.startAngle : arc.endAngle;
+      const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
+      const angle: number = isStart ? arc.startAngle : arc.endAngle;
       // Tangent is perpendicular to radius
       // If arc goes counterclockwise, tangent points in +90° direction
       // If arc goes clockwise, tangent points in -90° direction
-      const isCounterClockwise = arc.endAngle > arc.startAngle;
-      const tangentAngle = angle + (isCounterClockwise ? Math.PI / 2 : -Math.PI / 2);
+      const isCounterClockwise: boolean = arc.endAngle > arc.startAngle;
+      const tangentAngle: number = angle + (isCounterClockwise ? Math.PI / 2 : -Math.PI / 2);
       return {
         x: Math.cos(tangentAngle),
         y: Math.sin(tangentAngle)
@@ -770,10 +734,10 @@ function getChainTangent(chain: ShapeChain, point: Point2D, isStart: boolean): P
 
     case 'circle':
       // Circle tangent at any point is perpendicular to radius
-      const circle = shape.geometry as any;
-      const cdx = point.x - circle.center.x;
-      const cdy = point.y - circle.center.y;
-      const clen = Math.sqrt(cdx * cdx + cdy * cdy);
+      const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle;
+      const cdx: number = point.x - circle.center.x;
+      const cdy: number = point.y - circle.center.y;
+      const clen: number = Math.sqrt(cdx * cdx + cdy * cdy);
       if (clen > 0) {
         // Tangent is perpendicular to radius, assuming counterclockwise
         return { x: -cdy / clen, y: cdx / clen };
@@ -782,17 +746,17 @@ function getChainTangent(chain: ShapeChain, point: Point2D, isStart: boolean): P
 
     case 'polyline':
       // Polyline tangent at start/end
-      const points = (shape.geometry as any).points;
+      const points: Point2D[] = polylineToPoints(shape.geometry as Polyline);
       if (isStart && points.length >= 2) {
-        const dx = points[1].x - points[0].x;
-        const dy = points[1].y - points[0].y;
-        const len = Math.sqrt(dx * dx + dy * dy);
+        const dx: number = points[1].x - points[0].x;
+        const dy: number = points[1].y - points[0].y;
+        const len: number = Math.sqrt(dx * dx + dy * dy);
         return len > 0 ? { x: dx / len, y: dy / len } : { x: 1, y: 0 };
       } else if (!isStart && points.length >= 2) {
-        const n = points.length;
-        const dx = points[n - 1].x - points[n - 2].x;
-        const dy = points[n - 1].y - points[n - 2].y;
-        const len = Math.sqrt(dx * dx + dy * dy);
+        const n: number = points.length;
+        const dx: number = points[n - 1].x - points[n - 2].x;
+        const dy: number = points[n - 1].y - points[n - 2].y;
+        const len: number = Math.sqrt(dx * dx + dy * dy);
         return len > 0 ? { x: dx / len, y: dy / len } : { x: 1, y: 0 };
       }
       return { x: 1, y: 0 };
@@ -812,15 +776,15 @@ function getLeadCurveDirection(
   isHole: boolean,
   isShell: boolean,
   cutDirection: CutDirection,
-  chain: ShapeChain,
+  chain: Chain,
   point: Point2D,
   part?: DetectedPart,
   leadLength?: number,
   flipSide: boolean = false
 ): Point2D {
   // Base normal directions (perpendicular to tangent)
-  const leftNormal = { x: -tangent.y, y: tangent.x };   // 90° counterclockwise
-  const rightNormal = { x: tangent.y, y: -tangent.x };  // 90° clockwise
+  const leftNormal: Point2D = { x: -tangent.y, y: tangent.x };   // 90° counterclockwise
+  const rightNormal: Point2D = { x: tangent.y, y: -tangent.x };  // 90° clockwise
 
   let selectedDirection: Point2D = leftNormal; // Default fallback
 
@@ -828,15 +792,22 @@ function getLeadCurveDirection(
   if (cutDirection !== 'none') {
     // For shells (outer boundaries):
     if (isShell) {
+      // Default: leads should be placed outside the part
+      // For clockwise cuts: lead curves to maintain clockwise flow
+      // For counterclockwise cuts: lead curves to maintain counterclockwise flow
+      selectedDirection = cutDirection === CutDirection.CLOCKWISE ? rightNormal : leftNormal;
+      
       // Check if there are nearby holes that could provide better lead placement
-      const nearbyHoleDirection = getNearbyHoleDirection(chain, point, tangent, part, leadLength);
+      // But only use hole direction if it's consistent with cut direction preference
+      const nearbyHoleDirection: Point2D | null = getNearbyHoleDirection(chain, point, tangent, part, leadLength);
       if (nearbyHoleDirection) {
-        selectedDirection = nearbyHoleDirection;
-      } else {
-        // Default: leads should be placed outside the part
-        // For clockwise cuts: lead curves to maintain clockwise flow
-        // For counterclockwise cuts: lead curves to maintain counterclockwise flow
-        selectedDirection = cutDirection === CutDirection.CLOCKWISE ? rightNormal : leftNormal;
+        // Calculate dot product to see if hole direction aligns with cut direction preference
+        const dotProduct: number = selectedDirection.x * nearbyHoleDirection.x + selectedDirection.y * nearbyHoleDirection.y;
+        // Only use hole direction if it's reasonably aligned (dot product > 0.3)
+        if (dotProduct > 0.3) {
+          selectedDirection = nearbyHoleDirection;
+        }
+        // Otherwise, stick with cut direction preference
       }
     }
     
@@ -858,7 +829,7 @@ function getLeadCurveDirection(
   else {
     // For shells, try to place leads outward
     if (isShell) {
-      const outwardNormal = calculateLocalOutwardNormal(chain, point, tangent);
+      const outwardNormal: Point2D | null = calculateLocalOutwardNormal(chain, point, tangent);
       if (outwardNormal) {
         selectedDirection = outwardNormal;
       } else {
@@ -867,7 +838,7 @@ function getLeadCurveDirection(
     }
     // For holes, try to place leads inward
     else if (isHole) {
-      const outwardNormal = calculateLocalOutwardNormal(chain, point, tangent);
+      const outwardNormal: Point2D | null = calculateLocalOutwardNormal(chain, point, tangent);
       if (outwardNormal) {
         // For holes, we want the opposite of outward (inward)
         selectedDirection = { x: -outwardNormal.x, y: -outwardNormal.y };
@@ -877,25 +848,25 @@ function getLeadCurveDirection(
     }
     // Final fallback: use centroid-based approach
     else {
-      const centroid = calculateChainCentroid(chain);
-      const toCentroid = {
+      const centroid: Point2D = calculateChainCentroid(chain);
+      const toCentroid: Point2D = {
         x: centroid.x - point.x,
         y: centroid.y - point.y
       };
 
-      const toCentroidLen = Math.sqrt(toCentroid.x * toCentroid.x + toCentroid.y * toCentroid.y);
+      const toCentroidLen: number = Math.sqrt(toCentroid.x * toCentroid.x + toCentroid.y * toCentroid.y);
       if (toCentroidLen > 0) {
         toCentroid.x /= toCentroidLen;
         toCentroid.y /= toCentroidLen;
       }
 
       if (isHole) {
-        const leftDot = leftNormal.x * toCentroid.x + leftNormal.y * toCentroid.y;
-        const rightDot = rightNormal.x * toCentroid.x + rightNormal.y * toCentroid.y;
+        const leftDot: number = leftNormal.x * toCentroid.x + leftNormal.y * toCentroid.y;
+        const rightDot: number = rightNormal.x * toCentroid.x + rightNormal.y * toCentroid.y;
         selectedDirection = leftDot > rightDot ? leftNormal : rightNormal;
       } else if (isShell) {
-        const leftDot = leftNormal.x * toCentroid.x + leftNormal.y * toCentroid.y;
-        const rightDot = rightNormal.x * toCentroid.x + rightNormal.y * toCentroid.y;
+        const leftDot: number = leftNormal.x * toCentroid.x + leftNormal.y * toCentroid.y;
+        const rightDot: number = rightNormal.x * toCentroid.x + rightNormal.y * toCentroid.y;
         selectedDirection = leftDot < rightDot ? leftNormal : rightNormal;
       } else {
         selectedDirection = leftNormal;
@@ -916,7 +887,7 @@ function getLeadCurveDirection(
  * Returns a direction toward the nearest accessible hole, or null if none found.
  */
 function getNearbyHoleDirection(
-  chain: ShapeChain,
+  chain: Chain,
   point: Point2D,
   tangent: Point2D,
   part?: DetectedPart,
@@ -928,27 +899,27 @@ function getNearbyHoleDirection(
   
   // Only consider holes that are reachable by the lead length
   // Use a reasonable multiplier (e.g., 3x lead length) to account for arc curvature
-  const maxReachableDistance = leadLength ? leadLength * 3 : 50;
+  const maxReachableDistance: number = leadLength ? leadLength * 3 : 50;
 
   // Base normal directions (perpendicular to tangent)
-  const leftNormal = { x: -tangent.y, y: tangent.x };   // 90° counterclockwise
-  const rightNormal = { x: tangent.y, y: -tangent.x };  // 90° clockwise
+  const leftNormal: Point2D = { x: -tangent.y, y: tangent.x };   // 90° counterclockwise
+  const rightNormal: Point2D = { x: tangent.y, y: -tangent.x };  // 90° clockwise
 
   let nearestHole: { distance: number; direction: Point2D } | null = null;
 
   // Check each hole to find the nearest one
   for (const hole of part.holes) {
     // Calculate hole center
-    const holeCenter = calculateChainCentroid(hole.chain);
+    const holeCenter: Point2D = calculateChainCentroid(hole.chain);
     
     
     // Vector from connection point to hole center
-    const toHole = {
+    const toHole: Point2D = {
       x: holeCenter.x - point.x,
       y: holeCenter.y - point.y
     };
     
-    const distance = Math.sqrt(toHole.x * toHole.x + toHole.y * toHole.y);
+    const distance: number = Math.sqrt(toHole.x * toHole.x + toHole.y * toHole.y);
     
     // Normalize the direction
     if (distance > 0) {
@@ -959,11 +930,11 @@ function getNearbyHoleDirection(
     // Check if hole is reachable by the lead length
     if (distance < maxReachableDistance) {
       // Determine which normal direction (left or right) points more toward the hole
-      const leftDot = leftNormal.x * toHole.x + leftNormal.y * toHole.y;
-      const rightDot = rightNormal.x * toHole.x + rightNormal.y * toHole.y;
+      const leftDot: number = leftNormal.x * toHole.x + leftNormal.y * toHole.y;
+      const rightDot: number = rightNormal.x * toHole.x + rightNormal.y * toHole.y;
       
       // Choose the normal that points more toward the hole
-      const holeDirection = leftDot > rightDot ? leftNormal : rightNormal;
+      const holeDirection: Point2D = leftDot > rightDot ? leftNormal : rightNormal;
       
       // Track the nearest hole
       if (!nearestHole || distance < nearestHole.distance) {
@@ -980,18 +951,18 @@ function getNearbyHoleDirection(
  * This works by analyzing adjacent points to determine which direction leads away from the shape.
  */
 function calculateLocalOutwardNormal(
-  chain: ShapeChain,
+  chain: Chain,
   point: Point2D,
   tangent: Point2D
 ): Point2D | null {
   // Find the shape and position within the chain that corresponds to this point
-  const shapeInfo = findPointInChain(chain, point);
+  const shapeInfo: { shapeIndex: number; isStart: boolean } | null = findPointInChain(chain, point);
   if (!shapeInfo) {
     return null;
   }
 
   // Get adjacent points for curvature analysis
-  const adjacentPoints = getAdjacentPoints(chain, shapeInfo);
+  const adjacentPoints: { prev: Point2D; next: Point2D } | null = getAdjacentPoints(chain, shapeInfo);
   if (!adjacentPoints) {
     return null;
   }
@@ -1000,12 +971,12 @@ function calculateLocalOutwardNormal(
   const { prev, next } = adjacentPoints;
   
   // Calculate vectors from point to adjacent points
-  const toPrev = { x: prev.x - point.x, y: prev.y - point.y };
-  const toNext = { x: next.x - point.x, y: next.y - point.y };
+  const toPrev: Point2D = { x: prev.x - point.x, y: prev.y - point.y };
+  const toNext: Point2D = { x: next.x - point.x, y: next.y - point.y };
   
   // Normalize vectors
-  const prevLen = Math.sqrt(toPrev.x * toPrev.x + toPrev.y * toPrev.y);
-  const nextLen = Math.sqrt(toNext.x * toNext.x + toNext.y * toNext.y);
+  const prevLen: number = Math.sqrt(toPrev.x * toPrev.x + toPrev.y * toPrev.y);
+  const nextLen: number = Math.sqrt(toNext.x * toNext.x + toNext.y * toNext.y);
   
   if (prevLen > 0) {
     toPrev.x /= prevLen;
@@ -1018,13 +989,13 @@ function calculateLocalOutwardNormal(
   }
   
   // Calculate the bisector of the angle formed by adjacent points
-  const bisector = {
+  const bisector: Point2D = {
     x: (toPrev.x + toNext.x) / 2,
     y: (toPrev.y + toNext.y) / 2
   };
   
   // Normalize bisector
-  const bisectorLen = Math.sqrt(bisector.x * bisector.x + bisector.y * bisector.y);
+  const bisectorLen: number = Math.sqrt(bisector.x * bisector.x + bisector.y * bisector.y);
   if (bisectorLen > 0) {
     bisector.x /= bisectorLen;
     bisector.y /= bisectorLen;
@@ -1035,11 +1006,11 @@ function calculateLocalOutwardNormal(
   
   // Cross product to determine if we're in a convex or concave area
   // Using the turn direction from prev -> current -> next
-  const cross = (toNext.x - toPrev.x) * tangent.y - (toNext.y - toPrev.y) * tangent.x;
+  const cross: number = (toNext.x - toPrev.x) * tangent.y - (toNext.y - toPrev.y) * tangent.x;
   
   // Base normal directions
-  const leftNormal = { x: -tangent.y, y: tangent.x };   // 90° counterclockwise
-  const rightNormal = { x: tangent.y, y: -tangent.x };  // 90° clockwise
+  const leftNormal: Point2D = { x: -tangent.y, y: tangent.x };   // 90° counterclockwise
+  const rightNormal: Point2D = { x: tangent.y, y: -tangent.x };  // 90° clockwise
   
   // For convex curves (cross < 0), use the normal that points away from the bisector
   // For concave curves (cross > 0), use the normal that points with the bisector
@@ -1049,8 +1020,8 @@ function calculateLocalOutwardNormal(
   }
   
   // Determine which normal points more away from the shape
-  const leftDotBisector = leftNormal.x * bisector.x + leftNormal.y * bisector.y;
-  const rightDotBisector = rightNormal.x * bisector.x + rightNormal.y * bisector.y;
+  const leftDotBisector: number = leftNormal.x * bisector.x + leftNormal.y * bisector.y;
+  const rightDotBisector: number = rightNormal.x * bisector.x + rightNormal.y * bisector.y;
   
   if (cross > 0) {
     // Concave area - bisector points inward, so choose normal that opposes it
@@ -1064,22 +1035,27 @@ function calculateLocalOutwardNormal(
 /**
  * Find which shape and position within a chain corresponds to a given point.
  */
-function findPointInChain(chain: ShapeChain, targetPoint: Point2D): { shapeIndex: number; isStart: boolean } | null {
-  const tolerance = 0.001;
+function findPointInChain(chain: Chain, targetPoint: Point2D): { shapeIndex: number; isStart: boolean } | null {
+  const tolerance: number = 0.001;
   
-  for (let i = 0; i < chain.shapes.length; i++) {
-    const shape = chain.shapes[i];
+  for (let i: number = 0; i < chain.shapes.length; i++) {
+    const shape: Shape = chain.shapes[i];
     
     // Check start and end points of each shape
-    const startPoint = getShapeStartPoint(shape);
-    const endPoint = getShapeEndPoint(shape);
-    
-    if (startPoint && distance(startPoint, targetPoint) < tolerance) {
-      return { shapeIndex: i, isStart: true };
-    }
-    
-    if (endPoint && distance(endPoint, targetPoint) < tolerance) {
-      return { shapeIndex: i, isStart: false };
+    try {
+      const startPoint: Point2D = getShapeStartPoint(shape);
+      const endPoint: Point2D = getShapeEndPoint(shape);
+      
+      if (distance(startPoint, targetPoint) < tolerance) {
+        return { shapeIndex: i, isStart: true };
+      }
+      
+      if (distance(endPoint, targetPoint) < tolerance) {
+        return { shapeIndex: i, isStart: false };
+      }
+    } catch (error) {
+      console.warn('Error getting shape points:', shape, error);
+      continue;
     }
   }
   
@@ -1090,33 +1066,37 @@ function findPointInChain(chain: ShapeChain, targetPoint: Point2D): { shapeIndex
  * Get adjacent points for curvature analysis.
  */  
 function getAdjacentPoints(
-  chain: ShapeChain, 
+  chain: Chain, 
   shapeInfo: { shapeIndex: number; isStart: boolean }
 ): { prev: Point2D; next: Point2D } | null {
   const { shapeIndex, isStart } = shapeInfo;
-  const shapes = chain.shapes;
-  const currentShape = shapes[shapeIndex];
+  const shapes: Shape[] = chain.shapes;
+  const currentShape: Shape = shapes[shapeIndex];
   
   // Special handling for polylines since they contain multiple points
   if (currentShape.type === 'polyline') {
-    const points = (currentShape.geometry as any).points;
+    const points: Point2D[] = polylineToPoints(currentShape.geometry as Polyline);
     
     if (isStart) {
       // For polyline start, prev is the second-to-last point (since last = first in closed polylines)
-      const prevPoint = points[points.length - 2];
-      const nextPoint = points[1]; // Second point in polyline
+      const prevPoint: Point2D = points[points.length - 2];
+      const nextPoint: Point2D = points[1]; // Second point in polyline
       
       if (prevPoint && nextPoint) {
         return { prev: prevPoint, next: nextPoint };
       }
     } else {
       // For polyline end, prev is second-to-last, next is from next shape
-      const prevPoint = points[points.length - 2];
-      const nextShape = shapes[(shapeIndex + 1) % shapes.length];
-      const nextStart = getShapeStartPoint(nextShape);
-      
-      if (prevPoint && nextStart) {
-        return { prev: prevPoint, next: nextStart };
+      const prevPoint: Point2D = points[points.length - 2];
+      const nextShape: Shape = shapes[(shapeIndex + 1) % shapes.length];
+      try {
+        const nextStart: Point2D = getShapeStartPoint(nextShape);
+        
+        if (prevPoint) {
+          return { prev: prevPoint, next: nextStart };
+        }
+      } catch (error) {
+        console.warn('Error getting next shape start point:', error);
       }
     }
   }
@@ -1124,114 +1104,77 @@ function getAdjacentPoints(
   // Original logic for non-polyline shapes
   if (isStart) {
     // Point is at the start of a shape
-    const prevShape = shapes[(shapeIndex - 1 + shapes.length) % shapes.length];
-    const nextShape = shapes[shapeIndex];
+    const prevShape: Shape = shapes[(shapeIndex - 1 + shapes.length) % shapes.length];
+    const nextShape: Shape = shapes[shapeIndex];
     
-    const currentStart = getShapeStartPoint(currentShape);
-    const prevEnd = getShapeEndPoint(prevShape);
-    const nextPoint = getShapePointAfterStart(nextShape);
-    
-    if (currentStart && prevEnd && nextPoint) {
-      return { prev: prevEnd, next: nextPoint };
+    try {
+      const prevEnd: Point2D = getShapeEndPoint(prevShape);
+      const nextPoint: Point2D | null = getShapePointAfterStart(nextShape);
+      
+      if (nextPoint) {
+        return { prev: prevEnd, next: nextPoint };
+      }
+    } catch (error) {
+      console.warn('Error getting adjacent points for start:', error);
     }
   } else {
     // Point is at the end of a shape
-    const nextShape = shapes[(shapeIndex + 1) % shapes.length];
+    const nextShape: Shape = shapes[(shapeIndex + 1) % shapes.length];
     
-    const currentEnd = getShapeEndPoint(currentShape);
-    const prevPoint = getShapePointBeforeEnd(currentShape);
-    const nextStart = getShapeStartPoint(nextShape);
-    
-    if (currentEnd && prevPoint && nextStart) {
-      return { prev: prevPoint, next: nextStart };
+    try {
+      const prevPoint: Point2D | null = getShapePointBeforeEnd(currentShape);
+      const nextStart: Point2D = getShapeStartPoint(nextShape);
+      
+      if (prevPoint) {
+        return { prev: prevPoint, next: nextStart };
+      }
+    } catch (error) {
+      console.warn('Error getting adjacent points for end:', error);
     }
   }
   
   return null;
 }
 
-/**
- * Helper functions for getting shape points
- */
-function getShapeStartPoint(shape: any): Point2D | null {
-  switch (shape.type) {
-    case 'line':
-      return shape.geometry.start;
-    case 'arc':
-      const arc = shape.geometry;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-      };
-    case 'circle':
-      const circle = shape.geometry;
-      return { x: circle.center.x + circle.radius, y: circle.center.y };
-    case 'polyline':
-      return shape.geometry.points[0];
-    default:
-      return null;
-  }
-}
 
-function getShapeEndPoint(shape: any): Point2D | null {
+function getShapePointAfterStart(shape: Shape): Point2D | null {
   switch (shape.type) {
     case 'line':
-      return shape.geometry.end;
+      return (shape.geometry as Line).end;
     case 'arc':
-      const arc = shape.geometry;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-      };
-    case 'circle':
-      const circle = shape.geometry;
-      return { x: circle.center.x + circle.radius, y: circle.center.y };
-    case 'polyline':
-      const points = shape.geometry.points;
-      return points[points.length - 1];
-    default:
-      return null;
-  }
-}
-
-function getShapePointAfterStart(shape: any): Point2D | null {
-  switch (shape.type) {
-    case 'line':
-      return shape.geometry.end;
-    case 'arc':
-      const arc = shape.geometry;
-      const midAngle = (arc.startAngle + arc.endAngle) / 2;
+      const arc: Arc = shape.geometry as Arc;
+      const midAngle: number = (arc.startAngle + arc.endAngle) / 2;
       return {
         x: arc.center.x + arc.radius * Math.cos(midAngle),
         y: arc.center.y + arc.radius * Math.sin(midAngle)
       };
     case 'circle':
-      const circle = shape.geometry;
+      const circle: Circle = shape.geometry as Circle;
       return { x: circle.center.x, y: circle.center.y + circle.radius };
     case 'polyline':
-      const points = shape.geometry.points;
+      const points: Point2D[] = polylineToPoints(shape.geometry as Polyline);
       return points.length > 1 ? points[1] : points[0];
     default:
       return null;
   }
 }
 
-function getShapePointBeforeEnd(shape: any): Point2D | null {
+function getShapePointBeforeEnd(shape: Shape): Point2D | null {
   switch (shape.type) {
     case 'line':
-      return shape.geometry.start;
+      return (shape.geometry as Line).start;
     case 'arc':
-      const arc = shape.geometry;
-      const midAngle = (arc.startAngle + arc.endAngle) / 2;
+      const arc: Arc = shape.geometry as Arc;
+      const midAngle: number = (arc.startAngle + arc.endAngle) / 2;
       return {
         x: arc.center.x + arc.radius * Math.cos(midAngle),
         y: arc.center.y + arc.radius * Math.sin(midAngle)
       };
     case 'circle':
-      const circle = shape.geometry;
+      const circle: Circle = shape.geometry as Circle;
       return { x: circle.center.x - circle.radius, y: circle.center.y };
     case 'polyline':
-      const points = shape.geometry.points;
+      const points: Point2D[] = polylineToPoints(shape.geometry as Polyline);
       return points.length > 1 ? points[points.length - 2] : points[0];
     default:
       return null;
@@ -1245,13 +1188,13 @@ function distance(p1: Point2D, p2: Point2D): number {
 /**
  * Calculate the centroid of a chain for determining inside/outside.
  */
-function calculateChainCentroid(chain: ShapeChain): Point2D {
-  let sumX = 0;
-  let sumY = 0;
-  let count = 0;
+function calculateChainCentroid(chain: Chain): Point2D {
+  let sumX: number = 0;
+  let sumY: number = 0;
+  let count: number = 0;
 
   for (const shape of chain.shapes) {
-    const points = getShapePoints(shape);
+    const points: Point2D[] = getShapePoints(shape);
     for (const point of points) {
       sumX += point.x;
       sumY += point.y;
@@ -1267,18 +1210,18 @@ function calculateChainCentroid(chain: ShapeChain): Point2D {
 /**
  * Get sample points from a shape for centroid calculation.
  */
-function getShapePoints(shape: any): Point2D[] {
+function getShapePoints(shape: Shape): Point2D[] {
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry as any;
+      const line: Line = shape.geometry as Line;
       return [line.start, line.end];
     case 'arc':
       // Sample a few points along the arc
-      const arc = shape.geometry as any;
+      const arc: Arc = shape.geometry as Arc;
       const points: Point2D[] = [];
-      const segments = 4;
-      for (let i = 0; i <= segments; i++) {
-        const angle = arc.startAngle + (arc.endAngle - arc.startAngle) * i / segments;
+      const segments: number = 4;
+      for (let i: number = 0; i <= segments; i++) {
+        const angle: number = arc.startAngle + (arc.endAngle - arc.startAngle) * i / segments;
         points.push({
           x: arc.center.x + arc.radius * Math.cos(angle),
           y: arc.center.y + arc.radius * Math.sin(angle)
@@ -1287,7 +1230,7 @@ function getShapePoints(shape: any): Point2D[] {
       return points;
     case 'circle':
       // Sample points around circle
-      const circle = shape.geometry as any;
+      const circle: Circle = shape.geometry as Circle;
       return [
         { x: circle.center.x + circle.radius, y: circle.center.y },
         { x: circle.center.x, y: circle.center.y + circle.radius },
@@ -1295,7 +1238,7 @@ function getShapePoints(shape: any): Point2D[] {
         { x: circle.center.x, y: circle.center.y - circle.radius }
       ];
     case 'polyline':
-      return (shape.geometry as any).points;
+      return polylineToPoints(shape.geometry as Polyline);
     default:
       return [];
   }
@@ -1305,8 +1248,8 @@ function getShapePoints(shape: any): Point2D[] {
  * Rotate a curve direction vector by the specified angle
  */
 function rotateCurveDirection(direction: Point2D, angle: number): Point2D {
-  const cos = Math.cos(angle);
-  const sin = Math.sin(angle);
+  const cos: number = Math.cos(angle);
+  const sin: number = Math.sin(angle);
   
   return {
     x: direction.x * cos - direction.y * sin,
@@ -1319,7 +1262,7 @@ function rotateCurveDirection(direction: Point2D, angle: number): Point2D {
  * Excludes the connection point from the check since it's on the boundary.
  */
 function countSolidAreaPoints(points: Point2D[], part: DetectedPart, connectionPoint?: Point2D): number {
-  let solidPoints = 0;
+  let solidPoints: number = 0;
   // Check each point in the lead
   for (const leadPoint of points) {
     // Skip the connection point as it's expected to be on the boundary
@@ -1336,13 +1279,6 @@ function countSolidAreaPoints(points: Point2D[], part: DetectedPart, connectionP
   return solidPoints;
 }
 
-/**
- * Check if any points in the lead intersect with solid areas of the part.
- * Solid areas are regions inside the shell but outside any holes.
- */
-function leadIntersectsSolidArea(points: Point2D[], part: DetectedPart): boolean {
-  return countSolidAreaPoints(points, part) > 0;
-}
 
 /**
  * Check if a point is inside the solid area of a part.
@@ -1351,15 +1287,15 @@ function leadIntersectsSolidArea(points: Point2D[], part: DetectedPart): boolean
  */
 function isPointInSolidArea(point: Point2D, part: DetectedPart): boolean {
   // First check if point is inside the shell using ray casting
-  const shellPolygon = getPolygonFromChain(part.shell.chain);
-  if (!pointInPolygon(point, shellPolygon)) {
+  const shellPolygon: Point2D[] = getPolygonFromChain(part.shell.chain);
+  if (!isPointInPolygon(point, shellPolygon)) {
     return false; // Not inside shell, definitely not in solid area
   }
 
   // Check if point is inside any hole using ray casting
   for (const hole of part.holes) {
-    const holePolygon = getPolygonFromChain(hole.chain);
-    if (pointInPolygon(point, holePolygon)) {
+    const holePolygon: Point2D[] = getPolygonFromChain(hole.chain);
+    if (isPointInPolygon(point, holePolygon)) {
       return false; // Inside hole, not solid area
     }
   }
@@ -1370,23 +1306,23 @@ function isPointInSolidArea(point: Point2D, part: DetectedPart): boolean {
 /**
  * Extract polygon points from a chain for point-in-polygon testing.
  */
-function getPolygonFromChain(chain: ShapeChain): Point2D[] {
+function getPolygonFromChain(chain: Chain): Point2D[] {
   const points: Point2D[] = [];
   
   for (const shape of chain.shapes) {
     switch (shape.type) {
       case 'line':
-        const line = shape.geometry as any;
+        const line: Line = shape.geometry as Line;
         points.push(line.start);
         break;
         
       case 'arc':
         // Sample points along the arc
-        const arc = shape.geometry as any;
-        const segments = Math.max(8, Math.ceil(Math.abs(arc.endAngle - arc.startAngle) * arc.radius / 2));
-        for (let i = 0; i < segments; i++) {
-          const t = i / segments;
-          const angle = arc.startAngle + (arc.endAngle - arc.startAngle) * t;
+        const arc: Arc = shape.geometry as Arc;
+        const segments: number = Math.max(8, Math.ceil(Math.abs(arc.endAngle - arc.startAngle) * arc.radius / 2));
+        for (let i: number = 0; i < segments; i++) {
+          const t: number = i / segments;
+          const angle: number = arc.startAngle + (arc.endAngle - arc.startAngle) * t;
           points.push({
             x: arc.center.x + arc.radius * Math.cos(angle),
             y: arc.center.y + arc.radius * Math.sin(angle)
@@ -1396,10 +1332,10 @@ function getPolygonFromChain(chain: ShapeChain): Point2D[] {
         
       case 'circle':
         // Sample points around the circle
-        const circle = shape.geometry as any;
-        const circleSegments = Math.max(16, Math.ceil(2 * Math.PI * circle.radius / 2));
-        for (let i = 0; i < circleSegments; i++) {
-          const angle = (2 * Math.PI * i) / circleSegments;
+        const circle: Circle = shape.geometry as Circle;
+        const circleSegments: number = Math.max(16, Math.ceil(2 * Math.PI * circle.radius / 2));
+        for (let i: number = 0; i < circleSegments; i++) {
+          const angle: number = (2 * Math.PI * i) / circleSegments;
           points.push({
             x: circle.center.x + circle.radius * Math.cos(angle),
             y: circle.center.y + circle.radius * Math.sin(angle)
@@ -1408,13 +1344,13 @@ function getPolygonFromChain(chain: ShapeChain): Point2D[] {
         break;
         
       case 'polyline':
-        const polyline = shape.geometry as any;
-        points.push(...polyline.points);
+        const polyline: Polyline = shape.geometry as Polyline;
+        points.push(...polylineToPoints(polyline));
         break;
         
       default:
         // For other shape types, use bounding points
-        const shapePoints = getShapePoints(shape);
+        const shapePoints: Point2D[] = getShapePoints(shape);
         points.push(...shapePoints);
         break;
     }
@@ -1427,45 +1363,16 @@ function getPolygonFromChain(chain: ShapeChain): Point2D[] {
  * Point-in-polygon test using ray casting algorithm.
  * Returns true if point is inside the polygon.
  */
-function pointInPolygon(point: Point2D, polygon: Point2D[]): boolean {
-  if (polygon.length < 3) return false;
-  
-  let inside = false;
-  const x = point.x;
-  const y = point.y;
-  
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i].x;
-    const yi = polygon[i].y;
-    const xj = polygon[j].x;
-    const yj = polygon[j].y;
-    
-    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
-      inside = !inside;
-    }
-  }
-  
-  return inside;
-}
 
-/**
- * Check if a point is inside a bounding box
- */
-function isPointInBoundingBox(point: Point2D, bbox: { minX: number; maxX: number; minY: number; maxY: number }): boolean {
-  return point.x >= bbox.minX && 
-         point.x <= bbox.maxX && 
-         point.y >= bbox.minY && 
-         point.y <= bbox.maxY;
-}
 
 /**
  * Check if leads would collide with each other or with paths.
  * This is a placeholder for the actual collision detection logic.
  */
 export function checkLeadCollisions(
-  leadResult: LeadResult,
-  allPaths: any[],
-  currentPath: any
+  _leadResult: LeadResult,
+  _allPaths: unknown[],
+  _currentPath: unknown
 ): boolean {
   // TODO: Implement collision detection
   // - Check if lead-in crosses lead-out

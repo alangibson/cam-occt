@@ -6,8 +6,8 @@
  */
 
 import { writable } from 'svelte/store';
-import type { AlgorithmParameters } from '../../types/algorithm-parameters';
-import { DEFAULT_ALGORITHM_PARAMETERS } from '../../types/algorithm-parameters';
+import type { AlgorithmParameters } from '../../lib/types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS } from '../../lib/types/algorithm-parameters';
 import type { ChainNormalizationResult } from '../algorithms/chain-normalization';
 
 export interface PrepareStageState {
@@ -25,7 +25,16 @@ export interface PrepareStageState {
   lastAnalysisTimestamp: number;
 }
 
-function createPrepareStageStore() {
+function createPrepareStageStore(): {
+  subscribe: (run: (value: PrepareStageState) => void) => () => void;
+  setAlgorithmParams: (params: AlgorithmParameters) => void;
+  updateAlgorithmParam: <K extends keyof AlgorithmParameters>(category: K, params: Partial<AlgorithmParameters[K]>) => void;
+  setChainNormalizationResults: (results: ChainNormalizationResult[]) => void;
+  clearChainNormalizationResults: () => void;
+  setColumnWidths: (leftWidth: number, rightWidth: number) => void;
+  reset: () => void;
+  getChainNormalizationResult: (chainId: string) => ChainNormalizationResult | null;
+} {
   const { subscribe, set, update } = writable<PrepareStageState>({
     algorithmParams: { ...DEFAULT_ALGORITHM_PARAMETERS },
     chainNormalizationResults: [],
@@ -126,4 +135,4 @@ function createPrepareStageStore() {
   };
 }
 
-export const prepareStageStore = createPrepareStageStore();
+export const prepareStageStore: ReturnType<typeof createPrepareStageStore> = createPrepareStageStore();

@@ -26,5 +26,5 @@ export default defineConfig({
 	ssr: {
 		noExternal: ['three', 'dxf']
 	},
-	assetsInclude: ['**/*.wasm']
+	assetsInclude: ['**/*.wasm'],
 });

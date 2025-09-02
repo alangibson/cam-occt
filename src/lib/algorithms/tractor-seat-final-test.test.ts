@@ -24,20 +24,13 @@ describe('Tractor Seat Mount Final Test', () => {
     // Detect parts
     const partResult = await detectParts(chains);
     
-    console.log(`\n=== FINAL TEST RESULTS ===`);
-    console.log(`Parts detected: ${partResult.parts.length}`);
-    console.log(`Total holes across all parts: ${partResult.parts.reduce((sum, part) => sum + part.holes.length, 0)}`);
     
     partResult.parts.forEach((part, index) => {
-      console.log(`Part ${index + 1}: ${part.holes.length} holes, shell has ${part.shell.chain.shapes.length} shapes`);
       part.holes.forEach((hole, holeIndex) => {
-        console.log(`  Hole ${holeIndex + 1}: chain ${hole.chain.id} with ${hole.chain.shapes.length} shapes`);
       });
     });
     
     if (partResult.warnings.length > 0) {
-      console.log(`Warnings: ${partResult.warnings.length}`);
-      partResult.warnings.forEach(warning => console.log(`  - ${warning.message}`));
     }
     
     // The expected behavior: 1 part with multiple holes

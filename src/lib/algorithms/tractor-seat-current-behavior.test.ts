@@ -4,6 +4,8 @@ import path from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
+import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import { polylineToPoints } from '../geometry/polyline';
 
 describe('Tractor Seat Mount Current Behavior', () => {
   it('should confirm current behavior: detects 11 parts instead of 1 part with holes', async () => {
@@ -19,12 +21,10 @@ describe('Tractor Seat Mount Current Behavior', () => {
     });
 
     // Try more aggressive chain detection to see if more chains can be detected
-    console.log('\n=== TRYING DIFFERENT TOLERANCES ===');
     const tolerances = [0.05, 0.1, 0.5, 1.0, 2.0];
     
     for (const tolerance of tolerances) {
       const testChains = detectShapeChains(drawing.shapes, { tolerance });
-      console.log(`Tolerance ${tolerance}: ${testChains.length} chains detected`);
     }
     
     // Use aggressive tolerance to get maximum chains
@@ -34,19 +34,12 @@ describe('Tractor Seat Mount Current Behavior', () => {
     const userTolerance = 0.1;
     const partResult = await detectParts(chains, userTolerance);
     
-    console.log(`\n=== CURRENT BEHAVIOR CONFIRMATION ===`);
-    console.log(`Total shapes: ${drawing.shapes.length}`);
-    console.log(`Total chains: ${chains.length}`);
-    console.log(`Parts detected: ${partResult.parts.length}`);
-    console.log(`Warnings: ${partResult.warnings.length}`);
     
     // Show all parts
     partResult.parts.forEach((part, index) => {
-      console.log(`Part ${index + 1}: ${part.holes.length} holes, shell has ${part.shell.chain.shapes.length} shapes`);
     });
     
     // Analyze chain closure with detailed debugging
-    console.log('\n=== CHAIN CLOSURE ANALYSIS ===');
     chains.forEach((chain, index) => {
       if (chain.shapes.length === 0) return;
       const firstShape = chain.shapes[0];
@@ -54,19 +47,13 @@ describe('Tractor Seat Mount Current Behavior', () => {
       const firstStart = getShapeStartPoint(firstShape);
       const lastEnd = getShapeEndPoint(lastShape);
       
-      if (!firstStart || !lastEnd) {
-        console.log(`Chain ${index + 1} (${chain.id}): ${chain.shapes.length} shapes - NO ENDPOINTS`);
-        return;
-      }
-      
-      const distance = Math.sqrt(
+      const distance: number = Math.sqrt(
         Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
       );
       
       // Use ONLY the user-set tolerance
       const userTolerance = 0.1;
       const isClosed = distance < userTolerance;
-      console.log(`Chain ${index + 1} (${chain.id}): ${chain.shapes.length} shapes, gap=${distance.toFixed(4)}, tolerance=${userTolerance.toFixed(4)}, closed=${isClosed}`);
     });
     
     const closedChains = chains.filter(chain => {
@@ -75,8 +62,7 @@ describe('Tractor Seat Mount Current Behavior', () => {
       const lastShape = chain.shapes[chain.shapes.length - 1];
       const firstStart = getShapeStartPoint(firstShape);
       const lastEnd = getShapeEndPoint(lastShape);
-      if (!firstStart || !lastEnd) return false;
-      const distance = Math.sqrt(
+      const distance: number = Math.sqrt(
         Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
       );
       
@@ -85,15 +71,10 @@ describe('Tractor Seat Mount Current Behavior', () => {
       return distance < userTolerance;
     });
     
-    console.log(`\nClosed chains with user tolerance (${userTolerance}): ${closedChains.length}`);
-    console.log(`Open chains: ${chains.length - closedChains.length}`);
     
     // This test documents the current behavior with user tolerance
     // With user tolerance 0.1, most chains will be open due to gaps
     // The expected behavior is 1 part with multiple holes
-    console.log(`\nWith user tolerance of ${userTolerance}, expecting different results than before`);
-    console.log(`Parts detected: ${partResult.parts.length}`);
-    console.log(`Warnings: ${partResult.warnings.length}`);
     
     // Expected behavior after fix:
     // expect(partResult.parts.length).toBe(1);
@@ -141,7 +122,8 @@ function getShapeBoundingBox(shape: any): any {
       };
     case 'polyline':
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-      for (const point of shape.geometry.points || []) {
+      const points = polylineToPoints(shape.geometry);
+      for (const point of points) {
         minX = Math.min(minX, point.x);
         maxX = Math.max(maxX, point.x);
         minY = Math.min(minY, point.y);
@@ -153,47 +135,3 @@ function getShapeBoundingBox(shape: any): any {
   }
 }
 
-function getShapeStartPoint(shape: any): { x: number; y: number } | null {
-  switch (shape.type) {
-    case 'line':
-      return shape.geometry.start;
-    case 'polyline':
-      return shape.geometry.points.length > 0 ? shape.geometry.points[0] : null;
-    case 'arc':
-      const arc = shape.geometry;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-      };
-    case 'circle':
-      return {
-        x: shape.geometry.center.x + shape.geometry.radius,
-        y: shape.geometry.center.y
-      };
-    default:
-      return null;
-  }
-}
-
-function getShapeEndPoint(shape: any): { x: number; y: number } | null {
-  switch (shape.type) {
-    case 'line':
-      return shape.geometry.end;
-    case 'polyline':
-      const points = shape.geometry.points;
-      return points.length > 0 ? points[points.length - 1] : null;
-    case 'arc':
-      const arc = shape.geometry;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-      };
-    case 'circle':
-      return {
-        x: shape.geometry.center.x + shape.geometry.radius,
-        y: shape.geometry.center.y
-      };
-    default:
-      return null;
-  }
-}

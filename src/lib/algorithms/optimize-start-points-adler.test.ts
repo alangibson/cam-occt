@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
-import type { Shape } from '../../types';
+import type { Shape } from '../../lib/types';
 import type { ShapeChain } from './chain-detection';
 import { CutDirection, LeadType } from '../types/direction';
+import { createPolylineFromVertices } from '../geometry/polyline';
 
 describe('optimizeStartPoints - ADLER.dxf scenario', () => {
   const tolerance = 0.1;
@@ -12,43 +13,34 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
     const chains: ShapeChain[] = [];
     
     // Create 5 closed chains similar to what's in ADLER.dxf
-    for (let i = 0; i < 5; i++) {
+    for (let i: number = 0; i < 5; i++) {
       const xOffset = i * 20;
       const shapes: Shape[] = [
         {
           id: `polyline-${i}-1`,
           type: 'polyline',
-          geometry: {
-            points: [
-              { x: xOffset + 0, y: 0 },
-              { x: xOffset + 10, y: 0 },
-              { x: xOffset + 10, y: 5 }
-            ],
-            closed: false
-          }
+          geometry: createPolylineFromVertices([
+            { x: xOffset + 0, y: 0, bulge: 0 },
+            { x: xOffset + 10, y: 0, bulge: 0 },
+            { x: xOffset + 10, y: 5, bulge: 0 }
+          ], false).geometry
         },
         {
           id: `polyline-${i}-2`,
           type: 'polyline',
-          geometry: {
-            points: [
-              { x: xOffset + 10, y: 5 },
-              { x: xOffset + 10, y: 10 },
-              { x: xOffset + 0, y: 10 }
-            ],
-            closed: false
-          }
+          geometry: createPolylineFromVertices([
+            { x: xOffset + 10, y: 5, bulge: 0 },
+            { x: xOffset + 10, y: 10, bulge: 0 },
+            { x: xOffset + 0, y: 10, bulge: 0 }
+          ], false).geometry
         },
         {
           id: `polyline-${i}-3`,
           type: 'polyline',
-          geometry: {
-            points: [
-              { x: xOffset + 0, y: 10 },
-              { x: xOffset + 0, y: 0 }
-            ],
-            closed: false
-          }
+          geometry: createPolylineFromVertices([
+            { x: xOffset + 0, y: 10, bulge: 0 },
+            { x: xOffset + 0, y: 0, bulge: 0 }
+          ], false).geometry
         }
       ];
       
@@ -73,25 +65,19 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
         {
           id: 'polyline-mixed-1',
           type: 'polyline',
-          geometry: {
-            points: [
-              { x: 110, y: 0 },
-              { x: 110, y: 10 },
-              { x: 100, y: 10 }
-            ],
-            closed: false
-          }
+          geometry: createPolylineFromVertices([
+            { x: 110, y: 0, bulge: 0 },
+            { x: 110, y: 10, bulge: 0 },
+            { x: 100, y: 10, bulge: 0 }
+          ], false).geometry
         },
         {
           id: 'polyline-mixed-2',
           type: 'polyline',
-          geometry: {
-            points: [
-              { x: 100, y: 10 },
-              { x: 100, y: 0 }
-            ],
-            closed: false
-          }
+          geometry: createPolylineFromVertices([
+            { x: 100, y: 10, bulge: 0 },
+            { x: 100, y: 0, bulge: 0 }
+          ], false).geometry
         }
       ]
     };
@@ -128,14 +114,11 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
         {
           id: 'polyline-1',
           type: 'polyline',
-          geometry: {
-            points: [
-              { x: 0, y: 0 },
-              { x: 10, y: 0 },
-              { x: 10, y: 10 }
-            ],
-            closed: false
-          }
+          geometry: createPolylineFromVertices([
+            { x: 0, y: 0, bulge: 0 },
+            { x: 10, y: 0, bulge: 0 },
+            { x: 10, y: 10, bulge: 0 }
+          ], false).geometry
         },
         {
           id: 'spline-1',
@@ -156,13 +139,10 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
         {
           id: 'polyline-2',
           type: 'polyline',
-          geometry: {
-            points: [
-              { x: 0, y: 10 },
-              { x: 0, y: 0 }
-            ],
-            closed: false
-          }
+          geometry: createPolylineFromVertices([
+            { x: 0, y: 10, bulge: 0 },
+            { x: 0, y: 0, bulge: 0 }
+          ], false).geometry
         }
       ]
     };
@@ -183,35 +163,29 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
         {
           id: 'converted-polyline-1',
           type: 'polyline',
-          geometry: {
-            points: [
-              { x: 0, y: 0 },
-              { x: 5, y: 0 },
-              { x: 10, y: 0 },
-              { x: 15, y: 0 },
-              { x: 20, y: 0 },
-              { x: 20, y: 5 },
-              { x: 20, y: 10 }
-            ],
-            closed: false
-          },
+          geometry: createPolylineFromVertices([
+            { x: 0, y: 0, bulge: 0 },
+            { x: 5, y: 0, bulge: 0 },
+            { x: 10, y: 0, bulge: 0 },
+            { x: 15, y: 0, bulge: 0 },
+            { x: 20, y: 0, bulge: 0 },
+            { x: 20, y: 5, bulge: 0 },
+            { x: 20, y: 10, bulge: 0 }
+          ], false).geometry,
           originalType: 'LWPOLYLINE' // This indicates it was converted from DXF
         },
         {
           id: 'converted-polyline-2',
           type: 'polyline',
-          geometry: {
-            points: [
-              { x: 20, y: 10 },
-              { x: 15, y: 10 },
-              { x: 10, y: 10 },
-              { x: 5, y: 10 },
-              { x: 0, y: 10 },
-              { x: 0, y: 5 },
-              { x: 0, y: 0 }
-            ],
-            closed: false
-          },
+          geometry: createPolylineFromVertices([
+            { x: 20, y: 10, bulge: 0 },
+            { x: 15, y: 10, bulge: 0 },
+            { x: 10, y: 10, bulge: 0 },
+            { x: 5, y: 10, bulge: 0 },
+            { x: 0, y: 10, bulge: 0 },
+            { x: 0, y: 5, bulge: 0 },
+            { x: 0, y: 0, bulge: 0 }
+          ], false).geometry,
           originalType: 'LWPOLYLINE'
         }
       ]

@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import { isChainClosed } from './part-detection';
-import type { Shape } from '../../types';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
+import type { Shape } from '../../lib/types';
 import type { ShapeChain } from './chain-detection';
 
 describe('optimizeStartPoints - closed polylines', () => {
@@ -9,20 +10,12 @@ describe('optimizeStartPoints - closed polylines', () => {
 
   it('should recognize single closed polylines as closed chains', () => {
     // Simulate ADLER.dxf style - single closed polyline in a chain
-    const closedPolyline: Shape = {
-      id: 'closed-polyline-1',
-      type: 'polyline',
-      geometry: {
-        points: [
-          { x: 0, y: 0 },
-          { x: 10, y: 0 },
-          { x: 10, y: 10 },
-          { x: 0, y: 10 },
-          { x: 0, y: 0 } // Duplicate first point to ensure geometric closure
-        ],
-        closed: true // This is the key flag from DXF parsing
-      }
-    };
+    const closedPolyline = createPolylineFromVertices([
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 10, y: 10 },
+      { x: 0, y: 10 }
+    ], true, { id: 'closed-polyline-1' });
 
     const chain: ShapeChain = {
       id: 'chain-1',
@@ -47,23 +40,15 @@ describe('optimizeStartPoints - closed polylines', () => {
     // Simulate typical ADLER.dxf structure - each chain contains one closed polyline
     const chains: ShapeChain[] = [];
     
-    for (let i = 0; i < 3; i++) {
-      const closedPolyline: Shape = {
-        id: `adler-polyline-${i}`,
-        type: 'polyline',
-        geometry: {
-          points: [
-            { x: i * 20, y: 0 },
-            { x: i * 20 + 15, y: 0 },
-            { x: i * 20 + 15, y: 8 },
-            { x: i * 20 + 10, y: 12 },
-            { x: i * 20 + 5, y: 8 },
-            { x: i * 20, y: 8 },
-            { x: i * 20, y: 0 } // Duplicate first point
-          ],
-          closed: true
-        }
-      };
+    for (let i: number = 0; i < 3; i++) {
+      const closedPolyline = createPolylineFromVertices([
+        { x: i * 20, y: 0 },
+        { x: i * 20 + 15, y: 0 },
+        { x: i * 20 + 15, y: 8 },
+        { x: i * 20 + 10, y: 12 },
+        { x: i * 20 + 5, y: 8 },
+        { x: i * 20, y: 8 }
+      ], true, { id: `adler-polyline-${i}` });
 
       chains.push({
         id: `adler-chain-${i}`,
@@ -87,18 +72,11 @@ describe('optimizeStartPoints - closed polylines', () => {
   });
 
   it('should not optimize open polylines', () => {
-    const openPolyline: Shape = {
-      id: 'open-polyline-1',
-      type: 'polyline',
-      geometry: {
-        points: [
-          { x: 0, y: 0 },
-          { x: 10, y: 0 },
-          { x: 10, y: 10 }
-        ],
-        closed: false
-      }
-    };
+    const openPolyline = createPolylineFromVertices([
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 10, y: 10 }
+    ], false, { id: 'open-polyline-1' });
 
     const chain: ShapeChain = {
       id: 'open-chain',
@@ -117,19 +95,12 @@ describe('optimizeStartPoints - closed polylines', () => {
 
   it('should handle polylines without explicit closed flag by checking geometric closure', () => {
     // Some polylines might not have the closed flag but are geometrically closed
-    const geometricallyClosedPolyline: Shape = {
-      id: 'geo-closed-polyline',
-      type: 'polyline',
-      geometry: {
-        points: [
-          { x: 0, y: 0 },
-          { x: 10, y: 0 },
-          { x: 5, y: 10 },
-          { x: 0.05, y: 0.05 } // Distance = sqrt(0.05² + 0.05²) ≈ 0.071 < 0.1 tolerance
-        ],
-        closed: false // No explicit closed flag, relies on geometric closure
-      }
-    };
+    const geometricallyClosedPolyline = createPolylineFromVertices([
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 5, y: 10 },
+      { x: 0.05, y: 0.05 } // Distance = sqrt(0.05² + 0.05²) ≈ 0.071 < 0.1 tolerance
+    ], false, { id: 'geo-closed-polyline' }); // No explicit closed flag, relies on geometric closure
 
     const chain: ShapeChain = {
       id: 'geo-closed-chain',

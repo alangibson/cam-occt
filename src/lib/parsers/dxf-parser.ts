@@ -1,7 +1,11 @@
 // Dynamic import to avoid SSR issues
-let parseString: any;
-import type { Drawing, Shape, Point2D } from '../../types';
+let parseString: typeof import('dxf').parseString;
+import type { Drawing, Shape, Point2D, PolylineVertex, Polyline, Line, Arc, Circle, Ellipse, Spline } from '../../lib/types';
 import { generateId } from '../utils/id';
+import { generateSegments } from '../geometry/polyline';
+import { normalizeSplineWeights } from '../geometry/spline';
+import { getShapePointsForBounds } from '../utils/shape-bounds-utils';
+import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
 
 interface DXFOptions {
   squashLayers?: boolean;
@@ -13,7 +17,7 @@ interface DXFOptions {
 /**
  * Helper function to conditionally include layer information based on squashLayers option
  */
-function getLayerInfo(entity: any, options: DXFOptions): { layer?: string } {
+function getLayerInfo(entity: DXFEntity, options: DXFOptions): { layer?: string } {
   if (options.squashLayers) {
     return {}; // Don't include layer information
   }
@@ -27,19 +31,19 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
     parseString = dxfModule.parseString;
   }
   
-  let parsed;
+  let parsed: DXFParsed;
   try {
     parsed = parseString(content);
   } catch (error) {
     console.error('Failed to parse DXF file:', error);
-    throw new Error(`DXF parsing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(`DXF parsing failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`);
   }
   
   if (!parsed) {
     throw new Error('DXF parser returned null or undefined');
   }
   const shapes: Shape[] = [];
-  const bounds = {
+  const bounds: { minX: number; minY: number; maxX: number; maxY: number } = {
     minX: Infinity,
     minY: Infinity,
     maxX: -Infinity,
@@ -51,7 +55,7 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
   
   
   if (parsed && parsed.header && (parsed.header.$INSUNITS !== undefined || parsed.header.insUnits !== undefined)) {
-    const insunits = parsed.header.$INSUNITS || parsed.header.insUnits;
+    const insunits: number | undefined = parsed.header.$INSUNITS || parsed.header.insUnits;
     // Convert DXF $INSUNITS values to our unit system
     switch (insunits) {
       case 1: // Inches
@@ -74,11 +78,11 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
   }
 
   // Process blocks first to build block dictionary
-  const blocks = new Map<string, any[]>();
-  const blockBasePoints = new Map<string, {x: number, y: number}>();
+  const blocks: Map<string, DXFEntity[]> = new Map<string, DXFEntity[]>();
+  const blockBasePoints: Map<string, {x: number, y: number}> = new Map<string, {x: number, y: number}>();
   if (parsed && parsed.blocks) {
     for (const blockKey in parsed.blocks) {
-      const block = parsed.blocks[blockKey];
+      const block: DXFBlock = parsed.blocks[blockKey];
       if (block && block.entities && block.name) {
         blocks.set(block.name, block.entities);
         // Store block base point for INSERT transformations
@@ -92,9 +96,9 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
 
   // Process entities
   if (parsed && parsed.entities) {
-    parsed.entities.forEach((entity: any, index: number) => {
+    parsed.entities.forEach((entity: DXFEntity, index: number) => {
       try {
-        const result = convertDXFEntity(entity, options, blocks, blockBasePoints);
+        const result: Shape | Shape[] | null = convertDXFEntity(entity, options, blocks, blockBasePoints);
         if (result) {
           if (Array.isArray(result)) {
             // Multiple shapes (decomposed polyline or INSERT entities)
@@ -116,7 +120,7 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
   }
 
   // Ensure bounds are valid - if no shapes were processed, set to zero bounds
-  let finalBounds = {
+  const finalBounds: { min: Point2D; max: Point2D } = {
     min: { 
       x: isFinite(bounds.minX) ? bounds.minX : 0, 
       y: isFinite(bounds.minY) ? bounds.minY : 0 
@@ -136,36 +140,36 @@ export async function parseDXF(content: string, options: DXFOptions = {}): Promi
 }
 
 
-function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<string, any[]> = new Map(), blockBasePoints: Map<string, {x: number, y: number}> = new Map()): Shape | Shape[] | null {
+function convertDXFEntity(entity: DXFEntity, options: DXFOptions = {}, blocks: Map<string, DXFEntity[]> = new Map(), blockBasePoints: Map<string, {x: number, y: number}> = new Map()): Shape | Shape[] | null {
   try {
     switch (entity.type) {
       case 'INSERT':
         // Handle INSERT entities (block references)
-        const blockName = entity.block || entity.name;
+        const blockName: string | undefined = entity.block || entity.name;
         if (blockName && blocks.has(blockName)) {
-          const blockEntities = blocks.get(blockName) || [];
+          const blockEntities: DXFEntity[] = blocks.get(blockName) || [];
           const insertedShapes: Shape[] = [];
           
           // Get transformation parameters with defaults
-          const insertX = entity.x || 0;
-          const insertY = entity.y || 0;
-          const scaleX = entity.scaleX || 1;
-          const scaleY = entity.scaleY || 1;
-          const rotation = entity.rotation || 0; // In degrees
-          const rotationRad = (rotation * Math.PI) / 180; // Convert to radians
+          const insertX: number = entity.x || 0;
+          const insertY: number = entity.y || 0;
+          const scaleX: number = entity.scaleX || 1;
+          const scaleY: number = entity.scaleY || 1;
+          const rotation: number = entity.rotation || 0; // In degrees
+          const rotationRad: number = (rotation * Math.PI) / 180; // Convert to radians
           
           // Get block base point for proper INSERT positioning
-          const basePoint = blockBasePoints.get(blockName) || { x: 0, y: 0 };
+          const basePoint: { x: number; y: number } = blockBasePoints.get(blockName) || { x: 0, y: 0 };
           
           // Process each entity in the block
           for (const blockEntity of blockEntities) {
-            const shape = convertDXFEntity(blockEntity, options, blocks, blockBasePoints);
+            const shape: Shape | Shape[] | null = convertDXFEntity(blockEntity, options, blocks, blockBasePoints);
             if (shape) {
-              const shapesToTransform = Array.isArray(shape) ? shape : [shape];
+              const shapesToTransform: Shape[] = Array.isArray(shape) ? shape : [shape];
               
               // Apply transformation to each shape
               for (const shapeToTransform of shapesToTransform) {
-                const transformedShape = transformShape(shapeToTransform, {
+                const transformedShape: Shape | null = transformShape(shapeToTransform, {
                   insertX,
                   insertY,
                   scaleX,
@@ -249,17 +253,22 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
       case 'SPLINE':
         // SPLINE entities are NURBS curves
         if (entity.controlPoints && Array.isArray(entity.controlPoints) && entity.controlPoints.length >= 2) {
+          const splineGeometry: Spline = {
+            controlPoints: entity.controlPoints.map((p: {x: number, y: number}) => ({ x: p.x, y: p.y })),
+            knots: entity.knots || [],
+            weights: entity.weights || [],
+            degree: entity.degree || 3,
+            fitPoints: entity.fitPoints ? entity.fitPoints.map((p: {x: number, y: number}) => ({ x: p.x, y: p.y })) : [],
+            closed: entity.closed || false
+          };
+          
+          // Normalize spline weights to prevent NaN values during offset calculations
+          const normalizedGeometry = normalizeSplineWeights(splineGeometry);
+          
           return {
             id: generateId(),
             type: 'spline',
-            geometry: {
-              controlPoints: entity.controlPoints.map((p: any) => ({ x: p.x, y: p.y })),
-              knots: entity.knots || [],
-              weights: entity.weights || [],
-              degree: entity.degree || 3,
-              fitPoints: entity.fitPoints ? entity.fitPoints.map((p: any) => ({ x: p.x, y: p.y })) : [],
-              closed: entity.closed || false
-            },
+            geometry: normalizedGeometry,
             ...getLayerInfo(entity, options)
           };
         }
@@ -268,32 +277,27 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
       case 'LWPOLYLINE':
       case 'POLYLINE':
         if (entity.vertices && Array.isArray(entity.vertices) && entity.vertices.length > 0) {
-          // Return as polyline and preserve bulge data
-          const vertices = entity.vertices
-            .filter((v: any) => v && typeof v.x === 'number' && typeof v.y === 'number')
-            .map((v: any) => ({
+          // Filter and map vertices to preserve bulge data
+          const vertices: PolylineVertex[] = entity.vertices
+            .filter((v: {x?: number, y?: number}) => v && typeof v.x === 'number' && typeof v.y === 'number')
+            .map((v: {x: number, y: number, bulge?: number}) => ({
               x: v.x,
               y: v.y,
               bulge: v.bulge || 0
             }));
           
           if (vertices.length > 0) {
-            const isClosed = entity.shape || entity.closed || false;
-            const points = vertices.map((v: any) => ({ x: v.x, y: v.y }));
+            const isClosed: boolean = entity.shape || entity.closed || false;
             
-            // CRITICAL: For closed polylines, duplicate the first point at the end
-            // to ensure start and end points are coincident in our representation
-            if (isClosed && points.length > 0) {
-              points.push({ x: points[0].x, y: points[0].y });
-            }
+            // Generate shapes using the utility function
+            const shapes: Shape[] = generateSegments(vertices, isClosed);
             
             return {
               id: generateId(),
               type: 'polyline',
               geometry: {
-                points,
                 closed: isClosed,
-                vertices // Add bulge-aware vertices (without duplication)
+                shapes
               },
               ...getLayerInfo(entity, options)
             };
@@ -315,10 +319,12 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
             typeof entity.majorX === 'number' && typeof entity.majorY === 'number' &&
             typeof entity.axisRatio === 'number') {
           
-          const ellipse: any = {
+          const ellipse: Ellipse = {
             center: { x: entity.x, y: entity.y },
             majorAxisEndpoint: { x: entity.majorX, y: entity.majorY },
-            minorToMajorRatio: entity.axisRatio
+            minorToMajorRatio: entity.axisRatio,
+            startParam: 0,
+            endParam: 2 * Math.PI
           };
           
           // Add start and end parameters if they exist (ellipse arcs)
@@ -351,8 +357,8 @@ function convertDXFEntity(entity: any, options: DXFOptions = {}, blocks: Map<str
 }
 
 
-function updateBounds(shape: Shape, bounds: any): void {
-  const points = getShapePoints(shape);
+function updateBounds(shape: Shape, bounds: { minX: number; minY: number; maxX: number; maxY: number }): void {
+  const points: Point2D[] = getShapePointsForBounds(shape);
   points.forEach(p => {
     // Only update bounds with finite values
     if (p && isFinite(p.x) && isFinite(p.y)) {
@@ -375,12 +381,12 @@ function transformShape(shape: Shape, transform: {
   blockBaseY: number;
 }): Shape | null {
   const { insertX, insertY, scaleX, scaleY, rotationRad, blockBaseX, blockBaseY } = transform;
-  const clonedShape = JSON.parse(JSON.stringify(shape));
+  const clonedShape: Shape = JSON.parse(JSON.stringify(shape));
   
-  const transformPoint = (p: Point2D): Point2D => {
+  const transformPoint: (p: Point2D) => Point2D = (p: Point2D): Point2D => {
     // Step 1: Translate by negative block base point (block origin)
-    let x = p.x - blockBaseX;
-    let y = p.y - blockBaseY;
+    let x: number = p.x - blockBaseX;
+    let y: number = p.y - blockBaseY;
     
     // Step 2: Apply scaling
     x = x * scaleX;
@@ -388,10 +394,10 @@ function transformShape(shape: Shape, transform: {
     
     // Step 3: Apply rotation
     if (rotationRad !== 0) {
-      const cos = Math.cos(rotationRad);
-      const sin = Math.sin(rotationRad);
-      const newX = x * cos - y * sin;
-      const newY = x * sin + y * cos;
+      const cos: number = Math.cos(rotationRad);
+      const sin: number = Math.sin(rotationRad);
+      const newX: number = x * cos - y * sin;
+      const newY: number = x * sin + y * cos;
       x = newX;
       y = newY;
     }
@@ -406,44 +412,68 @@ function transformShape(shape: Shape, transform: {
   // Transform geometry based on shape type
   switch (clonedShape.type) {
     case 'line':
-      const line = clonedShape.geometry as any;
+      const line: Line = clonedShape.geometry as Line;
       line.start = transformPoint(line.start);
       line.end = transformPoint(line.end);
       break;
       
     case 'circle':
     case 'arc':
-      const circle = clonedShape.geometry as any;
-      circle.center = transformPoint(circle.center);
+      const circleOrArc: Circle | Arc = clonedShape.geometry as Circle | Arc;
+      circleOrArc.center = transformPoint(circleOrArc.center);
       // Scale radius (use average of scaleX and scaleY for uniform scaling)
-      circle.radius *= (scaleX + scaleY) / 2;
+      circleOrArc.radius *= (scaleX + scaleY) / 2;
       // Adjust arc angles for rotation
       if (clonedShape.type === 'arc' && rotationRad !== 0) {
-        circle.startAngle += rotationRad;
-        circle.endAngle += rotationRad;
+        const arc: Arc = circleOrArc as Arc;
+        arc.startAngle += rotationRad;
+        arc.endAngle += rotationRad;
       }
       break;
       
     case 'polyline':
-      const polyline = clonedShape.geometry as any;
-      polyline.points = polyline.points.map(transformPoint);
-      if (polyline.vertices) {
-        polyline.vertices = polyline.vertices.map((v: any) => ({
-          ...v,
-          ...transformPoint({ x: v.x, y: v.y })
-        }));
-      }
+      const polyline: Polyline = clonedShape.geometry as Polyline;
+      // Transform all shapes
+      polyline.shapes = polyline.shapes.map(shape => {
+        const segment = shape.geometry;
+        if ('start' in segment && 'end' in segment) {
+          // Line segment
+          return {
+            ...shape,
+            geometry: {
+              start: transformPoint(segment.start),
+              end: transformPoint(segment.end)
+            }
+          };
+        } else if ('center' in segment && 'radius' in segment) {
+          // Arc segment
+          const arc: Arc = { ...segment } as Arc;
+          arc.center = transformPoint(arc.center);
+          // Scale radius (use average of scaleX and scaleY for uniform scaling)
+          arc.radius *= (scaleX + scaleY) / 2;
+          // Adjust arc angles for rotation
+          if (rotationRad !== 0) {
+            arc.startAngle += rotationRad;
+            arc.endAngle += rotationRad;
+          }
+          return {
+            ...shape,
+            geometry: arc
+          };
+        }
+        return shape;
+      });
       break;
       
     case 'ellipse':
-      const ellipse = clonedShape.geometry as any;
+      const ellipse: Ellipse = clonedShape.geometry as Ellipse;
       ellipse.center = transformPoint(ellipse.center);
       // Transform the major axis endpoint vector
-      const majorAxisEnd = {
+      const majorAxisEnd: Point2D = {
         x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
         y: ellipse.center.y + ellipse.majorAxisEndpoint.y
       };
-      const transformedMajorAxisEnd = transformPoint(majorAxisEnd);
+      const transformedMajorAxisEnd: Point2D = transformPoint(majorAxisEnd);
       ellipse.majorAxisEndpoint = {
         x: transformedMajorAxisEnd.x - ellipse.center.x,
         y: transformedMajorAxisEnd.y - ellipse.center.y
@@ -460,51 +490,4 @@ function transformShape(shape: Shape, transform: {
   clonedShape.id = generateId();
   
   return clonedShape;
-}
-
-function getShapePoints(shape: Shape): Point2D[] {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return [line.start, line.end];
-    
-    case 'circle':
-      const circle = shape.geometry as any;
-      return [
-        { x: circle.center.x - circle.radius, y: circle.center.y - circle.radius },
-        { x: circle.center.x + circle.radius, y: circle.center.y + circle.radius }
-      ];
-    
-    case 'arc':
-      const arc = shape.geometry as any;
-      return [
-        { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
-        { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius }
-      ];
-    
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points;
-    
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      // Calculate bounding box points for ellipse
-      const majorAxisLength = Math.sqrt(
-        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-        ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-      );
-      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-      
-      // For bounding box calculation, we need the extent of the ellipse
-      // This is an approximation - true ellipse bounds calculation is more complex
-      const maxExtent = Math.max(majorAxisLength, minorAxisLength);
-      
-      return [
-        { x: ellipse.center.x - maxExtent, y: ellipse.center.y - maxExtent },
-        { x: ellipse.center.x + maxExtent, y: ellipse.center.y + maxExtent }
-      ];
-    
-    default:
-      return [];
-  }
 }

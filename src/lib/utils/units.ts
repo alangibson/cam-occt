@@ -6,9 +6,9 @@
 export type Unit = 'mm' | 'inch';
 
 // Physical constants for screen display
-const MM_PER_INCH = 25.4;
-const PIXELS_PER_INCH = 96; // Standard CSS DPI
-const PIXELS_PER_MM = PIXELS_PER_INCH / MM_PER_INCH; // ~3.78 pixels per mm
+const MM_PER_INCH: number = 25.4;
+const PIXELS_PER_INCH: number = 96; // Standard CSS DPI
+const PIXELS_PER_MM: number = PIXELS_PER_INCH / MM_PER_INCH; // ~3.78 pixels per mm
 
 /**
  * Get the pixels per unit for physical display scaling
@@ -59,7 +59,7 @@ export function getPhysicalScaleFactor(geometryUnit: Unit, displayUnit: Unit): n
  * Format a numeric value with appropriate precision for the given unit
  */
 export function formatValue(value: number, unit: Unit): string {
-  const precision = unit === 'inch' ? 3 : 1; // More precision for inches
+  const precision: number = unit === 'inch' ? 3 : 1; // More precision for inches
   return value.toFixed(precision);
 }
 

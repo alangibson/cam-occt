@@ -37,20 +37,15 @@ describe('Test Circle Face Creation and Containment', () => {
     expect(boundaryChain).toBeDefined();
     expect(circleChains.length).toBe(4);
     
-    console.log(`\n=== TESTING CIRCLE FACE CREATION ===`);
-    console.log(`Found boundary chain: ${boundaryChain!.id} with ${boundaryChain!.shapes.length} shapes`);
-    console.log(`Found ${circleChains.length} circle chains`);
     
     // Test each circle chain individually
     let successfulContainments = 0;
     let failedContainments = 0;
     
     for (const circleChain of circleChains) {
-      console.log(`\nTesting circle chain ${circleChain.id}:`);
       
       try {
         const isContained = await isChainGeometricallyContained(circleChain, boundaryChain!);
-        console.log(`  Result: ${isContained ? 'CONTAINED ✅' : 'NOT CONTAINED ❌'}`);
         
         if (isContained) {
           successfulContainments++;
@@ -58,26 +53,15 @@ describe('Test Circle Face Creation and Containment', () => {
           failedContainments++;
         }
         
-      } catch (error) {
-        console.log(`  ERROR: ${(error as Error).message}`);
+      } catch {
         failedContainments++;
       }
     }
     
-    console.log(`\n=== SUMMARY ===`);
-    console.log(`Successful containments: ${successfulContainments}`);
-    console.log(`Failed containments: ${failedContainments}`);
     
     // With the fix, we should get at least some successful containments
     // Even if not all 4, at least 1-2 should work
     expect(successfulContainments).toBeGreaterThan(0);
-    
-    // Ideally all 4 should work
-    if (successfulContainments === 4) {
-      console.log(`🎉 ALL CIRCLE CONTAINMENTS SUCCESSFUL!`);
-    } else {
-      console.log(`⚠️  Only ${successfulContainments}/4 circle containments successful`);
-    }
-    
+
   }, 15000);
 });

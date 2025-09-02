@@ -3,6 +3,8 @@ import { detectShapeChains } from './chain-detection';
 import { parseDXF } from '../parsers/dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { polylineToVertices } from '../geometry/polyline';
+import type { Polyline } from '../types';
 
 describe('Chain Detection for Polylines with Bulges', () => {
   it('should correctly detect closed polylines with bulges as closed chains', async () => {
@@ -19,16 +21,18 @@ describe('Chain Detection for Polylines with Bulges', () => {
     expect(drawing.shapes[1].type).toBe('polyline');
     
     // Extract the polylines for detailed inspection
-    const polyline1 = drawing.shapes[0].geometry as any;
-    const polyline2 = drawing.shapes[1].geometry as any;
+    const polyline1 = drawing.shapes[0].geometry as Polyline;
+    const polyline2 = drawing.shapes[1].geometry as Polyline;
     
     // Verify the polylines have vertices with bulges
-    expect(polyline1.vertices).toBeDefined();
-    expect(polyline2.vertices).toBeDefined();
+    const vertices1 = polylineToVertices(polyline1);
+    const vertices2 = polylineToVertices(polyline2);
+    expect(vertices1).toBeDefined();
+    expect(vertices2).toBeDefined();
     
     // Check that at least some vertices have non-zero bulges
-    const hasNonZeroBulges1 = polyline1.vertices.some((v: any) => v.bulge !== 0);
-    const hasNonZeroBulges2 = polyline2.vertices.some((v: any) => v.bulge !== 0);
+    const hasNonZeroBulges1 = vertices1.some((v: any) => v.bulge !== 0);
+    const hasNonZeroBulges2 = vertices2.some((v: any) => v.bulge !== 0);
     expect(hasNonZeroBulges1 || hasNonZeroBulges2).toBe(true);
     
     // Both polylines in the test file should be closed (flag = 1 in DXF)

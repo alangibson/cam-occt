@@ -1,9 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '../parsers/dxf-parser';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import { decomposePolylines } from './decompose-polylines';
 import { readFileSync } from 'fs';
 import path from 'path';
-import type { Shape } from '../../types';
+import type { Shape } from '../../lib/types';
+import { EPSILON } from '../constants';
+import type { Line, Arc, Polyline } from '../types/geometry';
 
 // Mock canvas for screenshot comparison
 function createTestCanvas(width: number = 800, height: number = 600) {
@@ -41,12 +44,12 @@ function drawShapes(shapes: Shape[], ctx: any, scale: number = 1) {
     
     switch (shape.type) {
       case 'line':
-        const line = shape.geometry as any;
+        const line: import("$lib/types/geometry").Line = shape.geometry as Line;
         ctx.moveTo(line.start.x * scale, line.start.y * scale);
         ctx.lineTo(line.end.x * scale, line.end.y * scale);
         break;
       case 'arc':
-        const arc = shape.geometry as any;
+        const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
         // Draw arc using center, radius, start/end angles
         ctx.arc(
           arc.center.x * scale, 
@@ -58,11 +61,11 @@ function drawShapes(shapes: Shape[], ctx: any, scale: number = 1) {
         );
         break;
       case 'polyline':
-        const polyline = shape.geometry as any;
-        const points = polyline.points || [];
+        const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
+        const points = polylineToPoints(polyline);
         if (points.length > 0) {
           ctx.moveTo(points[0].x * scale, points[0].y * scale);
-          for (let i = 1; i < points.length; i++) {
+          for (let i: number = 1; i < points.length; i++) {
             ctx.lineTo(points[i].x * scale, points[i].y * scale);
           }
           if (polyline.closed) {
@@ -88,11 +91,11 @@ function calculateShapeBounds(shapes: Shape[]): { min: { x: number, y: number },
     
     switch (shape.type) {
       case 'line':
-        const line = shape.geometry as any;
+        const line: import("$lib/types/geometry").Line = shape.geometry as Line;
         points = [line.start, line.end];
         break;
       case 'arc':
-        const arc = shape.geometry as any;
+        const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
         // Calculate actual arc bounds based on start/end angles
         // Sample points along the arc for accurate bounds
         const numSamples = 16;
@@ -119,17 +122,17 @@ function calculateShapeBounds(shapes: Shape[]): { min: { x: number, y: number },
         }
         
         const angleDiff = endAngle - startAngle;
-        for (let i = 1; i < numSamples - 1; i++) {
-          const t = i / (numSamples - 1);
-          const angle = startAngle + t * angleDiff;
-          const x = arc.center.x + arc.radius * Math.cos(angle);
-          const y = arc.center.y + arc.radius * Math.sin(angle);
+        for (let i: number = 1; i < numSamples - 1; i++) {
+          const t: number = i / (numSamples - 1);
+          const angle: number = startAngle + t * angleDiff;
+          const x: number = arc.center.x + arc.radius * Math.cos(angle);
+          const y: number = arc.center.y + arc.radius * Math.sin(angle);
           points.push({ x, y });
         }
         break;
       case 'polyline':
-        const polyline = shape.geometry as any;
-        points = polyline.points || [];
+        const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
+        points = polylineToPoints(polyline);
         break;
     }
 
@@ -155,50 +158,33 @@ describe('Polylinie.dxf Decomposition Visual Test', () => {
     
     // Parse original (with bulges preserved)
     const originalDrawing = await parseDXF(dxfContent);
-    console.log('Original shapes:', originalDrawing.shapes.length);
-    console.log('Original types:', originalDrawing.shapes.map(s => s.type));
     
     // Apply decomposition
     const decomposedShapes = decomposePolylines(originalDrawing.shapes);
-    console.log('Decomposed shapes:', decomposedShapes.length);  
-    console.log('Decomposed types:', decomposedShapes.map(s => s.type));
     
     // Log shape details for debugging
-    console.log('\n=== ORIGINAL POLYLINE DETAILS ===');
     originalDrawing.shapes.forEach((shape, i) => {
       if (shape.type === 'polyline') {
-        const geom = shape.geometry as any;
-        console.log(`Polyline ${i}:`);
-        console.log(`  Points: ${geom.points?.length || 0}`);
-        console.log(`  Vertices: ${geom.vertices?.length || 0}`);
-        console.log(`  Closed: ${geom.closed}`);
+        const geom = shape.geometry as Polyline;
         if (geom.vertices) {
-          const bulgedVertices = geom.vertices.filter((v: any) => Math.abs(v.bulge || 0) > 1e-10);
-          console.log(`  Vertices with bulges: ${bulgedVertices.length}`);
+          const bulgedVertices = geom.vertices.filter((v: any) => Math.abs(v.bulge || 0) > EPSILON);
           bulgedVertices.forEach((v: any, idx: number) => {
-            console.log(`    Vertex ${idx}: x=${v.x}, y=${v.y}, bulge=${v.bulge}`);
           });
         }
       }
     });
     
-    console.log('\n=== DECOMPOSED SHAPE DETAILS ===');
     const arcs = decomposedShapes.filter(s => s.type === 'arc');
     const lines = decomposedShapes.filter(s => s.type === 'line');
-    console.log(`Lines: ${lines.length}, Arcs: ${arcs.length}`);
     
     arcs.forEach((arc, i) => {
-      const geom = arc.geometry as any;
-      console.log(`Arc ${i}: center=(${geom.center.x.toFixed(2)}, ${geom.center.y.toFixed(2)}), radius=${geom.radius.toFixed(2)}, clockwise=${geom.clockwise}`);
+      const geom = arc.geometry as Arc;
     });
     
     // Calculate bounds for both versions
     const originalBounds = calculateShapeBounds(originalDrawing.shapes);
     const decomposedBounds = calculateShapeBounds(decomposedShapes);
     
-    console.log('\n=== BOUNDS COMPARISON ===');
-    console.log('Original bounds:', originalBounds);
-    console.log('Decomposed bounds:', decomposedBounds);
     
     // Check that bounds are similar (shapes should occupy same space)
     const tolerance = 10.0; // Allow tolerance for arc approximation and extreme bulge values
@@ -218,9 +204,6 @@ describe('Polylinie.dxf Decomposition Visual Test', () => {
     const boundsHeight = Math.max(originalBounds.max.y - originalBounds.min.y, 1);
     const scale = Math.min(700 / boundsWidth, 500 / boundsHeight);
     
-    console.log(`\n=== DRAWING SETUP ===`);
-    console.log(`Bounds: ${boundsWidth.toFixed(2)} x ${boundsHeight.toFixed(2)}`);
-    console.log(`Scale: ${scale.toFixed(4)}`);
     
     // Draw both versions
     drawShapes(originalDrawing.shapes, ctx1, scale);
@@ -233,10 +216,5 @@ describe('Polylinie.dxf Decomposition Visual Test', () => {
     // The decomposed version should have more shapes than original
     expect(decomposedShapes.length).toBeGreaterThan(originalDrawing.shapes.length);
     
-    console.log('\n=== TEST CONCLUSION ===');
-    console.log('✓ Bounds are within tolerance');
-    console.log('✓ Decomposed version has arcs and lines');
-    console.log('✓ Decomposed version has more shapes than original');
-    console.log('✓ Visual comparison setup complete');
   });
 });

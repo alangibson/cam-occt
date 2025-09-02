@@ -5,9 +5,20 @@
  * Saves all application state to browser localStorage to maintain state across sessions.
  */
 
+import type { Drawing } from '../types/geometry';
+import type { Chain } from '../algorithms/chain-detection';
+import type { DetectedPart, PartDetectionWarning } from '../algorithms/part-detection';
+import type { Rapid } from '../algorithms/optimize-cut-order';
+import type { TessellationPoint, DrawingOverlay } from '../stores/overlay';
+import type { LeadWarning } from '../stores/lead-warnings';
+import type { PrepareStageState } from '../stores/prepare-stage';
+import type { Operation } from '../stores/operations';
+import type { Path } from '../stores/paths';
+import type { Tool } from '../stores/tools';
+
 export interface PersistedState {
   // Drawing state
-  drawing: any;
+  drawing: Drawing | null;
   selectedShapes: string[];
   hoveredShape: string | null;
   scale: number;
@@ -21,17 +32,17 @@ export interface PersistedState {
   completedStages: string[];
   
   // Chains state
-  chains: any[];
+  chains: Chain[];
   tolerance: number;
   selectedChainId: string | null;
   
   // Parts state
-  parts: any[];
-  partWarnings: any[];
+  parts: DetectedPart[];
+  partWarnings: PartDetectionWarning[];
   highlightedPartId: string | null;
   
   // Rapids state
-  rapids: any[];
+  rapids: Rapid[];
   showRapids: boolean;
   selectedRapidId: string | null;
   highlightedRapidId: string | null;
@@ -41,36 +52,39 @@ export interface PersistedState {
   
   // Tessellation state
   tessellationActive: boolean;
-  tessellationPoints: any[];
+  tessellationPoints: TessellationPoint[];
   
   // Overlay state
   overlayStage: string;
-  overlays: any;
+  overlays: Record<string, DrawingOverlay>;
   
   // Lead warnings
-  leadWarnings: any[];
+  leadWarnings: LeadWarning[];
   
   // Prepare stage state
-  prepareStageState: any;
+  prepareStageState: PrepareStageState | null;
   
   // Operations, paths, and tools
-  operations: any[];
-  paths: any[];
-  tools: any[];
+  operations: Operation[];
+  paths: Path[];
+  tools: Tool[];
   
   // Timestamp for debugging
   savedAt: string;
+
+  selectedPathId: string|null;
+  highlightedPathId: string|null;
 }
 
-const STATE_STORAGE_KEY = 'cam-occt-state';
-const STATE_VERSION = '1.0.0';
+const STATE_STORAGE_KEY: string = 'cam-occt-state';
+const STATE_VERSION: string = '1.0.0';
 
 /**
  * Save complete application state to localStorage
  */
 export function saveState(state: PersistedState): void {
   try {
-    const stateWithMeta = {
+    const stateWithMeta: PersistedState & { version: string; savedAt: string } = {
       version: STATE_VERSION,
       ...state,
       savedAt: new Date().toISOString()
@@ -104,17 +118,17 @@ export function saveState(state: PersistedState): void {
  */
 export function loadState(): PersistedState | null {
   try {
-    const savedData = localStorage.getItem(STATE_STORAGE_KEY);
+    const savedData: string | null = localStorage.getItem(STATE_STORAGE_KEY);
     if (!savedData) {
       console.log('No saved state found');
       return null;
     }
     
-    const parsedState = JSON.parse(savedData);
+    const parsedState: PersistedState & { version?: string } = JSON.parse(savedData);
     
     // Version check
     if (parsedState.version !== STATE_VERSION) {
-      console.warn(`State version mismatch: saved=${parsedState.version}, current=${STATE_VERSION}`);
+      console.log(`State version mismatch: saved=${parsedState.version}, current=${STATE_VERSION}`);
       // Could implement migration logic here in the future
       return null;
     }
@@ -122,7 +136,7 @@ export function loadState(): PersistedState | null {
     console.log('Application state loaded from localStorage', parsedState.savedAt);
     return parsedState;
   } catch (error) {
-    console.error('Failed to load application state:', error);
+    console.log('Failed to load application state:', error);
     return null;
   }
 }
@@ -150,23 +164,23 @@ export function hasPersistedState(): boolean {
  * Get the size of persisted state in bytes (for debugging)
  */
 export function getPersistedStateSize(): number {
-  const savedData = localStorage.getItem(STATE_STORAGE_KEY);
+  const savedData: string | null = localStorage.getItem(STATE_STORAGE_KEY);
   return savedData ? new Blob([savedData]).size : 0;
 }
 
 /**
  * Debounce utility for auto-saving
  */
-export function debounce<T extends (...args: any[]) => void>(
+export function debounce<T extends (...args: never[]) => void>(
   func: T,
   delay: number
-): (...args: Parameters<T>) => void {
+): T {
   let timeoutId: ReturnType<typeof setTimeout>;
   
-  return (...args: Parameters<T>) => {
+  return ((...args: Parameters<T>) => {
     clearTimeout(timeoutId);
     timeoutId = setTimeout(() => func(...args), delay);
-  };
+  }) as T;
 }
 
 /**

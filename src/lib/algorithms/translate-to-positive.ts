@@ -1,5 +1,5 @@
-import type { Shape, Point2D } from '../../types';
-import { sampleNURBS } from '../geometry/nurbs';
+import type { Shape, Point2D, Line, Circle, Arc, Polyline, Ellipse, Spline } from '../../lib/types';
+import { getShapePointsForBounds } from '../utils/shape-bounds-utils';
 
 /**
  * Translate all shapes to ensure they are in the positive quadrant
@@ -12,11 +12,11 @@ export function translateToPositiveQuadrant(shapes: Shape[]): Shape[] {
   if (shapes.length === 0) return shapes;
   
   // Calculate bounding box
-  let minX = Infinity;
-  let minY = Infinity;
+  let minX: number = Infinity;
+  let minY: number = Infinity;
   
   shapes.forEach(shape => {
-    const points = getShapePoints(shape);
+    const points: Point2D[] = getShapePointsForBounds(shape);
     points.forEach(point => {
       minX = Math.min(minX, point.x);
       minY = Math.min(minY, point.y);
@@ -26,8 +26,8 @@ export function translateToPositiveQuadrant(shapes: Shape[]): Shape[] {
   // Only translate if there are negative coordinates
   if (minX >= 0 && minY >= 0) return shapes;
   
-  const translateX = minX < 0 ? -minX : 0;
-  const translateY = minY < 0 ? -minY : 0;
+  const translateX: number = minX < 0 ? -minX : 0;
+  const translateY: number = minY < 0 ? -minY : 0;
   
   // Translate all shapes
   return shapes.map(shape => {
@@ -36,82 +36,28 @@ export function translateToPositiveQuadrant(shapes: Shape[]): Shape[] {
 }
 
 /**
- * Get all significant points from a shape for bounding box calculation
- */
-function getShapePoints(shape: Shape): Point2D[] {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return [line.start, line.end];
-    case 'circle':
-      const circle = shape.geometry as any;
-      return [
-        { x: circle.center.x - circle.radius, y: circle.center.y - circle.radius },
-        { x: circle.center.x + circle.radius, y: circle.center.y + circle.radius }
-      ];
-    case 'arc':
-      const arc = shape.geometry as any;
-      return [
-        { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
-        { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius }
-      ];
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points || [];
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      // Calculate bounding box points for ellipse
-      const majorAxisLength = Math.sqrt(
-        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-        ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-      );
-      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-      
-      // For bounding box calculation, we need the extent of the ellipse
-      // This is an approximation - true ellipse bounds calculation is more complex
-      const maxExtent = Math.max(majorAxisLength, minorAxisLength);
-      
-      return [
-        { x: ellipse.center.x - maxExtent, y: ellipse.center.y - maxExtent },
-        { x: ellipse.center.x + maxExtent, y: ellipse.center.y + maxExtent }
-      ];
-    case 'spline':
-      const spline = shape.geometry as any;
-      try {
-        // Sample points along the NURBS curve for accurate bounds
-        return sampleNURBS(spline, 20); // Use fewer points for bounds calculation
-      } catch (error) {
-        // Fallback to control points if NURBS evaluation fails
-        return spline.controlPoints || [];
-      }
-    default:
-      return [];
-  }
-}
-
-/**
  * Translate a single shape by the given offsets
  */
 function translateShape(shape: Shape, dx: number, dy: number): Shape {
-  const translated = { ...shape };
+  const translated: Shape = { ...shape };
   
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry as any;
+      const line: Line = shape.geometry as Line;
       translated.geometry = {
         start: { x: line.start.x + dx, y: line.start.y + dy },
         end: { x: line.end.x + dx, y: line.end.y + dy }
       };
       break;
     case 'circle':
-      const circle = shape.geometry as any;
+      const circle: Circle = shape.geometry as Circle;
       translated.geometry = {
         center: { x: circle.center.x + dx, y: circle.center.y + dy },
         radius: circle.radius
       };
       break;
     case 'arc':
-      const arc = shape.geometry as any;
+      const arc: Arc = shape.geometry as Arc;
       translated.geometry = {
         center: { x: arc.center.x + dx, y: arc.center.y + dy },
         radius: arc.radius,
@@ -121,15 +67,39 @@ function translateShape(shape: Shape, dx: number, dy: number): Shape {
       };
       break;
     case 'polyline':
-      const polyline = shape.geometry as any;
+      const polyline: Polyline = shape.geometry as Polyline;
+      // Translate shapes instead of points/vertices (new polyline structure)
+      const translatedShapes: Shape[] = polyline.shapes.map((polylineShape) => {
+        const segment: Line | Arc = polylineShape.geometry as Line | Arc;
+        if ('start' in segment && 'end' in segment) {
+          // Line segment
+          return {
+            ...polylineShape,
+            geometry: {
+              start: { x: segment.start.x + dx, y: segment.start.y + dy },
+              end: { x: segment.end.x + dx, y: segment.end.y + dy }
+            }
+          };
+        } else if ('center' in segment && 'radius' in segment) {
+          // Arc segment
+          return {
+            ...polylineShape,
+            geometry: {
+              ...segment,
+              center: { x: segment.center.x + dx, y: segment.center.y + dy }
+            }
+          };
+        }
+        return polylineShape; // Unknown segment type, return as-is
+      });
+      
       translated.geometry = {
         ...polyline,
-        points: polyline.points?.map((p: Point2D) => ({ x: p.x + dx, y: p.y + dy })) || [],
-        vertices: polyline.vertices?.map((v: any) => ({ ...v, x: v.x + dx, y: v.y + dy })) || undefined
+        shapes: translatedShapes
       };
       break;
     case 'ellipse':
-      const ellipse = shape.geometry as any;
+      const ellipse: Ellipse = shape.geometry as Ellipse;
       translated.geometry = {
         center: { x: ellipse.center.x + dx, y: ellipse.center.y + dy },
         majorAxisEndpoint: ellipse.majorAxisEndpoint, // This is a vector, not translated
@@ -139,7 +109,7 @@ function translateShape(shape: Shape, dx: number, dy: number): Shape {
       };
       break;
     case 'spline':
-      const spline = shape.geometry as any;
+      const spline: Spline = shape.geometry as Spline;
       translated.geometry = {
         ...spline,
         controlPoints: spline.controlPoints.map((p: Point2D) => ({ x: p.x + dx, y: p.y + dy })),

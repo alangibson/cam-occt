@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { detectShapeChains } from './chain-detection';
-import type { Shape } from '../../types';
+import type { Shape } from '../../lib/types';
 import { CutDirection, LeadType } from '../types/direction';
 
 // Helper function to create ellipse shapes
@@ -28,7 +28,7 @@ function createEllipse(
 describe('Chain Detection - Ellipse Support', () => {
   describe('Full ellipse chains', () => {
     it('should detect single full ellipse as a chain', () => {
-      const ellipse = createEllipse('ellipse1', { x: 0, y: 0 }, { x: 30, y: 0 }, 0.6);
+      const ellipse: import("$lib/types/geometry").Ellipse = createEllipse('ellipse1', { x: 0, y: 0 }, { x: 30, y: 0 }, 0.6);
       
       const chains = detectShapeChains([ellipse], { tolerance: 0.05 });
       

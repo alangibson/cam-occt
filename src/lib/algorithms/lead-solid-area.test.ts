@@ -3,7 +3,7 @@ import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-ca
 import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
-import type { Shape, Point2D } from '../../types/geometry';
+import type { Shape, Point2D } from '../../lib/types/geometry';
 
 describe('Lead Solid Area Avoidance', () => {
   // Helper to create a rectangle chain
@@ -122,7 +122,6 @@ describe('Lead Solid Area Avoidance', () => {
         }
       }
       
-      console.log(`Shell lead points in solid area: ${pointsInSolidArea} out of ${points.length}`);
       
       // Shell lead should successfully avoid solid areas with rotation algorithm
       expect(pointsInSolidArea).toBe(0); // No points should be in solid area
@@ -175,7 +174,6 @@ describe('Lead Solid Area Avoidance', () => {
         }
       }
       
-      console.log(`Hole lead points in solid area: ${pointsInSolidArea} out of ${points.length}`);
       
       // For holes, even with rotation, leads may still intersect solid areas when space is limited
       // This demonstrates the algorithm attempts rotation and length reduction
@@ -253,7 +251,6 @@ describe('Lead Solid Area Avoidance', () => {
         if (isPointInSolidArea(point, part)) solidAreaViolations2++;
       }
       
-      console.log(`Hole1 lead violations: ${solidAreaViolations1}, Hole2 lead violations: ${solidAreaViolations2}`);
       
       // Algorithm attempts to minimize solid area violations through rotation and length reduction
       // Results may vary based on geometry constraints

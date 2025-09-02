@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
-import type { Shape, Point2D } from '../../types';
+import type { Shape, Point2D, Line, Circle, Arc, Polyline } from '../../lib/types/geometry';
+import { EPSILON } from '../constants';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {
@@ -33,23 +35,23 @@ function calculateBounds(shapes: Shape[]) {
 function getShapePoints(shape: Shape): Point2D[] {
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry as any;
+      const line: import("$lib/types/geometry").Line = shape.geometry as Line;
       return [line.start, line.end];
     case 'circle':
-      const circle = shape.geometry as any;
+      const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle;
       return [
         { x: circle.center.x - circle.radius, y: circle.center.y - circle.radius },
         { x: circle.center.x + circle.radius, y: circle.center.y + circle.radius }
       ];
     case 'arc':
-      const arc = shape.geometry as any;
+      const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
       return [
         { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
         { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius }
       ];
     case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points || [];
+      const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
+      return polylineToPoints(polyline);
     default:
       return [];
   }
@@ -107,11 +109,11 @@ EOF`;
       expect(drawing.bounds.max.y).toBeGreaterThan(0);
 
       // Check that shapes were translated
-      const line = drawing.shapes.find(s => s.type === 'line');
-      const circle = drawing.shapes.find(s => s.type === 'circle');
+      const line: import("$lib/types/geometry").Line = drawing.shapes.find(s => s.type === 'line');
+      const circle: import("$lib/types/geometry").Circle = drawing.shapes.find(s => s.type === 'circle');
 
       if (line) {
-        const lineGeom = line.geometry as any;
+        const lineGeom = line.geometry as Line;
         expect(lineGeom.start.x).toBeGreaterThanOrEqual(0);
         expect(lineGeom.start.y).toBeGreaterThanOrEqual(0);
         expect(lineGeom.end.x).toBeGreaterThanOrEqual(0);
@@ -119,7 +121,7 @@ EOF`;
       }
 
       if (circle) {
-        const circleGeom = circle.geometry as any;
+        const circleGeom = circle.geometry as Circle;
         expect(circleGeom.center.x).toBeGreaterThanOrEqual(0);
         expect(circleGeom.center.y).toBeGreaterThanOrEqual(0);
       }
@@ -172,7 +174,7 @@ EOF`;
       // Check shapes are identical
       expect(translatedDrawing.shapes.length).toBe(parsed.shapes.length);
       
-      for (let i = 0; i < translatedDrawing.shapes.length; i++) {
+      for (let i: number = 0; i < translatedDrawing.shapes.length; i++) {
         const original = parsed.shapes[i];
         const translated = translatedDrawing.shapes[i];
         expect(translated.geometry).toEqual(original.geometry);
@@ -228,14 +230,14 @@ EOF`;
       drawing.shapes.forEach(shape => {
         switch (shape.type) {
           case 'line':
-            const line = shape.geometry as any;
+            const line: import("$lib/types/geometry").Line = shape.geometry as Line;
             expect(line.start.x).toBeGreaterThanOrEqual(0);
             expect(line.start.y).toBeGreaterThanOrEqual(0);
             expect(line.end.x).toBeGreaterThanOrEqual(0);
             expect(line.end.y).toBeGreaterThanOrEqual(0);
             break;
           case 'circle':
-            const circle = shape.geometry as any;
+            const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle;
             expect(circle.center.x - circle.radius).toBeGreaterThanOrEqual(0);
             expect(circle.center.y - circle.radius).toBeGreaterThanOrEqual(0);
             break;
@@ -284,14 +286,14 @@ EOF`;
         bounds: calculateBounds(translatedShapes)
       };
 
-      const polyline = drawing.shapes.find(s => s.type === 'polyline');
+      const polyline: import("$lib/types/geometry").Polyline = drawing.shapes.find(s => s.type === 'polyline');
       expect(polyline).toBeDefined();
 
       if (polyline) {
-        const geom = polyline.geometry as any;
+        const geom = polyline.geometry as Polyline;
         
         // Check points array
-        geom.points.forEach((point: any) => {
+        polylineToPoints(geom).forEach((point: any) => {
           expect(point.x).toBeGreaterThanOrEqual(0);
           expect(point.y).toBeGreaterThanOrEqual(0);
         });
@@ -358,14 +360,14 @@ EOF`;
         bounds: calculateBounds(translatedShapes)
       };
 
-      const polyline = drawing.shapes.find(s => s.type === 'polyline');
+      const polyline: import("$lib/types/geometry").Polyline = drawing.shapes.find(s => s.type === 'polyline');
       expect(polyline).toBeDefined();
 
       if (polyline) {
-        const geom = polyline.geometry as any;
+        const geom = polyline.geometry as Polyline;
         
         // All coordinates should be non-negative
-        geom.points.forEach((point: any) => {
+        polylineToPoints(geom).forEach((point: any) => {
           expect(point.x).toBeGreaterThanOrEqual(0);
           expect(point.y).toBeGreaterThanOrEqual(0);
         });
@@ -432,14 +434,14 @@ EOF`;
       drawing.shapes.forEach(shape => {
         switch (shape.type) {
           case 'line':
-            const line = shape.geometry as any;
+            const line: import("$lib/types/geometry").Line = shape.geometry as Line;
             expect(line.start.x).toBeGreaterThanOrEqual(0);
             expect(line.start.y).toBeGreaterThanOrEqual(0);
             expect(line.end.x).toBeGreaterThanOrEqual(0);
             expect(line.end.y).toBeGreaterThanOrEqual(0);
             break;
           case 'arc':
-            const arc = shape.geometry as any;
+            const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
             expect(arc.center.x - arc.radius).toBeGreaterThanOrEqual(0);
             expect(arc.center.y - arc.radius).toBeGreaterThanOrEqual(0);
             break;
@@ -540,16 +542,16 @@ EOF`;
       expect(translatedLines.length).toBe(2);
 
       // Calculate relative distances in original drawing
-      const origLine1 = originalLines[0].geometry as any;
-      const origLine2 = originalLines[1].geometry as any;
+      const origLine1 = originalLines[0].geometry as Line;
+      const origLine2 = originalLines[1].geometry as Line;
       const origDistance = Math.sqrt(
         Math.pow(origLine2.start.x - origLine1.start.x, 2) + 
         Math.pow(origLine2.start.y - origLine1.start.y, 2)
       );
 
       // Calculate relative distances in translated drawing
-      const transLine1 = translatedLines[0].geometry as any;
-      const transLine2 = translatedLines[1].geometry as any;
+      const transLine1 = translatedLines[0].geometry as Line;
+      const transLine2 = translatedLines[1].geometry as Line;
       const transDistance = Math.sqrt(
         Math.pow(transLine2.start.x - transLine1.start.x, 2) + 
         Math.pow(transLine2.start.y - transLine1.start.y, 2)
@@ -699,7 +701,7 @@ EOF`;
       expect(drawing.bounds.min.x).toBeLessThan(0);
       expect(drawing.bounds.min.y).toBeLessThan(0);
 
-      const line = drawing.shapes[0].geometry as any;
+      const line: import("$lib/types/geometry").Line = drawing.shapes[0].geometry as Line;
       expect(line.start.x).toBe(-50);
       expect(line.start.y).toBe(-25);
     });
@@ -757,8 +759,8 @@ EOF`;
 
       drawing.shapes.forEach(shape => {
         const bounds = getShapeBounds(shape);
-        expect(bounds.min.x).toBeGreaterThanOrEqual(-1e-10); // Allow for floating point precision
-        expect(bounds.min.y).toBeGreaterThanOrEqual(-1e-10);
+        expect(bounds.min.x).toBeGreaterThanOrEqual(-EPSILON); // Allow for floating point precision
+        expect(bounds.min.y).toBeGreaterThanOrEqual(-EPSILON);
       });
     });
   });
@@ -770,29 +772,29 @@ function getShapeBounds(shape: any) {
   
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry;
+      const line: import("$lib/types/geometry").Line = shape.geometry;
       minX = Math.min(line.start.x, line.end.x);
       maxX = Math.max(line.start.x, line.end.x);
       minY = Math.min(line.start.y, line.end.y);
       maxY = Math.max(line.start.y, line.end.y);
       break;
     case 'circle':
-      const circle = shape.geometry;
+      const circle: import("$lib/types/geometry").Circle = shape.geometry;
       minX = circle.center.x - circle.radius;
       maxX = circle.center.x + circle.radius;
       minY = circle.center.y - circle.radius;
       maxY = circle.center.y + circle.radius;
       break;
     case 'arc':
-      const arc = shape.geometry;
+      const arc: import("$lib/types/geometry").Arc = shape.geometry;
       minX = arc.center.x - arc.radius;
       maxX = arc.center.x + arc.radius;
       minY = arc.center.y - arc.radius;
       maxY = arc.center.y + arc.radius;
       break;
     case 'polyline':
-      const polyline = shape.geometry;
-      polyline.points.forEach((point: any) => {
+      const polyline: import("$lib/types/geometry").Polyline = shape.geometry;
+      polylineToPoints(polyline).forEach((point: any) => {
         minX = Math.min(minX, point.x);
         maxX = Math.max(maxX, point.x);
         minY = Math.min(minY, point.y);

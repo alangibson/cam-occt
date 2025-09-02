@@ -3,16 +3,16 @@ import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-ca
 import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
-import type { Shape, Point2D } from '../../types/geometry';
+import type { Shape, Point2D } from '../../lib/types/geometry';
 
 describe('Lead Concave Area Fix', () => {
   // Helper to check if a point is inside a polygon using ray casting
   function isPointInPolygon(point: Point2D, polygon: Point2D[]): boolean {
     let inside = false;
-    const x = point.x;
-    const y = point.y;
+    const x: number = point.x;
+    const y: number = point.y;
     
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    for (let i: number = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
       const xi = polygon[i].x;
       const yi = polygon[i].y;
       const xj = polygon[j].x;
@@ -45,7 +45,7 @@ describe('Lead Concave Area Fix', () => {
     ];
     
     const shapes: Shape[] = [];
-    for (let i = 0; i < points.length - 1; i++) {
+    for (let i: number = 0; i < points.length - 1; i++) {
       shapes.push({
         id: `line${i}`,
         type: LeadType.LINE,
@@ -107,12 +107,8 @@ describe('Lead Concave Area Fix', () => {
       }
     }
     
-    console.log(`Concave shape: ${pointsInside} out of ${points.length} lead points inside polygon`);
-    console.log(`Connection point: (${connectionPoint.x.toFixed(3)}, ${connectionPoint.y.toFixed(3)})`);
-    console.log('First few lead points:');
     points.slice(0, 3).forEach((p, i) => {
       const inside = isPointInPolygon(p, polygon);
-      console.log(`  Point ${i}: (${p.x.toFixed(3)}, ${p.y.toFixed(3)}) inside=${inside}`);
     });
     
     // With the improved algorithm, we should have fewer points inside the solid area
@@ -132,7 +128,7 @@ describe('Lead Concave Area Fix', () => {
     ];
     
     const shapes: Shape[] = [];
-    for (let i = 0; i < points.length - 1; i++) {
+    for (let i: number = 0; i < points.length - 1; i++) {
       shapes.push({
         id: `line${i}`,
         type: LeadType.LINE,
@@ -174,6 +170,5 @@ describe('Lead Concave Area Fix', () => {
     const points_result = result.leadIn!.points;
     expect(points_result.length).toBeGreaterThan(0);
     
-    console.log(`Simple concave test completed with ${points_result.length} lead points`);
   });
 });

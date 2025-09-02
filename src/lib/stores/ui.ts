@@ -4,8 +4,13 @@ export interface UIState {
   showToolTable: boolean;
 }
 
-function createUIStore() {
-  const { subscribe, set, update } = writable<UIState>({
+function createUIStore(): {
+  subscribe: (run: (value: UIState) => void) => () => void;
+  toggleToolTable: () => void;
+  showToolTable: () => void;
+  hideToolTable: () => void;
+} {
+  const { subscribe, update } = writable<UIState>({
     showToolTable: false
   });
 
@@ -35,4 +40,4 @@ function createUIStore() {
   };
 }
 
-export const uiStore = createUIStore();
+export const uiStore: ReturnType<typeof createUIStore> = createUIStore();

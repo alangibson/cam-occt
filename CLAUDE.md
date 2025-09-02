@@ -97,6 +97,16 @@ When any object is selected in UI panels, it MUST be highlighted on canvas:
 
 ## Development Guidelines
 
+### Dos and Donts
+
+- Don't duplicate code. Put it in one place and export/import it.
+- Don't catch errors and hide them. Let them bubble up if you can't handle them.
+- Obey commands to use specific libraries. Don't substitute or do your own implementation because you have trouble with the API.
+- If you cannot figure out an API, request specific documentation.
+- Don't create fallbacks unless told to do so.
+- Never "temporarily disable" anything.
+- Never create placeholder implementations.
+
 ### Code Organization
 
 - Components: `src/components/`
@@ -134,7 +144,7 @@ npm run validate     # Run all validation checks
 
 ### Development Server
 
-**CRITICAL**: Never run `npm run dev` - the user manages the dev server. If you need it running, ask the user to start it.
+Never run `npm run dev` - the user manages the dev server. If you need it running, ask the user to start it.
 
 ### Bug Fix Process
 
@@ -142,6 +152,18 @@ npm run validate     # Run all validation checks
 2. Fix the bug
 3. Run test to verify
 4. Report completion or iterate
+
+## Testing Guidelines
+
+### Dos and Donts
+
+- Do not change tests, or make them simpler, just to make them pass. If needed create a new simpler test.
+- Use exact integer coordinates in tests wherever possible. When points should meet, don't make them 'close enough'
+- Don't create debug scripts. Just write vitest tests.
+
+### Validation
+
+- Do not mark human validation tasks done until they have been approved.
 
 ## Implementation Notes
 
@@ -152,7 +174,7 @@ npm run validate     # Run all validation checks
 ### Shape System
 
 **Shape Origins**:
-- Circle/Arc: center point
+- Circle/Arc/Ellipse: center point
 - Line: start point
 - Polyline/Spline: first point
 
@@ -228,10 +250,6 @@ cam-occt/
 - LinuxCNC G-code reference
 - MetalHeadCAM examples at `./reference/MetalHeadCAM`
 
----
+## Definitions
 
-# Important Reminders
-
-- Do only what's asked - nothing more, nothing less
-- Always prefer editing existing files over creating new ones
-- Never create documentation unless explicitly requested
+- Spline: synonym for a NURBS

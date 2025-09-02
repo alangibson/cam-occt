@@ -11,25 +11,21 @@ describe('Operations Store Functions Debug', () => {
   });
 
   it('should directly test highlightPart function', () => {
-    console.log('Initial part store state:', get(partStore));
     
     const testPartId = 'part-debug-123';
     highlightPart(testPartId);
     
     const finalState = get(partStore);
-    console.log('Final part store state:', finalState);
     
     expect(finalState.highlightedPartId).toBe(testPartId);
   });
 
   it('should directly test selectChain function', () => {
-    console.log('Initial chain store state:', get(chainStore));
     
     const testChainId = 'chain-debug-456';
     selectChain(testChainId);
     
     const finalState = get(chainStore);
-    console.log('Final chain store state:', finalState);
     
     expect(finalState.selectedChainId).toBe(testChainId);
   });

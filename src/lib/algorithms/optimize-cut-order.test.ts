@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
 import type { Path } from '../stores/paths';
 import type { ShapeChain } from './chain-detection';
-import type { Shape, Ellipse, Spline } from '../../types';
+import type { Shape, Ellipse, Spline, Polyline, Circle, Line } from '../../lib/types';
 import type { DetectedPart } from './part-detection';
 import { CutDirection, LeadType } from '../types/direction';
+import { createPolylineFromVertices } from '../geometry/polyline';
 
 describe('Optimize Cut Order', () => {
   it('should handle ellipse shapes in chains', () => {
@@ -121,16 +122,16 @@ describe('Optimize Cut Order', () => {
       
       switch (type) {
         case 'line':
-          geometry = { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } };
+          geometry = { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } } as Line;
           break;
         case 'arc':
-          geometry = { center: { x: 5, y: 5 }, radius: 5, startAngle: 0, endAngle: 90, clockwise: true };
+          geometry = { center: { x: 5, y: 5 }, radius: 5, startAngle: 0, endAngle: 90, clockwise: true } as Arc;
           break;
         case 'circle':
-          geometry = { center: { x: 5, y: 5 }, radius: 5 };
+          geometry = { center: { x: 5, y: 5 }, radius: 5 } as Circle;
           break;
         case 'polyline':
-          geometry = { points: [{ x: 0, y: 0 }, { x: 10, y: 10 }], closed: false };
+          geometry = createPolylineFromVertices([{ x: 0, y: 0, bulge: 0 }, { x: 10, y: 10, bulge: 0 }], false).geometry;
           break;
         case 'spline':
           geometry = { 
@@ -140,14 +141,14 @@ describe('Optimize Cut Order', () => {
             degree: 1,
             fitPoints: [],
             closed: false 
-          };
+          } as Spline;
           break;
         case 'ellipse':
           geometry = { 
             center: { x: 5, y: 5 }, 
             majorAxisEndpoint: { x: 3, y: 0 }, 
             minorToMajorRatio: 0.5 
-          };
+          } as Ellipse;
           break;
       }
 

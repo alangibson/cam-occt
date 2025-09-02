@@ -11,40 +11,41 @@ import {
   clearPersistedState, 
   debouncedSave,
   type PersistedState 
-} from '../utils/state-persistence.js';
+} from '../utils/state-persistence';
 
 // Import all stores
-import { drawingStore } from './drawing.js';
-import { workflowStore } from './workflow.js';
-import { chainStore } from './chains.js';
-import { partStore } from './parts.js';
-import { rapidStore } from './rapids.js';
-import { uiStore } from './ui.js';
-import { tessellationStore } from './tessellation.js';
-import { overlayStore } from './overlay.js';
-import { leadWarningsStore } from './lead-warnings.js';
-import { prepareStageStore } from './prepare-stage.js';
-import { operationsStore } from './operations.js';
-import { pathStore } from './paths.js';
-import { toolStore } from './tools.js';
+import { drawingStore, type DrawingState } from './drawing';
+import { workflowStore, type WorkflowState, type WorkflowStage } from './workflow';
+import { chainStore, type ChainStore } from './chains';
+import { partStore, type PartStore } from './parts';
+import { rapidStore, type RapidsState } from './rapids';
+import { uiStore, type UIState } from './ui';
+import { tessellationStore, type TessellationState } from './tessellation';
+import { overlayStore, type OverlayState } from './overlay';
+import { leadWarningsStore, type LeadWarning } from './lead-warnings';
+import { prepareStageStore, type PrepareStageState } from './prepare-stage';
+import { operationsStore, type Operation } from './operations';
+import { pathStore, type PathsState } from './paths';
+import { toolStore, type Tool } from './tools';
+import type { WarningState } from './warning-store-base';
 
 /**
  * Collect current state from all stores
  */
 function collectCurrentState(): PersistedState {
-  const drawing = get(drawingStore);
-  const workflow = get(workflowStore);
-  const chains = get(chainStore);
-  const parts = get(partStore);
-  const rapids = get(rapidStore);
-  const ui = get(uiStore);
-  const tessellation = get(tessellationStore);
-  const overlay = get(overlayStore);
-  const leadWarnings = get(leadWarningsStore);
-  const prepareStage = get(prepareStageStore);
-  const operations = get(operationsStore);
-  const paths = get(pathStore);
-  const tools = get(toolStore);
+  const drawing: DrawingState = get(drawingStore);
+  const workflow: WorkflowState = get(workflowStore);
+  const chains: ChainStore = get(chainStore);
+  const parts: PartStore = get(partStore);
+  const rapids: RapidsState = get(rapidStore);
+  const ui: UIState = get(uiStore);
+  const tessellation: TessellationState = get(tessellationStore);
+  const overlay: OverlayState = get(overlayStore);
+  const leadWarnings: WarningState<LeadWarning> = get(leadWarningsStore);
+  const prepareStage: PrepareStageState = get(prepareStageStore);
+  const operations: Operation[] = get(operationsStore);
+  const paths: PathsState = get(pathStore);
+  const tools: Tool[] = get(toolStore);
   
   return {
     // Drawing state
@@ -147,7 +148,7 @@ function restoreStateToStores(state: PersistedState): void {
     }
     
     // Restore workflow state using the dedicated restore method
-    workflowStore.restore(state.currentStage as any, state.completedStages);
+    workflowStore.restore(state.currentStage as WorkflowStage, state.completedStages as WorkflowStage[]);
     
     // Restore rapids state
     rapidStore.setRapids(state.rapids);
@@ -174,23 +175,23 @@ function restoreStateToStores(state: PersistedState): void {
     }
     
     // Restore overlay state
-    overlayStore.setCurrentStage(state.overlayStage as any);
+    overlayStore.setCurrentStage(state.overlayStage as WorkflowStage);
     
     // Restore the full overlays object with all stage-specific data
     if (state.overlays) {
       // We need to restore each stage's overlay data
-      Object.entries(state.overlays).forEach(([stage, overlayData]: [string, any]) => {
+      Object.entries(state.overlays).forEach(([stage, overlayData]) => {
         if (overlayData.shapePoints?.length > 0) {
-          overlayStore.setShapePoints(stage as any, overlayData.shapePoints);
+          overlayStore.setShapePoints(stage as WorkflowStage, overlayData.shapePoints);
         }
         if (overlayData.chainEndpoints?.length > 0) {
-          overlayStore.setChainEndpoints(stage as any, overlayData.chainEndpoints);
+          overlayStore.setChainEndpoints(stage as WorkflowStage, overlayData.chainEndpoints);
         }
         if (overlayData.tessellationPoints?.length > 0) {
-          overlayStore.setTessellationPoints(stage as any, overlayData.tessellationPoints);
+          overlayStore.setTessellationPoints(stage as WorkflowStage, overlayData.tessellationPoints);
         }
         if (overlayData.toolHead) {
-          overlayStore.setToolHead(stage as any, overlayData.toolHead);
+          overlayStore.setToolHead(stage as WorkflowStage, overlayData.toolHead);
         }
       });
     }
@@ -218,7 +219,7 @@ function restoreStateToStores(state: PersistedState): void {
     
     if (state.paths && Array.isArray(state.paths)) {
       // Restore paths with their original IDs and lead geometry
-      const pathsState = {
+      const pathsState: PathsState = {
         paths: state.paths,
         selectedPathId: state.selectedPathId || null,
         highlightedPathId: state.highlightedPathId || null
@@ -240,7 +241,7 @@ function restoreStateToStores(state: PersistedState): void {
  * Save current application state
  */
 export function saveApplicationState(): void {
-  const currentState = collectCurrentState();
+  const currentState: PersistedState = collectCurrentState();
   saveState(currentState);
 }
 
@@ -248,7 +249,7 @@ export function saveApplicationState(): void {
  * Save current application state with debouncing
  */
 export function autoSaveApplicationState(): void {
-  const currentState = collectCurrentState();
+  const currentState: PersistedState = collectCurrentState();
   debouncedSave(currentState);
 }
 
@@ -256,7 +257,7 @@ export function autoSaveApplicationState(): void {
  * Restore application state from localStorage
  */
 export function restoreApplicationState(): boolean {
-  const savedState = loadState();
+  const savedState: PersistedState | null = loadState();
   if (savedState) {
     restoreStateToStores(savedState);
     return true;

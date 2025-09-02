@@ -1,4 +1,4 @@
-import type { ToolPath, GCodeCommand, Drawing, Shape } from '../../types';
+import type { ToolPath, GCodeCommand, Drawing, Shape, Spline, Arc, Circle, CuttingParameters, Point2D } from '../../lib/types';
 
 export interface GCodeOptions {
   units: 'mm' | 'inch';
@@ -88,7 +88,7 @@ function generateHeader(options: GCodeOptions): GCodeCommand[] {
     });
     
     // Path blending with tolerance
-    const toleranceValue = options.units === 'mm' ? 0.1 : 0.004;
+    const toleranceValue: number = options.units === 'mm' ? 0.1 : 0.004;
     commands.push({
       code: 'G64',
       parameters: { P: toleranceValue },
@@ -197,7 +197,7 @@ function generatePathCommands(
   // Lead-in if present
   if (path.leadIn && path.leadIn.length > 0) {
     // Rapid to lead-in start
-    const leadInStart = path.leadIn[0];
+    const leadInStart: { x: number; y: number } = path.leadIn[0];
     commands.push({
       code: 'G0',
       parameters: { X: leadInStart.x, Y: leadInStart.y },
@@ -206,7 +206,7 @@ function generatePathCommands(
     
     // Pierce if plasma mode
     if (options.plasmaMode && path.parameters) {
-      commands.push(...generatePierceCommands(path.parameters, options));
+      commands.push(...generatePierceCommands(path.parameters));
     }
     
     // Cut lead-in
@@ -224,7 +224,8 @@ function generatePathCommands(
     });
   } else {
     // Direct move to path start
-    const start = path.points[0];
+    const pathPoints: { x: number; y: number }[] = path.points || [];
+    const start: { x: number; y: number } = pathPoints[0];
     commands.push({
       code: 'G0',
       parameters: { X: start.x, Y: start.y },
@@ -232,14 +233,15 @@ function generatePathCommands(
     });
     
     if (options.plasmaMode && path.parameters) {
-      commands.push(...generatePierceCommands(path.parameters, options));
+      commands.push(...generatePierceCommands(path.parameters));
     }
   }
   
   // Detect if this is a hole (closed path with small area for velocity reduction)
-  const isHole = (path.points.length > 3 && 
-    Math.abs(path.points[0].x - path.points[path.points.length - 1].x) < 0.1 &&
-    Math.abs(path.points[0].y - path.points[path.points.length - 1].y) < 0.1);
+  const pathPoints: { x: number; y: number }[] = path.points || [];
+  const isHole: boolean = (pathPoints.length > 3 && 
+    Math.abs(pathPoints[0].x - pathPoints[pathPoints.length - 1].x) < 0.1 &&
+    Math.abs(pathPoints[0].y - pathPoints[pathPoints.length - 1].y) < 0.1);
   
   // Apply velocity reduction for hole cutting
   if (options.plasmaMode && isHole && options.enableVelocityReduction !== false) {
@@ -255,7 +257,8 @@ function generatePathCommands(
     commands.push(...generateNativeSplineCommands(path.originalShape, options));
   } else {
     // Fallback to linear interpolation
-    path.points.forEach((point, i) => {
+    const pathPoints: { x: number; y: number }[] = path.points || [];
+    pathPoints.forEach((point, i) => {
       if (i > 0) {
         commands.push({
           code: 'G1',
@@ -309,7 +312,7 @@ function generatePathCommands(
   return commands;
 }
 
-function generatePierceCommands(parameters: any, options: GCodeOptions): GCodeCommand[] {
+function generatePierceCommands(parameters: CuttingParameters): GCodeCommand[] {
   const commands: GCodeCommand[] = [];
   
   // Move to pierce height
@@ -389,7 +392,7 @@ function generateNativeSplineCommands(shape: Shape, options: GCodeOptions): GCod
   
   switch (shape.type) {
     case 'spline':
-      const spline = shape.geometry as any;
+      const spline: import("$lib/types/geometry").Spline = shape.geometry as Spline;
       
       // Use G5.2/G5.3 NURBS commands for splines
       if (spline.controlPoints && spline.controlPoints.length >= 2) {
@@ -402,7 +405,7 @@ function generateNativeSplineCommands(shape: Shape, options: GCodeOptions): GCod
         }
         
         // G5.2 - Open NURBS data block
-        const order = spline.degree || 3;
+        const order: number = spline.degree || 3;
         commands.push({
           code: 'G5.2',
           parameters: { 
@@ -413,9 +416,9 @@ function generateNativeSplineCommands(shape: Shape, options: GCodeOptions): GCod
         });
         
         // Add control points with weights
-        spline.controlPoints.forEach((point: any, i: number) => {
+        spline.controlPoints.forEach((point: Point2D, i: number) => {
           if (i > 0) { // Skip first point (already at start position)
-            const weight = spline.weights && spline.weights[i] ? spline.weights[i] : 1;
+            const weight: number = spline.weights && spline.weights[i] ? spline.weights[i] : 1;
             commands.push({
               code: '',
               parameters: { 
@@ -449,7 +452,7 @@ function generateNativeSplineCommands(shape: Shape, options: GCodeOptions): GCod
       
     case 'arc':
       // Use native arc commands (G2/G3) for arcs
-      const arc = shape.geometry as any;
+      const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
       if (options.includeComments) {
         commands.push({
           code: '',
@@ -459,17 +462,17 @@ function generateNativeSplineCommands(shape: Shape, options: GCodeOptions): GCod
       }
       
       // Calculate arc endpoint
-      const endX = arc.center.x + arc.radius * Math.cos(arc.endAngle);
-      const endY = arc.center.y + arc.radius * Math.sin(arc.endAngle);
+      const endX: number = arc.center.x + arc.radius * Math.cos(arc.endAngle);
+      const endY: number = arc.center.y + arc.radius * Math.sin(arc.endAngle);
       
       // Calculate center offsets from start point
-      const startX = arc.center.x + arc.radius * Math.cos(arc.startAngle);
-      const startY = arc.center.y + arc.radius * Math.sin(arc.startAngle);
-      const I = arc.center.x - startX;
-      const J = arc.center.y - startY;
+      const startX: number = arc.center.x + arc.radius * Math.cos(arc.startAngle);
+      const startY: number = arc.center.y + arc.radius * Math.sin(arc.startAngle);
+      const I: number = arc.center.x - startX;
+      const J: number = arc.center.y - startY;
       
       // Determine direction (clockwise vs counterclockwise)
-      const isClockwise = (arc.endAngle - arc.startAngle) < 0;
+      const isClockwise: boolean = (arc.endAngle - arc.startAngle) < 0;
       
       commands.push({
         code: isClockwise ? 'G2' : 'G3',
@@ -485,7 +488,7 @@ function generateNativeSplineCommands(shape: Shape, options: GCodeOptions): GCod
       
     case 'circle':
       // Convert full circles to arc commands
-      const circle = shape.geometry as any;
+      const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle;
       if (options.includeComments) {
         commands.push({
           code: '',
@@ -521,7 +524,7 @@ function commandsToString(commands: GCodeCommand[], options: GCodeOptions): stri
       return options.includeComments ? `(${cmd.comment})` : '';
     }
     
-    let line = cmd.code;
+    let line: string = cmd.code;
     
     // Add parameters
     Object.entries(cmd.parameters).forEach(([key, value]) => {
@@ -529,8 +532,16 @@ function commandsToString(commands: GCodeCommand[], options: GCodeOptions): stri
         // QtPlasmaC tool syntax (e.g., $0, $1, $2)
         line += ` ${key}`;
       } else {
+        // Format numeric values with appropriate precision
+        let formattedValue: string | number = value;
+        if (typeof value === 'number') {
+          // Use 4 decimal places for coordinates, 3 for other values
+          const isCoordinate: boolean = ['X', 'Y', 'Z', 'I', 'J', 'K'].includes(key);
+          const precision: number = isCoordinate ? 4 : 3;
+          formattedValue = Number(value.toFixed(precision));
+        }
         // Standard parameter syntax
-        line += ` ${key}${value}`;
+        line += ` ${key}${formattedValue}`;
       }
     });
     

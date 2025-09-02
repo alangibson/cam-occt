@@ -1,8 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
+import { polylineToVertices } from '../geometry/polyline';
 import { readFileSync } from 'fs';
 import path from 'path';
+import { EPSILON } from '../constants';
+import type { Polyline, Arc } from '../../lib/types/geometry';
 
 describe('Bulge Rendering Fixes', () => {
   describe('Polylinie.dxf', () => {
@@ -13,9 +16,6 @@ describe('Bulge Rendering Fixes', () => {
       // Parse DXF (no decomposition in parser)
       const drawing = await parseDXF(dxfContent);
       
-      console.log('Polylinie.dxf with bulges preserved:');
-      console.log('Shapes:', drawing.shapes.length);
-      console.log('Shape types:', drawing.shapes.map(s => s.type));
       
       // Should have polylines with vertex data
       const polylines = drawing.shapes.filter(s => s.type === 'polyline');
@@ -24,16 +24,13 @@ describe('Bulge Rendering Fixes', () => {
       // Check if vertices with bulges are preserved
       let totalBulgedVertices = 0;
       polylines.forEach(polyline => {
-        const geometry = polyline.geometry as any;
-        if (geometry.vertices) {
-          const bulgedVertices = geometry.vertices.filter((v: any) => Math.abs(v.bulge || 0) > 1e-10);
-          totalBulgedVertices += bulgedVertices.length;
-          console.log(`Polyline has ${bulgedVertices.length} vertices with bulges`);
-        }
+        const geometry = polyline.geometry as Polyline;
+        const vertices = polylineToVertices(geometry);
+        const bulgedVertices = vertices.filter((v: any) => Math.abs(v.bulge || 0) > EPSILON);
+        totalBulgedVertices += bulgedVertices.length;
       });
       
       expect(totalBulgedVertices).toBeGreaterThan(0);
-      console.log(`Total bulged vertices found: ${totalBulgedVertices}`);
     });
     
     it('should decompose correctly with proper arc directions', async () => {
@@ -52,14 +49,10 @@ describe('Bulge Rendering Fixes', () => {
         shapes: decomposed
       };
       
-      console.log('Polylinie.dxf decomposed:');
-      console.log('Shapes:', drawing.shapes.length);
-      console.log('Shape types:', drawing.shapes.map(s => s.type));
       
       const arcs = drawing.shapes.filter(s => s.type === 'arc');
       const lines = drawing.shapes.filter(s => s.type === 'line');
       
-      console.log(`Found ${arcs.length} arcs and ${lines.length} lines`);
       
       // Should have both arcs and lines
       expect(arcs.length).toBeGreaterThan(0);
@@ -67,14 +60,13 @@ describe('Bulge Rendering Fixes', () => {
       
       // Check arc properties
       arcs.forEach((arc, index) => {
-        const geometry = arc.geometry as any;
+        const geometry = arc.geometry as Arc;
         expect(geometry.center).toBeDefined();
         expect(geometry.radius).toBeGreaterThan(0);
         expect(geometry.startAngle).toBeDefined();
         expect(geometry.endAngle).toBeDefined();
         expect(typeof geometry.clockwise).toBe('boolean');
         
-        console.log(`Arc ${index + 1}: radius=${geometry.radius.toFixed(2)}, clockwise=${geometry.clockwise}`);
       });
     });
   });
@@ -109,7 +101,6 @@ describe('Bulge Rendering Fixes', () => {
         const angleDegrees = (includedAngle * 180) / Math.PI;
         const direction = bulge > 0 ? 'CCW' : 'CW';
         
-        console.log(`Bulge ${bulge} = ${angleDegrees.toFixed(1)}° arc (${direction})`);
         
         // Validate mathematical properties
         expect(typeof bulge).toBe('number');
@@ -119,15 +110,12 @@ describe('Bulge Rendering Fixes', () => {
         // Special cases based on DXF specification
         if (Math.abs(bulge) === 1.0) {
           expect(angleDegrees).toBeCloseTo(180, 1); // Semicircle
-          console.log('  -> This is a semicircle (bulge = ±1)');
         }
         if (Math.abs(bulge) === 0.0) {
           expect(angleDegrees).toBeCloseTo(0, 1); // Straight line
-          console.log('  -> This is a straight line (bulge = 0)');
         }
         if (Math.abs(bulge) > 1.0) {
           expect(angleDegrees).toBeGreaterThan(180); // Greater than semicircle
-          console.log('  -> Arc > 180° (large arc)');
         }
       });
     });
@@ -148,9 +136,6 @@ describe('Bulge Rendering Fixes', () => {
         shapes: decomposedShapes
       };
       
-      console.log('Comparison test:');
-      console.log(`With bulges: ${withBulges.shapes.length} shapes (${withBulges.shapes.map(s => s.type).join(', ')})`);
-      console.log(`Decomposed: ${decomposed.shapes.length} shapes (${decomposed.shapes.map(s => s.type).join(', ')})`);
       
       // Decomposed should have more shapes
       expect(decomposed.shapes.length).toBeGreaterThan(withBulges.shapes.length);

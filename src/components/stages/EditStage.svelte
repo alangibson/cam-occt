@@ -41,6 +41,7 @@
         <LayersList />
       </AccordionPanel>
 
+
       <AccordionPanel title="Next Stage" isExpanded={true}>
         <div class="next-stage-content">
           <button 
@@ -121,4 +122,5 @@
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.4;
   }
+
 </style>

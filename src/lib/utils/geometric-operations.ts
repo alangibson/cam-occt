@@ -5,39 +5,42 @@
  * and spatial relationships using custom mathematical algorithms.
  */
 
-import type { ShapeChain } from '../algorithms/chain-detection';
-import type { Shape, Point2D } from '../../types';
+import type { Chain } from '../algorithms/chain-detection';
+import type { Shape, Point2D, Line, Circle, Arc, Polyline, Ellipse, Spline } from '../../lib/types';
 import { sampleNURBS } from '../geometry/nurbs';
+import { polylineToPoints } from '../geometry/polyline';
+import { generateEllipsePoints } from './ellipse-utils';
+import { 
+  calculatePolygonArea as calculatePolygonAreaShared,
+  calculateDistanceBetweenPoints,
+  isPointInPolygon as isPointInPolygonShared
+} from './polygon-geometry-shared';
+
 
 /**
  * Checks if one closed chain is completely contained within another closed chain
  * using proper geometric containment (point-in-polygon testing)
  */
 export function isChainGeometricallyContained(
-  innerChain: ShapeChain, 
-  outerChain: ShapeChain
+  innerChain: Chain, 
+  outerChain: Chain
 ): boolean {
-  try {
-    // Extract polygon points from both chains
-    const innerPolygon = extractPolygonFromChain(innerChain);
-    const outerPolygon = extractPolygonFromChain(outerChain);
-    
-    if (!innerPolygon || !outerPolygon || innerPolygon.length < 3 || outerPolygon.length < 3) {
-      throw new Error(`Failed to extract polygons for containment check: inner chain ${innerChain.id}=${!!innerPolygon}, outer chain ${outerChain.id}=${!!outerPolygon}. Chains may have gaps preventing polygon creation.`);
-    }
-    
-    // Check if all points of inner polygon are inside outer polygon
-    return isPolygonContained(innerPolygon, outerPolygon);
-  } catch (error) {
-    // Re-throw the error so the part detection can handle it appropriately
-    throw error;
+  // Extract polygon points from both chains
+  const innerPolygon: Point2D[] | null = extractPolygonFromChain(innerChain);
+  const outerPolygon: Point2D[] | null = extractPolygonFromChain(outerChain);
+  
+  if (!innerPolygon || !outerPolygon || innerPolygon.length < 3 || outerPolygon.length < 3) {
+    throw new Error(`Failed to extract polygons for containment check: inner chain ${innerChain.id}=${!!innerPolygon}, outer chain ${outerChain.id}=${!!outerPolygon}. Chains may have gaps preventing polygon creation.`);
   }
+  
+  // Check if all points of inner polygon are inside outer polygon
+  return isPolygonContained(innerPolygon, outerPolygon);
 }
 
 /**
  * Extracts a polygon representation from a chain for geometric operations
  */
-function extractPolygonFromChain(chain: ShapeChain): Point2D[] | null {
+function extractPolygonFromChain(chain: Chain): Point2D[] | null {
   if (!chain || !chain.shapes || chain.shapes.length === 0) {
     return null;
   }
@@ -45,7 +48,7 @@ function extractPolygonFromChain(chain: ShapeChain): Point2D[] | null {
   const points: Point2D[] = [];
   
   for (const shape of chain.shapes) {
-    const shapePoints = getShapePoints(shape);
+    const shapePoints: Point2D[] = getShapePoints(shape);
     if (shapePoints && shapePoints.length > 0) {
       // Add points, but avoid duplicating the last point of previous shape with first point of next
       if (points.length === 0) {
@@ -54,10 +57,7 @@ function extractPolygonFromChain(chain: ShapeChain): Point2D[] | null {
         // Skip first point if it's close to the last added point
         const lastPoint = points[points.length - 1];
         const firstNewPoint = shapePoints[0];
-        const distance = Math.sqrt(
-          Math.pow(lastPoint.x - firstNewPoint.x, 2) + 
-          Math.pow(lastPoint.y - firstNewPoint.y, 2)
-        );
+        const distance = calculateDistanceBetweenPoints(lastPoint, firstNewPoint);
         
         if (distance > 0.001) {
           points.push(...shapePoints);
@@ -69,7 +69,7 @@ function extractPolygonFromChain(chain: ShapeChain): Point2D[] | null {
   }
   
   // Remove duplicate points and ensure we have enough for a polygon
-  const cleanedPoints = removeDuplicatePoints(points);
+  const cleanedPoints: Point2D[] = removeDuplicatePoints(points);
   return cleanedPoints.length >= 3 ? cleanedPoints : null;
 }
 
@@ -79,16 +79,16 @@ function extractPolygonFromChain(chain: ShapeChain): Point2D[] | null {
 function getShapePoints(shape: Shape): Point2D[] {
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry as any;
+      const line: import("$lib/types/geometry").Line = shape.geometry as Line;
       return [line.start, line.end];
       
     case 'circle':
-      const circle = shape.geometry as any;
+      const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle;
       // Create polygon approximation of circle with 32 points
       const points: Point2D[] = [];
-      const segments = 32;
-      for (let i = 0; i < segments; i++) {
-        const angle = (i * 2 * Math.PI) / segments;
+      const segments: number = 32;
+      for (let i: number = 0; i < segments; i++) {
+        const angle: number = (i * 2 * Math.PI) / segments;
         points.push({
           x: circle.center.x + circle.radius * Math.cos(angle),
           y: circle.center.y + circle.radius * Math.sin(angle)
@@ -97,11 +97,11 @@ function getShapePoints(shape: Shape): Point2D[] {
       return points;
       
     case 'arc':
-      const arc = shape.geometry as any;
+      const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
       // Create polygon approximation of arc
       const arcPoints: Point2D[] = [];
-      let startAngle = arc.startAngle;
-      let endAngle = arc.endAngle;
+      let startAngle: number = arc.startAngle;
+      let endAngle: number = arc.endAngle;
       
       // Normalize angles and handle clockwise arcs
       if (arc.clockwise) {
@@ -109,13 +109,13 @@ function getShapePoints(shape: Shape): Point2D[] {
       }
       
       // Calculate arc span
-      let span = endAngle - startAngle;
+      let span: number = endAngle - startAngle;
       if (span <= 0) span += 2 * Math.PI;
       
-      const arcSegments = Math.max(8, Math.ceil(span / (Math.PI / 8))); // At least 8 segments
+      const arcSegments: number = Math.max(8, Math.ceil(span / (Math.PI / 8))); // At least 8 segments
       
-      for (let i = 0; i <= arcSegments; i++) {
-        const angle = startAngle + (span * i) / arcSegments;
+      for (let i: number = 0; i <= arcSegments; i++) {
+        const angle: number = startAngle + (span * i) / arcSegments;
         arcPoints.push({
           x: arc.center.x + arc.radius * Math.cos(angle),
           y: arc.center.y + arc.radius * Math.sin(angle)
@@ -124,83 +124,45 @@ function getShapePoints(shape: Shape): Point2D[] {
       return arcPoints;
       
     case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points || [];
+      const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
+      return polylineToPoints(polyline);
       
     case 'ellipse':
-      const ellipse = shape.geometry as any;
+      const ellipse: import("$lib/types/geometry").Ellipse = shape.geometry as Ellipse;
       // Create polygon approximation of ellipse
       const ellipsePoints: Point2D[] = [];
-      const ellipseSegments = 64; // More segments for ellipse to capture shape accurately
-      
-      // Calculate major and minor axis lengths
-      const majorAxisLength = Math.sqrt(
-        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-        ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-      );
-      const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-      
-      // Calculate rotation angle of major axis
-      const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+      const ellipseSegments: number = 64; // More segments for ellipse to capture shape accurately
       
       // Determine if this is an ellipse arc or full ellipse
-      const isArc = typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number';
+      const isArc: boolean = typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number';
       
       if (isArc) {
         // Ellipse arc - only sample between start and end parameters
-        const startParam = ellipse.startParam!;
-        const endParam = ellipse.endParam!;
-        let paramSpan = endParam - startParam;
+        const startParam: number = ellipse.startParam!;
+        const endParam: number = ellipse.endParam!;
+        let paramSpan: number = endParam - startParam;
         
         // Handle parameter wrapping
         if (paramSpan <= 0) paramSpan += 2 * Math.PI;
         
-        const numSegments = Math.max(8, Math.ceil(ellipseSegments * paramSpan / (2 * Math.PI)));
+        const numSegments: number = Math.max(8, Math.ceil(ellipseSegments * paramSpan / (2 * Math.PI)));
         
-        for (let i = 0; i <= numSegments; i++) {
-          const param = startParam + (paramSpan * i) / numSegments;
-          
-          // Parametric ellipse equations
-          const x = majorAxisLength * Math.cos(param);
-          const y = minorAxisLength * Math.sin(param);
-          
-          // Rotate by major axis angle and translate to center
-          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
-          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
-          
-          ellipsePoints.push({
-            x: ellipse.center.x + rotatedX,
-            y: ellipse.center.y + rotatedY
-          });
-        }
+        const arcPoints = generateEllipsePoints(ellipse, startParam, startParam + paramSpan, numSegments + 1);
+        ellipsePoints.push(...arcPoints);
       } else {
         // Full ellipse
-        for (let i = 0; i < ellipseSegments; i++) {
-          const param = (i * 2 * Math.PI) / ellipseSegments;
-          
-          // Parametric ellipse equations
-          const x = majorAxisLength * Math.cos(param);
-          const y = minorAxisLength * Math.sin(param);
-          
-          // Rotate by major axis angle and translate to center
-          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
-          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
-          
-          ellipsePoints.push({
-            x: ellipse.center.x + rotatedX,
-            y: ellipse.center.y + rotatedY
-          });
-        }
+        const fullEllipsePoints = generateEllipsePoints(ellipse, 0, 2 * Math.PI, ellipseSegments);
+        ellipsePoints.push(...fullEllipsePoints);
       }
       
       return ellipsePoints;
       
     case 'spline':
-      const spline = shape.geometry as any;
+      const spline: import("$lib/types/geometry").Spline = shape.geometry as Spline;
       try {
         // Use NURBS sampling for accurate polygon representation
         return sampleNURBS(spline, 64); // Use more points for geometric accuracy
-      } catch (error) {
+      } catch {
         // Fallback to fit points or control points if NURBS evaluation fails
         if (spline.fitPoints && spline.fitPoints.length > 0) {
           return spline.fitPoints;
@@ -223,14 +185,11 @@ function removeDuplicatePoints(points: Point2D[], tolerance: number = 0.001): Po
   
   const result: Point2D[] = [points[0]];
   
-  for (let i = 1; i < points.length; i++) {
-    const current = points[i];
-    const last = result[result.length - 1];
+  for (let i: number = 1; i < points.length; i++) {
+    const current: Point2D = points[i];
+    const last: Point2D = result[result.length - 1];
     
-    const distance = Math.sqrt(
-      Math.pow(current.x - last.x, 2) + 
-      Math.pow(current.y - last.y, 2)
-    );
+    const distance = calculateDistanceBetweenPoints(current, last);
     
     if (distance > tolerance) {
       result.push(current);
@@ -261,13 +220,13 @@ function isPolygonContained(innerPolygon: Point2D[], outerPolygon: Point2D[]): b
  */
 function doPolygonsIntersect(poly1: Point2D[], poly2: Point2D[]): boolean {
   // Check each edge of poly1 against each edge of poly2
-  for (let i = 0; i < poly1.length; i++) {
-    const p1 = poly1[i];
-    const p2 = poly1[(i + 1) % poly1.length];
+  for (let i: number = 0; i < poly1.length; i++) {
+    const p1: Point2D = poly1[i];
+    const p2: Point2D = poly1[(i + 1) % poly1.length];
     
-    for (let j = 0; j < poly2.length; j++) {
-      const p3 = poly2[j];
-      const p4 = poly2[(j + 1) % poly2.length];
+    for (let j: number = 0; j < poly2.length; j++) {
+      const p3: Point2D = poly2[j];
+      const p4: Point2D = poly2[(j + 1) % poly2.length];
       
       if (doLineSegmentsIntersect(p1, p2, p3, p4)) {
         return true;
@@ -282,10 +241,10 @@ function doPolygonsIntersect(poly1: Point2D[], poly2: Point2D[]): boolean {
  * Checks if two line segments intersect
  */
 function doLineSegmentsIntersect(p1: Point2D, p2: Point2D, p3: Point2D, p4: Point2D): boolean {
-  const d1 = direction(p3, p4, p1);
-  const d2 = direction(p3, p4, p2);
-  const d3 = direction(p1, p2, p3);
-  const d4 = direction(p1, p2, p4);
+  const d1: number = direction(p3, p4, p1);
+  const d2: number = direction(p3, p4, p2);
+  const d3: number = direction(p1, p2, p3);
+  const d4: number = direction(p1, p2, p4);
   
   if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
       ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
@@ -318,40 +277,16 @@ function onSegment(p: Point2D, q: Point2D, r: Point2D): boolean {
 
 /**
  * Point-in-polygon test using ray casting algorithm
+ * Re-exported from polygon-geometry-shared for backward compatibility
  */
-export function isPointInPolygon(point: Point2D, polygon: Point2D[]): boolean {
-  let inside = false;
-  const x = point.x;
-  const y = point.y;
-  
-  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
-    const xi = polygon[i].x;
-    const yi = polygon[i].y;
-    const xj = polygon[j].x;
-    const yj = polygon[j].y;
-    
-    if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
-      inside = !inside;
-    }
-  }
-  
-  return inside;
-}
+export const isPointInPolygon = isPointInPolygonShared;
 
 /**
  * Calculates the area of a polygon using the shoelace formula
+ * Delegated to polygon-geometry-shared.ts to eliminate duplication
  */
 export function calculatePolygonArea(polygon: Point2D[]): number {
-  if (polygon.length < 3) return 0;
-  
-  let area = 0;
-  for (let i = 0; i < polygon.length; i++) {
-    const j = (i + 1) % polygon.length;
-    area += polygon[i].x * polygon[j].y;
-    area -= polygon[j].x * polygon[i].y;
-  }
-  
-  return Math.abs(area) / 2;
+  return calculatePolygonAreaShared(polygon);
 }
 
 /**
@@ -386,12 +321,12 @@ export function calculatePolygonCentroid(polygon: Point2D[]): Point2D | null {
 export function calculatePolygonBounds(polygon: Point2D[]): { min: Point2D; max: Point2D } | null {
   if (polygon.length === 0) return null;
   
-  let minX = polygon[0].x;
-  let maxX = polygon[0].x;
-  let minY = polygon[0].y;
-  let maxY = polygon[0].y;
+  let minX: number = polygon[0].x;
+  let maxX: number = polygon[0].x;
+  let minY: number = polygon[0].y;
+  let maxY: number = polygon[0].y;
   
-  for (let i = 1; i < polygon.length; i++) {
+  for (let i: number = 1; i < polygon.length; i++) {
     minX = Math.min(minX, polygon[i].x);
     maxX = Math.max(maxX, polygon[i].x);
     minY = Math.min(minY, polygon[i].y);

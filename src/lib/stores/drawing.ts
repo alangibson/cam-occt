@@ -1,20 +1,25 @@
 import { writable } from 'svelte/store';
-import type { Drawing, Shape, Point2D } from '../../types';
+import type { Drawing, Shape, Point2D } from '../../lib/types';
 import { clearChains } from './chains';
 import { clearParts } from './parts';
+import { moveShape, rotateShape, scaleShape } from '$lib/geometry';
 
 // Import workflow store for state management
-let workflowStore: any = null;
-const getWorkflowStore = async () => {
+interface WorkflowStore {
+  invalidateDownstreamStages: (fromStage: 'edit' | 'prepare') => void;
+}
+
+let workflowStore: WorkflowStore | null = null;
+const getWorkflowStore = async (): Promise<WorkflowStore> => {
   if (!workflowStore) {
     const { workflowStore: ws } = await import('./workflow');
-    workflowStore = ws;
+    workflowStore = ws as WorkflowStore;
   }
   return workflowStore;
 };
 
 // Helper function to reset downstream stages when drawing is modified
-const resetDownstreamStages = async (fromStage: 'edit' | 'prepare' = 'edit') => {
+const resetDownstreamStages = async (fromStage: 'edit' | 'prepare' = 'edit'): Promise<void> => {
   // Clear stage-specific data
   clearChains();
   clearParts();
@@ -42,7 +47,7 @@ const resetDownstreamStages = async (fromStage: 'edit' | 'prepare' = 'edit') => 
   ws.invalidateDownstreamStages(fromStage);
 };
 
-interface DrawingState {
+export interface DrawingState {
   drawing: Drawing | null;
   selectedShapes: Set<string>;
   hoveredShape: string | null;
@@ -55,8 +60,24 @@ interface DrawingState {
   displayUnit: 'mm' | 'inch';
 }
 
-function createDrawingStore() {
-  const { subscribe, set, update } = writable<DrawingState>({
+function createDrawingStore(): {
+  subscribe: (run: (value: DrawingState) => void) => () => void;
+  setDrawing: (drawing: Drawing, fileName?: string) => void;
+  selectShape: (shapeId: string, multi?: boolean) => void;
+  deselectShape: (shapeId: string) => void;
+  clearSelection: () => void;
+  deleteSelected: () => void;
+  moveShapes: (shapeIds: string[], delta: Point2D) => void;
+  scaleShapes: (shapeIds: string[], scaleFactor: number, origin: Point2D) => void;
+  rotateShapes: (shapeIds: string[], angle: number, origin: Point2D) => void;
+  setViewTransform: (scale: number, offset: Point2D) => void;
+  setLayerVisibility: (layerName: string, visible: boolean) => void;
+  setHoveredShape: (shapeId: string | null) => void;
+  setDisplayUnit: (unit: 'mm' | 'inch') => void;
+  replaceAllShapes: (shapes: Shape[]) => void;
+  restoreDrawing: (drawing: Drawing, fileName: string | null, scale: number, offset: Point2D, displayUnit: 'mm' | 'inch', selectedShapes: Set<string>, hoveredShape: string | null) => void;
+} {
+  const { subscribe, update } = writable<DrawingState>({
     drawing: null,
     selectedShapes: new Set(),
     hoveredShape: null,
@@ -90,13 +111,13 @@ function createDrawingStore() {
     },
     
     selectShape: (shapeId: string, multi = false) => update(state => {
-      const selectedShapes = new Set(multi ? state.selectedShapes : []);
+      const selectedShapes: Set<string> = new Set(multi ? state.selectedShapes : []);
       selectedShapes.add(shapeId);
       return { ...state, selectedShapes };
     }),
     
     deselectShape: (shapeId: string) => update(state => {
-      const selectedShapes = new Set(state.selectedShapes);
+      const selectedShapes: Set<string> = new Set(state.selectedShapes);
       selectedShapes.delete(shapeId);
       return { ...state, selectedShapes };
     }),
@@ -109,7 +130,7 @@ function createDrawingStore() {
     deleteSelected: () => update(state => {
       if (!state.drawing) return state;
       
-      const shapes = state.drawing.shapes.filter(
+      const shapes: Shape[] = state.drawing.shapes.filter(
         shape => !state.selectedShapes.has(shape.id)
       );
       
@@ -126,7 +147,7 @@ function createDrawingStore() {
     moveShapes: (shapeIds: string[], delta: Point2D) => update(state => {
       if (!state.drawing) return state;
       
-      const shapes = state.drawing.shapes.map(shape => {
+      const shapes: Shape[] = state.drawing.shapes.map(shape => {
         if (shapeIds.includes(shape.id)) {
           return moveShape(shape, delta);
         }
@@ -145,7 +166,7 @@ function createDrawingStore() {
     scaleShapes: (shapeIds: string[], scaleFactor: number, origin: Point2D) => update(state => {
       if (!state.drawing) return state;
       
-      const shapes = state.drawing.shapes.map(shape => {
+      const shapes: Shape[] = state.drawing.shapes.map(shape => {
         if (shapeIds.includes(shape.id)) {
           return scaleShape(shape, scaleFactor, origin);
         }
@@ -164,7 +185,7 @@ function createDrawingStore() {
     rotateShapes: (shapeIds: string[], angle: number, origin: Point2D) => update(state => {
       if (!state.drawing) return state;
       
-      const shapes = state.drawing.shapes.map(shape => {
+      const shapes: Shape[] = state.drawing.shapes.map(shape => {
         if (shapeIds.includes(shape.id)) {
           return rotateShape(shape, angle, origin);
         }
@@ -235,195 +256,4 @@ function createDrawingStore() {
   };
 }
 
-function moveShape(shape: Shape, delta: Point2D): Shape {
-  const moved = { ...shape };
-  
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      moved.geometry = {
-        start: { x: line.start.x + delta.x, y: line.start.y + delta.y },
-        end: { x: line.end.x + delta.x, y: line.end.y + delta.y }
-      };
-      break;
-      
-    case 'circle':
-    case 'arc':
-      const circle = shape.geometry as any;
-      moved.geometry = {
-        ...circle,
-        center: { x: circle.center.x + delta.x, y: circle.center.y + delta.y }
-      };
-      break;
-      
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      moved.geometry = {
-        ...polyline,
-        points: polyline.points.map((p: Point2D) => ({
-          x: p.x + delta.x,
-          y: p.y + delta.y
-        })),
-        // Also update vertices array if it exists (for bulge-aware polylines)
-        vertices: polyline.vertices ? polyline.vertices.map((v: any) => ({
-          x: v.x + delta.x,
-          y: v.y + delta.y,
-          bulge: v.bulge || 0
-        })) : undefined
-      };
-      break;
-      
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      moved.geometry = {
-        ...ellipse,
-        center: { x: ellipse.center.x + delta.x, y: ellipse.center.y + delta.y }
-      };
-      break;
-  }
-  
-  return moved;
-}
-
-function scaleShape(shape: Shape, scaleFactor: number, origin: Point2D): Shape {
-  const scaled = { ...shape };
-  
-  const scalePoint = (p: Point2D): Point2D => ({
-    x: origin.x + (p.x - origin.x) * scaleFactor,
-    y: origin.y + (p.y - origin.y) * scaleFactor
-  });
-  
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      scaled.geometry = {
-        start: scalePoint(line.start),
-        end: scalePoint(line.end)
-      };
-      break;
-      
-    case 'circle':
-    case 'arc':
-      const circle = shape.geometry as any;
-      scaled.geometry = {
-        ...circle,
-        center: scalePoint(circle.center),
-        radius: circle.radius * scaleFactor
-      };
-      break;
-      
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      scaled.geometry = {
-        ...polyline,
-        points: polyline.points.map(scalePoint),
-        // Also update vertices array if it exists (for bulge-aware polylines)
-        vertices: polyline.vertices ? polyline.vertices.map((v: any) => ({
-          ...scalePoint({ x: v.x, y: v.y }),
-          bulge: v.bulge || 0
-        })) : undefined
-      };
-      break;
-      
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      const scaledCenter = scalePoint(ellipse.center);
-      const majorAxisEnd = {
-        x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
-        y: ellipse.center.y + ellipse.majorAxisEndpoint.y
-      };
-      const scaledMajorAxisEnd = scalePoint(majorAxisEnd);
-      
-      scaled.geometry = {
-        ...ellipse,
-        center: scaledCenter,
-        majorAxisEndpoint: {
-          x: scaledMajorAxisEnd.x - scaledCenter.x,
-          y: scaledMajorAxisEnd.y - scaledCenter.y
-        }
-      };
-      break;
-  }
-  
-  return scaled;
-}
-
-function rotateShape(shape: Shape, angle: number, origin: Point2D): Shape {
-  const rotated = { ...shape };
-  
-  const rotatePoint = (p: Point2D): Point2D => {
-    const cos = Math.cos(angle);
-    const sin = Math.sin(angle);
-    const dx = p.x - origin.x;
-    const dy = p.y - origin.y;
-    
-    return {
-      x: origin.x + dx * cos - dy * sin,
-      y: origin.y + dx * sin + dy * cos
-    };
-  };
-  
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      rotated.geometry = {
-        start: rotatePoint(line.start),
-        end: rotatePoint(line.end)
-      };
-      break;
-      
-    case 'circle':
-      const circle = shape.geometry as any;
-      rotated.geometry = {
-        ...circle,
-        center: rotatePoint(circle.center)
-      };
-      break;
-      
-    case 'arc':
-      const arc = shape.geometry as any;
-      rotated.geometry = {
-        ...arc,
-        center: rotatePoint(arc.center),
-        startAngle: arc.startAngle + angle,
-        endAngle: arc.endAngle + angle
-      };
-      break;
-      
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      rotated.geometry = {
-        ...polyline,
-        points: polyline.points.map(rotatePoint),
-        // Also update vertices array if it exists (for bulge-aware polylines)
-        vertices: polyline.vertices ? polyline.vertices.map((v: any) => ({
-          ...rotatePoint({ x: v.x, y: v.y }),
-          bulge: v.bulge || 0
-        })) : undefined
-      };
-      break;
-      
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      const rotatedCenter = rotatePoint(ellipse.center);
-      const majorAxisEnd = {
-        x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
-        y: ellipse.center.y + ellipse.majorAxisEndpoint.y
-      };
-      const rotatedMajorAxisEnd = rotatePoint(majorAxisEnd);
-      
-      rotated.geometry = {
-        ...ellipse,
-        center: rotatedCenter,
-        majorAxisEndpoint: {
-          x: rotatedMajorAxisEnd.x - rotatedCenter.x,
-          y: rotatedMajorAxisEnd.y - rotatedCenter.y
-        }
-      };
-      break;
-  }
-  
-  return rotated;
-}
-
-export const drawingStore = createDrawingStore();
+export const drawingStore: ReturnType<typeof createDrawingStore> = createDrawingStore();

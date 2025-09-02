@@ -6,7 +6,7 @@ test.describe('Basic CAM Workflow', () => {
   });
   
   test('should display the main interface', async ({ page }) => {
-    await expect(page.locator('button:has-text("Import DXF/SVG")')).toBeVisible();
+    await expect(page.locator('button:has-text("Import DXF")')).toBeVisible();
     await expect(page.locator('h3:has-text("Cutting Parameters")')).toBeVisible();
     await expect(page.locator('button:has-text("Generate G-Code")')).toBeVisible();
     await expect(page.locator('footer')).toBeVisible();

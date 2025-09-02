@@ -16,6 +16,24 @@ export interface WorkflowState {
 // Define the workflow progression order
 const WORKFLOW_ORDER: WorkflowStage[] = ['import', 'edit', 'prepare', 'program', 'simulate', 'export'];
 
+/**
+ * Validates if a stage can be advanced to based on completed stages
+ * @param targetStage Stage to check advancement to
+ * @param completedStages Set of already completed stages
+ * @returns Whether the target stage can be advanced to
+ */
+function validateStageAdvancement(targetStage: WorkflowStage, completedStages: Set<WorkflowStage>): boolean {
+  const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
+  
+  // For sequential workflow, all previous stages must be completed
+  for (let i: number = 0; i < targetIndex; i++) {
+    if (!completedStages.has(WORKFLOW_ORDER[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
 function createWorkflowStore(): Writable<WorkflowState> & {
   setStage: (stage: WorkflowStage) => void;
   completeStage: (stage: WorkflowStage) => void;
@@ -30,17 +48,7 @@ function createWorkflowStore(): Writable<WorkflowState> & {
   const initialState: WorkflowState = {
     currentStage: 'import',
     completedStages: new Set(),
-    canAdvanceTo: (stage: WorkflowStage) => {
-      const targetIndex = WORKFLOW_ORDER.indexOf(stage);
-      
-      // For sequential workflow, all previous stages must be completed
-      for (let i = 0; i < targetIndex; i++) {
-        if (!initialState.completedStages.has(WORKFLOW_ORDER[i])) {
-          return false;
-        }
-      }
-      return true;
-    }
+    canAdvanceTo: (stage: WorkflowStage) => validateStageAdvancement(stage, initialState.completedStages)
   };
 
   const { subscribe, set, update } = writable<WorkflowState>(initialState);
@@ -61,29 +69,19 @@ function createWorkflowStore(): Writable<WorkflowState> & {
 
     completeStage: (stage: WorkflowStage) => {
       update(state => {
-        const newCompleted = new Set(state.completedStages);
+        const newCompleted: Set<WorkflowStage> = new Set(state.completedStages);
         newCompleted.add(stage);
         
         return {
           ...state,
           completedStages: newCompleted,
-          canAdvanceTo: (targetStage: WorkflowStage) => {
-            const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
-            
-            // For sequential workflow, all previous stages must be completed
-            for (let i = 0; i < targetIndex; i++) {
-              if (!newCompleted.has(WORKFLOW_ORDER[i])) {
-                return false;
-              }
-            }
-            return true;
-          }
+          canAdvanceTo: (targetStage: WorkflowStage) => validateStageAdvancement(targetStage, newCompleted)
         };
       });
     },
 
     canAdvanceTo: (stage: WorkflowStage) => {
-      let canAdvance = false;
+      let canAdvance: boolean = false;
       update(state => {
         canAdvance = state.canAdvanceTo(stage);
         return state;
@@ -94,7 +92,7 @@ function createWorkflowStore(): Writable<WorkflowState> & {
     getNextStage: () => {
       let nextStage: WorkflowStage | null = null;
       update(state => {
-        const currentIndex = WORKFLOW_ORDER.indexOf(state.currentStage);
+        const currentIndex: number = WORKFLOW_ORDER.indexOf(state.currentStage);
         if (currentIndex < WORKFLOW_ORDER.length - 1) {
           nextStage = WORKFLOW_ORDER[currentIndex + 1];
         }
@@ -106,7 +104,7 @@ function createWorkflowStore(): Writable<WorkflowState> & {
     getPreviousStage: () => {
       let prevStage: WorkflowStage | null = null;
       update(state => {
-        const currentIndex = WORKFLOW_ORDER.indexOf(state.currentStage);
+        const currentIndex: number = WORKFLOW_ORDER.indexOf(state.currentStage);
         if (currentIndex > 0) {
           prevStage = WORKFLOW_ORDER[currentIndex - 1];
         }
@@ -120,7 +118,7 @@ function createWorkflowStore(): Writable<WorkflowState> & {
         currentStage: 'import',
         completedStages: new Set(),
         canAdvanceTo: (stage: WorkflowStage) => {
-          const targetIndex = WORKFLOW_ORDER.indexOf(stage);
+          const targetIndex: number = WORKFLOW_ORDER.indexOf(stage);
           // Only import stage (index 0) accessible initially
           return targetIndex === 0;
         }
@@ -129,48 +127,38 @@ function createWorkflowStore(): Writable<WorkflowState> & {
 
     resetFromStage: (stage: WorkflowStage) => {
       update(state => {
-        const stageIndex = WORKFLOW_ORDER.indexOf(stage);
-        const newCompleted = new Set<WorkflowStage>();
+        const stageIndex: number = WORKFLOW_ORDER.indexOf(stage);
+        const newCompleted: Set<WorkflowStage> = new Set<WorkflowStage>();
         
         // Keep only completed stages before the reset stage
         for (const completedStage of state.completedStages) {
-          const completedIndex = WORKFLOW_ORDER.indexOf(completedStage);
+          const completedIndex: number = WORKFLOW_ORDER.indexOf(completedStage);
           if (completedIndex < stageIndex) {
             newCompleted.add(completedStage);
           }
         }
         
         // If current stage is after reset stage, move back to reset stage
-        const currentIndex = WORKFLOW_ORDER.indexOf(state.currentStage);
-        const newCurrentStage = currentIndex > stageIndex ? stage : state.currentStage;
+        const currentIndex: number = WORKFLOW_ORDER.indexOf(state.currentStage);
+        const newCurrentStage: WorkflowStage = currentIndex > stageIndex ? stage : state.currentStage;
         
         return {
           ...state,
           currentStage: newCurrentStage,
           completedStages: newCompleted,
-          canAdvanceTo: (targetStage: WorkflowStage) => {
-            const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
-            
-            // For sequential workflow, all previous stages must be completed
-            for (let i = 0; i < targetIndex; i++) {
-              if (!newCompleted.has(WORKFLOW_ORDER[i])) {
-                return false;
-              }
-            }
-            return true;
-          }
+          canAdvanceTo: (targetStage: WorkflowStage) => validateStageAdvancement(targetStage, newCompleted)
         };
       });
     },
 
     invalidateDownstreamStages: (fromStage: WorkflowStage) => {
       update(state => {
-        const fromIndex = WORKFLOW_ORDER.indexOf(fromStage);
-        const newCompleted = new Set<WorkflowStage>();
+        const fromIndex: number = WORKFLOW_ORDER.indexOf(fromStage);
+        const newCompleted: Set<WorkflowStage> = new Set<WorkflowStage>();
         
         // Keep only completed stages up to and including the fromStage
         for (const completedStage of state.completedStages) {
-          const completedIndex = WORKFLOW_ORDER.indexOf(completedStage);
+          const completedIndex: number = WORKFLOW_ORDER.indexOf(completedStage);
           if (completedIndex <= fromIndex) {
             newCompleted.add(completedStage);
           }
@@ -179,44 +167,24 @@ function createWorkflowStore(): Writable<WorkflowState> & {
         return {
           ...state,
           completedStages: newCompleted,
-          canAdvanceTo: (targetStage: WorkflowStage) => {
-            const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
-            
-            // For sequential workflow, all previous stages must be completed
-            for (let i = 0; i < targetIndex; i++) {
-              if (!newCompleted.has(WORKFLOW_ORDER[i])) {
-                return false;
-              }
-            }
-            return true;
-          }
+          canAdvanceTo: (targetStage: WorkflowStage) => validateStageAdvancement(targetStage, newCompleted)
         };
       });
     },
 
     // Restore workflow state from persistence (bypasses validation)
     restore: (currentStage: WorkflowStage, completedStages: WorkflowStage[]) => {
-      const completedSet = new Set(completedStages);
+      const completedSet: Set<WorkflowStage> = new Set(completedStages);
       set({
         currentStage,
         completedStages: completedSet,
-        canAdvanceTo: (targetStage: WorkflowStage) => {
-          const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
-          
-          // For sequential workflow, all previous stages must be completed
-          for (let i = 0; i < targetIndex; i++) {
-            if (!completedSet.has(WORKFLOW_ORDER[i])) {
-              return false;
-            }
-          }
-          return true;
-        }
+        canAdvanceTo: (targetStage: WorkflowStage) => validateStageAdvancement(targetStage, completedSet)
       });
     }
   };
 }
 
-export const workflowStore = createWorkflowStore();
+export const workflowStore: ReturnType<typeof createWorkflowStore> = createWorkflowStore();
 
 // Helper function to get stage display names
 export function getStageDisplayName(stage: WorkflowStage): string {

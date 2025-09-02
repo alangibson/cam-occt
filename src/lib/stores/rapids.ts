@@ -8,7 +8,17 @@ export interface RapidsState {
   highlightedRapidId: string | null;
 }
 
-function createRapidsStore() {
+function createRapidsStore(): {
+  subscribe: (run: (value: RapidsState) => void) => () => void;
+  setRapids: (rapids: Rapid[]) => void;
+  clearRapids: () => void;
+  toggleShowRapids: () => void;
+  setShowRapids: (show: boolean) => void;
+  selectRapid: (rapidId: string | null) => void;
+  highlightRapid: (rapidId: string | null) => void;
+  clearHighlight: () => void;
+  reset: () => void;
+} {
   const initialState: RapidsState = {
     rapids: [],
     showRapids: true,
@@ -74,7 +84,7 @@ function createRapidsStore() {
   };
 }
 
-export const rapidStore = createRapidsStore();
+export const rapidStore: ReturnType<typeof createRapidsStore> = createRapidsStore();
 
 // Helper functions for rapid selection
 export function selectRapid(rapidId: string | null) {

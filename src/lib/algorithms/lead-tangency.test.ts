@@ -3,7 +3,7 @@ import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-ca
 import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
-import type { Shape } from '../../types/geometry';
+import type { Shape } from '../../lib/types/geometry';
 
 describe('Lead Tangency Tests', () => {
   // Helper to create a simple line chain
@@ -74,7 +74,7 @@ describe('Lead Tangency Tests', () => {
       const lineTangent = { x: 1, y: 0 };
       
       // The angle between lead tangent and line tangent should be 0 (parallel)
-      const angle = angleBetweenVectors(leadTangent, lineTangent);
+      const angle: number = angleBetweenVectors(leadTangent, lineTangent);
       expect(angle).toBeCloseTo(0, 1); // Within 0.1 radians (~5.7 degrees)
     });
 
@@ -107,7 +107,7 @@ describe('Lead Tangency Tests', () => {
       const lineTangent = { x: 1, y: 0 };
       
       // The angle between lead tangent and line tangent should be 0 (parallel)
-      const angle = angleBetweenVectors(leadTangent, lineTangent);
+      const angle: number = angleBetweenVectors(leadTangent, lineTangent);
       expect(angle).toBeCloseTo(0, 1); // Within 0.1 radians (~5.7 degrees)
     });
 
@@ -141,7 +141,7 @@ describe('Lead Tangency Tests', () => {
       const circleTangent = { x: 0, y: 1 };
       
       // The angle between lead tangent and circle tangent should be 0 (parallel)
-      const angle = angleBetweenVectors(leadTangent, circleTangent);
+      const angle: number = angleBetweenVectors(leadTangent, circleTangent);
       expect(angle).toBeCloseTo(0, 1); // Within 0.1 radians (~5.7 degrees)
     });
 
@@ -205,9 +205,9 @@ describe('Lead Tangency Tests', () => {
       
       // Calculate total arc length by summing segment lengths
       let totalLength = 0;
-      for (let i = 1; i < points.length; i++) {
-        const dx = points[i].x - points[i-1].x;
-        const dy = points[i].y - points[i-1].y;
+      for (let i: number = 1; i < points.length; i++) {
+        const dx: number = points[i].x - points[i-1].x;
+        const dy: number = points[i].y - points[i-1].y;
         totalLength += Math.sqrt(dx * dx + dy * dy);
       }
       

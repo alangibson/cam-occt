@@ -12,6 +12,7 @@
   import { pathStore } from '../../lib/stores/paths';
   import { rapidStore, selectRapid, highlightRapid, clearRapidHighlight } from '../../lib/stores/rapids';
   import { leadWarningsStore } from '../../lib/stores/lead-warnings';
+  import { offsetWarningsStore } from '../../lib/stores/offset-warnings';
   import { optimizeCutOrder } from '../../lib/algorithms/optimize-cut-order';
   
   // Subscribe to stores
@@ -25,6 +26,7 @@
   $: selectedRapidId = $rapidStore.selectedRapidId;
   $: highlightedRapidId = $rapidStore.highlightedRapidId;
   $: leadWarnings = $leadWarningsStore.warnings;
+  $: offsetWarnings = $offsetWarningsStore.warnings;
 
   // Track previous hash to prevent infinite loops
   let previousPathsHash = '';
@@ -176,6 +178,35 @@
         </AccordionPanel>
       {/if}
 
+      <AccordionPanel title="Paths" isExpanded={true}>
+        <Paths />
+      </AccordionPanel>
+
+      <AccordionPanel title="Cut Order" isExpanded={true}>
+        <div class="cut-order-list">
+          {#if rapids.length > 0}
+            {#each rapids as rapid, index (rapid.id)}
+              <div 
+                class="rapid-item {selectedRapidId === rapid.id ? 'selected' : ''} {highlightedRapidId === rapid.id ? 'highlighted' : ''}"
+                role="button"
+                tabindex="0"
+                on:click={() => handleRapidClick(rapid.id)}
+                on:keydown={(e) => e.key === 'Enter' && handleRapidClick(rapid.id)}
+                on:mouseenter={() => handleRapidMouseEnter(rapid.id)}
+                on:mouseleave={handleRapidMouseLeave}
+              >
+                <span class="rapid-index">{index + 1}.</span>
+                <span class="rapid-description">
+                  Rapid to ({rapid.end.x.toFixed(2)}, {rapid.end.y.toFixed(2)})
+                </span>
+              </div>
+            {/each}
+          {:else}
+            <p class="no-rapids">No rapids applied yet. Click "Apply Rapids" to generate optimized cutting sequence.</p>
+          {/if}
+        </div>
+      </AccordionPanel>
+
       <AccordionPanel title="Next Stage" isExpanded={true}>
         <div class="next-stage-content">
           <button 
@@ -228,32 +259,23 @@
       <AccordionPanel title="Operations" isExpanded={true}>
         <Operations />
       </AccordionPanel>
-      
-      <AccordionPanel title="Paths" isExpanded={true}>
-        <Paths />
-      </AccordionPanel>
 
-      <AccordionPanel title="Cut Order" isExpanded={true}>
-        <div class="cut-order-list">
-          {#if rapids.length > 0}
-            {#each rapids as rapid, index (rapid.id)}
-              <div 
-                class="rapid-item {selectedRapidId === rapid.id ? 'selected' : ''} {highlightedRapidId === rapid.id ? 'highlighted' : ''}"
-                role="button"
-                tabindex="0"
-                on:click={() => handleRapidClick(rapid.id)}
-                on:keydown={(e) => e.key === 'Enter' && handleRapidClick(rapid.id)}
-                on:mouseenter={() => handleRapidMouseEnter(rapid.id)}
-                on:mouseleave={handleRapidMouseLeave}
-              >
-                <span class="rapid-index">{index + 1}.</span>
-                <span class="rapid-description">
-                  Rapid to ({rapid.end.x.toFixed(2)}, {rapid.end.y.toFixed(2)})
-                </span>
+      <AccordionPanel title="Problems ({offsetWarnings.length})" isExpanded={true}>
+        <div class="offset-warnings-list">
+          {#if offsetWarnings.length > 0}
+            {#each offsetWarnings as warning (warning.id)}
+              <div class="warning-item offset-warning">
+                <div class="warning-header">
+                  <span class="warning-type {warning.type}">
+                    ⚠️ {warning.type}
+                  </span>
+                  <span class="warning-chain">Chain {warning.chainId.split('-')[1]}</span>
+                </div>
+                <p class="warning-message">{warning.message}</p>
               </div>
             {/each}
           {:else}
-            <p class="no-rapids">No rapids applied yet. Click "Apply Rapids" to generate optimized cutting sequence.</p>
+            <p class="no-problems">No problems detected. All offset calculations completed successfully.</p>
           {/if}
         </div>
       </AccordionPanel>
@@ -479,6 +501,49 @@
   }
 
   .no-rapids {
+    color: #6b7280;
+    font-size: 0.875rem;
+    text-align: center;
+    padding: 1rem;
+    margin: 0;
+  }
+
+  /* Offset Warnings section styles */
+  .offset-warnings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .warning-item.offset-warning {
+    padding: 0.75rem;
+    background-color: #fef2f2;
+    border: 1px solid #f87171;
+    border-radius: 0.375rem;
+    border-left: 4px solid #dc2626;
+  }
+
+  .warning-type.offset {
+    color: #dc2626;
+  }
+
+  .warning-type.trim {
+    color: #ea580c;
+  }
+
+  .warning-type.gap {
+    color: #d97706;
+  }
+
+  .warning-type.intersection {
+    color: #7c2d12;
+  }
+
+  .warning-type.geometry {
+    color: #991b1b;
+  }
+
+  .no-problems {
     color: #6b7280;
     font-size: 0.875rem;
     text-align: center;

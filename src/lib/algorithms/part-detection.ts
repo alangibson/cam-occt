@@ -10,20 +10,21 @@
  * Uses JSTS for robust geometric containment detection based on MetalHeadCAM reference
  */
 
-import type { ShapeChain } from './chain-detection';
-import type { Point2D, Shape } from '../../types';
+import type { Chain } from './chain-detection';
+import type { Point2D, Shape, Ellipse, Polyline } from '../../lib/types';
 import { 
-  buildContainmentHierarchy, 
-  identifyShells as identifyShellsJSTS 
-} from '../utils/geometric-containment-jsts';
-import type { PartDetectionParameters } from '../../types/part-detection';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../types/part-detection';
+  buildContainmentHierarchy,
+  calculateNestingLevel
+} from '../utils/geometric-containment';
+import type { PartDetectionParameters } from '../../lib/types/part-detection';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
 import { normalizeChain } from './chain-normalization';
-import { evaluateNURBS, sampleNURBS } from '../geometry/nurbs';
+import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import { calculateChainBoundingBox, type BoundingBox } from '../utils/shape-bounds-utils';
 
 export interface PartHole {
   id: string;
-  chain: ShapeChain;
+  chain: Chain;
   type: 'hole';
   boundingBox: BoundingBox;
   holes: PartHole[]; // Nested holes within this hole (parts)
@@ -31,7 +32,7 @@ export interface PartHole {
 
 export interface PartShell {
   id: string;
-  chain: ShapeChain;
+  chain: Chain;
   type: 'shell';
   boundingBox: BoundingBox;
   holes: PartHole[];
@@ -43,12 +44,6 @@ export interface DetectedPart {
   holes: PartHole[];
 }
 
-export interface BoundingBox {
-  minX: number;
-  maxX: number;
-  minY: number;
-  maxY: number;
-}
 
 export interface PartDetectionWarning {
   type: 'overlapping_boundary';
@@ -64,26 +59,26 @@ export interface PartDetectionResult {
 /**
  * Detects parts from a collection of chains using geometric containment
  */
-export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1, params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS): Promise<PartDetectionResult> {
+export async function detectParts(chains: Chain[], tolerance: number = 0.1, params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS): Promise<PartDetectionResult> {
   const warnings: PartDetectionWarning[] = [];
   
   // CRITICAL: Normalize all chains BEFORE any analysis
-  const normalizedChains = chains.map(chain => normalizeChain(chain));
+  const normalizedChains: Chain[] = chains.map(chain => normalizeChain(chain));
   
   // Separate closed and open chains (using normalized chains)
-  const closedChains = normalizedChains.filter(chain => isChainClosed(chain, tolerance));
-  const openChains = normalizedChains.filter(chain => !isChainClosed(chain, tolerance));
+  const closedChains: Chain[] = normalizedChains.filter(chain => isChainClosed(chain, tolerance));
+  const openChains: Chain[] = normalizedChains.filter(chain => !isChainClosed(chain, tolerance));
   
   
   // Calculate bounding boxes for all closed chains
-  const chainBounds = new Map<string, BoundingBox>();
+  const chainBounds: Map<string, BoundingBox> = new Map<string, BoundingBox>();
   for (const chain of closedChains) {
     chainBounds.set(chain.id, calculateChainBoundingBox(chain));
   }
   
   // Check for open chains that cross boundaries
   for (const openChain of openChains) {
-    const crossingIssue = checkOpenChainBoundaryCrossing(openChain, closedChains, chainBounds);
+    const crossingIssue: string | null = checkOpenChainBoundaryCrossing(openChain, closedChains, chainBounds);
     if (crossingIssue) {
       warnings.push({
         type: 'overlapping_boundary',
@@ -94,7 +89,7 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1,
   }
   
   // Build containment hierarchy using JSTS geometric containment
-  const containmentMap = buildContainmentHierarchy(closedChains, tolerance, params);
+  const containmentMap: Map<string, string> = buildContainmentHierarchy(closedChains, tolerance, params);
   
   // Debug: log containment hierarchy
   console.log(`Part detection: ${closedChains.length} closed chains, containment map size: ${containmentMap.size}`);
@@ -109,19 +104,19 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1,
   // Level 3: Chains inside nested parts = holes
   // And so on...
   
-  const allPartChains = identifyPartChains(closedChains, containmentMap);
+  const allPartChains: Chain[] = identifyPartChains(closedChains, containmentMap);
   console.log(`Found ${allPartChains.length} part chains: ${allPartChains.map(c => c.id).join(', ')}`);
   
   // Build part structures - each part chain becomes a part
   const parts: DetectedPart[] = [];
-  let partCounter = 1;
+  let partCounter: number = 1;
   
   for (const partChain of allPartChains) {
     // Find all chains directly contained within this part chain (these become holes)
-    const directHoles: ShapeChain[] = [];
+    const directHoles: Chain[] = [];
     for (const [childId, parentId] of containmentMap.entries()) {
       if (parentId === partChain.id) {
-        const holeChain = closedChains.find(c => c.id === childId);
+        const holeChain: Chain | undefined = closedChains.find(c => c.id === childId);
         // Only add as hole if the child is not itself a part
         if (holeChain && !allPartChains.some(p => p.id === childId)) {
           directHoles.push(holeChain);
@@ -185,21 +180,21 @@ export async function detectParts(chains: ShapeChain[], tolerance: number = 0.1,
  * - Level 3 (inside nested part): Hole
  * - And so on...
  */
-function identifyPartChains(closedChains: ShapeChain[], containmentMap: Map<string, string>): ShapeChain[] {
-  const partChains: ShapeChain[] = [];
+function identifyPartChains(closedChains: Chain[], containmentMap: Map<string, string>): Chain[] {
+  const partChains: Chain[] = [];
   
   // Calculate nesting level for each chain
-  const nestingLevels = new Map<string, number>();
+  const nestingLevels: Map<string, number> = new Map<string, number>();
   
   for (const chain of closedChains) {
-    const level = calculateNestingLevel(chain.id, containmentMap);
+    const level: number = calculateNestingLevel(chain.id, containmentMap);
     nestingLevels.set(chain.id, level);
   }
   
   // Chains at even nesting levels (0, 2, 4, ...) are parts
   // Chains at odd nesting levels (1, 3, 5, ...) are holes
   for (const chain of closedChains) {
-    const level = nestingLevels.get(chain.id) || 0;
+    const level: number = nestingLevels.get(chain.id) || 0;
     if (level % 2 === 0) {
       partChains.push(chain);
     }
@@ -208,43 +203,28 @@ function identifyPartChains(closedChains: ShapeChain[], containmentMap: Map<stri
   return partChains;
 }
 
-/**
- * Calculates the nesting level of a chain (how many parents it has)
- */
-function calculateNestingLevel(chainId: string, containmentMap: Map<string, string>): number {
-  let level = 0;
-  let currentId = chainId;
-  
-  // Traverse up the parent chain, counting levels
-  while (containmentMap.has(currentId)) {
-    level++;
-    currentId = containmentMap.get(currentId)!;
-  }
-  
-  return level;
-}
 
 /**
  * Checks if a chain forms a closed loop
  */
-export function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boolean {
+export function isChainClosed(chain: Chain, tolerance: number = 0.1): boolean {
   if (chain.shapes.length === 0) return false;
   
   // Special case: single-shape circles, ellipses, and closed polylines are inherently closed
   if (chain.shapes.length === 1) {
-    const shape = chain.shapes[0];
+    const shape: Shape = chain.shapes[0];
     if (shape.type === 'circle') {
       return true;
     }
     if (shape.type === 'ellipse') {
       // Full ellipses are closed, elliptical arcs may not be
-      const ellipse = shape.geometry as any;
+      const ellipse: Ellipse = shape.geometry as Ellipse;
       // If no start/end parameters, it's a full ellipse (closed)
       return ellipse.startParam === undefined && ellipse.endParam === undefined;
     }
     if (shape.type === 'polyline') {
       // Check the explicit closed flag from DXF parsing
-      const polyline = shape.geometry as any;
+      const polyline: Polyline = shape.geometry as Polyline;
       if (typeof polyline.closed === 'boolean' && polyline.closed === true) {
         return true; // Explicitly closed polylines are definitely closed
       }
@@ -256,22 +236,20 @@ export function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boole
   const endpoints: Point2D[] = [];
   
   for (const shape of chain.shapes) {
-    const shapeEndpoints = getShapeEndpoints(shape);
+    const shapeEndpoints: Point2D[] = getShapeEndpoints(shape);
     endpoints.push(...shapeEndpoints);
   }
   
   // A closed chain should have all endpoints paired up (each point appears exactly twice)
   // For a truly closed chain, the start of the first shape should connect to the end of the last shape
-  const firstShape = chain.shapes[0];
-  const lastShape = chain.shapes[chain.shapes.length - 1];
+  const firstShape: Shape = chain.shapes[0];
+  const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
   
-  const firstStart = getShapeStartPoint(firstShape);
-  const lastEnd = getShapeEndPoint(lastShape);
-  
-  if (!firstStart || !lastEnd) return false;
+  const firstStart: Point2D = getShapeStartPoint(firstShape);
+  const lastEnd: Point2D = getShapeEndPoint(lastShape);
   
   // Check if the chain is closed (end connects to start within tolerance)
-  const distance = Math.sqrt(
+  const distance: number = Math.sqrt(
     Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
   );
   
@@ -279,243 +257,36 @@ export function isChainClosed(chain: ShapeChain, tolerance: number = 0.1): boole
   return distance < tolerance;
 }
 
-/**
- * Calculates the actual gap distance between the first and last points of a chain
- */
-function calculateChainGapDistance(chain: ShapeChain): number {
-  if (chain.shapes.length === 0) return 0;
-  
-  const firstShape = chain.shapes[0];
-  const lastShape = chain.shapes[chain.shapes.length - 1];
-  
-  const firstStart = getShapeStartPoint(firstShape);
-  const lastEnd = getShapeEndPoint(lastShape);
-  
-  if (!firstStart || !lastEnd) return 0;
-  
-  return Math.sqrt(
-    Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
-  );
-}
 
 /**
  * Gets the start and end points of a shape
  */
 function getShapeEndpoints(shape: Shape): Point2D[] {
-  const start = getShapeStartPoint(shape);
-  const end = getShapeEndPoint(shape);
+  const start: Point2D = getShapeStartPoint(shape);
+  const end: Point2D = getShapeEndPoint(shape);
   
   const points: Point2D[] = [];
-  if (start) points.push(start);
-  if (end && (start?.x !== end.x || start?.y !== end.y)) {
+  points.push(start);
+  if (start.x !== end.x || start.y !== end.y) {
     points.push(end);
   }
   
   return points;
 }
 
-/**
- * Gets the start point of a shape
- */
-function getShapeStartPoint(shape: Shape): Point2D | null {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return line.start;
-    
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points.length > 0 ? polyline.points[0] : null;
-    
-    case 'arc':
-      const arc = shape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-      };
-    
-    case 'circle':
-      // For circles, start and end are the same (rightmost point)
-      const circle = shape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    
-    case 'spline':
-      const spline = shape.geometry as any;
-      try {
-        // Use proper NURBS evaluation at parameter t=0
-        return evaluateNURBS(0, spline);
-      } catch (error) {
-        // Fallback to first control point if NURBS evaluation fails
-        if (spline.fitPoints && spline.fitPoints.length > 0) {
-          return spline.fitPoints[0];
-        }
-        return spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
-      }
-    
-    default:
-      return null;
-  }
-}
-
-/**
- * Gets the end point of a shape
- */
-function getShapeEndPoint(shape: Shape): Point2D | null {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return line.end;
-    
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points.length > 0 ? polyline.points[polyline.points.length - 1] : null;
-    
-    case 'arc':
-      const arc = shape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-      };
-    
-    case 'circle':
-      // For circles, start and end are the same (rightmost point)
-      const circle = shape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    
-    case 'spline':
-      const spline = shape.geometry as any;
-      try {
-        // Use proper NURBS evaluation at parameter t=1
-        return evaluateNURBS(1, spline);
-      } catch (error) {
-        // Fallback to last control point if NURBS evaluation fails
-        if (spline.fitPoints && spline.fitPoints.length > 0) {
-          return spline.fitPoints[spline.fitPoints.length - 1];
-        }
-        return spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
-      }
-    
-    default:
-      return null;
-  }
-}
-
-/**
- * Calculates the bounding box of a chain
- */
-function calculateChainBoundingBox(chain: ShapeChain): BoundingBox {
-  let minX = Infinity, maxX = -Infinity;
-  let minY = Infinity, maxY = -Infinity;
-  
-  for (const shape of chain.shapes) {
-    const shapeBounds = getShapeBoundingBox(shape);
-    minX = Math.min(minX, shapeBounds.minX);
-    maxX = Math.max(maxX, shapeBounds.maxX);
-    minY = Math.min(minY, shapeBounds.minY);
-    maxY = Math.max(maxY, shapeBounds.maxY);
-  }
-  
-  return { minX, maxX, minY, maxY };
-}
-
-/**
- * Gets the bounding box of a single shape
- */
-function getShapeBoundingBox(shape: Shape): BoundingBox {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return {
-        minX: Math.min(line.start.x, line.end.x),
-        maxX: Math.max(line.start.x, line.end.x),
-        minY: Math.min(line.start.y, line.end.y),
-        maxY: Math.max(line.start.y, line.end.y)
-      };
-    
-    case 'circle':
-      const circle = shape.geometry as any;
-      return {
-        minX: circle.center.x - circle.radius,
-        maxX: circle.center.x + circle.radius,
-        minY: circle.center.y - circle.radius,
-        maxY: circle.center.y + circle.radius
-      };
-    
-    case 'arc':
-      const arc = shape.geometry as any;
-      // For simplicity, use circle bounding box (conservative)
-      return {
-        minX: arc.center.x - arc.radius,
-        maxX: arc.center.x + arc.radius,
-        minY: arc.center.y - arc.radius,
-        maxY: arc.center.y + arc.radius
-      };
-    
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      let minX = Infinity, maxX = -Infinity;
-      let minY = Infinity, maxY = -Infinity;
-      
-      for (const point of polyline.points) {
-        minX = Math.min(minX, point.x);
-        maxX = Math.max(maxX, point.x);
-        minY = Math.min(minY, point.y);
-        maxY = Math.max(maxY, point.y);
-      }
-      
-      return { minX, maxX, minY, maxY };
-    
-    case 'spline':
-      const spline = shape.geometry as any;
-      let splineMinX = Infinity, splineMaxX = -Infinity;
-      let splineMinY = Infinity, splineMaxY = -Infinity;
-      
-      // Try to use NURBS sampling for accurate bounds
-      let points;
-      try {
-        points = sampleNURBS(spline, 32); // Sample enough points for good bounds
-      } catch (error) {
-        // Fallback to fit points or control points
-        points = spline.fitPoints || spline.controlPoints || [];
-      }
-      
-      for (const point of points) {
-        splineMinX = Math.min(splineMinX, point.x);
-        splineMaxX = Math.max(splineMaxX, point.x);
-        splineMinY = Math.min(splineMinY, point.y);
-        splineMaxY = Math.max(splineMaxY, point.y);
-      }
-      
-      // If no points found, return zero bounding box
-      if (points.length === 0) {
-        return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-      }
-      
-      return { minX: splineMinX, maxX: splineMaxX, minY: splineMinY, maxY: splineMaxY };
-    
-    default:
-      return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-  }
-}
 
 /**
  * Checks if an open chain crosses part boundaries
  */
 function checkOpenChainBoundaryCrossing(
-  openChain: ShapeChain, 
-  closedChains: ShapeChain[], 
+  openChain: Chain, 
+  closedChains: Chain[], 
   chainBounds: Map<string, BoundingBox>
 ): string | null {
-  const openChainBounds = calculateChainBoundingBox(openChain);
+  const _openChainBounds: BoundingBox = calculateChainBoundingBox(openChain);
   
   for (const closedChain of closedChains) {
-    const closedBounds = chainBounds.get(closedChain.id);
+    const closedBounds: BoundingBox | undefined = chainBounds.get(closedChain.id);
     if (!closedBounds) continue;
     
     // Check if open chain crosses the boundary (not just intersects bounding box)
@@ -523,8 +294,8 @@ function checkOpenChainBoundaryCrossing(
     // 1. Its start point is inside the closed region AND end point is outside, OR
     // 2. Its start point is outside the closed region AND end point is inside
     
-    const startInside = isPointInBoundingBox(getOpenChainStart(openChain), closedBounds);
-    const endInside = isPointInBoundingBox(getOpenChainEnd(openChain), closedBounds);
+    const startInside: boolean = isPointInBoundingBox(getOpenChainStart(openChain), closedBounds);
+    const endInside: boolean = isPointInBoundingBox(getOpenChainEnd(openChain), closedBounds);
     
     if (startInside !== endInside) {
       // Chain crosses the boundary
@@ -538,7 +309,7 @@ function checkOpenChainBoundaryCrossing(
 /**
  * Gets the starting point of an open chain
  */
-function getOpenChainStart(chain: ShapeChain): Point2D | null {
+function getOpenChainStart(chain: Chain): Point2D | null {
   if (chain.shapes.length === 0) return null;
   return getShapeStartPoint(chain.shapes[0]);
 }
@@ -546,7 +317,7 @@ function getOpenChainStart(chain: ShapeChain): Point2D | null {
 /**
  * Gets the ending point of an open chain
  */
-function getOpenChainEnd(chain: ShapeChain): Point2D | null {
+function getOpenChainEnd(chain: Chain): Point2D | null {
   if (chain.shapes.length === 0) return null;
   return getShapeEndPoint(chain.shapes[chain.shapes.length - 1]);
 }

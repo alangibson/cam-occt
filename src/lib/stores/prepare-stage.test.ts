@@ -5,7 +5,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { prepareStageStore } from './prepare-stage';
-import { DEFAULT_ALGORITHM_PARAMETERS } from '../../types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS } from '../../lib/types/algorithm-parameters';
 
 describe('Prepare Stage Store', () => {
   beforeEach(() => {

@@ -3,7 +3,7 @@
   import { drawingStore } from '../lib/stores/drawing';
   import { chainStore } from '../lib/stores/chains';
   import { partStore } from '../lib/stores/parts';
-  import { pathStore } from '../lib/stores/paths';
+  import { pathStore, type Path } from '../lib/stores/paths';
   import { operationsStore } from '../lib/stores/operations';
   import { tessellationStore } from '../lib/stores/tessellation';
   import { overlayStore } from '../lib/stores/overlay';
@@ -12,11 +12,17 @@
   import { getChainPartType, getPartChainIds, clearHighlight } from '../lib/stores/parts';
   import { selectPath, clearPathHighlight } from '../lib/stores/paths';
   import { sampleNURBS, evaluateNURBS } from '../lib/geometry/nurbs';
+  import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+  import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
   import { calculateLeads } from '../lib/algorithms/lead-calculation';
   import { leadWarningsStore } from '../lib/stores/lead-warnings';
   import { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
+  import { EPSILON, SPLINE_TESSELLATION_TOLERANCE, ELLIPSE_TESSELLATION_POINTS } from '../lib/constants';
+  import { debounce } from '../lib/utils/state-persistence';
+  import { tessellateEllipse } from '../lib/geometry/ellipse-tessellation';
+  import { tessellateSpline } from '../lib/geometry/spline-tessellation';
   import LeadVisualization from './LeadVisualization.svelte';
-  import type { Shape, Point2D } from '../types';
+  import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../lib/types';
   import type { WorkflowStage } from '../lib/stores/workflow';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
   
@@ -83,6 +89,21 @@
     coordinator.updateTransform(scale, offset, physicalScale);
   }
   
+  // Create debounced render function for rapid offset recalculations
+  const debouncedRender = debounce(() => {
+    if (ctx) {
+      render();
+    }
+  }, 16); // ~60fps for smooth updates
+
+  // Track offset calculation state changes
+  $: offsetCalculationHash = pathsState?.paths ? 
+    pathsState.paths.map(path => ({
+      id: path.id,
+      hasOffset: !!path.calculatedOffset,
+      offsetHash: path.calculatedOffset ? JSON.stringify(path.calculatedOffset.offsetShapes?.map((s: Shape) => s.id) || []) : null
+    })).join('|') : '';
+
   // Consolidate all reactive render triggers
   $: {
     // List all dependencies that should trigger a re-render
@@ -98,14 +119,32 @@
     currentOverlay;
     pathsState;
     operations;
+    selectedPathId;
+    highlightedPathId;
+    
+    // Specifically watch for offset calculation changes
+    offsetCalculationHash;
     
     // Only render if we have a context
     if (ctx) {
       render();
     }
   }
+
+  // Separate debounced reactive block for rapid offset updates
+  $: if (pathsState?.paths && ctx) {
+    const hasActiveOffsetCalculations = pathsState.paths.some(path => 
+      path.calculatedOffset && path.calculatedOffset.offsetShapes && path.calculatedOffset.offsetShapes.length > 0
+    );
+    
+    // Use debounced rendering for complex offset scenarios
+    if (hasActiveOffsetCalculations && pathsState.paths.length > 10) {
+      debouncedRender();
+    }
+  }
   
   let canvasContainer: HTMLElement;
+  let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
   
   onMount(() => {
     ctx = canvas.getContext('2d')!;
@@ -164,7 +203,6 @@
     }
   });
   
-  
   function render() {
     if (!ctx || !drawing) return;
     
@@ -202,9 +240,12 @@
         isHovered = chainShapeIds.some(id => hoveredShape === id);
       }
       
-      drawShape(shape, isSelected, isHovered, chainId, partType);
+      drawShapeStyled(shape, isSelected, isHovered, chainId, partType);
       
     });
+    
+    // Draw offset paths (solid green for offset, dashed green for original)
+    drawOffsetPaths();
     
     // Draw rapids (light blue thin lines)
     drawRapids();
@@ -226,6 +267,134 @@
     ctx.restore();
   }
   
+  function drawOffsetPaths() {
+    if (!pathsState || pathsState.paths.length === 0) return;
+    
+    pathsState.paths.forEach((path: Path) => {
+      // Only draw offset paths for enabled paths with enabled operations
+      const operation = operations.find(op => op.id === path.operationId);
+      if (!operation || !operation.enabled || !path.enabled) return;
+      
+      // Only draw if path has calculated offset
+      if (!path.calculatedOffset) return;
+      
+      // Comprehensive validation of offset geometry before rendering
+      if (!path.calculatedOffset.originalShapes || !path.calculatedOffset.offsetShapes) {
+        console.warn(`Invalid offset geometry for path ${path.id}: missing shape arrays`);
+        return;
+      }
+      
+      if (!Array.isArray(path.calculatedOffset.originalShapes) || !Array.isArray(path.calculatedOffset.offsetShapes)) {
+        console.warn(`Invalid offset geometry for path ${path.id}: shape arrays are not arrays`);
+        return;
+      }
+      
+      // Validate that shapes have required properties
+      if (path.calculatedOffset.originalShapes.length === 0 || path.calculatedOffset.offsetShapes.length === 0) {
+        console.warn(`Invalid offset geometry for path ${path.id}: empty shape arrays`);
+        return;
+      }
+      
+      const isPathSelected = selectedPathId && selectedPathId === path.id;
+      const isPathHighlighted = highlightedPathId && highlightedPathId === path.id;
+      
+      ctx.save();
+      
+      try {
+        // Define color constants for visual consistency
+        const pathColors = {
+          originalLightGreen: '#86efac',  // Light green for original paths when offset exists
+          offsetGreen: '#16a34a',        // Green for offset paths (same as original normal)
+          selectedDark: '#15803d',       // Dark green for selected
+          highlighted: '#15803d'         // Dark green for highlighted
+        };
+        
+        // Draw original shapes as dashed light green lines FIRST (background layer)
+        ctx.setLineDash([5, 3]); // Standardized dash pattern in screen pixels
+        ctx.strokeStyle = pathColors.originalLightGreen;
+        ctx.lineWidth = coordinator.screenToWorldDistance(1); // 1px original paths
+        ctx.lineCap = 'round';   // Professional appearance
+        ctx.lineJoin = 'round';  // Professional appearance
+        
+        path.calculatedOffset.originalShapes.forEach((shape, index) => {
+          try {
+            drawShape(shape);
+          } catch (error) {
+            console.warn(`Error rendering original shape ${index} for path ${path.id}:`, error);
+          }
+        });
+        
+        // Draw offset shapes as solid green lines SECOND (foreground layer)
+        ctx.setLineDash([]); // Solid line pattern
+        ctx.shadowColor = 'transparent'; // Reset shadow
+        ctx.shadowBlur = 0;
+        
+        // Set styling based on selection state with proper hierarchy
+        if (isPathSelected) {
+          ctx.strokeStyle = pathColors.selectedDark; // Dark green for selected (highest priority)
+          ctx.lineWidth = coordinator.screenToWorldDistance(3); // 3px selected paths
+        } else if (isPathHighlighted) {
+          ctx.strokeStyle = pathColors.highlighted; // Dark green for highlighted
+          ctx.lineWidth = coordinator.screenToWorldDistance(2.5);
+          ctx.shadowColor = pathColors.highlighted;
+          ctx.shadowBlur = coordinator.screenToWorldDistance(4);
+        } else {
+          ctx.strokeStyle = pathColors.offsetGreen; // Green for offset paths
+          ctx.lineWidth = coordinator.screenToWorldDistance(2); // 2px offset paths
+        }
+        
+        // Maintain professional line appearance
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        
+        path.calculatedOffset.offsetShapes.forEach((shape, index) => {
+          try {
+            drawShape(shape);
+          } catch (error) {
+            console.warn(`Error rendering offset shape ${index} for path ${path.id}:`, error);
+          }
+        });
+        
+        // Render gap fills if they exist (filler shapes and modified shapes)
+        if (path.calculatedOffset.gapFills && path.calculatedOffset.gapFills.length > 0) {
+          ctx.save();
+          
+          // Use orange color for gap fills to match test visualization
+          ctx.strokeStyle = '#ff6600'; // Orange
+          ctx.lineWidth = coordinator.screenToWorldDistance(2);
+          ctx.setLineDash([]); // Solid line
+          
+          for (const gapFill of path.calculatedOffset.gapFills) {
+            // Render filler shape if it exists
+            if (gapFill.fillerShape) {
+              try {
+                drawShape(gapFill.fillerShape);
+              } catch (error) {
+                console.warn(`Error rendering gap filler shape for path ${path.id}:`, error);
+              }
+            }
+            
+            // Render modified shapes (these replace the original offset shapes in gap areas)
+            for (const modifiedShapeEntry of gapFill.modifiedShapes) {
+              try {
+                drawShape(modifiedShapeEntry.modified);
+              } catch (error) {
+                console.warn(`Error rendering gap modified shape for path ${path.id}:`, error);
+              }
+            }
+          }
+          
+          ctx.restore();
+        }
+        
+      } catch (error) {
+        console.error(`Error rendering offset path ${path.id}:`, error);
+      } finally {
+        ctx.restore();
+      }
+    });
+  }
+
   function drawOriginCross() {
     const crossSize = coordinator.screenToWorldDistance(20); // Fixed size regardless of zoom
     
@@ -330,7 +499,6 @@
     leadVisualization.drawLeads();
   }
   
-  
   function drawPathChevrons() {
     if (!pathsState || pathsState.paths.length === 0) return;
     
@@ -339,12 +507,20 @@
       const operation = operations.find(op => op.id === path.operationId);
       if (!operation || !operation.enabled || !path.enabled) return;
       
-      // Get the chain for this path
-      const chain = chains.find(c => c.id === path.chainId);
-      if (!chain || chain.shapes.length === 0) return;
+      let pathPoints: Point2D[] = [];
       
-      // Sample points along the path
-      const pathPoints = samplePathPoints(chain, 50, path.cutDirection); // Sample 50 points along the path
+      // If path has offset, use offset shapes for arrows, otherwise use original chain
+      if (path.calculatedOffset && path.calculatedOffset.offsetShapes && path.calculatedOffset.offsetShapes.length > 0) {
+        // Sample points along the offset shapes
+        pathPoints = sampleOffsetShapePoints(path.calculatedOffset.offsetShapes, 50, path.cutDirection);
+      } else {
+        // Get the chain for this path and sample points from original shapes
+        const chain = chains.find(c => c.id === path.chainId);
+        if (!chain || chain.shapes.length === 0) return;
+        
+        pathPoints = samplePathPoints(chain, 50, path.cutDirection); // Sample 50 points along the path
+      }
+      
       if (pathPoints.length < 2) return;
       
       // Draw chevron arrows at regular intervals
@@ -428,7 +604,7 @@
     
     switch (shape.type) {
       case 'line':
-        const line = shape.geometry as any;
+        const line = shape.geometry as Line;
         for (let i = 0; i <= numSamples; i++) {
           const t = reverse ? 1 - (i / numSamples) : i / numSamples;
           points.push({
@@ -439,7 +615,8 @@
         break;
         
       case 'arc':
-        const arc = shape.geometry as any;
+        const arc = shape.geometry as Arc;
+        
         let startAngle = arc.startAngle;
         let endAngle = arc.endAngle;
         
@@ -466,7 +643,7 @@
         break;
         
       case 'circle':
-        const circle = shape.geometry as any;
+        const circle = shape.geometry as Circle;
         for (let i = 0; i <= numSamples; i++) {
           const t = reverse ? 1 - (i / numSamples) : i / numSamples;
           const angle = t * 2 * Math.PI;
@@ -478,104 +655,24 @@
         break;
         
       case 'polyline':
-        const polyline = shape.geometry as any;
-        let vertices = polyline.vertices || polyline.points?.map((p: any) => ({ ...p, bulge: 0 })) || [];
+        const polyline = shape.geometry as Polyline;
         
-        if (vertices.length < 2) break;
+        if (!polyline.shapes || polyline.shapes.length === 0) break;
         
-        // If reverse is true, reverse the vertex order and adjust bulge signs
-        if (reverse) {
-          vertices = [...vertices].reverse();
-          // When reversing, bulge factors need to be negated and shifted
-          for (let i = 0; i < vertices.length - 1; i++) {
-            const originalBulge = vertices[i + 1].bulge || 0; // Take bulge from next vertex in original order
-            vertices[i].bulge = -originalBulge; // Negate bulge for reverse direction
-          }
-        }
+        // Determine the order to traverse shapes based on reverse flag
+        const shapes = reverse ? [...polyline.shapes].reverse() : polyline.shapes;
         
-        // Sample along each segment
-        const segmentSamples = Math.max(1, Math.floor(numSamples / vertices.length));
+        // Sample along each shape in the polyline
+        const segmentSamples = Math.max(1, Math.floor(numSamples / polyline.shapes.length));
         
-        for (let i = 0; i < vertices.length - 1; i++) {
-          const currentVertex = vertices[i];
-          const nextVertex = vertices[i + 1];
-          const bulge = currentVertex.bulge || 0;
-          
-          if (Math.abs(bulge) < 1e-10) {
-            // Straight line segment
-            for (let j = 0; j <= segmentSamples; j++) {
-              const t = j / segmentSamples;
-              points.push({
-                x: currentVertex.x + t * (nextVertex.x - currentVertex.x),
-                y: currentVertex.y + t * (nextVertex.y - currentVertex.y)
-              });
-            }
-          } else {
-            // Arc segment
-            const arcSegment = bulgeToArc(currentVertex, nextVertex, bulge);
-            if (arcSegment) {
-              let startAngle = arcSegment.startAngle;
-              let endAngle = arcSegment.endAngle;
-              
-              if (arcSegment.clockwise) {
-                while (endAngle > startAngle) endAngle -= 2 * Math.PI;
-              } else {
-                while (endAngle < startAngle) endAngle += 2 * Math.PI;
-              }
-              
-              for (let j = 0; j <= segmentSamples; j++) {
-                const t = j / segmentSamples;
-                const angle = startAngle + t * (endAngle - startAngle);
-                points.push({
-                  x: arcSegment.center.x + arcSegment.radius * Math.cos(angle),
-                  y: arcSegment.center.y + arcSegment.radius * Math.sin(angle)
-                });
-              }
-            }
-          }
-        }
-        
-        // Handle closing segment for closed polylines
-        if (polyline.closed && vertices.length >= 3) {
-          const lastVertex = vertices[vertices.length - 1];
-          const firstVertex = vertices[0];
-          const bulge = lastVertex.bulge || 0;
-          
-          if (Math.abs(bulge) < 1e-10) {
-            for (let j = 0; j <= segmentSamples; j++) {
-              const t = j / segmentSamples;
-              points.push({
-                x: lastVertex.x + t * (firstVertex.x - lastVertex.x),
-                y: lastVertex.y + t * (firstVertex.y - lastVertex.y)
-              });
-            }
-          } else {
-            const arcSegment = bulgeToArc(lastVertex, firstVertex, bulge);
-            if (arcSegment) {
-              let startAngle = arcSegment.startAngle;
-              let endAngle = arcSegment.endAngle;
-              
-              if (arcSegment.clockwise) {
-                while (endAngle > startAngle) endAngle -= 2 * Math.PI;
-              } else {
-                while (endAngle < startAngle) endAngle += 2 * Math.PI;
-              }
-              
-              for (let j = 0; j <= segmentSamples; j++) {
-                const t = j / segmentSamples;
-                const angle = startAngle + t * (endAngle - startAngle);
-                points.push({
-                  x: arcSegment.center.x + arcSegment.radius * Math.cos(angle),
-                  y: arcSegment.center.y + arcSegment.radius * Math.sin(angle)
-                });
-              }
-            }
-          }
+        for (const polylineShape of shapes) {
+          const shapePoints = sampleShapePoints(polylineShape, segmentSamples, reverse);
+          points.push(...shapePoints);
         }
         break;
         
       case 'spline':
-        const spline = shape.geometry as any;
+        const spline = shape.geometry as Spline;
         const splinePoints = sampleNURBS(spline, numSamples);
         if (reverse) {
           points.push(...splinePoints.reverse());
@@ -601,72 +698,38 @@
     return points;
   }
   
-  function drawTessellationPoints(points: Array<{x: number, y: number}>) {
-    ctx.save();
+  function sampleOffsetShapePoints(offsetShapes: Shape[], numSamples: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D[] {
+    const points: Point2D[] = [];
     
-    // Set blue color for tessellation points
-    ctx.fillStyle = '#2563eb'; // Blue color
+    if (!offsetShapes || offsetShapes.length === 0) return points;
     
-    const pointRadius = coordinator.screenToWorldDistance(2); // Fixed size regardless of zoom
+    // Determine the order to traverse shapes based on cut direction
+    const shapes = cutDirection === 'counterclockwise' ? [...offsetShapes].reverse() : offsetShapes;
     
-    for (const point of points) {
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, pointRadius, 0, Math.PI * 2);
-      ctx.fill();
+    // For each shape in the offset path, sample points along it
+    for (const shape of shapes) {
+      const shapePoints = sampleShapePoints(shape, Math.max(2, Math.floor(numSamples / offsetShapes.length)), cutDirection === 'counterclockwise');
+      points.push(...shapePoints);
     }
     
-    ctx.restore();
+    return points;
   }
   
-  function drawPolylineWithBulges(vertices: any[], closed: boolean) {
-    if (vertices.length < 2) return;
-    
+  function drawLine(line: Line) {
     ctx.beginPath();
-    ctx.moveTo(vertices[0].x, vertices[0].y);
-    
-    // Draw each segment, handling bulges
-    for (let i = 0; i < vertices.length - 1; i++) {
-      const currentVertex = vertices[i];
-      const nextVertex = vertices[i + 1];
-      const bulge = currentVertex.bulge || 0;
-      
-      if (Math.abs(bulge) < 1e-10) {
-        // Straight line segment
-        ctx.lineTo(nextVertex.x, nextVertex.y);
-      } else {
-        // Arc segment - draw using canvas arc
-        drawBulgedSegment(currentVertex, nextVertex, bulge);
-      }
-    }
-    
-    // Handle closing segment for closed polylines
-    if (closed && vertices.length >= 3) {
-      const lastVertex = vertices[vertices.length - 1];
-      const firstVertex = vertices[0];
-      const bulge = lastVertex.bulge || 0;
-      
-      if (Math.abs(bulge) < 1e-10) {
-        // Straight line closing segment
-        ctx.lineTo(firstVertex.x, firstVertex.y);
-      } else {
-        // Arc closing segment
-        drawBulgedSegment(lastVertex, firstVertex, bulge);
-      }
-      ctx.closePath();
-    }
-    
+    ctx.moveTo(line.start.x, line.start.y);
+    ctx.lineTo(line.end.x, line.end.y);
     ctx.stroke();
   }
-  
-  function drawBulgedSegment(start: any, end: any, bulge: number) {
-    // Convert bulge to arc parameters
-    const arc = bulgeToArc(start, end, bulge);
-    if (!arc) {
-      ctx.lineTo(end.x, end.y);
-      return;
-    }
-    
-    // Draw arc using canvas arc method
+
+  function drawCircle(circle: Circle) {
+    ctx.beginPath();
+    ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+
+  function drawArc(arc: Arc) {
+    ctx.beginPath();
     ctx.arc(
       arc.center.x,
       arc.center.y,
@@ -675,102 +738,87 @@
       arc.endAngle,
       arc.clockwise
     );
+    ctx.stroke();
   }
-  
-  // Bulge-to-arc conversion function (same as in DXF parser)
-  function bulgeToArc(start: any, end: any, bulge: number) {
-    if (Math.abs(bulge) < 1e-10) {
-      return null;
+
+  function drawPolyline(polyline: Polyline) {
+    if (!polyline.shapes || polyline.shapes.length === 0) return;
+    
+    // Draw each shape in the polyline using drawLine or drawArc
+    for (const shape of polyline.shapes) {
+      switch (shape.type) {
+        case 'line':
+          drawLine(shape.geometry as Line);
+          break;
+        case 'arc':
+          drawArc(shape.geometry as Arc);
+          break;
+      }
     }
     
-    const dx = end.x - start.x;
-    const dy = end.y - start.y;
-    const chordLength = Math.sqrt(dx * dx + dy * dy);
-    
-    if (chordLength < 1e-10) {
-      return null;
-    }
-    
-    const theta = 4 * Math.atan(bulge);
-    const radius = Math.abs(chordLength / (2 * Math.sin(theta / 2)));
-    
-    const chordMidX = (start.x + end.x) / 2;
-    const chordMidY = (start.y + end.y) / 2;
-    
-    const perpDist = radius * Math.cos(theta / 2);
-    const perpAngle = Math.atan2(dy, dx) + (bulge > 0 ? Math.PI / 2 : -Math.PI / 2);
-    
-    const center = {
-      x: chordMidX + perpDist * Math.cos(perpAngle),
-      y: chordMidY + perpDist * Math.sin(perpAngle)
-    };
-    
-    const startAngle = Math.atan2(start.y - center.y, start.x - center.x);
-    const endAngle = Math.atan2(end.y - center.y, end.x - center.x);
-    
-    return {
-      center,
-      radius,
-      startAngle,
-      endAngle,
-      clockwise: bulge < 0
-    };
+    // Handle closing segment for closed polylines
+    // if (polyline.closed && polyline.shapes.length >= 2) {
+    //   const lastShape = polyline.shapes[polyline.shapes.length - 1];
+    //   const firstShape = polyline.shapes[0];
+      
+    //   const lastEndPoint = getShapeEndPoint(lastShape);
+    //   const firstStartPoint = getShapeStartPoint(firstShape);
+      
+    //   // Only draw closing line if endpoints don't already meet
+    //   if (lastEndPoint && firstStartPoint) {
+    //     const dx = lastEndPoint.x - firstStartPoint.x;
+    //     const dy = lastEndPoint.y - firstStartPoint.y;
+    //     const distance = Math.sqrt(dx * dx + dy * dy);
+        
+    //     if (distance > EPSILON) {
+    //       const closingLine: Line = {
+    //         start: lastEndPoint,
+    //         end: firstStartPoint
+    //       };
+    //       drawLine(closingLine);
+    //     }
+    //   }
+    // }
   }
-  
+
   function drawEllipse(ellipse: any) {
-    // Calculate major and minor axis lengths
-    const majorAxisLength = Math.sqrt(
-      ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-      ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-    );
-    const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
+    // Use high-resolution tessellation for consistent rendering with visual validation tests
+    const tessellatedPoints = tessellateEllipse(ellipse, { numPoints: ELLIPSE_TESSELLATION_POINTS });
     
-    // Calculate rotation angle of major axis
-    const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
-    
-    // Save context for transformation
-    ctx.save();
-    
-    // Transform to ellipse coordinate system
-    ctx.translate(ellipse.center.x, ellipse.center.y);
-    ctx.rotate(majorAxisAngle);
-    ctx.scale(majorAxisLength, minorAxisLength);
+    if (tessellatedPoints.length < 2) return;
     
     // Determine if this is an ellipse arc or full ellipse
     const isArc = typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number';
     
     ctx.beginPath();
-    if (isArc) {
-      // Draw ellipse arc
-      let startParam = ellipse.startParam!;
-      let endParam = ellipse.endParam!;
-      
-      // Handle parameter wrapping
-      if (endParam < startParam) {
-        endParam += 2 * Math.PI;
-      }
-      
-      ctx.arc(0, 0, 1, startParam, endParam, false);
-    } else {
-      // Draw full ellipse as a circle in the transformed coordinate system
-      ctx.arc(0, 0, 1, 0, 2 * Math.PI, false);
+    ctx.moveTo(tessellatedPoints[0].x, tessellatedPoints[0].y);
+    
+    for (let i = 1; i < tessellatedPoints.length; i++) {
+      ctx.lineTo(tessellatedPoints[i].x, tessellatedPoints[i].y);
     }
     
-    ctx.restore();
+    // Close path for full ellipses (not arcs)
+    if (!isArc) {
+      ctx.closePath();
+    }
+    
     ctx.stroke();
   }
 
   function drawSpline(spline: any) {
-    // Use proper NURBS evaluation for smooth curves
-    const sampledPoints = sampleNURBS(spline);
+    // Use comprehensive tessellation system with knot vector conversion
+    const result = tessellateSpline(spline, { 
+      method: 'verb-nurbs', 
+      tolerance: SPLINE_TESSELLATION_TOLERANCE 
+    });
     
-    if (sampledPoints.length < 2) return;
+    if (!result.success || result.points.length < 2) return;
     
     ctx.beginPath();
-    ctx.moveTo(sampledPoints[0].x, sampledPoints[0].y);
+    ctx.moveTo(result.points[0].x, result.points[0].y);
     
-    for (let i = 1; i < sampledPoints.length; i++) {
-      ctx.lineTo(sampledPoints[i].x, sampledPoints[i].y);
+    for (let i = 1; i < result.points.length; i++) {
+      ctx.lineTo(result.points[i].x, result.points[i].y);
     }
     
     if (spline.closed) {
@@ -778,36 +826,43 @@
     }
     
     ctx.stroke();
-    
-    // Optionally draw control points for debugging
-    // Enable by setting showSplineControlPoints = true
-    const showSplineControlPoints = false;
-    if (showSplineControlPoints) {
-      ctx.save();
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.7)';
-      for (const cp of spline.controlPoints) {
-        ctx.beginPath();
-        ctx.arc(cp.x, cp.y, coordinator.screenToWorldDistance(4), 0, 2 * Math.PI);
-        ctx.fill();
-      }
-      
-      // Draw control polygon
-      ctx.strokeStyle = 'rgba(255, 0, 0, 0.3)';
-      ctx.lineWidth = coordinator.screenToWorldDistance(1);
-      ctx.beginPath();
-      if (spline.controlPoints.length > 0) {
-        ctx.moveTo(spline.controlPoints[0].x, spline.controlPoints[0].y);
-        for (let i = 1; i < spline.controlPoints.length; i++) {
-          ctx.lineTo(spline.controlPoints[i].x, spline.controlPoints[i].y);
-        }
-      }
-      ctx.stroke();
-      
-      ctx.restore();
+  }
+
+  function drawShape(shape: Shape) {
+    switch (shape.type) {
+      case 'line':
+        const line = shape.geometry as Line;
+        drawLine(line);
+        break;
+        
+      case 'circle':
+        const circle = shape.geometry as Circle;
+        drawCircle(circle);
+        break;
+        
+      case 'arc':
+        const arc = shape.geometry as Arc;
+        drawArc(arc);
+        break;
+        
+      case 'polyline':
+        const polyline = shape.geometry as Polyline;
+        drawPolyline(polyline);
+        break;
+        
+      case 'ellipse':
+        const ellipse = shape.geometry as Ellipse;
+        drawEllipse(ellipse);
+        break;
+        
+      case 'spline':
+        const spline = shape.geometry as Spline;
+        drawSpline(spline);
+        break;
     }
   }
 
-  function drawShape(shape: Shape, isSelected: boolean, isHovered: boolean = false, chainId: string | null = null, partType: 'shell' | 'hole' | null = null) {
+  function drawShapeStyled(shape: Shape, isSelected: boolean, isHovered: boolean = false, chainId: string | null = null, partType: 'shell' | 'hole' | null = null) {
     // Save context state
     ctx.save();
     
@@ -864,286 +919,12 @@
       ctx.lineWidth = coordinator.screenToWorldDistance(1);
     }
     
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        ctx.beginPath();
-        ctx.moveTo(line.start.x, line.start.y);
-        ctx.lineTo(line.end.x, line.end.y);
-        ctx.stroke();
-        break;
-        
-      case 'circle':
-        const circle = shape.geometry as any;
-        ctx.beginPath();
-        ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, 2 * Math.PI);
-        ctx.stroke();
-        break;
-        
-      case 'arc':
-        const arc = shape.geometry as any;
-        ctx.beginPath();
-        ctx.arc(
-          arc.center.x,
-          arc.center.y,
-          arc.radius,
-          arc.startAngle,
-          arc.endAngle,
-          arc.clockwise
-        );
-        ctx.stroke();
-        break;
-        
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        if (polyline.vertices && polyline.vertices.length > 0) {
-          // Render polyline with bulge support
-          drawPolylineWithBulges(polyline.vertices, polyline.closed);
-        } else if (polyline.points && polyline.points.length > 0) {
-          // Fallback to simple line rendering for polylines without bulge data
-          ctx.beginPath();
-          ctx.moveTo(polyline.points[0].x, polyline.points[0].y);
-          for (let i = 1; i < polyline.points.length; i++) {
-            ctx.lineTo(polyline.points[i].x, polyline.points[i].y);
-          }
-          if (polyline.closed) {
-            ctx.closePath();
-          }
-          ctx.stroke();
-        }
-        break;
-        
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        drawEllipse(ellipse);
-        break;
-        
-      case 'spline':
-        const spline = shape.geometry as any;
-        drawSpline(spline);
-        break;
-    }
+    // Render the shape geometry using the extracted function
+    drawShape(shape);
     
     // Restore context state
     ctx.restore();
   }
-  
-  function drawShapePoints(shape: Shape) {
-    const pointSize = coordinator.screenToWorldDistance(4); // Fixed size regardless of zoom
-    
-    // Get points using the same logic as ShapeProperties component
-    const origin = getShapeOrigin(shape);
-    const startPoint = getShapeStartPoint(shape);
-    const endPoint = getShapeEndPoint(shape);
-    
-    // Draw origin point (blue)
-    if (origin) {
-      ctx.fillStyle = '#0066ff';
-      ctx.beginPath();
-      ctx.arc(origin.x, origin.y, pointSize, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-    
-    // Draw start point (green)
-    if (startPoint) {
-      ctx.fillStyle = '#00ff00';
-      ctx.beginPath();
-      ctx.arc(startPoint.x, startPoint.y, pointSize, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-    
-    // Draw end point (red)
-    if (endPoint) {
-      ctx.fillStyle = '#ff0000';
-      ctx.beginPath();
-      ctx.arc(endPoint.x, endPoint.y, pointSize, 0, 2 * Math.PI);
-      ctx.fill();
-    }
-  }
-  
-  function getShapeOrigin(shape: Shape): Point2D {
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        return line.start; // Origin is the start point
-      
-      case 'circle':
-      case 'arc':
-        const circle = shape.geometry as any;
-        return circle.center; // Origin is the center
-      
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        return polyline.points.length > 0 ? polyline.points[0] : { x: 0, y: 0 }; // Origin is the first point
-      
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        return ellipse.center; // Origin is the center
-      
-      case 'spline':
-        const spline = shape.geometry as any;
-        // Origin is the first control point
-        return spline.controlPoints.length > 0 ? spline.controlPoints[0] : { x: 0, y: 0 };
-      
-      default:
-        return { x: 0, y: 0 };
-    }
-  }
-  
-  function getShapeStartPoint(shape: Shape): Point2D | null {
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        return line.start;
-      
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        return polyline.points.length > 0 ? polyline.points[0] : null;
-      
-      case 'arc':
-        // For arcs, calculate start point from center, radius, and start angle
-        const arc = shape.geometry as any;
-        return {
-          x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-          y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-        };
-      
-      case 'circle':
-        // For circles, start and end points must be the same (rightmost point at 0°)
-        const circle = shape.geometry as any;
-        return {
-          x: circle.center.x + circle.radius,
-          y: circle.center.y
-        };
-      
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        // Calculate major axis length
-        const majorAxisLength = Math.sqrt(
-          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-        );
-        
-        if (typeof ellipse.startParam === 'number') {
-          // For ellipse arcs, calculate start point from start parameter
-          const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-          const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
-          
-          // Parametric ellipse equations
-          const x = majorAxisLength * Math.cos(ellipse.startParam);
-          const y = minorAxisLength * Math.sin(ellipse.startParam);
-          
-          // Rotate by major axis angle and translate to center
-          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
-          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
-          
-          return {
-            x: ellipse.center.x + rotatedX,
-            y: ellipse.center.y + rotatedY
-          };
-        } else {
-          // For full ellipses, use rightmost point (parameter 0)
-          return {
-            x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
-            y: ellipse.center.y + ellipse.majorAxisEndpoint.y
-          };
-        }
-      
-      case 'spline':
-        const spline = shape.geometry as any;
-        // Use proper NURBS evaluation at parameter t=0
-        try {
-          return evaluateNURBS(0, spline); // Get exact start point at t=0
-        } catch (error) {
-          // Fallback to first control point if NURBS evaluation fails
-          if (spline.fitPoints && spline.fitPoints.length > 0) {
-            return spline.fitPoints[0];
-          }
-          return spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
-        }
-      
-      default:
-        return null;
-    }
-  }
-  
-  function getShapeEndPoint(shape: Shape): Point2D | null {
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        return line.end;
-      
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        return polyline.points.length > 0 ? polyline.points[polyline.points.length - 1] : null;
-      
-      case 'arc':
-        // For arcs, calculate end point from center, radius, and end angle
-        const arc = shape.geometry as any;
-        return {
-          x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-          y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-        };
-      
-      case 'circle':
-        // For circles, start and end points must be the same (rightmost point at 0°)
-        const circle = shape.geometry as any;
-        return {
-          x: circle.center.x + circle.radius,
-          y: circle.center.y
-        };
-      
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        // Calculate major axis length
-        const majorAxisLength = Math.sqrt(
-          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-        );
-        
-        if (typeof ellipse.endParam === 'number') {
-          // For ellipse arcs, calculate end point from end parameter
-          const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-          const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
-          
-          // Parametric ellipse equations
-          const x = majorAxisLength * Math.cos(ellipse.endParam);
-          const y = minorAxisLength * Math.sin(ellipse.endParam);
-          
-          // Rotate by major axis angle and translate to center
-          const rotatedX = x * Math.cos(majorAxisAngle) - y * Math.sin(majorAxisAngle);
-          const rotatedY = x * Math.sin(majorAxisAngle) + y * Math.cos(majorAxisAngle);
-          
-          return {
-            x: ellipse.center.x + rotatedX,
-            y: ellipse.center.y + rotatedY
-          };
-        } else {
-          // For full ellipses, start and end points are the same (rightmost point at parameter 0)
-          return {
-            x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
-            y: ellipse.center.y + ellipse.majorAxisEndpoint.y
-          };
-        }
-      
-      case 'spline':
-        const spline = shape.geometry as any;
-        // Use proper NURBS evaluation at parameter t=1
-        try {
-          return evaluateNURBS(1, spline); // Get exact end point at t=1
-        } catch (error) {
-          // Fallback to last control point if NURBS evaluation fails
-          if (spline.fitPoints && spline.fitPoints.length > 0) {
-            return spline.fitPoints[spline.fitPoints.length - 1];
-          }
-          return spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
-        }
-      
-      default:
-        return null;
-    }
-  }
-  
   
   function drawOverlays(overlay: any) {
     // Draw shape points (Edit stage)
@@ -1242,11 +1023,7 @@
     
     ctx.restore();
   }
-  
-  function screenToWorld(screenPos: Point2D): Point2D {
-    return coordinator.screenToWorld(screenPos);
-  }
-  
+    
   function getShapeAtPoint(point: Point2D): Shape | null {
     if (!drawing) return null;
     
@@ -1287,16 +1064,16 @@
   function isPointNearShape(point: Point2D, shape: Shape, tolerance: number): boolean {
     switch (shape.type) {
       case 'line':
-        const line = shape.geometry as any;
+        const line = shape.geometry as Line;
         return distanceToLine(point, line.start, line.end) < tolerance;
         
       case 'circle':
-        const circle = shape.geometry as any;
+        const circle = shape.geometry as Circle;
         const distToCenter = distance(point, circle.center);
         return Math.abs(distToCenter - circle.radius) < tolerance;
         
       case 'arc':
-        const arc = shape.geometry as any;
+        const arc = shape.geometry as Arc;
         const distToCenterArc = distance(point, arc.center);
         // Check if point is near the arc circumference
         if (Math.abs(distToCenterArc - arc.radius) > tolerance) {
@@ -1307,63 +1084,21 @@
         return isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle, arc.clockwise);
         
       case 'polyline':
-        const polyline = shape.geometry as any;
-        // Use vertices array if available (bulge-aware polylines)
-        const vertices = polyline.vertices || polyline.points.map((p: any) => ({ ...p, bulge: 0 }));
+        const polyline = shape.geometry as Polyline;
         
-        for (let i = 0; i < vertices.length - 1; i++) {
-          const currentVertex = vertices[i];
-          const nextVertex = vertices[i + 1];
-          const bulge = currentVertex.bulge || 0;
-          
-          if (Math.abs(bulge) < 1e-10) {
-            // Straight line segment
-            if (distanceToLine(point, currentVertex, nextVertex) < tolerance) {
-              return true;
-            }
-          } else {
-            // Arc segment - check if point is near the arc
-            const arc = bulgeToArc(currentVertex, nextVertex, bulge);
-            if (arc) {
-              const distToCenter = distance(point, arc.center);
-              if (Math.abs(distToCenter - arc.radius) < tolerance) {
-                const pointAngle = Math.atan2(point.y - arc.center.y, point.x - arc.center.x);
-                if (isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle, arc.clockwise)) {
-                  return true;
-                }
-              }
-            }
-          }
-        }
+        if (!polyline.shapes || polyline.shapes.length === 0) return false;
         
-        // Check closing segment for closed polylines
-        if (polyline.closed && vertices.length >= 3) {
-          const lastVertex = vertices[vertices.length - 1];
-          const firstVertex = vertices[0];
-          const bulge = lastVertex.bulge || 0;
-          
-          if (Math.abs(bulge) < 1e-10) {
-            if (distanceToLine(point, lastVertex, firstVertex) < tolerance) {
-              return true;
-            }
-          } else {
-            const arc = bulgeToArc(lastVertex, firstVertex, bulge);
-            if (arc) {
-              const distToCenter = distance(point, arc.center);
-              if (Math.abs(distToCenter - arc.radius) < tolerance) {
-                const pointAngle = Math.atan2(point.y - arc.center.y, point.x - arc.center.x);
-                if (isAngleInArcRange(pointAngle, arc.startAngle, arc.endAngle, arc.clockwise)) {
-                  return true;
-                }
-              }
-            }
+        // Check each shape in the polyline
+        for (const polylineShape of polyline.shapes) {
+          if (isPointNearShape(point, polylineShape, tolerance)) {
+            return true;
           }
         }
         
         return false;
         
       case 'ellipse':
-        const ellipse = shape.geometry as any;
+        const ellipse = shape.geometry as Ellipse;
         // Use a simpler approximation for hit testing: check if point is within ellipse bounds + tolerance
         const majorAxisLength = Math.sqrt(
           ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
@@ -1415,7 +1150,7 @@
         }
         
       case 'spline':
-        const spline = shape.geometry as any;
+        const spline = shape.geometry as Spline;
         // For hit testing, use properly evaluated NURBS points
         const evaluatedPoints = sampleNURBS(spline, 50); // Use fewer points for hit testing performance
         
@@ -1509,6 +1244,10 @@
     return Math.sqrt(dx * dx + dy * dy);
   }
   
+  //
+  // Event handlers
+  //
+
   function handleMouseDown(e: MouseEvent) {
     isMouseDown = true;
     mousePos = { x: e.offsetX, y: e.offsetY };
@@ -1517,7 +1256,7 @@
     
     // Only handle shape selection with left mouse button
     if (e.button === 0) {
-      const worldPos = screenToWorld(mousePos);
+      const worldPos = coordinator.screenToWorld(mousePos);
       
       // Check for rapid selection first (rapids are on top)
       const rapid = getRapidAtPoint(worldPos);
@@ -1598,8 +1337,6 @@
     }
   }
   
-  let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
-
   function handleMouseMove(e: MouseEvent) {
     const newMousePos = { x: e.offsetX, y: e.offsetY };
     
@@ -1632,7 +1369,7 @@
       
       hoverTimeout = setTimeout(() => {
         // Handle hover detection when not dragging
-        const worldPos = screenToWorld(newMousePos);
+        const worldPos = coordinator.screenToWorld(newMousePos);
         const shape = getShapeAtPoint(worldPos);
         
         if (interactionMode === 'shapes') {

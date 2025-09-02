@@ -3,7 +3,7 @@ import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-ca
 import { CutDirection, LeadType } from '../types/direction';
 import type { ShapeChain } from './chain-detection';
 import type { DetectedPart } from './part-detection';
-import type { Shape, Point2D } from '../../types/geometry';
+import type { Shape, Point2D } from '../../lib/types/geometry';
 
 describe('Lead Geometry Debug', () => {
   // Helper to create a simple line chain
@@ -37,9 +37,7 @@ describe('Lead Geometry Debug', () => {
     expect(result.leadIn).toBeDefined();
     const points = result.leadIn!.points;
     
-    console.log('Simple shell lead points:');
     points.forEach((point, i) => {
-      console.log(`  Point ${i}: (${point.x.toFixed(3)}, ${point.y.toFixed(3)})`);
     });
     
     // Check: lead should start away from line and end at (0,0)
@@ -49,7 +47,6 @@ describe('Lead Geometry Debug', () => {
     expect(endPoint.x).toBeCloseTo(0, 5);
     expect(endPoint.y).toBeCloseTo(0, 5);
     
-    console.log(`Lead starts at (${startPoint.x.toFixed(3)}, ${startPoint.y.toFixed(3)}) and ends at (${endPoint.x.toFixed(3)}, ${endPoint.y.toFixed(3)})`);
   });
 
   it('should show part geometry and solid area detection', () => {
@@ -82,13 +79,11 @@ describe('Lead Geometry Debug', () => {
       { x: 110, y: 50 },  // Outside shell = NOT SOLID
     ];
 
-    console.log('Testing solid area detection:');
     testPoints.forEach((point, i) => {
       const inShell = isPointInRectangle(point, 0, 0, 100, 100);
       const inHole = isPointInRectangle(point, 70, 70, 90, 90);
       const inSolid = inShell && !inHole;
       
-      console.log(`  Point ${i} (${point.x}, ${point.y}): shell=${inShell}, hole=${inHole}, solid=${inSolid}`);
     });
 
     // Generate a lead for this shell
@@ -98,14 +93,12 @@ describe('Lead Geometry Debug', () => {
     expect(result.leadIn).toBeDefined();
     const points = result.leadIn!.points;
     
-    console.log('Shell lead with part context:');
     points.forEach((point, i) => {
       const inShell = isPointInRectangle(point, 0, 0, 100, 100);
       const inHole = isPointInRectangle(point, 70, 70, 90, 90);
       const inSolid = inShell && !inHole;
       
       if (i < 5 || i >= points.length - 2) { // Show first few and last few points
-        console.log(`  Point ${i}: (${point.x.toFixed(3)}, ${point.y.toFixed(3)}) solid=${inSolid}`);
       }
     });
   });

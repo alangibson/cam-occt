@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
-import type { Shape, Ellipse } from '../../types';
+import type { Shape, Ellipse } from '../../lib/types';
 
 describe('DXF Parser - ELLIPSE entity support', () => {
   describe('Full ellipse parsing', () => {
@@ -61,15 +61,15 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse = drawing.shapes[0];
+      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
       expect(ellipse.type).toBe('ellipse');
       
       const geometry = ellipse.geometry as Ellipse;
       expect(geometry.center).toEqual({ x: 100, y: 200 });
       expect(geometry.majorAxisEndpoint).toEqual({ x: 50, y: 0 });
       expect(geometry.minorToMajorRatio).toBe(0.5);
-      expect(geometry.startParam).toBeUndefined();
-      expect(geometry.endParam).toBeUndefined();
+      expect(geometry.startParam).toBe(0);
+      expect(geometry.endParam).toBe(2 * Math.PI);
     });
 
     it('should parse an ellipse with different orientation', async () => {
@@ -102,7 +102,7 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse = drawing.shapes[0];
+      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
       expect(ellipse.type).toBe('ellipse');
       
       const geometry = ellipse.geometry as Ellipse;
@@ -147,7 +147,7 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse = drawing.shapes[0];
+      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
       expect(ellipse.type).toBe('ellipse');
       
       const geometry = ellipse.geometry as Ellipse;
@@ -192,7 +192,7 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse = drawing.shapes[0];
+      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
       expect(ellipse.type).toBe('ellipse');
       
       const geometry = ellipse.geometry as Ellipse;
@@ -269,7 +269,7 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse = drawing.shapes[0];
+      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
       expect(ellipse.type).toBe('ellipse');
       
       const geometry = ellipse.geometry as Ellipse;
@@ -317,7 +317,7 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse = drawing.shapes[0];
+      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
       expect(ellipse.type).toBe('ellipse');
       
       const geometry = ellipse.geometry as Ellipse;
@@ -354,7 +354,7 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse = drawing.shapes[0];
+      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
       expect(ellipse.type).toBe('ellipse');
       
       const geometry = ellipse.geometry as Ellipse;

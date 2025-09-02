@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
-import type { Shape, Point2D } from '../../types';
+import type { Shape, Point2D, Line, Circle, Arc, Polyline } from '../../lib/types/geometry';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {
@@ -33,23 +34,23 @@ function calculateBounds(shapes: Shape[]) {
 function getShapePoints(shape: Shape): Point2D[] {
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry as any;
+      const line: import("$lib/types/geometry").Line = shape.geometry as Line;
       return [line.start, line.end];
     case 'circle':
-      const circle = shape.geometry as any;
+      const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle;
       return [
         { x: circle.center.x - circle.radius, y: circle.center.y - circle.radius },
         { x: circle.center.x + circle.radius, y: circle.center.y + circle.radius }
       ];
     case 'arc':
-      const arc = shape.geometry as any;
+      const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
       return [
         { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
         { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius }
       ];
     case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points || [];
+      const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
+      return polylineToPoints(polyline);
     default:
       return [];
   }
@@ -301,16 +302,16 @@ EOF`;
       // But geometry should be identical
       expect(mmDrawing.shapes.length).toBe(inchDrawing.shapes.length);
       
-      const mmLine = mmDrawing.shapes.find(s => s.type === 'line')?.geometry as any;
-      const inchLine = inchDrawing.shapes.find(s => s.type === 'line')?.geometry as any;
+      const mmLine = mmDrawing.shapes.find(s => s.type === 'line')?.geometry as Line;
+      const inchLine = inchDrawing.shapes.find(s => s.type === 'line')?.geometry as Line;
       
       expect(mmLine.start.x).toBe(inchLine.start.x);
       expect(mmLine.start.y).toBe(inchLine.start.y);
       expect(mmLine.end.x).toBe(inchLine.end.x);
       expect(mmLine.end.y).toBe(inchLine.end.y);
 
-      const mmCircle = mmDrawing.shapes.find(s => s.type === 'circle')?.geometry as any;
-      const inchCircle = inchDrawing.shapes.find(s => s.type === 'circle')?.geometry as any;
+      const mmCircle = mmDrawing.shapes.find(s => s.type === 'circle')?.geometry as Circle;
+      const inchCircle = inchDrawing.shapes.find(s => s.type === 'circle')?.geometry as Circle;
       
       expect(mmCircle.center.x).toBe(inchCircle.center.x);
       expect(mmCircle.center.y).toBe(inchCircle.center.y);

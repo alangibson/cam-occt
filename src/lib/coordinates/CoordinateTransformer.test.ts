@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CoordinateTransformer } from './CoordinateTransformer';
-import type { Point2D } from '../../types/geometry';
+import type { Point2D } from '../../lib/types/geometry';
 
 describe('CoordinateTransformer', () => {
   let transformer: CoordinateTransformer;
@@ -224,6 +224,319 @@ describe('CoordinateTransformer', () => {
       const screenPoint = transformerInch.worldToScreen(worldPoint);
       
       expect(screenPoint.x - 200).toBe(192);
+    });
+  });
+
+  describe('updateCanvas', () => {
+    it('should update canvas dimensions', () => {
+      const newCanvas = { width: 1000, height: 800 };
+      transformer.updateCanvas(newCanvas);
+      
+      const origin = transformer.getScreenOrigin();
+      expect(origin.x).toBe(newCanvas.width * 0.25);
+      expect(origin.y).toBe(newCanvas.height * 0.75);
+    });
+
+    it('should maintain transformations after canvas update', () => {
+      const worldPoint = { x: 50, y: 30 };
+      const screenBefore = transformer.worldToScreen(worldPoint);
+      
+      transformer.updateCanvas({ width: 1000, height: 800 });
+      
+      // Screen coordinates should change due to new origin
+      const screenAfter = transformer.worldToScreen(worldPoint);
+      expect(screenAfter).not.toEqual(screenBefore);
+      
+      // But world to screen to world should still work
+      const worldBack = transformer.screenToWorld(screenAfter);
+      expect(worldBack.x).toBeCloseTo(worldPoint.x);
+      expect(worldBack.y).toBeCloseTo(worldPoint.y);
+    });
+  });
+
+  describe('updateTransform', () => {
+    it('should update scale and offset', () => {
+      const newScale = 2.5;
+      const newOffset = { x: 100, y: -50 };
+      
+      transformer.updateTransform(newScale, newOffset);
+      
+      expect(transformer.getScale()).toBe(newScale);
+      expect(transformer.getOffset()).toEqual(newOffset);
+      expect(transformer.getTotalScale()).toBe(newScale); // physicalScale = 1
+    });
+
+    it('should update physical scale when provided', () => {
+      const newScale = 1.5;
+      const newOffset = { x: 0, y: 0 };
+      const newPhysicalScale = 3.0;
+      
+      transformer.updateTransform(newScale, newOffset, newPhysicalScale);
+      
+      expect(transformer.getScale()).toBe(newScale);
+      expect(transformer.getPhysicalScale()).toBe(newPhysicalScale);
+      expect(transformer.getTotalScale()).toBe(newScale * newPhysicalScale);
+    });
+
+    it('should not update physical scale when undefined', () => {
+      const originalPhysicalScale = transformer.getPhysicalScale();
+      
+      transformer.updateTransform(2, { x: 0, y: 0 });
+      
+      expect(transformer.getPhysicalScale()).toBe(originalPhysicalScale);
+      expect(transformer.getTotalScale()).toBe(2 * originalPhysicalScale);
+    });
+  });
+
+  describe('getScreenOrigin', () => {
+    it('should return correct origin without offset', () => {
+      const origin = transformer.getScreenOrigin();
+      
+      expect(origin.x).toBe(canvas.width * 0.25);
+      expect(origin.y).toBe(canvas.height * 0.75);
+    });
+
+    it('should apply offset to origin', () => {
+      const offset = { x: 50, y: -30 };
+      transformer.updateTransform(1, offset);
+      
+      const origin = transformer.getScreenOrigin();
+      
+      expect(origin.x).toBe(canvas.width * 0.25 + offset.x);
+      expect(origin.y).toBe(canvas.height * 0.75 + offset.y);
+    });
+
+    it('should handle negative offsets', () => {
+      const offset = { x: -100, y: 75 };
+      transformer.updateTransform(1, offset);
+      
+      const origin = transformer.getScreenOrigin();
+      
+      expect(origin.x).toBe(canvas.width * 0.25 - 100);
+      expect(origin.y).toBe(canvas.height * 0.75 + 75);
+    });
+  });
+
+  describe('calculateZoomOffset', () => {
+    it('should calculate offset to keep zoom point fixed', () => {
+      const zoomPoint = { x: 400, y: 300 };
+      const oldScale = 1;
+      const newScale = 2;
+      
+      const newOffset = transformer.calculateZoomOffset(zoomPoint, oldScale, newScale);
+      
+      // Create new transformer with calculated offset
+      const newTransformer = new CoordinateTransformer(canvas, newScale, newOffset);
+      
+      // The world point under the zoom point should remain at same screen position
+      const originalWorldPoint = transformer.screenToWorld(zoomPoint);
+      const newScreenPoint = newTransformer.worldToScreen(originalWorldPoint);
+      
+      expect(newScreenPoint.x).toBeCloseTo(zoomPoint.x, 1);
+      expect(newScreenPoint.y).toBeCloseTo(zoomPoint.y, 1);
+    });
+
+    it('should handle zoom out correctly', () => {
+      const transformer2x = new CoordinateTransformer(canvas, 2, { x: 0, y: 0 });
+      const zoomPoint = { x: 300, y: 200 };
+      const oldScale = 2;
+      const newScale = 0.5;
+      
+      const newOffset = transformer2x.calculateZoomOffset(zoomPoint, oldScale, newScale);
+      
+      const newTransformer = new CoordinateTransformer(canvas, newScale, newOffset);
+      
+      const originalWorldPoint = transformer2x.screenToWorld(zoomPoint);
+      const newScreenPoint = newTransformer.worldToScreen(originalWorldPoint);
+      
+      expect(newScreenPoint.x).toBeCloseTo(zoomPoint.x, 1);
+      expect(newScreenPoint.y).toBeCloseTo(zoomPoint.y, 1);
+    });
+
+    it('should handle physical scale in zoom calculations', () => {
+      const physicalScale = 2;
+      const transformerWithPhys = new CoordinateTransformer(canvas, 1, { x: 0, y: 0 }, physicalScale);
+      const zoomPoint = { x: 350, y: 250 };
+      const oldScale = 1;
+      const newScale = 3;
+      
+      const newOffset = transformerWithPhys.calculateZoomOffset(zoomPoint, oldScale, newScale);
+      
+      const newTransformer = new CoordinateTransformer(canvas, newScale, newOffset, physicalScale);
+      
+      const originalWorldPoint = transformerWithPhys.screenToWorld(zoomPoint);
+      const newScreenPoint = newTransformer.worldToScreen(originalWorldPoint);
+      
+      expect(newScreenPoint.x).toBeCloseTo(zoomPoint.x, 1);
+      expect(newScreenPoint.y).toBeCloseTo(zoomPoint.y, 1);
+    });
+  });
+
+  describe('getTotalScale', () => {
+    it('should return scale times physical scale', () => {
+      const scale = 2.5;
+      const physicalScale = 1.5;
+      const transformerScaled = new CoordinateTransformer(canvas, scale, { x: 0, y: 0 }, physicalScale);
+      
+      expect(transformerScaled.getTotalScale()).toBe(scale * physicalScale);
+    });
+
+    it('should update when scale changes', () => {
+      transformer.updateTransform(3, { x: 0, y: 0 });
+      expect(transformer.getTotalScale()).toBe(3);
+      
+      transformer.updateTransform(0.5, { x: 0, y: 0 });
+      expect(transformer.getTotalScale()).toBe(0.5);
+    });
+  });
+
+  describe('getScale', () => {
+    it('should return current user scale', () => {
+      const scale = 2.7;
+      transformer.updateTransform(scale, { x: 0, y: 0 });
+      
+      expect(transformer.getScale()).toBe(scale);
+    });
+  });
+
+  describe('getPhysicalScale', () => {
+    it('should return current physical scale', () => {
+      const physicalScale = 1.8;
+      const transformerWithPhys = new CoordinateTransformer(canvas, 1, { x: 0, y: 0 }, physicalScale);
+      
+      expect(transformerWithPhys.getPhysicalScale()).toBe(physicalScale);
+    });
+
+    it('should return 1 when not specified', () => {
+      expect(transformer.getPhysicalScale()).toBe(1);
+    });
+  });
+
+  describe('getOffset', () => {
+    it('should return a copy of current offset', () => {
+      const offset = { x: 123, y: -456 };
+      transformer.updateTransform(1, offset);
+      
+      const returnedOffset = transformer.getOffset();
+      
+      expect(returnedOffset).toEqual(offset);
+      expect(returnedOffset).not.toBe(offset); // Should be a copy
+    });
+
+    it('should not allow mutation of internal offset', () => {
+      const offset = { x: 10, y: 20 };
+      transformer.updateTransform(1, offset);
+      
+      const returnedOffset = transformer.getOffset();
+      returnedOffset.x = 999;
+      
+      expect(transformer.getOffset().x).toBe(10); // Should be unchanged
+    });
+  });
+
+  describe('worldToScreenDistance', () => {
+    it('should convert world distance to screen pixels', () => {
+      const worldDistance = 100;
+      const screenDistance = transformer.worldToScreenDistance(worldDistance);
+      
+      expect(screenDistance).toBe(worldDistance * transformer.getTotalScale());
+    });
+
+    it('should handle scale factor correctly', () => {
+      transformer.updateTransform(2.5, { x: 0, y: 0 });
+      const worldDistance = 50;
+      const screenDistance = transformer.worldToScreenDistance(worldDistance);
+      
+      expect(screenDistance).toBe(125);
+    });
+
+    it('should handle physical scale factor', () => {
+      const physicalScale = 3;
+      const transformerWithPhys = new CoordinateTransformer(canvas, 2, { x: 0, y: 0 }, physicalScale);
+      const worldDistance = 10;
+      const screenDistance = transformerWithPhys.worldToScreenDistance(worldDistance);
+      
+      expect(screenDistance).toBe(60); // 10 * 2 * 3
+    });
+  });
+
+  describe('screenToWorldDistance', () => {
+    it('should convert screen pixels to world distance', () => {
+      const screenDistance = 200;
+      const worldDistance = transformer.screenToWorldDistance(screenDistance);
+      
+      expect(worldDistance).toBe(screenDistance / transformer.getTotalScale());
+    });
+
+    it('should be inverse of worldToScreenDistance', () => {
+      const originalWorldDistance = 75;
+      const screenDistance = transformer.worldToScreenDistance(originalWorldDistance);
+      const worldDistanceBack = transformer.screenToWorldDistance(screenDistance);
+      
+      expect(worldDistanceBack).toBeCloseTo(originalWorldDistance);
+    });
+
+    it('should handle combined scale factors', () => {
+      const scale = 1.5;
+      const physicalScale = 2.5;
+      const transformerScaled = new CoordinateTransformer(canvas, scale, { x: 0, y: 0 }, physicalScale);
+      
+      const screenDistance = 150;
+      const worldDistance = transformerScaled.screenToWorldDistance(screenDistance);
+      
+      expect(worldDistance).toBe(screenDistance / (scale * physicalScale));
+    });
+  });
+
+  describe('Extreme Values and Edge Cases', () => {
+    it('should handle extremely small scale values', () => {
+      const verySmallScale = 0.001;
+      const transformerSmall = new CoordinateTransformer(canvas, verySmallScale, { x: 0, y: 0 });
+      
+      const worldPoint = { x: 1, y: 1 };
+      const screenPoint = transformerSmall.worldToScreen(worldPoint);
+      const worldBack = transformerSmall.screenToWorld(screenPoint);
+      
+      expect(worldBack.x).toBeCloseTo(worldPoint.x, 3);
+      expect(worldBack.y).toBeCloseTo(worldPoint.y, 3);
+    });
+
+    it('should handle extremely large scale values', () => {
+      const veryLargeScale = 1000;
+      const transformerLarge = new CoordinateTransformer(canvas, veryLargeScale, { x: 0, y: 0 });
+      
+      const worldPoint = { x: 0.001, y: 0.001 };
+      const screenPoint = transformerLarge.worldToScreen(worldPoint);
+      const worldBack = transformerLarge.screenToWorld(screenPoint);
+      
+      expect(worldBack.x).toBeCloseTo(worldPoint.x, 6);
+      expect(worldBack.y).toBeCloseTo(worldPoint.y, 6);
+    });
+
+    it('should handle extreme offsets', () => {
+      const extremeOffset = { x: -10000, y: 50000 };
+      transformer.updateTransform(1, extremeOffset);
+      
+      const worldPoint = { x: 100, y: -200 };
+      const screenPoint = transformer.worldToScreen(worldPoint);
+      const worldBack = transformer.screenToWorld(screenPoint);
+      
+      expect(worldBack.x).toBeCloseTo(worldPoint.x);
+      expect(worldBack.y).toBeCloseTo(worldPoint.y);
+    });
+
+    it('should handle zero world coordinates with various scales', () => {
+      const scales = [0.1, 1, 10, 100];
+      const worldZero = { x: 0, y: 0 };
+      
+      scales.forEach(scale => {
+        const t = new CoordinateTransformer(canvas, scale, { x: 0, y: 0 });
+        const screenPoint = t.worldToScreen(worldZero);
+        const worldBack = t.screenToWorld(screenPoint);
+        
+        expect(worldBack.x).toBeCloseTo(0, 10);
+        expect(worldBack.y).toBeCloseTo(0, 10);
+      });
     });
   });
 });

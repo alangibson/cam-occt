@@ -1,6 +1,8 @@
 <script lang="ts">
   import { drawingStore } from '../lib/stores/drawing';
-  import type { Shape, Point2D } from '../types';
+  import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../lib/types';
+  import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+  import { polylineToPoints } from '$lib/geometry/polyline';
   
   $: drawing = $drawingStore.drawing;
   $: selectedShapes = $drawingStore.selectedShapes;
@@ -19,20 +21,21 @@
   function getShapeOrigin(shape: Shape): Point2D {
     switch (shape.type) {
       case 'line':
-        const line = shape.geometry as any;
+        const line = shape.geometry as Line;
         return line.start; // Origin is the start point
       
       case 'circle':
       case 'arc':
-        const circle = shape.geometry as any;
+        const circle = shape.geometry as Circle;
         return circle.center; // Origin is the center
       
       case 'polyline':
-        const polyline = shape.geometry as any;
-        return polyline.points.length > 0 ? polyline.points[0] : { x: 0, y: 0 }; // Origin is the first point
+        const polyline = shape.geometry as Polyline;
+        const points = polylineToPoints(polyline);
+        return points.length > 0 ? points[0] : { x: 0, y: 0 }; // Origin is the first point
       
       case 'ellipse':
-        const ellipse = shape.geometry as any;
+        const ellipse = shape.geometry as Ellipse;
         return ellipse.center; // Origin is the center
       
       default:
@@ -40,82 +43,8 @@
     }
   }
   
-  function getShapeStartPoint(shape: Shape): Point2D | null {
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        return line.start;
-      
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        return polyline.points.length > 0 ? polyline.points[0] : null;
-      
-      case 'arc':
-        // For arcs, calculate start point from center, radius, and start angle
-        const arc = shape.geometry as any;
-        return {
-          x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-          y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-        };
-      
-      case 'circle':
-        // For circles, start and end points must be the same (rightmost point at 0°)
-        const circle = shape.geometry as any;
-        return {
-          x: circle.center.x + circle.radius,
-          y: circle.center.y
-        };
-      
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        // For ellipse arcs, use startParam if available, otherwise start at parameter 0
-        const startParam = ellipse.startParam !== undefined ? ellipse.startParam : 0;
-        return getEllipsePointAtParameter(ellipse, startParam);
-      
-      default:
-        return null;
-    }
-  }
   
-  function getShapeEndPoint(shape: Shape): Point2D | null {
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as any;
-        return line.end;
-      
-      case 'polyline':
-        const polyline = shape.geometry as any;
-        return polyline.points.length > 0 ? polyline.points[polyline.points.length - 1] : null;
-      
-      case 'arc':
-        // For arcs, calculate end point from center, radius, and end angle
-        const arc = shape.geometry as any;
-        return {
-          x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-          y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-        };
-      
-      case 'circle':
-        // For circles, start and end points must be the same (rightmost point at 0°)
-        const circle = shape.geometry as any;
-        return {
-          x: circle.center.x + circle.radius,
-          y: circle.center.y
-        };
-      
-      case 'ellipse':
-        const ellipse = shape.geometry as any;
-        // For ellipse arcs, use endParam if available, otherwise end at parameter 2π
-        const endParam = ellipse.endParam !== undefined ? ellipse.endParam : 2 * Math.PI;
-        return getEllipsePointAtParameter(ellipse, endParam);
-      
-      default:
-        return null;
-    }
-  }
-  
-  function formatPoint(point: Point2D | null): string {
-    if (!point) return 'N/A';
+  function formatPoint(point: Point2D): string {
     return `(${point.x.toFixed(2)}, ${point.y.toFixed(2)})`;
   }
   
@@ -187,43 +116,73 @@
         <span class="property-value">{formatPoint(getShapeOrigin(displayShape))}</span>
       </div>
       
-      {#if getShapeStartPoint(displayShape)}
-        {@const startPoint = getShapeStartPoint(displayShape)}
-        <div class="property-row">
-          <span class="property-label">Start:</span>
-          <span class="property-value">{formatPoint(startPoint)}</span>
-        </div>
-      {/if}
+      <div class="property-row">
+        <span class="property-label">Start:</span>
+        <span class="property-value">{formatPoint(getShapeStartPoint(displayShape))}</span>
+      </div>
       
-      {#if getShapeEndPoint(displayShape)}
-        {@const endPoint = getShapeEndPoint(displayShape)}
-        <div class="property-row">
-          <span class="property-label">End:</span>
-          <span class="property-value">{formatPoint(endPoint)}</span>
-        </div>
-      {/if}
+      <div class="property-row">
+        <span class="property-label">End:</span>
+        <span class="property-value">{formatPoint(getShapeEndPoint(displayShape))}</span>
+      </div>
       
       {#if displayShape.type === 'circle' || displayShape.type === 'arc'}
-        {@const geometry = displayShape.geometry as any}
+        {@const geometry = displayShape.geometry as Circle | Arc}
         <div class="property-row">
           <span class="property-label">Radius:</span>
           <span class="property-value">{geometry.radius.toFixed(2)}</span>
         </div>
         
         {#if displayShape.type === 'arc'}
+          {@const arcGeometry = displayShape.geometry as Arc}
           <div class="property-row">
             <span class="property-label">Start Angle:</span>
-            <span class="property-value">{(geometry.startAngle * 180 / Math.PI).toFixed(1)}°</span>
+            <span class="property-value">{(arcGeometry.startAngle * 180 / Math.PI).toFixed(1)}°</span>
           </div>
           <div class="property-row">
             <span class="property-label">End Angle:</span>
-            <span class="property-value">{(geometry.endAngle * 180 / Math.PI).toFixed(1)}°</span>
+            <span class="property-value">{(arcGeometry.endAngle * 180 / Math.PI).toFixed(1)}°</span>
+          </div>
+          <div class="property-row">
+            <span class="property-label">Direction:</span>
+            <span class="property-value">{arcGeometry.clockwise ? 'Clockwise' : 'Counter-clockwise'}</span>
+          </div>
+        {/if}
+      {/if}
+      
+      {#if displayShape.type === 'ellipse'}
+        {@const ellipseGeometry = displayShape.geometry as Ellipse}
+        <div class="property-row">
+          <span class="property-label">Center:</span>
+          <span class="property-value">{formatPoint(ellipseGeometry.center)}</span>
+        </div>
+        <div class="property-row">
+          <span class="property-label">Major Axis End:</span>
+          <span class="property-value">{formatPoint(ellipseGeometry.majorAxisEndpoint)}</span>
+        </div>
+        <div class="property-row">
+          <span class="property-label">Minor/Major Ratio:</span>
+          <span class="property-value">{ellipseGeometry.minorToMajorRatio.toFixed(3)}</span>
+        </div>
+        
+        {#if ellipseGeometry.startParam !== undefined && ellipseGeometry.endParam !== undefined}
+          <div class="property-row">
+            <span class="property-label">Start Param:</span>
+            <span class="property-value">{ellipseGeometry.startParam.toFixed(3)}</span>
+          </div>
+          <div class="property-row">
+            <span class="property-label">End Param:</span>
+            <span class="property-value">{ellipseGeometry.endParam.toFixed(3)}</span>
+          </div>
+          <div class="property-row">
+            <span class="property-label">Direction:</span>
+            <span class="property-value">Counter-clockwise</span>
           </div>
         {/if}
       {/if}
       
       {#if displayShape.type === 'spline'}
-        {@const splineGeometry = displayShape.geometry as any}
+        {@const splineGeometry = displayShape.geometry as Spline}
         <div class="property-row">
           <span class="property-label">Degree:</span>
           <span class="property-value">{splineGeometry.degree}</span>

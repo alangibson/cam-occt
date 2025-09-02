@@ -1,4 +1,4 @@
-import type { Point2D } from '../../types/geometry';
+import type { Point2D } from '../../lib/types/geometry';
 
 /**
  * Manages coordinate transformations between different coordinate systems:
@@ -55,7 +55,7 @@ export class CoordinateTransformer {
    * World: CAD units with Y+ up, origin at drawing origin
    */
   screenToWorld(screenPoint: Point2D): Point2D {
-    const origin = this.getScreenOrigin();
+    const origin: Point2D = this.getScreenOrigin();
     
     return {
       x: (screenPoint.x - origin.x) / this.totalScale,
@@ -68,7 +68,7 @@ export class CoordinateTransformer {
    * Inverse of screenToWorld
    */
   worldToScreen(worldPoint: Point2D): Point2D {
-    const origin = this.getScreenOrigin();
+    const origin: Point2D = this.getScreenOrigin();
     
     return {
       x: worldPoint.x * this.totalScale + origin.x,
@@ -107,15 +107,15 @@ export class CoordinateTransformer {
    */
   calculateZoomOffset(zoomPoint: Point2D, oldScale: number, newScale: number): Point2D {
     // Get world coordinates of zoom point with current transform
-    const worldPoint = this.screenToWorld(zoomPoint);
+    const worldPoint: Point2D = this.screenToWorld(zoomPoint);
     
     // Calculate where this world point would appear with new scale
-    const oldTotalScale = this.totalScale;
-    const newTotalScale = newScale * this.physicalScale;
+    const _oldTotalScale: number = this.totalScale;
+    const newTotalScale: number = newScale * this.physicalScale;
     
-    const origin = this.getScreenOrigin();
-    const newScreenX = worldPoint.x * newTotalScale + origin.x;
-    const newScreenY = -worldPoint.y * newTotalScale + origin.y;
+    const origin: Point2D = this.getScreenOrigin();
+    const newScreenX: number = worldPoint.x * newTotalScale + origin.x;
+    const newScreenY: number = -worldPoint.y * newTotalScale + origin.y;
     
     // Calculate offset to keep zoom point at same screen position
     return {

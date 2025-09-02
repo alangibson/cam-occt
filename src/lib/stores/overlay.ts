@@ -5,9 +5,10 @@
 
 import { writable } from 'svelte/store';
 import type { WorkflowStage } from './workflow';
-import type { Point2D, Shape } from '../../types';
-import type { ShapeChain } from '../algorithms/chain-detection';
-import { evaluateNURBS } from '../geometry/nurbs';
+import type { Point2D, Shape, Line, Arc, Circle, Polyline, Ellipse } from '../../lib/types';
+import type { Chain } from '../algorithms/chain-detection';
+import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import { polylineToPoints } from '../geometry/polyline';
 
 export interface TessellationPoint {
   x: number;
@@ -49,7 +50,21 @@ export interface OverlayState {
   overlays: Record<WorkflowStage, DrawingOverlay>;
 }
 
-function createOverlayStore() {
+function createOverlayStore(): {
+  subscribe: (run: (value: OverlayState) => void) => () => void;
+  setCurrentStage: (stage: WorkflowStage) => void;
+  getCurrentOverlay: () => DrawingOverlay | null;
+  setShapePoints: (stage: WorkflowStage, points: ShapePoint[]) => void;
+  clearShapePoints: (stage: WorkflowStage) => void;
+  setChainEndpoints: (stage: WorkflowStage, endpoints: ChainEndpoint[]) => void;
+  clearChainEndpoints: (stage: WorkflowStage) => void;
+  setTessellationPoints: (stage: WorkflowStage, points: TessellationPoint[]) => void;
+  clearTessellationPoints: (stage: WorkflowStage) => void;
+  setToolHead: (stage: WorkflowStage, position: Point2D) => void;
+  clearToolHead: (stage: WorkflowStage) => void;
+  clearStageOverlay: (stage: WorkflowStage) => void;
+  clearAllOverlays: () => void;
+} {
   const initialState: OverlayState = {
     currentStage: 'import',
     overlays: {
@@ -62,7 +77,7 @@ function createOverlayStore() {
     }
   };
 
-  const { subscribe, set, update } = writable<OverlayState>(initialState);
+  const { subscribe, update } = writable<OverlayState>(initialState);
 
   return {
     subscribe,
@@ -231,7 +246,7 @@ function createOverlayStore() {
   };
 }
 
-export const overlayStore = createOverlayStore();
+export const overlayStore: ReturnType<typeof createOverlayStore> = createOverlayStore();
 
 // Helper functions to generate overlay data
 export function generateShapePoints(shapes: Shape[], selectedShapeIds: Set<string>): ShapePoint[] {
@@ -240,42 +255,36 @@ export function generateShapePoints(shapes: Shape[], selectedShapeIds: Set<strin
   shapes.forEach(shape => {
     if (selectedShapeIds.has(shape.id)) {
       // Generate origin, start, and end points for selected shapes
-      const origin = getShapeOrigin(shape);
-      const start = getShapeStartPoint(shape);
-      const end = getShapeEndPoint(shape);
+      const origin: Point2D | null = getShapeOrigin(shape);
+      const start: Point2D = getShapeStartPoint(shape);
+      const end: Point2D = getShapeEndPoint(shape);
       
       if (origin) {
         points.push({ ...origin, type: 'origin', shapeId: shape.id });
       }
-      if (start) {
-        points.push({ ...start, type: 'start', shapeId: shape.id });
-      }
-      if (end) {
-        points.push({ ...end, type: 'end', shapeId: shape.id });
-      }
+      points.push({ ...start, type: 'start', shapeId: shape.id });
+      points.push({ ...end, type: 'end', shapeId: shape.id });
     }
   });
   
   return points;
 }
 
-export function generateChainEndpoints(chains: ShapeChain[]): ChainEndpoint[] {
+export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {
   const endpoints: ChainEndpoint[] = [];
   
   chains.forEach(chain => {
     if (chain.shapes.length === 0) return;
     
-    const firstShape = chain.shapes[0];
-    const lastShape = chain.shapes[chain.shapes.length - 1];
+    const firstShape: Shape = chain.shapes[0];
+    const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
     
-    const start = getShapeStartPoint(firstShape);
-    const end = getShapeEndPoint(lastShape);
+    const start: Point2D = getShapeStartPoint(firstShape);
+    const end: Point2D = getShapeEndPoint(lastShape);
     
-    if (start) {
-      endpoints.push({ ...start, type: 'start', chainId: chain.id });
-    }
+    endpoints.push({ ...start, type: 'start', chainId: chain.id });
     
-    if (end && (!start || Math.abs(end.x - start.x) > 0.01 || Math.abs(end.y - start.y) > 0.01)) {
+    if (Math.abs(end.x - start.x) > 0.01 || Math.abs(end.y - start.y) > 0.01) {
       endpoints.push({ ...end, type: 'end', chainId: chain.id });
     }
   });
@@ -287,143 +296,20 @@ export function generateChainEndpoints(chains: ShapeChain[]): ChainEndpoint[] {
 function getShapeOrigin(shape: Shape): Point2D | null {
   switch (shape.type) {
     case 'line':
-      const line = shape.geometry as any;
+      const line: import("$lib/types/geometry").Line = shape.geometry as Line;
       return line.start;
     case 'circle':
     case 'arc':
-      const circle = shape.geometry as any;
+      const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle | Arc;
       return circle.center;
     case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points.length > 0 ? polyline.points[0] : null;
+      const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
+      const points: Point2D[] = polylineToPoints(polyline);
+      return points.length > 0 ? points[0] : null;
     case 'ellipse':
-      const ellipse = shape.geometry as any;
+      const ellipse: import("$lib/types/geometry").Ellipse = shape.geometry as Ellipse;
       return ellipse.center;
     default:
       return null;
   }
-}
-
-function getShapeStartPoint(shape: Shape): Point2D | null {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return line.start;
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points.length > 0 ? polyline.points[0] : null;
-    case 'arc':
-      const arc = shape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.startAngle)
-      };
-    case 'circle':
-      const circle = shape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      // For ellipse arcs, use startParam if available, otherwise start at parameter 0
-      const startParam = ellipse.startParam !== undefined ? ellipse.startParam : 0;
-      return getEllipsePointAtParameter(ellipse, startParam);
-    case 'spline':
-      const spline = shape.geometry as any;
-      try {
-        // Use proper NURBS evaluation at parameter t=0
-        return evaluateNURBS(0, spline);
-      } catch (error) {
-        // Fallback to fit points or control points if NURBS evaluation fails
-        if (spline.fitPoints && spline.fitPoints.length > 0) {
-          return spline.fitPoints[0];
-        }
-        return spline.controlPoints && spline.controlPoints.length > 0 ? spline.controlPoints[0] : null;
-      }
-    default:
-      return null;
-  }
-}
-
-function getShapeEndPoint(shape: Shape): Point2D | null {
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as any;
-      return line.end;
-    case 'polyline':
-      const polyline = shape.geometry as any;
-      return polyline.points.length > 0 ? polyline.points[polyline.points.length - 1] : null;
-    case 'arc':
-      const arc = shape.geometry as any;
-      return {
-        x: arc.center.x + arc.radius * Math.cos(arc.endAngle),
-        y: arc.center.y + arc.radius * Math.sin(arc.endAngle)
-      };
-    case 'circle':
-      const circle = shape.geometry as any;
-      return {
-        x: circle.center.x + circle.radius,
-        y: circle.center.y
-      };
-    case 'ellipse':
-      const ellipse = shape.geometry as any;
-      // For ellipse arcs, use endParam if available, otherwise end at parameter 2π
-      const endParam = ellipse.endParam !== undefined ? ellipse.endParam : 2 * Math.PI;
-      return getEllipsePointAtParameter(ellipse, endParam);
-    case 'spline':
-      const spline = shape.geometry as any;
-      try {
-        // Use proper NURBS evaluation at parameter t=1
-        return evaluateNURBS(1, spline);
-      } catch (error) {
-        // Fallback to fit points or control points if NURBS evaluation fails
-        if (spline.fitPoints && spline.fitPoints.length > 0) {
-          return spline.fitPoints[spline.fitPoints.length - 1];
-        }
-        return spline.controlPoints && spline.controlPoints.length > 0 ? spline.controlPoints[spline.controlPoints.length - 1] : null;
-      }
-    default:
-      return null;
-  }
-}
-
-// Helper function to calculate a point on an ellipse at a given parameter
-// Uses the ezdxf approach: calculating minor axis using counterclockwise perpendicular
-function getEllipsePointAtParameter(ellipse: any, parameter: number): Point2D {
-  // IMPORTANT: majorAxisEndpoint is already a VECTOR from center, not an absolute point!
-  // This is how DXF stores ellipse data (group codes 11,21,31)
-  const majorAxisVector = ellipse.majorAxisEndpoint;
-  
-  // Calculate major axis length (this is the semi-major axis length)
-  const majorAxisLength = Math.sqrt(majorAxisVector.x * majorAxisVector.x + majorAxisVector.y * majorAxisVector.y);
-  
-  // Calculate minor axis length (this is the semi-minor axis length)
-  const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-  
-  // Calculate unit vectors
-  const majorAxisUnit = {
-    x: majorAxisVector.x / majorAxisLength,
-    y: majorAxisVector.y / majorAxisLength
-  };
-  
-  // Minor axis is perpendicular to major axis (counterclockwise rotation)
-  // This is equivalent to the 2D cross product: z_axis × major_axis (right-hand rule)
-  const minorAxisUnit = {
-    x: -majorAxisUnit.y,  // counterclockwise perpendicular
-    y: majorAxisUnit.x
-  };
-  
-  // Calculate point using parametric ellipse equation from ezdxf
-  const cosParam = Math.cos(parameter);
-  const sinParam = Math.sin(parameter);
-  
-  const x = cosParam * majorAxisLength * majorAxisUnit.x + sinParam * minorAxisLength * minorAxisUnit.x;
-  const y = cosParam * majorAxisLength * majorAxisUnit.y + sinParam * minorAxisLength * minorAxisUnit.y;
-  
-  // Translate to ellipse center
-  return {
-    x: ellipse.center.x + x,
-    y: ellipse.center.y + y
-  };
 }

@@ -6,13 +6,12 @@
  */
 
 import { writable } from 'svelte/store';
-import type { Point2D } from '../../types';
-import type { ShapeChain } from '../algorithms/chain-detection';
 
-export interface TessellationPoint extends Point2D {
+export interface TessellationPoint {
+  x: number;
+  y: number;
+  shapeId: string;
   chainId: string;
-  shapeIndex: number;
-  pointIndex: number;
 }
 
 export interface TessellationState {
@@ -22,7 +21,7 @@ export interface TessellationState {
 }
 
 function createTessellationStore() {
-  const { subscribe, set, update } = writable<TessellationState>({
+  const { subscribe, update } = writable<TessellationState>({
     isActive: false,
     points: [],
     lastUpdate: 0
@@ -35,7 +34,7 @@ function createTessellationStore() {
      * Set tessellation points for visualization
      */
     setTessellation: (points: TessellationPoint[]) => {
-      update(state => ({
+      update(_ => ({
         isActive: true,
         points,
         lastUpdate: Date.now()
@@ -46,7 +45,7 @@ function createTessellationStore() {
      * Clear tessellation visualization
      */
     clearTessellation: () => {
-      update(state => ({
+      update(_ => ({
         isActive: false,
         points: [],
         lastUpdate: Date.now()

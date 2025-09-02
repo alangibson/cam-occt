@@ -18,7 +18,14 @@ export interface Tool {
   plungeRate: number; // units/min
 }
 
-function createToolStore() {
+function createToolStore(): {
+  subscribe: (run: (value: Tool[]) => void) => () => void;
+  addTool: (tool: Omit<Tool, 'id'>) => void;
+  updateTool: (id: string, updates: Partial<Tool>) => void;
+  deleteTool: (id: string) => void;
+  reorderTools: (newOrder: Tool[]) => void;
+  reset: () => void;
+} {
   const { subscribe, set, update } = writable<Tool[]>([]);
 
   return {
@@ -54,7 +61,7 @@ function createToolStore() {
   };
 }
 
-export const toolStore = createToolStore();
+export const toolStore: ReturnType<typeof createToolStore> = createToolStore();
 
 // Default tool values for new tools
 export const DEFAULT_TOOL_VALUES: Omit<Tool, 'id' | 'toolNumber' | 'toolName'> = {

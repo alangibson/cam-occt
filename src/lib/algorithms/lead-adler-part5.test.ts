@@ -6,15 +6,16 @@ import { detectShapeChains } from './chain-detection';
 import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
+import { polylineToPoints } from '../geometry/polyline';
 
 describe('ADLER.dxf Part 5 Lead Fix', () => {
   // Helper to check if a point is inside a polygon using ray casting
   function isPointInPolygon(point: { x: number; y: number }, polygon: { x: number; y: number }[]): boolean {
     let inside = false;
-    const x = point.x;
-    const y = point.y;
+    const x: number = point.x;
+    const y: number = point.y;
     
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    for (let i: number = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
       const xi = polygon[i].x;
       const yi = polygon[i].y;
       const xj = polygon[j].x;
@@ -36,7 +37,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
       if (shape.type === 'line') {
         points.push(shape.geometry.start);
       } else if (shape.type === 'polyline') {
-        points.push(...shape.geometry.points);
+        points.push(...polylineToPoints(shape.geometry));
       }
       // Add other shape types as needed
     }
@@ -64,15 +65,10 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
     
     if (!part5) return;
     
-    console.log(`Part 5 shell has ${part5.shell.chain.shapes.length} shapes`);
     
     // Debug the shape type and geometry
     const firstShape = part5.shell.chain.shapes[0];
-    console.log(`First shape type: ${firstShape.type}`);
     if (firstShape.type === 'polyline') {
-      console.log(`Polyline has ${(firstShape.geometry as any).points.length} points`);
-      console.log('First few points:', (firstShape.geometry as any).points.slice(0, 5));
-      console.log('Last few points:', (firstShape.geometry as any).points.slice(-5));
     }
     
     // Test lead generation for the shell chain
@@ -103,14 +99,10 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
       }
     }
     
-    console.log(`ADLER Part 5: ${pointsInside} out of ${leadPoints.length} lead points inside solid area`);
-    console.log(`Connection point: (${connectionPoint.x.toFixed(3)}, ${connectionPoint.y.toFixed(3)})`);
     
     // Log first few points for debugging
-    console.log('First few lead points:');
     leadPoints.slice(0, 5).forEach((p, i) => {
       const inside = isPointInPolygon(p, shellPolygon);
-      console.log(`  Point ${i}: (${p.x.toFixed(3)}, ${p.y.toFixed(3)}) inside=${inside}`);
     });
     
     // The algorithm is working correctly by trying all rotations and length reductions.
@@ -140,14 +132,12 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
     const part5 = partResult.parts[4];
     
     if (!part5) {
-      console.log('Part 5 not found, skipping test');
       return;
     }
     
     const shellPolygon = getPolygonFromChain(part5.shell.chain);
     const leadLengths = [5, 10, 15, 20];
     
-    console.log('\nTesting multiple lead lengths for Part 5:');
     
     for (const length of leadLengths) {
       const leadIn: LeadInConfig = { type: LeadType.ARC, length };
@@ -170,7 +160,6 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
       }
       
       const percentage = (pointsInside / leadPoints.length * 100).toFixed(1);
-      console.log(`  Length ${length}: ${pointsInside}/${leadPoints.length} inside (${percentage}%)`);
       
       // Each length should show improvement over the old algorithm
       expect(pointsInside).toBeLessThan(leadPoints.length); // At least some improvement

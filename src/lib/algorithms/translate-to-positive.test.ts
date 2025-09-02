@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { translateToPositiveQuadrant } from './translate-to-positive';
-import type { Shape } from '../../types';
+import { polylineToPoints, polylineToVertices, createPolylineFromVertices } from '$lib/geometry/polyline';
+import type { Shape } from '../../lib/types';
+import type { Line, Circle, Arc, Polyline, Ellipse } from '../../lib/types/geometry';
 import { CutDirection, LeadType } from '../types/direction';
 
 describe('Translate to Positive Quadrant Algorithm', () => {
@@ -20,7 +22,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const line = result[0].geometry as any;
+      const line: import("$lib/types/geometry").Line = result[0].geometry as Line;
       expect(line.start).toEqual({ x: 0, y: 0 }); // -10 + 10 = 0, -5 + 5 = 0
       expect(line.end).toEqual({ x: 10, y: 10 }); // 0 + 10 = 10, 5 + 5 = 10
     });
@@ -58,7 +60,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const line = result[0].geometry as any;
+      const line: import("$lib/types/geometry").Line = result[0].geometry as Line;
       expect(line.start).toEqual({ x: 0, y: 10 }); // Only X translated
       expect(line.end).toEqual({ x: 10, y: 20 });
     });
@@ -78,7 +80,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const line = result[0].geometry as any;
+      const line: import("$lib/types/geometry").Line = result[0].geometry as Line;
       expect(line.start).toEqual({ x: 5, y: 0 }); // Only Y translated
       expect(line.end).toEqual({ x: 15, y: 10 });
     });
@@ -100,7 +102,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const circle = result[0].geometry as any;
+      const circle: import("$lib/types/geometry").Circle = result[0].geometry as Circle;
       // Bounding box: center(-5,-3) ± radius(2) = min(-7,-5), max(-3,-1)
       // Translation: x+7, y+5
       expect(circle.center).toEqual({ x: 2, y: 2 }); // -5+7=2, -3+5=2
@@ -125,7 +127,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const arc = result[0].geometry as any;
+      const arc: import("$lib/types/geometry").Arc = result[0].geometry as Arc;
       // Bounding box: center(-10,-8) ± radius(3) = min(-13,-11), max(-7,-5)
       // Translation: x+13, y+11
       expect(arc.center).toEqual({ x: 3, y: 3 }); // -10+13=3, -8+11=3
@@ -136,27 +138,22 @@ describe('Translate to Positive Quadrant Algorithm', () => {
     });
 
     it('should translate polylines correctly', () => {
-      const shapes: Shape[] = [
-        {
-          id: 'poly1',
-          type: 'polyline',
-          geometry: {
-            points: [
-              { x: -5, y: -10 },
-              { x: 0, y: -5 },
-              { x: 5, y: 0 }
-            ],
-            closed: false
-          }
-        }
-      ];
+      // Create polyline using the new segments-based structure
+      const polylineShape = createPolylineFromVertices([
+        { x: -5, y: -10 },
+        { x: 0, y: -5 },
+        { x: 5, y: 0 }
+      ], false);
+      
+      const shapes: Shape[] = [polylineShape];
 
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const polyline = result[0].geometry as any;
+      const polyline: import("$lib/types/geometry").Polyline = result[0].geometry as Polyline;
       // Min point: (-5, -10), translation: x+5, y+10
-      expect(polyline.points).toEqual([
+      const translatedPoints = polylineToPoints(polyline);
+      expect(translatedPoints).toEqual([
         { x: 0, y: 0 },   // -5+5=0, -10+10=0
         { x: 5, y: 5 },   // 0+5=5, -5+10=5
         { x: 10, y: 10 }  // 5+5=10, 0+10=10
@@ -165,29 +162,30 @@ describe('Translate to Positive Quadrant Algorithm', () => {
     });
 
     it('should translate polylines with vertices (bulge data)', () => {
-      const shapes: Shape[] = [
-        {
-          id: 'poly1',
-          type: 'polyline',
-          geometry: {
-            points: [{ x: -5, y: -10 }, { x: 0, y: -5 }],
-            closed: false,
-            vertices: [
-              { x: -5, y: -10, bulge: 0.5 },
-              { x: 0, y: -5, bulge: 0 }
-            ]
-          }
-        }
-      ];
+      // Create polyline using the new segments-based structure
+      const polylineShape = createPolylineFromVertices([
+          { x: -5, y: -10, bulge: 0.5 },
+          { x: 0, y: -5, bulge: 0 }
+        ], false);
+      
+      const shapes: Shape[] = [polylineShape];
 
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const polyline = result[0].geometry as any;
-      expect(polyline.vertices).toEqual([
-        { x: 0, y: 0, bulge: 0.5 },  // Bulge preserved
-        { x: 5, y: 5, bulge: 0 }
-      ]);
+      const polyline: import("$lib/types/geometry").Polyline = result[0].geometry as Polyline;
+      const translatedVertices = polylineToVertices(polyline);
+      expect(translatedVertices).toHaveLength(2);
+      
+      // Check first vertex with bulge preserved
+      expect(translatedVertices[0].x).toBeCloseTo(0);
+      expect(translatedVertices[0].y).toBeCloseTo(0);
+      expect(translatedVertices[0].bulge).toBeCloseTo(0.5);
+      
+      // Check second vertex
+      expect(translatedVertices[1].x).toBeCloseTo(5);
+      expect(translatedVertices[1].y).toBeCloseTo(5);
+      expect(translatedVertices[1].bulge).toBeCloseTo(0);
     });
 
     it('should translate ellipses correctly', () => {
@@ -206,7 +204,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const ellipse = result[0].geometry as any;
+      const ellipse: import("$lib/types/geometry").Ellipse = result[0].geometry as Ellipse;
       // Major axis length = 4, minor = 2, max extent = 4
       // Bounding box: center(-8,-6) ± 4 = min(-12,-10), max(-4,-2)
       // Translation: x+12, y+10
@@ -244,11 +242,11 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       // Global min: x=-5 (from line), y=-9 (from circle: -8-1=-9)
       // Translation: x+5, y+9
       
-      const line = result[0].geometry as any;
+      const line: import("$lib/types/geometry").Line = result[0].geometry as Line;
       expect(line.start).toEqual({ x: 0, y: 6 }); // -5+5=0, -3+9=6
       expect(line.end).toEqual({ x: 5, y: 9 });   // 0+5=5, 0+9=9
       
-      const circle = result[1].geometry as any;
+      const circle: import("$lib/types/geometry").Circle = result[1].geometry as Circle;
       expect(circle.center).toEqual({ x: 15, y: 1 }); // 10+5=15, -8+9=1
     });
   });
@@ -292,7 +290,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const line = result[0].geometry as any;
+      const line: import("$lib/types/geometry").Line = result[0].geometry as Line;
       expect(line.start).toEqual({ x: 0, y: 0 });
       expect(line.end).toEqual({ x: 0, y: 0 });
     });
@@ -306,8 +304,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             start: { x: -5, y: -5 },
             end: { x: 0, y: 0 }
           },
-          layer: 'construction',
-          color: '#ff0000'
+          layer: 'construction'
         }
       ];
 
@@ -317,7 +314,6 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       expect(result[0].id).toBe('line1');
       expect(result[0].type).toBe('line');
       expect(result[0].layer).toBe('construction');
-      expect(result[0].color).toBe('#ff0000');
     });
   });
 
@@ -337,7 +333,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
       const result = translateToPositiveQuadrant(shapes);
       
       expect(result).toHaveLength(1);
-      const line = result[0].geometry as any;
+      const line: import("$lib/types/geometry").Line = result[0].geometry as Line;
       expect(line.start.x).toBeCloseTo(0, 6); // Should be very close to 0
       expect(line.start.y).toBe(5); // Y unchanged
       expect(line.end.x).toBeCloseTo(10.001, 6);
