@@ -4,7 +4,7 @@ import type { Shape, Point2D, Line, Arc } from '../../lib/types';
 import type { DetectedPart } from './part-detection';
 import { calculateLeads } from './lead-calculation';
 import { createLeadInConfig, createLeadOutConfig } from '../utils/lead-config-utils';
-import { getShapeStartPoint } from '$lib/geometry';
+import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { calculateSquaredDistance } from '../utils/math-utils';
 
 /**
@@ -63,7 +63,7 @@ export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
 }
 
 /**
- * Get the effective start point of a path, accounting for lead-in geometry
+ * Get the effective start point of a path, accounting for lead-in geometry and offset
  * Extracted from optimize-cut-order.ts to eliminate duplication
  */
 export function getPathStartPoint(path: Path, chain: Chain, part?: DetectedPart): Point2D {
@@ -73,7 +73,17 @@ export function getPathStartPoint(path: Path, chain: Chain, part?: DetectedPart)
       const leadInConfig = createLeadInConfig(path);
       const leadOutConfig = createLeadOutConfig(path);
       
-      const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+      // Use offset geometry for lead calculation if available
+      let leadCalculationChain: Chain = chain;
+      if (path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0) {
+        // Create a temporary chain from offset shapes
+        leadCalculationChain = {
+          id: chain.id + '_offset_temp',
+          shapes: path.calculatedOffset.offsetShapes
+        };
+      }
+      
+      const leadResult = calculateLeads(leadCalculationChain, leadInConfig, leadOutConfig, path.cutDirection, part);
       
       if (leadResult.leadIn && leadResult.leadIn.points.length > 0) {
         // Return the first point of the lead-in (start of lead-in)
@@ -84,7 +94,15 @@ export function getPathStartPoint(path: Path, chain: Chain, part?: DetectedPart)
     }
   }
   
-  // Fallback to chain start point
+  // Fallback to chain start point (use offset if available)
+  if (path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0) {
+    const offsetChain: Chain = {
+      id: chain.id + '_offset_temp',
+      shapes: path.calculatedOffset.offsetShapes
+    };
+    return getChainStartPoint(offsetChain);
+  }
+  
   return getChainStartPoint(chain);
 }
 
@@ -98,6 +116,48 @@ function getChainStartPoint(chain: Chain): Point2D {
   
   const firstShape = chain.shapes[0];
   return getShapeStartPoint(firstShape);
+}
+
+/**
+ * Get the effective start point of a path's chain, using offset geometry if available
+ */
+export function getPathChainStartPoint(path: Path, chain: Chain): Point2D {
+  if (path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0) {
+    const offsetChain: Chain = {
+      id: chain.id + '_offset_temp',
+      shapes: path.calculatedOffset.offsetShapes
+    };
+    return getChainStartPoint(offsetChain);
+  }
+  
+  return getChainStartPoint(chain);
+}
+
+/**
+ * Get the effective end point of a path's chain, using offset geometry if available
+ */
+export function getPathChainEndPoint(path: Path, chain: Chain): Point2D {
+  if (path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0) {
+    const offsetChain: Chain = {
+      id: chain.id + '_offset_temp',
+      shapes: path.calculatedOffset.offsetShapes
+    };
+    return getChainEndPoint(offsetChain);
+  }
+  
+  return getChainEndPoint(chain);
+}
+
+/**
+ * Get the end point of a shape chain
+ */
+function getChainEndPoint(chain: Chain): Point2D {
+  if (chain.shapes.length === 0) {
+    throw new Error('Chain has no shapes');
+  }
+  
+  const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
+  return getShapeEndPoint(lastShape);
 }
 
 /**

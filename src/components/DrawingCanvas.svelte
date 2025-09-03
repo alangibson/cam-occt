@@ -478,9 +478,14 @@
       const chain = chains.find(c => c.id === path.chainId);
       if (!chain || chain.shapes.length === 0) return;
       
-      // Get first and last shape in the chain
-      const firstShape = chain.shapes[0];
-      const lastShape = chain.shapes[chain.shapes.length - 1];
+      // Use offset shapes if they exist, otherwise use original chain shapes
+      const shapesToUse = path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0 
+        ? path.calculatedOffset.offsetShapes 
+        : chain.shapes;
+      
+      // Get first and last shape
+      const firstShape = shapesToUse[0];
+      const lastShape = shapesToUse[shapesToUse.length - 1];
       
       if (!firstShape || !lastShape) return;
       

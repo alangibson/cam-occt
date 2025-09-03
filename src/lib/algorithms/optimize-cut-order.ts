@@ -60,7 +60,7 @@ function processNearestPath(
 }
 
 /**
- * Get the effective end point of a path, accounting for lead-out geometry.
+ * Get the effective end point of a path, accounting for lead-out geometry and offset.
  * If the path has a lead-out, returns the lead-out end point.
  * Otherwise, returns the chain end point.
  */
@@ -71,7 +71,17 @@ function getPathEndPoint(path: Path, chain: Chain, part?: DetectedPart): Point2D
       const leadInConfig = createLeadInConfig(path);
       const leadOutConfig = createLeadOutConfig(path);
       
-      const leadResult = calculateLeads(chain, leadInConfig, leadOutConfig, path.cutDirection, part);
+      // Use offset geometry for lead calculation if available
+      let leadCalculationChain: Chain = chain;
+      if (path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0) {
+        // Create a temporary chain from offset shapes
+        leadCalculationChain = {
+          id: chain.id + '_offset_temp',
+          shapes: path.calculatedOffset.offsetShapes
+        };
+      }
+      
+      const leadResult = calculateLeads(leadCalculationChain, leadInConfig, leadOutConfig, path.cutDirection, part);
       
       if (leadResult.leadOut && leadResult.leadOut.points.length > 0) {
         // Return the last point of the lead-out (end of lead-out)
@@ -82,7 +92,15 @@ function getPathEndPoint(path: Path, chain: Chain, part?: DetectedPart): Point2D
     }
   }
   
-  // Fallback to chain end point
+  // Fallback to chain end point (use offset if available)
+  if (path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0) {
+    const offsetChain: Chain = {
+      id: chain.id + '_offset_temp',
+      shapes: path.calculatedOffset.offsetShapes
+    };
+    return getChainEndPoint(offsetChain);
+  }
+  
   return getChainEndPoint(chain);
 }
 
