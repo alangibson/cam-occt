@@ -33,10 +33,6 @@
     rightColumnStorageKey="cam-occt-edit-right-column-width"
   >
     <svelte:fragment slot="left">
-      <AccordionPanel title="Display Units" isExpanded={true}>
-        <Units />
-      </AccordionPanel>
-      
       <AccordionPanel title="Layers" isExpanded={true}>
         <LayersList />
       </AccordionPanel>
@@ -66,7 +62,11 @@
     </svelte:fragment>
 
     <svelte:fragment slot="right">
-      <AccordionPanel title="Shape Properties" isExpanded={true}>
+      <AccordionPanel title="Display Units" isExpanded={true}>
+        <Units />
+      </AccordionPanel>
+      
+      <AccordionPanel title="Shape" isExpanded={true}>
         <ShapeProperties />
       </AccordionPanel>
     </svelte:fragment>

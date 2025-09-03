@@ -149,7 +149,7 @@
   >
     <svelte:fragment slot="left">
       {#if chains.length > 0}
-        <AccordionPanel title="Chains ({chains.length})" isExpanded={true}>
+        <AccordionPanel title="Chains" isExpanded={true}>
           <div class="chain-list">
             {#each chains as chain (chain.id)}
               <div 

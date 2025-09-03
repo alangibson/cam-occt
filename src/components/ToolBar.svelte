@@ -55,13 +55,6 @@
       >
         Rotate
       </button>
-      
-      <button
-        on:click={() => drawingStore.clearSelection()}
-        disabled={selectedCount === 0}
-      >
-        Clear Selection
-      </button>
     </div>
     
   </div>

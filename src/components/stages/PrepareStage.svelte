@@ -674,7 +674,7 @@
         {/if}
       </AccordionPanel>
 
-      <AccordionPanel title="Chains{detectedChains.length > 0 ? ` (${detectedChains.length} chains with ${detectedChains.reduce((sum, chain) => sum + chain.shapes.length, 0)} connected shapes)` : ''}" isExpanded={true}>
+      <AccordionPanel title="Chains" isExpanded={true}>
         {#if detectedChains.length > 0}
           <div class="chain-summary">
             {#each chainNormalizationResults as result}
@@ -690,7 +690,6 @@
                     {result.canTraverse ? '✓' : '✗'}
                   </span>
                 </div>
-                <div class="chain-description">{result.description}</div>
               </div>
             {/each}
           </div>
@@ -1012,7 +1011,7 @@
         </details>
       </AccordionPanel>
       {#if selectedChain && selectedChainAnalysis}
-        <AccordionPanel title="Chain Details" isExpanded={true}>
+        <AccordionPanel title="Chain" isExpanded={true}>
           <div class="chain-detail">
             <div class="chain-detail-header">
               <span class="chain-id">{selectedChain.id}</span>
@@ -1079,7 +1078,7 @@
       {/if}
 
       {#if chainTraversalIssues.length > 0}
-        <AccordionPanel title="Chain Traversal Issues" isExpanded={true}>
+        <AccordionPanel title="Problems" isExpanded={true}>
           <div class="traversal-info">
             <p class="traversal-description">
               Chains should be traversable from start to end, with each shape connecting end-to-start with the next shape.
