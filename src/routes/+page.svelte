@@ -6,14 +6,40 @@
   import ToolTable from '../components/ToolTable.svelte';
   import { workflowStore } from '../lib/stores/workflow';
   import { uiStore } from '../lib/stores/ui';
+  import { drawingStore } from '../lib/stores/drawing';
   import { 
     restoreApplicationState, 
     setupAutoSave,
-    saveApplicationState 
+    saveApplicationState,
+    clearApplicationState 
   } from '../lib/stores/persistence';
   import { migrateLegacyData } from '../lib/utils/migration';
+  import { prepareStageStore } from '../lib/stores/prepare-stage';
+  import { leadWarningsStore } from '../lib/stores/lead-warnings';
+  import { offsetWarningsStore } from '../lib/stores/offset-warnings';
   
   let cleanupAutoSave: (() => void) | null = null;
+  
+  function clearDrawingState() {
+    // Reset drawing store to empty state (this also clears chains, parts, paths, operations, rapids, tessellation, overlay)
+    drawingStore.setDrawing({
+      shapes: [],
+      bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
+      units: 'mm',
+      layers: {}
+    });
+    
+    // Clear additional stores that aren't cleared by setDrawing
+    prepareStageStore.reset();
+    leadWarningsStore.clearAllWarnings();
+    offsetWarningsStore.clearAllWarnings();
+    
+    // Reset workflow to import stage
+    workflowStore.reset();
+    
+    // Clear persisted state from localStorage
+    clearApplicationState();
+  }
   
   onMount(() => {
     // Migrate any legacy localStorage data
@@ -49,12 +75,20 @@
   <!-- Header -->
   <header class="app-header">
     <WorkflowBreadcrumbs />
-    <button 
-      class="tools-button" 
-      onclick={() => $uiStore.showToolTable ? uiStore.hideToolTable() : uiStore.showToolTable()}
-    >
-      Tools
-    </button>
+    <div class="header-buttons">
+      <button 
+        class="clear-button" 
+        onclick={() => clearDrawingState()}
+      >
+        Clear
+      </button>
+      <button 
+        class="tools-button" 
+        onclick={() => $uiStore.showToolTable ? uiStore.hideToolTable() : uiStore.showToolTable()}
+      >
+        Tools
+      </button>
+    </div>
   </header>
 
   <!-- Body -->
@@ -90,9 +124,31 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 1rem;
+    padding: 0 0.5rem;
     background: #f8f9fa;
     border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .header-buttons {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .clear-button {
+    padding: 0.5rem 1rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .clear-button:hover {
+    background: #dc2626;
   }
   
   .tools-button {

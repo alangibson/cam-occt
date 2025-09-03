@@ -90,11 +90,11 @@
   .resizable-column {
     background-color: #f5f5f5;
     border-right: 1px solid #e5e7eb;
-    padding: 1rem;
+    padding: 0.5rem;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
     min-height: 0; /* Allow flex child to shrink */
     flex-shrink: 0; /* Prevent column from shrinking */
     position: relative; /* For resize handle positioning */
