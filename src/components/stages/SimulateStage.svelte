@@ -78,6 +78,17 @@
   let drawingState: any;
   let toolStoreState: any;
   
+  // Statistics
+  let totalCutDistance = 0;
+  let totalRapidDistance = 0;
+  let pierceCount = 0;
+  let estimatedCutTime = 0;
+  
+  // Reactive formatted statistics for display - updates when drawingState or values change
+  $: formattedCutDistance = drawingState ? formatDistance(totalCutDistance) : '0.0';
+  $: formattedRapidDistance = drawingState ? formatDistance(totalRapidDistance) : '0.0';
+  $: displayUnit = drawingState?.displayUnit || 'mm';
+  
   // Unsubscribe functions
   let unsubscribers: Array<() => void> = [];
 
@@ -153,9 +164,18 @@
     animationSteps = [];
     let currentTime = 0;
     
+    // Reset statistics
+    totalCutDistance = 0;
+    totalRapidDistance = 0;
+    pierceCount = 0;
+    estimatedCutTime = 0;
+    
     // Get ordered paths and rapids
     const orderedPaths = [...pathStoreState.paths].sort((a, b) => a.order - b.order);
     const rapids = rapidStoreState.rapids;
+    
+    // Count pierces (one per path)
+    pierceCount = orderedPaths.length;
     
     // Find starting position (first rapid start or first path start)
     if (rapids.length > 0) {
@@ -181,6 +201,9 @@
         const rapidRate = getRapidRateForPath(path); // Get rapid rate from path's tool
         const rapidTime = (rapidDistance / rapidRate) * 60; // Convert to seconds
         
+        // Update statistics
+        totalRapidDistance += rapidDistance;
+        
         animationSteps.push({
           type: 'rapid',
           path: null,
@@ -198,6 +221,10 @@
       const pathDistance = getPathDistance(path);
       const feedRate = path.feedRate || 1000; // Default feed rate
       const cutTime = (pathDistance / feedRate) * 60; // Convert to seconds (feedRate is units/min)
+      
+      // Update statistics
+      totalCutDistance += pathDistance;
+      estimatedCutTime += cutTime;
       
       animationSteps.push({
         type: 'cut',
@@ -933,6 +960,30 @@
     const remainingSeconds = Math.floor(seconds % 60);
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   }
+  
+  // Format distance with units
+  function formatDistance(distance: number): string {
+    if (!drawingState?.drawing) return '0.0';
+    const displayUnit = drawingState.displayUnit || 'mm';
+    
+    // Convert from drawing units to display units if needed
+    let displayDistance = distance;
+    if (drawingState.drawing.units !== displayUnit) {
+      // Convert between mm and inch
+      if (drawingState.drawing.units === 'mm' && displayUnit === 'inch') {
+        displayDistance = distance / 25.4;
+      } else if (drawingState.drawing.units === 'inch' && displayUnit === 'mm') {
+        displayDistance = distance * 25.4;
+      }
+    }
+    
+    return displayDistance.toFixed(1);
+  }
+  
+  // Get display unit string
+  function getDisplayUnit(): string {
+    return drawingState?.displayUnit || 'mm';
+  }
 
   // Load column widths from localStorage on mount
   onMount(() => {
@@ -1062,19 +1113,19 @@
         <div class="stats-grid">
           <div class="stat-item">
             <span class="stat-label">Total Length:</span>
-            <span class="stat-value">-- mm</span>
+            <span class="stat-value">{formattedCutDistance} {displayUnit}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Cut Time:</span>
-            <span class="stat-value">-- min</span>
+            <span class="stat-value">{formatTime(estimatedCutTime)}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Pierce Count:</span>
-            <span class="stat-value">--</span>
+            <span class="stat-value">{pierceCount}</span>
           </div>
           <div class="stat-item">
             <span class="stat-label">Rapid Distance:</span>
-            <span class="stat-value">-- mm</span>
+            <span class="stat-value">{formattedRapidDistance} {displayUnit}</span>
           </div>
         </div>
       </AccordionPanel>
