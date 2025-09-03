@@ -23,6 +23,13 @@ export interface PrepareStageState {
   
   // Analysis flags
   lastAnalysisTimestamp: number;
+  
+  // State tracking for undo operations
+  originalShapesBeforeNormalization: any[] | null;
+  originalChainsBeforeNormalization: any[] | null;
+  originalShapesBeforeOptimization: any[] | null;
+  originalChainsBeforeOptimization: any[] | null;
+  partsDetected: boolean;
 }
 
 function createPrepareStageStore(): {
@@ -34,13 +41,25 @@ function createPrepareStageStore(): {
   setColumnWidths: (leftWidth: number, rightWidth: number) => void;
   reset: () => void;
   getChainNormalizationResult: (chainId: string) => ChainNormalizationResult | null;
+  saveOriginalStateForNormalization: (shapes: any[], chains: any[]) => void;
+  restoreOriginalStateFromNormalization: () => { shapes: any[], chains: any[] } | null;
+  clearOriginalNormalizationState: () => void;
+  saveOriginalStateForOptimization: (shapes: any[], chains: any[]) => void;
+  restoreOriginalStateFromOptimization: () => { shapes: any[], chains: any[] } | null;
+  clearOriginalOptimizationState: () => void;
+  setPartsDetected: (detected: boolean) => void;
 } {
   const { subscribe, set, update } = writable<PrepareStageState>({
     algorithmParams: { ...DEFAULT_ALGORITHM_PARAMETERS },
     chainNormalizationResults: [],
     leftColumnWidth: 280,
     rightColumnWidth: 280,
-    lastAnalysisTimestamp: 0
+    lastAnalysisTimestamp: 0,
+    originalShapesBeforeNormalization: null,
+    originalChainsBeforeNormalization: null,
+    originalShapesBeforeOptimization: null,
+    originalChainsBeforeOptimization: null,
+    partsDetected: false
   });
 
   return {
@@ -117,7 +136,12 @@ function createPrepareStageStore(): {
         chainNormalizationResults: [],
         leftColumnWidth: 280,
         rightColumnWidth: 280,
-        lastAnalysisTimestamp: 0
+        lastAnalysisTimestamp: 0,
+        originalShapesBeforeNormalization: null,
+        originalChainsBeforeNormalization: null,
+        originalShapesBeforeOptimization: null,
+        originalChainsBeforeOptimization: null,
+        partsDetected: false
       });
     },
     
@@ -131,6 +155,94 @@ function createPrepareStageStore(): {
         return state;
       });
       return result;
+    },
+    
+    /**
+     * Save original state before normalization
+     */
+    saveOriginalStateForNormalization: (shapes: any[], chains: any[]) => {
+      update(state => ({
+        ...state,
+        originalShapesBeforeNormalization: JSON.parse(JSON.stringify(shapes)),
+        originalChainsBeforeNormalization: JSON.parse(JSON.stringify(chains))
+      }));
+    },
+    
+    /**
+     * Restore original state from before normalization
+     */
+    restoreOriginalStateFromNormalization: (): { shapes: any[], chains: any[] } | null => {
+      let result: { shapes: any[], chains: any[] } | null = null;
+      update(state => {
+        if (state.originalShapesBeforeNormalization && state.originalChainsBeforeNormalization) {
+          result = {
+            shapes: JSON.parse(JSON.stringify(state.originalShapesBeforeNormalization)),
+            chains: JSON.parse(JSON.stringify(state.originalChainsBeforeNormalization))
+          };
+        }
+        return state;
+      });
+      return result;
+    },
+    
+    /**
+     * Clear saved original state
+     */
+    clearOriginalNormalizationState: () => {
+      update(state => ({
+        ...state,
+        originalShapesBeforeNormalization: null,
+        originalChainsBeforeNormalization: null
+      }));
+    },
+    
+    /**
+     * Save original state before optimization
+     */
+    saveOriginalStateForOptimization: (shapes: any[], chains: any[]) => {
+      update(state => ({
+        ...state,
+        originalShapesBeforeOptimization: JSON.parse(JSON.stringify(shapes)),
+        originalChainsBeforeOptimization: JSON.parse(JSON.stringify(chains))
+      }));
+    },
+    
+    /**
+     * Restore original state from before optimization
+     */
+    restoreOriginalStateFromOptimization: (): { shapes: any[], chains: any[] } | null => {
+      let result: { shapes: any[], chains: any[] } | null = null;
+      update(state => {
+        if (state.originalShapesBeforeOptimization && state.originalChainsBeforeOptimization) {
+          result = {
+            shapes: JSON.parse(JSON.stringify(state.originalShapesBeforeOptimization)),
+            chains: JSON.parse(JSON.stringify(state.originalChainsBeforeOptimization))
+          };
+        }
+        return state;
+      });
+      return result;
+    },
+    
+    /**
+     * Clear saved original optimization state
+     */
+    clearOriginalOptimizationState: () => {
+      update(state => ({
+        ...state,
+        originalShapesBeforeOptimization: null,
+        originalChainsBeforeOptimization: null
+      }));
+    },
+    
+    /**
+     * Set parts detection state
+     */
+    setPartsDetected: (detected: boolean) => {
+      update(state => ({
+        ...state,
+        partsDetected: detected
+      }));
     }
   };
 }

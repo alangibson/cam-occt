@@ -4,8 +4,8 @@
   import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
-  import { chainStore, setChains, setTolerance, selectChain } from '../../lib/stores/chains';
-  import { partStore, setParts, highlightPart, clearHighlight } from '../../lib/stores/parts';
+  import { chainStore, setChains, setTolerance, selectChain, clearChains } from '../../lib/stores/chains';
+  import { partStore, setParts, highlightPart, clearHighlight, clearParts } from '../../lib/stores/parts';
   import { detectShapeChains } from '../../lib/algorithms/chain-detection';
   import { detectParts, type PartDetectionWarning } from '../../lib/algorithms/part-detection';
   import { analyzeChainTraversal, normalizeChain } from '../../lib/algorithms/chain-normalization';
@@ -93,6 +93,18 @@
   // Tessellation state
   $: tessellationActive = $tessellationStore.isActive;
   
+  // Chain detection state
+  $: chainsDetected = detectedChains.length > 0;
+  
+  // Normalization state - check if original state exists AND chains are detected
+  $: normalizationApplied = chainsDetected && $prepareStageStore.originalShapesBeforeNormalization !== null && $prepareStageStore.originalChainsBeforeNormalization !== null;
+  
+  // Optimization state - check if original state exists AND chains are detected
+  $: optimizationApplied = chainsDetected && $prepareStageStore.originalShapesBeforeOptimization !== null && $prepareStageStore.originalChainsBeforeOptimization !== null;
+  
+  // Parts detection state - use store flag AND chains must be detected
+  $: partsDetectionApplied = chainsDetected && $prepareStageStore.partsDetected;
+  
   // Auto-analyze chains for traversal issues when chains change
   $: {
     if (detectedChains.length > 0) {
@@ -119,6 +131,38 @@
   }
 
   function handleDetectChains() {
+    if (chainsDetected && !isDetectingChains) {
+      // Restore drawing to the earliest saved state
+      // Priority: normalization first (if available), then optimization, then current state
+      if ($prepareStageStore.originalShapesBeforeNormalization !== null) {
+        const originalState = prepareStageStore.restoreOriginalStateFromNormalization();
+        if (originalState) {
+          drawingStore.replaceAllShapes(originalState.shapes);
+          console.log('Restored drawing to state before normalization');
+        }
+      } else if ($prepareStageStore.originalShapesBeforeOptimization !== null) {
+        const originalState = prepareStageStore.restoreOriginalStateFromOptimization();
+        if (originalState) {
+          drawingStore.replaceAllShapes(originalState.shapes);
+          console.log('Restored drawing to state before optimization');
+        }
+      }
+      
+      // Clear chains and all dependent state
+      clearChains();
+      clearParts();
+      tessellationStore.clearTessellation();
+      prepareStageStore.clearChainNormalizationResults();
+      prepareStageStore.clearOriginalNormalizationState();
+      prepareStageStore.clearOriginalOptimizationState();
+      prepareStageStore.setPartsDetected(false);
+      overlayStore.clearChainEndpoints('prepare');
+      overlayStore.clearTessellationPoints('prepare');
+      selectChain(null);
+      console.log('Cleared all chains and dependent state');
+      return;
+    }
+
     isDetectingChains = true;
     
     try {
@@ -147,6 +191,30 @@
   }
 
   async function handleNormalizeChains() {
+    // Handle clear operation if normalization has been applied
+    if (normalizationApplied && !isNormalizing) {
+      const originalState = prepareStageStore.restoreOriginalStateFromNormalization();
+      if (originalState) {
+        // Restore original shapes to drawing
+        drawingStore.replaceAllShapes(originalState.shapes);
+        
+        // Restore original chains
+        setChains(originalState.chains);
+        
+        // Clear the saved original state
+        prepareStageStore.clearOriginalNormalizationState();
+        
+        // Update overlays
+        if ($workflowStore.currentStage === 'prepare') {
+          const chainEndpoints = generateChainEndpoints(originalState.chains);
+          overlayStore.setChainEndpoints('prepare', chainEndpoints);
+        }
+        
+        console.log('Restored original chains before normalization');
+        return;
+      }
+    }
+
     const currentDrawing = $drawingStore.drawing;
     if (!currentDrawing || !currentDrawing.shapes) {
       console.warn('No drawing available to normalize');
@@ -161,6 +229,9 @@
     isNormalizing = true;
     
     try {
+      // Save original state before normalization
+      prepareStageStore.saveOriginalStateForNormalization(currentDrawing.shapes, detectedChains);
+      
       // Normalize all chains
       const normalizedChains = detectedChains.map(chain => normalizeChain(chain, algorithmParams.chainNormalization));
       
@@ -197,6 +268,30 @@
   }
 
   async function handleOptimizeStarts() {
+    // Handle clear operation if optimization has been applied
+    if (optimizationApplied && !isOptimizingStarts) {
+      const originalState = prepareStageStore.restoreOriginalStateFromOptimization();
+      if (originalState) {
+        // Restore original shapes to drawing
+        drawingStore.replaceAllShapes(originalState.shapes);
+        
+        // Restore original chains
+        setChains(originalState.chains);
+        
+        // Clear the saved original state
+        prepareStageStore.clearOriginalOptimizationState();
+        
+        // Update overlays
+        if ($workflowStore.currentStage === 'prepare') {
+          const chainEndpoints = generateChainEndpoints(originalState.chains);
+          overlayStore.setChainEndpoints('prepare', chainEndpoints);
+        }
+        
+        console.log('Restored original chains before optimization');
+        return;
+      }
+    }
+
     const currentDrawing = $drawingStore.drawing;
     if (!currentDrawing || !currentDrawing.shapes) {
       console.warn('No drawing available to optimize');
@@ -211,6 +306,9 @@
     isOptimizingStarts = true;
     
     try {
+      // Save original state before optimization
+      prepareStageStore.saveOriginalStateForOptimization(currentDrawing.shapes, detectedChains);
+      
       // Optimize start points for all chains
       const optimizedShapes = optimizeStartPoints(detectedChains, tolerance);
       
@@ -287,6 +385,15 @@
   }
   
   async function handleDetectParts() {
+    // Handle clear operation if parts have been detected
+    if (partsDetectionApplied && !isDetectingParts) {
+      // Clear parts and reset detection state
+      clearParts();
+      prepareStageStore.setPartsDetected(false);
+      console.log('Cleared detected parts');
+      return;
+    }
+
     if (detectedChains.length === 0) {
       console.warn('No chains detected. Please detect chains first.');
       return;
@@ -320,10 +427,14 @@
       const allWarnings = [...openChainWarnings, ...partResult.warnings];
       setParts(partResult.parts, allWarnings);
       
+      // Mark parts as detected in the store
+      prepareStageStore.setPartsDetected(true);
+      
       console.log(`Detected ${partResult.parts.length} parts with ${allWarnings.length} warnings`);
     } catch (error) {
       console.error('Error detecting parts:', error);
       setParts([], []);
+      prepareStageStore.setPartsDetected(false);
     } finally {
       isDetectingParts = false;
     }
@@ -744,12 +855,13 @@
         <!-- Decompose Polylines -->
         <details class="param-group-details">
           <summary class="param-group-summary">
+            <span class="action-title">Decompose Polylines</span>
             <button 
-              class="action-title-button"
+              class="apply-button"
               on:click|stopPropagation={handleDecomposePolylines}
               disabled={!$drawingStore.drawing}
             >
-              Decompose Polylines
+              Apply
             </button>
           </summary>
           <div class="param-group-content">
@@ -762,12 +874,13 @@
         <!-- Join Co-linear Lines -->
         <details class="param-group-details">
           <summary class="param-group-summary">
+            <span class="action-title">Join Co-linear Lines</span>
             <button 
-              class="action-title-button"
+              class="apply-button"
               on:click|stopPropagation={handleJoinColinearLines}
               disabled={!$drawingStore.drawing}
             >
-              Join Co-linear Lines
+              Apply
             </button>
           </summary>
           <div class="param-group-content">
@@ -780,12 +893,13 @@
         <!-- Translate to Positive -->
         <details class="param-group-details">
           <summary class="param-group-summary">
+            <span class="action-title">Translate to Positive</span>
             <button 
-              class="action-title-button"
+              class="apply-button"
               on:click|stopPropagation={handleTranslateToPositive}
               disabled={!$drawingStore.drawing}
             >
-              Translate to Positive
+              Apply
             </button>
           </summary>
           <div class="param-group-content">
@@ -798,12 +912,14 @@
         <!-- Detect Chains -->
         <details class="param-group-details">
           <summary class="param-group-summary">
+            <span class="action-title">Detect Chains</span>
             <button 
-              class="action-title-button"
+              class="apply-button"
+              class:clear-button={chainsDetected && !isDetectingChains}
               on:click|stopPropagation={handleDetectChains}
               disabled={isDetectingChains}
             >
-              {isDetectingChains ? 'Detecting...' : 'Detect Chains'}
+              {isDetectingChains ? 'Detecting...' : chainsDetected ? 'Clear' : 'Apply'}
             </button>
           </summary>
           <div class="param-group-content">
@@ -833,12 +949,14 @@
         <!-- Normalize Chains -->
         <details class="param-group-details">
           <summary class="param-group-summary">
+            <span class="action-title">Normalize Chains</span>
             <button 
-              class="action-title-button"
+              class="apply-button"
+              class:clear-button={normalizationApplied && !isNormalizing}
               on:click|stopPropagation={handleNormalizeChains}
               disabled={isNormalizing || detectedChains.length === 0}
             >
-              {isNormalizing ? 'Normalizing...' : 'Normalize Chains'}
+              {isNormalizing ? 'Normalizing...' : normalizationApplied ? 'Clear' : 'Apply'}
             </button>
           </summary>
           <div class="param-group-content">
@@ -886,12 +1004,14 @@
         <!-- Optimize Starts -->
         <details class="param-group-details">
           <summary class="param-group-summary">
+            <span class="action-title">Optimize Starts</span>
             <button 
-              class="action-title-button"
+              class="apply-button"
+              class:clear-button={optimizationApplied && !isOptimizingStarts}
               on:click|stopPropagation={handleOptimizeStarts}
               disabled={isOptimizingStarts || detectedChains.length === 0}
             >
-              {isOptimizingStarts ? 'Optimizing...' : 'Optimize Starts'}
+              {isOptimizingStarts ? 'Optimizing...' : optimizationApplied ? 'Clear' : 'Apply'}
             </button>
           </summary>
           <div class="param-group-content">
@@ -904,12 +1024,14 @@
         <!-- Tessellate Chains -->
         <details class="param-group-details">
           <summary class="param-group-summary">
+            <span class="action-title">Tessellate Chains</span>
             <button 
-              class="action-title-button"
+              class="apply-button"
+              class:clear-button={tessellationActive && !isTessellating}
               on:click|stopPropagation={handleTessellateChains}
               disabled={isTessellating || detectedChains.length === 0}
             >
-              {isTessellating ? 'Tessellating...' : tessellationActive ? 'Clear Tessellation' : 'Tessellate Chains'}
+              {isTessellating ? 'Tessellating...' : tessellationActive ? 'Clear' : 'Apply'}
             </button>
           </summary>
           <div class="param-group-content">
@@ -922,12 +1044,14 @@
         <!-- Detect Parts -->
         <details class="param-group-details">
           <summary class="param-group-summary">
+            <span class="action-title">Detect Parts</span>
             <button 
-              class="action-title-button"
+              class="apply-button"
+              class:clear-button={partsDetectionApplied && !isDetectingParts}
               on:click|stopPropagation={handleDetectParts}
               disabled={isDetectingParts || detectedChains.length === 0}
             >
-              {isDetectingParts ? 'Detecting...' : 'Detect Parts'}
+              {isDetectingParts ? 'Detecting...' : partsDetectionApplied ? 'Clear' : 'Apply'}
             </button>
           </summary>
           <div class="param-group-content">
@@ -1215,28 +1339,45 @@
     line-height: 1.4;
   }
 
-  /* Prepare action button in summary */
-  .action-title-button {
-    padding: 0.5rem 1rem;
+  /* Prepare action title and apply button styles */
+  .action-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    flex: 1;
+  }
+
+  .apply-button {
+    padding: 0.25rem 0.75rem;
     background-color: #4f46e5;
     color: white;
     border: none;
-    border-radius: 0.375rem;
-    font-weight: 600;
+    border-radius: 0.25rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
     font-size: 0.75rem;
     flex-shrink: 0;
+    margin-left: auto;
+    margin-right: 2rem;
   }
 
-  .action-title-button:hover:not(:disabled) {
+  .apply-button:hover:not(:disabled) {
     background-color: #4338ca;
   }
 
-  .action-title-button:disabled {
+  .apply-button:disabled {
     background-color: #9ca3af;
     cursor: not-allowed;
     color: #6b7280;
+  }
+
+  .apply-button.clear-button {
+    background-color: #dc2626;
+  }
+
+  .apply-button.clear-button:hover:not(:disabled) {
+    background-color: #b91c1c;
   }
 
   .prepare-action-description {
