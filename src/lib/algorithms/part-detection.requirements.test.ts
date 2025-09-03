@@ -15,8 +15,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection';
-import { normalizeChain } from './chain-normalization';
+import { detectShapeChains } from './chain-detection/chain-detection';
+import { normalizeChain } from './chain-normalization/chain-normalization';
 import { detectParts } from './part-detection';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { evaluateNURBS } from '../geometry/nurbs';

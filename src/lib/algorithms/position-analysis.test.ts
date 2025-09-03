@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection';
-import { normalizeChain } from './chain-normalization';
+import { detectShapeChains } from './chain-detection/chain-detection';
+import { normalizeChain } from './chain-normalization/chain-normalization';
 import { polylineToPoints } from '../geometry/polyline';
 
 describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {

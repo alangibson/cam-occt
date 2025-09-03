@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { LeadType, CutDirection } from '../types/direction';
-import type { ShapeChain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
 import type { Shape } from '../../lib/types/geometry';
 
 describe('Lead Calculation with Validation Pipeline', () => {
   // Helper to create a simple line chain
-  function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): ShapeChain {
+  function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): Chain {
     const shape: Shape = {
       id: 'line1',
       type: 'line',
@@ -22,7 +22,7 @@ describe('Lead Calculation with Validation Pipeline', () => {
   }
 
   // Helper to create a circle chain
-  function createCircleChain(center: { x: number; y: number }, radius: number): ShapeChain {
+  function createCircleChain(center: { x: number; y: number }, radius: number): Chain {
     const shape: Shape = {
       id: 'circle1',
       type: 'circle',
@@ -81,7 +81,7 @@ describe('Lead Calculation with Validation Pipeline', () => {
     });
 
     it('should handle empty chain validation', () => {
-      const emptyChain: ShapeChain = { id: 'empty', shapes: [] };
+      const emptyChain: Chain = { id: 'empty', shapes: [] };
       const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
       const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
 

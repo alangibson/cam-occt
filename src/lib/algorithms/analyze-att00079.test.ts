@@ -5,7 +5,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection';
+import { detectShapeChains } from './chain-detection/chain-detection';
 import { detectParts } from './part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
@@ -13,7 +13,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Shape } from '../../lib/types';
 import type { Line, Circle, Arc, Polyline } from '../../lib/types/geometry';
-import type { ShapeChain } from './chain-detection';
+import type { Chain as ShapeChain } from './chain-detection/chain-detection';
 
 const problematicChains = ['chain-34', 'chain-65', 'chain-70', 'chain-85', 'chain-90'];
 

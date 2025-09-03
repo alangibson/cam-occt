@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import type { Shape } from '../../lib/types';
-import type { ShapeChain } from './chain-detection';
+import type { ShapeChain } from './chain-detection/chain-detection';
 import { CutDirection, LeadType } from '../types/direction';
 import type { Line, Arc } from '../types/geometry';
 import { createPolylineFromVertices } from '../geometry/polyline';

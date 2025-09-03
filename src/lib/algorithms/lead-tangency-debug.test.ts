@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { ShapeChain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { Shape } from '../../lib/types/geometry';
 
 describe('Lead Tangency Debug', () => {
-  function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): ShapeChain {
+  function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): Chain {
     const shape: Shape = {
       id: 'shape1',
       type: LeadType.LINE,

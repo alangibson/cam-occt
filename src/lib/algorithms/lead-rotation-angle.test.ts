@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { LeadType } from '../types/direction';
-import type { ShapeChain } from './chain-detection';
+import type { ShapeChain } from './chain-detection/chain-detection';
 import type { Point2D } from '../../lib/types/geometry';
 
 describe('Lead Rotation Angle', () => {

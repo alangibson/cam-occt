@@ -2,12 +2,12 @@ import { describe, it, expect, beforeAll } from 'vitest';
 import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { offsetChain } from '../chain/offset';
-import { detectShapeChains } from '../../chain-detection';
-import { normalizeChain } from '../../chain-normalization';
+import { detectShapeChains } from '../../chain-detection/chain-detection';
+import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { parseDXF } from '../../../parsers/dxf-parser';
 import type { Shape, Line, Ellipse } from '../../../../lib/types/geometry';
 import type { OffsetChain } from '../chain/types';
-import type { ShapeChain } from '../../chain-detection';
+import type { ShapeChain } from '../../chain-detection/chain-detection';
 import { SVGBuilder } from '../../../test/svg-builder';
 
 describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {

@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection';
+import { detectShapeChains } from './chain-detection/chain-detection';
 import { squashLayers, getLayerStatistics, validateSquashing } from './layer-squashing';
 import { readFileSync } from 'fs';
 import { join } from 'path';

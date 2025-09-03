@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection';
+import { detectShapeChains } from './chain-detection/chain-detection';
 import { detectParts } from './part-detection';
-import { normalizeChain } from './chain-normalization';
+import { normalizeChain } from './chain-normalization/chain-normalization';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { ShapeChain } from './chain-detection';
+import type { Chain as ShapeChain } from './chain-detection/chain-detection';
 import type { Shape, Point2D } from '../../lib/types';
 
 // Helper function to test chain closure (copied from part-detection.ts)

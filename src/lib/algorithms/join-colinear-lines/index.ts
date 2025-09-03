@@ -82,7 +82,7 @@ function createJoinedLine(lines: Line[]): Line {
 /**
  * Join consecutive collinear line segments within a polyline
  */
-function joinColinearLinesInPolyline(polyline: Polyline, tolerance: number = TOLERANCE): Polyline {
+export function joinColinearLinesInPolyline(polyline: Polyline, tolerance: number = TOLERANCE): Polyline {
   if (!polyline.shapes || polyline.shapes.length === 0) {
     return polyline;
   }
@@ -150,7 +150,7 @@ function joinColinearLinesInPolyline(polyline: Polyline, tolerance: number = TOL
 /**
  * Join consecutive collinear lines within each chain
  */
-function joinColinearLinesInChains(chains: Chain[], tolerance: number = TOLERANCE): Chain[] {
+export function joinColinearLinesInChains(chains: Chain[], tolerance: number = TOLERANCE): Chain[] {
   return chains.map(chain => ({
     ...chain,
     shapes: joinColinearLinesInShapes(chain.shapes, tolerance)

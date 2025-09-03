@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { ShapeChain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
 import type { Shape, Point2D } from '../../lib/types/geometry';
 
@@ -27,7 +27,7 @@ describe('Lead Concave Area Fix', () => {
   }
 
   // Helper to create a complex shape that has both convex and concave areas
-  function createComplexConcaveShape(): ShapeChain {
+  function createComplexConcaveShape(): Chain {
     // Create a shape that resembles the problematic geometry from ADLER.dxf
     // This will have concave areas where centroid-based logic fails
     const points: Point2D[] = [
@@ -145,7 +145,7 @@ describe('Lead Concave Area Fix', () => {
       layer: 'layer1'
     });
     
-    const chain: ShapeChain = { id: 'simple_concave', shapes };
+    const chain: Chain = { id: 'simple_concave', shapes };
     
     const part: DetectedPart = {
       id: 'part1',

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { detectParts } from './part-detection';
-import type { ShapeChain } from './chain-detection';
+import type { Chain as ShapeChain } from './chain-detection/chain-detection';
 import { generateId } from '../utils/id';
 import { CutDirection, LeadType } from '../types/direction';
 

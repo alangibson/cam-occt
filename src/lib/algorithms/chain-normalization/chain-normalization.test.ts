@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
-import type { ShapeChain } from './chain-detection';
+import type { ShapeChain } from './chain-detection/chain-detection';
 import type { Shape, Polyline, Line, Arc } from '../../types';
 import { CutDirection, LeadType } from '../../types/direction';
 import { polylineToPoints, polylineToVertices, createPolylineFromVertices } from '../../geometry/polyline';

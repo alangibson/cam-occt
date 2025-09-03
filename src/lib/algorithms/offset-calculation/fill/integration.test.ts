@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { offsetChain } from '../chain/offset';
-import { detectShapeChains } from '../../chain-detection';
-import { normalizeChain } from '../../chain-normalization';
+import { detectShapeChains } from '../../chain-detection/chain-detection';
+import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import type { Shape } from '../../../types/geometry';
 import { createPolylineFromVertices } from '../../../geometry/polyline';
 

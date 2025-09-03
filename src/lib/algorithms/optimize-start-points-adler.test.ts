@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import type { Shape } from '../../lib/types';
-import type { ShapeChain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import { CutDirection, LeadType } from '../types/direction';
 import { createPolylineFromVertices } from '../geometry/polyline';
 
@@ -10,7 +10,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
 
   it('should optimize multiple closed polyline chains like in ADLER.dxf', () => {
     // Simulate typical ADLER.dxf chains - closed polylines with multiple segments
-    const chains: ShapeChain[] = [];
+    const chains: Chain[] = [];
     
     // Create 5 closed chains similar to what's in ADLER.dxf
     for (let i: number = 0; i < 5; i++) {
@@ -51,7 +51,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
     }
 
     // Add a chain with a line segment (which should be preferred for splitting)
-    const mixedChain: ShapeChain = {
+    const mixedChain: Chain = {
       id: 'chain-mixed',
       shapes: [
         {
@@ -108,7 +108,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
 
   it('should handle chains where all shapes are complex (no simple shapes to split)', () => {
     // Create a chain with only polylines and splines
-    const complexChain: ShapeChain = {
+    const complexChain: Chain = {
       id: 'complex-chain',
       shapes: [
         {
@@ -157,7 +157,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
   it('should show why ADLER.dxf chains are not being optimized', () => {
     // Most realistic ADLER.dxf scenario: closed chains made of polylines with bulges
     // that have been converted to polylines
-    const adlerStyleChain: ShapeChain = {
+    const adlerStyleChain: Chain = {
       id: 'adler-chain',
       shapes: [
         {

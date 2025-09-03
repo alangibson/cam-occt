@@ -3,8 +3,8 @@ import { optimizeStartPoints } from './optimize-start-points';
 import { createPolylineFromVertices, polylineToPoints } from '$lib/geometry/polyline';
 import type { Shape } from '../../lib/types';
 import type { Polyline } from '../../lib/types/geometry';
-import type { ShapeChain } from './chain-detection';
-import { CutDirection, LeadType } from '../types/direction';
+import type { Chain } from './chain-detection/chain-detection';
+import { LeadType } from '../types/direction';
 
 describe('optimizeStartPoints - polyline splitting', () => {
   const tolerance = 0.1;
@@ -21,7 +21,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
       ], false, { id: 'polyline2' })
     ];
 
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain1',
       shapes
     };
@@ -74,7 +74,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
       }
     ];
 
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'L-chain',
       shapes
     };
@@ -119,7 +119,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
       ], false, { id: 'closing-polyline' })
     ];
 
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'complex-chain',
       shapes
     };
@@ -194,7 +194,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
       }
     };
 
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain-with-arcs',
       shapes: [polylineWithArcs]
     };

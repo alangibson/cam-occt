@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { ShapeChain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
 import type { Shape, Point2D } from '../../lib/types/geometry';
 
@@ -13,7 +13,7 @@ describe('Lead Solid Area Avoidance', () => {
     minY: number, 
     maxX: number, 
     maxY: number
-  ): ShapeChain {
+  ): Chain {
     const shapes: Shape[] = [
       {
         id: `${id}_bottom`,

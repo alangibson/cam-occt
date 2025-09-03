@@ -1,13 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { ShapeChain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
 import type { Shape } from '../../lib/types/geometry';
 
 describe('calculateLeads', () => {
   // Helper to create a simple line chain
-  function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): ShapeChain {
+  function createLineChain(start: { x: number; y: number }, end: { x: number; y: number }): Chain {
     const shape: Shape = {
       id: 'shape1',
       type: LeadType.LINE,
@@ -22,7 +22,7 @@ describe('calculateLeads', () => {
   }
 
   // Helper to create a circle chain
-  function createCircleChain(center: { x: number; y: number }, radius: number): ShapeChain {
+  function createCircleChain(center: { x: number; y: number }, radius: number): Chain {
     const shape: Shape = {
       id: 'shape1',
       type: 'circle',
@@ -189,7 +189,7 @@ describe('calculateLeads', () => {
 
   describe('edge cases', () => {
     it('should handle empty chain', () => {
-      const chain: ShapeChain = {
+      const chain: Chain = {
         id: 'chain1',
         shapes: []
       };

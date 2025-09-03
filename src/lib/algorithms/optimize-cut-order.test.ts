@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
 import type { Path } from '../stores/paths';
-import type { ShapeChain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { Shape, Ellipse, Spline, Polyline, Circle, Line } from '../../lib/types';
 import type { DetectedPart } from './part-detection';
 import { CutDirection, LeadType } from '../types/direction';
@@ -23,7 +23,7 @@ describe('Optimize Cut Order', () => {
     };
 
     // Create a chain with the ellipse
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain-1',
       shapes: [ellipseShape]
     };
@@ -41,7 +41,7 @@ describe('Optimize Cut Order', () => {
     };
 
     // Create a map of chains
-    const chains = new Map<string, ShapeChain>();
+    const chains = new Map<string, Chain>();
     chains.set('chain-1', chain);
 
     // Test with no parts
@@ -78,7 +78,7 @@ describe('Optimize Cut Order', () => {
     };
 
     // Create a chain with the spline
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain-1',
       shapes: [splineShape]
     };
@@ -96,7 +96,7 @@ describe('Optimize Cut Order', () => {
     };
 
     // Create a map of chains
-    const chains = new Map<string, ShapeChain>();
+    const chains = new Map<string, Chain>();
     chains.set('chain-1', chain);
 
     // Test with no parts
@@ -113,7 +113,7 @@ describe('Optimize Cut Order', () => {
 
   it('should handle all shape types without throwing errors', () => {
     const shapeTypes = ['line', 'arc', 'circle', 'polyline', 'spline', 'ellipse'];
-    const chains = new Map<string, ShapeChain>();
+    const chains = new Map<string, Chain>();
     const paths: Path[] = [];
 
     // Create a shape for each type
@@ -158,7 +158,7 @@ describe('Optimize Cut Order', () => {
         geometry
       };
 
-      const chain: ShapeChain = {
+      const chain: Chain = {
         id: `chain-${index}`,
         shapes: [shape]
       };

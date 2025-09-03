@@ -16,7 +16,7 @@ import { SVGBuilder } from '../../../test/svg-builder';
 import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';
 import { ChainOffsetResult, DEFAULT_CHAIN_OFFSET_PARAMETERS } from '../chain/types';
 import { offsetChain } from '../chain/offset';
-import { Chain } from '../../chain-detection';
+import { Chain } from '../../chain-detection/chain-detection';
 
 describe('Minimal Visual Validation Test', { timeout: 60000 }, () => {
   const outputDir = 'test-output/minimal-validation';

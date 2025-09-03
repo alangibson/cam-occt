@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { detectChainSide, isPointInsideChain, determineChainOrientation} from './side-detection';
 import type { Shape, Line, Arc, Circle } from '../../../../lib/types/geometry';
-import type { Chain } from '../../chain-detection';
-import { detectShapeChains } from '../../chain-detection';
-import { normalizeChain } from '../../chain-normalization';
+import type { Chain } from '../../chain-detection/chain-detection';
+import { detectShapeChains } from '../../chain-detection/chain-detection';
+import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '../../../utils/id';
 import { getShapeNormal, getShapeMidpoint } from '../../../../lib/geometry'
 

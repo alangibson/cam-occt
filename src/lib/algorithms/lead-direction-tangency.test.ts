@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { ShapeChain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import { createPolylineFromVertices } from '../geometry/polyline';
 
 describe('Lead Direction and Cut Direction Tangency', () => {
   // Create a simple circular chain for testing
-  function createCircleChain(center: { x: number; y: number }, radius: number, clockwise: boolean): ShapeChain {
+  function createCircleChain(center: { x: number; y: number }, radius: number, clockwise: boolean): Chain {
     return {
       id: 'test-circle',
       shapes: [{
@@ -21,7 +21,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
   }
 
   // Create a simple rectangular chain for testing
-  function createRectangleChain(x: number, y: number, width: number, height: number, clockwise: boolean): ShapeChain {
+  function createRectangleChain(x: number, y: number, width: number, height: number, clockwise: boolean): Chain {
     const vertices = clockwise ? [
       { x, y, bulge: 0 },
       { x: x + width, y, bulge: 0 },

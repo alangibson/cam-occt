@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { detectShapeChains } from '$lib/algorithms/chain-detection';
-import { normalizeChain } from '$lib/algorithms/chain-normalization';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import { offsetChain } from './offset';
 import type { Shape } from '$lib/types/geometry';
 import type { OffsetChain } from './types';

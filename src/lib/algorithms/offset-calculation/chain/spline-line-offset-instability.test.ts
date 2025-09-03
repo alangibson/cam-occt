@@ -3,8 +3,8 @@ import type { Shape, Spline, Line } from '../../../types/geometry';
 import { offsetShape } from '../offset/index';
 import { findShapeIntersections } from '../intersect';
 import { detectChainSide } from './side-detection';
-import { detectShapeChains } from '../../chain-detection';
-import { normalizeChain } from '../../chain-normalization';
+import { detectShapeChains } from '../../chain-detection/chain-detection';
+import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { createPolylineFromVertices } from '../../../geometry/polyline';
 
 describe('Spline-Line Offset Intersection Instability', () => {

@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { parseDXF } from '../../../parsers/dxf-parser';
-import { detectShapeChains } from '../../chain-detection';
+import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { offsetChain } from './offset';
 import { scaleShape } from '../../../geometry';
 import { getPhysicalScaleFactor } from '../../../utils/units';
 import { calculateDynamicTolerance } from '../../../geometry/bounding-box';
 import type { Polyline, Shape, Line, Drawing } from '../../../types/geometry';
-import type { Chain } from '../../chain-detection';
-import { normalizeChain } from '../../chain-normalization';
+import type { Chain } from '../../chain-detection/chain-detection';
+import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '../../../utils/id';
 
 describe('offsetChain Polyline Support', () => {
