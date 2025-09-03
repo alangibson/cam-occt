@@ -521,9 +521,8 @@ function generatePathsForOperation(operation: Operation) {
   }, 100); // Small delay to ensure path store is updated
   
   // Calculate and store lead geometry for all paths in this operation
-  setTimeout(() => {
-    calculateAndStoreOperationLeads(operation);
-  }, 150); // Delay to ensure paths are created first
+  // Run immediately to prevent visual jumping when offset geometry exists
+  calculateAndStoreOperationLeads(operation);
 }
 
 export const operationsStore: ReturnType<typeof createOperationsStore> = createOperationsStore();

@@ -48,12 +48,14 @@ export async function calculateAndStorePathLeads(
 
     // Use offset geometry for lead calculation if available
     let leadCalculationChain: Chain = chain;
+    let isUsingOffsetGeometry: boolean = false;
     if (path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0) {
       // Create a temporary chain from offset shapes
       leadCalculationChain = {
         id: chain.id + '_offset_temp',
         shapes: path.calculatedOffset.offsetShapes
       };
+      isUsingOffsetGeometry = true;
     }
 
     // Calculate leads using the appropriate chain (original or offset)
@@ -106,7 +108,8 @@ export async function calculateAndStorePathLeads(
       leadInPoints: leadResult.leadIn?.points?.length || 0,
       leadOutPoints: leadResult.leadOut?.points?.length || 0,
       warnings: leadResult.warnings?.length || 0,
-      usedOffsetGeometry: !!(path.calculatedOffset && path.calculatedOffset.offsetShapes.length > 0)
+      usedOffsetGeometry: isUsingOffsetGeometry,
+      offsetShapeCount: path.calculatedOffset?.offsetShapes.length || 0
     });
 
   } catch (error) {
