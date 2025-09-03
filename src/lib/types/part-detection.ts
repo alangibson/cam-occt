@@ -17,11 +17,15 @@ export interface PartDetectionParameters {
   
   /** Decimal precision for coordinate rounding to avoid floating point errors. Range: 1-6 */
   decimalPrecision: number;
+  
+  /** Enable tessellation visualization during parts detection */
+  enableTessellation: boolean;
 }
 
 export const DEFAULT_PART_DETECTION_PARAMETERS: PartDetectionParameters = {
   circleTessellationPoints: 64,
   minArcTessellationPoints: 16,
   arcTessellationDensity: Math.PI / 32, // ~0.098
-  decimalPrecision: 3
+  decimalPrecision: 3,
+  enableTessellation: false
 };

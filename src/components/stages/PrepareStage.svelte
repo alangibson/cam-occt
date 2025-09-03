@@ -35,7 +35,6 @@
   let isDetectingParts = false;
   let isNormalizing = false;
   let isOptimizingStarts = false;
-  let isTessellating = false;
 
   // Algorithm parameters - use store for persistence
   $: algorithmParams = $prepareStageStore.algorithmParams;
@@ -328,48 +327,6 @@
     }
   }
 
-  async function handleTessellateChains() {
-    if (detectedChains.length === 0) {
-      console.warn('No chains detected. Please detect chains first.');
-      return;
-    }
-    
-    isTessellating = true;
-    
-    try {
-      if (tessellationActive) {
-        // Clear existing tessellation
-        tessellationStore.clearTessellation();
-      } else {
-        // Generate tessellation points
-        const tessellationPoints: TessellationPoint[] = [];
-        
-        for (const chain of detectedChains) {
-          for (let shapeIndex = 0; shapeIndex < chain.shapes.length; shapeIndex++) {
-            const shape = chain.shapes[shapeIndex];
-            const shapePoints = tessellateShape(shape, algorithmParams.partDetection);
-            
-            for (let pointIndex = 0; pointIndex < shapePoints.length; pointIndex++) {
-              const point = shapePoints[pointIndex];
-              tessellationPoints.push({
-                x: point.x,
-                y: point.y,
-                chainId: chain.id,
-                shapeId: `${chain.id}-shape-${shapeIndex}`
-              });
-            }
-          }
-        }
-        
-        tessellationStore.setTessellation(tessellationPoints);
-        console.log(`Generated ${tessellationPoints.length} tessellation points for ${detectedChains.length} chains`);
-      }
-    } catch (error) {
-      console.error('Error tessellating chains:', error);
-    } finally {
-      isTessellating = false;
-    }
-  }
   
   async function handleDetectParts() {
     // Handle clear operation if parts have been detected
@@ -377,6 +334,10 @@
       // Clear parts and reset detection state
       clearParts();
       prepareStageStore.setPartsDetected(false);
+      
+      // Clear tessellation if it was enabled
+      tessellationStore.clearTessellation();
+      
       console.log('Cleared detected parts');
       return;
     }
@@ -417,11 +378,41 @@
       // Mark parts as detected in the store
       prepareStageStore.setPartsDetected(true);
       
+      // Handle tessellation if enabled
+      if (algorithmParams.partDetection.enableTessellation) {
+        // Generate tessellation points
+        const tessellationPoints: TessellationPoint[] = [];
+        
+        for (const chain of detectedChains) {
+          for (let shapeIndex = 0; shapeIndex < chain.shapes.length; shapeIndex++) {
+            const shape = chain.shapes[shapeIndex];
+            const shapePoints = tessellateShape(shape, algorithmParams.partDetection);
+            
+            for (let pointIndex = 0; pointIndex < shapePoints.length; pointIndex++) {
+              const point = shapePoints[pointIndex];
+              tessellationPoints.push({
+                x: point.x,
+                y: point.y,
+                chainId: chain.id,
+                shapeId: `${chain.id}-shape-${shapeIndex}`
+              });
+            }
+          }
+        }
+        
+        tessellationStore.setTessellation(tessellationPoints);
+        console.log(`Generated ${tessellationPoints.length} tessellation points for ${detectedChains.length} chains`);
+      } else {
+        // Clear tessellation if disabled
+        tessellationStore.clearTessellation();
+      }
+      
       console.log(`Detected ${partResult.parts.length} parts with ${allWarnings.length} warnings`);
     } catch (error) {
       console.error('Error detecting parts:', error);
       setParts([], []);
       prepareStageStore.setPartsDetected(false);
+      tessellationStore.clearTessellation();
     } finally {
       isDetectingParts = false;
     }
@@ -1025,25 +1016,6 @@
           </div>
         </details>
 
-        <!-- Tessellate Chains -->
-        <details class="param-group-details">
-          <summary class="param-group-summary">
-            <span class="action-title">Tessellate Chains</span>
-            <button 
-              class="apply-button"
-              class:clear-button={tessellationActive && !isTessellating}
-              on:click|stopPropagation={handleTessellateChains}
-              disabled={isTessellating || detectedChains.length === 0}
-            >
-              {isTessellating ? 'Tessellating...' : tessellationActive ? 'Clear' : 'Apply'}
-            </button>
-          </summary>
-          <div class="param-group-content">
-            <div class="prepare-action-description">
-              Generates visualization points along chain paths for analysis and debugging.
-            </div>
-          </div>
-        </details>
 
         <!-- Detect Parts -->
         <details class="param-group-details">
@@ -1131,6 +1103,20 @@
                 Number of decimal places for coordinate rounding to avoid floating-point errors. 
                 Higher values preserve more precision but may cause numerical instability. 
                 Lower values improve robustness but may lose fine geometric details.
+              </div>
+            </label>
+            
+            <label class="param-label">
+              <input 
+                type="checkbox" 
+                bind:checked={algorithmParams.partDetection.enableTessellation}
+                class="param-checkbox"
+                title="Show tessellation visualization points during parts detection."
+              />
+              Enable Tessellation Visualization
+              <div class="param-description">
+                Shows visualization points along chain paths for analysis and debugging during parts detection. 
+                This helps visualize how shapes are being processed for containment analysis.
               </div>
             </label>
           </div>
@@ -1630,11 +1616,6 @@
     font-weight: bold;
   }
 
-  .chain-description {
-    font-size: 0.75rem;
-    color: #6b7280;
-    line-height: 1.4;
-  }
 
   /* Empty state styles */
   .empty-state {
@@ -1870,6 +1851,11 @@
     outline: none;
     border-color: #8b5cf6;
     box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
+  }
+
+  .param-checkbox {
+    margin-right: 0.5rem;
+    width: auto;
   }
 
   .param-description {
