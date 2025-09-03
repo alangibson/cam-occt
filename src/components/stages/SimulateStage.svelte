@@ -55,6 +55,7 @@
   let currentProgress = 0;
   let currentOperation = 'Ready';
   let lastFrameTime = 0;
+  let simulationSpeed = 10; // 10x real-time for faster preview
   
   // Tool head position and animation data
   let toolHeadPosition: Point2D = { x: 0, y: 0 };
@@ -576,7 +577,7 @@
     
     const deltaTime = now - lastFrameTime;
     lastFrameTime = now;
-    currentTime += deltaTime;
+    currentTime += deltaTime * simulationSpeed;
     
     if (currentTime >= totalTime) {
       // Animation complete
@@ -1073,6 +1074,16 @@
           <button class="control-btn" on:click={resetSimulation}>
             <span>⏮️</span> Reset
           </button>
+          <div class="speed-control">
+            <label for="speed-select">Speed:</label>
+            <select id="speed-select" bind:value={simulationSpeed} class="speed-select">
+              <option value={0.1}>0.1x</option>
+              <option value={0.5}>0.5x</option>
+              <option value={1}>1x (Real-time)</option>
+              <option value={5}>5x</option>
+              <option value={10}>10x</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -1191,6 +1202,25 @@
   .simulation-controls {
     display: flex;
     gap: 0.5rem;
+    align-items: center;
+  }
+
+  .speed-control {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 1rem;
+    font-size: 0.875rem;
+    color: #374151;
+  }
+
+  .speed-select {
+    padding: 0.25rem 0.5rem;
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    cursor: pointer;
   }
 
   .control-btn {
