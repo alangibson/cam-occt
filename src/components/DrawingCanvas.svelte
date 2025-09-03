@@ -9,7 +9,7 @@
   import { overlayStore } from '../lib/stores/overlay';
   import { rapidStore, selectRapid, clearRapidHighlight } from '../lib/stores/rapids';
   import { getShapeChainId, getChainShapeIds, clearChainSelection } from '../lib/stores/chains';
-  import { getChainPartType, getPartChainIds, clearHighlight } from '../lib/stores/parts';
+  import { getChainPartType, getPartChainIds, clearHighlight, selectPart, getChainPartId } from '../lib/stores/parts';
   import { selectPath, clearPathHighlight } from '../lib/stores/paths';
   import { sampleNURBS, evaluateNURBS } from '../lib/geometry/nurbs';
   import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
@@ -30,6 +30,7 @@
   export let respectLayerVisibility = true; // Default to true for Edit stage
   export let treatChainsAsEntities = false; // Default to false, true for Program stage
   export let onChainClick: ((chainId: string) => void) | null = null; // Callback for chain clicks
+  export let onPartClick: ((partId: string) => void) | null = null; // Callback for part clicks
   export let disableDragging = false; // Default to false, true to disable dragging
   export let currentStage: WorkflowStage; // Current workflow stage for overlay rendering
   export let interactionMode: 'shapes' | 'chains' | 'paths' = 'shapes'; // What type of objects can be selected
@@ -53,8 +54,11 @@
   $: displayUnit = $drawingStore.displayUnit;
   $: chains = $chainStore.chains;
   $: selectedChainId = $chainStore.selectedChainId;
+  $: highlightedChainId = $chainStore.highlightedChainId;
   $: parts = $partStore.parts;
   $: highlightedPartId = $partStore.highlightedPartId;
+  $: hoveredPartId = $partStore.hoveredPartId;
+  $: selectedPartId = $partStore.selectedPartId;
   $: pathsState = $pathStore;
   $: operations = $operationsStore;
   // Only show chains as having paths if their associated operations are enabled
@@ -80,6 +84,12 @@
   
   // Get chain IDs that belong to the highlighted part
   $: highlightedChainIds = highlightedPartId ? getPartChainIds(highlightedPartId, parts) : [];
+  
+  // Get chain IDs that belong to the hovered part
+  $: hoveredChainIds = hoveredPartId ? getPartChainIds(hoveredPartId, parts) : [];
+  
+  // Get chain IDs that belong to the selected part
+  $: selectedChainIds = selectedPartId ? getPartChainIds(selectedPartId, parts) : [];
   
   
   // Calculate physical scale factor for proper unit display
@@ -115,8 +125,13 @@
     offset;
     displayUnit;
     selectedChainId;
+    highlightedChainId;
     highlightedPartId;
+    hoveredPartId;
+    selectedPartId;
     highlightedChainIds;
+    hoveredChainIds;
+    selectedChainIds;
     tessellationState;
     currentOverlay;
     pathsState;
@@ -888,8 +903,17 @@
     // Check if this shape is part of the highlighted part
     const isPartHighlighted = chainId && highlightedChainIds.includes(chainId);
     
+    // Check if this shape is part of the hovered part
+    const isPartHovered = chainId && hoveredChainIds.includes(chainId);
+    
+    // Check if this shape is part of the selected part
+    const isPartSelected = chainId && selectedChainIds.includes(chainId);
+    
     // Check if this shape is part of the selected chain
     const isChainSelected = chainId && selectedChainId === chainId;
+    
+    // Check if this shape is part of the highlighted chain
+    const isChainHighlighted = chainId && highlightedChainId === chainId;
     
     // Check if this chain has paths (green highlighting)
     const hasPath = chainId && chainsWithPaths.includes(chainId);
@@ -898,7 +922,7 @@
     const isPathSelected = selectedPathId && pathsState.paths.some(p => p.id === selectedPathId && p.chainId === chainId);
     const isPathHighlighted = highlightedPathId && pathsState.paths.some(p => p.id === highlightedPathId && p.chainId === chainId);
     
-    // Priority: selected > hovered > path selected > path highlighted > chain selected > part highlighted > path (green) > part type > chain > normal
+    // Priority: selected > hovered > path selected > path highlighted > chain selected > part selected > chain highlighted > part highlighted > part hovered > path (green) > part type > chain > normal
     if (isSelected) {
       ctx.strokeStyle = '#ff6600';
       ctx.lineWidth = coordinator.screenToWorldDistance(2);
@@ -914,13 +938,24 @@
       ctx.shadowColor = '#15803d';
       ctx.shadowBlur = coordinator.screenToWorldDistance(4);
     } else if (isChainSelected) {
-      ctx.strokeStyle = '#ff6600'; // Orange color for selected chain (same as selected shapes)
+      ctx.strokeStyle = '#f59e0b'; // Dark amber color for selected chain
+      ctx.lineWidth = coordinator.screenToWorldDistance(2);
+    } else if (isPartSelected) {
+      ctx.strokeStyle = '#f59e0b'; // Dark amber color for selected part
+      ctx.lineWidth = coordinator.screenToWorldDistance(2.5);
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = coordinator.screenToWorldDistance(2);
+    } else if (isChainHighlighted) {
+      ctx.strokeStyle = '#fbbf24'; // Light amber color for highlighted chain
       ctx.lineWidth = coordinator.screenToWorldDistance(2);
     } else if (isPartHighlighted) {
       ctx.strokeStyle = '#f59e0b'; // Amber color for highlighted part
       ctx.lineWidth = coordinator.screenToWorldDistance(2.5);
       ctx.shadowColor = '#f59e0b';
       ctx.shadowBlur = coordinator.screenToWorldDistance(3);
+    } else if (isPartHovered) {
+      ctx.strokeStyle = '#fbbf24'; // Light amber color for hovered part
+      ctx.lineWidth = coordinator.screenToWorldDistance(2);
     } else if (hasPath) {
       ctx.strokeStyle = '#16a34a'; // Green color for chains with paths
       ctx.lineWidth = coordinator.screenToWorldDistance(2);
@@ -1337,28 +1372,34 @@
           }
           drawingStore.selectShape(shape.id, e.ctrlKey);
         } else if (interactionMode === 'chains') {
-          // Program mode - only allow chain selection
+          // Program mode - allow chain and part selection
           const chainId = getShapeChainId(shape.id, chains);
           if (chainId) {
-            // Get all shapes in the chain
-            const chainShapeIds = getChainShapeIds(shape.id, chains);
+            // Check if this chain belongs to a part
+            const partId = getChainPartId(chainId, parts);
             
-            // Check if any shape in the chain is already selected
-            const chainSelected = chainShapeIds.some(id => selectedShapes.has(id));
-            
-            if (!e.ctrlKey && !chainSelected) {
-              drawingStore.clearSelection();
-            }
-            
-            // Select/deselect all shapes in the chain
-            chainShapeIds.forEach(id => {
-              if (!selectedShapes.has(id) || !e.ctrlKey) {
-                drawingStore.selectShape(id, true); // Always multi-select for chains
+            if (partId && onPartClick) {
+              // Handle part click
+              onPartClick(partId);
+            } else if (onChainClick) {
+              // Handle chain click
+              // Get all shapes in the chain
+              const chainShapeIds = getChainShapeIds(shape.id, chains);
+              
+              // Check if any shape in the chain is already selected
+              const chainSelected = chainShapeIds.some(id => selectedShapes.has(id));
+              
+              if (!e.ctrlKey && !chainSelected) {
+                drawingStore.clearSelection();
               }
-            });
-            
-            // Notify parent component about chain click
-            if (onChainClick) {
+              
+              // Select/deselect all shapes in the chain
+              chainShapeIds.forEach(id => {
+                if (!selectedShapes.has(id) || !e.ctrlKey) {
+                  drawingStore.selectShape(id, true); // Always multi-select for chains
+                }
+              });
+              
               onChainClick(chainId);
             }
           }
@@ -1386,6 +1427,7 @@
         drawingStore.clearSelection();
         clearChainSelection();
         clearHighlight();
+        selectPart(null);
         pathStore.selectPath(null);
         clearPathHighlight();
         selectRapid(null);

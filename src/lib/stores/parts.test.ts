@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { partStore, setParts, clearParts, highlightPart, clearHighlight, getPartChainIds, getChainPartType } from './parts';
+import { partStore, setParts, clearParts, highlightPart, clearHighlight, hoverPart, clearPartHover, selectPart, clearPartSelection, getPartChainIds, getChainPartType } from './parts';
 import type { DetectedPart, PartDetectionWarning } from '../algorithms/part-detection';
 import { generateId } from '../utils/id';
 
@@ -197,6 +197,98 @@ describe('Parts Store', () => {
       expect(getChainPartType('shell-chain', parts)).toBe('shell');
       expect(getChainPartType('hole-chain', parts)).toBe('hole');
       expect(getChainPartType('nested-chain', parts)).toBe('hole');
+    });
+  });
+
+  describe('Part Hovering', () => {
+    it('should hover a part', () => {
+      const testPartId = 'part-123';
+      
+      hoverPart(testPartId);
+      
+      const state = get(partStore);
+      expect(state.hoveredPartId).toBe(testPartId);
+      expect(state.highlightedPartId).toBeNull(); // Should not affect highlighting
+    });
+
+    it('should clear part hover', () => {
+      const testPartId = 'part-123';
+      
+      // First hover a part
+      hoverPart(testPartId);
+      expect(get(partStore).hoveredPartId).toBe(testPartId);
+      
+      // Then clear the hover
+      clearPartHover();
+      expect(get(partStore).hoveredPartId).toBeNull();
+    });
+
+    it('should allow hovering and highlighting to coexist', () => {
+      const highlightedPartId = 'part-highlighted';
+      const hoveredPartId = 'part-hovered';
+      
+      // Highlight one part and hover another
+      highlightPart(highlightedPartId);
+      hoverPart(hoveredPartId);
+      
+      const state = get(partStore);
+      expect(state.highlightedPartId).toBe(highlightedPartId);
+      expect(state.hoveredPartId).toBe(hoveredPartId);
+    });
+
+    it('should handle null part hovering', () => {
+      hoverPart(null);
+      
+      const state = get(partStore);
+      expect(state.hoveredPartId).toBeNull();
+    });
+  });
+
+  describe('Part Selection', () => {
+    it('should select a part', () => {
+      const testPartId = 'part-123';
+      
+      selectPart(testPartId);
+      
+      const state = get(partStore);
+      expect(state.selectedPartId).toBe(testPartId);
+      expect(state.highlightedPartId).toBeNull(); // Should not affect highlighting
+      expect(state.hoveredPartId).toBeNull(); // Should not affect hovering
+    });
+
+    it('should clear part selection', () => {
+      const testPartId = 'part-123';
+      
+      // First select a part
+      selectPart(testPartId);
+      expect(get(partStore).selectedPartId).toBe(testPartId);
+      
+      // Then clear the selection
+      clearPartSelection();
+      expect(get(partStore).selectedPartId).toBeNull();
+    });
+
+    it('should allow selection, highlighting, and hovering to coexist', () => {
+      const selectedPartId = 'part-selected';
+      const highlightedPartId = 'part-highlighted';
+      const hoveredPartId = 'part-hovered';
+      
+      // Select, highlight, and hover different parts
+      selectPart(selectedPartId);
+      highlightPart(highlightedPartId);
+      hoverPart(hoveredPartId);
+      
+      const state = get(partStore);
+      expect(state.selectedPartId).toBe(selectedPartId);
+      expect(state.highlightedPartId).toBe(highlightedPartId);
+      expect(state.hoveredPartId).toBe(hoveredPartId);
+    });
+
+    it('should handle null part selection', () => {
+      selectPart(null);
+      
+      const state = get(partStore);
+      expect(state.selectedPartId).toBeNull();
     });
   });
 });

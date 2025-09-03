@@ -75,11 +75,11 @@
     let targetType: 'parts' | 'chains' = 'parts';
     let targetIds: string[] = [];
 
-    // Check if a part is highlighted
-    const highlightedPartId = $partStore.highlightedPartId;
-    if (highlightedPartId) {
+    // Check if a part is selected
+    const selectedPartId = $partStore.selectedPartId;
+    if (selectedPartId) {
       targetType = 'parts';
-      targetIds = [highlightedPartId];
+      targetIds = [selectedPartId];
     } 
     // Check if a chain is selected  
     else {

@@ -5,12 +5,14 @@ export interface ChainStore {
   chains: Chain[];
   tolerance: number;
   selectedChainId: string | null;
+  highlightedChainId: string | null;
 }
 
 const initialState: ChainStore = {
   chains: [],
   tolerance: 0.1,
-  selectedChainId: null
+  selectedChainId: null,
+  highlightedChainId: null
 };
 
 export const chainStore: ReturnType<typeof writable<ChainStore>> = writable<ChainStore>(initialState);
@@ -83,4 +85,19 @@ export function getSelectedChainShapeIds(selectedChainId: string | null, chains:
   
   const chain: Chain | null = getChainById(selectedChainId, chains);
   return chain ? chain.shapes.map(shape => shape.id) : [];
+}
+
+// Chain highlighting functions
+export function highlightChain(chainId: string | null) {
+  chainStore.update(state => ({
+    ...state,
+    highlightedChainId: chainId
+  }));
+}
+
+export function clearChainHighlight() {
+  chainStore.update(state => ({
+    ...state,
+    highlightedChainId: null
+  }));
 }

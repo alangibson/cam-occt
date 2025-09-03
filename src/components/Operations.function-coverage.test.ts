@@ -6,7 +6,7 @@ import Operations from './Operations.svelte';
 import { operationsStore } from '$lib/stores/operations';
 import { toolStore } from '$lib/stores/tools';
 import { chainStore, selectChain, clearChains, clearChainSelection } from '$lib/stores/chains';
-import { partStore, highlightPart, clearParts } from '$lib/stores/parts';
+import { partStore, highlightPart, clearParts, selectPart } from '$lib/stores/parts';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 
@@ -64,11 +64,11 @@ describe('Operations Component - Function Coverage', () => {
   });
 
   describe('addNewOperation function', () => {
-    it('should create operation with highlighted part', () => {
+    it('should create operation with selected part', () => {
       const { component: comp } = render(Operations);
       component = comp;
       
-      highlightPart('part-1');
+      selectPart('part-1');
       
       // Call addNewOperation function
       comp.addNewOperation();
@@ -79,7 +79,7 @@ describe('Operations Component - Function Coverage', () => {
       expect(operations[0].targetIds).toEqual(['part-1']);
     });
 
-    it('should create operation with selected chain when no part highlighted', () => {
+    it('should create operation with selected chain when no part selected', () => {
       const { component: comp } = render(Operations);
       component = comp;
       

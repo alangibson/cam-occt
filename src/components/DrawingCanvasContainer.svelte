@@ -5,6 +5,7 @@
   export let respectLayerVisibility = true;
   export let treatChainsAsEntities = false;
   export let onChainClick: ((chainId: string) => void) | null = null;
+  export let onPartClick: ((partId: string) => void) | null = null;
   export let disableDragging = false;
   export let currentStage: WorkflowStage;
   export let showToolbar = false;
@@ -24,6 +25,7 @@
       {respectLayerVisibility}
       {treatChainsAsEntities}
       {onChainClick}
+      {onPartClick}
       {disableDragging}
       {currentStage}
       {interactionMode}

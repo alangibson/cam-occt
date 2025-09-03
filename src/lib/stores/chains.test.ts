@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { get } from 'svelte/store';
-import { chainStore, setChains, clearChains, setTolerance, getShapeChainId, getChainShapeIds, getChainById } from './chains';
+import { chainStore, setChains, clearChains, setTolerance, getShapeChainId, getChainShapeIds, getChainById, highlightChain, clearChainHighlight, selectChain } from './chains';
 import type { ShapeChain } from '../algorithms/chain-detection';
 import { generateId } from '../utils/id';
 import { CutDirection, LeadType } from '../types/direction';
@@ -27,6 +27,8 @@ describe('Chain Store', () => {
     const state = get(chainStore);
     expect(state.chains).toEqual([]);
     expect(state.tolerance).toBe(0.1);
+    expect(state.selectedChainId).toBeNull();
+    expect(state.highlightedChainId).toBeNull();
   });
 
   it('should set chains correctly', () => {
@@ -70,5 +72,49 @@ describe('Chain Store', () => {
 
     const nonExistentChain = getChainById('chain-999', mockChains);
     expect(nonExistentChain).toBeNull();
+  });
+
+  describe('Chain Highlighting', () => {
+    it('should highlight a chain', () => {
+      const testChainId = 'chain-123';
+      
+      highlightChain(testChainId);
+      
+      const state = get(chainStore);
+      expect(state.highlightedChainId).toBe(testChainId);
+      expect(state.selectedChainId).toBeNull(); // Should not affect selection
+    });
+
+    it('should clear chain highlight', () => {
+      const testChainId = 'chain-123';
+      
+      // First highlight a chain
+      highlightChain(testChainId);
+      expect(get(chainStore).highlightedChainId).toBe(testChainId);
+      
+      // Then clear the highlight
+      clearChainHighlight();
+      expect(get(chainStore).highlightedChainId).toBeNull();
+    });
+
+    it('should allow highlighting and selection to coexist', () => {
+      const selectedChainId = 'chain-selected';
+      const highlightedChainId = 'chain-highlighted';
+      
+      // Select one chain and highlight another
+      selectChain(selectedChainId);
+      highlightChain(highlightedChainId);
+      
+      const state = get(chainStore);
+      expect(state.selectedChainId).toBe(selectedChainId);
+      expect(state.highlightedChainId).toBe(highlightedChainId);
+    });
+
+    it('should handle null chain highlighting', () => {
+      highlightChain(null);
+      
+      const state = get(chainStore);
+      expect(state.highlightedChainId).toBeNull();
+    });
   });
 });

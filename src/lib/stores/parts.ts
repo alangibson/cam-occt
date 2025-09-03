@@ -5,12 +5,16 @@ export interface PartStore {
   parts: DetectedPart[];
   warnings: PartDetectionWarning[];
   highlightedPartId: string | null;
+  hoveredPartId: string | null;
+  selectedPartId: string | null;
 }
 
 const initialState: PartStore = {
   parts: [],
   warnings: [],
-  highlightedPartId: null
+  highlightedPartId: null,
+  hoveredPartId: null,
+  selectedPartId: null
 };
 
 export const partStore: ReturnType<typeof writable<PartStore>> = writable<PartStore>(initialState);
@@ -29,7 +33,9 @@ export function clearParts() {
     ...state,
     parts: [],
     warnings: [],
-    highlightedPartId: null
+    highlightedPartId: null,
+    hoveredPartId: null,
+    selectedPartId: null
   }));
 }
 
@@ -45,6 +51,36 @@ export function clearHighlight() {
   partStore.update(state => ({
     ...state,
     highlightedPartId: null
+  }));
+}
+
+// Part hover functions
+export function hoverPart(partId: string | null) {
+  partStore.update(state => ({
+    ...state,
+    hoveredPartId: partId
+  }));
+}
+
+export function clearPartHover() {
+  partStore.update(state => ({
+    ...state,
+    hoveredPartId: null
+  }));
+}
+
+// Part selection functions
+export function selectPart(partId: string | null) {
+  partStore.update(state => ({
+    ...state,
+    selectedPartId: partId
+  }));
+}
+
+export function clearPartSelection() {
+  partStore.update(state => ({
+    ...state,
+    selectedPartId: null
   }));
 }
 
@@ -71,6 +107,21 @@ export function getPartChainIds(partId: string, parts: DetectedPart[]): string[]
   addHoleChainIds(part.holes);
   
   return chainIds;
+}
+
+// Helper to get which part a chain belongs to
+export function getChainPartId(chainId: string, parts: DetectedPart[]): string | null {
+  for (const part of parts) {
+    if (part.shell.chain.id === chainId) {
+      return part.id;
+    }
+    
+    // Check holes recursively
+    if (isChainInHoles(chainId, part.holes)) {
+      return part.id;
+    }
+  }
+  return null;
 }
 
 // Helper to get the type of a chain (shell or hole)

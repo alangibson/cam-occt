@@ -7,8 +7,8 @@
   import ShapeProperties from '../ShapeProperties.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
-  import { chainStore, selectChain } from '../../lib/stores/chains';
-  import { partStore, highlightPart, clearHighlight } from '../../lib/stores/parts';
+  import { chainStore, selectChain, highlightChain, clearChainHighlight } from '../../lib/stores/chains';
+  import { partStore, highlightPart, clearHighlight, hoverPart, clearPartHover, selectPart } from '../../lib/stores/parts';
   import { isChainClosed } from '../../lib/algorithms/part-detection';
   import { pathStore } from '../../lib/stores/paths';
   import { rapidStore, selectRapid, highlightRapid, clearRapidHighlight } from '../../lib/stores/rapids';
@@ -23,7 +23,10 @@
   $: chains = $chainStore.chains;
   $: parts = $partStore.parts;
   $: selectedChainId = $chainStore.selectedChainId;
+  $: highlightedChainId = $chainStore.highlightedChainId;
   $: highlightedPartId = $partStore.highlightedPartId;
+  $: hoveredPartId = $partStore.hoveredPartId;
+  $: selectedPartId = $partStore.selectedPartId;
   $: paths = $pathStore.paths;
   $: rapids = $rapidStore.rapids;
   $: selectedRapidId = $rapidStore.selectedRapidId;
@@ -73,18 +76,37 @@
     }
   }
 
-  // Part highlighting functions  
+  // Part selection functions  
   function handlePartClick(partId: string) {
-    if (highlightedPartId === partId) {
-      clearHighlight();
+    if (selectedPartId === partId) {
+      selectPart(null);
     } else {
-      highlightPart(partId);
+      selectPart(partId);
     }
   }
 
   // Helper function to check if a chain is closed
   function isChainClosedHelper(chain: any): boolean {
     return isChainClosed(chain, 0.1); // Use default tolerance since this is display-only
+  }
+
+  // Chain hover functions
+  function handleChainMouseEnter(chainId: string) {
+    highlightChain(chainId);
+  }
+
+  function handleChainMouseLeave() {
+    // Clear chain highlight on mouse leave since chains have separate selection state
+    clearChainHighlight();
+  }
+
+  // Part hover functions  
+  function handlePartMouseEnter(partId: string) {
+    hoverPart(partId);
+  }
+
+  function handlePartMouseLeave() {
+    clearPartHover();
   }
 
   // Rapid selection functions  
@@ -153,11 +175,13 @@
           <div class="chain-list">
             {#each chains as chain (chain.id)}
               <div 
-                class="chain-item {selectedChainId === chain.id ? 'selected' : ''}"
+                class="chain-item {selectedChainId === chain.id ? 'selected' : ''} {highlightedChainId === chain.id ? 'highlighted' : ''}"
                 role="button"
                 tabindex="0"
                 onclick={() => handleChainClick(chain.id)}
                 onkeydown={(e) => e.key === 'Enter' && handleChainClick(chain.id)}
+                onmouseenter={() => handleChainMouseEnter(chain.id)}
+                onmouseleave={handleChainMouseLeave}
               >
                 <span class="chain-name">Chain {chain.id.split('-')[1]}</span>
                 <span class="chain-status {isChainClosedHelper(chain) ? 'closed' : 'open'}">
@@ -174,11 +198,13 @@
           <div class="parts-list">
             {#each parts as part (part.id)}
               <div 
-                class="part-item {highlightedPartId === part.id ? 'highlighted' : ''}"
+                class="part-item {selectedPartId === part.id ? 'selected' : ''} {hoveredPartId === part.id ? 'hovered' : ''}"
                 role="button"
                 tabindex="0"
                 onclick={() => handlePartClick(part.id)}
                 onkeydown={(e) => e.key === 'Enter' && handlePartClick(part.id)}
+                onmouseenter={() => handlePartMouseEnter(part.id)}
+                onmouseleave={handlePartMouseLeave}
               >
                 <span class="part-name">Part {part.id.split('-')[1]}</span>
                 <span class="part-info">{part.holes.length} holes</span>
@@ -255,6 +281,7 @@
         treatChainsAsEntities={true}
         interactionMode="chains"
         onChainClick={handleChainClick}
+        onPartClick={handlePartClick}
       />
     </svelte:fragment>
 
@@ -344,13 +371,23 @@
   }
 
   .chain-item.selected {
-    background-color: #dbeafe;
-    border-color: #3b82f6;
-  }
-
-  .part-item.highlighted {
     background-color: #fef3c7;
     border-color: #f59e0b;
+  }
+
+  .chain-item.highlighted {
+    background-color: #fef9e7;
+    border-color: #fbbf24;
+  }
+
+  .part-item.selected {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+  }
+
+  .part-item.hovered {
+    background-color: #fef9e7;
+    border-color: #fbbf24;
   }
 
   .chain-name, .part-name {
