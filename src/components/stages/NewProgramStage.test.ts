@@ -78,7 +78,8 @@ vi.mock('../../lib/stores/rapids', () => ({
       });
       return vi.fn();
     }),
-    setRapids: vi.fn()
+    setRapids: vi.fn(),
+    clearRapids: vi.fn()
   },
   selectRapid: vi.fn(),
   highlightRapid: vi.fn(),

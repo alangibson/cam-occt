@@ -61,6 +61,14 @@
     }
   }
 
+  // Clear rapids when no paths exist
+  $: {
+    if (paths.length === 0) {
+      rapidStore.clearRapids();
+      selectRapid(null);
+    }
+  }
+
   function handleNext() {
     if ($workflowStore.canAdvanceTo('simulate')) {
       workflowStore.setStage('simulate');
