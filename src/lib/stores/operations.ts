@@ -13,6 +13,7 @@ import { calculateAndStoreOperationLeads } from '../utils/lead-persistence-utils
 import type { DetectedPart, PartHole } from '$lib/algorithms/part-detection';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
+import { KerfCompensation } from '../types/kerf-compensation';
 import { offsetChain } from '../algorithms/offset-calculation/chain/offset';
 import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
 import type { Shape } from '../types';
@@ -52,7 +53,7 @@ export interface Operation {
   leadOutLength: number; // Lead-out length (units)
   leadOutFlipSide: boolean; // Flip which side of the chain the lead-out is on
   leadOutAngle: number; // Manual rotation angle for lead-out (degrees, 0-360)
-  kerfCompensation?: OffsetDirection; // Kerf compensation direction (none, inset, outset)
+  kerfCompensation?: KerfCompensation; // Kerf compensation type (none, inner, outer, part)
 }
 
 function createOperationsStore(): {
@@ -301,12 +302,25 @@ function generatePathsForOperation(operation: Operation) {
       const detectedDirection: CutDirection = chain ? detectCutDirection(chain, 0.1) : CutDirection.NONE;
       const cutDirection: CutDirection = detectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
       
-      // Auto-detect kerf compensation if not manually set
-      let kerfCompensation: OffsetDirection = operation.kerfCompensation || 'none';
-      if (!operation.kerfCompensation || operation.kerfCompensation === 'none') {
-        // For standalone chains, default to none unless user specifies
-        // Auto-detection only happens for parts
-        kerfCompensation = 'none';
+      // Convert KerfCompensation to OffsetDirection for chains
+      let kerfCompensation: OffsetDirection = 'none';
+      if (operation.kerfCompensation) {
+        switch (operation.kerfCompensation) {
+          case KerfCompensation.INNER:
+            kerfCompensation = 'inset';
+            break;
+          case KerfCompensation.OUTER:
+            kerfCompensation = 'outset';
+            break;
+          case KerfCompensation.PART:
+            // For standalone chains, part mode doesn't make sense, treat as none
+            kerfCompensation = 'none';
+            break;
+          case KerfCompensation.NONE:
+          default:
+            kerfCompensation = 'none';
+            break;
+        }
       }
       
       // Calculate offset if kerf compensation is enabled
@@ -360,11 +374,25 @@ function generatePathsForOperation(operation: Operation) {
         const shellDetectedDirection: CutDirection = shellChain ? detectCutDirection(shellChain, 0.1) : CutDirection.NONE;
         const shellCutDirection: CutDirection = shellDetectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
         
-        // Auto-detect kerf compensation for shell (outer boundary) if not manually set
-        let shellKerfCompensation: OffsetDirection = operation.kerfCompensation || 'outset';
-        if (!operation.kerfCompensation || operation.kerfCompensation === 'none') {
-          // For shells (outer boundaries), default to outset
-          shellKerfCompensation = 'outset';
+        // Convert KerfCompensation to OffsetDirection for shell
+        let shellKerfCompensation: OffsetDirection = 'none';
+        if (operation.kerfCompensation) {
+          switch (operation.kerfCompensation) {
+            case KerfCompensation.INNER:
+              shellKerfCompensation = 'inset';
+              break;
+            case KerfCompensation.OUTER:
+              shellKerfCompensation = 'outset';
+              break;
+            case KerfCompensation.PART:
+              // For shells (outer boundaries) in part mode, use outset
+              shellKerfCompensation = 'outset';
+              break;
+            case KerfCompensation.NONE:
+            default:
+              shellKerfCompensation = 'none';
+              break;
+          }
         }
         
         // Calculate offset for shell if kerf compensation is enabled
@@ -414,11 +442,25 @@ function generatePathsForOperation(operation: Operation) {
             const holeDetectedDirection: CutDirection = holeChain ? detectCutDirection(holeChain, 0.1) : CutDirection.NONE;
             const holeCutDirection: CutDirection = holeDetectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
             
-            // Auto-detect kerf compensation for hole (inner boundary) if not manually set
-            let holeKerfCompensation: OffsetDirection = operation.kerfCompensation || 'inset';
-            if (!operation.kerfCompensation || operation.kerfCompensation === 'none') {
-              // For holes (inner boundaries), default to inset
-              holeKerfCompensation = 'inset';
+            // Convert KerfCompensation to OffsetDirection for hole
+            let holeKerfCompensation: OffsetDirection = 'none';
+            if (operation.kerfCompensation) {
+              switch (operation.kerfCompensation) {
+                case KerfCompensation.INNER:
+                  holeKerfCompensation = 'inset';
+                  break;
+                case KerfCompensation.OUTER:
+                  holeKerfCompensation = 'outset';
+                  break;
+                case KerfCompensation.PART:
+                  // For holes (inner boundaries) in part mode, use inset
+                  holeKerfCompensation = 'inset';
+                  break;
+                case KerfCompensation.NONE:
+                default:
+                  holeKerfCompensation = 'none';
+                  break;
+              }
             }
             
             // Calculate offset for hole if kerf compensation is enabled

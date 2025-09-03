@@ -6,7 +6,7 @@
   import { flip } from 'svelte/animate';
   import { onMount } from 'svelte';
   import { CutDirection, LeadType } from '$lib/types/direction';
-  import type { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+  import { KerfCompensation } from '$lib/types/kerf-compensation';
   
   let operations: Operation[] = [];
   let chains: any[] = [];
@@ -106,7 +106,7 @@
       leadOutLength: 5,
       leadOutAngle: 0,
       leadOutFlipSide: false,
-      kerfCompensation: 'none'
+      kerfCompensation: targetType === 'parts' ? KerfCompensation.PART : KerfCompensation.NONE
     });
   }
   
@@ -606,13 +606,14 @@
             <label for="kerf-compensation-{operation.id}">Kerf Compensation:</label>
             <select
               id="kerf-compensation-{operation.id}"
-              value={operation.kerfCompensation || 'none'}
+              value={operation.kerfCompensation || KerfCompensation.NONE}
               onchange={(e) => updateOperationField(operation.id, 'kerfCompensation', e.currentTarget.value)}
               class="lead-select"
             >
-              <option value="none">None</option>
-              <option value="inset">Inset</option>
-              <option value="outset">Outset</option>
+              <option value={KerfCompensation.NONE}>None</option>
+              <option value={KerfCompensation.INNER}>Inner</option>
+              <option value={KerfCompensation.OUTER}>Outer</option>
+              <option value={KerfCompensation.PART}>Part</option>
             </select>
           </div>
         </div>
