@@ -32,10 +32,7 @@
 <div class="import-stage">
   <div class="import-container">
     <div class="import-header">
-      <h1>Import Drawing</h1>
-      <p class="import-description">
-        Upload your DXF drawing file to begin the CAM workflow.
-      </p>
+      <h1>MetalHead CAM</h1>
     </div>
 
     <div class="import-content">
@@ -75,13 +72,6 @@
     font-size: 2rem;
     font-weight: 700;
     color: #111827;
-  }
-
-  .import-description {
-    margin: 0;
-    color: #6b7280;
-    font-size: 1rem;
-    line-height: 1.5;
   }
 
   .import-content {

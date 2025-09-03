@@ -73,6 +73,10 @@
     style="display: none;"
   />
   
+  <p class="import-description">
+    Upload your DXF drawing file to begin the CAM workflow.
+  </p>
+  
   <button
     class="import-button"
     on:click={() => fileInput.click()}
@@ -125,6 +129,13 @@
     margin-top: 1rem;
     color: #0066cc;
     font-weight: 500;
+  }
+  
+  .import-description {
+    margin: 0 0 1rem 0;
+    color: #6b7280;
+    font-size: 1rem;
+    line-height: 1.5;
   }
   
 </style>
