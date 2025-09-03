@@ -1,5 +1,5 @@
 import type { Shape, Line, Arc, Circle, Polyline, Spline, Ellipse } from '../../../../lib/types/geometry';
-import type { Chain } from '../../chain-detection';
+import type { Chain } from '../../chain-detection/chain-detection';
 import type { OffsetChain } from './types';
 import { tessellateSpline } from '../../../geometry/spline-tessellation';
 import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';

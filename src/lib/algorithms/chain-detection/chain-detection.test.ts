@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { detectShapeChains } from './chain-detection';
-import type { Shape } from '../../lib/types';
-import { generateId } from '../utils/id';
-import { LeadType } from '../types/direction';
-import { createPolylineFromVertices } from '../geometry/polyline';
+import type { Shape } from '../../types';
+import { generateId } from '../../utils/id';
+import { LeadType } from '../../types/direction';
+import { createPolylineFromVertices } from '../../geometry/polyline';
 
 describe('Chain Detection Algorithm', () => {
   // Helper function to create test shapes

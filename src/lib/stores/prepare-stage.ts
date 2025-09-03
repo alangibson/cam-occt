@@ -8,7 +8,7 @@
 import { writable } from 'svelte/store';
 import type { AlgorithmParameters } from '../../lib/types/algorithm-parameters';
 import { DEFAULT_ALGORITHM_PARAMETERS } from '../../lib/types/algorithm-parameters';
-import type { ChainNormalizationResult } from '../algorithms/chain-normalization';
+import type { ChainNormalizationResult } from '../algorithms/chain-normalization/chain-normalization';
 
 export interface PrepareStageState {
   // Algorithm parameters

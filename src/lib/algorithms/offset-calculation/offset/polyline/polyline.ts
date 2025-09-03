@@ -3,7 +3,7 @@ import type { OffsetDirection, OffsetResult } from '../types';
 import { generateId } from '$lib/utils/id';
 import { offsetChain } from '../../chain/offset';
 import type { ChainOffsetParameters, ChainOffsetResult } from '../../chain/types';
-import type { Chain } from '$lib/algorithms/chain-detection';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 
 /**
  * Offset a polyline using the chain offset system

@@ -1,5 +1,5 @@
 import type { Shape, Point2D } from '../../../../lib/types/geometry';
-import type { Chain } from '../../chain-detection.ts';
+import type { Chain } from '../../chain-detection/chain-detection';
 import type { OffsetSide, SideDetectionResult, SideDetectionOptions } from './types.ts';
 import { isChainClosed } from '../../part-detection';
 import { getShapePointAt, getShapeMidpoint, normalizeVector } from '$lib/geometry';

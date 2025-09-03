@@ -10,10 +10,10 @@
  * - Shapes with coincident points that break traversal order
  */
 
-import type { Chain } from './chain-detection';
-import type { Shape, Point2D, Arc, Circle, Ellipse, Spline } from '../types';
-import type { ChainNormalizationParameters } from '../types/algorithm-parameters';
-import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS } from '../types/algorithm-parameters';
+import type { Chain } from '../chain-detection/chain-detection';
+import type { Shape, Point2D, Arc, Circle, Ellipse, Spline } from '../../types';
+import type { ChainNormalizationParameters } from '../../types/algorithm-parameters';
+import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS } from '../../types/algorithm-parameters';
 import { getShapeStartPoint, getShapeEndPoint, reverseShape } from '$lib/geometry';
 
 export interface ChainTraversalIssue {

@@ -1,6 +1,15 @@
-import type { Chain } from '../chain-detection';
+import type { Chain } from '../chain-detection/chain-detection';
 import type { Polyline, Shape, Line, Point2D } from '../../types/geometry';
+import type { JoinColinearLinesParameters } from '../../types/algorithm-parameters';
 import { TOLERANCE } from '../../constants';
+
+/**
+ * Primary function to join collinear lines in chains with configurable parameters
+ * This is the main entry point that should be used by the UI
+ */
+export function joinColinearLines(chains: Chain[], parameters: JoinColinearLinesParameters): Chain[] {
+  return joinColinearLinesInChains(chains, parameters.tolerance);
+}
 
 /**
  * Check if three points are collinear within tolerance
@@ -73,7 +82,7 @@ function createJoinedLine(lines: Line[]): Line {
 /**
  * Join consecutive collinear line segments within a polyline
  */
-export function joinColinearLinesInPolyline(polyline: Polyline, tolerance: number = TOLERANCE): Polyline {
+function joinColinearLinesInPolyline(polyline: Polyline, tolerance: number = TOLERANCE): Polyline {
   if (!polyline.shapes || polyline.shapes.length === 0) {
     return polyline;
   }
@@ -141,7 +150,7 @@ export function joinColinearLinesInPolyline(polyline: Polyline, tolerance: numbe
 /**
  * Join consecutive collinear lines within each chain
  */
-export function joinColinearLinesInChains(chains: Chain[], tolerance: number = TOLERANCE): Chain[] {
+function joinColinearLinesInChains(chains: Chain[], tolerance: number = TOLERANCE): Chain[] {
   return chains.map(chain => ({
     ...chain,
     shapes: joinColinearLinesInShapes(chain.shapes, tolerance)

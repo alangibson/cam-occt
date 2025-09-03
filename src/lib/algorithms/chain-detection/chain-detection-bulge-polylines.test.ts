@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { detectShapeChains } from './chain-detection';
-import { parseDXF } from '../parsers/dxf-parser';
+import { parseDXF } from '../../parsers/dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { polylineToVertices } from '../geometry/polyline';
-import type { Polyline } from '../types';
+import { polylineToVertices } from '../../geometry/polyline';
+import type { Polyline } from '../../types';
 
 describe('Chain Detection for Polylines with Bulges', () => {
   it('should correctly detect closed polylines with bulges as closed chains', async () => {

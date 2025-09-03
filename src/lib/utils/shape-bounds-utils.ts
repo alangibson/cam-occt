@@ -6,7 +6,7 @@
  * - part-detection.ts
  */
 
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Point2D, Shape, Line, Circle, Arc, Polyline, Ellipse, Spline } from '../types';
 import { polylineToPoints } from '../geometry/polyline';
 import { sampleNURBS } from '../geometry/nurbs';

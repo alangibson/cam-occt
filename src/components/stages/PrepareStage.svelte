@@ -6,9 +6,9 @@
   import { drawingStore } from '../../lib/stores/drawing';
   import { chainStore, setChains, setTolerance, selectChain, clearChains } from '../../lib/stores/chains';
   import { partStore, setParts, highlightPart, clearHighlight, clearParts } from '../../lib/stores/parts';
-  import { detectShapeChains } from '../../lib/algorithms/chain-detection';
+  import { detectShapeChains } from '../../lib/algorithms/chain-detection/chain-detection';
   import { detectParts, type PartDetectionWarning } from '../../lib/algorithms/part-detection';
-  import { analyzeChainTraversal, normalizeChain } from '../../lib/algorithms/chain-normalization';
+  import { analyzeChainTraversal, normalizeChain } from '../../lib/algorithms/chain-normalization/chain-normalization';
   import { tessellationStore, type TessellationPoint } from '../../lib/stores/tessellation';
   import { tessellateShape } from '../../lib/utils/tessellation';
   import { overlayStore, generateChainEndpoints } from '../../lib/stores/overlay';
@@ -16,17 +16,11 @@
   import { prepareStageStore } from '../../lib/stores/prepare-stage';
   import { decomposePolylines } from '../../lib/algorithms/decompose-polylines';
   import { translateToPositiveQuadrant } from '../../lib/algorithms/translate-to-positive';
-  import { joinColinearLinesInChains } from '../../lib/algorithms/join-colinear-lines';
-  import { TOLERANCE } from '../../lib/constants';
+  import { joinColinearLines } from '../../lib/algorithms/join-colinear-lines';
   import type { Shape, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../../lib/types';
-  import type { Chain } from '../../lib/algorithms/chain-detection';
-  import type { ChainNormalizationParameters } from '../../lib/types/algorithm-parameters';
-  import type { AlgorithmParameters } from '../../lib/types/algorithm-parameters';
-  import { DEFAULT_ALGORITHM_PARAMETERS } from '../../lib/types/algorithm-parameters';
-  import { evaluateNURBS } from '../../lib/geometry/nurbs';
+  import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
   import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
   import { polylineToPoints } from '$lib/geometry/polyline';
-  import { onMount } from 'svelte';
 
   // Resizable columns state - initialize from store, update local variables during drag
   let leftColumnWidth = $prepareStageStore.leftColumnWidth;
@@ -37,7 +31,6 @@
   let startWidth = 0;
 
   // Chain detection parameters
-  let tolerance = $chainStore.tolerance;
   let isDetectingChains = false;
   let isDetectingParts = false;
   let isNormalizing = false;
@@ -47,12 +40,6 @@
   // Algorithm parameters - use store for persistence
   $: algorithmParams = $prepareStageStore.algorithmParams;
   
-  // Keep tolerance input synchronized with chain detection parameters
-  $: {
-    if (algorithmParams.chainDetection.tolerance !== tolerance) {
-      prepareStageStore.updateAlgorithmParam('chainDetection', { tolerance });
-    }
-  }
   
   // Reactive chain and part data
   $: detectedChains = $chainStore.chains;
@@ -175,10 +162,10 @@
       }
 
       // Update tolerance in store
-      setTolerance(tolerance);
+      setTolerance(algorithmParams.chainDetection.tolerance);
       
       // Detect chains and update store
-      const chains = detectShapeChains(currentDrawing.shapes, { tolerance });
+      const chains = detectShapeChains(currentDrawing.shapes, { tolerance: algorithmParams.chainDetection.tolerance });
       setChains(chains);
       
       console.log(`Detected ${chains.length} chains with ${chains.reduce((sum, chain) => sum + chain.shapes.length, 0)} total shapes`);
@@ -242,7 +229,7 @@
       drawingStore.replaceAllShapes(normalizedShapes);
       
       // Re-detect chains after normalization to update the chain store
-      const newChains = detectShapeChains(normalizedShapes, { tolerance });
+      const newChains = detectShapeChains(normalizedShapes, { tolerance: algorithmParams.chainDetection.tolerance });
       setChains(newChains);
       
       // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
@@ -310,13 +297,13 @@
       prepareStageStore.saveOriginalStateForOptimization(currentDrawing.shapes, detectedChains);
       
       // Optimize start points for all chains
-      const optimizedShapes = optimizeStartPoints(detectedChains, tolerance);
+      const optimizedShapes = optimizeStartPoints(detectedChains, algorithmParams.chainDetection.tolerance);
       
       // Update the drawing store with optimized shapes
       drawingStore.replaceAllShapes(optimizedShapes);
       
       // Re-detect chains after optimization to update the chain store
-      const newChains = detectShapeChains(optimizedShapes, { tolerance });
+      const newChains = detectShapeChains(optimizedShapes, { tolerance: algorithmParams.chainDetection.tolerance });
       setChains(newChains);
       
       // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
@@ -421,7 +408,7 @@
         }
       }
       
-      const partResult = await detectParts(detectedChains, tolerance, algorithmParams.partDetection);
+      const partResult = await detectParts(detectedChains, algorithmParams.chainDetection.tolerance, algorithmParams.partDetection);
       
       // Combine open chain warnings with part detection warnings
       const allWarnings = [...openChainWarnings, ...partResult.warnings];
@@ -491,7 +478,7 @@
     );
     
     // Use ONLY the user-set tolerance
-    return distance < tolerance;
+    return distance < algorithmParams.chainDetection.tolerance;
   }
 
   function calculateChainBoundingBox(chain: Chain): {minX: number, maxX: number, minY: number, maxY: number} {
@@ -622,10 +609,10 @@
     
     try {
       // First detect chains from current shapes
-      const chains = detectShapeChains(drawing.shapes, { tolerance: TOLERANCE });
+      const chains = detectShapeChains(drawing.shapes, { tolerance: algorithmParams.chainDetection.tolerance });
       
-      // Join collinear lines in the chains
-      const joinedChains = joinColinearLinesInChains(chains, TOLERANCE);
+      // Join collinear lines in the chains using the configured parameters
+      const joinedChains = joinColinearLines(chains, algorithmParams.joinColinearLines);
       
       // Extract all shapes from the joined chains
       const allJoinedShapes = joinedChains.flatMap(chain => chain.shapes);
@@ -887,6 +874,23 @@
             <div class="prepare-action-description">
               Combines adjacent line segments that are perfectly aligned into single lines to simplify geometry.
             </div>
+            <label class="param-label">
+              Collinearity Tolerance:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.joinColinearLines.tolerance} 
+                min="0.001" 
+                max="1.0" 
+                step="0.001"
+                class="param-input"
+                title="Tolerance for determining if lines are collinear."
+              />
+              <div class="param-description">
+                Maximum deviation from perfect collinearity for lines to be considered joinable. 
+                Smaller values require more precise alignment. 
+                Larger values allow joining of slightly misaligned line segments.
+              </div>
+            </label>
           </div>
         </details>
 
@@ -1058,79 +1062,77 @@
             <div class="prepare-action-description">
               Identifies parts (outer shells with inner holes) from closed chains for advanced cutting operations.
             </div>
-            <div class="param-grid">
-              <label class="param-label">
-                Circle Points:
-                <input 
-                  type="number" 
-                  bind:value={algorithmParams.partDetection.circleTessellationPoints} 
-                  min="8" 
-                  max="128" 
-                  step="1"
-                  class="param-input"
-                  title="Number of points to tessellate circles into. Higher = better precision but slower."
-                />
-                <div class="param-description">
-                  Number of straight line segments used to approximate circles for geometric operations. 
-                  Higher values provide better accuracy for containment detection but slower performance. 
-                  Increase for complex files with precision issues.
-                </div>
-              </label>
-              
-              <label class="param-label">
-                Min Arc Points:
-                <input 
-                  type="number" 
-                  bind:value={algorithmParams.partDetection.minArcTessellationPoints} 
-                  min="4" 
-                  max="64" 
-                  step="1"
-                  class="param-input"
-                  title="Minimum number of points for arc tessellation."
-                />
-                <div class="param-description">
-                  Minimum number of points for arc tessellation, regardless of arc length. 
-                  Ensures even very small arcs have adequate geometric representation. 
-                  Higher values improve precision for tiny arc segments.
-                </div>
-              </label>
-              
-              <label class="param-label">
-                Arc Precision:
-                <input 
-                  type="number" 
-                  bind:value={algorithmParams.partDetection.arcTessellationDensity} 
-                  min="0.01" 
-                  max="0.5" 
-                  step="0.01"
-                  class="param-input"
-                  title="Arc tessellation density factor. Smaller = more points."
-                />
-                <div class="param-description">
-                  Controls how finely arcs are divided into line segments (radians per point). 
-                  Smaller values create more points and better precision. 
-                  Larger values use fewer points for faster processing but less accuracy.
-                </div>
-              </label>
-              
-              <label class="param-label">
-                Decimal Precision:
-                <input 
-                  type="number" 
-                  bind:value={algorithmParams.partDetection.decimalPrecision} 
-                  min="1" 
-                  max="6" 
-                  step="1"
-                  class="param-input"
-                  title="Decimal precision for coordinate rounding."
-                />
-                <div class="param-description">
-                  Number of decimal places for coordinate rounding to avoid floating-point errors. 
-                  Higher values preserve more precision but may cause numerical instability. 
-                  Lower values improve robustness but may lose fine geometric details.
-                </div>
-              </label>
-            </div>
+            <label class="param-label">
+              Circle Points:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.partDetection.circleTessellationPoints} 
+                min="8" 
+                max="128" 
+                step="1"
+                class="param-input"
+                title="Number of points to tessellate circles into. Higher = better precision but slower."
+              />
+              <div class="param-description">
+                Number of straight line segments used to approximate circles for geometric operations. 
+                Higher values provide better accuracy for containment detection but slower performance. 
+                Increase for complex files with precision issues.
+              </div>
+            </label>
+            
+            <label class="param-label">
+              Min Arc Points:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.partDetection.minArcTessellationPoints} 
+                min="4" 
+                max="64" 
+                step="1"
+                class="param-input"
+                title="Minimum number of points for arc tessellation."
+              />
+              <div class="param-description">
+                Minimum number of points for arc tessellation, regardless of arc length. 
+                Ensures even very small arcs have adequate geometric representation. 
+                Higher values improve precision for tiny arc segments.
+              </div>
+            </label>
+            
+            <label class="param-label">
+              Arc Precision:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.partDetection.arcTessellationDensity} 
+                min="0.01" 
+                max="0.5" 
+                step="0.01"
+                class="param-input"
+                title="Arc tessellation density factor. Smaller = more points."
+              />
+              <div class="param-description">
+                Controls how finely arcs are divided into line segments (radians per point). 
+                Smaller values create more points and better precision. 
+                Larger values use fewer points for faster processing but less accuracy.
+              </div>
+            </label>
+            
+            <label class="param-label">
+              Decimal Precision:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.partDetection.decimalPrecision} 
+                min="1" 
+                max="6" 
+                step="1"
+                class="param-input"
+                title="Decimal precision for coordinate rounding."
+              />
+              <div class="param-description">
+                Number of decimal places for coordinate rounding to avoid floating-point errors. 
+                Higher values preserve more precision but may cause numerical instability. 
+                Lower values improve robustness but may lose fine geometric details.
+              </div>
+            </label>
           </div>
         </details>
       </AccordionPanel>
@@ -1844,11 +1846,6 @@
     gap: 0.5rem;
   }
 
-  .param-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
-  }
 
   .param-label {
     display: flex;

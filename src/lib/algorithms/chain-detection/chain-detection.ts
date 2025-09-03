@@ -1,8 +1,8 @@
-import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../types';
+import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../../types';
 // Unused imports removed to fix lint warnings
-import { evaluateNURBS } from '../geometry/nurbs';
-import { polylineToPoints } from '../geometry/polyline';
-import { calculateSquaredDistance } from '../utils/math-utils';
+import { evaluateNURBS } from '../../geometry/nurbs';
+import { polylineToPoints } from '../../geometry/polyline';
+import { calculateSquaredDistance } from '../../utils/math-utils';
 
 export interface ChainDetectionOptions {
   tolerance: number;

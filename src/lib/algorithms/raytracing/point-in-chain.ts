@@ -6,7 +6,7 @@
  */
 
 import type { Shape, Point2D, Polyline, Spline, Line, Arc, Circle } from '../../types/geometry';
-import type { Chain } from '../chain-detection';
+import type { Chain } from '../chain-detection/chain-detection';
 import type { RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { isChainClosed } from '../part-detection';

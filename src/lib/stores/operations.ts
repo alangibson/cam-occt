@@ -11,7 +11,7 @@ import { offsetWarningsStore } from './offset-warnings';
 import { CutDirection, LeadType } from '../types/direction';
 import { calculateAndStoreOperationLeads } from '../utils/lead-persistence-utils';
 import type { DetectedPart, PartHole } from '$lib/algorithms/part-detection';
-import type { Chain } from '$lib/algorithms/chain-detection';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import { offsetChain } from '../algorithms/offset-calculation/chain/offset';
 import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';

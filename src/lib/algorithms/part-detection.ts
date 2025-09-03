@@ -10,7 +10,7 @@
  * Uses JSTS for robust geometric containment detection based on MetalHeadCAM reference
  */
 
-import type { Chain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { Point2D, Shape, Ellipse, Polyline } from '../../lib/types';
 import { 
   buildContainmentHierarchy,
@@ -18,7 +18,7 @@ import {
 } from '../utils/geometric-containment';
 import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
-import { normalizeChain } from './chain-normalization';
+import { normalizeChain } from './chain-normalization/chain-normalization';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { calculateChainBoundingBox, type BoundingBox } from '../utils/shape-bounds-utils';
 

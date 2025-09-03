@@ -1,5 +1,5 @@
 import type { Point2D, Polyline, Line, Arc, Circle, Shape } from '../types/geometry';
-import type { Chain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
 import { LeadType, CutDirection } from '../types/direction';
 import { validateLeadConfiguration, type LeadValidationResult } from './lead-validation';

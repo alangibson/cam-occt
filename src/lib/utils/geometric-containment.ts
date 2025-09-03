@@ -11,7 +11,7 @@
 
 import { GeometryFactory, Coordinate } from 'jsts/org/locationtech/jts/geom';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Point2D, Shape } from '../../lib/types';
 import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';

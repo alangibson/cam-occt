@@ -1,5 +1,5 @@
 import type { Path } from '../stores/paths';
-import type { Chain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { Shape, Point2D } from '../../lib/types';
 import type { DetectedPart } from './part-detection';
 import { calculateLeads } from './lead-calculation';

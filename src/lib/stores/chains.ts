@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 
 export interface ChainStore {
   chains: Chain[];

@@ -9,7 +9,7 @@
 import type { Path, PathsState } from '../stores/paths';
 import type { Operation } from '../stores/operations';
 import type { DetectedPart, PartHole } from '../algorithms/part-detection';
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import { calculateLeads } from '../algorithms/lead-calculation';
 import { LeadType } from '../types/direction';
 import { createLeadInConfig, createLeadOutConfig } from './lead-config-utils';

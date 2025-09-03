@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { detectShapeChains } from './chain-detection';
-import type { Shape } from '../../lib/types';
-import { CutDirection, LeadType } from '../types/direction';
+import type { Shape } from '../../types';
+import { CutDirection, LeadType } from '../../types/direction';
 
 // Helper function to create ellipse shapes
 function createEllipse(

@@ -1,4 +1,4 @@
-import type { Chain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import type { Shape, Point2D, Line, Arc, Circle, Polyline, Spline, Ellipse } from '../types/geometry';
 import { CutDirection } from '../types/direction';
 import { getShapeEndPoint } from '$lib/geometry';

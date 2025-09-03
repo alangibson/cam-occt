@@ -6,7 +6,7 @@
  */
 
 import type { Drawing } from '../types/geometry';
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { DetectedPart, PartDetectionWarning } from '../algorithms/part-detection';
 import type { Rapid } from '../algorithms/optimize-cut-order';
 import type { TessellationPoint, DrawingOverlay } from '../stores/overlay';

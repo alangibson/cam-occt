@@ -6,7 +6,7 @@
 import { writable } from 'svelte/store';
 import type { WorkflowStage } from './workflow';
 import type { Point2D, Shape, Line, Arc, Circle, Polyline, Ellipse } from '../../lib/types';
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { polylineToPoints } from '../geometry/polyline';
 

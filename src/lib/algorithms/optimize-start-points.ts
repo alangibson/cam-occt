@@ -1,5 +1,5 @@
 import type { Shape, Polyline } from '../../lib/types';
-import type { Chain } from './chain-detection';
+import type { Chain } from './chain-detection/chain-detection';
 import { isChainClosed } from './part-detection';
 import { polylineToPoints } from '../geometry/polyline';
 import { splitShapeAtMidpoint, reconstructChainFromSplit, createSplitShape } from './path-optimization-utils';

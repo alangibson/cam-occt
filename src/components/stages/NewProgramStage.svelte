@@ -270,7 +270,7 @@
         <Operations bind:this={operationsComponent} />
       </AccordionPanel>
 
-      <AccordionPanel title="Shape Properties" isExpanded={true}>
+      <AccordionPanel title="Shape" isExpanded={true}>
         <ShapeProperties />
       </AccordionPanel>
 

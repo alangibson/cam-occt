@@ -27,7 +27,7 @@
   import { overlayStore } from '../../lib/stores/overlay';
   import { onMount, onDestroy } from 'svelte';
   import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../../lib/types';
-  import type { Chain } from '../../lib/algorithms/chain-detection';
+  import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
   import type { Path } from '../../lib/stores/paths';
   import type { Rapid } from '../../lib/algorithms/optimize-cut-order';
   import { getPhysicalScaleFactor } from '../../lib/utils/units';

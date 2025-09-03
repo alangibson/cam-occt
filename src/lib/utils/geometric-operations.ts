@@ -5,7 +5,7 @@
  * and spatial relationships using custom mathematical algorithms.
  */
 
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Shape, Point2D, Line, Circle, Arc, Polyline, Ellipse, Spline } from '../../lib/types';
 import { sampleNURBS } from '../geometry/nurbs';
 import { polylineToPoints } from '../geometry/polyline';

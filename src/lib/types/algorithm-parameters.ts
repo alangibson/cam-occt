@@ -6,6 +6,7 @@
  */
 
 // Import part detection parameters for combined interface
+import { TOLERANCE } from '$lib/constants';
 import type { PartDetectionParameters } from './part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './part-detection';
 // Import PartDetectionParameters and DEFAULT_PART_DETECTION_PARAMETERS directly from './part-detection'
@@ -41,6 +42,19 @@ export const DEFAULT_CHAIN_NORMALIZATION_PARAMETERS: ChainNormalizationParameter
 };
 
 /**
+ * Join Co-linear Lines Parameters
+ * Controls how collinear line segments are joined together
+ */
+export interface JoinColinearLinesParameters {
+  /** Tolerance for determining if lines are collinear. Range: 0.001-1.0 */
+  tolerance: number;
+}
+
+export const DEFAULT_JOIN_COLINEAR_LINES_PARAMETERS: JoinColinearLinesParameters = {
+  tolerance: TOLERANCE
+};
+
+/**
  * Combined Algorithm Parameters
  * All algorithm parameters in a single interface for convenience
  */
@@ -48,10 +62,12 @@ export interface AlgorithmParameters {
   chainDetection: ChainDetectionParameters;
   chainNormalization: ChainNormalizationParameters;
   partDetection: PartDetectionParameters;
+  joinColinearLines: JoinColinearLinesParameters;
 }
 
 export const DEFAULT_ALGORITHM_PARAMETERS: AlgorithmParameters = {
   chainDetection: DEFAULT_CHAIN_DETECTION_PARAMETERS,
   chainNormalization: DEFAULT_CHAIN_NORMALIZATION_PARAMETERS,
-  partDetection: DEFAULT_PART_DETECTION_PARAMETERS
+  partDetection: DEFAULT_PART_DETECTION_PARAMETERS,
+  joinColinearLines: DEFAULT_JOIN_COLINEAR_LINES_PARAMETERS
 };
