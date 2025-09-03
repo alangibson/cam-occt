@@ -94,14 +94,6 @@
     border-color: #c7d2fe;
   }
 
-  .breadcrumb-button.current {
-    background-color: #4f46e5;
-    color: white;
-    border-color: #4f46e5;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3), 0 2px 4px -1px rgba(79, 70, 229, 0.2);
-    transform: scale(1.05);
-  }
-
   .breadcrumb-button.completed {
     background-color: #10b981;
     color: white;
@@ -111,6 +103,20 @@
   .breadcrumb-button.completed:hover {
     background-color: #059669;
     border-color: #059669;
+  }
+
+  /* Current stage always takes precedence over completed */
+  .breadcrumb-button.current {
+    background-color: #4f46e5 !important;
+    color: white;
+    border-color: #4f46e5 !important;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3), 0 2px 4px -1px rgba(79, 70, 229, 0.2);
+    transform: scale(1.05);
+  }
+  
+  .breadcrumb-button.current:hover {
+    background-color: #4f46e5 !important;
+    border-color: #4f46e5 !important;
   }
 
   .breadcrumb-button.inaccessible {

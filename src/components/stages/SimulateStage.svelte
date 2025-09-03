@@ -91,6 +91,11 @@
     overlayStore.setToolHead('simulate', toolHeadPosition);
   }
 
+  // Auto-complete simulate stage when simulation data is available
+  $: if (pathStoreState?.paths?.length > 0 || rapidStoreState?.rapids?.length > 0) {
+    workflowStore.completeStage('simulate');
+  }
+
   // Setup store subscriptions
   function setupStoreSubscriptions() {
     // Clear any existing subscriptions

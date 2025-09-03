@@ -68,7 +68,7 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
       expect(get(workflowStore).canAdvanceTo('export')).toBe(false);
     });
 
-    it('should enable simulate stage after program is completed', () => {
+    it('should enable simulate and export stages after program is completed', () => {
       workflowStore.completeStage('import');
       workflowStore.completeStage('edit');
       workflowStore.completeStage('prepare');
@@ -79,7 +79,7 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
       expect(get(workflowStore).canAdvanceTo('prepare')).toBe(true);
       expect(get(workflowStore).canAdvanceTo('program')).toBe(true);
       expect(get(workflowStore).canAdvanceTo('simulate')).toBe(true);
-      expect(get(workflowStore).canAdvanceTo('export')).toBe(false);
+      expect(get(workflowStore).canAdvanceTo('export')).toBe(true); // Export now available when program is completed
     });
 
     it('should enable export stage ONLY after simulate is completed', () => {
@@ -99,7 +99,7 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
   });
 
   describe('Export Stage Accessibility Rules', () => {
-    it('should keep export stage inaccessible if simulate is not completed', () => {
+    it('should make export stage accessible when program is completed (even without simulate)', () => {
       // Complete all stages except simulate
       workflowStore.completeStage('import');
       workflowStore.completeStage('edit');
@@ -107,7 +107,7 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
       workflowStore.completeStage('program');
       // Note: simulate NOT completed
       
-      expect(get(workflowStore).canAdvanceTo('export')).toBe(false);
+      expect(get(workflowStore).canAdvanceTo('export')).toBe(true); // Export is available when program is completed
     });
 
     it('should keep export stage inaccessible if any previous stage is not completed', () => {
@@ -123,16 +123,19 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
       expect(get(workflowStore).canAdvanceTo('export')).toBe(false);
     });
 
-    it('should make export accessible immediately when simulate is completed', () => {
+    it('should make export accessible when program is completed (not requiring simulate)', () => {
       workflowStore.completeStage('import');
       workflowStore.completeStage('edit');
       workflowStore.completeStage('prepare');
-      workflowStore.completeStage('program');
       
-      // Before simulate completion
+      // Before program completion
       expect(get(workflowStore).canAdvanceTo('export')).toBe(false);
       
-      // After simulate completion
+      // After program completion
+      workflowStore.completeStage('program');
+      expect(get(workflowStore).canAdvanceTo('export')).toBe(true); // Export available immediately with program
+      
+      // Completing simulate doesn't change export availability
       workflowStore.completeStage('simulate');
       expect(get(workflowStore).canAdvanceTo('export')).toBe(true);
     });
@@ -238,7 +241,7 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
       
       // Verify final state is consistent
       expect(get(workflowStore).canAdvanceTo('simulate')).toBe(true);
-      expect(get(workflowStore).canAdvanceTo('export')).toBe(false);
+      expect(get(workflowStore).canAdvanceTo('export')).toBe(true); // Export is available when program is completed
     });
   });
 
@@ -263,14 +266,14 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
       // 4. Create operations (program stage)
       workflowStore.setStage('program');
       workflowStore.completeStage('program');
-      expect(get(workflowStore).canAdvanceTo('export')).toBe(false);
+      expect(get(workflowStore).canAdvanceTo('export')).toBe(true); // Export is available when program is completed
       
       // 5. Run simulation (simulate stage)
       workflowStore.setStage('simulate');
-      expect(get(workflowStore).canAdvanceTo('export')).toBe(false); // Still not accessible
+      expect(get(workflowStore).canAdvanceTo('export')).toBe(true); // Already accessible after program
       
       workflowStore.completeStage('simulate'); // Complete simulation
-      expect(get(workflowStore).canAdvanceTo('export')).toBe(true); // NOW accessible
+      expect(get(workflowStore).canAdvanceTo('export')).toBe(true); // Still accessible
       
       // 6. Navigate to export
       workflowStore.setStage('export');
@@ -287,13 +290,12 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
       // Navigate to simulate but don't complete it
       workflowStore.setStage('simulate');
       
-      // Export should still be blocked
-      expect(get(workflowStore).canAdvanceTo('export')).toBe(false);
+      // Export should be accessible after program completion
+      expect(get(workflowStore).canAdvanceTo('export')).toBe(true);
       
-      // Should not be able to navigate to export - stage should not change
-      const currentStageBefore = get(workflowStore).currentStage;
+      // Should be able to navigate to export even without completing simulate
       workflowStore.setStage('export');
-      expect(get(workflowStore).currentStage).toBe(currentStageBefore); // Should remain unchanged
+      expect(get(workflowStore).currentStage).toBe('export'); // Can navigate to export
     });
   });
 });

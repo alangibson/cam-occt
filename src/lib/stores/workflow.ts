@@ -25,6 +25,15 @@ const WORKFLOW_ORDER: WorkflowStage[] = ['import', 'edit', 'prepare', 'program',
 function validateStageAdvancement(targetStage: WorkflowStage, completedStages: Set<WorkflowStage>): boolean {
   const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
   
+  // Special case: Export stage becomes available when Program is completed (same as Simulate)
+  if (targetStage === 'export') {
+    // Export requires program to be completed, but not simulate
+    return completedStages.has('import') && 
+           completedStages.has('edit') && 
+           completedStages.has('prepare') && 
+           completedStages.has('program');
+  }
+  
   // For sequential workflow, all previous stages must be completed
   for (let i: number = 0; i < targetIndex; i++) {
     if (!completedStages.has(WORKFLOW_ORDER[i])) {
