@@ -1009,7 +1009,6 @@
     <!-- Center Column - 3D Simulation Viewport -->
     <div class="center-column">
       <div class="simulation-header">
-        <h2>3D Cutting Simulation</h2>
         <div class="simulation-controls">
           <button class="control-btn" on:click={playSimulation} disabled={isPlaying && !isPaused}>
             <span>▶️</span> Play
@@ -1059,28 +1058,7 @@
         aria-label="Resize right panel (Arrow keys to adjust)"
         type="button"
       ></button>
-      <AccordionPanel title="Simulation Settings" isExpanded={true}>
-        <div class="setting-group">
-          <label>
-            <input type="checkbox" checked disabled>
-            Show tool path
-          </label>
-          <label>
-            <input type="checkbox" checked disabled>
-            Show pierce points
-          </label>
-          <label>
-            <input type="checkbox" disabled>
-            Show lead-in/out
-          </label>
-          <label>
-            <input type="checkbox" disabled>
-            Realistic timing
-          </label>
-        </div>
-      </AccordionPanel>
-
-      <AccordionPanel title="Cut Statistics" isExpanded={true}>
+<AccordionPanel title="Cut Statistics" isExpanded={true}>
         <div class="stats-grid">
           <div class="stat-item">
             <span class="stat-label">Total Length:</span>
@@ -1123,8 +1101,6 @@
     display: flex;
     flex-direction: column;
     height: 100%;
-    background-color: #1a1a1a;
-    color: white;
   }
 
   .simulate-layout {
@@ -1137,12 +1113,11 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    background-color: #2d2d2d;
   }
 
   .right-column {
-    background-color: #1f1f1f;
-    border-left: 1px solid #404040;
+    background-color: white;
+    border-left: 1px solid #e5e7eb;
     padding: 1rem;
     overflow-y: auto;
     flex-shrink: 0; /* Prevent column from shrinking */
@@ -1154,19 +1129,13 @@
 
   .simulation-header {
     padding: 1rem 2rem;
-    border-bottom: 1px solid #404040;
+    border-bottom: 1px solid #e5e7eb;
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
-    background-color: #252525;
+    background-color: #f5f5f5;
   }
 
-  .simulation-header h2 {
-    margin: 0;
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: white;
-  }
 
   .simulation-controls {
     display: flex;
@@ -1175,9 +1144,9 @@
 
   .control-btn {
     padding: 0.5rem 1rem;
-    background: #404040;
-    color: white;
-    border: 1px solid #555;
+    background: white;
+    color: #374151;
+    border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     cursor: pointer;
     font-size: 0.875rem;
@@ -1185,8 +1154,8 @@
   }
 
   .control-btn:hover:not(:disabled) {
-    background: #505050;
-    border-color: #666;
+    background: #f9fafb;
+    border-color: #9ca3af;
   }
 
   .control-btn:disabled {
@@ -1196,7 +1165,7 @@
 
   .simulation-viewport {
     flex: 1;
-    background: #1a1a1a;
+    background: white;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1208,8 +1177,8 @@
 
   .simulation-progress {
     padding: 1rem 2rem;
-    border-top: 1px solid #404040;
-    background-color: #252525;
+    border-top: 1px solid #e5e7eb;
+    background-color: #f5f5f5;
   }
 
   .progress-info {
@@ -1217,12 +1186,12 @@
     justify-content: space-between;
     margin-bottom: 0.5rem;
     font-size: 0.875rem;
-    color: #ccc;
+    color: #6b7280;
   }
 
   .progress-bar {
     height: 4px;
-    background: #404040;
+    background: #e5e7eb;
     border-radius: 2px;
     overflow: hidden;
   }
@@ -1242,24 +1211,6 @@
     padding: 1rem;
   }
 
-  .setting-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .setting-group label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: #ccc;
-    cursor: pointer;
-  }
-
-  .setting-group input[type="checkbox"] {
-    width: 1rem;
-    height: 1rem;
-  }
 
   .stats-grid {
     display: flex;
@@ -1271,7 +1222,7 @@
     display: flex;
     justify-content: space-between;
     padding: 0.5rem 0;
-    border-bottom: 1px solid #404040;
+    border-bottom: 1px solid #e5e7eb;
   }
 
   .stat-item:last-child {
@@ -1279,11 +1230,11 @@
   }
 
   .stat-label {
-    color: #aaa;
+    color: #6b7280;
   }
 
   .stat-value {
-    color: white;
+    color: #374151;
     font-weight: 600;
   }
 
