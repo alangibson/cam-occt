@@ -33,6 +33,7 @@
   import { getPhysicalScaleFactor } from '../../lib/utils/units';
   import { evaluateNURBS, sampleNURBS } from '../../lib/geometry/nurbs';
   import { polylineToPoints } from '$lib/geometry/polyline';
+  import { getShapePointAt } from '$lib/geometry';
   import { calculateLeads, type LeadInConfig, type LeadOutConfig } from '../../lib/algorithms/lead-calculation';
   import type { DetectedPart } from '../../lib/algorithms/part-detection';
   import { LeadType } from '../../lib/types/direction';
@@ -55,7 +56,7 @@
   let currentProgress = 0;
   let currentOperation = 'Ready';
   let lastFrameTime = 0;
-  let simulationSpeed = 10; // 10x real-time for faster preview
+  let simulationSpeed = 1; // 1x real-time default
   
   // Tool head position and animation data
   let toolHeadPosition: Point2D = { x: 0, y: 0 };
@@ -284,12 +285,14 @@
         const leadInConfig: LeadInConfig = {
           type: path.leadInType,
           length: path.leadInLength,
-          flipSide: path.leadInFlipSide || false
+          flipSide: path.leadInFlipSide || false,
+          angle: path.leadInAngle
         };
         const leadOutConfig: LeadOutConfig = {
           type: path.leadOutType || LeadType.NONE,
           length: path.leadOutLength || 0,
-          flipSide: path.leadOutFlipSide || false
+          flipSide: path.leadOutFlipSide || false,
+          angle: path.leadOutAngle
         };
         
         const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
@@ -335,12 +338,14 @@
         const leadInConfig: LeadInConfig = {
           type: path.leadInType || LeadType.NONE,
           length: path.leadInLength || 0,
-          flipSide: path.leadInFlipSide || false
+          flipSide: path.leadInFlipSide || false,
+          angle: path.leadInAngle
         };
         const leadOutConfig: LeadOutConfig = {
           type: path.leadOutType,
           length: path.leadOutLength,
-          flipSide: path.leadOutFlipSide || false
+          flipSide: path.leadOutFlipSide || false,
+          angle: path.leadOutAngle
         };
         
         const chainForLeads = path.calculatedOffset ? 
@@ -404,12 +409,14 @@
         const leadInConfig: LeadInConfig = {
           type: path.leadInType || LeadType.NONE,
           length: path.leadInLength || 0,
-          flipSide: path.leadInFlipSide || false
+          flipSide: path.leadInFlipSide || false,
+          angle: path.leadInAngle
         };
         const leadOutConfig: LeadOutConfig = {
           type: path.leadOutType || LeadType.NONE,
           length: path.leadOutLength || 0,
-          flipSide: path.leadOutFlipSide || false
+          flipSide: path.leadOutFlipSide || false,
+          angle: path.leadOutAngle
         };
         
         const chainForLeads = path.calculatedOffset ? 
@@ -651,12 +658,14 @@
         const leadInConfig: LeadInConfig = {
           type: path.leadInType || LeadType.NONE,
           length: path.leadInLength || 0,
-          flipSide: path.leadInFlipSide || false
+          flipSide: path.leadInFlipSide || false,
+          angle: path.leadInAngle
         };
         const leadOutConfig: LeadOutConfig = {
           type: path.leadOutType || LeadType.NONE,
           length: path.leadOutLength || 0,
-          flipSide: path.leadOutFlipSide || false
+          flipSide: path.leadOutFlipSide || false,
+          angle: path.leadOutAngle
         };
         
         const chainForLeads = path.calculatedOffset ? 
@@ -806,37 +815,14 @@
           };
         }
       case 'circle':
-        const circle = shape.geometry as Circle;
-        let circleAngle: number;
-        
-        if (cutDirection === 'clockwise') {
-          // For clockwise, start at 0 (3 o'clock) and go negative
-          circleAngle = -progress * 2 * Math.PI;
-        } else {
-          // For counterclockwise (default), start at 0 and go positive
-          circleAngle = progress * 2 * Math.PI;
-        }
-        
-        return {
-          x: circle.center.x + circle.radius * Math.cos(circleAngle),
-          y: circle.center.y + circle.radius * Math.sin(circleAngle)
-        };
+        // Use proper geometry function and handle cut direction by reversing progress
+        const effectiveProgressCircle = cutDirection === 'clockwise' ? 1.0 - progress : progress;
+        return getShapePointAt(shape, effectiveProgressCircle);
       case 'arc':
-        const arc = shape.geometry as Arc;
-        let arcAngle: number;
-        
-        if (cutDirection === 'clockwise') {
-          // For clockwise, go from endAngle to startAngle
-          arcAngle = arc.endAngle + (arc.startAngle - arc.endAngle) * progress;
-        } else {
-          // For counterclockwise (default), go from startAngle to endAngle
-          arcAngle = arc.startAngle + (arc.endAngle - arc.startAngle) * progress;
-        }
-        
-        return {
-          x: arc.center.x + arc.radius * Math.cos(arcAngle),
-          y: arc.center.y + arc.radius * Math.sin(arcAngle)
-        };
+        // Use proper geometry function that respects Arc's clockwise property
+        // Handle cut direction by reversing progress for clockwise cuts
+        const effectiveProgressArc = cutDirection === 'clockwise' ? 1.0 - progress : progress;
+        return getShapePointAt(shape, effectiveProgressArc);
       case 'polyline':
         const polyline = shape.geometry as Polyline;
         const polylinePoints = polylineToPoints(polyline);
@@ -1070,9 +1056,6 @@
           </button>
           <button class="control-btn" on:click={stopSimulation} disabled={!isPlaying && !isPaused}>
             <span>⏹️</span> Stop  
-          </button>
-          <button class="control-btn" on:click={resetSimulation}>
-            <span>⏮️</span> Reset
           </button>
           <div class="speed-control">
             <label for="speed-select">Speed:</label>
