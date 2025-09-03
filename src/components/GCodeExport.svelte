@@ -5,6 +5,7 @@
   import { pathStore } from '../lib/stores/paths';
   import { chainStore } from '../lib/stores/chains';
   import type { CuttingParameters } from '../lib/types';
+  import { onMount } from 'svelte';
   
   $: drawing = $drawingStore.drawing;
   $: paths = $pathStore.paths;
@@ -83,27 +84,22 @@
       alert('Failed to copy G-code to clipboard');
     });
   }
+  
+  // Automatically generate G-code when component mounts
+  onMount(() => {
+    handleGenerateGCode();
+  });
 </script>
 
 <div class="export-container">
-  {#if !generatedGCode}
+  {#if !generatedGCode && isGenerating}
     <div class="generate-section">
-      <button
-        class="export-button generate-button"
-        on:click={handleGenerateGCode}
-        disabled={!drawing || isGenerating}
-      >
-        {isGenerating ? 'Generating...' : 'Generate G-Code'}
-      </button>
-      <div class="info">
-        {#if drawing}
-          <p>Ready to generate G-code for {drawing.shapes.length} shapes</p>
-        {:else}
-          <p>No drawing loaded</p>
-        {/if}
+      <div class="generating-indicator">
+        <div class="spinner"></div>
+        <p>Generating G-code...</p>
       </div>
     </div>
-  {:else}
+  {:else if generatedGCode}
     <div class="gcode-section">
       <div class="gcode-header">
         <div class="gcode-info">
@@ -119,8 +115,8 @@
           <button class="action-button download-button" on:click={downloadGCode}>
             Download
           </button>
-          <button class="action-button generate-button" on:click={handleGenerateGCode}>
-            Generate G-Code
+          <button class="action-button regenerate-button" on:click={handleGenerateGCode}>
+            Regenerate
           </button>
         </div>
       </div>
@@ -134,6 +130,12 @@
         ></textarea>
       </div>
     </div>
+  {:else}
+    <div class="generate-section">
+      <div class="error-message">
+        <p>No paths available. Please create operations first.</p>
+      </div>
+    </div>
   {/if}
 </div>
 
@@ -145,7 +147,7 @@
     background-color: white;
   }
   
-  /* Initial generate button view */
+  /* Initial generate/loading view */
   .generate-section {
     display: flex;
     flex-direction: column;
@@ -155,25 +157,30 @@
     padding: 2rem;
   }
   
-  .generate-section .generate-button {
-    padding: 1rem 3rem;
-    background-color: #28a745;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1.125rem;
-    font-weight: 600;
-    transition: background-color 0.2s;
+  .generating-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
   }
   
-  .generate-section .generate-button:hover:not(:disabled) {
-    background-color: #218838;
+  .generating-indicator p {
+    margin: 0;
+    color: #6b7280;
+    font-size: 1rem;
   }
   
-  .generate-section .generate-button:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e5e7eb;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    to { transform: rotate(360deg); }
   }
   
   /* G-code display view */
@@ -245,18 +252,18 @@
     border-color: #2563eb;
   }
   
-  .generate-button {
+  .regenerate-button {
     background-color: #10b981;
     color: white;
     border-color: #10b981;
   }
   
-  .generate-button:hover:not(:disabled) {
+  .regenerate-button:hover:not(:disabled) {
     background-color: #059669;
     border-color: #059669;
   }
   
-  .generate-button:disabled {
+  .regenerate-button:disabled {
     background-color: #e5e7eb;
     border-color: #e5e7eb;
     color: #9ca3af;
@@ -289,14 +296,14 @@
     outline: none;
   }
   
-  .info {
-    margin-top: 1rem;
-    font-size: 0.875rem;
-    color: #6b7280;
+  
+  .error-message {
     text-align: center;
+    color: #ef4444;
+    font-size: 1rem;
   }
   
-  .info p {
+  .error-message p {
     margin: 0;
   }
 </style>
