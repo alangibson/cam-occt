@@ -26,6 +26,7 @@
   import type { WorkflowStage } from '../lib/stores/workflow';
   import { getPhysicalScaleFactor, getPixelsPerUnit } from '../lib/utils/units';
   import { normalizeAngle } from '../lib/utils/polygon-geometry-shared';
+  import { isPointInsidePart } from '../lib/algorithms/raytracing/point-in-chain';
   
   export let respectLayerVisibility = true; // Default to true for Edit stage
   export let treatChainsAsEntities = false; // Default to false, true for Program stage
@@ -1140,6 +1141,19 @@
     return null;
   }
 
+  function getPartAtPoint(point: Point2D): string | null {
+    if (!parts || parts.length === 0) return null;
+    
+    // Check each part to see if the point is inside it (shell but outside holes)
+    for (const part of parts) {
+      if (isPointInsidePart(point, part)) {
+        return part.id;
+      }
+    }
+    
+    return null;
+  }
+
   function isPointNearShape(point: Point2D, shape: Shape, tolerance: number): boolean {
     switch (shape.type) {
       case 'line':
@@ -1375,13 +1389,8 @@
           // Program mode - allow chain and part selection
           const chainId = getShapeChainId(shape.id, chains);
           if (chainId) {
-            // Check if this chain belongs to a part
-            const partId = getChainPartId(chainId, parts);
-            
-            if (partId && onPartClick) {
-              // Handle part click
-              onPartClick(partId);
-            } else if (onChainClick) {
+            // When clicking on a shape outline, always prefer chain selection
+            if (onChainClick) {
               // Handle chain click
               // Get all shapes in the chain
               const chainShapeIds = getChainShapeIds(shape.id, chains);
@@ -1422,16 +1431,28 @@
           }
           // Don't select individual shapes in paths mode
         }
-      } else if (!e.ctrlKey) {
-        // Clear all selections when clicking in empty space
-        drawingStore.clearSelection();
-        clearChainSelection();
-        clearHighlight();
-        selectPart(null);
-        pathStore.selectPath(null);
-        clearPathHighlight();
-        selectRapid(null);
-        clearRapidHighlight();
+      } else {
+        // Clicked in empty space - check for part selection in Program stage
+        if (interactionMode === 'chains' && onPartClick) {
+          const partId = getPartAtPoint(worldPos);
+          if (partId) {
+            // Clicked inside part but not on any shape - select the part
+            onPartClick(partId);
+            return;
+          }
+        }
+        
+        if (!e.ctrlKey) {
+          // Clear all selections when clicking in empty space
+          drawingStore.clearSelection();
+          clearChainSelection();
+          clearHighlight();
+          selectPart(null);
+          pathStore.selectPath(null);
+          clearPathHighlight();
+          selectRapid(null);
+          clearRapidHighlight();
+        }
       }
     }
   }

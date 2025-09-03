@@ -198,3 +198,31 @@ export function countPointsInsideChainExact(
   
   return count;
 }
+
+/**
+ * Check if a point is inside a part (inside shell but outside all holes)
+ * 
+ * @param point - Point to test
+ * @param part - Part with shell and holes to test against
+ * @param config - Configuration for tolerance
+ * @returns True if point is inside the part (shell) but outside all holes
+ */
+export function isPointInsidePart(
+  point: Point2D,
+  part: { shell: { chain: Chain }, holes: { chain: Chain }[] },
+  config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
+): boolean {
+  // Point must be inside the shell
+  if (!isPointInsideChainExact(point, part.shell.chain, config)) {
+    return false;
+  }
+  
+  // Point must NOT be inside any holes
+  for (const hole of part.holes) {
+    if (isPointInsideChainExact(point, hole.chain, config)) {
+      return false;
+    }
+  }
+  
+  return true;
+}
