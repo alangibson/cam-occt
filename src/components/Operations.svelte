@@ -25,6 +25,9 @@
   let hoveredPartId: string | null = null;
   let hoveredChainId: string | null = null;
   
+  // Collapsed state for operations
+  let collapsedOperations: { [operationId: string]: boolean } = {};
+  
   // Track assigned targets
   $: assignedTargets = operationsStore.getAssignedTargets();
   
@@ -63,7 +66,7 @@
   chainStore.subscribe(state => chains = state.chains);
   partStore.subscribe(state => parts = state.parts);
   
-  function addNewOperation() {
+  export function addNewOperation() {
     const newOrder = operations.length > 0 
       ? Math.max(...operations.map(op => op.order)) + 1 
       : 1;
@@ -308,15 +311,13 @@
       return assigned.parts.has(targetId);
     }
   }
+  
+  function toggleOperationCollapse(operationId: string) {
+    collapsedOperations[operationId] = !collapsedOperations[operationId];
+  }
 </script>
 
 <div class="operations-container">
-  <div class="operations-header">
-    <button onclick={addNewOperation} class="btn btn-primary btn-small">
-      Add Operation
-    </button>
-  </div>
-  
   <div class="operations-list">
     {#each operations as operation, index (operation.id)}
       <div
@@ -345,8 +346,17 @@
             onchange={(e) => updateOperationField(operation.id, 'name', e.currentTarget.value)}
             class="operation-name-input"
           />
+          <button
+            type="button"
+            class="collapse-button"
+            onclick={() => toggleOperationCollapse(operation.id)}
+            title="Expand/collapse operation details"
+          >
+            <span class="collapse-arrow">{collapsedOperations[operation.id] ? '▶' : '▼'}</span>
+          </button>
         </div>
         
+        {#if !collapsedOperations[operation.id]}
         <div class="operation-details">
           <div class="field-group">
             <label for="tool-{operation.id}">Tool:</label>
@@ -615,6 +625,7 @@
             ✕
           </button>
         </div>
+        {/if}
       </div>
     {/each}
     
@@ -632,13 +643,6 @@
     background: #f9f9f9;
     border-radius: 4px;
     padding: 1rem;
-  }
-  
-  .operations-header {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    margin-bottom: 1rem;
   }
   
   .operations-list {
@@ -686,6 +690,29 @@
     border-radius: 0.25rem;
     font-size: 0.875rem;
     font-weight: 500;
+  }
+  
+  .collapse-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+  }
+  
+  .collapse-button:hover {
+    background: #f3f4f6;
+    color: #374151;
+  }
+  
+  .collapse-arrow {
+    font-size: 0.875rem;
+    transition: transform 0.2s;
   }
   
   .enabled-checkbox {

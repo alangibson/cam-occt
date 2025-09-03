@@ -16,6 +16,8 @@
   import { offsetWarningsStore } from '../../lib/stores/offset-warnings';
   import { optimizeCutOrder } from '../../lib/algorithms/optimize-cut-order';
   
+  let operationsComponent: Operations;
+  
   // Subscribe to stores
   $: drawing = $drawingStore.drawing;
   $: chains = $chainStore.chains;
@@ -102,6 +104,13 @@
     clearRapidHighlight();
   }
 
+  // Handle adding new operation
+  function handleAddOperation() {
+    if (operationsComponent) {
+      operationsComponent.addNewOperation();
+    }
+  }
+
   // Handle cut order optimization
   function handleOptimizeCutOrder() {
     if (!drawing || chains.length === 0 || paths.length === 0) {
@@ -147,8 +156,8 @@
                 class="chain-item {selectedChainId === chain.id ? 'selected' : ''}"
                 role="button"
                 tabindex="0"
-                on:click={() => handleChainClick(chain.id)}
-                on:keydown={(e) => e.key === 'Enter' && handleChainClick(chain.id)}
+                onclick={() => handleChainClick(chain.id)}
+                onkeydown={(e) => e.key === 'Enter' && handleChainClick(chain.id)}
               >
                 <span class="chain-name">Chain {chain.id.split('-')[1]}</span>
                 <span class="chain-status {isChainClosedHelper(chain) ? 'closed' : 'open'}">
@@ -168,8 +177,8 @@
                 class="part-item {highlightedPartId === part.id ? 'highlighted' : ''}"
                 role="button"
                 tabindex="0"
-                on:click={() => handlePartClick(part.id)}
-                on:keydown={(e) => e.key === 'Enter' && handlePartClick(part.id)}
+                onclick={() => handlePartClick(part.id)}
+                onkeydown={(e) => e.key === 'Enter' && handlePartClick(part.id)}
               >
                 <span class="part-name">Part {part.id.split('-')[1]}</span>
                 <span class="part-info">{part.holes.length} holes</span>
@@ -191,10 +200,10 @@
                 class="rapid-item {selectedRapidId === rapid.id ? 'selected' : ''} {highlightedRapidId === rapid.id ? 'highlighted' : ''}"
                 role="button"
                 tabindex="0"
-                on:click={() => handleRapidClick(rapid.id)}
-                on:keydown={(e) => e.key === 'Enter' && handleRapidClick(rapid.id)}
-                on:mouseenter={() => handleRapidMouseEnter(rapid.id)}
-                on:mouseleave={handleRapidMouseLeave}
+                onclick={() => handleRapidClick(rapid.id)}
+                onkeydown={(e) => e.key === 'Enter' && handleRapidClick(rapid.id)}
+                onmouseenter={() => handleRapidMouseEnter(rapid.id)}
+                onmouseleave={handleRapidMouseLeave}
               >
                 <span class="rapid-index">{index + 1}.</span>
                 <span class="rapid-description">
@@ -214,7 +223,7 @@
             class="next-button"
             class:disabled={!$workflowStore.canAdvanceTo('simulate')}
             disabled={!$workflowStore.canAdvanceTo('simulate')}
-            on:click={handleNext}
+            onclick={handleNext}
           >
             Next: Simulate Cutting
           </button>
@@ -251,7 +260,14 @@
 
     <svelte:fragment slot="right">
       <AccordionPanel title="Operations" isExpanded={true}>
-        <Operations />
+        <button 
+          slot="header-button"
+          onclick={handleAddOperation} 
+          class="add-operation-button"
+        >
+          Add
+        </button>
+        <Operations bind:this={operationsComponent} />
       </AccordionPanel>
 
       <AccordionPanel title="Shape Properties" isExpanded={true}>
@@ -601,6 +617,22 @@
     font-size: 0.875rem;
     color: #92400e;
     line-height: 1.4;
+  }
+
+  .add-operation-button {
+    padding: 0.25rem 0.5rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .add-operation-button:hover {
+    background: #2563eb;
   }
 
 </style>

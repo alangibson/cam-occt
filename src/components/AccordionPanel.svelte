@@ -8,16 +8,25 @@
 </script>
 
 <div class="accordion-panel">
-  <div class="panel-header {isExpanded ? 'expanded' : ''}" on:click={toggleExpanded} role="button" tabindex="0" on:keydown={(e) => e.key === 'Enter' && toggleExpanded()}>
-    <h3 class="panel-title">{title}</h3>
-    <svg 
-      class="arrow-icon {isExpanded ? 'expanded' : ''}" 
-      width="16" 
-      height="16" 
-      viewBox="0 0 16 16"
-    >
-      <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
+  <div class="panel-header {isExpanded ? 'expanded' : ''}">
+    <div class="header-left" onclick={toggleExpanded} role="button" tabindex="0" onkeydown={(e) => e.key === 'Enter' && toggleExpanded()}>
+      <h3 class="panel-title">{title}</h3>
+    </div>
+    <div class="header-right">
+      <slot name="header-button" />
+      <svg 
+        class="arrow-icon {isExpanded ? 'expanded' : ''}" 
+        width="16" 
+        height="16" 
+        viewBox="0 0 16 16"
+        onclick={toggleExpanded}
+        role="button"
+        tabindex="0"
+        onkeydown={(e) => e.key === 'Enter' && toggleExpanded()}
+      >
+        <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
   </div>
   
   {#if isExpanded}
@@ -42,10 +51,20 @@
     justify-content: space-between;
     align-items: center;
     padding: 0.25rem 0.5rem;
-    cursor: pointer;
     transition: background-color 0.2s ease;
     flex-shrink: 0; /* Prevent header from being compressed */
     min-height: 2rem; /* Ensure minimum visible height */
+  }
+  
+  .header-left {
+    cursor: pointer;
+    flex: 1;
+  }
+  
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
   }
 
   .panel-header:hover {
@@ -66,6 +85,7 @@
   .arrow-icon {
     color: #6b7280;
     transition: transform 0.2s ease;
+    cursor: pointer;
   }
 
   .arrow-icon.expanded {
