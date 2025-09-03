@@ -124,11 +124,18 @@ describe('Footer Component', () => {
     vi.mocked(calculateDrawingSize).mockRejectedValue(new Error('Calculation failed'));
 
     drawingStore.setDrawing(mockDrawing);
+    
+    // Suppress console error for this test since we expect an error
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
     const { getByText } = render(Footer);
     
     // Wait for error state
     await waitFor(() => {
       expect(getByText('Unable to calculate size')).toBeDefined();
     });
+    
+    // Restore console.error
+    consoleSpy.mockRestore();
   });
 });

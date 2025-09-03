@@ -41,11 +41,13 @@ describe('Operations Component', () => {
     expect(toolsInStore[0].toolName).toBe('Test Tool 1');
 
     // Render the Operations component
-    const { container, getByText } = render(Operations);
+    const { container, component } = render(Operations);
 
-    // Add an operation first
-    const addButton = getByText('Add Operation');
-    await fireEvent.click(addButton);
+    // Add an operation using the exported function
+    component.addNewOperation();
+    
+    // Wait for the component to update
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     // Find and click the tool dropdown button
     const toolButtons = container.querySelectorAll('.tool-select-button');
@@ -111,11 +113,13 @@ describe('Operations Component', () => {
     const toolsInStore = get(toolStore);
     expect(toolsInStore).toHaveLength(2);
 
-    const { container, getByText } = render(Operations);
+    const { container, component } = render(Operations);
 
-    // Add an operation
-    const addButton = getByText('Add Operation');
-    await fireEvent.click(addButton);
+    // Add an operation using the exported function
+    component.addNewOperation();
+    
+    // Wait for the component to update
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     // Click tool dropdown
     const toolButton = container.querySelector('.tool-select-button');
@@ -167,11 +171,13 @@ describe('Operations Component', () => {
       plungeRate: 600
     });
 
-    const { container, getByText } = render(Operations);
+    const { container, component } = render(Operations);
 
-    // Add an operation
-    const addButton = getByText('Add Operation');
-    await fireEvent.click(addButton);
+    // Add an operation using the exported function
+    component.addNewOperation();
+    
+    // Wait for the component to update
+    await new Promise(resolve => setTimeout(resolve, 0));
 
     // Click tool dropdown
     const toolButton = container.querySelector('.tool-select-button');

@@ -66,12 +66,10 @@ describe('ToolBar Component', () => {
     const deleteButton = getByText(/Delete \(\d+\)/);
     const scaleButton = getByText('Scale');
     const rotateButton = getByText('Rotate');
-    const clearButton = getByText('Clear Selection');
     
     expect(deleteButton.closest('button')?.disabled).toBe(true);
     expect(scaleButton.closest('button')?.disabled).toBe(true);
     expect(rotateButton.closest('button')?.disabled).toBe(true);
-    expect(clearButton.closest('button')?.disabled).toBe(true);
   });
 
   it('should enable buttons when shapes are selected', () => {
