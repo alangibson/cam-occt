@@ -121,37 +121,6 @@
         </div>
       </AccordionPanel>
 
-      <AccordionPanel title="QtPlasmaC G-code Features" isExpanded={true}>
-        <ul class="feature-list">
-          <li>✅ QtPlasmaC preamble codes (G21/G20, G64, M52)</li>
-          <li>✅ Torch height control (THC) with M62/M63</li>
-          <li>✅ Material selection with M190/M66</li>
-          <li>✅ HAL feed rate integration</li>
-          <li>✅ Velocity reduction for hole cutting</li>
-          <li>✅ Proper tool syntax (M3 $0 S1, M5 $0)</li>
-          <li>✅ Paused motion (adaptive feed control)</li>
-          <li>✅ Lead-in and lead-out paths</li>
-          <li>✅ Automatic pierce delays</li>
-        </ul>
-      </AccordionPanel>
-
-      <AccordionPanel title="Safety Reminders" isExpanded={true}>
-        <div class="safety-warnings">
-          <div class="warning-item">
-            <span class="warning-icon">⚠️</span>
-            <span>Always verify G-code in a simulator before cutting</span>
-          </div>
-          <div class="warning-item">
-            <span class="warning-icon">🔍</span>
-            <span>Check material thickness and cutting parameters</span>
-          </div>
-          <div class="warning-item">
-            <span class="warning-icon">🛡️</span>
-            <span>Ensure proper safety equipment is in place</span>
-          </div>
-        </div>
-      </AccordionPanel>
-
       <AccordionPanel title="Start New Project" isExpanded={true}>
         <div class="workflow-content">
           <button 
@@ -243,45 +212,6 @@
     font-size: 0.875rem;
   }
 
-  .feature-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .feature-list li {
-    padding: 0.5rem 0;
-    color: #4b5563;
-    font-size: 0.875rem;
-    border-bottom: 1px solid #f3f4f6;
-  }
-
-  .feature-list li:last-child {
-    border-bottom: none;
-  }
-
-  .safety-warnings {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .warning-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    padding: 0.75rem;
-    background-color: #fef3c7;
-    border: 1px solid #fde68a;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    color: #92400e;
-  }
-
-  .warning-icon {
-    flex-shrink: 0;
-    font-size: 1rem;
-  }
 
   /* Removed .workflow-panel styles - now handled by workflow-content within AccordionPanel */
 
