@@ -203,7 +203,7 @@
               </div>
             {/each}
           {:else}
-            <p class="no-rapids">No rapids applied yet. Click "Apply Rapids" to generate optimized cutting sequence.</p>
+            <p class="no-rapids">No rapids generated yet.</p>
           {/if}
         </div>
       </AccordionPanel>
@@ -233,13 +233,6 @@
       <div class="toolbar-container">
         <div class="toolbar">
           <div class="toolbar-left">
-            <button
-              on:click={handleOptimizeCutOrder}
-              disabled={!drawing || chains.length === 0}
-              class="toolbar-button"
-            >
-              Apply Rapids
-            </button>
           </div>
           <div class="toolbar-right">
             {#if drawing && $drawingStore.fileName}
