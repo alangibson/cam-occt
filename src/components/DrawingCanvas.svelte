@@ -389,9 +389,19 @@
         if (path.calculatedOffset.gapFills && path.calculatedOffset.gapFills.length > 0) {
           ctx.save();
           
-          // Use orange color for gap fills to match test visualization
-          ctx.strokeStyle = '#ff6600'; // Orange
-          ctx.lineWidth = coordinator.screenToWorldDistance(2);
+          // Use same color logic as offset shapes for consistency
+          if (isPathSelected) {
+            ctx.strokeStyle = pathColors.selectedDark; // Dark green for selected path
+            ctx.lineWidth = coordinator.screenToWorldDistance(3); // 3px selected paths
+          } else if (isPathHighlighted) {
+            ctx.strokeStyle = pathColors.highlighted; // Dark green for highlighted
+            ctx.lineWidth = coordinator.screenToWorldDistance(2.5);
+            ctx.shadowColor = pathColors.highlighted;
+            ctx.shadowBlur = coordinator.screenToWorldDistance(4);
+          } else {
+            ctx.strokeStyle = pathColors.offsetGreen; // Green for gap fills (same as offset paths)
+            ctx.lineWidth = coordinator.screenToWorldDistance(2); // 2px gap fills
+          }
           ctx.setLineDash([]); // Solid line
           
           for (const gapFill of path.calculatedOffset.gapFills) {
@@ -412,6 +422,12 @@
                 console.warn(`Error rendering gap modified shape for path ${path.id}:`, error);
               }
             }
+          }
+          
+          // Reset shadow after gap fills if it was applied
+          if (isPathHighlighted) {
+            ctx.shadowColor = 'transparent';
+            ctx.shadowBlur = 0;
           }
           
           ctx.restore();
