@@ -24,6 +24,7 @@ import { tessellationStore, type TessellationState } from './tessellation';
 import { overlayStore, type OverlayState } from './overlay';
 import { leadWarningsStore, type LeadWarning } from './lead-warnings';
 import { prepareStageStore, type PrepareStageState } from './prepare-stage';
+import { DEFAULT_ALGORITHM_PARAMETERS } from '../types/algorithm-parameters';
 import { operationsStore, type Operation } from './operations';
 import { pathStore, type PathsState } from './paths';
 import { toolStore, type Tool } from './tools';
@@ -204,7 +205,30 @@ function restoreStateToStores(state: PersistedState): void {
     
     // Restore prepare stage state
     if (state.prepareStageState) {
-      prepareStageStore.setAlgorithmParams(state.prepareStageState.algorithmParams);
+      // Merge with defaults to ensure all properties exist
+      const mergedAlgorithmParams = {
+        ...DEFAULT_ALGORITHM_PARAMETERS,
+        ...state.prepareStageState.algorithmParams,
+        // Ensure nested objects are also merged properly
+        chainDetection: {
+          ...DEFAULT_ALGORITHM_PARAMETERS.chainDetection,
+          ...(state.prepareStageState.algorithmParams?.chainDetection || {})
+        },
+        chainNormalization: {
+          ...DEFAULT_ALGORITHM_PARAMETERS.chainNormalization,
+          ...(state.prepareStageState.algorithmParams?.chainNormalization || {})
+        },
+        partDetection: {
+          ...DEFAULT_ALGORITHM_PARAMETERS.partDetection,
+          ...(state.prepareStageState.algorithmParams?.partDetection || {})
+        },
+        joinColinearLines: {
+          ...DEFAULT_ALGORITHM_PARAMETERS.joinColinearLines,
+          ...(state.prepareStageState.algorithmParams?.joinColinearLines || {})
+        }
+      };
+      
+      prepareStageStore.setAlgorithmParams(mergedAlgorithmParams);
       prepareStageStore.setChainNormalizationResults(state.prepareStageState.chainNormalizationResults);
       prepareStageStore.setColumnWidths(
         state.prepareStageState.leftColumnWidth,
