@@ -12,6 +12,7 @@
   import { isChainClosed } from '../../lib/algorithms/part-detection';
   import { pathStore } from '../../lib/stores/paths';
   import { rapidStore, selectRapid, highlightRapid, clearRapidHighlight } from '../../lib/stores/rapids';
+  import { handleChainClick as sharedHandleChainClick, handleChainMouseEnter, handleChainMouseLeave, handlePartClick as sharedHandlePartClick, handlePartMouseEnter, handlePartMouseLeave } from '../../lib/utils/chain-part-interactions';
   import { leadWarningsStore } from '../../lib/stores/lead-warnings';
   import { offsetWarningsStore } from '../../lib/stores/offset-warnings';
   import { optimizeCutOrder } from '../../lib/algorithms/optimize-cut-order';
@@ -75,46 +76,18 @@
     }
   }
 
-  // Chain selection functions
+  // Chain and part interaction functions using shared handlers
   function handleChainClick(chainId: string) {
-    if (selectedChainId === chainId) {
-      selectChain(null); // Deselect if already selected
-    } else {
-      selectChain(chainId);
-    }
+    sharedHandleChainClick(chainId, selectedChainId);
   }
 
-  // Part selection functions  
   function handlePartClick(partId: string) {
-    if (selectedPartId === partId) {
-      selectPart(null);
-    } else {
-      selectPart(partId);
-    }
+    sharedHandlePartClick(partId, selectedPartId);
   }
 
   // Helper function to check if a chain is closed
   function isChainClosedHelper(chain: any): boolean {
     return isChainClosed(chain, 0.1); // Use default tolerance since this is display-only
-  }
-
-  // Chain hover functions
-  function handleChainMouseEnter(chainId: string) {
-    highlightChain(chainId);
-  }
-
-  function handleChainMouseLeave() {
-    // Clear chain highlight on mouse leave since chains have separate selection state
-    clearChainHighlight();
-  }
-
-  // Part hover functions  
-  function handlePartMouseEnter(partId: string) {
-    hoverPart(partId);
-  }
-
-  function handlePartMouseLeave() {
-    clearPartHover();
   }
 
   // Rapid selection functions  

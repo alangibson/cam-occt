@@ -1,13 +1,13 @@
 <script lang="ts">
-  import DrawingCanvas from '../DrawingCanvas.svelte';
+  import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
   import LayersInfo from '../LayersInfo.svelte';
   import AccordionPanel from '../AccordionPanel.svelte';
   import { workflowStore } from '../../lib/stores/workflow';
   import { drawingStore } from '../../lib/stores/drawing';
-  import { chainStore, setChains, setTolerance, selectChain, clearChains } from '../../lib/stores/chains';
-  import { partStore, setParts, highlightPart, clearHighlight, clearParts } from '../../lib/stores/parts';
+  import { chainStore, setChains, setTolerance, selectChain, clearChains, highlightChain, clearChainHighlight } from '../../lib/stores/chains';
+  import { partStore, setParts, highlightPart, clearHighlight, clearParts, hoverPart, clearPartHover, selectPart } from '../../lib/stores/parts';
   import { detectShapeChains } from '../../lib/algorithms/chain-detection/chain-detection';
-  import { detectParts, type PartDetectionWarning } from '../../lib/algorithms/part-detection';
+  import { detectParts, type PartDetectionWarning, isChainClosed as isChainClosedAlgorithm } from '../../lib/algorithms/part-detection';
   import { analyzeChainTraversal, normalizeChain } from '../../lib/algorithms/chain-normalization/chain-normalization';
   import { tessellationStore, type TessellationPoint } from '../../lib/stores/tessellation';
   import { tessellateShape } from '../../lib/utils/tessellation';
@@ -20,6 +20,7 @@
   import type { Shape, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../../lib/types';
   import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
   import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+  import { handleChainClick as sharedHandleChainClick, handleChainMouseEnter, handleChainMouseLeave, handlePartClick as sharedHandlePartClick, handlePartMouseEnter, handlePartMouseLeave } from '../../lib/utils/chain-part-interactions';
   import { polylineToPoints } from '$lib/geometry/polyline';
 
   // Resizable columns state - initialize from store, update local variables during drag
@@ -73,6 +74,9 @@
   
   // Chain selection state
   $: selectedChainId = $chainStore.selectedChainId;
+  $: highlightedChainId = $chainStore.highlightedChainId;
+  $: hoveredPartId = $partStore.hoveredPartId;
+  $: selectedPartId = $partStore.selectedPartId;
   $: selectedChain = selectedChainId ? detectedChains.find(chain => chain.id === selectedChainId) : null;
   $: selectedChainAnalysis = selectedChainId ? chainNormalizationResults.find(result => result.chainId === selectedChainId) : null;
   
@@ -418,13 +422,9 @@
     }
   }
 
-  // Part highlighting functions
+  // Part interaction functions using shared handlers
   function handlePartClick(partId: string) {
-    if (highlightedPartId === partId) {
-      clearHighlight();
-    } else {
-      highlightPart(partId);
-    }
+    sharedHandlePartClick(partId, selectedPartId);
   }
 
   // Chain analysis functions
@@ -561,10 +561,16 @@
     }
   }
 
-  // Chain selection functions
+  // Chain interaction functions using shared handlers
   function handleChainClick(chainId: string) {
-    // Always select the clicked chain (normal selection logic)
-    selectChain(chainId);
+    sharedHandleChainClick(chainId, selectedChainId);
+  }
+
+  // Helper function to check if a chain is closed (for UI display)
+  function isChainClosedHelper(chainId: string): boolean {
+    const chain = detectedChains.find(c => c.id === chainId);
+    if (!chain) return false;
+    return isChainClosedAlgorithm(chain, algorithmParams.chainDetection.tolerance);
   }
   
   // Tessellation is now handled by the imported tessellateShape function
@@ -792,8 +798,8 @@
       <!-- Left resize handle -->
       <button 
         class="resize-handle resize-handle-right" 
-        on:mousedown={handleLeftResizeStart}
-        on:keydown={handleLeftKeydown}
+        onmousedown={handleLeftResizeStart}
+        onkeydown={handleLeftKeydown}
         class:dragging={isDraggingLeft}
         aria-label="Resize left panel (Arrow keys to adjust)"
         type="button"
@@ -808,11 +814,13 @@
           <div class="parts-list">
             {#each detectedParts as part, index}
               <div 
-                class="part-item {highlightedPartId === part.id ? 'highlighted' : ''}"
-                on:click={() => handlePartClick(part.id)}
+                class="part-item {selectedPartId === part.id ? 'selected' : ''} {hoveredPartId === part.id ? 'hovered' : ''}"
+                onclick={() => handlePartClick(part.id)}
                 role="button"
                 tabindex="0"
-                on:keydown={(e) => e.key === 'Enter' && handlePartClick(part.id)}
+                onkeydown={(e) => e.key === 'Enter' && handlePartClick(part.id)}
+                onmouseenter={() => handlePartMouseEnter(part.id)}
+                onmouseleave={handlePartMouseLeave}
               >
                 <div class="part-header">
                   <span class="part-name">Part {index + 1}</span>
@@ -848,17 +856,24 @@
         {#if detectedChains.length > 0}
           <div class="chain-summary">
             {#each chainNormalizationResults as result}
-              <div class="chain-summary-item {selectedChainId === result.chainId ? 'selected' : ''}" 
+              <div class="chain-summary-item {selectedChainId === result.chainId ? 'selected' : ''} {highlightedChainId === result.chainId ? 'highlighted' : ''}" 
                 role="button"
                 tabindex="0"
-                on:click={() => handleChainClick(result.chainId)}
-                on:keydown={(e) => e.key === 'Enter' && handleChainClick(result.chainId)}
+                onclick={() => handleChainClick(result.chainId)}
+                onkeydown={(e) => e.key === 'Enter' && handleChainClick(result.chainId)}
+                onmouseenter={() => handleChainMouseEnter(result.chainId)}
+                onmouseleave={handleChainMouseLeave}
               >
                 <div class="chain-header">
-                  <span class="chain-id">{result.chainId}</span>
-                  <span class="traversal-status {result.canTraverse ? 'can-traverse' : 'cannot-traverse'}">
-                    {result.canTraverse ? '✓' : '✗'}
-                  </span>
+                  <span class="chain-name">Chain {result.chainId.split('-')[1]}</span>
+                  <div class="chain-indicators">
+                    <span class="chain-status {isChainClosedHelper(result.chainId) ? 'closed' : 'open'}">
+                      {isChainClosedHelper(result.chainId) ? 'Closed' : 'Open'}
+                    </span>
+                    <span class="traversal-status {result.canTraverse ? 'can-traverse' : 'cannot-traverse'}">
+                      {result.canTraverse ? '✓' : '✗'}
+                    </span>
+                  </div>
                 </div>
               </div>
             {/each}
@@ -874,7 +889,7 @@
         <div class="next-stage-content">
           <button 
             class="next-button"
-            on:click={handleNext}
+            onclick={handleNext}
           >
             Next: Program Cuts
           </button>
@@ -888,12 +903,12 @@
     <!-- Center Column -->
     <div class="center-column">
       <div class="canvas-container">
-        <DrawingCanvas 
-          respectLayerVisibility={false} 
+        <DrawingCanvasContainer 
+          currentStage="prepare" 
           treatChainsAsEntities={true}
+          interactionMode="chains"
           onChainClick={handleChainClick}
-          disableDragging={true}
-          currentStage="prepare"
+          onPartClick={handlePartClick}
         />
       </div>
     </div>
@@ -903,8 +918,8 @@
       <!-- Right resize handle -->
       <button 
         class="resize-handle resize-handle-left" 
-        on:mousedown={handleRightResizeStart}
-        on:keydown={handleRightKeydown}
+        onmousedown={handleRightResizeStart}
+        onkeydown={handleRightKeydown}
         class:dragging={isDraggingRight}
         aria-label="Resize right panel (Arrow keys to adjust)"
         type="button"
@@ -914,7 +929,7 @@
         <svelte:fragment slot="header-button">
           <button 
             class="header-action-button apply-all-button"
-            on:click={() => handleApplyAll()}
+            onclick={() => handleApplyAll()}
             disabled={!$drawingStore.drawing}
             title="Apply all actions in order"
           >
@@ -922,7 +937,7 @@
           </button>
           <button 
             class="header-action-button clear-all-button"
-            on:click={handleClearAll}
+            onclick={handleClearAll}
             disabled={!chainsDetected && !normalizationApplied && !optimizationApplied && !partsDetectionApplied}
             title="Clear all actions in reverse order"
           >
@@ -935,7 +950,7 @@
             <span class="action-title">Decompose Polylines</span>
             <button 
               class="apply-button"
-              on:click|stopPropagation={handleDecomposePolylines}
+              onclick={(e) => { e.stopPropagation(); handleDecomposePolylines(); }}
               disabled={!$drawingStore.drawing}
             >
               Apply
@@ -954,7 +969,7 @@
             <span class="action-title">Join Co-linear Lines</span>
             <button 
               class="apply-button"
-              on:click|stopPropagation={handleJoinColinearLines}
+              onclick={(e) => { e.stopPropagation(); handleJoinColinearLines(); }}
               disabled={!$drawingStore.drawing}
             >
               Apply
@@ -990,7 +1005,7 @@
             <span class="action-title">Translate to Positive</span>
             <button 
               class="apply-button"
-              on:click|stopPropagation={handleTranslateToPositive}
+              onclick={(e) => { e.stopPropagation(); handleTranslateToPositive(); }}
               disabled={!$drawingStore.drawing}
             >
               Apply
@@ -1010,7 +1025,7 @@
             <button 
               class="apply-button"
               class:clear-button={chainsDetected && !isDetectingChains}
-              on:click|stopPropagation={handleDetectChains}
+              onclick={(e) => { e.stopPropagation(); handleDetectChains(); }}
               disabled={isDetectingChains}
             >
               {isDetectingChains ? 'Detecting...' : chainsDetected ? 'Clear' : 'Apply'}
@@ -1047,7 +1062,7 @@
             <button 
               class="apply-button"
               class:clear-button={normalizationApplied && !isNormalizing}
-              on:click|stopPropagation={handleNormalizeChains}
+              onclick={(e) => { e.stopPropagation(); handleNormalizeChains(); }}
               disabled={isNormalizing || detectedChains.length === 0}
             >
               {isNormalizing ? 'Normalizing...' : normalizationApplied ? 'Clear' : 'Apply'}
@@ -1102,7 +1117,7 @@
             <button 
               class="apply-button"
               class:clear-button={optimizationApplied && !isOptimizingStarts}
-              on:click|stopPropagation={handleOptimizeStarts}
+              onclick={(e) => { e.stopPropagation(); handleOptimizeStarts(); }}
               disabled={isOptimizingStarts || detectedChains.length === 0}
             >
               {isOptimizingStarts ? 'Optimizing...' : optimizationApplied ? 'Clear' : 'Apply'}
@@ -1155,7 +1170,7 @@
             <button 
               class="apply-button"
               class:clear-button={partsDetectionApplied && !isDetectingParts}
-              on:click|stopPropagation={handleDetectParts}
+              onclick={(e) => { e.stopPropagation(); handleDetectParts(); }}
               disabled={isDetectingParts || detectedChains.length === 0}
             >
               {isDetectingParts ? 'Detecting...' : partsDetectionApplied ? 'Clear' : 'Apply'}
@@ -1540,15 +1555,14 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
-  .part-item.highlighted {
-    background-color: #eff6ff;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+  .part-item.selected {
+    background-color: #fef3c7;
+    border-color: #f59e0b;
   }
 
-  .part-item.highlighted:hover {
-    background-color: #dbeafe;
-    border-color: #2563eb;
+  .part-item.hovered {
+    background-color: #fef9e7;
+    border-color: #fbbf24;
   }
 
   .part-header {
@@ -1718,9 +1732,13 @@
   }
 
   .chain-summary-item.selected {
-    background-color: #eff6ff;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+    background-color: #fef3c7;
+    border-color: #f59e0b;
+  }
+
+  .chain-summary-item.highlighted {
+    background-color: #fef9e7;
+    border-color: #fbbf24;
   }
 
   .chain-header {
@@ -1728,6 +1746,34 @@
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0.5rem;
+  }
+
+  .chain-indicators {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .chain-name {
+    font-weight: 500;
+    color: #374151;
+  }
+
+  .chain-status {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+  }
+
+  .chain-status.closed {
+    background-color: #dcfce7;
+    color: #166534;
+  }
+
+  .chain-status.open {
+    background-color: #fef3c7;
+    color: #92400e;
   }
 
   .chain-id {
