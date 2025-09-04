@@ -954,15 +954,6 @@
     transition: background-color 0.2s;
   }
   
-  .btn-primary {
-    background: #3b82f6;
-    color: white;
-  }
-  
-  .btn-primary:hover {
-    background: #2563eb;
-  }
-  
   .btn-secondary {
     background: #6b7280;
     color: white;
@@ -979,11 +970,6 @@
   
   .btn-danger:hover {
     background: #dc2626;
-  }
-  
-  .btn-small {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
   }
   
   .btn-xs {

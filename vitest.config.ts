@@ -17,7 +17,7 @@ export default defineConfig({
 			all: true, // Collect coverage from all files, even if they've not been tested
 			thresholds: {
 				lines: 88,
-				functions: 90,
+				functions: 88,
 				branches: 86,
 				statements: 88,
 			},

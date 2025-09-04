@@ -9,6 +9,8 @@ import { writable } from 'svelte/store';
 import type { AlgorithmParameters } from '../../lib/types/algorithm-parameters';
 import { DEFAULT_ALGORITHM_PARAMETERS } from '../../lib/types/algorithm-parameters';
 import type { ChainNormalizationResult } from '../algorithms/chain-normalization/chain-normalization';
+import type { Shape } from '../types/geometry';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 
 export interface PrepareStageState {
   // Algorithm parameters
@@ -25,10 +27,10 @@ export interface PrepareStageState {
   lastAnalysisTimestamp: number;
   
   // State tracking for undo operations
-  originalShapesBeforeNormalization: any[] | null;
-  originalChainsBeforeNormalization: any[] | null;
-  originalShapesBeforeOptimization: any[] | null;
-  originalChainsBeforeOptimization: any[] | null;
+  originalShapesBeforeNormalization: Shape[] | null;
+  originalChainsBeforeNormalization: Chain[] | null;
+  originalShapesBeforeOptimization: Shape[] | null;
+  originalChainsBeforeOptimization: Chain[] | null;
   partsDetected: boolean;
 }
 
@@ -41,11 +43,11 @@ function createPrepareStageStore(): {
   setColumnWidths: (leftWidth: number, rightWidth: number) => void;
   reset: () => void;
   getChainNormalizationResult: (chainId: string) => ChainNormalizationResult | null;
-  saveOriginalStateForNormalization: (shapes: any[], chains: any[]) => void;
-  restoreOriginalStateFromNormalization: () => { shapes: any[], chains: any[] } | null;
+  saveOriginalStateForNormalization: (shapes: Shape[], chains: Chain[]) => void;
+  restoreOriginalStateFromNormalization: () => { shapes: Shape[], chains: Chain[] } | null;
   clearOriginalNormalizationState: () => void;
-  saveOriginalStateForOptimization: (shapes: any[], chains: any[]) => void;
-  restoreOriginalStateFromOptimization: () => { shapes: any[], chains: any[] } | null;
+  saveOriginalStateForOptimization: (shapes: Shape[], chains: Chain[]) => void;
+  restoreOriginalStateFromOptimization: () => { shapes: Shape[], chains: Chain[] } | null;
   clearOriginalOptimizationState: () => void;
   setPartsDetected: (detected: boolean) => void;
 } {
@@ -160,7 +162,7 @@ function createPrepareStageStore(): {
     /**
      * Save original state before normalization
      */
-    saveOriginalStateForNormalization: (shapes: any[], chains: any[]) => {
+    saveOriginalStateForNormalization: (shapes: Shape[], chains: Chain[]) => {
       update(state => ({
         ...state,
         originalShapesBeforeNormalization: JSON.parse(JSON.stringify(shapes)),
@@ -171,8 +173,8 @@ function createPrepareStageStore(): {
     /**
      * Restore original state from before normalization
      */
-    restoreOriginalStateFromNormalization: (): { shapes: any[], chains: any[] } | null => {
-      let result: { shapes: any[], chains: any[] } | null = null;
+    restoreOriginalStateFromNormalization: (): { shapes: Shape[], chains: Chain[] } | null => {
+      let result: { shapes: Shape[], chains: Chain[] } | null = null;
       update(state => {
         if (state.originalShapesBeforeNormalization && state.originalChainsBeforeNormalization) {
           result = {
@@ -199,7 +201,7 @@ function createPrepareStageStore(): {
     /**
      * Save original state before optimization
      */
-    saveOriginalStateForOptimization: (shapes: any[], chains: any[]) => {
+    saveOriginalStateForOptimization: (shapes: Shape[], chains: Chain[]) => {
       update(state => ({
         ...state,
         originalShapesBeforeOptimization: JSON.parse(JSON.stringify(shapes)),
@@ -210,8 +212,8 @@ function createPrepareStageStore(): {
     /**
      * Restore original state from before optimization
      */
-    restoreOriginalStateFromOptimization: (): { shapes: any[], chains: any[] } | null => {
-      let result: { shapes: any[], chains: any[] } | null = null;
+    restoreOriginalStateFromOptimization: (): { shapes: Shape[], chains: Chain[] } | null => {
+      let result: { shapes: Shape[], chains: Chain[] } | null = null;
       update(state => {
         if (state.originalShapesBeforeOptimization && state.originalChainsBeforeOptimization) {
           result = {
