@@ -162,7 +162,7 @@ describe('ToolTable Component - Function Coverage', () => {
       
       render(ToolTable);
       
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('cam-occt-tools');
+      expect(localStorageMock.getItem).toHaveBeenCalledWith('metalheadcam-tools');
     });
 
     it('should handle invalid localStorage data gracefully', () => {

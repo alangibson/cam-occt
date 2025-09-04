@@ -29,8 +29,8 @@
 
 <div class="edit-stage">
   <ThreeColumnLayout 
-    leftColumnStorageKey="cam-occt-edit-left-column-width"
-    rightColumnStorageKey="cam-occt-edit-right-column-width"
+    leftColumnStorageKey="metalheadcam-edit-left-column-width"
+    rightColumnStorageKey="metalheadcam-edit-right-column-width"
   >
     <svelte:fragment slot="left">
       <AccordionPanel title="Layers" isExpanded={true}>

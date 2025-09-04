@@ -1,5 +1,5 @@
 /**
- * Unit conversion utilities for CAM-OCCT
+ * Unit conversion utilities for MetalHead CAM
  * Handles conversion between different units and physical display scaling
  */
 

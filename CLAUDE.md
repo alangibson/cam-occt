@@ -1,8 +1,8 @@
-# CAM-OCCT Development Guide
+# MetalHead CAM Development Guide
 
 ## Project Overview
 
-CAM-OCCT is a web-based Computer-Aided Manufacturing (CAM) application that converts SVG and DXF design files into optimized G-code for CNC plasma cutting operations. The application specifically targets LinuxCNC 2.9+ QtPlasmaC controllers.
+MetalHead CAM is a web-based Computer-Aided Manufacturing (CAM) application that converts SVG and DXF design files into optimized G-code for CNC plasma cutting operations. The application specifically targets LinuxCNC 2.9+ QtPlasmaC controllers.
 
 ## Core Principles
 
@@ -216,7 +216,7 @@ Refer to `reference/linuxcnc/QtPlasmaC.html` for LinuxCNC QtPlasmaC specificatio
 ## Project Structure
 
 ```
-cam-occt/
+metalheadcam/
 ├── src/
 │   ├── lib/
 │   ├── routes/

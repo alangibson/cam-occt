@@ -1,7 +1,7 @@
 /**
  * State Persistence Utilities
  * 
- * Provides comprehensive state saving and restoration for the CAM-OCCT application.
+ * Provides comprehensive state saving and restoration for the MetalHead CAM application.
  * Saves all application state to browser localStorage to maintain state across sessions.
  */
 
@@ -76,7 +76,7 @@ export interface PersistedState {
   highlightedPathId: string|null;
 }
 
-const STATE_STORAGE_KEY: string = 'cam-occt-state';
+const STATE_STORAGE_KEY: string = 'metalheadcam-state';
 const STATE_VERSION: string = '1.0.0';
 
 /**

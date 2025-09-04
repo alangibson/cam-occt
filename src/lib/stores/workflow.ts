@@ -1,5 +1,5 @@
 /**
- * Workflow state management for CAM-OCCT application
+ * Workflow state management for MetalHead CAM application
  * Manages the 6-stage workflow: Import → Edit → Prepare → Program → Simulate → Export
  */
 

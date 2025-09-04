@@ -9,7 +9,7 @@ import { generateUniformKnotVector } from './nurbs-utils';
  * 
  * Centralizes verb-nurbs curve creation and intersection processing to eliminate 
  * code duplication across intersection algorithms. Provides consistent conversion
- * from CAM-OCCT geometry types to verb-nurbs curves and standardized processing
+ * from MetalHead CAM geometry types to verb-nurbs curves and standardized processing
  * of intersection results.
  * 
  * This library consolidates duplicate code from:

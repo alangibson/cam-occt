@@ -11,8 +11,8 @@ import { join } from 'path';
 
 describe('Layer Squashing Algorithm', () => {
   it('should load Tractor Seat Mount - Left.dxf, squash layers, and detect 13 chains', async () => {
-    // 1) Load /home/alangibson/dev/cam-occt/tests/dxf/Tractor Seat Mount - Left.dxf
-    const filePath = '/home/alangibson/dev/cam-occt/tests/dxf/Tractor Seat Mount - Left.dxf';
+    // 1) Load tests/dxf/Tractor Seat Mount - Left.dxf
+    const filePath = 'tests/dxf/Tractor Seat Mount - Left.dxf';
     const dxfContent = readFileSync(filePath, 'utf-8');
     
     // Parse DXF without layer squashing first to get original structure
@@ -51,7 +51,7 @@ describe('Layer Squashing Algorithm', () => {
   
   it('should eliminate duplicate shapes when squashing layers', async () => {
     // Test with a known multi-layer file that has duplicates
-    const filePath = '/home/alangibson/dev/cam-occt/tests/dxf/Tractor Seat Mount - Left.dxf';
+    const filePath = 'tests/dxf/Tractor Seat Mount - Left.dxf';
     const dxfContent = readFileSync(filePath, 'utf-8');
     
     const originalDrawing = await parseDXF(dxfContent, { squashLayers: false });
@@ -76,7 +76,7 @@ describe('Layer Squashing Algorithm', () => {
   
   it('should handle drawings with no layers gracefully', async () => {
     // Test with a single-layer file
-    const filePath = '/home/alangibson/dev/cam-occt/tests/dxf/1.dxf';
+    const filePath = 'tests/dxf/1.dxf';
     const dxfContent = readFileSync(filePath, 'utf-8');
     
     const originalDrawing = await parseDXF(dxfContent, { squashLayers: false });
@@ -90,7 +90,7 @@ describe('Layer Squashing Algorithm', () => {
   });
   
   it('should preserve layer info when requested', async () => {
-    const filePath = '/home/alangibson/dev/cam-occt/tests/dxf/Tractor Seat Mount - Left.dxf';
+    const filePath = 'tests/dxf/Tractor Seat Mount - Left.dxf';
     const dxfContent = readFileSync(filePath, 'utf-8');
     
     const originalDrawing = await parseDXF(dxfContent, { squashLayers: false });

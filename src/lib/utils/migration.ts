@@ -15,11 +15,11 @@ export function migrateLegacyData(): void {
   
   // Check for legacy localStorage keys
   const legacyKeys: string[] = [
-    'cam-occt-operations',
-    'cam-occt-paths', 
-    'cam-occt-tools',
-    'cam-occt-prepare-left-column-width',
-    'cam-occt-prepare-right-column-width'
+    'metalheadcam-operations',
+    'metalheadcam-paths', 
+    'metalheadcam-tools',
+    'metalheadcam-prepare-left-column-width',
+    'metalheadcam-prepare-right-column-width'
   ];
   
   const legacyData: Record<string, unknown> = {};
@@ -67,11 +67,11 @@ export function migrateLegacyData(): void {
  */
 export function hasLegacyData(): boolean {
   const legacyKeys: string[] = [
-    'cam-occt-operations',
-    'cam-occt-paths',
-    'cam-occt-tools',
-    'cam-occt-prepare-left-column-width',
-    'cam-occt-prepare-right-column-width'
+    'metalheadcam-operations',
+    'metalheadcam-paths',
+    'metalheadcam-tools',
+    'metalheadcam-prepare-left-column-width',
+    'metalheadcam-prepare-right-column-width'
   ];
   
   return legacyKeys.some(key => localStorage.getItem(key) !== null);

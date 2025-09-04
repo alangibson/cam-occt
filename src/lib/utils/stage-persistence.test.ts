@@ -60,7 +60,7 @@ describe('Workflow Stage Persistence', () => {
     await saveApplicationState();
     
     // Debug: Check what was actually saved
-    const savedData = JSON.parse(localStorageMock.getItem('cam-occt-state') || '{}');
+    const savedData = JSON.parse(localStorageMock.getItem('metalheadcam-state') || '{}');
 
     // Reset workflow to simulate fresh app load
     workflowStore.reset();

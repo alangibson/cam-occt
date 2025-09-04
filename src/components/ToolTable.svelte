@@ -16,7 +16,7 @@
   
   // Load tools from localStorage on mount
   onMount(() => {
-    const savedTools = localStorage.getItem('cam-occt-tools');
+    const savedTools = localStorage.getItem('metalheadcam-tools');
     if (savedTools) {
       try {
         const parsedTools = JSON.parse(savedTools);
@@ -35,7 +35,7 @@
     tools = value;
     // Save to localStorage whenever tools change
     if (typeof window !== 'undefined' && value.length > 0) {
-      localStorage.setItem('cam-occt-tools', JSON.stringify(value));
+      localStorage.setItem('metalheadcam-tools', JSON.stringify(value));
     }
   });
   

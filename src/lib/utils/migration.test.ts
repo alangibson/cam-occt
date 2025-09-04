@@ -38,36 +38,36 @@ describe('migration utilities', () => {
       expect(result).toBe(false);
     });
 
-    it('should return true when cam-occt-operations exists', () => {
-      mockLocalStorage.data['cam-occt-operations'] = '[]';
+    it('should return true when metalheadcam-operations exists', () => {
+      mockLocalStorage.data['metalheadcam-operations'] = '[]';
       
       const result = hasLegacyData();
       expect(result).toBe(true);
     });
 
-    it('should return true when cam-occt-paths exists', () => {
-      mockLocalStorage.data['cam-occt-paths'] = '[]';
+    it('should return true when metalheadcam-paths exists', () => {
+      mockLocalStorage.data['metalheadcam-paths'] = '[]';
       
       const result = hasLegacyData();
       expect(result).toBe(true);
     });
 
-    it('should return true when cam-occt-tools exists', () => {
-      mockLocalStorage.data['cam-occt-tools'] = '[]';
+    it('should return true when metalheadcam-tools exists', () => {
+      mockLocalStorage.data['metalheadcam-tools'] = '[]';
       
       const result = hasLegacyData();
       expect(result).toBe(true);
     });
 
     it('should return true when column width data exists', () => {
-      mockLocalStorage.data['cam-occt-prepare-left-column-width'] = '200';
+      mockLocalStorage.data['metalheadcam-prepare-left-column-width'] = '200';
       
       const result = hasLegacyData();
       expect(result).toBe(true);
     });
 
     it('should return true when any legacy key exists', () => {
-      mockLocalStorage.data['cam-occt-prepare-right-column-width'] = '300';
+      mockLocalStorage.data['metalheadcam-prepare-right-column-width'] = '300';
       
       const result = hasLegacyData();
       expect(result).toBe(true);
@@ -91,97 +91,97 @@ describe('migration utilities', () => {
 
     it('should migrate and remove operations data', () => {
       const operationsData = '[{"id": "op1", "type": "cut"}]';
-      mockLocalStorage.data['cam-occt-operations'] = operationsData;
+      mockLocalStorage.data['metalheadcam-operations'] = operationsData;
       
       migrateLegacyData();
       
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-operations');
-      expect(console.log).toHaveBeenCalledWith('Found legacy data for cam-occt-operations');
-      expect(console.log).toHaveBeenCalledWith('Cleared legacy key: cam-occt-operations');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-operations');
+      expect(console.log).toHaveBeenCalledWith('Found legacy data for metalheadcam-operations');
+      expect(console.log).toHaveBeenCalledWith('Cleared legacy key: metalheadcam-operations');
     });
 
     it('should migrate and remove paths data', () => {
       const pathsData = '[{"id": "path1", "points": []}]';
-      mockLocalStorage.data['cam-occt-paths'] = pathsData;
+      mockLocalStorage.data['metalheadcam-paths'] = pathsData;
       
       migrateLegacyData();
       
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-paths');
-      expect(console.log).toHaveBeenCalledWith('Found legacy data for cam-occt-paths');
-      expect(console.log).toHaveBeenCalledWith('Cleared legacy key: cam-occt-paths');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-paths');
+      expect(console.log).toHaveBeenCalledWith('Found legacy data for metalheadcam-paths');
+      expect(console.log).toHaveBeenCalledWith('Cleared legacy key: metalheadcam-paths');
     });
 
     it('should migrate and remove tools data', () => {
       const toolsData = '[{"id": "tool1", "name": "Plasma"}]';
-      mockLocalStorage.data['cam-occt-tools'] = toolsData;
+      mockLocalStorage.data['metalheadcam-tools'] = toolsData;
       
       migrateLegacyData();
       
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-tools');
-      expect(console.log).toHaveBeenCalledWith('Found legacy data for cam-occt-tools');
-      expect(console.log).toHaveBeenCalledWith('Cleared legacy key: cam-occt-tools');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-tools');
+      expect(console.log).toHaveBeenCalledWith('Found legacy data for metalheadcam-tools');
+      expect(console.log).toHaveBeenCalledWith('Cleared legacy key: metalheadcam-tools');
     });
 
     it('should migrate column width data', () => {
-      mockLocalStorage.data['cam-occt-prepare-left-column-width'] = '250';
-      mockLocalStorage.data['cam-occt-prepare-right-column-width'] = '350';
+      mockLocalStorage.data['metalheadcam-prepare-left-column-width'] = '250';
+      mockLocalStorage.data['metalheadcam-prepare-right-column-width'] = '350';
       
       migrateLegacyData();
       
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-prepare-left-column-width');
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-prepare-right-column-width');
-      expect(console.log).toHaveBeenCalledWith('Found legacy data for cam-occt-prepare-left-column-width');
-      expect(console.log).toHaveBeenCalledWith('Found legacy data for cam-occt-prepare-right-column-width');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-prepare-left-column-width');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-prepare-right-column-width');
+      expect(console.log).toHaveBeenCalledWith('Found legacy data for metalheadcam-prepare-left-column-width');
+      expect(console.log).toHaveBeenCalledWith('Found legacy data for metalheadcam-prepare-right-column-width');
     });
 
     it('should handle all legacy keys at once', () => {
-      mockLocalStorage.data['cam-occt-operations'] = '[]';
-      mockLocalStorage.data['cam-occt-paths'] = '[]';
-      mockLocalStorage.data['cam-occt-tools'] = '[]';
-      mockLocalStorage.data['cam-occt-prepare-left-column-width'] = '200';
-      mockLocalStorage.data['cam-occt-prepare-right-column-width'] = '300';
+      mockLocalStorage.data['metalheadcam-operations'] = '[]';
+      mockLocalStorage.data['metalheadcam-paths'] = '[]';
+      mockLocalStorage.data['metalheadcam-tools'] = '[]';
+      mockLocalStorage.data['metalheadcam-prepare-left-column-width'] = '200';
+      mockLocalStorage.data['metalheadcam-prepare-right-column-width'] = '300';
       
       migrateLegacyData();
       
       // All keys should be removed
       expect(mockLocalStorage.removeItem).toHaveBeenCalledTimes(5);
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-operations');
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-paths');
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-tools');
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-prepare-left-column-width');
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-prepare-right-column-width');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-operations');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-paths');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-tools');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-prepare-left-column-width');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-prepare-right-column-width');
       
       expect(console.log).toHaveBeenCalledWith('Legacy data migration completed');
     });
 
     it('should handle invalid JSON data gracefully', () => {
-      mockLocalStorage.data['cam-occt-operations'] = 'invalid-json{';
+      mockLocalStorage.data['metalheadcam-operations'] = 'invalid-json{';
       
       migrateLegacyData();
       
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-operations');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-operations');
       expect(console.warn).toHaveBeenCalledWith(
-        'Failed to parse legacy data for cam-occt-operations:',
+        'Failed to parse legacy data for metalheadcam-operations:',
         expect.any(SyntaxError)
       );
     });
 
     it('should parse column width as integer', () => {
-      mockLocalStorage.data['cam-occt-prepare-left-column-width'] = '250';
+      mockLocalStorage.data['metalheadcam-prepare-left-column-width'] = '250';
       
       migrateLegacyData();
       
-      expect(console.log).toHaveBeenCalledWith('Found legacy data for cam-occt-prepare-left-column-width');
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-prepare-left-column-width');
+      expect(console.log).toHaveBeenCalledWith('Found legacy data for metalheadcam-prepare-left-column-width');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-prepare-left-column-width');
     });
 
     it('should handle invalid column width data', () => {
-      mockLocalStorage.data['cam-occt-prepare-left-column-width'] = 'not-a-number';
+      mockLocalStorage.data['metalheadcam-prepare-left-column-width'] = 'not-a-number';
       
       migrateLegacyData();
       
-      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('cam-occt-prepare-left-column-width');
-      expect(console.log).toHaveBeenCalledWith('Found legacy data for cam-occt-prepare-left-column-width');
+      expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('metalheadcam-prepare-left-column-width');
+      expect(console.log).toHaveBeenCalledWith('Found legacy data for metalheadcam-prepare-left-column-width');
     });
   });
 });

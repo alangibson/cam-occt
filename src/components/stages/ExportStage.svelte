@@ -32,7 +32,7 @@
 
   // Load column widths from localStorage on mount
   onMount(() => {
-    const savedSideWidth = localStorage.getItem('cam-occt-export-side-column-width');
+    const savedSideWidth = localStorage.getItem('metalheadcam-export-side-column-width');
     
     if (savedSideWidth) {
       sideColumnWidth = parseInt(savedSideWidth, 10);
@@ -41,7 +41,7 @@
 
   // Save column widths to localStorage
   function saveColumnWidths() {
-    localStorage.setItem('cam-occt-export-side-column-width', sideColumnWidth.toString());
+    localStorage.setItem('metalheadcam-export-side-column-width', sideColumnWidth.toString());
   }
 
   // Side column resize handlers

@@ -2,7 +2,7 @@
  * Algorithm Parameters
  * 
  * These interfaces define configurable parameters for various algorithms
- * used in the CAM-OCCT application.
+ * used in the MetalHead CAM application.
  */
 
 // Import part detection parameters for combined interface

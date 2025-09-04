@@ -974,7 +974,7 @@
 
   // Load column widths from localStorage on mount
   onMount(() => {
-    const savedRightWidth = localStorage.getItem('cam-occt-simulate-right-column-width');
+    const savedRightWidth = localStorage.getItem('metalheadcam-simulate-right-column-width');
     
     if (savedRightWidth) {
       rightColumnWidth = parseInt(savedRightWidth, 10);
@@ -1001,7 +1001,7 @@
 
   // Save column widths to localStorage
   function saveColumnWidths() {
-    localStorage.setItem('cam-occt-simulate-right-column-width', rightColumnWidth.toString());
+    localStorage.setItem('metalheadcam-simulate-right-column-width', rightColumnWidth.toString());
   }
 
   // Right column resize handlers

@@ -24,14 +24,14 @@ describe('Resizable Columns localStorage Integration', () => {
     
     // Simulate the saveColumnWidths function
     function saveColumnWidths(leftWidth: number, rightWidth: number) {
-      localStorage.setItem('cam-occt-left-column-width', leftWidth.toString());
-      localStorage.setItem('cam-occt-right-column-width', rightWidth.toString());
+      localStorage.setItem('metalheadcam-left-column-width', leftWidth.toString());
+      localStorage.setItem('metalheadcam-right-column-width', rightWidth.toString());
     }
     
     saveColumnWidths(testWidth, 280);
     
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('cam-occt-left-column-width', '350');
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('cam-occt-right-column-width', '280');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('metalheadcam-left-column-width', '350');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('metalheadcam-right-column-width', '280');
   });
 
   it('should load column widths from localStorage', () => {
@@ -39,8 +39,8 @@ describe('Resizable Columns localStorage Integration', () => {
     const savedRightWidth = '250';
     
     localStorageMock.getItem.mockImplementation((key: string) => {
-      if (key === 'cam-occt-left-column-width') return savedLeftWidth;
-      if (key === 'cam-occt-right-column-width') return savedRightWidth;
+      if (key === 'metalheadcam-left-column-width') return savedLeftWidth;
+      if (key === 'metalheadcam-right-column-width') return savedRightWidth;
       return null;
     });
     
@@ -48,8 +48,8 @@ describe('Resizable Columns localStorage Integration', () => {
     let leftColumnWidth = 280; // Default
     let rightColumnWidth = 280; // Default
     
-    const savedLeft = localStorage.getItem('cam-occt-left-column-width');
-    const savedRight = localStorage.getItem('cam-occt-right-column-width');
+    const savedLeft = localStorage.getItem('metalheadcam-left-column-width');
+    const savedRight = localStorage.getItem('metalheadcam-right-column-width');
     
     if (savedLeft) {
       leftColumnWidth = parseInt(savedLeft, 10);
@@ -60,8 +60,8 @@ describe('Resizable Columns localStorage Integration', () => {
     
     expect(leftColumnWidth).toBe(320);
     expect(rightColumnWidth).toBe(250);
-    expect(localStorageMock.getItem).toHaveBeenCalledWith('cam-occt-left-column-width');
-    expect(localStorageMock.getItem).toHaveBeenCalledWith('cam-occt-right-column-width');
+    expect(localStorageMock.getItem).toHaveBeenCalledWith('metalheadcam-left-column-width');
+    expect(localStorageMock.getItem).toHaveBeenCalledWith('metalheadcam-right-column-width');
   });
 
   it('should handle missing localStorage values gracefully', () => {
@@ -71,8 +71,8 @@ describe('Resizable Columns localStorage Integration', () => {
     let leftColumnWidth = 280; // Default
     let rightColumnWidth = 280; // Default
     
-    const savedLeft = localStorage.getItem('cam-occt-left-column-width');
-    const savedRight = localStorage.getItem('cam-occt-right-column-width');
+    const savedLeft = localStorage.getItem('metalheadcam-left-column-width');
+    const savedRight = localStorage.getItem('metalheadcam-right-column-width');
     
     if (savedLeft) {
       leftColumnWidth = parseInt(savedLeft, 10);
@@ -127,7 +127,7 @@ describe('Resizable Columns localStorage Integration', () => {
     // Simulate mouse up
     function handleResizeEnd() {
       isDragging = false;
-      localStorage.setItem('cam-occt-left-column-width', currentWidth.toString());
+      localStorage.setItem('metalheadcam-left-column-width', currentWidth.toString());
     }
     
     // Test the workflow
@@ -141,6 +141,6 @@ describe('Resizable Columns localStorage Integration', () => {
     
     handleResizeEnd();
     expect(isDragging).toBe(false);
-    expect(localStorageMock.setItem).toHaveBeenCalledWith('cam-occt-left-column-width', '330');
+    expect(localStorageMock.setItem).toHaveBeenCalledWith('metalheadcam-left-column-width', '330');
   });
 });

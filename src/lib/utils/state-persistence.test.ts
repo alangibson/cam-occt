@@ -222,7 +222,7 @@ describe('State Persistence', () => {
 
   it('should handle invalid JSON gracefully', () => {
     // Manually add invalid JSON to storage
-    localStorageMock.setItem('cam-occt-state', 'invalid json');
+    localStorageMock.setItem('metalheadcam-state', 'invalid json');
     
     expect(loadState()).toBeNull();
   });
@@ -235,7 +235,7 @@ describe('State Persistence', () => {
       savedAt: '2023-01-01T00:00:00.000Z'
     };
     
-    localStorageMock.setItem('cam-occt-state', JSON.stringify(invalidState));
+    localStorageMock.setItem('metalheadcam-state', JSON.stringify(invalidState));
     
     expect(loadState()).toBeNull();
   });

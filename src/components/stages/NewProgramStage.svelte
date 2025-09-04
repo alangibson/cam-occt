@@ -147,8 +147,8 @@
 
 <div class="program-stage">
   <ThreeColumnLayout 
-    leftColumnStorageKey="cam-occt-program-left-column-width"
-    rightColumnStorageKey="cam-occt-program-right-column-width"
+    leftColumnStorageKey="metalheadcam-program-left-column-width"
+    rightColumnStorageKey="metalheadcam-program-right-column-width"
   >
     <svelte:fragment slot="left">
       {#if chains.length > 0}
