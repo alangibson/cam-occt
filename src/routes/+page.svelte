@@ -19,8 +19,18 @@
   import { offsetWarningsStore } from '../lib/stores/offset-warnings';
   
   let cleanupAutoSave: (() => void) | null = null;
+  let isMenuOpen = false;
+  
+  function toggleMenu() {
+    isMenuOpen = !isMenuOpen;
+  }
+  
+  function closeMenu() {
+    isMenuOpen = false;
+  }
   
   function clearDrawingState() {
+    closeMenu();
     // Reset drawing store to empty state (this also clears chains, parts, paths, operations, rapids, tessellation, overlay)
     drawingStore.setDrawing({
       shapes: [],
@@ -59,7 +69,15 @@
       saveApplicationState();
     };
     
+    // Close menu when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      if (isMenuOpen && !(event.target as Element)?.closest('.hamburger-container')) {
+        closeMenu();
+      }
+    };
+    
     window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('click', handleClickOutside);
     
     // Cleanup function
     return () => {
@@ -67,6 +85,7 @@
         cleanupAutoSave();
       }
       window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handleClickOutside);
     };
   });
 </script>
@@ -74,21 +93,36 @@
 <div class="app">
   <!-- Header -->
   <header class="app-header">
-    <WorkflowBreadcrumbs />
-    <div class="header-buttons">
-      <button 
-        class="clear-button" 
-        onclick={() => clearDrawingState()}
-      >
-        Clear
+    <!-- Hamburger Menu -->
+    <div class="hamburger-container">
+      <button class="hamburger-button" onclick={toggleMenu} aria-label="Menu">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
       </button>
-      <button 
-        class="tools-button" 
-        onclick={() => $uiStore.showToolTable ? uiStore.hideToolTable() : uiStore.showToolTable()}
-      >
-        Tools
-      </button>
+      
+      {#if isMenuOpen}
+        <div class="menu-dropdown">
+          <button 
+            class="menu-item clear-menu-item" 
+            onclick={() => clearDrawingState()}
+          >
+            Clear
+          </button>
+          <button 
+            class="menu-item tools-menu-item" 
+            onclick={() => {
+              closeMenu();
+              $uiStore.showToolTable ? uiStore.hideToolTable() : uiStore.showToolTable();
+            }}
+          >
+            Tools
+          </button>
+        </div>
+      {/if}
     </div>
+    
+    <WorkflowBreadcrumbs />
   </header>
 
   <!-- Body -->
@@ -122,49 +156,82 @@
   .app-header {
     flex-shrink: 0;
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     padding: 0 0.5rem;
     background: #f8f9fa;
     border-bottom: 1px solid #e5e7eb;
+    position: relative;
   }
   
-  .header-buttons {
+  .hamburger-container {
+    position: absolute;
+    left: 0.5rem;
+  }
+  
+  .hamburger-button {
     display: flex;
-    gap: 0.5rem;
     align-items: center;
-  }
-  
-  .clear-button {
-    padding: 0.5rem 1rem;
-    background: #ef4444;
-    color: white;
+    justify-content: center;
+    padding: 0.5rem;
+    background: none;
     border: none;
     border-radius: 0.375rem;
-    font-size: 0.875rem;
-    font-weight: 500;
+    color: #4b5563;
     cursor: pointer;
     transition: background-color 0.2s;
   }
   
-  .clear-button:hover {
-    background: #dc2626;
+  .hamburger-button:hover {
+    background: #f3f4f6;
   }
   
-  .tools-button {
-    padding: 0.5rem 1rem;
-    background: #3b82f6;
-    color: white;
+  .menu-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin-top: 0.25rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    min-width: 120px;
+    z-index: 1000;
+    padding: 0.75rem 1rem;
+  }
+  
+  .menu-item {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.5rem;
+    background: none;
     border: none;
-    border-radius: 0.375rem;
+    text-align: left;
     font-size: 0.875rem;
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.2s;
+    border-radius: 0.25rem;
+    margin: 0.25rem 0;
   }
   
-  .tools-button:hover {
-    background: #2563eb;
+  
+  .clear-menu-item {
+    color: #dc2626;
+  }
+  
+  .clear-menu-item:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+  
+  .tools-menu-item {
+    color: #2563eb;
+  }
+  
+  .tools-menu-item:hover {
+    background: #eff6ff;
+    color: #1d4ed8;
   }
   
   .app-body {
