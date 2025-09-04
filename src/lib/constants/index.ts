@@ -26,3 +26,8 @@ export const ELLIPSE_TESSELLATION_POINTS: number = 64;
  * Fine tessellation tolerance for spline rendering (pixels)
  */
 export const SPLINE_TESSELLATION_TOLERANCE: number = 0.1;
+
+/**
+ * Physical spacing between cut direction chevrons in drawing units
+ */
+export const CHEVRON_SPACING_UNITS: number = 10;

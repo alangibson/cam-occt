@@ -5,6 +5,7 @@ import { getArcStartPoint, getArcEndPoint, reverseArc, getArcPointAt } from './a
 import { getPolylineStartPoint, getPolylineEndPoint, reversePolyline, getPolylinePointAt } from './polyline';
 import { getSplineStartPoint, getSplineEndPoint, reverseSpline, getSplinePointAt } from './spline';
 import { getEllipseStartPoint, getEllipseEndPoint, reverseEllipse, getEllipsePointAt } from './ellipse';
+import { sampleNURBS } from './nurbs';
 
 /**
  * Get the starting point of a shape
@@ -96,6 +97,131 @@ export function getShapePointAt(shape: Shape, t: number): Point2D {
     default:
       throw new Error(`Unknown shape type: ${shape.type}`);
   }
+}
+
+/**
+ * Calculate the total length of a shape
+ */
+export function getShapeLength(shape: Shape): number {
+  switch (shape.type) {
+    case 'line':
+      const line = shape.geometry as Line;
+      const dx = line.end.x - line.start.x;
+      const dy = line.end.y - line.start.y;
+      return Math.sqrt(dx * dx + dy * dy);
+      
+    case 'arc':
+      const arc = shape.geometry as Arc;
+      let angularSpan = Math.abs(arc.endAngle - arc.startAngle);
+      if (angularSpan > Math.PI) angularSpan = 2 * Math.PI - angularSpan;
+      return arc.radius * angularSpan;
+      
+    case 'circle':
+      const circle = shape.geometry as Circle;
+      return 2 * Math.PI * circle.radius;
+      
+    case 'polyline':
+      const polyline = shape.geometry as Polyline;
+      if (!polyline.shapes || polyline.shapes.length === 0) return 0;
+      return polyline.shapes.reduce((total, shape) => total + getShapeLength(shape), 0);
+      
+    case 'spline':
+      // For splines, approximate length by sampling points
+      const spline = shape.geometry as Spline;
+      try {
+        const points = sampleNURBS(spline, 50);
+        if (points.length < 2) return 0;
+        
+        let length = 0;
+        for (let i = 1; i < points.length; i++) {
+          const dx = points[i].x - points[i-1].x;
+          const dy = points[i].y - points[i-1].y;
+          length += Math.sqrt(dx * dx + dy * dy);
+        }
+        return length;
+      } catch {
+        return 0;
+      }
+      
+    case 'ellipse':
+      // For ellipses, approximate length using Ramanujan's approximation
+      const ellipse = shape.geometry as Ellipse;
+      const a = Math.sqrt(ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y);
+      const b = a * ellipse.minorToMajorRatio;
+      
+      if (typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number') {
+        // Ellipse arc - approximate by sampling points
+        const points: Point2D[] = [];
+        const numSamples = 50;
+        for (let i = 0; i <= numSamples; i++) {
+          const t = i / numSamples;
+          points.push(getEllipsePointAt(ellipse, t));
+        }
+        
+        let length = 0;
+        for (let i = 1; i < points.length; i++) {
+          const dx = points[i].x - points[i-1].x;
+          const dy = points[i].y - points[i-1].y;
+          length += Math.sqrt(dx * dx + dy * dy);
+        }
+        return length;
+      } else {
+        // Full ellipse - use Ramanujan's approximation
+        const h = Math.pow((a - b) / (a + b), 2);
+        return Math.PI * (a + b) * (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
+      }
+      
+    default:
+      return 0;
+  }
+}
+
+/**
+ * Sample points along a path of shapes at regular distance intervals
+ */
+export function samplePathAtDistanceIntervals(shapes: Shape[], intervalDistance: number): { point: Point2D; direction: Point2D }[] {
+  if (shapes.length === 0 || intervalDistance <= 0) return [];
+  
+  const samples: { point: Point2D; direction: Point2D }[] = [];
+  
+  // Calculate cumulative distances and sample points
+  let currentDistance = 0;
+  let nextSampleDistance = intervalDistance;
+  
+  for (const shape of shapes) {
+    const shapeLength = getShapeLength(shape);
+    if (shapeLength === 0) continue;
+    
+    const shapeEndDistance = currentDistance + shapeLength;
+    
+    // Sample points within this shape
+    while (nextSampleDistance <= shapeEndDistance) {
+      const distanceIntoShape = nextSampleDistance - currentDistance;
+      const t = distanceIntoShape / shapeLength;
+      
+      // Get point at this parameter
+      const point = getShapePointAt(shape, t);
+      
+      // Get direction by sampling nearby points
+      const epsilon = 0.001;
+      const t1 = Math.max(0, t - epsilon);
+      const t2 = Math.min(1, t + epsilon);
+      const p1 = getShapePointAt(shape, t1);
+      const p2 = getShapePointAt(shape, t2);
+      
+      const direction = normalizeVector({
+        x: p2.x - p1.x,
+        y: p2.y - p1.y
+      });
+      
+      samples.push({ point, direction });
+      nextSampleDistance += intervalDistance;
+    }
+    
+    currentDistance = shapeEndDistance;
+  }
+  
+  return samples;
 }
 
 /**

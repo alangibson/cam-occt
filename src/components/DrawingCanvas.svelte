@@ -12,12 +12,12 @@
   import { getChainPartType, getPartChainIds, clearHighlight, selectPart, getChainPartId } from '../lib/stores/parts';
   import { selectPath, clearPathHighlight } from '../lib/stores/paths';
   import { sampleNURBS, evaluateNURBS } from '../lib/geometry/nurbs';
-  import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+  import { getShapeStartPoint, getShapeEndPoint, samplePathAtDistanceIntervals } from '$lib/geometry';
   import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
   import { calculateLeads } from '../lib/algorithms/lead-calculation';
   import { leadWarningsStore } from '../lib/stores/lead-warnings';
   import { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
-  import { EPSILON, SPLINE_TESSELLATION_TOLERANCE, ELLIPSE_TESSELLATION_POINTS } from '../lib/constants';
+  import { EPSILON, SPLINE_TESSELLATION_TOLERANCE, ELLIPSE_TESSELLATION_POINTS, CHEVRON_SPACING_UNITS } from '../lib/constants';
   import { debounce } from '../lib/utils/state-persistence';
   import { tessellateEllipse } from '../lib/geometry/ellipse-tessellation';
   import { tessellateSpline } from '../lib/geometry/spline-tessellation';
@@ -558,47 +558,36 @@
       const operation = operations.find(op => op.id === path.operationId);
       if (!operation || !operation.enabled || !path.enabled) return;
       
-      let pathPoints: Point2D[] = [];
+      let shapesToSample: Shape[] = [];
       
       // If path has offset, use offset shapes for arrows, otherwise use original chain
       if (path.calculatedOffset && path.calculatedOffset.offsetShapes && path.calculatedOffset.offsetShapes.length > 0) {
-        // Sample points along the offset shapes
-        pathPoints = sampleOffsetShapePoints(path.calculatedOffset.offsetShapes, 50, path.cutDirection);
+        shapesToSample = path.cutDirection === 'counterclockwise' ? 
+          [...path.calculatedOffset.offsetShapes].reverse() : 
+          path.calculatedOffset.offsetShapes;
       } else {
-        // Get the chain for this path and sample points from original shapes
+        // Get the chain for this path and use original shapes
         const chain = chains.find(c => c.id === path.chainId);
         if (!chain || chain.shapes.length === 0) return;
         
-        pathPoints = samplePathPoints(chain, 50, path.cutDirection); // Sample 50 points along the path
+        shapesToSample = path.cutDirection === 'counterclockwise' ? 
+          [...chain.shapes].reverse() : 
+          chain.shapes;
       }
       
-      if (pathPoints.length < 2) return;
+      // Use the new utility to sample at regular distance intervals
+      const chevronSamples = samplePathAtDistanceIntervals(shapesToSample, CHEVRON_SPACING_UNITS);
       
-      // Draw chevron arrows at regular intervals
-      const chevronSpacing = 20; // Draw a chevron every 20 sample points
+      // Draw chevron arrows at the sampled locations
       const chevronSize = coordinator.screenToWorldDistance(8); // Size of chevrons in world units
       
-      for (let i = chevronSpacing; i < pathPoints.length - chevronSpacing; i += chevronSpacing) {
-        const currentPoint = pathPoints[i];
-        const nextPoint = pathPoints[i + 1];
+      chevronSamples.forEach(sample => {
+        // Calculate perpendicular vector for chevron wings
+        const perpX = -sample.direction.y;
+        const perpY = sample.direction.x;
         
-        // Calculate direction vector
-        const dx = nextPoint.x - currentPoint.x;
-        const dy = nextPoint.y - currentPoint.y;
-        const length = Math.sqrt(dx * dx + dy * dy);
-        
-        if (length > 0) {
-          // Normalize direction vector
-          const dirX = dx / length;
-          const dirY = dy / length;
-          
-          // Calculate perpendicular vector for chevron wings
-          const perpX = -dirY;
-          const perpY = dirX;
-          
-          drawChevronArrow(currentPoint, dirX, dirY, perpX, perpY, chevronSize);
-        }
-      }
+        drawChevronArrow(sample.point, sample.direction.x, sample.direction.y, perpX, perpY, chevronSize);
+      });
     });
   }
   
@@ -633,138 +622,6 @@
     ctx.restore();
   }
   
-  function samplePathPoints(chain: any, numSamples: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D[] {
-    const points: Point2D[] = [];
-    
-    if (!chain.shapes || chain.shapes.length === 0) return points;
-    
-    // Determine the order to traverse shapes based on cut direction
-    const shapes = cutDirection === 'counterclockwise' ? [...chain.shapes].reverse() : chain.shapes;
-    
-    // For each shape in the chain, sample points along it
-    for (const shape of shapes) {
-      const shapePoints = sampleShapePoints(shape, Math.max(2, Math.floor(numSamples / chain.shapes.length)), cutDirection === 'counterclockwise');
-      points.push(...shapePoints);
-    }
-    
-    return points;
-  }
-  
-  function sampleShapePoints(shape: Shape, numSamples: number, reverse: boolean = false): Point2D[] {
-    const points: Point2D[] = [];
-    
-    switch (shape.type) {
-      case 'line':
-        const line = shape.geometry as Line;
-        for (let i = 0; i <= numSamples; i++) {
-          const t = reverse ? 1 - (i / numSamples) : i / numSamples;
-          points.push({
-            x: line.start.x + t * (line.end.x - line.start.x),
-            y: line.start.y + t * (line.end.y - line.start.y)
-          });
-        }
-        break;
-        
-      case 'arc':
-        const arc = shape.geometry as Arc;
-        
-        let startAngle = arc.startAngle;
-        let endAngle = arc.endAngle;
-        
-        // Handle angle wrapping for proper arc direction
-        if (arc.clockwise) {
-          while (endAngle > startAngle) endAngle -= 2 * Math.PI;
-        } else {
-          while (endAngle < startAngle) endAngle += 2 * Math.PI;
-        }
-        
-        // If reverse is true, swap start and end angles
-        if (reverse) {
-          [startAngle, endAngle] = [endAngle, startAngle];
-        }
-        
-        for (let i = 0; i <= numSamples; i++) {
-          const t = i / numSamples;
-          const angle = startAngle + t * (endAngle - startAngle);
-          points.push({
-            x: arc.center.x + arc.radius * Math.cos(angle),
-            y: arc.center.y + arc.radius * Math.sin(angle)
-          });
-        }
-        break;
-        
-      case 'circle':
-        const circle = shape.geometry as Circle;
-        for (let i = 0; i <= numSamples; i++) {
-          const t = reverse ? 1 - (i / numSamples) : i / numSamples;
-          const angle = t * 2 * Math.PI;
-          points.push({
-            x: circle.center.x + circle.radius * Math.cos(angle),
-            y: circle.center.y + circle.radius * Math.sin(angle)
-          });
-        }
-        break;
-        
-      case 'polyline':
-        const polyline = shape.geometry as Polyline;
-        
-        if (!polyline.shapes || polyline.shapes.length === 0) break;
-        
-        // Determine the order to traverse shapes based on reverse flag
-        const shapes = reverse ? [...polyline.shapes].reverse() : polyline.shapes;
-        
-        // Sample along each shape in the polyline
-        const segmentSamples = Math.max(1, Math.floor(numSamples / polyline.shapes.length));
-        
-        for (const polylineShape of shapes) {
-          const shapePoints = sampleShapePoints(polylineShape, segmentSamples, reverse);
-          points.push(...shapePoints);
-        }
-        break;
-        
-      case 'spline':
-        const spline = shape.geometry as Spline;
-        const splinePoints = sampleNURBS(spline, numSamples);
-        if (reverse) {
-          points.push(...splinePoints.reverse());
-        } else {
-          points.push(...splinePoints);
-        }
-        break;
-        
-      default:
-        // For unsupported shapes, just add start and end points if available
-        const startPoint = getShapeStartPoint(shape);
-        const endPoint = getShapeEndPoint(shape);
-        if (reverse) {
-          if (endPoint) points.push(endPoint);
-          if (startPoint && startPoint !== endPoint) points.push(startPoint);
-        } else {
-          if (startPoint) points.push(startPoint);
-          if (endPoint && endPoint !== startPoint) points.push(endPoint);
-        }
-        break;
-    }
-    
-    return points;
-  }
-  
-  function sampleOffsetShapePoints(offsetShapes: Shape[], numSamples: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D[] {
-    const points: Point2D[] = [];
-    
-    if (!offsetShapes || offsetShapes.length === 0) return points;
-    
-    // Determine the order to traverse shapes based on cut direction
-    const shapes = cutDirection === 'counterclockwise' ? [...offsetShapes].reverse() : offsetShapes;
-    
-    // For each shape in the offset path, sample points along it
-    for (const shape of shapes) {
-      const shapePoints = sampleShapePoints(shape, Math.max(2, Math.floor(numSamples / offsetShapes.length)), cutDirection === 'counterclockwise');
-      points.push(...shapePoints);
-    }
-    
-    return points;
-  }
   
   function drawLine(line: Line) {
     ctx.beginPath();
