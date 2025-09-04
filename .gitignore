@@ -10,3 +10,4 @@ test-output/
 tests/output
 report/
 coverage/
+.wrangler/

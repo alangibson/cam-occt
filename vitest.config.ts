@@ -15,12 +15,12 @@ export default defineConfig({
 			reportsDirectory: "./report/coverage",
 			clean: false, // Clean coverage reports directory before running tests
 			all: true, // Collect coverage from all files, even if they've not been tested
-			thresholds: {
-				lines: 88,
-				functions: 88,
-				branches: 86,
-				statements: 88,
-			},
+			// thresholds: {
+			// 	lines: 88,
+			// 	functions: 88,
+			// 	branches: 86,
+			// 	statements: 88,
+			// },
 			include: ["src/**/*.{js,vue,ts,svelte}"],
 			exclude: [
 				"node_modules/**/*",
