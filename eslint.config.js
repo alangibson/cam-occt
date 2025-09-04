@@ -19,7 +19,9 @@ export default [
       'test-*.ts',
       'eslint.config.js',
       '**/*.svelte',
-      'report/**'
+      'report/**',
+      '.wrangler/**',
+      'worker/**'
     ]
   },
   js.configs.recommended,
