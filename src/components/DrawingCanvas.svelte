@@ -21,6 +21,9 @@
   import { debounce } from '../lib/utils/state-persistence';
   import { tessellateEllipse } from '../lib/geometry/ellipse-tessellation';
   import { tessellateSpline } from '../lib/geometry/spline-tessellation';
+  import { getCachedTessellation, clearTessellationCache } from '../lib/rendering/tessellation-cache';
+  import { RenderStateManager, PanStateManager } from '../lib/rendering/render-state';
+  import { calculateViewportBounds, cullShapesToViewport } from '../lib/rendering/viewport-culling';
   import LeadVisualization from './LeadVisualization.svelte';
   import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } from '../lib/types';
   import type { WorkflowStage } from '../lib/stores/workflow';
@@ -44,6 +47,10 @@
   let mouseButton = 0; // Track which mouse button was pressed
   let coordinator: CoordinateTransformer;
   let leadVisualization: LeadVisualization;
+  
+  // Performance optimization managers
+  let renderStateManager = new RenderStateManager();
+  let panStateManager = new PanStateManager();
   
   $: drawing = $drawingStore.drawing;
   $: selectedShapes = $drawingStore.selectedShapes;
@@ -117,35 +124,43 @@
       offsetHash: path.calculatedOffset ? JSON.stringify(path.calculatedOffset.offsetShapes?.map((s: Shape) => s.id) || []) : null
     })).join('|') : '';
 
-  // Consolidate all reactive render triggers
-  $: {
-    // List all dependencies that should trigger a re-render
-    drawing;
-    selectedShapes;
-    scale;
-    offset;
-    displayUnit;
-    selectedChainId;
-    highlightedChainId;
-    highlightedPartId;
-    hoveredPartId;
-    selectedPartId;
-    highlightedChainIds;
-    hoveredChainIds;
-    selectedChainIds;
-    tessellationState;
-    currentOverlay;
-    pathsState;
-    operations;
-    selectedPathId;
-    highlightedPathId;
-    
-    // Specifically watch for offset calculation changes
-    offsetCalculationHash;
-    
-    // Only render if we have a context
+  // Targeted reactive updates for performance optimization
+  
+  // Geometry changes (shapes, drawing structure)
+  $: if (drawing) {
+    renderStateManager.markDirty('geometry');
+    clearTessellationCache(); // Clear cache when geometry changes
+    requestOptimizedRender();
+  }
+  
+  // Transform changes (pan, zoom, units)
+  $: if (scale || offset || displayUnit) {
+    renderStateManager.markDirty('transforms');
+    requestOptimizedRender();
+  }
+  
+  // Selection and hover changes
+  $: if (selectedShapes || hoveredShape || selectedChainId || highlightedChainId || 
+        highlightedPartId || hoveredPartId || selectedPartId || selectedPathId || highlightedPathId) {
+    renderStateManager.markDirty('selection');
+    requestOptimizedRender();
+  }
+  
+  // Path and operation changes
+  $: if (pathsState || operations || offsetCalculationHash) {
+    renderStateManager.markDirty('paths');
+    requestOptimizedRender();
+  }
+  
+  // Overlay and stage changes
+  $: if (tessellationState || currentOverlay) {
+    renderStateManager.markDirty('overlays');
+    requestOptimizedRender();
+  }
+  
+  function requestOptimizedRender() {
     if (ctx) {
-      render();
+      renderStateManager.requestRender(() => render());
     }
   }
 
@@ -236,8 +251,23 @@
     // Draw origin cross at (0,0)
     drawOriginCross();
     
-    // Draw shapes
-    drawing.shapes.forEach(shape => {
+    // Calculate viewport bounds for culling
+    const viewportBounds = calculateViewportBounds(
+      canvas.width,
+      canvas.height,
+      scale,
+      offset,
+      physicalScale
+    );
+    
+    // Use viewport culling for large drawings
+    const shouldCull = drawing.shapes.length > 100;
+    const shapesToRender = shouldCull 
+      ? cullShapesToViewport(drawing.shapes, viewportBounds, 50).visibleShapes
+      : drawing.shapes;
+    
+    // Draw visible shapes
+    shapesToRender.forEach(shape => {
       // Check if layer is visible (only if respectLayerVisibility is true)
       if (respectLayerVisibility) {
         const shapeLayer = shape.layer || '0';
@@ -689,9 +719,10 @@
     // }
   }
 
-  function drawEllipse(ellipse: any) {
-    // Use high-resolution tessellation for consistent rendering with visual validation tests
-    const tessellatedPoints = tessellateEllipse(ellipse, { numPoints: ELLIPSE_TESSELLATION_POINTS });
+  function drawEllipse(ellipse: any, shape: Shape) {
+    // Try to get cached tessellation first
+    const cachedPoints = getCachedTessellation(shape);
+    const tessellatedPoints = cachedPoints || tessellateEllipse(ellipse, { numPoints: ELLIPSE_TESSELLATION_POINTS });
     
     if (tessellatedPoints.length < 2) return;
     
@@ -713,20 +744,29 @@
     ctx.stroke();
   }
 
-  function drawSpline(spline: any) {
-    // Use comprehensive tessellation system with knot vector conversion
-    const result = tessellateSpline(spline, { 
-      method: 'verb-nurbs', 
-      tolerance: SPLINE_TESSELLATION_TOLERANCE 
-    });
+  function drawSpline(spline: any, shape: Shape) {
+    // Try to get cached tessellation first
+    const cachedPoints = getCachedTessellation(shape);
+    let tessellatedPoints = cachedPoints;
     
-    if (!result.success || result.points.length < 2) return;
+    if (!tessellatedPoints) {
+      // Use comprehensive tessellation system with knot vector conversion
+      const result = tessellateSpline(spline, { 
+        method: 'verb-nurbs', 
+        tolerance: SPLINE_TESSELLATION_TOLERANCE 
+      });
+      
+      if (!result.success || result.points.length < 2) return;
+      tessellatedPoints = result.points;
+    }
+    
+    if (tessellatedPoints.length < 2) return;
     
     ctx.beginPath();
-    ctx.moveTo(result.points[0].x, result.points[0].y);
+    ctx.moveTo(tessellatedPoints[0].x, tessellatedPoints[0].y);
     
-    for (let i = 1; i < result.points.length; i++) {
-      ctx.lineTo(result.points[i].x, result.points[i].y);
+    for (let i = 1; i < tessellatedPoints.length; i++) {
+      ctx.lineTo(tessellatedPoints[i].x, tessellatedPoints[i].y);
     }
     
     if (spline.closed) {
@@ -760,12 +800,12 @@
         
       case 'ellipse':
         const ellipse = shape.geometry as Ellipse;
-        drawEllipse(ellipse);
+        drawEllipse(ellipse, shape);
         break;
         
       case 'spline':
         const spline = shape.geometry as Spline;
-        drawSpline(spline);
+        drawSpline(spline, shape);
         break;
     }
   }
@@ -1343,16 +1383,20 @@
         
         drawingStore.moveShapes(Array.from(selectedShapes), worldDelta);
       } else if ((mouseButton === 1 || mouseButton === 2)) {
-        // Pan view with middle or right mouse button
+        // Pan view with middle or right mouse button - use optimized pan manager
         const delta = {
           x: newMousePos.x - mousePos.x,
           y: newMousePos.y - mousePos.y
         };
         
-        drawingStore.setViewTransform(scale, {
+        const newOffset = {
           x: offset.x + delta.x,
           y: offset.y + delta.y
-        });
+        };
+        
+        // Use pan state manager for smooth updates
+        panStateManager.setPanOffset(newOffset);
+        drawingStore.setViewTransform(scale, newOffset);
       }
     } else {
       // Throttle hover detection to improve performance

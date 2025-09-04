@@ -10,6 +10,7 @@ import type { Point2D } from '../../lib/types/geometry';
  */
 export class CoordinateTransformer {
   private totalScale: number;
+  private cachedScreenOrigin: Point2D | null = null;
 
   constructor(
     private canvas: { width: number; height: number },
@@ -25,6 +26,7 @@ export class CoordinateTransformer {
    */
   updateCanvas(canvas: { width: number; height: number }) {
     this.canvas = canvas;
+    this.cachedScreenOrigin = null; // Invalidate cache
   }
 
   /**
@@ -37,16 +39,20 @@ export class CoordinateTransformer {
       this.physicalScale = physicalScale;
     }
     this.totalScale = this.scale * this.physicalScale;
+    this.cachedScreenOrigin = null; // Invalidate cache
   }
 
   /**
    * Get the screen position of the origin (0,0 in world coordinates)
    */
   getScreenOrigin(): Point2D {
-    return {
-      x: this.canvas.width * 0.25 + this.offset.x,
-      y: this.canvas.height * 0.75 + this.offset.y
-    };
+    if (!this.cachedScreenOrigin) {
+      this.cachedScreenOrigin = {
+        x: this.canvas.width * 0.25 + this.offset.x,
+        y: this.canvas.height * 0.75 + this.offset.y
+      };
+    }
+    return this.cachedScreenOrigin;
   }
 
   /**

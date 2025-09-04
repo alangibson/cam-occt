@@ -902,15 +902,13 @@
 
     <!-- Center Column -->
     <div class="center-column">
-      <div class="canvas-container">
-        <DrawingCanvasContainer 
-          currentStage="prepare" 
-          treatChainsAsEntities={true}
-          interactionMode="chains"
-          onChainClick={handleChainClick}
-          onPartClick={handlePartClick}
-        />
-      </div>
+      <DrawingCanvasContainer 
+        currentStage="prepare" 
+        treatChainsAsEntities={true}
+        interactionMode="chains"
+        onChainClick={handleChainClick}
+        onPartClick={handlePartClick}
+      />
     </div>
 
     <!-- Right Column -->
@@ -1438,13 +1436,6 @@
     padding: 1rem;
   }
 
-  .canvas-container {
-    flex: 1;
-    position: relative;
-    background-color: white;
-    overflow: hidden; /* Prevent canvas from growing container */
-    min-height: 0; /* Allow flexbox to shrink */
-  }
 
   /* Removed .next-stage-panel - now handled by next-stage-content within AccordionPanel */
 
