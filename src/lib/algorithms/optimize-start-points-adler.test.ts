@@ -4,9 +4,13 @@ import type { Shape } from '../../lib/types';
 import type { Chain } from './chain-detection/chain-detection';
 import { CutDirection, LeadType } from '../types/direction';
 import { createPolylineFromVertices } from '../geometry/polyline';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
 
 describe('optimizeStartPoints - ADLER.dxf scenario', () => {
-  const tolerance = 0.1;
+  const optimizationParams = {
+    ...DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS,
+    tolerance: 0.1
+  };
 
   it('should optimize multiple closed polyline chains like in ADLER.dxf', () => {
     // Simulate typical ADLER.dxf chains - closed polylines with multiple segments
@@ -86,7 +90,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
     const originalShapeCount = chains.reduce((sum, chain) => sum + chain.shapes.length, 0);
     
     // Run optimization
-    const result = optimizeStartPoints(chains, tolerance);
+    const result = optimizeStartPoints(chains, optimizationParams);
     
     // NEW EXPECTATION: All chains should be modified now that we support polylines
     // Each chain should have one shape split into two
@@ -147,7 +151,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
       ]
     };
 
-    const result = optimizeStartPoints([complexChain], tolerance);
+    const result = optimizeStartPoints([complexChain], optimizationParams);
     
     // Now it SHOULD modify the chain since we support polylines
     expect(result.length).toBe(4); // 3 original + 1 from split
@@ -191,7 +195,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
       ]
     };
 
-    const result = optimizeStartPoints([adlerStyleChain], tolerance);
+    const result = optimizeStartPoints([adlerStyleChain], optimizationParams);
     
     // NEW BEHAVIOR: Optimization now works because we support polylines!
     expect(result.length).toBe(3); // 2 original + 1 from split

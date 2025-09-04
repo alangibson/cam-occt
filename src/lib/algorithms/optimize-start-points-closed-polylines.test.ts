@@ -4,9 +4,13 @@ import { isChainClosed } from './part-detection';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { Shape } from '../../lib/types';
 import type { Chain } from './chain-detection/chain-detection';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
 
 describe('optimizeStartPoints - closed polylines', () => {
-  const tolerance = 0.1;
+  const optimizationParams = {
+    ...DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS,
+    tolerance: 0.1
+  };
 
   it('should recognize single closed polylines as closed chains', () => {
     // Simulate ADLER.dxf style - single closed polyline in a chain
@@ -23,10 +27,10 @@ describe('optimizeStartPoints - closed polylines', () => {
     };
 
     // First, verify that isChainClosed correctly identifies this as closed
-    expect(isChainClosed(chain, tolerance)).toBe(true);
+    expect(isChainClosed(chain, optimizationParams.tolerance)).toBe(true);
 
     // Now test optimization
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should have split the polyline (original 1 shape -> 2 split shapes)
     expect(result.length).toBe(2);
@@ -58,10 +62,10 @@ describe('optimizeStartPoints - closed polylines', () => {
 
     // Verify all chains are recognized as closed
     chains.forEach(chain => {
-      expect(isChainClosed(chain, tolerance)).toBe(true);
+      expect(isChainClosed(chain, optimizationParams.tolerance)).toBe(true);
     });
 
-    const result = optimizeStartPoints(chains, tolerance);
+    const result = optimizeStartPoints(chains, optimizationParams);
     
     // Should have optimized all 3 chains (3 original polylines -> 6 split shapes)
     expect(result.length).toBe(6);
@@ -84,9 +88,9 @@ describe('optimizeStartPoints - closed polylines', () => {
     };
 
     // Verify it's not recognized as closed
-    expect(isChainClosed(chain, tolerance)).toBe(false);
+    expect(isChainClosed(chain, optimizationParams.tolerance)).toBe(false);
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should not have been modified
     expect(result.length).toBe(1);
@@ -108,9 +112,9 @@ describe('optimizeStartPoints - closed polylines', () => {
     };
 
     // Should fall back to geometric check and recognize as closed
-    expect(isChainClosed(chain, tolerance)).toBe(true);
+    expect(isChainClosed(chain, optimizationParams.tolerance)).toBe(true);
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should have been optimized
     expect(result.length).toBe(2);

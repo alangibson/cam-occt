@@ -5,9 +5,13 @@ import type { ShapeChain } from './chain-detection/chain-detection';
 import { CutDirection, LeadType } from '../types/direction';
 import type { Line, Arc } from '../types/geometry';
 import { createPolylineFromVertices } from '../geometry/polyline';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
 
 describe('optimizeStartPoints', () => {
-  const tolerance = 0.1;
+  const optimizationParams = {
+    ...DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS,
+    tolerance: 0.1
+  };
 
   it('should split a line at its midpoint for a closed chain', () => {
     // Create a simple closed triangular chain with lines
@@ -43,7 +47,7 @@ describe('optimizeStartPoints', () => {
       shapes
     };
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should have 4 shapes now (original 3 minus 1 split shape plus 2 split halves)
     expect(result.length).toBe(4);
@@ -92,7 +96,7 @@ describe('optimizeStartPoints', () => {
       shapes
     };
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should have 4 shapes now (2 polylines + 2 arc halves)
     expect(result.length).toBe(4);
@@ -152,7 +156,7 @@ describe('optimizeStartPoints', () => {
       shapes
     };
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should have 3 shapes (spline + 2 line halves)
     expect(result.length).toBe(3);
@@ -193,7 +197,7 @@ describe('optimizeStartPoints', () => {
       shapes
     };
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should have same number of shapes
     expect(result.length).toBe(2);
@@ -221,7 +225,7 @@ describe('optimizeStartPoints', () => {
       shapes
     };
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should have same single shape
     expect(result.length).toBe(1);
@@ -266,7 +270,7 @@ describe('optimizeStartPoints', () => {
       ]
     };
 
-    const result = optimizeStartPoints([chain1, chain2], tolerance);
+    const result = optimizeStartPoints([chain1, chain2], optimizationParams);
     
     // Chain1 should be split (3 shapes), chain2 should be unchanged (1 shape)
     expect(result.length).toBe(4);

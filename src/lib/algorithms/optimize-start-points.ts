@@ -4,6 +4,7 @@ import { isChainClosed } from './part-detection';
 import { polylineToPoints } from '../geometry/polyline';
 import { splitShapeAtMidpoint, reconstructChainFromSplit, createSplitShape } from './path-optimization-utils';
 import type { Point2D } from '$lib/types';
+import type { StartPointOptimizationParameters } from '../types/algorithm-parameters';
 
 /**
  * Result of optimizing a single chain's start point
@@ -151,9 +152,9 @@ function findBestShapeToSplit(shapes: Shape[]): number {
 /**
  * Optimizes the start point of a single chain
  */
-function optimizeChainStartPoint(chain: Chain, tolerance: number): OptimizeResult {
+function optimizeChainStartPoint(chain: Chain, params: StartPointOptimizationParameters): OptimizeResult {
   // Only process closed chains with multiple shapes
-  if (!isChainClosed(chain, tolerance)) {
+  if (!isChainClosed(chain, params.tolerance)) {
     return {
       originalChain: chain,
       optimizedChain: null,
@@ -185,7 +186,7 @@ function optimizeChainStartPoint(chain: Chain, tolerance: number): OptimizeResul
       if (points && points.length > 3) {
         // Check if it's closed (either explicit flag or geometric closure)
         const hasClosedFlag: boolean = polylineGeom.closed === true;
-        const isGeometricallyClosed: boolean = isChainClosed(chain, tolerance);
+        const isGeometricallyClosed: boolean = isChainClosed(chain, params.tolerance);
         
         if (hasClosedFlag || isGeometricallyClosed) {
           // Split the polyline and create a new chain
@@ -270,16 +271,16 @@ function optimizeChainStartPoint(chain: Chain, tolerance: number): OptimizeResul
  * in multi-shape closed chains to avoid piercing in narrow corners.
  * 
  * @param chains - Array of shape chains to optimize
- * @param tolerance - Tolerance for chain closure detection
+ * @param params - Optimization parameters including tolerance and split position
  * @returns Array of all shapes with optimized chains replacing original ones
  */
-export function optimizeStartPoints(chains: Chain[], tolerance: number): Shape[] {
+export function optimizeStartPoints(chains: Chain[], params: StartPointOptimizationParameters): Shape[] {
   const results: OptimizeResult[] = [];
   const allShapes: Shape[] = [];
   
   // Process each chain
   for (const chain of chains) {
-    const result: OptimizeResult = optimizeChainStartPoint(chain, tolerance);
+    const result: OptimizeResult = optimizeChainStartPoint(chain, params);
     results.push(result);
     
     // Use optimized chain if available, otherwise use original

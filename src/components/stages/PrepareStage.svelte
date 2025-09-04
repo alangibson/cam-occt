@@ -296,7 +296,7 @@
       prepareStageStore.saveOriginalStateForOptimization(currentDrawing.shapes, detectedChains);
       
       // Optimize start points for all chains
-      const optimizedShapes = optimizeStartPoints(detectedChains, algorithmParams.chainDetection.tolerance);
+      const optimizedShapes = optimizeStartPoints(detectedChains, algorithmParams.startPointOptimization);
       
       // Update the drawing store with optimized shapes
       drawingStore.replaceAllShapes(optimizedShapes);
@@ -1112,6 +1112,38 @@
             <div class="prepare-action-description">
               Adjusts chain starting points to minimize rapid movement and cutting time.
             </div>
+            <label class="param-label">
+              Split Position:
+              <select 
+                bind:value={algorithmParams.startPointOptimization.splitPosition}
+                class="param-input"
+                title="Position along the shape where to create the split point."
+              >
+                <option value="midpoint">Midpoint</option>
+              </select>
+              <div class="param-description">
+                Position along the selected shape where the start point optimization will split the geometry. 
+                Currently only midpoint splitting is supported for consistent cutting behavior.
+              </div>
+            </label>
+            
+            <label class="param-label">
+              Optimization Tolerance:
+              <input 
+                type="number" 
+                bind:value={algorithmParams.startPointOptimization.tolerance} 
+                min="0.001" 
+                max="10" 
+                step="0.001"
+                class="param-input"
+                title="Tolerance for optimization operations including chain closure detection."
+              />
+              <div class="param-description">
+                Distance tolerance used for determining chain closure and optimization operations. 
+                Higher values are more permissive for connecting shapes. 
+                Lower values require more precise geometric alignment.
+              </div>
+            </label>
           </div>
         </details>
 

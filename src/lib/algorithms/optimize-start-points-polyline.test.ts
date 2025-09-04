@@ -5,9 +5,13 @@ import type { Shape } from '../../lib/types';
 import type { Polyline } from '../../lib/types/geometry';
 import type { Chain } from './chain-detection/chain-detection';
 import { LeadType } from '../types/direction';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
 
 describe('optimizeStartPoints - polyline splitting', () => {
-  const tolerance = 0.1;
+  const optimizationParams = {
+    ...DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS,
+    tolerance: 0.1
+  };
 
   it('should split a 2-point polyline at its midpoint', () => {
     const shapes: Shape[] = [
@@ -26,7 +30,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
       shapes
     };
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should have 3 shapes (2 original minus 1 + 2 split halves)
     expect(result.length).toBe(3);
@@ -79,7 +83,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
       shapes
     };
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // The line will be preferred over the 3-point polyline
     const splitLines = result.filter(s => s.id.includes('closing-line-split'));
@@ -124,7 +128,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
       shapes
     };
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should split the second polyline (2-point polyline is preferred)
     const splitPolylines = result.filter(s => s.id.includes('closing-polyline-split'));
@@ -199,7 +203,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
       shapes: [polylineWithArcs]
     };
 
-    const result = optimizeStartPoints([chain], tolerance);
+    const result = optimizeStartPoints([chain], optimizationParams);
     
     // Should have optimized the polyline by splitting it into two pieces
     expect(result.length).toBe(2); // Should have exactly 2 polyline halves
