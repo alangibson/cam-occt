@@ -618,6 +618,87 @@
     }
   }
 
+  // Apply all actions in order
+  async function handleApplyAll() {
+    // Apply each action in order, checking conditions dynamically
+    const drawing = $drawingStore.drawing;
+    if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
+      console.log('No drawing available');
+      return;
+    }
+
+    console.log('Applying: Decompose Polylines');
+    handleDecomposePolylines();
+    
+    console.log('Applying: Join Co-linear Lines');
+    handleJoinColinearLines();
+    
+    console.log('Applying: Translate to Positive');
+    handleTranslateToPositive();
+    
+    // Detect chains if not already detected
+    if (!chainsDetected) {
+      console.log('Applying: Detect Chains');
+      handleDetectChains();
+      
+      // Wait a bit for chain detection to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+    
+    // Check if chains were detected and apply subsequent actions
+    if (detectedChains.length > 0) {
+      // Normalize chains if not already normalized
+      if (!normalizationApplied) {
+        console.log('Applying: Normalize Chains');
+        handleNormalizeChains();
+        
+        // Wait a bit for normalization to complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Optimize starts if not already optimized
+      if (!optimizationApplied) {
+        console.log('Applying: Optimize Starts');
+        handleOptimizeStarts();
+        
+        // Wait a bit for optimization to complete
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      
+      // Detect parts if not already detected
+      if (!partsDetectionApplied) {
+        console.log('Applying: Detect Parts');
+        handleDetectParts();
+      }
+    }
+  }
+
+  // Clear all actions in reverse order
+  function handleClearAll() {
+    // List of actions to clear in reverse order
+    const clearActions = [];
+
+    // Add clear actions based on current state
+    if (partsDetectionApplied) {
+      clearActions.push({ name: 'Clear Parts', handler: handleDetectParts });
+    }
+    if (optimizationApplied) {
+      clearActions.push({ name: 'Clear Optimization', handler: handleOptimizeStarts });
+    }
+    if (normalizationApplied) {
+      clearActions.push({ name: 'Clear Normalization', handler: handleNormalizeChains });
+    }
+    if (chainsDetected) {
+      clearActions.push({ name: 'Clear Chains', handler: handleDetectChains });
+    }
+
+    // Apply each clear action
+    for (const action of clearActions) {
+      console.log(`Clearing: ${action.name}`);
+      action.handler();
+    }
+  }
+
   // Auto-complete prepare stage when chains or parts are detected
   $: if (detectedChains.length > 0 || detectedParts.length > 0) {
     workflowStore.completeStage('prepare');
@@ -830,6 +911,24 @@
       ></button>
 
       <AccordionPanel title="Prepare" isExpanded={true}>
+        <svelte:fragment slot="header-button">
+          <button 
+            class="header-action-button apply-all-button"
+            on:click={() => handleApplyAll()}
+            disabled={!$drawingStore.drawing}
+            title="Apply all actions in order"
+          >
+            Apply
+          </button>
+          <button 
+            class="header-action-button clear-all-button"
+            on:click={handleClearAll}
+            disabled={!chainsDetected && !normalizationApplied && !optimizationApplied && !partsDetectionApplied}
+            title="Clear all actions in reverse order"
+          >
+            Clear
+          </button>
+        </svelte:fragment>
         <!-- Decompose Polylines -->
         <details class="param-group-details">
           <summary class="param-group-summary">
@@ -1864,6 +1963,47 @@
     line-height: 1.3;
     margin-top: 0.25rem;
     font-style: italic;
+  }
+
+  /* Header action button styles */
+  .header-action-button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: none;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .apply-all-button {
+    background-color: #4f46e5;
+    color: white;
+  }
+
+  .apply-all-button:hover:not(:disabled) {
+    background-color: #4338ca;
+  }
+
+  .apply-all-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    color: #6b7280;
+  }
+
+  .clear-all-button {
+    background-color: #dc2626;
+    color: white;
+  }
+
+  .clear-all-button:hover:not(:disabled) {
+    background-color: #b91c1c;
+  }
+
+  .clear-all-button:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    color: #6b7280;
   }
 
   /* Resize handle styles */
