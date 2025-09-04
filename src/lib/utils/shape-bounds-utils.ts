@@ -10,6 +10,7 @@ import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Point2D, Shape, Line, Circle, Arc, Polyline, Ellipse, Spline } from '../types';
 import { polylineToPoints } from '../geometry/polyline';
 import { sampleNURBS } from '../geometry/nurbs';
+import { getBoundingBoxForArc } from '../geometry/bounding-box';
 
 export interface BoundingBox {
   minX: number;
@@ -61,12 +62,13 @@ export function getShapeBoundingBox(shape: Shape): BoundingBox {
     
     case 'arc':
       const arc = shape.geometry as Arc;
-      // For simplicity, use circle bounding box (conservative)
+      // Use actual arc bounds instead of conservative circle bounds
+      const arcBounds = getBoundingBoxForArc(arc);
       return {
-        minX: arc.center.x - arc.radius,
-        maxX: arc.center.x + arc.radius,
-        minY: arc.center.y - arc.radius,
-        maxY: arc.center.y + arc.radius
+        minX: arcBounds.min.x,
+        maxX: arcBounds.max.x,
+        minY: arcBounds.min.y,
+        maxY: arcBounds.max.y
       };
     
     case 'polyline':
@@ -118,11 +120,23 @@ export function calculatePolylineBoundingBox(polyline: Polyline): BoundingBox {
   let minX = Infinity, maxX = -Infinity;
   let minY = Infinity, maxY = -Infinity;
   
-  for (const point of polylineToPoints(polyline)) {
-    minX = Math.min(minX, point.x);
-    maxX = Math.max(maxX, point.x);
-    minY = Math.min(minY, point.y);
-    maxY = Math.max(maxY, point.y);
+  // If polyline has segments (new format), process each segment for accurate bounds
+  if (polyline.shapes && polyline.shapes.length > 0) {
+    for (const shape of polyline.shapes) {
+      const segmentBounds = getShapeBoundingBox(shape);
+      minX = Math.min(minX, segmentBounds.minX);
+      maxX = Math.max(maxX, segmentBounds.maxX);
+      minY = Math.min(minY, segmentBounds.minY);
+      maxY = Math.max(maxY, segmentBounds.maxY);
+    }
+  } else {
+    // Fallback for old format or legacy polylines - use points
+    for (const point of polylineToPoints(polyline)) {
+      minX = Math.min(minX, point.x);
+      maxX = Math.max(maxX, point.x);
+      minY = Math.min(minY, point.y);
+      maxY = Math.max(maxY, point.y);
+    }
   }
   
   return { minX, maxX, minY, maxY };
@@ -147,14 +161,23 @@ export function getShapePointsForBounds(shape: Shape): Point2D[] {
       
     case 'arc':
       const arc: Arc = shape.geometry as Arc;
-      return [
-        { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
-        { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius }
-      ];
+      // Use actual arc bounds instead of full circle bounds
+      const arcBounds = getBoundingBoxForArc(arc);
+      return [arcBounds.min, arcBounds.max];
       
     case 'polyline':
       const polyline: Polyline = shape.geometry as Polyline;
-      return polylineToPoints(polyline);
+      // If polyline has segments (new format), get bounds from all segments
+      if (polyline.shapes && polyline.shapes.length > 0) {
+        const allPoints: Point2D[] = [];
+        for (const segmentShape of polyline.shapes) {
+          allPoints.push(...getShapePointsForBounds(segmentShape));
+        }
+        return allPoints;
+      } else {
+        // Fallback for old format - use points
+        return polylineToPoints(polyline);
+      }
       
     case 'ellipse':
       const ellipse: Ellipse = shape.geometry as Ellipse;

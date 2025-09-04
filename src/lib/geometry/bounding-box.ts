@@ -115,25 +115,42 @@ export function getBoundingBoxForArc(arc: Arc): BoundingBox {
 }
 
 export function getBoundingBoxForPolyline(polyline: Polyline): BoundingBox {
-  const points: Point2D[] = polylineToPoints(polyline);
-  if (!points || points.length === 0) {
-    throw new Error('Invalid polyline: must have at least one point');
-  }
-
   let minX: number = Infinity;
   let maxX: number = -Infinity;
   let minY: number = Infinity;
   let maxY: number = -Infinity;
 
-  for (const point of points) {
-    if (!point || !isFinite(point.x) || !isFinite(point.y)) {
-      throw new Error('Invalid polyline: all points must be finite numbers');
+  // If polyline has segments (new format), process each segment for accurate bounds
+  if (polyline.shapes && polyline.shapes.length > 0) {
+    for (const shape of polyline.shapes) {
+      const segmentBounds = getBoundingBoxForShape(shape);
+      
+      minX = Math.min(minX, segmentBounds.min.x);
+      maxX = Math.max(maxX, segmentBounds.max.x);
+      minY = Math.min(minY, segmentBounds.min.y);
+      maxY = Math.max(maxY, segmentBounds.max.y);
     }
-    
-    minX = Math.min(minX, point.x);
-    maxX = Math.max(maxX, point.x);
-    minY = Math.min(minY, point.y);
-    maxY = Math.max(maxY, point.y);
+  } else {
+    // Fallback for old format or legacy polylines - use points
+    const points: Point2D[] = polylineToPoints(polyline);
+    if (!points || points.length === 0) {
+      throw new Error('Invalid polyline: must have at least one point');
+    }
+
+    for (const point of points) {
+      if (!point || !isFinite(point.x) || !isFinite(point.y)) {
+        throw new Error('Invalid polyline: all points must be finite numbers');
+      }
+      
+      minX = Math.min(minX, point.x);
+      maxX = Math.max(maxX, point.x);
+      minY = Math.min(minY, point.y);
+      maxY = Math.max(maxY, point.y);
+    }
+  }
+
+  if (!isFinite(minX) || !isFinite(maxX) || !isFinite(minY) || !isFinite(maxY)) {
+    throw new Error('Invalid polyline: no finite bounds found');
   }
 
   return {

@@ -3,6 +3,7 @@ import { parseDXF } from './dxf-parser';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
+import { getBoundingBoxForArc } from '../geometry/bounding-box';
 import type { Shape, Point2D, Line, Circle, Arc, Polyline } from '../../lib/types/geometry';
 import { EPSILON } from '../constants';
 
@@ -45,10 +46,9 @@ function getShapePoints(shape: Shape): Point2D[] {
       ];
     case 'arc':
       const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
-      return [
-        { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
-        { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius }
-      ];
+      // Use actual arc bounds instead of full circle bounds
+      const arcBounds = getBoundingBoxForArc(arc);
+      return [arcBounds.min, arcBounds.max];
     case 'polyline':
       const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
       return polylineToPoints(polyline);
@@ -787,10 +787,12 @@ function getShapeBounds(shape: any) {
       break;
     case 'arc':
       const arc: import("$lib/types/geometry").Arc = shape.geometry;
-      minX = arc.center.x - arc.radius;
-      maxX = arc.center.x + arc.radius;
-      minY = arc.center.y - arc.radius;
-      maxY = arc.center.y + arc.radius;
+      // Use actual arc bounds instead of full circle bounds
+      const arcBounds = getBoundingBoxForArc(arc);
+      minX = arcBounds.min.x;
+      maxX = arcBounds.max.x;
+      minY = arcBounds.min.y;
+      maxY = arcBounds.max.y;
       break;
     case 'polyline':
       const polyline: import("$lib/types/geometry").Polyline = shape.geometry;

@@ -247,7 +247,7 @@ describe('getBoundingBoxForPolyline', () => {
     ], false);
     const invalidPolyline = invalidPolylineShape.geometry as Polyline;
     
-    expect(() => getBoundingBoxForPolyline(invalidPolyline)).toThrow('Invalid polyline');
+    expect(() => getBoundingBoxForPolyline(invalidPolyline)).toThrow('Invalid line');
   });
 });
 
