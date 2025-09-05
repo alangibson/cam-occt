@@ -808,9 +808,10 @@
       if (currentDistance + shapeLength >= targetDistance) {
         // Tool head is on this shape
         const shapeProgress = shapeLength > 0 ? (targetDistance - currentDistance) / shapeLength : 0;
-        // For counterclockwise cuts, reverse the shape progress as well
-        const adjustedProgress = cutDirection === 'counterclockwise' ? 1.0 - shapeProgress : shapeProgress;
-        return getPositionOnShape(shape, adjustedProgress, cutDirection);
+        // For counterclockwise cuts, we reverse both shape order AND individual shape direction
+        // This matches the old sampling behavior that was working correctly
+        const shapeDirection = cutDirection === 'counterclockwise' ? 'clockwise' : 'counterclockwise';
+        return getPositionOnShape(shape, shapeProgress, shapeDirection);
       }
       currentDistance += shapeLength;
     }
@@ -818,8 +819,9 @@
     // Fallback to last shape end
     if (shapes.length > 0) {
       const lastShape = shapes[shapes.length - 1];
-      const fallbackProgress = cutDirection === 'counterclockwise' ? 0.0 : 1.0;
-      return getPositionOnShape(lastShape, fallbackProgress, cutDirection);
+      // For the fallback end position, also respect the double reversal logic
+      const shapeDirection = cutDirection === 'counterclockwise' ? 'clockwise' : 'counterclockwise';  
+      return getPositionOnShape(lastShape, 1.0, shapeDirection);
     }
     
     return { x: 0, y: 0 };

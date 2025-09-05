@@ -607,7 +607,7 @@
       }
       
       // Use the new utility to sample at regular distance intervals
-      const chevronSamples = samplePathAtDistanceIntervals(shapesToSample, CHEVRON_SPACING_UNITS);
+      const chevronSamples = samplePathAtDistanceIntervals(shapesToSample, CHEVRON_SPACING_UNITS, path.cutDirection);
       
       // Draw chevron arrows at the sampled locations
       const chevronSize = coordinator.screenToWorldDistance(8); // Size of chevrons in world units
