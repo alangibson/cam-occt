@@ -174,7 +174,7 @@
     width: 40px;
     height: 40px;
     border: 4px solid #e5e7eb;
-    border-top-color: #3b82f6;
+    border-top-color: rgb(0, 83, 135);
     border-radius: 50%;
     animation: spin 1s linear infinite;
   }
@@ -242,25 +242,25 @@
   }
   
   .download-button {
-    background-color: #3b82f6;
+    background-color: rgb(0, 83, 135);
     color: white;
-    border-color: #3b82f6;
+    border-color: rgb(0, 83, 135);
   }
   
   .download-button:hover {
-    background-color: #2563eb;
-    border-color: #2563eb;
+    background-color: rgb(0, 83, 135);
+    border-color: rgb(0, 83, 135);
   }
   
   .regenerate-button {
-    background-color: #10b981;
+    background-color: rgb(0, 133, 84);
     color: white;
-    border-color: #10b981;
+    border-color: rgb(0, 133, 84);
   }
   
   .regenerate-button:hover:not(:disabled) {
-    background-color: #059669;
-    border-color: #059669;
+    background-color: rgb(0, 133, 84);
+    border-color: rgb(0, 133, 84);
   }
   
   .regenerate-button:disabled {
@@ -299,7 +299,7 @@
   
   .error-message {
     text-align: center;
-    color: #ef4444;
+    color: rgb(133, 18, 0);
     font-size: 1rem;
   }
   

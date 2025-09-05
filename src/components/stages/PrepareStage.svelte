@@ -1430,7 +1430,7 @@
   /* Removed .panel styles - now handled by AccordionPanel component */
 
   .next-stage-content {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, rgb(0, 83, 135) 0%, rgb(0, 83, 135) 100%);
     color: white;
     border-radius: 0.5rem;
     padding: 1rem;
@@ -1474,7 +1474,7 @@
 
   .apply-button {
     padding: 0.25rem 0.75rem;
-    background-color: #4f46e5;
+    background-color: rgb(0, 83, 135);
     color: white;
     border: none;
     border-radius: 0.25rem;
@@ -1488,7 +1488,7 @@
   }
 
   .apply-button:hover:not(:disabled) {
-    background-color: #4338ca;
+    background-color: rgb(0, 83, 135);
   }
 
   .apply-button:disabled {
@@ -1498,11 +1498,11 @@
   }
 
   .apply-button.clear-button {
-    background-color: #dc2626;
+    background-color: rgb(133, 18, 0);
   }
 
   .apply-button.clear-button:hover:not(:disabled) {
-    background-color: #b91c1c;
+    background-color: rgb(133, 18, 0);
   }
 
   .prepare-action-description {
@@ -1565,7 +1565,7 @@
 
   .part-name {
     font-weight: 600;
-    color: #1e40af;
+    color: rgb(0, 83, 135);
     font-size: 0.875rem;
   }
 
@@ -1695,7 +1695,7 @@
   .traversal-warning .traversal-status {
     background-color: #fef2f2;
     border: 1px solid #fecaca;
-    color: #dc2626;
+    color: rgb(133, 18, 0);
   }
 
   /* Chain summary styles */
@@ -1758,7 +1758,7 @@
   }
 
   .chain-status.closed {
-    background-color: #dcfce7;
+    background-color: #e6f2f0;
     color: #166534;
   }
 
@@ -1769,18 +1769,18 @@
 
   .chain-id {
     font-weight: 600;
-    color: #1e40af;
+    color: rgb(0, 83, 135);
     font-size: 0.875rem;
     font-family: monospace;
   }
 
   .traversal-status.can-traverse {
-    color: #16a34a;
+    color: rgb(0, 133, 84);
     font-weight: bold;
   }
 
   .traversal-status.cannot-traverse {
-    color: #dc2626;
+    color: rgb(133, 18, 0);
     font-weight: bold;
   }
 
@@ -1814,7 +1814,7 @@
 
   .chain-detail-header .chain-id {
     font-weight: 600;
-    color: #1e40af;
+    color: rgb(0, 83, 135);
     font-size: 1rem;
     font-family: monospace;
   }
@@ -1853,11 +1853,11 @@
   }
 
   .property-value.closed {
-    color: #059669; /* Green for closed chains */
+    color: rgb(0, 133, 84); /* Green for closed chains */
   }
 
   .property-value.open {
-    color: #dc2626; /* Red for open chains */
+    color: rgb(133, 18, 0); /* Red for open chains */
   }
 
   .shapes-title, .issues-title {
@@ -1921,7 +1921,7 @@
   .issue-type {
     font-size: 0.75rem;
     font-weight: 600;
-    color: #dc2626;
+    color: rgb(133, 18, 0);
     text-transform: capitalize;
   }
 
@@ -2046,12 +2046,12 @@
   }
 
   .apply-all-button {
-    background-color: #4f46e5;
+    background-color: rgb(0, 83, 135);
     color: white;
   }
 
   .apply-all-button:hover:not(:disabled) {
-    background-color: #4338ca;
+    background-color: rgb(0, 83, 135);
   }
 
   .apply-all-button:disabled {
@@ -2061,12 +2061,12 @@
   }
 
   .clear-all-button {
-    background-color: #dc2626;
+    background-color: rgb(133, 18, 0);
     color: white;
   }
 
   .clear-all-button:hover:not(:disabled) {
-    background-color: #b91c1c;
+    background-color: rgb(133, 18, 0);
   }
 
   .clear-all-button:disabled {
@@ -2090,12 +2090,12 @@
   }
 
   .resize-handle:hover {
-    background-color: #3b82f6;
+    background-color: rgb(0, 83, 135);
     opacity: 0.3;
   }
 
   .resize-handle.dragging {
-    background-color: #3b82f6;
+    background-color: rgb(0, 83, 135);
     opacity: 0.5;
   }
 

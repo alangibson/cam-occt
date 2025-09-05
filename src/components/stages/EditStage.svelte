@@ -87,7 +87,7 @@
   }
 
   .next-stage-content {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, rgb(0, 83, 135) 0%, rgb(0, 83, 135) 100%);
     color: white;
     border-radius: 0.5rem;
     padding: 1rem;

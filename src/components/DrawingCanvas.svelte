@@ -352,10 +352,10 @@
       try {
         // Define color constants for visual consistency
         const pathColors = {
-          originalLightGreen: '#86efac',  // Light green for original paths when offset exists
-          offsetGreen: '#16a34a',        // Green for offset paths (same as original normal)
-          selectedDark: '#15803d',       // Dark green for selected
-          highlighted: '#15803d'         // Dark green for highlighted
+          originalLightGreen: 'rgba(0, 133, 84, 0.6)',  // Light green for original paths when offset exists
+          offsetGreen: 'rgb(0, 133, 84)',        // Green for offset paths (same as original normal)
+          selectedDark: 'rgb(0, 133, 84)',       // Dark green for selected
+          highlighted: 'rgb(0, 133, 84)'         // Dark green for highlighted
         };
         
         // Draw original shapes as dashed light green lines FIRST (background layer)
@@ -512,7 +512,7 @@
         const dashSize = coordinator.screenToWorldDistance(3);
         ctx.setLineDash([dashSize, dashSize]); // Shorter dashes
       } else {
-        ctx.strokeStyle = '#00bfff'; // Light blue for normal
+        ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for normal
         ctx.lineWidth = coordinator.screenToWorldDistance(0.5); // Thin line
         const dashSize = coordinator.screenToWorldDistance(5);
         ctx.setLineDash([dashSize, dashSize]); // Normal dashes
@@ -556,7 +556,7 @@
       const startPoint = getShapeStartPoint(firstShape);
       if (startPoint) {
         ctx.save();
-        ctx.fillStyle = '#00ff00'; // Green for start
+        ctx.fillStyle = 'rgb(0, 133, 84)'; // Green for start
         ctx.beginPath();
         ctx.arc(startPoint.x, startPoint.y, pointRadius, 0, 2 * Math.PI);
         ctx.fill();
@@ -567,7 +567,7 @@
       const endPoint = getShapeEndPoint(lastShape);
       if (endPoint) {
         ctx.save();
-        ctx.fillStyle = '#ff0000'; // Red for end
+        ctx.fillStyle = 'rgb(133, 18, 0)'; // Red for end
         ctx.beginPath();
         ctx.arc(endPoint.x, endPoint.y, pointRadius, 0, 2 * Math.PI);
         ctx.fill();
@@ -624,7 +624,7 @@
   
   function drawChevronArrow(center: Point2D, dirX: number, dirY: number, perpX: number, perpY: number, size: number) {
     ctx.save();
-    ctx.strokeStyle = '#16a34a'; // Green color to match path color
+    ctx.strokeStyle = 'rgb(0, 133, 84)'; // Green color to match path color
     ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -845,7 +845,7 @@
       ctx.strokeStyle = '#ff6600';
       ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     } else if (isPathSelected) {
-      ctx.strokeStyle = '#15803d'; // Dark green color for selected path
+      ctx.strokeStyle = 'rgb(0, 133, 84)'; // Dark green color for selected path
       ctx.lineWidth = coordinator.screenToWorldDistance(3);
     } else if (isPathHighlighted) {
       ctx.strokeStyle = '#15803d'; // Dark green color for highlighted path
@@ -872,16 +872,16 @@
       ctx.strokeStyle = '#fbbf24'; // Light amber color for hovered part
       ctx.lineWidth = coordinator.screenToWorldDistance(2);
     } else if (hasPath) {
-      ctx.strokeStyle = '#16a34a'; // Green color for chains with paths
+      ctx.strokeStyle = 'rgb(0, 133, 84)'; // Green color for chains with paths
       ctx.lineWidth = coordinator.screenToWorldDistance(2);
     } else if (partType === 'shell') {
-      ctx.strokeStyle = '#2563eb'; // Blue color for part shells
+      ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for part shells
       ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     } else if (partType === 'hole') {
-      ctx.strokeStyle = '#93c5fd'; // Lighter blue color for holes
+      ctx.strokeStyle = 'rgba(0, 83, 135, 0.6)'; // Lighter RAL 5005 Signal Blue for holes
       ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     } else if (chainId) {
-      ctx.strokeStyle = '#2563eb'; // Blue color for chained shapes (fallback)
+      ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for chained shapes (fallback)
       ctx.lineWidth = coordinator.screenToWorldDistance(1.5);
     } else {
       ctx.strokeStyle = '#000000';
@@ -928,13 +928,13 @@
     
     switch (type) {
       case 'origin':
-        ctx.fillStyle = '#0066ff'; // Blue
+        ctx.fillStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue
         break;
       case 'start':
-        ctx.fillStyle = '#00ff00'; // Green
+        ctx.fillStyle = 'rgb(0, 133, 84)'; // Green
         break;
       case 'end':
-        ctx.fillStyle = '#ff0000'; // Red
+        ctx.fillStyle = 'rgb(133, 18, 0)'; // Red
         break;
       default:
         ctx.fillStyle = '#888888'; // Gray
@@ -957,9 +957,9 @@
     
     // Draw colored center
     if (type === 'start') {
-      ctx.fillStyle = '#10b981'; // Emerald green
+      ctx.fillStyle = 'rgb(0, 133, 84)'; // Emerald green
     } else {
-      ctx.fillStyle = '#ef4444'; // Red
+      ctx.fillStyle = 'rgb(133, 18, 0)'; // Red
     }
     
     ctx.beginPath();
@@ -970,7 +970,7 @@
   
   function drawTessellationPoint(x: number, y: number, size: number) {
     ctx.save();
-    ctx.fillStyle = '#2563eb'; // Blue
+    ctx.fillStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue
     ctx.beginPath();
     ctx.arc(x, y, size, 0, 2 * Math.PI);
     ctx.fill();
@@ -979,7 +979,7 @@
   
   function drawToolHead(x: number, y: number, size: number) {
     ctx.save();
-    ctx.strokeStyle = '#ff0000'; // Red
+    ctx.strokeStyle = 'rgb(133, 18, 0)'; // Red
     ctx.lineWidth = coordinator.screenToWorldDistance(2);
     
     // Draw cross

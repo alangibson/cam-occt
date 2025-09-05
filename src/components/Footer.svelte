@@ -86,7 +86,7 @@
   }
   
   .calculating {
-    color: #007acc;
+    color: rgb(0, 83, 135);
     font-style: italic;
   }
   

@@ -331,7 +331,7 @@
   .hover-info {
     margin-top: 1rem;
     font-size: 0.9rem;
-    color: #0066ff;
+    color: rgb(0, 83, 135);
     font-style: italic;
     text-align: center;
   }
@@ -339,7 +339,7 @@
   .offset-info {
     margin-top: 1rem;
     font-size: 0.9rem;
-    color: #10b981;
+    color: rgb(0, 133, 84);
     font-style: italic;
     text-align: center;
   }

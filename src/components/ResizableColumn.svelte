@@ -120,12 +120,12 @@
   }
 
   .resize-handle:hover {
-    background-color: #3b82f6;
+    background-color: rgb(0, 83, 135);
     opacity: 0.3;
   }
 
   .resize-handle.dragging {
-    background-color: #3b82f6;
+    background-color: rgb(0, 83, 135);
     opacity: 0.5;
   }
 

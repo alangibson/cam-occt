@@ -217,21 +217,21 @@
   
   
   .clear-menu-item {
-    color: #dc2626;
+    color: rgb(133, 18, 0);
   }
   
   .clear-menu-item:hover {
     background: #fef2f2;
-    color: #b91c1c;
+    color: rgb(133, 18, 0);
   }
   
   .tools-menu-item {
-    color: #2563eb;
+    color: rgb(0, 83, 135);
   }
   
   .tools-menu-item:hover {
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: #e6f2ff;
+    color: rgb(0, 83, 135);
   }
   
   .app-body {

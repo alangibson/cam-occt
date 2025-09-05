@@ -691,8 +691,8 @@
   }
   
   .operation-item.drag-over {
-    background: #dbeafe;
-    border-color: #3b82f6;
+    background: #e6f2ff;
+    border-color: rgb(0, 83, 135);
   }
   
   .operation-header {
@@ -814,8 +814,8 @@
   
   .cut-direction-select:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    border-color: rgb(0, 83, 135);
+    box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
   }
   
   .tool-dropdown,
@@ -866,8 +866,8 @@
   }
   
   .tool-option.selected {
-    background: #dbeafe;
-    color: #1d4ed8;
+    background: #e6f2ff;
+    color: rgb(0, 83, 135);
   }
   
   .target-type-tabs {
@@ -890,9 +890,9 @@
   }
   
   .target-type-tab.active {
-    background: #dbeafe;
-    color: #1d4ed8;
-    border-bottom: 2px solid #3b82f6;
+    background: #e6f2ff;
+    color: rgb(0, 83, 135);
+    border-bottom: 2px solid rgb(0, 83, 135);
   }
   
   .target-option {
@@ -908,8 +908,8 @@
   }
   
   .target-option.hovered {
-    background: #dbeafe;
-    border-left: 3px solid #3b82f6;
+    background: #e6f2ff;
+    border-left: 3px solid rgb(0, 83, 135);
   }
   
   .target-option.disabled {
@@ -988,12 +988,12 @@
   }
   
   .btn-danger {
-    background: #ef4444;
+    background: rgb(133, 18, 0);
     color: white;
   }
   
   .btn-danger:hover {
-    background: #dc2626;
+    background: rgb(133, 18, 0);
   }
   
   .btn-xs {
@@ -1034,8 +1034,8 @@
   
   .lead-select:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    border-color: rgb(0, 83, 135);
+    box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
   }
   
   .lead-input {
@@ -1054,8 +1054,8 @@
   
   .lead-input:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    border-color: rgb(0, 83, 135);
+    box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
   }
 
 

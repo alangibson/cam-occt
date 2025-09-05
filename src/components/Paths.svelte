@@ -180,19 +180,19 @@
   }
   
   .path-item.drag-over {
-    background: #dbeafe;
-    border-color: #3b82f6;
+    background: #e6f2ff;
+    border-color: rgb(0, 83, 135);
   }
   
   .path-item.selected {
-    background: #dbeafe;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+    background: #e6f2ff;
+    border-color: rgb(0, 83, 135);
+    box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
   }
   
   .path-item.highlighted {
-    background: #dcfce7;
-    border-color: #22c55e;
+    background: #e6f2f0;
+    border-color: rgb(0, 133, 84);
   }
   
   .path-header {
@@ -253,7 +253,7 @@
   }
   
   .cut-direction.counterclockwise {
-    background: #dcfce7;
+    background: #e6f2f0;
     color: #166534;
   }
   

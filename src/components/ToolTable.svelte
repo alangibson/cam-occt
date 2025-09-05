@@ -357,7 +357,7 @@
   }
   
   .tool-table tr.drag-over {
-    background: #dbeafe;
+    background: #e6f2ff;
   }
   
   .drag-handle {
@@ -403,21 +403,21 @@
   }
   
   .btn-primary {
-    background: #3b82f6;
+    background: rgb(0, 83, 135);
     color: white;
   }
   
   .btn-primary:hover {
-    background: #2563eb;
+    background: rgb(0, 83, 135);
   }
   
   .btn-danger {
-    background: #ef4444;
+    background: rgb(133, 18, 0);
     color: white;
   }
   
   .btn-danger:hover {
-    background: #dc2626;
+    background: rgb(133, 18, 0);
   }
   
   .btn-small {

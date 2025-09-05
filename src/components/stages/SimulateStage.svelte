@@ -1304,14 +1304,14 @@
 
   .progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #10b981, #059669);
+    background: linear-gradient(90deg, rgb(0, 133, 84), rgb(0, 133, 84));
     transition: width 0.3s ease;
   }
 
   /* Removed .panel and .panel-title styles - now handled by AccordionPanel component */
 
   .next-stage-content {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, rgb(0, 83, 135) 0%, rgb(0, 83, 135) 100%);
     color: white;
     border-radius: 0.5rem;
     padding: 1rem;
@@ -1386,12 +1386,12 @@
   }
 
   .resize-handle:hover {
-    background-color: #3b82f6;
+    background-color: rgb(0, 83, 135);
     opacity: 0.3;
   }
 
   .resize-handle.dragging {
-    background-color: #3b82f6;
+    background-color: rgb(0, 83, 135);
     opacity: 0.5;
   }
 

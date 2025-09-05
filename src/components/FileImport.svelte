@@ -102,12 +102,12 @@
   }
   
   .file-import.dragging {
-    border-color: #0066cc;
-    background-color: #f0f8ff;
+    border-color: rgb(0, 83, 135);
+    background-color: #e6f2ff;
   }
   
   .import-button {
-    background-color: #0066cc;
+    background-color: rgb(0, 83, 135);
     color: white;
     border: none;
     padding: 0.75rem 1.5rem;
@@ -117,7 +117,7 @@
   }
   
   .import-button:hover {
-    background-color: #0052a3;
+    background-color: rgb(0, 83, 135);
   }
   
   .hint {
@@ -127,7 +127,7 @@
   
   .filename {
     margin-top: 1rem;
-    color: #0066cc;
+    color: rgb(0, 83, 135);
     font-weight: 500;
   }
   

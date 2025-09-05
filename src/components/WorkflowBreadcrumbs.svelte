@@ -85,38 +85,38 @@
   }
 
   .breadcrumb-button.accessible {
-    color: #4f46e5;
+    color: rgb(0, 83, 135);
     cursor: pointer;
   }
 
   .breadcrumb-button.accessible:hover {
-    background-color: #eef2ff;
+    background-color: #e6f2ff;
     border-color: #c7d2fe;
   }
 
   .breadcrumb-button.completed {
-    background-color: #10b981;
+    background-color: rgb(0, 133, 84);
     color: white;
-    border-color: #10b981;
+    border-color: rgb(0, 133, 84);
   }
 
   .breadcrumb-button.completed:hover {
-    background-color: #059669;
-    border-color: #059669;
+    background-color: rgb(0, 133, 84);
+    border-color: rgb(0, 133, 84);
   }
 
   /* Current stage always takes precedence over completed */
   .breadcrumb-button.current {
-    background-color: #4f46e5 !important;
+    background-color: rgb(0, 83, 135) !important;
     color: white;
-    border-color: #4f46e5 !important;
-    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3), 0 2px 4px -1px rgba(79, 70, 229, 0.2);
+    border-color: rgb(0, 83, 135) !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 83, 135, 0.3), 0 2px 4px -1px rgba(0, 83, 135, 0.2);
     transform: scale(1.05);
   }
   
   .breadcrumb-button.current:hover {
-    background-color: #4f46e5 !important;
-    border-color: #4f46e5 !important;
+    background-color: rgb(0, 83, 135) !important;
+    border-color: rgb(0, 83, 135) !important;
   }
 
   .breadcrumb-button.inaccessible {

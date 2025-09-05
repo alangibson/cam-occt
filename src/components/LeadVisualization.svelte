@@ -24,8 +24,8 @@
   // Lead visualization settings
   export let showLeadIn: boolean = true;
   export let showLeadOut: boolean = true;
-  export let leadInColor: string = '#9333ea'; // Purple
-  export let leadOutColor: string = '#dc2626'; // Red
+  export let leadInColor: string = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue
+  export let leadOutColor: string = 'rgb(133, 18, 0)'; // Red
   export let leadInOpacity: number = 1.0;
   export let leadOutOpacity: number = 1.0;
   export let leadLineWidth: number = 1;

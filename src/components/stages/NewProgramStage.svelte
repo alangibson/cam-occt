@@ -389,7 +389,7 @@
   }
 
   .chain-status.closed {
-    background-color: #dcfce7;
+    background-color: #e6f2f0;
     color: #166534;
   }
 
@@ -399,7 +399,7 @@
   }
 
   .next-stage-content {
-    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+    background: linear-gradient(135deg, rgb(0, 83, 135) 0%, rgb(0, 83, 135) 100%);
     color: white;
     border-radius: 0.5rem;
     padding: 1rem;
@@ -518,8 +518,8 @@
   }
 
   .rapid-item.selected {
-    background-color: #dbeafe;
-    border-color: #3b82f6;
+    background-color: #e6f2ff;
+    border-color: rgb(0, 83, 135);
   }
 
   .rapid-index {
@@ -550,13 +550,13 @@
   .warning-item.offset-warning {
     padding: 0.75rem;
     background-color: #fef2f2;
-    border: 1px solid #f87171;
+    border: 1px solid rgba(133, 0, 15, 0.4);
     border-radius: 0.375rem;
-    border-left: 4px solid #dc2626;
+    border-left: 4px solid rgb(133, 18, 0);
   }
 
   .warning-type.offset {
-    color: #dc2626;
+    color: rgb(133, 18, 0);
   }
 
   .warning-type.trim {
@@ -614,11 +614,11 @@
   }
 
   .warning-type.lead-in {
-    color: #9333ea;
+    color: rgb(0, 83, 135);
   }
 
   .warning-type.lead-out {
-    color: #dc2626;
+    color: rgb(133, 18, 0);
   }
 
   .warning-chain {
@@ -639,7 +639,7 @@
 
   .add-operation-button {
     padding: 0.25rem 0.5rem;
-    background: #3b82f6;
+    background: rgb(0, 83, 135);
     color: white;
     border: none;
     border-radius: 0.25rem;
@@ -650,7 +650,7 @@
   }
   
   .add-operation-button:hover {
-    background: #2563eb;
+    background: rgb(0, 83, 135);
   }
 
 </style>
