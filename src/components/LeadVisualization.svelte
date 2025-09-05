@@ -7,6 +7,7 @@
   import type { Point2D } from '../lib/types';
   import { LeadType } from '../lib/types/direction';
   import { getCachedLeadGeometry, hasValidCachedLeads } from '../lib/utils/lead-persistence-utils';
+  import { findPartContainingChain } from '../lib/utils/chain-part-interactions';
 
   // Props
   export let ctx: CanvasRenderingContext2D;
@@ -97,10 +98,7 @@
       // Get the part if the path is part of a part
       let part = null;
       if (operation.targetType === 'parts') {
-        part = parts?.find(p => 
-          p.shell.chain.id === path.chainId || 
-          p.holes.some((h: any) => h.chain.id === path.chainId)
-        );
+        part = findPartContainingChain(path.chainId, parts);
       }
 
       // Get lead configurations with proper defaults
