@@ -12,6 +12,7 @@ export interface LeadInConfig {
   length: number; // For arc: length along the arc
   flipSide?: boolean; // Flip which side of the chain the lead is on
   angle?: number; // Manual rotation angle (degrees, 0-360). If undefined, auto-calculated
+  fit?: boolean; // Whether to automatically adjust length to avoid solid areas
 }
 
 export interface LeadOutConfig {
@@ -19,6 +20,7 @@ export interface LeadOutConfig {
   length: number; // For arc: length along the arc
   flipSide?: boolean; // Flip which side of the chain the lead is on
   angle?: number; // Manual rotation angle (degrees, 0-360). If undefined, auto-calculated
+  fit?: boolean; // Whether to automatically adjust length to avoid solid areas
 }
 
 export interface LeadGeometry {
@@ -138,9 +140,9 @@ function calculateLead(
   warnings: string[] = []
 ): LeadGeometry | undefined {
   if (config.type === LeadType.ARC) {
-    return calculateArcLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings, config.flipSide, config.angle);
+    return calculateArcLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings, config.flipSide, config.angle, config.fit);
   } else if (config.type === LeadType.LINE) {
-    return calculateLineLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings, config.flipSide, config.angle);
+    return calculateLineLead(chain, point, config.length, isLeadIn, isHole, isShell, cutDirection, part, warnings, config.flipSide, config.angle, config.fit);
   }
   return undefined;
 }
@@ -163,7 +165,8 @@ function calculateArcLead(
   part?: DetectedPart,
   warnings: string[] = [],
   flipSide: boolean = false,
-  manualAngle?: number
+  manualAngle?: number,
+  fit: boolean = true
 ): LeadGeometry {
   
   // Get the tangent direction at the point
@@ -207,8 +210,8 @@ function calculateArcLead(
     });
   }
   
-  // Try full length first, then shorter lengths if needed
-  const lengthAttempts: number[] = [1.0, 0.75, 0.5, 0.25]; // Try 100%, 75%, 50%, 25% of original length
+  // Try full length first, then shorter lengths if needed (only if fit is enabled)
+  const lengthAttempts: number[] = fit ? [1.0, 0.75, 0.5, 0.25] : [1.0]; // Try 100%, 75%, 50%, 25% of original length if fit enabled, otherwise only full length
   
   for (const lengthFactor of lengthAttempts) {
     const adjustedArcLength: number = arcLength * lengthFactor;
@@ -328,7 +331,8 @@ function calculateLineLead(
   part?: DetectedPart,
   warnings: string[] = [],
   flipSide: boolean = false,
-  manualAngle?: number
+  manualAngle?: number,
+  fit: boolean = true
 ): LeadGeometry {
   
   // Get the tangent direction at the point
@@ -359,8 +363,8 @@ function calculateLineLead(
     });
   }
   
-  // Try full length first, then shorter lengths if needed
-  const lengthAttempts: number[] = [1.0, 0.75, 0.5, 0.25]; // Try 100%, 75%, 50%, 25% of original length
+  // Try full length first, then shorter lengths if needed (only if fit is enabled)
+  const lengthAttempts: number[] = fit ? [1.0, 0.75, 0.5, 0.25] : [1.0]; // Try 100%, 75%, 50%, 25% of original length if fit enabled, otherwise only full length
   
   for (const lengthFactor of lengthAttempts) {
     const adjustedLineLength: number = lineLength * lengthFactor;

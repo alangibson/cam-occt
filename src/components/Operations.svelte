@@ -102,10 +102,12 @@
       leadInLength: 5,
       leadInAngle: 0,
       leadInFlipSide: false,
+      leadInFit: true,
       leadOutType: LeadType.NONE,
       leadOutLength: 5,
       leadOutAngle: 0,
       leadOutFlipSide: false,
+      leadOutFit: true,
       kerfCompensation: targetType === 'parts' ? KerfCompensation.PART : KerfCompensation.NONE
     });
   }
@@ -528,15 +530,26 @@
             {#if operation.leadInType !== 'none'}
               <div class="field-group">
                 <label for="lead-in-length-{operation.id}">Length (units):</label>
-                <input
-                  id="lead-in-length-{operation.id}"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={operation.leadInLength}
-                  onchange={(e) => updateOperationField(operation.id, 'leadInLength', parseFloat(e.currentTarget.value) || 0)}
-                  class="lead-input"
-                />
+                <div class="length-with-fit">
+                  <input
+                    id="lead-in-length-{operation.id}"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={operation.leadInLength}
+                    onchange={(e) => updateOperationField(operation.id, 'leadInLength', parseFloat(e.currentTarget.value) || 0)}
+                    class="lead-input"
+                  />
+                  <label class="fit-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={operation.leadInFit}
+                      onchange={(e) => updateOperationField(operation.id, 'leadInFit', e.currentTarget.checked)}
+                      class="fit-checkbox"
+                    />
+                    Fit
+                  </label>
+                </div>
               </div>
               <div class="field-group">
                 <label for="lead-in-angle-{operation.id}">Angle (degrees):</label>
@@ -572,15 +585,26 @@
             {#if operation.leadOutType !== 'none'}
               <div class="field-group">
                 <label for="lead-out-length-{operation.id}">Length (units):</label>
-                <input
-                  id="lead-out-length-{operation.id}"
-                  type="number"
-                  min="0"
-                  step="0.1"
-                  value={operation.leadOutLength}
-                  onchange={(e) => updateOperationField(operation.id, 'leadOutLength', parseFloat(e.currentTarget.value) || 0)}
-                  class="lead-input"
-                />
+                <div class="length-with-fit">
+                  <input
+                    id="lead-out-length-{operation.id}"
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    value={operation.leadOutLength}
+                    onchange={(e) => updateOperationField(operation.id, 'leadOutLength', parseFloat(e.currentTarget.value) || 0)}
+                    class="lead-input"
+                  />
+                  <label class="fit-checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={operation.leadOutFit}
+                      onchange={(e) => updateOperationField(operation.id, 'leadOutFit', e.currentTarget.checked)}
+                      class="fit-checkbox"
+                    />
+                    Fit
+                  </label>
+                </div>
               </div>
               <div class="field-group">
                 <label for="lead-out-angle-{operation.id}">Angle (degrees):</label>
@@ -1057,5 +1081,35 @@
 
   .kerf-compensation-row .field-group {
     max-width: 200px;
+  }
+
+  /* Length with fit checkbox styling */
+  .length-with-fit {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .length-with-fit .lead-input {
+    flex: 1;
+  }
+
+  .fit-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .fit-checkbox {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .fit-checkbox-label:hover {
+    color: #374151;
   }
 </style>

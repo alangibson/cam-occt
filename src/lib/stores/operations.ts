@@ -49,10 +49,12 @@ export interface Operation {
   leadInLength: number; // Lead-in length (units)
   leadInFlipSide: boolean; // Flip which side of the chain the lead-in is on
   leadInAngle: number; // Manual rotation angle for lead-in (degrees, 0-360)
+  leadInFit: boolean; // Whether to automatically adjust lead-in length to avoid solid areas
   leadOutType: LeadType; // Lead-out type
   leadOutLength: number; // Lead-out length (units)
   leadOutFlipSide: boolean; // Flip which side of the chain the lead-out is on
   leadOutAngle: number; // Manual rotation angle for lead-out (degrees, 0-360)
+  leadOutFit: boolean; // Whether to automatically adjust lead-out length to avoid solid areas
   kerfCompensation?: KerfCompensation; // Kerf compensation type (none, inner, outer, part)
 }
 
@@ -353,10 +355,12 @@ function generatePathsForOperation(operation: Operation) {
         leadInLength: operation.leadInLength,
         leadInFlipSide: operation.leadInFlipSide,
         leadInAngle: operation.leadInAngle,
+        leadInFit: operation.leadInFit,
         leadOutType: operation.leadOutType,
         leadOutLength: operation.leadOutLength,
         leadOutFlipSide: operation.leadOutFlipSide,
         leadOutAngle: operation.leadOutAngle,
+        leadOutFit: operation.leadOutFit,
         kerfCompensation: kerfCompensation,
         calculatedOffset: calculatedOffset
       });
@@ -424,10 +428,12 @@ function generatePathsForOperation(operation: Operation) {
           leadInLength: operation.leadInLength,
           leadInFlipSide: operation.leadInFlipSide,
           leadInAngle: operation.leadInAngle,
+          leadInFit: operation.leadInFit,
           leadOutType: operation.leadOutType,
           leadOutLength: operation.leadOutLength,
           leadOutFlipSide: operation.leadOutFlipSide,
           leadOutAngle: operation.leadOutAngle,
+          leadOutFit: operation.leadOutFit,
           kerfCompensation: shellKerfCompensation,
           calculatedOffset: shellCalculatedOffset
         });
@@ -492,10 +498,12 @@ function generatePathsForOperation(operation: Operation) {
               leadInLength: operation.leadInLength,
               leadInFlipSide: operation.leadInFlipSide,
               leadInAngle: operation.leadInAngle,
+              leadInFit: operation.leadInFit,
               leadOutType: operation.leadOutType,
               leadOutLength: operation.leadOutLength,
               leadOutFlipSide: operation.leadOutFlipSide,
               leadOutAngle: operation.leadOutAngle,
+              leadOutFit: operation.leadOutFit,
               kerfCompensation: holeKerfCompensation,
               calculatedOffset: holeCalculatedOffset
             });

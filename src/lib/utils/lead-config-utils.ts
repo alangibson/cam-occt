@@ -17,7 +17,8 @@ export function createLeadInConfig(path: Path): LeadInConfig {
     type: path.leadInType || LeadType.NONE,
     length: path.leadInLength || 0,
     flipSide: path.leadInFlipSide || false,
-    angle: path.leadInAngle
+    angle: path.leadInAngle,
+    fit: path.leadInFit !== undefined ? path.leadInFit : true // Default to true for backwards compatibility
   };
 }
 
@@ -29,7 +30,8 @@ export function createLeadOutConfig(path: Path): LeadOutConfig {
     type: path.leadOutType || LeadType.NONE,
     length: path.leadOutLength || 0,
     flipSide: path.leadOutFlipSide || false,
-    angle: path.leadOutAngle
+    angle: path.leadOutAngle,
+    fit: path.leadOutFit !== undefined ? path.leadOutFit : true // Default to true for backwards compatibility
   };
 }
 

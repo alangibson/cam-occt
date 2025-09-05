@@ -25,10 +25,12 @@ export interface Path {
   leadInType?: LeadType; // Lead-in type
   leadInFlipSide?: boolean; // Flip which side of the chain the lead-in is on
   leadInAngle?: number; // Manual rotation angle for lead-in (degrees, 0-360)
+  leadInFit?: boolean; // Whether to automatically adjust lead-in length to avoid solid areas
   leadOutLength?: number; // Lead-out length
   leadOutType?: LeadType; // Lead-out type
   leadOutFlipSide?: boolean; // Flip which side of the chain the lead-out is on
   leadOutAngle?: number; // Manual rotation angle for lead-out (degrees, 0-360)
+  leadOutFit?: boolean; // Whether to automatically adjust lead-out length to avoid solid areas
   overcutLength?: number; // Overcut length
   
   // Calculated lead geometry (persisted to avoid recalculation)
