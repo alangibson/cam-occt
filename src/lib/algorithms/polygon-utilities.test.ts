@@ -5,7 +5,6 @@ import {
   classifyPolygonsAsShellsAndHoles,
   isPolygonInsidePolygon,
   isPointInsidePolygon,
-  doPolygonsIntersect,
   doLineSegmentsIntersect,
   normalizePolygonWinding,
   createRegularPolygon,
@@ -38,11 +37,6 @@ describe('Polygon Utilities', () => {
     { x: 1, y: 2 }
   ];
 
-  const openPath: Point2D[] = [
-    { x: 0, y: 0 },
-    { x: 1, y: 0 },
-    { x: 1, y: 1 }
-  ];
 
   const defaultConfig: PolygonAnalysisConfig = {
     tolerance: 0.001,

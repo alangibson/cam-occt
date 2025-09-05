@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createPolylineFromVertices, getPolylineStartPoint, getPolylineEndPoint, polylineToPoints, polylineToVertices, reversePolyline } from './polyline';
-import type { Point2D, Arc } from '$lib/types/geometry';
+import type { Point2D, Arc, Polyline, PolylineVertex } from '$lib/types/geometry';
 
 describe('createPolylineFromVertices', () => {
   it('should create a basic open polyline', () => {
@@ -10,11 +10,11 @@ describe('createPolylineFromVertices', () => {
       { x: 10, y: 10 }
     ];
     
-    const polyline: import("$lib/types/geometry").Polyline = createPolylineFromVertices(points, false);
+    const polyline = createPolylineFromVertices(points, false);
     
     expect(polyline.type).toBe('polyline');
-    expect(polylineToPoints(polyline.geometry)).toEqual(points);
-    expect(polyline.geometry.closed).toBe(false);
+    expect(polylineToPoints(polyline.geometry as Polyline)).toEqual(points);
+    expect((polyline.geometry as Polyline).closed).toBe(false);
     expect(polyline.id).toBeDefined();
   });
 
@@ -26,10 +26,10 @@ describe('createPolylineFromVertices', () => {
       { x: 0, y: 10 }
     ];
     
-    const polyline: import("$lib/types/geometry").Polyline = createPolylineFromVertices(points, true);
+    const polyline = createPolylineFromVertices(points, true);
     
-    expect(polyline.geometry.closed).toBe(true);
-    const resultPoints = polylineToPoints(polyline.geometry);
+    expect((polyline.geometry as Polyline).closed).toBe(true);
+    const resultPoints = polylineToPoints(polyline.geometry as Polyline);
     expect(resultPoints).toHaveLength(5); // Should duplicate first point at end
     expect(resultPoints[0]).toEqual(resultPoints[4]);
   });
@@ -43,9 +43,9 @@ describe('createPolylineFromVertices', () => {
       { x: 0, y: 0 } // Already coincident
     ];
     
-    const polyline: import("$lib/types/geometry").Polyline = createPolylineFromVertices(points, true);
+    const polyline = createPolylineFromVertices(points, true);
     
-    const resultPoints = polylineToPoints(polyline.geometry);
+    const resultPoints = polylineToPoints(polyline.geometry as Polyline);
     expect(resultPoints).toHaveLength(5); // Should not add extra point
     expect(resultPoints[0]).toEqual(resultPoints[4]);
   });
@@ -53,28 +53,28 @@ describe('createPolylineFromVertices', () => {
   it('should handle optional parameters', () => {
     const vertices = [{ x: 0, y: 0, bulge: 0.5 }, { x: 10, y: 0, bulge: 0 }];
     
-    const polyline: import("$lib/types/geometry").Polyline = createPolylineFromVertices(vertices, false, {
+    const polyline = createPolylineFromVertices(vertices, false, {
       id: 'test-polyline',
       layer: 'test-layer'
     });
     
     expect(polyline.id).toBe('test-polyline');
-    expect(polylineToVertices(polyline.geometry)).toEqual(vertices);
+    expect(polylineToVertices(polyline.geometry as Polyline)).toEqual(vertices);
     expect(polyline.layer).toBe('test-layer');
   });
 
   it('should validate and filter invalid points', () => {
-    const points: any[] = [
-      { x: 0, y: 0 },
-      { x: NaN, y: 0 }, // Invalid
-      { x: 10, y: 10 },
+    const points: (PolylineVertex | null)[] = [
+      { x: 0, y: 0, bulge: 0 },
+      { x: NaN, y: 0, bulge: 0 }, // Invalid
+      { x: 10, y: 10, bulge: 0 },
       null, // Invalid
-      { x: 20, y: 20 }
+      { x: 20, y: 20, bulge: 0 }
     ];
     
-    const polyline: import("$lib/types/geometry").Polyline = createPolylineFromVertices(points, false);
+    const polyline = createPolylineFromVertices(points.filter(Boolean) as PolylineVertex[], false);
     
-    const resultPoints = polylineToPoints(polyline.geometry);
+    const resultPoints = polylineToPoints(polyline.geometry as Polyline);
     expect(resultPoints).toHaveLength(3);
     expect(resultPoints[0]).toEqual({ x: 0, y: 0 });
     expect(resultPoints[1]).toEqual({ x: 10, y: 10 });
@@ -86,11 +86,11 @@ describe('createPolylineFromVertices', () => {
   });
 
   it('should throw error for all invalid points', () => {
-    const invalidPoints: any[] = [
-      { x: NaN, y: 0 },
+    const invalidPoints = [
+      { x: NaN, y: 0, bulge: 0 },
       null,
-      { x: undefined, y: 5 }
-    ];
+      { x: undefined!, y: 5, bulge: 0 }
+    ] as PolylineVertex[];
     
     expect(() => createPolylineFromVertices(invalidPoints, false)).toThrow('Polyline must have at least one valid vertex');
   });
@@ -104,8 +104,8 @@ describe('polyline utility functions', () => {
       { x: 10, y: 10 }
     ], false);
     
-    expect(getPolylineStartPoint(polylineShape.geometry)).toEqual({ x: 0, y: 0 });
-    expect(getPolylineEndPoint(polylineShape.geometry)).toEqual({ x: 10, y: 10 });
+    expect(getPolylineStartPoint(polylineShape.geometry as Polyline)).toEqual({ x: 0, y: 0 });
+    expect(getPolylineEndPoint(polylineShape.geometry as Polyline)).toEqual({ x: 10, y: 10 });
   });
 });
 
@@ -117,7 +117,7 @@ describe('reversePolyline', () => {
       { x: 10, y: 10 }
     ], false);
     
-    const reversed = reversePolyline(polylineShape.geometry);
+    const reversed = reversePolyline(polylineShape.geometry as Polyline);
     
     expect(reversed.closed).toBe(false);
     expect(reversed.shapes).toHaveLength(2);
@@ -143,7 +143,7 @@ describe('reversePolyline', () => {
       { x: 0, y: 10 }
     ], true);
     
-    const reversed = reversePolyline(polylineShape.geometry);
+    const reversed = reversePolyline(polylineShape.geometry as Polyline);
     
     expect(reversed.closed).toBe(true);
     expect(reversed.shapes).toHaveLength(4);
@@ -178,7 +178,7 @@ describe('reversePolyline', () => {
     ];
     
     const polylineShape = createPolylineFromVertices(vertices, false);
-    const reversed = reversePolyline(polylineShape.geometry);
+    const reversed = reversePolyline(polylineShape.geometry as Polyline);
     
     expect(reversed.closed).toBe(false);
     expect(reversed.shapes).toHaveLength(1); // Only 1 segment between 2 vertices
@@ -194,7 +194,7 @@ describe('reversePolyline', () => {
   });
 
   it('should handle empty polyline segments', () => {
-    const emptyPolyline = { closed: false, segments: [] };
+    const emptyPolyline: Polyline = { closed: false, shapes: [] };
     const reversed = reversePolyline(emptyPolyline);
     
     expect(reversed).toEqual(emptyPolyline);
@@ -206,7 +206,7 @@ describe('reversePolyline', () => {
       { x: 10, y: 0 }
     ], false);
     
-    const reversed = reversePolyline(polylineShape.geometry);
+    const reversed = reversePolyline(polylineShape.geometry as Polyline);
     
     expect(reversed.closed).toBe(false);
     expect(reversed.shapes).toHaveLength(1);
@@ -223,7 +223,7 @@ describe('reversePolyline', () => {
       { x: 10, y: 10 }
     ], false);
     
-    const original = polylineShape.geometry;
+    const original = polylineShape.geometry as Polyline;
     const reversed = reversePolyline(original);
     const doubleReversed = reversePolyline(reversed);
     
@@ -244,7 +244,7 @@ describe('reversePolyline', () => {
     ];
     
     const polylineShape = createPolylineFromVertices(vertices, false);
-    const reversed = reversePolyline(polylineShape.geometry);
+    const reversed = reversePolyline(polylineShape.geometry as Polyline);
     
     expect(reversed.shapes).toHaveLength(3);
     

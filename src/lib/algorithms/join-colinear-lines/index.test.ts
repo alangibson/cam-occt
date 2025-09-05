@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { joinColinearLinesInPolyline, joinColinearLinesInChains } from './index';
 import type { Polyline, Shape, Line } from '../../types/geometry';
 import { generateId } from '../../utils/id';
-import { Chain } from '../chain-detection/chain-detection';
+import type { Chain } from '../chain-detection/chain-detection';
 
 describe('join-colinear-lines', () => {
   describe('joinColinearLinesInPolyline', () => {

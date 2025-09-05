@@ -1,13 +1,12 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { writeFileSync, mkdirSync, readFileSync } from 'fs';
+import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { offsetChain } from '../chain/offset';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import { parseDXF } from '../../../parsers/dxf-parser';
 import type { Shape, Line, Ellipse } from '../../../../lib/types/geometry';
 import type { OffsetChain } from '../chain/types';
-import type { ShapeChain } from '../../chain-detection/chain-detection';
+import type { Chain } from '../../chain-detection/chain-detection';
 import { SVGBuilder } from '../../../test/svg-builder';
 
 describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
@@ -16,14 +15,14 @@ describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
   beforeAll(() => {
     try {
       mkdirSync(outputDir, { recursive: true });
-    } catch (e) {
+    } catch {
       // Directory might already exist
     }
   });
 
   // Helper function to generate simple chain SVG using SVGBuilder
   function generateSimpleChainSVG(
-    chain: ShapeChain, 
+    chain: Chain, 
     offsets: OffsetChain[], 
     filename: string
   ) {
@@ -97,13 +96,6 @@ describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
         geometry: { start: { x: 100, y: 100 }, end: { x: 100, y: 200 } } as Line
       }
     ];
-  }
-
-  // Helper function to load shapes from ellipse-arc-chain.dxf
-  async function loadEllipseArcChainShapes(): Promise<Shape[]> {
-    const dxfContent = readFileSync('tests/dxf/ellipse-arc-chain.dxf', 'utf-8');
-    const result = await parseDXF(dxfContent);
-    return result.shapes;
   }
 
   // Helper function to visualize chain offset with gap filling

@@ -19,19 +19,15 @@ import {
 import {
   createExtendedSplineVerb
 } from './spline';
-import {
-  createEllipticalArcFromEllipse
-} from './ellipse';
 import type { 
   Line, 
   Arc, 
   Polyline, 
   Spline, 
   Ellipse, 
-  Point2D,
   Circle
 } from '../../../types/geometry';
-import type { Shape } from '../offset/types';
+import type { Shape } from '../../../types/geometry';
 import { polylineToPoints, createPolylineFromVertices } from '../../../geometry/polyline';
 import { SVGBuilder } from '../../../test/svg-builder';
 import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';
@@ -42,7 +38,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
   beforeAll(() => {
     try {
       mkdirSync(outputDir, { recursive: true });
-    } catch (e) {
+    } catch {
       // Directory might already exist
     }
   });
@@ -224,7 +220,6 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
     const testSplines: Spline[] = [
       // Open C-shaped curve
       {
-        id: 'spline-1',
         controlPoints: [
           { x: 50, y: 150 },
           { x: 100, y: 50 },
@@ -234,11 +229,11 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         degree: 3,
         knots: [0, 0, 0, 0, 1, 1, 1, 1],
         weights: [1, 1, 1, 1],
-        closed: false
+        closed: false,
+        fitPoints: []
       },
       // S-shaped curve
       {
-        id: 'spline-2',
         controlPoints: [
           { x: 50, y: 300 },
           { x: 150, y: 250 },
@@ -248,7 +243,8 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         degree: 3,
         knots: [0, 0, 0, 0, 1, 1, 1, 1],
         weights: [1, 1, 1, 1],
-        closed: false
+        closed: false,
+        fitPoints: []
       }
     ];
 
@@ -278,7 +274,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
           geometry: polylineFromSpline
         };
         svg.addShape(splinePolylineShape, 'black', 2);
-      } catch (error) {
+      } catch {
         // Fallback to control points
         const fallbackPolyline: Polyline = {
           shapes: spline.controlPoints.slice(0, -1).map((p, i) => ({
@@ -337,7 +333,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             geometry: outsetPolyline
           };
           svg.addShape(outsetPolylineShape, 'red', 2);
-        } catch (error) {
+        } catch {
           const outsetFallbackPolyline: Polyline = {
             shapes: outsetGeometry.controlPoints.slice(0, -1).map((p, i) => ({
               id: `outset-fallback-seg-${index}-${i}`,
@@ -382,7 +378,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             geometry: insetPolyline
           };
           svg.addShape(insetPolylineShape, 'blue', 2);
-        } catch (error) {
+        } catch {
           const insetFallbackPolyline: Polyline = {
             shapes: insetGeometry.controlPoints.slice(0, -1).map((p, i) => ({
               id: `inset-fallback-seg-${index}-${i}`,
@@ -408,12 +404,12 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
       
       // Create extended spline for demonstration
       try {
-        const extendedSpline = createExtendedSplineVerb(spline, 0.2, 0.2);
+        const extendedSpline = createExtendedSplineVerb(spline, true, true, 0.2);
         const verbCurve = verb.geom.NurbsCurve.byKnotsControlPointsWeights(
-          extendedSpline.degree,
-          extendedSpline.knots,
-          extendedSpline.controlPoints.map(p => [p.x, p.y, 0]),
-          extendedSpline.weights
+          extendedSpline.degree(),
+          extendedSpline.knots(),
+          extendedSpline.controlPoints().map(p => [p[0], p[1], 0]),
+          extendedSpline.weights()
         );
         const points = tessellateVerbCurve(verbCurve);
         const extendedPolyline: Polyline = {
@@ -422,7 +418,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             type: 'line' as const,
             geometry: { start: p, end: points[i + 1] } as Line
           })),
-          closed: extendedSpline.closed
+          closed: spline.closed
         };
         const extendedPolylineShape: Shape = {
           id: `extended-spline-${index}`,
@@ -430,7 +426,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
           geometry: extendedPolyline
         };
         svg.addShape(extendedPolylineShape, 'green', 1);
-      } catch (error) {
+      } catch {
         // Extension failed, skip green line
       }
     });
@@ -454,20 +450,20 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         { x: 50, y: 50, bulge: 0 },
         { x: 150, y: 50, bulge: 0 },
         { x: 150, y: 150, bulge: 0 }
-      ], false).geometry,
+      ], false).geometry as Polyline,
       // Open zigzag
       createPolylineFromVertices([
         { x: 200, y: 80, bulge: 0 },
         { x: 250, y: 40, bulge: 0 },
         { x: 300, y: 80, bulge: 0 },
         { x: 350, y: 40, bulge: 0 }
-      ], false).geometry,
+      ], false).geometry as Polyline,
       // Closed triangle (for comparison)
       createPolylineFromVertices([
         { x: 100, y: 200, bulge: 0 },
         { x: 200, y: 200, bulge: 0 },
         { x: 150, y: 280, bulge: 0 }
-      ], true).geometry,
+      ], true).geometry as Polyline,
       // Open stepped path
       createPolylineFromVertices([
         { x: 250, y: 200, bulge: 0 },
@@ -475,7 +471,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         { x: 280, y: 230, bulge: 0 },
         { x: 310, y: 230, bulge: 0 },
         { x: 310, y: 260, bulge: 0 }
-      ], false).geometry
+      ], false).geometry as Polyline
     ];
 
     const svg = new SVGBuilder(450, 350);
@@ -544,7 +540,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         svg.addPolylineExtensions(polyline, 'gray', 1, 50);
         
         // Create extended polyline for demonstration
-        const extendedPolyline = createExtendedPolyline(polyline, 25, 25);
+        const extendedPolyline = createExtendedPolyline(polyline, true, true, 25);
         
         // Draw extensions in green dashed
         const extendedPoints = polylineToPoints(extendedPolyline);
@@ -732,9 +728,14 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
           
           // Show extended arc using elliptical arc extension
           try {
-            const extendedArc = createEllipticalArcFromEllipse(ellipseArc, 
-              ellipseArc.startParam! - 0.3, ellipseArc.endParam! + 0.3);
-            const extendedPoints = tessellateEllipse(extendedArc, { numPoints: 40 });
+            const extendedEllipse: Ellipse = {
+              center: ellipseArc.center,
+              majorAxisEndpoint: ellipseArc.majorAxisEndpoint,
+              minorToMajorRatio: ellipseArc.minorToMajorRatio,
+              startParam: ellipseArc.startParam! - 0.3,
+              endParam: ellipseArc.endParam! + 0.3
+            };
+            const extendedPoints = tessellateEllipse(extendedEllipse, { numPoints: 40 });
             
             // Draw extended portions in green dashed
             const originalStartIdx = Math.round(0.3 * 40 / (2 * Math.PI));
@@ -774,7 +775,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
               };
               svg.addShape(endExtPolyShape, 'green', 1);
             }
-          } catch (error) {
+          } catch {
             // Extension failed, use simple line extensions
           }
         }
@@ -814,7 +815,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             
             // Add extensions to outset offset spline
             svg.addSplineExtensions(splineGeometry, 'red', 1, 40);
-          } catch (error) {
+          } catch {
             const fallbackPolyline: Polyline = {
               shapes: splineGeometry.controlPoints.slice(0, -1).map((p, i) => ({
                 id: `ellipse-outset-fallback-seg-${index}-${i}`,
@@ -863,7 +864,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             
             // Add extensions to inset offset spline
             svg.addSplineExtensions(splineGeometry, 'blue', 1, 40);
-          } catch (error) {
+          } catch {
             const insetFallbackPolyline: Polyline = {
               shapes: splineGeometry.controlPoints.slice(0, -1).map((p, i) => ({
                 id: `ellipse-inset-fallback-seg-${index}-${i}`,

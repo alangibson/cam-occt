@@ -5,19 +5,43 @@ import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
 import { operationsStore } from '$lib/stores/operations';
 import { toolStore } from '$lib/stores/tools';
-import { chainStore, selectChain, clearChains, clearChainSelection } from '$lib/stores/chains';
-import { partStore, highlightPart, clearParts, selectPart } from '$lib/stores/parts';
+import { chainStore, clearChains, clearChainSelection } from '$lib/stores/chains';
+import { partStore, clearParts, selectPart } from '$lib/stores/parts';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
+import type { PartShell } from '$lib/algorithms/part-detection';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 
 // Mock DragEvent for jsdom
+interface MockDragEventInit extends EventInit {
+  dataTransfer?: DataTransfer | null;
+}
+
 global.DragEvent = class DragEvent extends Event {
-  dataTransfer: any;
-  constructor(type: string, init?: any) {
+  dataTransfer: DataTransfer | null;
+  constructor(type: string, init?: MockDragEventInit) {
     super(type, init);
     this.dataTransfer = init?.dataTransfer || null;
   }
-} as any;
+} as unknown as typeof DragEvent;
+
+// Helper to create mock PartShell
+function createMockPartShell(id: string): PartShell {
+  const mockChain: Chain = {
+    id: `chain-${id}`,
+    shapes: []
+  };
+  return {
+    id: `shell-${id}`,
+    chain: mockChain,
+    type: 'shell',
+    boundingBox: { 
+      minX: 0, minY: 0,
+      maxX: 10, maxY: 10 
+    },
+    holes: []
+  };
+}
 
 // Mock getAnimations for jsdom
 Object.defineProperty(Element.prototype, 'getAnimations', {
@@ -28,7 +52,7 @@ Object.defineProperty(Element.prototype, 'getAnimations', {
 });
 
 describe('Operations Component - Function Coverage', () => {
-  let component: any;
+  let component: typeof Operations.prototype;
 
   beforeEach(() => {
     // Reset all stores
@@ -133,7 +157,6 @@ describe('Operations Component - Function Coverage', () => {
   describe('operation management functions', () => {
     beforeEach(() => {
       operationsStore.addOperation({
-        id: 'test-op-1',
         name: 'Test Operation',
         toolId: null,
         targetType: 'parts',
@@ -145,10 +168,12 @@ describe('Operations Component - Function Coverage', () => {
         leadInLength: 5,
         leadInAngle: 0,
         leadInFlipSide: false,
+        leadInFit: true,
         leadOutType: LeadType.NONE,
         leadOutLength: 5,
         leadOutAngle: 0,
         leadOutFlipSide: false,
+        leadOutFit: true,
         kerfCompensation: KerfCompensation.PART
       });
     });
@@ -191,17 +216,17 @@ describe('Operations Component - Function Coverage', () => {
   describe('drag and drop functions', () => {
     beforeEach(() => {
       operationsStore.addOperation({
-        id: 'op-1', name: 'Operation 1', toolId: null, targetType: 'parts',
+        name: 'Operation 1', toolId: null, targetType: 'parts',
         targetIds: [], enabled: true, order: 1, cutDirection: CutDirection.COUNTERCLOCKWISE,
-        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false,
-        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false,
+        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false, leadInFit: true,
+        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false, leadOutFit: true,
         kerfCompensation: KerfCompensation.PART
       });
       operationsStore.addOperation({
-        id: 'op-2', name: 'Operation 2', toolId: null, targetType: 'parts',
+        name: 'Operation 2', toolId: null, targetType: 'parts',
         targetIds: [], enabled: true, order: 2, cutDirection: CutDirection.COUNTERCLOCKWISE,
-        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false,
-        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false,
+        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false, leadInFit: true,
+        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false, leadOutFit: true,
         kerfCompensation: KerfCompensation.PART
       });
     });
@@ -213,9 +238,20 @@ describe('Operations Component - Function Coverage', () => {
       expect(operationItems.length).toBe(2);
       
       // Simulate drag start with proper dataTransfer mock
+      const mockDataTransfer = {
+        effectAllowed: 'none' as const,
+        dropEffect: 'none' as const,
+        files: [] as unknown as FileList,
+        items: [] as unknown as DataTransferItemList,
+        types: [] as string[],
+        setData: vi.fn(),
+        getData: vi.fn(() => ''),
+        clearData: vi.fn(),
+        setDragImage: vi.fn()
+      };
       const dragEvent = new DragEvent('dragstart', { 
         bubbles: true,
-        dataTransfer: { effectAllowed: '' }
+        dataTransfer: mockDataTransfer
       });
       
       await fireEvent(operationItems[0], dragEvent);
@@ -245,10 +281,10 @@ describe('Operations Component - Function Coverage', () => {
   describe('tool selection functions', () => {
     beforeEach(() => {
       operationsStore.addOperation({
-        id: 'test-op', name: 'Test Op', toolId: null, targetType: 'parts',
+        name: 'Test Op', toolId: null, targetType: 'parts',
         targetIds: [], enabled: true, order: 1, cutDirection: CutDirection.COUNTERCLOCKWISE,
-        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false,
-        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false,
+        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false, leadInFit: false,
+        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false, leadOutFit: false,
         kerfCompensation: KerfCompensation.PART
       });
     });
@@ -324,7 +360,7 @@ describe('Operations Component - Function Coverage', () => {
       
       // Test Enter key
       await fireEvent.keyDown(toolButton!, { key: 'Enter' });
-      let dropdown = container.querySelector('.tool-dropdown');
+      const dropdown = container.querySelector('.tool-dropdown');
       expect(dropdown).toBeTruthy();
       
       // Test Escape key
@@ -336,10 +372,10 @@ describe('Operations Component - Function Coverage', () => {
   describe('apply-to menu functions', () => {
     beforeEach(() => {
       operationsStore.addOperation({
-        id: 'test-op', name: 'Test Op', toolId: null, targetType: 'parts',
+        name: 'Test Op', toolId: null, targetType: 'parts',
         targetIds: [], enabled: true, order: 1, cutDirection: CutDirection.COUNTERCLOCKWISE,
-        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false,
-        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false,
+        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false, leadInFit: false,
+        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false, leadOutFit: false,
         kerfCompensation: KerfCompensation.PART
       });
     });
@@ -375,17 +411,17 @@ describe('Operations Component - Function Coverage', () => {
       const { container } = render(Operations);
       
       operationsStore.addOperation({
-        id: 'test-op', name: 'Test Op', toolId: null, targetType: 'parts',
+        name: 'Test Op', toolId: null, targetType: 'parts',
         targetIds: [], enabled: true, order: 1, cutDirection: CutDirection.COUNTERCLOCKWISE,
-        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false,
-        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false,
+        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false, leadInFit: false,
+        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false, leadOutFit: false,
         kerfCompensation: KerfCompensation.PART
       });
 
       // Add parts to part store
       partStore.update(state => ({
         ...state,
-        parts: [{ id: 'part-1', shells: [], holes: [] }]
+        parts: [{ id: 'part-1', shell: createMockPartShell('1'), holes: [] }]
       }));
       
       const partCheckbox = container.querySelector('input[type="checkbox"][value="part-1"]');
@@ -405,14 +441,14 @@ describe('Operations Component - Function Coverage', () => {
       // Add parts to store
       partStore.update(state => ({
         ...state,
-        parts: [{ id: 'part-1', shells: [], holes: [] }]
+        parts: [{ id: 'part-1', shell: createMockPartShell('1'), holes: [] }]
       }));
 
       operationsStore.addOperation({
-        id: 'test-op', name: 'Test Op', toolId: null, targetType: 'parts',
+        name: 'Test Op', toolId: null, targetType: 'parts',
         targetIds: [], enabled: true, order: 1, cutDirection: CutDirection.COUNTERCLOCKWISE,
-        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false,
-        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false,
+        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false, leadInFit: false,
+        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false, leadOutFit: false,
         kerfCompensation: KerfCompensation.PART
       });
       
@@ -436,10 +472,10 @@ describe('Operations Component - Function Coverage', () => {
       }));
 
       operationsStore.addOperation({
-        id: 'test-op', name: 'Test Op', toolId: null, targetType: 'chains',
+        name: 'Test Op', toolId: null, targetType: 'chains',
         targetIds: [], enabled: true, order: 1, cutDirection: CutDirection.COUNTERCLOCKWISE,
-        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false,
-        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false,
+        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false, leadInFit: false,
+        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false, leadOutFit: false,
         kerfCompensation: KerfCompensation.PART
       });
       
@@ -457,10 +493,10 @@ describe('Operations Component - Function Coverage', () => {
   describe('operation field updates', () => {
     beforeEach(() => {
       operationsStore.addOperation({
-        id: 'test-op', name: 'Test Op', toolId: null, targetType: 'parts',
+        name: 'Test Op', toolId: null, targetType: 'parts',
         targetIds: [], enabled: true, order: 1, cutDirection: CutDirection.COUNTERCLOCKWISE,
-        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false,
-        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false,
+        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false, leadInFit: false,
+        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false, leadOutFit: false,
         kerfCompensation: KerfCompensation.PART
       });
     });
@@ -494,10 +530,10 @@ describe('Operations Component - Function Coverage', () => {
   describe('collapse/expand functions', () => {
     beforeEach(() => {
       operationsStore.addOperation({
-        id: 'test-op', name: 'Test Op', toolId: null, targetType: 'parts',
+        name: 'Test Op', toolId: null, targetType: 'parts',
         targetIds: [], enabled: true, order: 1, cutDirection: CutDirection.COUNTERCLOCKWISE,
-        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false,
-        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false,
+        leadInType: LeadType.NONE, leadInLength: 5, leadInAngle: 0, leadInFlipSide: false, leadInFit: false,
+        leadOutType: LeadType.NONE, leadOutLength: 5, leadOutAngle: 0, leadOutFlipSide: false, leadOutFit: false,
         kerfCompensation: KerfCompensation.PART
       });
     });
@@ -509,7 +545,7 @@ describe('Operations Component - Function Coverage', () => {
       expect(collapseButton).toBeTruthy();
       
       // Initially expanded
-      let details = container.querySelector('.operation-details');
+      const details = container.querySelector('.operation-details');
       expect(details).toBeTruthy();
       
       // Click to collapse

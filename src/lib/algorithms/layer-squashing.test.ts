@@ -7,7 +7,6 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection/chain-detection';
 import { squashLayers, getLayerStatistics, validateSquashing } from './layer-squashing';
 import { readFileSync } from 'fs';
-import { join } from 'path';
 
 describe('Layer Squashing Algorithm', () => {
   it('should load Tractor Seat Mount - Left.dxf, squash layers, and detect 13 chains', async () => {

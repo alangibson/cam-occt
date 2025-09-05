@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
-import { get } from 'svelte/store';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '../lib/stores/drawing';
 import type { Drawing } from '../lib/types';
@@ -67,7 +66,7 @@ describe('ToolBar Component - Function Coverage', () => {
       await fireEvent.click(scaleButton);
       
       // Function should still be called but won't do anything effective
-      expect(scaleButton.disabled).toBe(true);
+      expect((scaleButton as HTMLButtonElement).disabled).toBe(true);
     });
 
     it('should handle invalid scale factor input', async () => {
@@ -143,7 +142,7 @@ describe('ToolBar Component - Function Coverage', () => {
       await fireEvent.click(rotateButton);
       
       // Button should be disabled when no shapes selected
-      expect(rotateButton.disabled).toBe(true);
+      expect((rotateButton as HTMLButtonElement).disabled).toBe(true);
     });
 
     it('should handle zero angle', async () => {

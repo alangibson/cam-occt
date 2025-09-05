@@ -1,12 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { LeadType } from '../types/direction';
-import type { ShapeChain } from './chain-detection/chain-detection';
-import type { Point2D } from '../../lib/types/geometry';
+import type { Chain } from './chain-detection/chain-detection';
 
 describe('Lead Rotation Angle', () => {
   // Simple horizontal line for testing lead angles
-  const horizontalLine: ShapeChain = {
+  const horizontalLine: Chain = {
     id: 'test-line',
     shapes: [
       {

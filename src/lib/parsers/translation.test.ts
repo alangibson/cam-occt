@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
 import { getBoundingBoxForArc } from '../geometry/bounding-box';
@@ -109,19 +109,19 @@ EOF`;
       expect(drawing.bounds.max.y).toBeGreaterThan(0);
 
       // Check that shapes were translated
-      const line: import("$lib/types/geometry").Line = drawing.shapes.find(s => s.type === 'line');
-      const circle: import("$lib/types/geometry").Circle = drawing.shapes.find(s => s.type === 'circle');
+      const lineShape = drawing.shapes.find(s => s.type === 'line');
+      const circleShape = drawing.shapes.find(s => s.type === 'circle');
 
-      if (line) {
-        const lineGeom = line.geometry as Line;
+      if (lineShape) {
+        const lineGeom = lineShape.geometry as Line;
         expect(lineGeom.start.x).toBeGreaterThanOrEqual(0);
         expect(lineGeom.start.y).toBeGreaterThanOrEqual(0);
         expect(lineGeom.end.x).toBeGreaterThanOrEqual(0);
         expect(lineGeom.end.y).toBeGreaterThanOrEqual(0);
       }
 
-      if (circle) {
-        const circleGeom = circle.geometry as Circle;
+      if (circleShape) {
+        const circleGeom = circleShape.geometry as Circle;
         expect(circleGeom.center.x).toBeGreaterThanOrEqual(0);
         expect(circleGeom.center.y).toBeGreaterThanOrEqual(0);
       }
@@ -286,25 +286,19 @@ EOF`;
         bounds: calculateBounds(translatedShapes)
       };
 
-      const polyline: import("$lib/types/geometry").Polyline = drawing.shapes.find(s => s.type === 'polyline');
-      expect(polyline).toBeDefined();
+      const polylineShape = drawing.shapes.find(s => s.type === 'polyline');
+      expect(polylineShape).toBeDefined();
 
-      if (polyline) {
-        const geom = polyline.geometry as Polyline;
+      if (polylineShape) {
+        const geom = polylineShape.geometry as Polyline;
         
         // Check points array
-        polylineToPoints(geom).forEach((point: any) => {
+        polylineToPoints(geom).forEach(point => {
           expect(point.x).toBeGreaterThanOrEqual(0);
           expect(point.y).toBeGreaterThanOrEqual(0);
         });
 
-        // Check vertices array if it exists
-        if (geom.vertices) {
-          geom.vertices.forEach((vertex: any) => {
-            expect(vertex.x).toBeGreaterThanOrEqual(0);
-            expect(vertex.y).toBeGreaterThanOrEqual(0);
-          });
-        }
+        // Vertices are represented as shapes in the Polyline interface
       }
     });
 
@@ -360,26 +354,29 @@ EOF`;
         bounds: calculateBounds(translatedShapes)
       };
 
-      const polyline: import("$lib/types/geometry").Polyline = drawing.shapes.find(s => s.type === 'polyline');
-      expect(polyline).toBeDefined();
+      const polylineShape = drawing.shapes.find(s => s.type === 'polyline');
+      expect(polylineShape).toBeDefined();
 
-      if (polyline) {
-        const geom = polyline.geometry as Polyline;
+      if (polylineShape) {
+        const geom = polylineShape.geometry as Polyline;
         
         // All coordinates should be non-negative
-        polylineToPoints(geom).forEach((point: any) => {
+        polylineToPoints(geom).forEach(point => {
           expect(point.x).toBeGreaterThanOrEqual(0);
           expect(point.y).toBeGreaterThanOrEqual(0);
         });
 
-        if (geom.vertices) {
-          geom.vertices.forEach((vertex: any) => {
-            expect(vertex.x).toBeGreaterThanOrEqual(0);
-            expect(vertex.y).toBeGreaterThanOrEqual(0);
-            // Bulge values should be preserved
+        // Polylines don't have a vertices property in our Polyline type
+        // They have a shapes property containing Line and Arc geometries
+        const vertices = polylineToVertices(geom);
+        vertices.forEach(vertex => {
+          expect(vertex.x).toBeGreaterThanOrEqual(0);
+          expect(vertex.y).toBeGreaterThanOrEqual(0);
+          // Bulge values should be preserved
+          if (vertex.bulge !== undefined) {
             expect(typeof vertex.bulge).toBe('number');
-          });
-        }
+          }
+        });
       }
     });
 
@@ -767,26 +764,26 @@ EOF`;
 });
 
 // Helper function to get shape bounds
-function getShapeBounds(shape: any) {
+function getShapeBounds(shape: Shape) {
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   
   switch (shape.type) {
     case 'line':
-      const line: import("$lib/types/geometry").Line = shape.geometry;
+      const line = shape.geometry as Line;
       minX = Math.min(line.start.x, line.end.x);
       maxX = Math.max(line.start.x, line.end.x);
       minY = Math.min(line.start.y, line.end.y);
       maxY = Math.max(line.start.y, line.end.y);
       break;
     case 'circle':
-      const circle: import("$lib/types/geometry").Circle = shape.geometry;
+      const circle = shape.geometry as import("$lib/types/geometry").Circle;
       minX = circle.center.x - circle.radius;
       maxX = circle.center.x + circle.radius;
       minY = circle.center.y - circle.radius;
       maxY = circle.center.y + circle.radius;
       break;
     case 'arc':
-      const arc: import("$lib/types/geometry").Arc = shape.geometry;
+      const arc = shape.geometry as import("$lib/types/geometry").Arc;
       // Use actual arc bounds instead of full circle bounds
       const arcBounds = getBoundingBoxForArc(arc);
       minX = arcBounds.min.x;
@@ -795,8 +792,8 @@ function getShapeBounds(shape: any) {
       maxY = arcBounds.max.y;
       break;
     case 'polyline':
-      const polyline: import("$lib/types/geometry").Polyline = shape.geometry;
-      polylineToPoints(polyline).forEach((point: any) => {
+      const polyline = shape.geometry as import("$lib/types/geometry").Polyline;
+      polylineToPoints(polyline).forEach((point: Point2D) => {
         minX = Math.min(minX, point.x);
         maxX = Math.max(maxX, point.x);
         minY = Math.min(minY, point.y);

@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { CutDirection, LeadType } from '../types/direction';
+import { KerfCompensation } from '../types/kerf-compensation';
 
 // Mock the stores before importing the module under test
 vi.mock('./paths', () => ({
@@ -67,10 +68,6 @@ vi.mock('../utils/lead-persistence-utils');
 // Now import the modules we need
 import { operationsStore, type Operation } from './operations';
 import { pathStore } from './paths';
-import { partStore } from './parts';
-import { chainStore } from './chains';
-import { toolStore } from './tools';
-import { workflowStore } from './workflow';
 import { leadWarningsStore } from './lead-warnings';
 import { offsetWarningsStore } from './offset-warnings';
 
@@ -82,10 +79,6 @@ Object.defineProperty(global, 'crypto', {
 
 // Get references to the mocked functions for easy access in tests
 const mockPathStore = vi.mocked(pathStore);
-const mockPartStore = vi.mocked(partStore);
-const mockChainStore = vi.mocked(chainStore);
-const mockToolStore = vi.mocked(toolStore);
-const mockWorkflowStore = vi.mocked(workflowStore);
 const mockLeadWarningsStore = vi.mocked(leadWarningsStore);
 const mockOffsetWarningsStore = vi.mocked(offsetWarningsStore);
 
@@ -111,11 +104,13 @@ describe('operationsStore', () => {
     leadInLength: 5,
     leadInFlipSide: false,
     leadInAngle: 0,
+    leadInFit: false,
     leadOutType: LeadType.LINE,
     leadOutLength: 5,
     leadOutFlipSide: false,
     leadOutAngle: 0,
-    kerfCompensation: 'none'
+    leadOutFit: false,
+    kerfCompensation: KerfCompensation.NONE
   });
 
   describe('addOperation', () => {

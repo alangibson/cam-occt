@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { drawingStore } from './drawing';
-import type { Drawing, Shape, Point2D } from '../types';
+import type { Drawing, Shape, Point2D, Line } from '../types';
 
 // Mock dependent modules
 vi.mock('./chains', () => ({
@@ -15,17 +15,19 @@ vi.mock('./parts', () => ({
 vi.mock('$lib/geometry', () => ({
   moveShape: vi.fn((shape: Shape, delta: Point2D) => ({
     ...shape,
-    geometry: {
+    geometry: shape.type === 'line' ? {
       ...shape.geometry,
-      start: { x: shape.geometry.start.x + delta.x, y: shape.geometry.start.y + delta.y },
-      end: { x: shape.geometry.end.x + delta.x, y: shape.geometry.end.y + delta.y }
+      start: { x: (shape.geometry as Line).start.x + delta.x, y: (shape.geometry as Line).start.y + delta.y },
+      end: { x: (shape.geometry as Line).end.x + delta.x, y: (shape.geometry as Line).end.y + delta.y }
+    } : {
+      ...shape.geometry
     }
   })),
-  rotateShape: vi.fn((shape: Shape, angle: number, origin: Point2D) => ({
+  rotateShape: vi.fn((shape: Shape, _angle: number, _origin: Point2D) => ({
     ...shape,
     geometry: { ...shape.geometry, rotated: true }
   })),
-  scaleShape: vi.fn((shape: Shape, scale: number, origin: Point2D) => ({
+  scaleShape: vi.fn((shape: Shape, scale: number, _origin: Point2D) => ({
     ...shape,
     geometry: { ...shape.geometry, scaled: scale }
   }))
@@ -115,7 +117,10 @@ describe('drawingStore', () => {
       min: { x: 0, y: 0 },
       max: { x: 10, y: 10 }
     },
-    layers: ['Layer1', 'Layer2'],
+    layers: {
+      'Layer1': { shapes: [] },
+      'Layer2': { shapes: [] }
+    },
     units: 'mm'
   });
 
@@ -263,7 +268,7 @@ describe('drawingStore', () => {
       expect(initialState.drawing).toBeDefined(); // We have a drawing from beforeEach
       
       // Create a fresh store state with no drawing
-      drawingStore.restoreDrawing(null as any, null, 1, { x: 0, y: 0 }, 'mm', new Set(), null);
+      drawingStore.restoreDrawing(null as unknown as Drawing, null, 1, { x: 0, y: 0 }, 'mm', new Set(), null);
       
       await drawingStore.deleteSelected();
       
@@ -297,7 +302,7 @@ describe('drawingStore', () => {
     });
 
     it('should handle no drawing state', async () => {
-      drawingStore.restoreDrawing(null as any, null, 1, { x: 0, y: 0 }, 'mm', new Set(), null);
+      drawingStore.restoreDrawing(null as unknown as Drawing, null, 1, { x: 0, y: 0 }, 'mm', new Set(), null);
       
       await drawingStore.moveShapes(['line-1'], { x: 1, y: 1 });
       
@@ -464,7 +469,7 @@ describe('drawingStore', () => {
     });
 
     it('should handle no drawing state', async () => {
-      drawingStore.restoreDrawing(null as any, null, 1, { x: 0, y: 0 }, 'mm', new Set(), null);
+      drawingStore.restoreDrawing(null as unknown as Drawing, null, 1, { x: 0, y: 0 }, 'mm', new Set(), null);
       
       await drawingStore.replaceAllShapes([]);
       

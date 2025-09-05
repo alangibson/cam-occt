@@ -10,7 +10,7 @@ import {
   calculateNestingLevel,
   identifyShells
 } from './geometric-containment';
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Point2D, Shape, Line, Circle } from '../../lib/types';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
 

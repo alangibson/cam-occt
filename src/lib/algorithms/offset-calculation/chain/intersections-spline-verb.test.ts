@@ -1,7 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EPSILON } from '../../../constants';
-import type { Shape, Point2D, Line, Arc, Circle, Spline, Polyline } from '../../../../lib/types/geometry';
-import type { IntersectionResult } from './types.ts';
+import type { Shape, Point2D, Line, Arc, Circle, Spline, Polyline, Ellipse, GeometryType } from '../../../../lib/types/geometry';
 import { findSplineLineIntersectionsVerb } from '../intersect/line-spline/index';
 import { findSplineSplineIntersectionsVerb } from '../intersect/spline-spline/index';
 import { findSplinePolylineIntersectionsVerb } from '../intersect/polyline-spline/index';
@@ -18,21 +16,25 @@ describe('intersections-spline-verb', () => {
     knots?: number[],
     weights?: number[]
   ): Spline {
+    // If no weights provided, create unit weights for all control points
+    const actualWeights = weights || controlPoints.map(() => 1);
+    
     return {
       controlPoints,
       degree,
-      knots,
-      weights
+      knots: knots || [],
+      weights: actualWeights,
+      fitPoints: [],
+      closed: false
     };
   }
 
   // Helper function to create test shape
-  function createTestShape(geometry: any, type: string): Shape {
+  function createTestShape(geometry: Arc | Line | Circle | Ellipse | Polyline | Spline, type: GeometryType): Shape {
     return {
       id: 'test-shape',
-      type: type as any,
-      geometry,
-      origin: { x: 0, y: 0 }
+      type: type,
+      geometry
     };
   }
 
@@ -104,7 +106,7 @@ describe('intersections-spline-verb', () => {
 
       // Should not throw and should attempt to find intersections
       expect(() => {
-        const result = findSplineLineIntersectionsVerb(
+        findSplineLineIntersectionsVerb(
           createTestShape(spline, 'spline'),
           createTestShape(line, 'line')
         );
@@ -152,7 +154,7 @@ describe('intersections-spline-verb', () => {
       // This is a known issue with the verb-nurbs Arc constructor
       // For now, we verify the function signature is correct
       const spline: import("$lib/types/geometry").Spline = createTestSpline([{ x: 0, y: 0 }, { x: 1, y: 1 }], 1);
-      const arc: Arc = { center: { x: 0, y: 0 }, radius: 1, startAngle: 0, endAngle: Math.PI };
+      const arc: Arc = { center: { x: 0, y: 0 }, radius: 1, startAngle: 0, endAngle: Math.PI, clockwise: false };
       
       // Function should accept the correct parameters without throwing
       expect(() => {
@@ -252,7 +254,7 @@ describe('intersections-spline-verb', () => {
 
       // Should not throw, may or may not find intersections depending on verb-nurbs
       expect(() => {
-        const result = findSplineSplineIntersectionsVerb(
+        findSplineSplineIntersectionsVerb(
           createTestShape(spline1, 'spline'),
           createTestShape(spline2, 'spline')
         );
@@ -310,11 +312,10 @@ describe('intersections-spline-verb', () => {
         { x: 2, y: 2, bulge: 0 },
         { x: 0, y: 2, bulge: 0 }
       ], true);
-      const polyline: import("$lib/types/geometry").Polyline = polylineShape.geometry as Polyline;
 
       const result = findSplinePolylineIntersectionsVerb(
         createTestShape(spline, 'spline'),
-        createTestShape(polyline, 'polyline')
+        polylineShape
       );
 
       // Should intersect with left and right sides of the square at y=1
@@ -472,7 +473,7 @@ describe('intersections-spline-verb', () => {
       expect(result1.length).toBe(result2.length);
       
       for (let i: number = 0; i < result1.length; i++) {
-        expectPointNear(result1[i].point, result2[i].point, EPSILON);
+        expectPointNear(result1[i].point, result2[i].point, 1e-9);
         expect(result1[i].param1).toBeCloseTo(result2[i].param1, 8);
         expect(result1[i].param2).toBeCloseTo(result2[i].param2, 8);
       }

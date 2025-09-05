@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
+import { detectShapeChains, type Chain } from './chain-detection/chain-detection';
 import { detectParts } from './part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import type { BoundingBox, Shape, Line, Circle, Arc, Polyline } from '$lib/types/geometry';
 
 describe('Tractor Seat Mount Part Detection', () => {
   it('should detect 1 part with multiple holes for Tractor Seat Mount - Left.dxf', async () => {
@@ -46,7 +47,7 @@ describe('Tractor Seat Mount Part Detection', () => {
       distance = Math.sqrt(
         Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
       );
-      tolerance = calculateClosureTolerance(chain, distance);
+      tolerance = calculateClosureTolerance(chain);
       isClosed = distance < tolerance;
 
       console.log(`Chain ${chain.id}: ${chain.shapes.length} shapes, distance: ${distance.toFixed(6)}, tolerance: ${tolerance.toFixed(6)}, closed: ${isClosed}`);
@@ -79,14 +80,14 @@ describe('Tractor Seat Mount Part Detection', () => {
       const distance: number = Math.sqrt(
         Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
       );
-      const tolerance = calculateClosureTolerance(chain, distance);
+      const tolerance = calculateClosureTolerance(chain);
       return distance < tolerance;
     });
 
     console.log(`Closed chains: ${closedChains.length}`);
     for (const chain of closedChains) {
       const bbox = calculateChainBoundingBox(chain);
-      console.log(`  Chain ${chain.id}: ${chain.shapes.length} shapes, bbox: [${bbox.minX.toFixed(1)}, ${bbox.minY.toFixed(1)}, ${bbox.maxX.toFixed(1)}, ${bbox.maxY.toFixed(1)}]`);
+      console.log(`  Chain ${chain.id}: ${chain.shapes.length} shapes, bbox: [${bbox.min.x.toFixed(1)}, ${bbox.min.y.toFixed(1)}, ${bbox.max.x.toFixed(1)}, ${bbox.max.y.toFixed(1)}]`);
     }
 
     // The expectation: should detect 1 part with multiple holes
@@ -97,14 +98,14 @@ describe('Tractor Seat Mount Part Detection', () => {
 });
 
 // Helper functions copied from part-detection.ts for testing
-function calculateClosureTolerance(chain: any, gapDistance: number): number {
+function calculateClosureTolerance(chain: Chain): number {
   // Base tolerance for precision errors
   const baseTolerance = 0.01;
   
   // Calculate chain bounding box to understand scale
   const boundingBox = calculateChainBoundingBox(chain);
-  const chainWidth = boundingBox.maxX - boundingBox.minX;
-  const chainHeight = boundingBox.maxY - boundingBox.minY;
+  const chainWidth = boundingBox.max.x - boundingBox.min.x;
+  const chainHeight = boundingBox.max.y - boundingBox.min.y;
   const chainSize = Math.max(chainWidth, chainHeight);
   
   // For large chains, allow larger gaps (up to 5% of chain size)
@@ -121,52 +122,67 @@ function calculateClosureTolerance(chain: any, gapDistance: number): number {
   return cappedTolerance;
 }
 
-function calculateChainBoundingBox(chain: any): any {
+function calculateChainBoundingBox(chain: Chain): BoundingBox {
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   
   for (const shape of chain.shapes) {
     const shapeBounds = getShapeBoundingBox(shape);
-    minX = Math.min(minX, shapeBounds.minX);
-    maxX = Math.max(maxX, shapeBounds.maxX);
-    minY = Math.min(minY, shapeBounds.minY);
-    maxY = Math.max(maxY, shapeBounds.maxY);
+    minX = Math.min(minX, shapeBounds.min.x);
+    maxX = Math.max(maxX, shapeBounds.max.x);
+    minY = Math.min(minY, shapeBounds.min.y);
+    maxY = Math.max(maxY, shapeBounds.max.y);
   }
   
-  return { minX, maxX, minY, maxY };
+  return {
+    min: { x: minX, y: minY },
+    max: { x: maxX, y: maxY }
+  };
 }
 
-function getShapeBoundingBox(shape: any): any {
+function getShapeBoundingBox(shape: Shape): BoundingBox {
   switch (shape.type) {
     case 'line':
-      const line: import("$lib/types/geometry").Line = shape.geometry;
+      const line = shape.geometry as Line;
       return {
-        minX: Math.min(line.start.x, line.end.x),
-        maxX: Math.max(line.start.x, line.end.x),
-        minY: Math.min(line.start.y, line.end.y),
-        maxY: Math.max(line.start.y, line.end.y)
+        min: {
+          x: Math.min(line.start.x, line.end.x),
+          y: Math.min(line.start.y, line.end.y)
+        },
+        max: {
+          x: Math.max(line.start.x, line.end.x),
+          y: Math.max(line.start.y, line.end.y)
+        }
       };
     
     case 'circle':
-      const circle: import("$lib/types/geometry").Circle = shape.geometry;
+      const circle = shape.geometry as Circle;
       return {
-        minX: circle.center.x - circle.radius,
-        maxX: circle.center.x + circle.radius,
-        minY: circle.center.y - circle.radius,
-        maxY: circle.center.y + circle.radius
+        min: {
+          x: circle.center.x - circle.radius,
+          y: circle.center.y - circle.radius
+        },
+        max: {
+          x: circle.center.x + circle.radius,
+          y: circle.center.y + circle.radius
+        }
       };
     
     case 'arc':
-      const arc: import("$lib/types/geometry").Arc = shape.geometry;
+      const arc = shape.geometry as Arc;
       // Simplified: use circle bounding box
       return {
-        minX: arc.center.x - arc.radius,
-        maxX: arc.center.x + arc.radius,
-        minY: arc.center.y - arc.radius,
-        maxY: arc.center.y + arc.radius
+        min: {
+          x: arc.center.x - arc.radius,
+          y: arc.center.y - arc.radius
+        },
+        max: {
+          x: arc.center.x + arc.radius,
+          y: arc.center.y + arc.radius
+        }
       };
     
     case 'polyline':
-      const polyline: import("$lib/types/geometry").Polyline = shape.geometry;
+      const polyline = shape.geometry as Polyline;
       let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
       for (const point of polylineToPoints(polyline)) {
         minX = Math.min(minX, point.x);
@@ -174,10 +190,16 @@ function getShapeBoundingBox(shape: any): any {
         minY = Math.min(minY, point.y);
         maxY = Math.max(maxY, point.y);
       }
-      return { minX, maxX, minY, maxY };
+      return {
+        min: { x: minX, y: minY },
+        max: { x: maxX, y: maxY }
+      };
     
     default:
-      return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
+      return {
+        min: { x: 0, y: 0 },
+        max: { x: 0, y: 0 }
+      };
   }
 }
 

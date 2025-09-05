@@ -7,7 +7,7 @@ import {
   findShapeIntersections,
   clusterIntersections
 } from './index';
-import type { Shape, Line, Arc, Circle, Point2D, Polyline, Ellipse, Spline } from '../../../types/geometry';
+import type { Shape, Line, Arc, Point2D } from '../../../types/geometry';
 import type { IntersectionResult } from '../chain/types';
 import { generateId } from '../../../utils/id';
 import { createPolylineFromVertices } from '../../../geometry/polyline';
@@ -21,7 +21,7 @@ describe('intersections', () => {
       geometry: {
         start: { x: x1, y: y1 },
         end: { x: x2, y: y2 }
-      } as Line
+      }
     };
   }
 
@@ -35,7 +35,7 @@ describe('intersections', () => {
         startAngle,
         endAngle,
         clockwise
-      } as Arc
+      }
     };
   }
 
@@ -46,7 +46,7 @@ describe('intersections', () => {
       geometry: {
         center: { x: cx, y: cy },
         radius
-      } as Circle
+      }
     };
   }
 
@@ -457,8 +457,8 @@ describe('intersections', () => {
     });
 
     it('should find line-arc intersections through main interface', () => {
-      const line: import("$lib/types/geometry").Line = createLine(-5, 0, 5, 0);
-      const arc: import("$lib/types/geometry").Arc = createArc(0, 0, 3, 0, 2 * Math.PI);
+      const line: Shape = createLine(-5, 0, 5, 0);
+      const arc: Shape = createArc(0, 0, 3, 0, 2 * Math.PI);
 
       const result = findShapeIntersections(line, arc);
 
@@ -536,14 +536,14 @@ describe('intersections', () => {
     }
 
     it('should find polyline-line intersections', () => {
-      const polyline: import("$lib/types/geometry").Polyline = createPolyline([
+      const polyline: Shape = createPolyline([
         { x: 0, y: 0 },
         { x: 10, y: 0 },
         { x: 10, y: 10 },
         { x: 0, y: 10 }
       ], true);
       
-      const line: import("$lib/types/geometry").Line = createLine(5, -5, 5, 15);
+      const line: Shape = createLine(5, -5, 5, 15);
       const result = findShapeIntersections(polyline, line);
 
       expect(result).toHaveLength(1); // Only one intersection due to constraint
@@ -574,8 +574,8 @@ describe('intersections', () => {
 
     it('should find ellipse-line intersections', () => {
       // Unit circle centered at origin with horizontal major axis
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipse(0, 0, 1, 0, 1); // Circle actually
-      const line: import("$lib/types/geometry").Line = createLine(-2, 0, 2, 0); // Horizontal line through center
+      const ellipse: Shape = createEllipse(0, 0, 1, 0, 1); // Circle actually
+      const line: Shape = createLine(-2, 0, 2, 0); // Horizontal line through center
 
       const result = findShapeIntersections(ellipse, line);
 
@@ -598,13 +598,13 @@ describe('intersections', () => {
 
     it('should find spline-line intersections using approximation', () => {
       // Simple spline that approximates a line from (0,0) to (10,10)
-      const spline: import("$lib/types/geometry").Spline = createSpline([
+      const spline: Shape = createSpline([
         { x: 0, y: 0 },
         { x: 5, y: 5 },
         { x: 10, y: 10 }
       ], 2);
       
-      const line: import("$lib/types/geometry").Line = createLine(0, 10, 10, 0); // Perpendicular line
+      const line: Shape = createLine(0, 10, 10, 0); // Perpendicular line
 
       const result = findShapeIntersections(spline, line);
 
@@ -636,21 +636,21 @@ describe('intersections', () => {
 
     it('should handle polylines with bulge vertices', () => {
       // Create a polyline with a bulged segment (approximating an arc)
-      const polyline: import("$lib/types/geometry").Polyline = createPolyline([
+      const polyline: Shape = createPolyline([
         { x: 0, y: 0 },
         { x: 10, y: 0, bulge: 1 }, // 90-degree arc to next point
         { x: 10, y: 10 }
       ]);
       
-      const line: import("$lib/types/geometry").Line = createLine(5, -5, 5, 15);
+      const line: Shape = createLine(5, -5, 5, 15);
       const result = findShapeIntersections(polyline, line);
 
       expect(result.length).toBeGreaterThan(0);
     });
 
     it('should maintain reasonable confidence levels for approximations', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipse(0, 0, 1, 0, 1);
-      const spline: import("$lib/types/geometry").Spline = createSpline([
+      const ellipse: Shape = createEllipse(0, 0, 1, 0, 1);
+      const spline: Shape = createSpline([
         { x: -2, y: 0 },
         { x: 2, y: 0 }
       ], 1);

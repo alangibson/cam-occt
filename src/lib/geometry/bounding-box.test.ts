@@ -20,7 +20,10 @@ import type {
   Ellipse, 
   Spline, 
   Shape, 
-  BoundingBox 
+  BoundingBox,
+  Point2D,
+  GeometryType,
+  Geometry
 } from '../types/geometry';
 
 describe('getBoundingBoxForLine', () => {
@@ -393,7 +396,7 @@ describe('getBoundingBoxForShape', () => {
       id: 'test-invalid',
       type: 'unknown',
       geometry: {}
-    } as any;
+    } as unknown as Shape;
     
     expect(() => getBoundingBoxForShape(invalidShape)).toThrow('Unsupported shape type');
   });
@@ -488,7 +491,7 @@ describe('Edge Cases - getBoundingBoxForLine', () => {
 
   it('should throw error for line with null start point', () => {
     const line: Line = {
-      start: null as any,
+      start: null as unknown as Point2D,
       end: { x: 10, y: 15 }
     };
     
@@ -498,7 +501,7 @@ describe('Edge Cases - getBoundingBoxForLine', () => {
   it('should throw error for line with null end point', () => {
     const line: Line = {
       start: { x: 0, y: 5 },
-      end: null as any
+      end: null as unknown as Point2D
     };
     
     expect(() => getBoundingBoxForLine(line)).toThrow('Invalid line: start and end points must be finite numbers');
@@ -544,7 +547,7 @@ describe('Edge Cases - getBoundingBoxForCircle', () => {
 
   it('should throw error for circle with null center', () => {
     const circle: Circle = {
-      center: null as any,
+      center: null as unknown as Point2D,
       radius: 5
     };
     
@@ -788,8 +791,8 @@ describe('Edge Cases - getBoundingBoxForShape', () => {
   it('should throw error for unsupported shape type', () => {
     const shape: Shape = {
       id: 'unknown1',
-      type: 'unknown' as any,
-      geometry: {} as any
+      type: 'unknown' as unknown as GeometryType,
+      geometry: {} as unknown as Geometry
     };
     
     expect(() => getBoundingBoxForShape(shape)).toThrow('Unsupported shape type: unknown');
@@ -799,7 +802,7 @@ describe('Edge Cases - getBoundingBoxForShape', () => {
 describe('Edge Cases - combineBoundingBoxes', () => {
   it('should throw error for bounding box with null min', () => {
     const boxes: BoundingBox[] = [
-      { min: null as any, max: { x: 10, y: 10 } }
+      { min: null as unknown as Point2D, max: { x: 10, y: 10 } }
     ];
     
     expect(() => combineBoundingBoxes(boxes)).toThrow('Invalid bounding box: min and max must be finite numbers');
@@ -807,7 +810,7 @@ describe('Edge Cases - combineBoundingBoxes', () => {
 
   it('should throw error for bounding box with null max', () => {
     const boxes: BoundingBox[] = [
-      { min: { x: 0, y: 0 }, max: null as any }
+      { min: { x: 0, y: 0 }, max: null as unknown as Point2D }
     ];
     
     expect(() => combineBoundingBoxes(boxes)).toThrow('Invalid bounding box: min and max must be finite numbers');

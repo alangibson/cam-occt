@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Spline } from '../../../types/geometry';
+import type { Spline, Point2D } from '../../../types/geometry';
 import type { IntersectionResult } from '../chain/types';
+import verb from 'verb-nurbs';
 import {
   validateSplineForIntersection,
   processSplineIntersection,
@@ -34,7 +35,6 @@ vi.mock('../extend/spline', () => ({
 
 describe('Spline Intersection Utilities', () => {
   const createTestSpline = (overrides: Partial<Spline> = {}): Spline => ({
-    type: 'spline',
     controlPoints: [
       { x: 0, y: 0 },
       { x: 10, y: 10 },
@@ -71,7 +71,7 @@ describe('Spline Intersection Utilities', () => {
     });
 
     it('should reject spline with null control points', () => {
-      const spline = createTestSpline({ controlPoints: null as any });
+      const spline = createTestSpline({ controlPoints: null as unknown as Point2D[] });
       const result = validateSplineForIntersection(spline);
 
       expect(result.isValid).toBe(false);
@@ -108,7 +108,7 @@ describe('Spline Intersection Utilities', () => {
     });
 
     it('should reject spline with missing knots', () => {
-      const spline = createTestSpline({ knots: null as any });
+      const spline = createTestSpline({ knots: null as unknown as number[] });
       const result = validateSplineForIntersection(spline);
 
       expect(result.isValid).toBe(false);
@@ -176,14 +176,16 @@ describe('Spline Intersection Utilities', () => {
           param1: 0.5,
           param2: 0.3,
           distance: 0.01,
-          isExtended: false
+          type: 'approximate',
+          confidence: 0.95,
+          onExtension: false
         }
       ];
 
       const { createVerbCurveFromSpline, processVerbIntersectionResults } = await import('../../../utils/verb-integration-utils');
       const { default: verb } = await import('verb-nurbs');
 
-      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ id: 'curve' });
+      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
       vi.mocked(verb.geom.Intersect.curves).mockReturnValue(mockIntersections);
       vi.mocked(processVerbIntersectionResults).mockReturnValue(mockProcessedResults);
 
@@ -207,7 +209,9 @@ describe('Spline Intersection Utilities', () => {
           param1: 0.8,
           param2: 0.2,
           distance: 0.01,
-          isExtended: true
+          type: 'approximate',
+          confidence: 0.95,
+          onExtension: true
         }
       ];
 
@@ -215,8 +219,8 @@ describe('Spline Intersection Utilities', () => {
       const { createExtendedSplineVerb } = await import('../extend/spline');
       const { default: verb } = await import('verb-nurbs');
 
-      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ id: 'original-curve' });
-      vi.mocked(createExtendedSplineVerb).mockReturnValue({ id: 'extended-curve' });
+      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
+      vi.mocked(createExtendedSplineVerb).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
       
       // First call returns no intersections, subsequent calls return intersections
       vi.mocked(verb.geom.Intersect.curves)
@@ -238,7 +242,7 @@ describe('Spline Intersection Utilities', () => {
       const { createVerbCurveFromSpline } = await import('../../../utils/verb-integration-utils');
       const { default: verb } = await import('verb-nurbs');
 
-      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ id: 'curve' });
+      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
       vi.mocked(verb.geom.Intersect.curves).mockReturnValue([]);
 
       const results = processSplineIntersection(spline1, spline2, false, false);
@@ -272,7 +276,7 @@ describe('Spline Intersection Utilities', () => {
       const { createVerbCurveFromSpline, processVerbIntersectionResults } = await import('../../../utils/verb-integration-utils');
       const { default: verb } = await import('verb-nurbs');
 
-      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ id: 'curve' });
+      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
       vi.mocked(verb.geom.Intersect.curves).mockReturnValue(mockIntersections);
       vi.mocked(processVerbIntersectionResults).mockReturnValue([]);
 
@@ -285,7 +289,7 @@ describe('Spline Intersection Utilities', () => {
   describe('processSplineWithCurveIntersection', () => {
     it('should find intersections with other curve', async () => {
       const spline = createTestSpline();
-      const mockOtherCurve = { id: 'other-curve' };
+      const mockOtherCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
 
       const mockIntersections = [
         { u0: 0.5, u1: 0.3, pt: [15, 5, 0] }
@@ -297,14 +301,16 @@ describe('Spline Intersection Utilities', () => {
           param1: 0.5,
           param2: 0.3,
           distance: 0.01,
-          isExtended: false
+          type: 'approximate',
+          confidence: 0.95,
+          onExtension: false
         }
       ];
 
       const { createVerbCurveFromSpline, processVerbIntersectionResults } = await import('../../../utils/verb-integration-utils');
       const { default: verb } = await import('verb-nurbs');
 
-      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ id: 'spline-curve' });
+      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
       vi.mocked(verb.geom.Intersect.curves).mockReturnValue(mockIntersections);
       vi.mocked(processVerbIntersectionResults).mockReturnValue(mockResults);
 
@@ -316,7 +322,7 @@ describe('Spline Intersection Utilities', () => {
 
     it('should try extensions when original intersection fails', async () => {
       const spline = createTestSpline();
-      const mockOtherCurve = { id: 'other-curve' };
+      const mockOtherCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
 
       const mockExtendedIntersections = [
         { u0: 0.8, u1: 0.2, pt: [25, 8, 0] }
@@ -328,7 +334,9 @@ describe('Spline Intersection Utilities', () => {
           param1: 0.8,
           param2: 0.2,
           distance: 0.01,
-          isExtended: true
+          type: 'approximate',
+          confidence: 0.95,
+          onExtension: true
         }
       ];
 
@@ -336,8 +344,8 @@ describe('Spline Intersection Utilities', () => {
       const { createExtendedSplineVerb } = await import('../extend/spline');
       const { default: verb } = await import('verb-nurbs');
 
-      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ id: 'spline-curve' });
-      vi.mocked(createExtendedSplineVerb).mockReturnValue({ id: 'extended-curve' });
+      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
+      vi.mocked(createExtendedSplineVerb).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
       
       vi.mocked(verb.geom.Intersect.curves)
         .mockReturnValueOnce([]) // Original fails
@@ -353,13 +361,13 @@ describe('Spline Intersection Utilities', () => {
 
     it('should return empty when extensions fail', async () => {
       const spline = createTestSpline();
-      const mockOtherCurve = { id: 'other-curve' };
+      const mockOtherCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
 
       const { createVerbCurveFromSpline } = await import('../../../utils/verb-integration-utils');
       const { createExtendedSplineVerb } = await import('../extend/spline');
       const { default: verb } = await import('verb-nurbs');
 
-      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ id: 'spline-curve' });
+      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
       vi.mocked(createExtendedSplineVerb).mockImplementation(() => {
         throw new Error('Extension failed');
       });
@@ -372,7 +380,7 @@ describe('Spline Intersection Utilities', () => {
 
     it('should handle parameter swapping', async () => {
       const spline = createTestSpline();
-      const mockOtherCurve = { id: 'other-curve' };
+      const mockOtherCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
 
       const mockIntersections = [
         { u0: 0.5, u1: 0.3, pt: [15, 5, 0] }
@@ -381,7 +389,7 @@ describe('Spline Intersection Utilities', () => {
       const { createVerbCurveFromSpline, processVerbIntersectionResults } = await import('../../../utils/verb-integration-utils');
       const { default: verb } = await import('verb-nurbs');
 
-      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ id: 'curve' });
+      vi.mocked(createVerbCurveFromSpline).mockReturnValue({ degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve);
       vi.mocked(verb.geom.Intersect.curves).mockReturnValue(mockIntersections);
       vi.mocked(processVerbIntersectionResults).mockReturnValue([]);
 
@@ -393,8 +401,8 @@ describe('Spline Intersection Utilities', () => {
 
   describe('processSplineIntersectionWithRetry', () => {
     it('should return consistent results from multiple retries', async () => {
-      const mockSplineCurve = { id: 'spline-curve' };
-      const mockOtherCurve = { id: 'other-curve' };
+      const mockSplineCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
+      const mockOtherCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
 
       const mockIntersections = [
         { u0: 0.5, u1: 0.3, pt: [15, 5, 0] }
@@ -406,7 +414,9 @@ describe('Spline Intersection Utilities', () => {
           param1: 0.5,
           param2: 0.3,
           distance: 0.01,
-          isExtended: false
+          type: 'approximate',
+          confidence: 0.95,
+          onExtension: false
         }
       ];
 
@@ -423,8 +433,8 @@ describe('Spline Intersection Utilities', () => {
     });
 
     it('should handle inconsistent results from retries', async () => {
-      const mockSplineCurve = { id: 'spline-curve' };
-      const mockOtherCurve = { id: 'other-curve' };
+      const mockSplineCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
+      const mockOtherCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
 
       const { processVerbIntersectionResults } = await import('../../../utils/verb-integration-utils');
       const { default: verb } = await import('verb-nurbs');
@@ -443,8 +453,8 @@ describe('Spline Intersection Utilities', () => {
     });
 
     it('should handle retry failures gracefully', async () => {
-      const mockSplineCurve = { id: 'spline-curve' };
-      const mockOtherCurve = { id: 'other-curve' };
+      const mockSplineCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
+      const mockOtherCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
 
       const { default: verb } = await import('verb-nurbs');
 
@@ -458,8 +468,8 @@ describe('Spline Intersection Utilities', () => {
     });
 
     it('should use provided retry count', async () => {
-      const mockSplineCurve = { id: 'spline-curve' };
-      const mockOtherCurve = { id: 'other-curve' };
+      const mockSplineCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
+      const mockOtherCurve = { degree: () => 2, knots: () => [0, 0, 0, 1, 1, 1], controlPoints: () => [[0, 0, 0], [1, 1, 0], [2, 0, 0]], weights: () => [1, 1, 1] } as verb.geom.ICurve;
 
       const { default: verb } = await import('verb-nurbs');
 
@@ -524,7 +534,7 @@ describe('Spline Intersection Utilities', () => {
 
   describe('Edge Cases and Error Handling', () => {
     it('should handle spline validation with missing weights', () => {
-      const spline = createTestSpline({ weights: undefined as any });
+      const spline = createTestSpline({ weights: undefined as unknown as number[] });
       const result = validateSplineForIntersection(spline);
 
       // Should still be valid since weights is optional

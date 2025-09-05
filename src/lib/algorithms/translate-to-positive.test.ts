@@ -3,7 +3,7 @@ import { translateToPositiveQuadrant } from './translate-to-positive';
 import { polylineToPoints, polylineToVertices, createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { Shape } from '../../lib/types';
 import type { Line, Circle, Arc, Polyline, Ellipse } from '../../lib/types/geometry';
-import { CutDirection, LeadType } from '../types/direction';
+import { LeadType } from '../types/direction';
 
 describe('Translate to Positive Quadrant Algorithm', () => {
   describe('Basic Functionality', () => {

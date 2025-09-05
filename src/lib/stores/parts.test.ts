@@ -1,8 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { partStore, setParts, clearParts, highlightPart, clearHighlight, hoverPart, clearPartHover, selectPart, clearPartSelection, getPartChainIds, getChainPartType } from './parts';
-import type { DetectedPart, PartDetectionWarning } from '../algorithms/part-detection';
-import { generateId } from '../utils/id';
+import type { DetectedPart, PartDetectionWarning, PartHole } from '../algorithms/part-detection';
 
 describe('Parts Store', () => {
   beforeEach(() => {
@@ -11,7 +10,7 @@ describe('Parts Store', () => {
 
   // Helper function to create test parts
   function createTestPart(partId: string, shellChainId: string, holeChainIds: string[] = []): DetectedPart {
-    const holes = holeChainIds.map((chainId, index) => ({
+    const holes: PartHole[] = holeChainIds.map((chainId, index) => ({
       id: `hole-${index + 1}`,
       chain: {
         id: chainId,
@@ -32,9 +31,9 @@ describe('Parts Store', () => {
         },
         type: 'shell' as const,
         boundingBox: { minX: 0, maxX: 20, minY: 0, maxY: 20 },
-        holes: holes as any
+        holes: holes
       },
-      holes: holes as any
+      holes: holes
     };
   }
 

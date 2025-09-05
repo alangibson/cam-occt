@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
-import { detectParts } from './part-detection';
+import { detectShapeChains, type Chain } from './chain-detection/chain-detection';
+import { detectParts, type PartShell } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
 import { polylineToPoints } from '../geometry/polyline';
-import type { Polyline } from '../types/geometry';
+import type { Polyline, Line } from '../types/geometry';
 
 describe('ADLER Part 5 Cut Direction Analysis', () => {
   // Helper to check if a point is inside a polygon using ray casting
@@ -31,14 +31,16 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
   }
 
   // Helper to get polygon points from a chain
-  function getPolygonFromChain(chain: any): { x: number; y: number }[] {
+  function getPolygonFromChain(chain: Chain): { x: number; y: number }[] {
     const points: { x: number; y: number }[] = [];
     
     for (const shape of chain.shapes) {
       if (shape.type === 'line') {
-        points.push(shape.geometry.start);
+        const lineGeometry = shape.geometry as Line;
+        points.push(lineGeometry.start);
       } else if (shape.type === 'polyline') {
-        points.push(...polylineToPoints(shape.geometry));
+        const polylineGeometry = shape.geometry as Polyline;
+        points.push(...polylineToPoints(polylineGeometry));
       }
     }
     
@@ -46,8 +48,8 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
   }
 
   // Helper to check if point is in solid area (inside shell, outside holes)
-  function isPointInSolidArea(point: { x: number; y: number }, part: any): boolean {
-    const shellPolygon = getPolygonFromChain(part.shell.chain);
+  function isPointInSolidArea(point: { x: number; y: number }, part: PartShell): boolean {
+    const shellPolygon = getPolygonFromChain(part.chain);
     
     // First check if point is inside the shell
     if (!isPointInPolygon(point, shellPolygon)) {
@@ -79,14 +81,14 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     
     // Test different lead lengths with both cut directions
     const testLengths = [2, 5, 8, 10, 15];
-    const cutDirections: ('clockwise' | 'counterclockwise')[] = ['clockwise', 'counterclockwise'];
+    const cutDirections = [CutDirection.CLOCKWISE, CutDirection.COUNTERCLOCKWISE];
     
     
     for (const length of testLengths) {
       const leadIn: LeadInConfig = { type: LeadType.ARC, length };
       const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
       
-      let results: Array<{ direction: string; solidPoints: number; warnings: number }> = [];
+      const results: Array<{ direction: string; solidPoints: number; warnings: number }> = [];
       
       for (const cutDirection of cutDirections) {
         const result = calculateLeads(part5.shell.chain, leadIn, leadOut, cutDirection, part5);
@@ -94,7 +96,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         let solidPoints = 0;
         if (result.leadIn) {
           for (let i: number = 0; i < result.leadIn.points.length - 1; i++) {
-            if (isPointInSolidArea(result.leadIn.points[i], part5)) {
+            if (isPointInSolidArea(result.leadIn.points[i], part5.shell)) {
               solidPoints++;
             }
           }
@@ -109,7 +111,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
       
       const clockwise = results[0];
       const counter = results[1];
-      const best = clockwise.solidPoints <= counter.solidPoints ? 'CW' : 'CCW';
+      const _best = clockwise.solidPoints <= counter.solidPoints ? 'CW' : 'CCW';
       
     }
     
@@ -119,12 +121,13 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     if (shortResult.leadIn) {
       let solidPoints = 0;
       for (let i: number = 0; i < shortResult.leadIn.points.length - 1; i++) {
-        if (isPointInSolidArea(shortResult.leadIn.points[i], part5)) {
+        if (isPointInSolidArea(shortResult.leadIn.points[i], part5.shell)) {
           solidPoints++;
         }
       }
       
       if (solidPoints === 0) {
+        // No solid points in short lead
       }
     }
   });
@@ -159,6 +162,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
       const minDist = Math.min(distToLeft, distToRight, distToBottom, distToTop);
       
       if (minDist < 15) {
+        // Lead is near boundary
       }
     }
     
@@ -168,12 +172,12 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
       if (holeShape.type === 'polyline') {
         const holePoints = polylineToPoints(holeShape.geometry as Polyline);
         const holeCenter = {
-          x: holePoints.reduce((sum: number, p: any) => sum + p.x, 0) / holePoints.length,
-          y: holePoints.reduce((sum: number, p: any) => sum + p.y, 0) / holePoints.length
+          x: holePoints.reduce((sum: number, p: { x: number; y: number }) => sum + p.x, 0) / holePoints.length,
+          y: holePoints.reduce((sum: number, p: { x: number; y: number }) => sum + p.y, 0) / holePoints.length
         };
         
         const connectionPoint = polylineToPoints(shellShape.geometry as Polyline)[0];
-        const distToHole = Math.sqrt(
+        const _distToHole = Math.sqrt(
           (connectionPoint.x - holeCenter.x) ** 2 + 
           (connectionPoint.y - holeCenter.y) ** 2
         );

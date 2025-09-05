@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/svelte';
-import { get } from 'svelte/store';
+import { render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '../lib/stores/drawing';
-import type { Drawing, Shape } from '../lib/types';
+import type { Drawing } from '../lib/types';
 
 
 // Mock window.prompt and window.alert

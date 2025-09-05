@@ -3,8 +3,6 @@ import type { Shape, Spline, Line } from '../../../types/geometry';
 import { offsetShape } from '../offset/index';
 import { findShapeIntersections } from '../intersect';
 import { detectChainSide } from './side-detection';
-import { detectShapeChains } from '../../chain-detection/chain-detection';
-import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { createPolylineFromVertices } from '../../../geometry/polyline';
 
 describe('Spline-Line Offset Intersection Instability', () => {
@@ -89,9 +87,9 @@ describe('Spline-Line Offset Intersection Instability', () => {
     
     // Generate offsets multiple times and check for consistency
     const intersectionCounts: number[] = [];
-    const detailedResults: any[] = [];
-    const splineOffsetResults: any[] = [];
-    const lineOffsetResults: any[] = [];
+    const detailedResults: { [key: string]: number }[] = [];
+    const splineOffsetResults: { insetSuccess: boolean; outsetSuccess: boolean; insetShapes: number; outsetShapes: number }[] = [];
+    const lineOffsetResults: { insetSuccess: boolean; outsetSuccess: boolean; insetShapes: number; outsetShapes: number }[] = [];
     
     for (let run = 0; run < 10; run++) {
       // Generate spline offsets
@@ -117,7 +115,7 @@ describe('Spline-Line Offset Intersection Instability', () => {
       });
       
       // Test intersections between all offset combinations with detailed logging
-      const runResults: any = { run: run + 1 };
+      const runResults: { [key: string]: number } = { run: run + 1 };
       let totalIntersections = 0;
       
       if (splineInset.success && lineInset.success && splineInset.shapes.length > 0 && lineInset.shapes.length > 0) {
@@ -189,7 +187,6 @@ describe('Spline-Line Offset Intersection Instability', () => {
     console.log('Line offsets consistent:', lineOffsetsConsistent);
     
     // Check which specific intersection pair is inconsistent
-    const firstDetailedResult = detailedResults[0];
     const pairKeys = ['splineInset_lineInset', 'splineOutset_lineOutset', 'splineInset_lineOutset', 'splineOutset_lineInset'];
     
     for (const key of pairKeys) {
@@ -246,7 +243,17 @@ describe('Spline-Line Offset Intersection Instability', () => {
     console.log('Offset line geometry:', JSON.stringify(offsetLine.geometry, null, 2));
     
     // Test this specific intersection multiple times
-    const intersectionResults: any[] = [];
+    interface TestResult {
+      run: number;
+      count: number;
+      points: Array<{
+        x: number;
+        y: number;
+        onExtension?: boolean;
+        confidence: number;
+      }>;
+    }
+    const intersectionResults: TestResult[] = [];
     
     for (let run = 0; run < 20; run++) {
       const intersections = findShapeIntersections(
@@ -299,8 +306,15 @@ describe('Spline-Line Offset Intersection Instability', () => {
     const offsetDistance = 8;
     
     console.log('Testing side detection consistency...');
-    
-    const sideDetectionResults: any[] = [];
+        
+    interface SideDetectionTestResult {
+      run: number;
+      splineInsetSide?: string;
+      splineOutsetSide?: string;
+      lineInsetSide?: string;
+      lineOutsetSide?: string;
+    }
+    const sideDetectionResults: SideDetectionTestResult[] = [];
     
     for (let run = 0; run < 5; run++) {
       // Generate offsets
@@ -309,25 +323,25 @@ describe('Spline-Line Offset Intersection Instability', () => {
       const lineInset = offsetShape(lineShape, offsetDistance, 'inset');
       const lineOutset = offsetShape(lineShape, offsetDistance, 'outset');
       
-      const results: any = { run: run + 1 };
+      const results: SideDetectionTestResult = { run: run + 1 };
       
       if (splineInset.success && splineInset.shapes.length > 0) {
-        const sideResult = detectChainSide(splineInset.shapes[0], -offsetDistance, chain, 0.1);
+        const sideResult = detectChainSide(splineInset.shapes[0], -offsetDistance, chain, 0.1, chain.closed);
         results.splineInsetSide = sideResult.side;
       }
       
       if (splineOutset.success && splineOutset.shapes.length > 0) {
-        const sideResult = detectChainSide(splineOutset.shapes[0], offsetDistance, chain, 0.1);
+        const sideResult = detectChainSide(splineOutset.shapes[0], offsetDistance, chain, 0.1, chain.closed);
         results.splineOutsetSide = sideResult.side;
       }
       
       if (lineInset.success && lineInset.shapes.length > 0) {
-        const sideResult = detectChainSide(lineInset.shapes[0], -offsetDistance, chain, 0.1);
+        const sideResult = detectChainSide(lineInset.shapes[0], -offsetDistance, chain, 0.1, chain.closed);
         results.lineInsetSide = sideResult.side;
       }
       
       if (lineOutset.success && lineOutset.shapes.length > 0) {
-        const sideResult = detectChainSide(lineOutset.shapes[0], offsetDistance, chain, 0.1);
+        const sideResult = detectChainSide(lineOutset.shapes[0], offsetDistance, chain, 0.1, chain.closed);
         results.lineOutsetSide = sideResult.side;
       }
       

@@ -14,7 +14,7 @@ describe('AccordionPanel Component - Function Coverage', () => {
       expect(headerLeft).toBeTruthy();
       
       // Initially expanded
-      let header = container.querySelector('.panel-header');
+      const header = container.querySelector('.panel-header');
       expect(header?.classList.contains('expanded')).toBe(true);
       
       // Click to collapse

@@ -1,6 +1,6 @@
 import { describe, test, expect } from 'vitest';
 import { findSplinePolylineIntersectionsVerb } from './index';
-import type { Shape, Spline, Polyline, Point2D } from '../../../../types/geometry';
+import type { Shape, Spline } from '../../../../types/geometry';
 import { createPolylineFromVertices } from '../../../../geometry/polyline';
 
 describe('Spline-Polyline Extension Intersections', () => {

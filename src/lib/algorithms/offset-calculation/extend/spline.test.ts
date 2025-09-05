@@ -11,7 +11,6 @@ import {
   calculateSplineExtension,
   getSplinePoint,
   type SplineExtensionOptions,
-  type SplineExtensionResult
 } from './spline';
 
 // Mock verb-nurbs
@@ -54,21 +53,20 @@ vi.mock('./common', () => ({
 
 describe('Spline Extension Functions', () => {
   const createTestSpline = (points: Point2D[]): Spline => ({
-    type: 'spline',
     controlPoints: points,
     degree: 3,
     weights: points.map(() => 1),
-    knots: [0, 0, 0, 0, 1, 1, 1, 1]
+    knots: [0, 0, 0, 0, 1, 1, 1, 1],
+    fitPoints: [],
+    closed: false
   });
 
   const createTestLine = (start: Point2D, end: Point2D): Line => ({
-    type: 'line',
     start,
     end
   });
 
   const createTestCircle = (center: Point2D, radius: number): Circle => ({
-    type: 'circle',
     center,
     radius
   });

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Shape, Point2D, Spline } from '../../../../types/geometry';
+import type { Shape, Spline } from '../../../../types/geometry';
 import { trimSpline } from './index';
 import { type KeepSide } from '../types';
 

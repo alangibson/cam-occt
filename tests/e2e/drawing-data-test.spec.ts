@@ -13,10 +13,13 @@ test.describe('Drawing Data Flow Test', () => {
     // Add debugging to track the flow
     await page.evaluate(() => {
       // Override console.log to capture debug info
-      (window as any).debugInfo = [];
+      interface DebugWindow extends Window {
+        debugInfo?: string[];
+      }
+      (window as DebugWindow).debugInfo = [];
       const originalLog = console.log;
       console.log = (...args) => {
-        (window as any).debugInfo.push(args.join(' '));
+        (window as DebugWindow).debugInfo?.push(args.join(' '));
         originalLog(...args);
       };
     });
@@ -38,9 +41,12 @@ test.describe('Drawing Data Flow Test', () => {
     
     // Check what data we have
     const debugInfo = await page.evaluate(() => {
+      interface DebugWindow extends Window {
+        debugInfo?: string[];
+      }
       // Try to access drawing data through various means
       const results = {
-        debugLogs: (window as any).debugInfo || [],
+        debugLogs: ((window as DebugWindow).debugInfo) || [],
         canvasElement: !!document.querySelector('.drawing-canvas'),
         sidebarText: document.querySelector('.export-section .info')?.textContent || 'not found',
         // Try to trigger a manual render to see what happens

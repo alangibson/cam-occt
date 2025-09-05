@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { samplePathAtDistanceIntervals, normalizeVector } from './index';
-import type { Shape, Line, Arc } from '../types';
+import { samplePathAtDistanceIntervals } from './index';
+import type { Shape, Line } from '../types';
 
 describe('samplePathAtDistanceIntervals', () => {
   describe('Cut Direction Handling', () => {
     it('should produce correct direction vectors for counterclockwise cuts on simple line', () => {
       // Create a simple horizontal line from (0,0) to (10,0)
       const line: Shape = {
+        id: 'line1',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -33,6 +34,7 @@ describe('samplePathAtDistanceIntervals', () => {
     it('should produce correct direction vectors for clockwise cuts on simple line', () => {
       // Create a simple horizontal line from (0,0) to (10,0)
       const line: Shape = {
+        id: 'line1',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -59,6 +61,7 @@ describe('samplePathAtDistanceIntervals', () => {
     it('should produce opposite directions for same shape with different cut directions', () => {
       // Create a vertical line from (0,0) to (0,10)
       const line: Shape = {
+        id: 'line1',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -84,6 +87,7 @@ describe('samplePathAtDistanceIntervals', () => {
     it('should handle multi-shape paths correctly', () => {
       // Create an L-shaped path: horizontal line then vertical line
       const horizontalLine: Shape = {
+        id: 'horizontalLine',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -92,6 +96,7 @@ describe('samplePathAtDistanceIntervals', () => {
       };
       
       const verticalLine: Shape = {
+        id: 'verticalLine',
         type: 'line',
         geometry: {
           start: { x: 10, y: 0 },
@@ -122,6 +127,7 @@ describe('samplePathAtDistanceIntervals', () => {
     it('should sample at regular intervals', () => {
       // Create a 20-unit long line
       const line: Shape = {
+        id: 'line1',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -155,6 +161,7 @@ describe('samplePathAtDistanceIntervals', () => {
       
       // Zero interval distance
       const line: Shape = {
+        id: 'line1',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -176,6 +183,7 @@ describe('Cut Direction Regression Tests', () => {
     // regardless of cut direction, while calling code reversed shape order
     
     const line: Shape = {
+      id: 'line1',
       type: 'line',
       geometry: {
         start: { x: 0, y: 0 },

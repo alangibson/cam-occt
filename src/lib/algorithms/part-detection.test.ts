@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { detectParts } from './part-detection';
 import type { Chain as ShapeChain } from './chain-detection/chain-detection';
 import { generateId } from '../utils/id';
-import { CutDirection, LeadType } from '../types/direction';
+import { LeadType } from '../types/direction';
 
 describe('Part Detection Algorithm', () => {
   // Helper function to create test shapes

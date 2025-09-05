@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { Shape, Point2D, Spline } from '../../../../types/geometry';
-import type { FillOptions, FillResult, ShapeExtension } from '../types';
+import type { FillOptions, FillResult } from '../types';
 import { fillSplineToIntersection } from './index';
 
 // Mock the extend/spline module
@@ -13,11 +13,12 @@ vi.mock('../../extend/spline', () => ({
 
 describe('Spline Fill Operations', () => {
   const createTestSpline = (points: Point2D[]): Spline => ({
-    type: 'spline',
     controlPoints: points,
     degree: 3,
     weights: points.map(() => 1),
-    knots: [0, 0, 0, 0, 1, 1, 1, 1]
+    knots: [0, 0, 0, 0, 1, 1, 1, 1],
+    fitPoints: [],
+    closed: false
   });
 
   const createSplineShape = (spline: Spline): Shape => ({
@@ -120,7 +121,7 @@ describe('Spline Fill Operations', () => {
     it('should return failure when shape is not a spline', () => {
       const lineShape: Shape = {
         type: 'line',
-        geometry: { type: 'line', start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
+        geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
         id: 'test-line',
         layer: 'default'
       };

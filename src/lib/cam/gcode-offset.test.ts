@@ -3,6 +3,7 @@ import { pathsToToolPaths } from './path-to-toolpath';
 import { generateGCode } from './gcode-generator';
 import type { Path } from '../stores/paths';
 import type { Shape, Drawing } from '../types';
+import { CutDirection, LeadType } from '../types/direction';
 
 describe('G-code generation with offset paths', () => {
   // Create test shapes for a simple rectangle
@@ -54,8 +55,8 @@ describe('G-code generation with offset paths', () => {
   ];
 
   const testDrawing: Drawing = {
-    id: 'test-drawing',
     shapes: testShapes,
+    bounds: { min: { x: 0, y: 0 }, max: { x: 30, y: 20 } },
     units: 'mm'
   };
 
@@ -68,7 +69,7 @@ describe('G-code generation with offset paths', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 1,
-      cutDirection: 'cw',
+      cutDirection: CutDirection.CLOCKWISE,
       feedRate: 1000,
       pierceHeight: 3.8,
       pierceDelay: 0.5,
@@ -111,7 +112,7 @@ describe('G-code generation with offset paths', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 1,
-      cutDirection: 'cw',
+      cutDirection: CutDirection.CLOCKWISE,
       feedRate: 1000,
       pierceHeight: 3.8,
       pierceDelay: 0.5,
@@ -168,7 +169,7 @@ describe('G-code generation with offset paths', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 1,
-      cutDirection: 'cw',
+      cutDirection: CutDirection.CLOCKWISE,
       feedRate: 1000,
       pierceHeight: 3.8,
       pierceDelay: 0.5,
@@ -178,13 +179,13 @@ describe('G-code generation with offset paths', () => {
       // Calculated lead-in connecting to offset path
       calculatedLeadIn: {
         points: [{ x: -4, y: 1 }, { x: 1, y: 1 }], // Connects to offset start point
-        type: 'line',
+        type: LeadType.LINE,
         generatedAt: new Date().toISOString(),
         version: '1.0.0'
       },
       calculatedLeadOut: {
         points: [{ x: 1, y: 1 }, { x: 1, y: -4 }], // Connects from offset end point
-        type: 'line',
+        type: LeadType.LINE,
         generatedAt: new Date().toISOString(),
         version: '1.0.0'
       },
@@ -227,13 +228,13 @@ describe('G-code generation with offset paths', () => {
       toolId: 'tool-1',
       enabled: true,
       order: 1,
-      cutDirection: 'cw',
+      cutDirection: CutDirection.CLOCKWISE,
       feedRate: 1000.12345,
       pierceHeight: 3.87654,
       calculatedOffset: {
         offsetShapes: [{
           id: 'precise-line',
-          type: 'line',
+          type: LeadType.LINE,
           geometry: { start: { x: 1.123456, y: 2.987654 }, end: { x: 3.456789, y: 4.321098 } }
         }],
         originalShapes: testShapes,

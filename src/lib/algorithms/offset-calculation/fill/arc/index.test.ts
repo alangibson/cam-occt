@@ -38,7 +38,7 @@ describe('fillArcToIntersection', () => {
   describe('basic extension functionality', () => {
     it('should extend arc forward (end direction) for counter-clockwise arc', () => {
       // Quarter circle from 0 to π/2
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
       const intersectionPoint = pointOnCircle(0, 0, 10, Math.PI * 3 / 4); // 135 degrees
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -60,7 +60,7 @@ describe('fillArcToIntersection', () => {
 
     it('should extend arc backward (start direction) for counter-clockwise arc', () => {
       // Quarter circle from π/4 to π/2
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, Math.PI / 4, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, Math.PI / 4, Math.PI / 2, false);
       const intersectionPoint = pointOnCircle(0, 0, 10, 0); // 0 degrees
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -76,7 +76,7 @@ describe('fillArcToIntersection', () => {
 
     it('should handle clockwise arcs correctly', () => {
       // Clockwise quarter circle from π/2 to 0
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, Math.PI / 2, 0, true);
+      const arc = createArcShape(0, 0, 10, Math.PI / 2, 0, true);
       const intersectionPoint = pointOnCircle(0, 0, 10, -Math.PI / 4); // -45 degrees
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -91,7 +91,7 @@ describe('fillArcToIntersection', () => {
 
   describe('direction determination', () => {
     it('should respect explicit start direction', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
       const intersectionPoint = pointOnCircle(0, 0, 10, -Math.PI / 4);
       
       const result = fillArcToIntersection(arc, intersectionPoint, {
@@ -104,7 +104,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should respect explicit end direction', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
       const intersectionPoint = pointOnCircle(0, 0, 10, Math.PI * 3 / 4);
       
       const result = fillArcToIntersection(arc, intersectionPoint, {
@@ -118,7 +118,7 @@ describe('fillArcToIntersection', () => {
 
     it('should auto-determine direction based on angular proximity', () => {
       // Arc from π/4 to π/2
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, Math.PI / 4, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, Math.PI / 4, Math.PI / 2, false);
       
       // Point closer to start should extend start
       const nearStart = pointOnCircle(0, 0, 10, 0);
@@ -136,7 +136,7 @@ describe('fillArcToIntersection', () => {
 
   describe('geometric properties preservation', () => {
     it('should preserve arc center and radius', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(5, 10, 15, 0, Math.PI / 2, false);
+      const arc = createArcShape(5, 10, 15, 0, Math.PI / 2, false);
       const intersectionPoint = pointOnCircle(5, 10, 15, Math.PI * 3 / 4);
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -149,7 +149,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should preserve clockwise direction', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, Math.PI, Math.PI / 2, true);
+      const arc = createArcShape(0, 0, 10, Math.PI, Math.PI / 2, true);
       const intersectionPoint = pointOnCircle(0, 0, 10, 0);
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -161,7 +161,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should calculate angular extension correctly', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
       const intersectionPoint = pointOnCircle(0, 0, 10, Math.PI); // 180 degrees
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -195,7 +195,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should reject points not on the arc circle', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
       const offCirclePoint = { x: 15, y: 15 }; // Not on radius 10 circle
       
       const result = fillArcToIntersection(arc, offCirclePoint, defaultOptions);
@@ -205,7 +205,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should reject extensions beyond maximum angular distance', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 5, 0, Math.PI / 4, false); // Small radius
+      const arc = createArcShape(0, 0, 5, 0, Math.PI / 4, false); // Small radius
       const farPoint = pointOnCircle(0, 0, 5, Math.PI); // Would require large angular extension
       
       const result = fillArcToIntersection(arc, farPoint, {
@@ -221,7 +221,7 @@ describe('fillArcToIntersection', () => {
   describe('angular calculations', () => {
     it('should handle angle wraparound correctly', () => {
       // Arc from 7π/4 to π/4 (crosses 0)
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 7 * Math.PI / 4, Math.PI / 4, false);
+      const arc = createArcShape(0, 0, 10, 7 * Math.PI / 4, Math.PI / 4, false);
       const intersectionPoint = pointOnCircle(0, 0, 10, Math.PI / 2);
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -231,7 +231,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should handle near-full circle extensions', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 6, false); // Small 30-degree arc
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 6, false); // Small 30-degree arc
       const intersectionPoint = pointOnCircle(0, 0, 10, 11 * Math.PI / 6); // Nearly full circle extension
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -244,7 +244,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should calculate extension amount in radians correctly', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 20, 0, Math.PI / 3, false); // 60 degrees
+      const arc = createArcShape(0, 0, 20, 0, Math.PI / 3, false); // 60 degrees
       const intersectionPoint = pointOnCircle(0, 0, 20, Math.PI / 2); // 90 degrees
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -267,7 +267,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should handle intersection point at arc endpoint', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
       const endPoint = pointOnCircle(0, 0, 10, Math.PI / 2); // Exactly at end
       
       const result = fillArcToIntersection(arc, endPoint, defaultOptions);
@@ -277,7 +277,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should handle machining tolerance precision requirements', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
       // Extension by TOLERANCE units = TOLERANCE/radius radians
       const angularExtension = TOLERANCE / 10;
       const intersectionPoint = pointOnCircle(0, 0, 10, Math.PI / 2 + angularExtension);
@@ -294,7 +294,7 @@ describe('fillArcToIntersection', () => {
 
   describe('extension metadata', () => {
     it('should provide correct extension metadata for end extension', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
       const intersectionPoint = pointOnCircle(0, 0, 10, Math.PI * 3 / 4);
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -312,7 +312,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should provide correct extension metadata for start extension', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, Math.PI / 4, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, Math.PI / 4, Math.PI / 2, false);
       const intersectionPoint = pointOnCircle(0, 0, 10, 0);
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);
@@ -326,7 +326,7 @@ describe('fillArcToIntersection', () => {
     });
 
     it('should have high confidence for successful extensions', () => {
-      const arc: import("$lib/types/geometry").Arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
+      const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
       const intersectionPoint = pointOnCircle(0, 0, 10, Math.PI * 3 / 4);
       
       const result = fillArcToIntersection(arc, intersectionPoint, defaultOptions);

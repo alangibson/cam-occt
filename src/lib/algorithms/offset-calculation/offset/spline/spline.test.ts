@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { offsetSpline, splitVerbCurve } from './spline';
-import type { Spline, Polyline } from '../../../../types/geometry';
+import type { Spline } from '../../../../types/geometry';
 import verb from 'verb-nurbs';
 
 describe('offsetSpline', () => {
@@ -33,6 +33,7 @@ describe('offsetSpline', () => {
   it('should offset spline outward', () => {
     const result = offsetSpline(testSpline, 1, 'outset');
     if (!result.success) {
+      // Handle error case if needed
     }
     expect(result.success).toBe(true);
     expect(result.shapes.length).toBeGreaterThan(0);

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { decomposePolylines } from './decompose-polylines';
 import type { Shape } from '../../lib/types';
 import { createPolylineFromVertices } from '../geometry/polyline';
-import { CutDirection, LeadType } from '../types/direction';
+import { LeadType } from '../types/direction';
 import type { Line } from '../types/geometry';
 
 describe('Decompose Polylines Algorithm', () => {

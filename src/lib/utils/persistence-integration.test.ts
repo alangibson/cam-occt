@@ -4,12 +4,13 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { saveApplicationState, restoreApplicationState } from '../stores/persistence';
-import { clearPersistedState } from './state-persistence';
 import { drawingStore } from '../stores/drawing';
-import { pathStore, type Path } from '../stores/paths';
+import { pathStore } from '../stores/paths';
 import { operationsStore, type Operation } from '../stores/operations';
-import { chainStore, setChains } from '../stores/chains';
+import { setChains } from '../stores/chains';
 import { LeadType, CutDirection } from '../types/direction';
+import type { GeometryType } from '../types/geometry';
+import type { PathsState } from '../stores/paths';
 
 // Mock localStorage
 const localStorageMock = {
@@ -61,14 +62,21 @@ describe('Persistence Integration - Lead Geometry', () => {
       shapes: [
         {
           id: 'shape-1',
-          type: 'circle',
-          center: { x: 50, y: 50 },
-          radius: 25,
+          type: 'circle' as GeometryType,
+          geometry: { center: { x: 50, y: 50 }, radius: 25 },
           layer: 'default'
         }
       ],
-      layers: ['default'],
-      units: 'mm'
+      layers: { 
+        'default': { 
+          shapes: [], 
+          name: 'default', 
+          visible: true, 
+          color: '#000000' 
+        } 
+      },
+      units: 'mm' as 'mm' | 'inch',
+      bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } }
     };
 
     const testChain = {
@@ -76,15 +84,14 @@ describe('Persistence Integration - Lead Geometry', () => {
       shapes: [
         { 
           id: 'shape-1', 
-          type: 'circle', 
+          type: 'circle' as GeometryType, 
           geometry: { center: { x: 50, y: 50 }, radius: 25 } 
         }
-      ],
-      isClosed: true
+      ]
     };
 
     // Set up the drawing and chains
-    drawingStore.setDrawing(testDrawing, 'test.dxf', 1.0, { x: 0, y: 0 }, 'mm', [], null);
+    drawingStore.setDrawing(testDrawing, 'test.dxf');
     setChains([testChain]);
 
     // Create operation that will generate paths
@@ -100,10 +107,12 @@ describe('Persistence Integration - Lead Geometry', () => {
       leadInLength: 5,
       leadInFlipSide: false,
       leadInAngle: 45,
+      leadInFit: false,
       leadOutType: LeadType.LINE,
       leadOutLength: 3,
       leadOutFlipSide: false,
-      leadOutAngle: 90
+      leadOutAngle: 90,
+      leadOutFit: false
     };
 
     // Add the operation (this should generate paths)
@@ -113,12 +122,12 @@ describe('Persistence Integration - Lead Geometry', () => {
     await new Promise(resolve => setTimeout(resolve, 200));
 
     // Verify paths were created
-    let pathsState: any = null;
+    let pathsState: PathsState | null = null;
     const unsubscribe = pathStore.subscribe(state => { pathsState = state; });
     unsubscribe();
-    expect(pathsState?.paths?.length).toBe(1);
+    expect(pathsState!.paths.length).toBe(1);
 
-    const createdPath = pathsState.paths[0];
+    const createdPath = pathsState!.paths[0];
     expect(createdPath.operationId).toBeDefined();
     expect(createdPath.chainId).toBe('chain-1');
 
@@ -143,7 +152,7 @@ describe('Persistence Integration - Lead Geometry', () => {
     // Get updated path with lead geometry
     const unsubscribe2 = pathStore.subscribe(state => { pathsState = state; });
     unsubscribe2();
-    const pathWithLeads = pathsState.paths[0];
+    const pathWithLeads = pathsState!.paths[0];
 
     // Verify lead geometry was added
     expect(pathWithLeads.calculatedLeadIn).toBeDefined();
@@ -162,21 +171,21 @@ describe('Persistence Integration - Lead Geometry', () => {
     operationsStore.reset();
 
     // Verify stores are empty
-    let emptyState: any = null;
+    let emptyState: PathsState | null = null;
     const unsubscribe3 = pathStore.subscribe(state => { emptyState = state; });
     unsubscribe3();
-    expect(emptyState?.paths).toHaveLength(0);
+    expect(emptyState!.paths).toHaveLength(0);
 
     // Restore application state
     await restoreApplicationState();
 
     // Verify that lead data was restored
-    let restoredState: any = null;
+    let restoredState: PathsState | null = null;
     const unsubscribe4 = pathStore.subscribe(state => { restoredState = state; });
     unsubscribe4();
-    expect(restoredState?.paths).toHaveLength(1);
+    expect(restoredState!.paths).toHaveLength(1);
 
-    const restoredPath = restoredState.paths[0];
+    const restoredPath = restoredState!.paths[0];
     expect(restoredPath.operationId).toBe(pathWithLeads.operationId);
     expect(restoredPath.chainId).toBe('chain-1');
 

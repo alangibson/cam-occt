@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { get } from 'svelte/store';
-import { tessellationStore, type TessellationPoint, type TessellationState } from './tessellation';
+import { tessellationStore, type TessellationPoint } from './tessellation';
 
 describe('tessellationStore', () => {
   beforeEach(() => {
@@ -284,7 +284,7 @@ describe('tessellationStore', () => {
 
     it('should handle multiple rapid state changes', () => {
       vi.useFakeTimers();
-      let time = 1000000;
+      const time = 1000000;
 
       const operations = [
         () => tessellationStore.setTessellation(createTestPoints()),

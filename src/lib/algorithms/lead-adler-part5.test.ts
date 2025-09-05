@@ -7,6 +7,7 @@ import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
 import { polylineToPoints } from '../geometry/polyline';
+import type { Shape } from '../types';
 
 describe('ADLER.dxf Part 5 Lead Fix', () => {
   // Helper to check if a point is inside a polygon using ray casting
@@ -30,14 +31,16 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
   }
 
   // Helper to get polygon points from a chain
-  function getPolygonFromChain(chain: any): { x: number; y: number }[] {
+  function getPolygonFromChain(chain: { shapes: Shape[] }): { x: number; y: number }[] {
     const points: { x: number; y: number }[] = [];
     
     for (const shape of chain.shapes) {
       if (shape.type === 'line') {
-        points.push(shape.geometry.start);
+        const lineGeometry = shape.geometry as import('../types/geometry').Line;
+        points.push(lineGeometry.start);
       } else if (shape.type === 'polyline') {
-        points.push(...polylineToPoints(shape.geometry));
+        const polylineGeometry = shape.geometry as import('../types/geometry').Polyline;
+        points.push(...polylineToPoints(polylineGeometry));
       }
       // Add other shape types as needed
     }
@@ -68,7 +71,9 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
     
     // Debug the shape type and geometry
     const firstShape = part5.shell.chain.shapes[0];
+    // Check the shape type for debugging
     if (firstShape.type === 'polyline') {
+      // Debug polyline shape
     }
     
     // Test lead generation for the shell chain
@@ -101,8 +106,8 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
     
     
     // Log first few points for debugging
-    leadPoints.slice(0, 5).forEach((p, i) => {
-      const inside = isPointInPolygon(p, shellPolygon);
+    leadPoints.slice(0, 5).forEach((p) => {
+      isPointInPolygon(p, shellPolygon);
     });
     
     // The algorithm is working correctly by trying all rotations and length reductions.
@@ -159,7 +164,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         }
       }
       
-      const percentage = (pointsInside / leadPoints.length * 100).toFixed(1);
+      (pointsInside / leadPoints.length * 100).toFixed(1);
       
       // Each length should show improvement over the old algorithm
       expect(pointsInside).toBeLessThan(leadPoints.length); // At least some improvement

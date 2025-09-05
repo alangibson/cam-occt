@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
-import type { ShapeChain } from './chain-detection/chain-detection';
+import type { Chain } from '../chain-detection/chain-detection';
 import type { Shape, Polyline, Line, Arc } from '../../types';
-import { CutDirection, LeadType } from '../../types/direction';
-import { polylineToPoints, polylineToVertices, createPolylineFromVertices } from '../../geometry/polyline';
+import { LeadType } from '../../types/direction';
+import { polylineToPoints, createPolylineFromVertices } from '../../geometry/polyline';
 import { EPSILON } from '../../constants';
 
 describe('Chain Normalization', () => {
@@ -23,7 +23,7 @@ describe('Chain Normalization', () => {
   }
 
   // Helper function to create a test chain
-  function createChain(id: string, shapes: Shape[]): ShapeChain {
+  function createChain(id: string, shapes: Shape[]): Chain {
     return {
       id,
       shapes
@@ -196,10 +196,6 @@ describe('Chain Normalization', () => {
       
       const normalizedChain = normalizeChain(chain);
       
-      // Log for debugging
-      normalizedChain.shapes.forEach((shape, i) => {
-        const geom = shape.geometry as Line;
-      });
       
       // After normalization - should be fixed
       const afterAnalysis = analyzeChainTraversal([normalizedChain]);
@@ -296,7 +292,7 @@ describe('Chain Normalization', () => {
       expect(normalizedPoly).toBeDefined();
       
       // Access the polyline geometry directly
-      const actualPolyGeom = normalizedPoly.geometry as Polyline;
+      const actualPolyGeom = normalizedPoly!.geometry as Polyline;
       
       // Verify that we have segments array
       expect(actualPolyGeom.shapes).toBeDefined();
@@ -323,12 +319,12 @@ describe('Chain Normalization', () => {
       const segment2 = actualPolyGeom.shapes[1];
       
       if (segment1 && 'start' in segment1 && 'end' in segment1) {
-        expectPointToEqual(segment1.start, { x: 10, y: 0 });
-        expectPointToEqual(segment1.end, { x: 15, y: 10 });
+        expectPointToEqual((segment1 as Line).start, { x: 10, y: 0 });
+        expectPointToEqual((segment1 as Line).end, { x: 15, y: 10 });
       }
       if (segment2 && 'start' in segment2 && 'end' in segment2) {
-        expectPointToEqual(segment2.start, { x: 15, y: 10 });
-        expectPointToEqual(segment2.end, { x: 20, y: 0 });
+        expectPointToEqual((segment2 as Line).start, { x: 15, y: 10 });
+        expectPointToEqual((segment2 as Line).end, { x: 20, y: 0 });
       }
     
     });

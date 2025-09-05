@@ -26,7 +26,12 @@ describe('Paths Component Basic Function Coverage', () => {
   });
 
   it('should cover getToolName function branches', () => {
-    function getToolName(toolId: string | null, tools: any[]): string {
+    interface MockTool {
+      id: string;
+      toolName: string;
+    }
+    
+    function getToolName(toolId: string | null, tools: MockTool[]): string {
       if (!toolId) return 'No Tool';
       const tool = tools.find(t => t.id === toolId);
       return tool ? tool.toolName : 'Unknown Tool';
@@ -40,7 +45,12 @@ describe('Paths Component Basic Function Coverage', () => {
   });
 
   it('should cover getOperationName function branches', () => {
-    function getOperationName(operationId: string, operations: any[]): string {
+    interface MockOperation {
+      id: string;
+      name: string;
+    }
+    
+    function getOperationName(operationId: string, operations: MockOperation[] | null): string {
       const ops = operations || [];
       const operation = ops.find(op => op.id === operationId);
       return operation ? operation.name : 'Unknown Operation';
@@ -50,6 +60,6 @@ describe('Paths Component Basic Function Coverage', () => {
 
     expect(getOperationName('op-1', mockOps)).toBe('Test Operation');
     expect(getOperationName('nonexistent', mockOps)).toBe('Unknown Operation');
-    expect(getOperationName('op-1', null as any)).toBe('Unknown Operation');
+    expect(getOperationName('op-1', null)).toBe('Unknown Operation');
   });
 });

@@ -109,21 +109,6 @@ describe('overlapping lines validation', () => {
     // The problem from the SVG: all vertical lines are at x=100, meaning no offset occurred
     const originalVertical = createLine(100, 0, 100, 80);   // original
     const leftOffsetVertical = createLine(100, 10, 100, 90); // "left offset" - same x!
-    const rightOffsetVertical = createLine(110, -10, 110, 80); // right offset
-    
-    // Test the problematic left offset that has vertical line at same x as original
-    const problematicLeftOffset: OffsetChain = {
-      id: 'left-offset',
-      originalChainId: 'test-chain', 
-      side: 'left',
-      shapes: [
-        createLine(0, 10, 100, 10),   // horizontal offset - correct
-        leftOffsetVertical            // vertical - WRONG! Same x as original
-      ],
-      closed: false,
-      continuous: true
-    };
-    
     // Create a combined test that includes both original and offset to detect overlap
     const testWithOriginal: OffsetChain = {
       id: 'test-with-original',
@@ -174,7 +159,7 @@ describe('overlapping lines validation', () => {
 
     // This creates a test case similar to the visual SVG where the offset
     // vertical line is at the same x coordinate as the original
-    const validation = validateNoOverlappingLines(badLeftOffset, 0.1);
+    void validateNoOverlappingLines(badLeftOffset, 0.1);
     
     // The test should detect that this offset has issues
     // (though it might not detect overlap with original since we're only checking within the offset)

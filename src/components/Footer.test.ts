@@ -63,14 +63,12 @@ describe('Footer Component', () => {
 
     // Mock a delayed calculation
     const { calculateDrawingSize } = await import('../lib/algorithms/drawing-size/drawing-size');
-    vi.mocked(calculateDrawingSize).mockImplementation(() => 
-      new Promise<DrawingSize>(resolve => setTimeout(() => resolve({
-        width: 10,
-        height: 10,
-        units: 'mm',
-        source: 'calculated'
-      }), 100))
-    );
+    vi.mocked(calculateDrawingSize).mockImplementation(() => ({
+      width: 10,
+      height: 10,
+      units: 'mm',
+      source: 'calculated'
+    }));
 
     drawingStore.setDrawing(mockDrawing);
     const { getByText } = render(Footer);

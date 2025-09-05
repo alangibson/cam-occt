@@ -2,9 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
+import { detectShapeChains, type Chain } from './chain-detection/chain-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import type { Shape } from '../types/geometry';
 
 describe('Simple Chain Comparison - Find Root Differences', () => {
   it('should compare properties of working vs failing chains', async () => {
@@ -42,29 +43,21 @@ describe('Simple Chain Comparison - Find Root Differences', () => {
       { name: 'chain-9 (WORKS)', chain: chain9!, status: 'CONTAINED' }
     ];
     
-    for (const { name, chain, status } of chainsToCompare) {
+    for (const { chain } of chainsToCompare) {
       
       // Check gap distance
       const firstShape = chain.shapes[0];
       const lastShape = chain.shapes[chain.shapes.length - 1];
-      const firstStart = getShapeStartPoint(firstShape);
-      const lastEnd = getShapeEndPoint(lastShape);
+      getShapeStartPoint(firstShape);
+      getShapeEndPoint(lastShape);
       
-      const gapDistance = Math.sqrt(
-        Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
-      );
       
       // Analyze shape types
-      const shapeTypes = chain.shapes.map(shape => shape.type);
-      const typeCounts = shapeTypes.reduce((counts, type) => {
-        counts[type] = (counts[type] || 0) + 1;
-        return counts;
-      }, {} as Record<string, number>);
+      chain.shapes.map(shape => shape.type);
       
       
       // Check connectivity between sequential shapes
       let maxSequentialGap = 0;
-      let connectivityIssues = 0;
       
       for (let i: number = 0; i < chain.shapes.length - 1; i++) {
         const currentEnd = getShapeEndPoint(chain.shapes[i]);
@@ -76,7 +69,7 @@ describe('Simple Chain Comparison - Find Root Differences', () => {
         maxSequentialGap = Math.max(maxSequentialGap, gap);
         
         if (gap > 0.1) {
-          connectivityIssues++;
+          // Gap detected but not processed in this analysis
         }
       }
       
@@ -88,26 +81,26 @@ describe('Simple Chain Comparison - Find Root Differences', () => {
     const failingChain = chain8!;
     
     // Check if there's a pattern in shape counts
-    const workingShapeCounts = workingChains.map(c => c.shapes.length);
-    const failingShapeCount = failingChain.shapes.length;
+    const _workingShapeCounts = workingChains.map(c => c.shapes.length);
+    const _failingShapeCount = failingChain.shapes.length;
     
     
     // Check shape type patterns
-    const getShapeTypePattern = (chain: any) => {
-      const types = chain.shapes.map((s: any) => s.type);
-      const counts = types.reduce((c: any, t: string) => { c[t] = (c[t] || 0) + 1; return c; }, {});
+    const getShapeTypePattern = (chain: Chain) => {
+      const types = chain.shapes.map((s: Shape) => s.type);
+      const counts = types.reduce((c: Record<string, number>, t: string) => { c[t] = (c[t] || 0) + 1; return c; }, {});
       return counts;
     };
     
     const workingPatterns = workingChains.map(getShapeTypePattern);
     const failingPattern = getShapeTypePattern(failingChain);
     
-    workingPatterns.forEach((pattern, i) => {
+    workingPatterns.forEach(() => {
     });
     
     // Look for differences
-    const hasPolylines = (pattern: any) => pattern.polyline > 0;
-    const hasLines = (pattern: any) => pattern.line > 0;
+    const hasPolylines = (pattern: Record<string, number>) => pattern.polyline > 0;
+    const hasLines = (pattern: Record<string, number>) => pattern.line > 0;
     
     const workingHavePolylines = workingPatterns.every(hasPolylines);
     const workingHaveLines = workingPatterns.every(hasLines);
@@ -116,6 +109,7 @@ describe('Simple Chain Comparison - Find Root Differences', () => {
     
     
     if (workingHavePolylines !== failingHasPolylines || workingHaveLines !== failingHasLines) {
+      // Pattern difference detected - could be root cause of detection failure
     }
     
     expect(chain7!.shapes.length).toBeGreaterThan(0);

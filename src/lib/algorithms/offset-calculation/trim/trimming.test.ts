@@ -72,10 +72,10 @@ describe('trimming', () => {
   describe('trimShapeAtPoint', () => {
     describe('line trimming', () => {
       it('should trim line at start (keep end portion)', () => {
-        const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 0);
+        const lineShape = createLine(0, 0, 10, 0);
         const trimPoint = { x: 3, y: 0 };
         
-        const result = trimShapeAtPoint(line, trimPoint, 'end');
+        const result = trimShapeAtPoint(lineShape, trimPoint, 'end');
         
         validateTrimResult(result, true);
         const trimmedLine = result.shape!.geometry as Line;
@@ -84,7 +84,7 @@ describe('trimming', () => {
       });
 
       it('should trim line at end (keep start portion)', () => {
-        const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 0);
+        const line = createLine(0, 0, 10, 0);
         const trimPoint = { x: 7, y: 0 };
         
         const result = trimShapeAtPoint(line, trimPoint, 'start');
@@ -96,7 +96,7 @@ describe('trimming', () => {
       });
 
       it('should handle diagonal lines', () => {
-        const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 10);
+        const line = createLine(0, 0, 10, 10);
         const trimPoint = { x: 5, y: 5 };
         
         const result = trimShapeAtPoint(line, trimPoint, 'before');
@@ -108,7 +108,7 @@ describe('trimming', () => {
       });
 
       it('should reject trim point not on line', () => {
-        const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 0);
+        const line = createLine(0, 0, 10, 0);
         const trimPoint = { x: 5, y: 5 }; // Off the line
         
         const result = trimShapeAtPoint(line, trimPoint, 'start');
@@ -118,7 +118,7 @@ describe('trimming', () => {
       });
 
       it('should reject degenerate trims', () => {
-        const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 0);
+        const line = createLine(0, 0, 10, 0);
         const trimPoint = { x: 0, y: 0 }; // Same as start
         
         const result = trimShapeAtPoint(line, trimPoint, 'start');
@@ -128,7 +128,7 @@ describe('trimming', () => {
       });
 
       it('should handle very small lines', () => {
-        const line: import("$lib/types/geometry").Line = createLine(0, 0, 0.001, 0);
+        const line = createLine(0, 0, 0.001, 0);
         const trimPoint = { x: 0.0005, y: 0 };
         
         const result = trimShapeAtPoint(line, trimPoint, 'start');
@@ -139,7 +139,7 @@ describe('trimming', () => {
 
     describe('arc trimming', () => {
       it('should trim arc at start (keep end portion)', () => {
-        const arc: import("$lib/types/geometry").Arc = createArc(0, 0, 5, 0, Math.PI); // Half circle
+        const arc = createArc(0, 0, 5, 0, Math.PI); // Half circle
         const trimAngle = Math.PI / 4; // 45 degrees
         const trimPoint = { 
           x: 5 * Math.cos(trimAngle), 
@@ -157,7 +157,7 @@ describe('trimming', () => {
       });
 
       it('should trim arc at end (keep start portion)', () => {
-        const arc: import("$lib/types/geometry").Arc = createArc(0, 0, 3, 0, Math.PI / 2); // Quarter circle
+        const arc = createArc(0, 0, 3, 0, Math.PI / 2); // Quarter circle
         const trimAngle = Math.PI / 6; // 30 degrees
         const trimPoint = { 
           x: 3 * Math.cos(trimAngle), 
@@ -173,7 +173,7 @@ describe('trimming', () => {
       });
 
       it('should reject trim point not on arc', () => {
-        const arc: import("$lib/types/geometry").Arc = createArc(0, 0, 5, 0, Math.PI);
+        const arc = createArc(0, 0, 5, 0, Math.PI);
         const trimPoint = { x: 3, y: 0 }; // Wrong radius
         
         const result = trimShapeAtPoint(arc, trimPoint, 'start');
@@ -183,7 +183,7 @@ describe('trimming', () => {
       });
 
       it('should extend arc when trim point is outside angular range', () => {
-        const arc: import("$lib/types/geometry").Arc = createArc(0, 0, 5, 0, Math.PI / 2); // First quadrant only (0 to 90 degrees)
+        const arc = createArc(0, 0, 5, 0, Math.PI / 2); // First quadrant only (0 to 90 degrees)
         const trimPoint = { x: 5 * Math.cos(3 * Math.PI / 4), y: 5 * Math.sin(3 * Math.PI / 4) }; // 135 degrees, exactly on arc radius
         
         const result = trimShapeAtPoint(arc, trimPoint, 'start'); // Keep start portion, trim end to this point
@@ -200,7 +200,7 @@ describe('trimming', () => {
       });
 
       it('should handle clockwise arcs', () => {
-        const arc: import("$lib/types/geometry").Arc = createArc(0, 0, 4, Math.PI, 0, true); // Clockwise half circle
+        const arc = createArc(0, 0, 4, Math.PI, 0, true); // Clockwise half circle
         const trimAngle = Math.PI * 3/4; // 135 degrees
         const trimPoint = { 
           x: 4 * Math.cos(trimAngle), 
@@ -218,7 +218,7 @@ describe('trimming', () => {
 
     describe('circle trimming', () => {
       it('should convert circle to arc when trimmed', () => {
-        const circle: import("$lib/types/geometry").Circle = createCircle(0, 0, 5);
+        const circle = createCircle(0, 0, 5);
         const trimPoint = { x: 5, y: 0 }; // Point on circle
         
         const result = trimShapeAtPoint(circle, trimPoint, 'start');
@@ -233,7 +233,7 @@ describe('trimming', () => {
       });
 
       it('should reject trim point not on circle', () => {
-        const circle: import("$lib/types/geometry").Circle = createCircle(0, 0, 5);
+        const circle = createCircle(0, 0, 5);
         const trimPoint = { x: 3, y: 0 }; // Inside circle
         
         const result = trimShapeAtPoint(circle, trimPoint, 'start');
@@ -500,7 +500,7 @@ describe('trimming', () => {
         param1: 0.5,
         param2: 0.5,
         distance: 0,
-        type: type as any,
+        type: type as 'exact' | 'approximate' | 'tangent' | 'coincident',
         confidence
       };
     }
@@ -600,8 +600,8 @@ describe('trimming', () => {
     });
 
     it('should work with mixed shape types', () => {
-      const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 0);
-      const arc: import("$lib/types/geometry").Arc = createArc(5, 0, 3, Math.PI, 0); // Arc intersecting line
+      const line = createLine(0, 0, 10, 0);
+      const arc = createArc(5, 0, 3, Math.PI, 0); // Arc intersecting line
       
       const intersections: IntersectionResult[] = [{
         point: { x: 2, y: 0 }, // Intersection point
@@ -631,7 +631,7 @@ describe('trimming', () => {
     });
 
     it('should handle numerical precision issues', () => {
-      const line: import("$lib/types/geometry").Line = createLine(0, 0, 1, 0);
+      const line = createLine(0, 0, 1, 0);
       const almostOnLine = { x: 0.5, y: 1e-15 }; // Very close to line
       
       const result = trimShapeAtPoint(line, almostOnLine, 'start', 1e-12);
@@ -640,7 +640,7 @@ describe('trimming', () => {
     });
 
     it('should validate tolerance parameter', () => {
-      const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 0);
+      const line = createLine(0, 0, 10, 0);
       const offLine = { x: 5, y: 0.1 };
       
       // Should fail with tight tolerance

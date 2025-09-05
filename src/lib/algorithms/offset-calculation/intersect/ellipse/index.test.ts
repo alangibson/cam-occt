@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { findEllipseIntersections, findEllipseGenericIntersections, approximateEllipseAsPolyline } from './index';
-import type { Shape, Ellipse, Line, Arc, Circle, Polyline, Spline } from '../../../../types/geometry';
+import type { Shape, Ellipse, Line, Arc, Circle, Polyline } from '../../../../types/geometry';
 
 describe('Ellipse Intersections', () => {
   describe('findEllipseIntersections', () => {
@@ -283,7 +283,7 @@ describe('Ellipse Intersections', () => {
       
       // All points should be roughly the correct distance from center
       const majorAxisLength = Math.sqrt(30 ** 2 + 40 ** 2);
-      const minorAxisLength = majorAxisLength * 0.4;
+      void (majorAxisLength * 0.4);
       
       // Check a few sample points are reasonable
       expect(polyline.shapes.length).toBeGreaterThan(0);

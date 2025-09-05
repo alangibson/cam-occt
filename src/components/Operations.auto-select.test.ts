@@ -6,6 +6,7 @@ import { operationsStore } from '$lib/stores/operations';
 import { partStore, highlightPart, clearParts } from '$lib/stores/parts';
 import { chainStore, selectChain, clearChains, clearChainSelection } from '$lib/stores/chains';
 import { toolStore } from '$lib/stores/tools';
+import { CutDirection, LeadType } from '$lib/types/direction';
 
 describe('Operations Auto-Selection Feature', () => {
   beforeEach(() => {
@@ -40,18 +41,29 @@ describe('Operations Auto-Selection Feature', () => {
     highlightPart('part-1');
     
     // Render the component
-    const { container } = render(Operations);
+    const { container: _container } = render(Operations);
     
     // Since there's no "Add Operation" button visible, simulate the operation creation
     // by directly calling the operations store method that would be triggered
     const partHighlighted = get(partStore).highlightedPartId;
     operationsStore.addOperation({
-      id: 'op-1',
       name: 'Test Operation',
-      toolNumber: 1,
+      toolId: '1',
       targetType: 'parts',
       targetIds: partHighlighted ? [partHighlighted] : [],
-      enabled: true
+      enabled: true,
+      order: 1,
+      cutDirection: CutDirection.CLOCKWISE,
+      leadInType: LeadType.LINE,
+      leadInLength: 2.0,
+      leadInFlipSide: false,
+      leadInAngle: 0,
+      leadInFit: true,
+      leadOutType: LeadType.LINE,
+      leadOutLength: 2.0,
+      leadOutFlipSide: false,
+      leadOutAngle: 0,
+      leadOutFit: true
     });
     
     // Check that the operation was created with the highlighted part
@@ -68,16 +80,30 @@ describe('Operations Auto-Selection Feature', () => {
     selectChain('chain-2');
     
     // Render the component
-    const { container } = render(Operations);
+    const { container: _container } = render(Operations);
     
     // Simulate operation creation with selected chain
     operationsStore.addOperation({
-      id: 'op-1',
       name: 'Test Operation',
-      toolNumber: 1,
+      toolId: '1',
       targetType: 'chains',
-      targetIds: get(chainStore).selectedChainId ? [get(chainStore).selectedChainId] : [],
-      enabled: true
+      targetIds: (() => {
+        const selectedId = get(chainStore).selectedChainId;
+        return selectedId ? [selectedId] : [];
+      })(),
+      enabled: true,
+      order: 1,
+      cutDirection: CutDirection.CLOCKWISE,
+      leadInType: LeadType.LINE,
+      leadInLength: 2.0,
+      leadInFlipSide: false,
+      leadInAngle: 0,
+      leadInFit: true,
+      leadOutType: LeadType.LINE,
+      leadOutLength: 2.0,
+      leadOutFlipSide: false,
+      leadOutAngle: 0,
+      leadOutFit: true
     });
     
     // Check that the operation was created with the selected chain
@@ -95,19 +121,30 @@ describe('Operations Auto-Selection Feature', () => {
     selectChain('chain-4');
     
     // Render the component
-    const { container } = render(Operations);
+    const { container: _container } = render(Operations);
     
     // Simulate operation creation with both part and chain selected (part should have priority)
     const partHighlighted = get(partStore).highlightedPartId;
     const chainSelected = get(chainStore).selectedChainId;
     
     operationsStore.addOperation({
-      id: 'op-1',
       name: 'Test Operation',
-      toolNumber: 1,
+      toolId: '1',
       targetType: partHighlighted ? 'parts' : 'chains',
       targetIds: partHighlighted ? [partHighlighted] : (chainSelected ? [chainSelected] : []),
-      enabled: true
+      enabled: true,
+      order: 1,
+      cutDirection: CutDirection.CLOCKWISE,
+      leadInType: LeadType.LINE,
+      leadInLength: 2.0,
+      leadInFlipSide: false,
+      leadInAngle: 0,
+      leadInFit: true,
+      leadOutType: LeadType.LINE,
+      leadOutLength: 2.0,
+      leadOutFlipSide: false,
+      leadOutAngle: 0,
+      leadOutFit: true
     });
     
     // Check that the operation was created with the part (priority over chain)
@@ -123,16 +160,27 @@ describe('Operations Auto-Selection Feature', () => {
     // Don't select anything
     
     // Render the component
-    const { container } = render(Operations);
+    const { container: _container } = render(Operations);
     
     // Simulate operation creation with nothing selected
     operationsStore.addOperation({
-      id: 'op-1',
       name: 'Test Operation',
-      toolNumber: 1,
+      toolId: '1',
       targetType: 'parts', // defaults to parts
       targetIds: [], // empty array
-      enabled: true
+      enabled: true,
+      order: 1,
+      cutDirection: CutDirection.CLOCKWISE,
+      leadInType: LeadType.LINE,
+      leadInLength: 2.0,
+      leadInFlipSide: false,
+      leadInAngle: 0,
+      leadInFit: true,
+      leadOutType: LeadType.LINE,
+      leadOutLength: 2.0,
+      leadOutFlipSide: false,
+      leadOutAngle: 0,
+      leadOutFit: true
     });
     
     // Check that the operation was created with no targets

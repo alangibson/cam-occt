@@ -107,8 +107,8 @@ describe('Lead Concave Area Fix', () => {
       }
     }
     
-    points.slice(0, 3).forEach((p, i) => {
-      const inside = isPointInPolygon(p, polygon);
+    points.slice(0, 3).forEach((p) => {
+      isPointInPolygon(p, polygon);
     });
     
     // With the improved algorithm, we should have fewer points inside the solid area

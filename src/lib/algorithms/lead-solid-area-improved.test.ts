@@ -43,7 +43,8 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     
     
     if (result.warnings && result.warnings.length > 0) {
-      result.warnings.forEach((warning, i) => {
+      result.warnings.forEach((_warning, _i) => {
+        // Process warning
       });
       
       // If warnings are generated, they should be informative
@@ -74,7 +75,8 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     const result = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.NONE, part5);
     
     if (result.warnings && result.warnings.length > 0) {
-      result.warnings.forEach((warning, i) => {
+      result.warnings.forEach((_warning, _i) => {
+        // Process warning
       });
       
       // Check that warnings properly identify lead-in vs lead-out

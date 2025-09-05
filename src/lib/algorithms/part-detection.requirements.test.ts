@@ -15,11 +15,10 @@
 
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
+import { detectShapeChains, type Chain } from './chain-detection/chain-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
-import { detectParts } from './part-detection';
+import { detectParts, type PartHole } from './part-detection';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
-import { evaluateNURBS } from '../geometry/nurbs';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -152,7 +151,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
     const closedChainIds = new Set<string>();
     partResult.parts.forEach(part => {
       closedChainIds.add(part.shell.chain.id);
-      const addHoles = (holes: any[]) => {
+      const addHoles = (holes: PartHole[]) => {
         holes.forEach(hole => {
           closedChainIds.add(hole.chain.id);
           addHoles(hole.holes);
@@ -184,7 +183,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
 });
 
 // Helper function to check if chain is closed (copied from part-detection.ts)
-function isChainClosed(chain: any, tolerance: number = 0.1): boolean {
+function isChainClosed(chain: Chain, tolerance: number = 0.1): boolean {
   if (chain.shapes.length === 0) return false;
   
   const firstShape = chain.shapes[0];

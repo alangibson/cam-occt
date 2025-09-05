@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { overlayStore, generateShapePoints, generateChainEndpoints, type DrawingOverlay, type ShapePoint, type ChainEndpoint, type TessellationPoint } from './overlay';
+import { overlayStore, generateShapePoints, generateChainEndpoints, type ShapePoint, type ChainEndpoint, type TessellationPoint } from './overlay';
 import type { WorkflowStage } from './workflow';
 import type { Shape, Point2D } from '../types';
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 
 describe('overlayStore', () => {
   beforeEach(() => {

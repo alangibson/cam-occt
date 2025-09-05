@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { rapidStore, selectRapid, highlightRapid, clearRapidHighlight, type RapidsState } from './rapids';
+import { rapidStore, selectRapid, highlightRapid, clearRapidHighlight } from './rapids';
 import type { Rapid } from '../algorithms/optimize-cut-order';
 
 describe('rapidStore', () => {
@@ -10,11 +10,9 @@ describe('rapidStore', () => {
 
   const createTestRapid = (id: string): Rapid => ({
     id,
-    from: { x: 0, y: 0 },
-    to: { x: 10, y: 10 },
-    distance: 14.14, // sqrt(10^2 + 10^2)
-    fromPathId: 'path-1',
-    toPathId: 'path-2'
+    start: { x: 0, y: 0 },
+    end: { x: 10, y: 10 },
+    type: 'rapid'
   });
 
   describe('initial state', () => {
@@ -342,7 +340,7 @@ describe('helper functions', () => {
   describe('helper function integration', () => {
     it('should work together with store methods', () => {
       const rapids: Rapid[] = [
-        { id: 'rapid-1', from: { x: 0, y: 0 }, to: { x: 5, y: 5 }, distance: 7.07, fromPathId: 'path-1', toPathId: 'path-2' }
+        { id: 'rapid-1', start: { x: 0, y: 0 }, end: { x: 5, y: 5 }, type: 'rapid' }
       ];
       
       rapidStore.setRapids(rapids);

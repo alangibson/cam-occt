@@ -18,14 +18,14 @@ describe('ADLER.dxf Part Detection', () => {
     const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
     
     // Log details about each chain
-    chains.forEach((chain, index) => {
+    chains.forEach(() => {
     });
     
     // Detect parts
     const partResult = await detectParts(chains);
     
     // Log details about each part
-    partResult.parts.forEach((part, index) => {
+    partResult.parts.forEach(() => {
     });
     
     const totalHoles = partResult.parts.reduce((sum, part) => sum + part.holes.length, 0);

@@ -7,11 +7,6 @@ import {
 import { SVGBuilder } from '../../../test/svg-builder';
 import { findShapeIntersections } from '../intersect';
 import type { 
-  Line, 
-  Arc, 
-  Circle, 
-  Spline, 
-  Ellipse, 
   Shape, 
 } from '../../../types/geometry';
 import { createPolylineFromVertices } from '../../../geometry/polyline';
@@ -22,7 +17,7 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
   beforeAll(() => {
     try {
       mkdirSync(outputDir, { recursive: true });
-    } catch (e) {
+    } catch {
       // Directory might already exist
     }
   });
@@ -155,15 +150,15 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test Line-Line gaps', () => {
       // Independent shape definitions for this test
-      const line1 = {
+      const line1: Shape = {
         id: 'line1',
-        type: 'line' as const,
-        geometry: { start: { x: 100, y: 200 }, end: { x: 180, y: 200 } } as Line
+        type: 'line',
+        geometry: { start: { x: 100, y: 200 }, end: { x: 180, y: 200 } }
       };
-      const line2 = {
+      const line2: Shape = {
         id: 'line2', 
-        type: 'line' as const,
-        geometry: { start: { x: 220, y: 100 }, end: { x: 220, y: 180 } } as Line
+        type: 'line',
+        geometry: { start: { x: 220, y: 100 }, end: { x: 220, y: 180 } }
       };
       
       // Use explicit extension length for consistency
@@ -173,22 +168,22 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test Line-Arc gaps', () => {
       // Independent shape definitions for this test
-      const line1 = {
+      const line1: Shape = {
         id: 'line1',
-        type: 'line' as const,
-        geometry: { start: { x: 100, y: 200 }, end: { x: 180, y: 200 } } as Line
+        type: 'line',
+        geometry: { start: { x: 100, y: 200 }, end: { x: 180, y: 200 } }
       };
       
-      const arc1 = {
+      const arc1: Shape = {
         id: 'arc1',
-        type: 'arc' as const,
+        type: 'arc',
         geometry: {
           center: { x: 240, y: 170 },
           radius: 60,
           startAngle: Math.PI/3,  // Rotated 90° CCW: was -π/6, now π/3 (60 degrees)
           endAngle: 2*Math.PI/3,  // Rotated 90° CCW: was π/6, now 2π/3 (120 degrees)
           clockwise: false
-        } as Arc
+        }
       };
       
       const count = visualizeIntersection(line1, arc1, 'Line-Arc');
@@ -197,15 +192,15 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test Line-Circle gaps', () => {
       // Move line 2 lengths to the right (line1 length is 80, so move 160 units right)
-      const customLine = {
+      const customLine: Shape = {
         id: 'line1',
-        type: 'line' as const,
-        geometry: { start: { x: 260, y: 200 }, end: { x: 340, y: 200 } } as Line
+        type: 'line',
+        geometry: { start: { x: 260, y: 200 }, end: { x: 340, y: 200 } }
       };
-      const circle1 = {
+      const circle1: Shape = {
         id: 'circle1',
-        type: 'circle' as const,
-        geometry: { center: { x: 150, y: 200 }, radius: 40 } as Circle
+        type: 'circle',
+        geometry: { center: { x: 150, y: 200 }, radius: 40 }
       };
       const count = visualizeIntersection(customLine, circle1, 'Line-Circle');
       expect(count).toBeGreaterThanOrEqual(0);
@@ -213,14 +208,14 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test Line-Polyline gaps', () => {
       // Move line up (decrease y coordinates)
-      const customLine = {
+      const customLine: Shape = {
         id: 'line1',
-        type: 'line' as const,
-        geometry: { start: { x: 100, y: 120 }, end: { x: 180, y: 120 } } as Line
+        type: 'line',
+        geometry: { start: { x: 100, y: 120 }, end: { x: 180, y: 120 } }
       };
-      const polyline1 = {
+      const polyline1: Shape = {
         id: 'polyline1',
-        type: 'polyline' as const,
+        type: 'polyline',
         geometry: createPolylineFromVertices([
           { x: 260, y: 150, bulge: 0 },
           { x: 320, y: 190, bulge: 0 },
@@ -233,14 +228,14 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test Line-Spline gaps', () => {
       // Move line 2 lengths to the right (line1 length is 80, so move 160 units right)
-      const customLine = {
+      const customLine: Shape = {
         id: 'line1',
-        type: 'line' as const,
-        geometry: { start: { x: 200, y: 170 }, end: { x: 280, y: 170 } } as Line
+        type: 'line',
+        geometry: { start: { x: 200, y: 170 }, end: { x: 280, y: 170 } }
       };
-      const spline1 = {
+      const spline1: Shape = {
         id: 'spline1',
-        type: 'spline' as const,
+        type: 'spline',
         geometry: {
           controlPoints: [
             { x: 200, y: 130 },
@@ -252,7 +247,7 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
           weights: [1, 1, 1],
           fitPoints: [],
           closed: false
-        } as Spline
+        }
       };
       // Use a longer extension to test consistency between visual and computational
       const count = visualizeIntersection(customLine, spline1, 'Line-Spline', 8, 200);
@@ -261,19 +256,19 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test Line-Ellipse gaps', () => {
       // Move line right 140 units (80 + 60)
-      const customLine = {
+      const customLine: Shape = {
         id: 'line1',
-        type: 'line' as const,
-        geometry: { start: { x: 240, y: 200 }, end: { x: 320, y: 200 } } as Line
+        type: 'line',
+        geometry: { start: { x: 240, y: 200 }, end: { x: 320, y: 200 } }
       };
-      const ellipse1 = {
+      const ellipse1: Shape = {
         id: 'ellipse1',
-        type: 'ellipse' as const,
+        type: 'ellipse',
         geometry: {
           center: { x: 150, y: 200 },
           majorAxisEndpoint: { x: 45, y: 0 },
           minorToMajorRatio: 0.6
-        } as Ellipse
+        }
       };
       const count = visualizeIntersection(customLine, ellipse1, 'Line-Ellipse');
       expect(count).toBeGreaterThanOrEqual(0);
@@ -282,32 +277,32 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
     it('should test flipped-arc-debug specific Line-Arc case', () => {
       // Test the exact line-arc combination from the flipped-arc-debug test
       // that is failing to find intersections
-      const line: import("$lib/types/geometry").Line = {
+      const lineShape: Shape = {
         id: 'line1',
-        type: 'line' as const,
-        geometry: { start: { x: 100, y: 50 }, end: { x: 200, y: 50 } } as Line
+        type: 'line',
+        geometry: { start: { x: 100, y: 50 }, end: { x: 200, y: 50 } }
       };
       
-      const arc: import("$lib/types/geometry").Arc = {
+      const arcShape: Shape = {
         id: 'arc1',
-        type: 'arc' as const,
+        type: 'arc',
         geometry: {
           center: { x: 230, y: 50 },
           radius: 30,
           startAngle: Math.PI,    // Start pointing left (toward 200,50)
           endAngle: Math.PI/2,    // End pointing up (toward 230,80)
           clockwise: true
-        } as Arc
+        }
       };
       
-      const count = visualizeIntersection(line, arc, 'Flipped-Arc-Debug-Line-Arc', 8, 100);
+      const count = visualizeIntersection(lineShape, arcShape, 'Flipped-Arc-Debug-Line-Arc', 8, 100);
       
       // This should find intersections for both inset and outset offsets
       expect(count).toBeGreaterThan(0);
       
       // Additional detailed test using specific offset shapes
-      const lineInsetResult = offsetShape(line, 8, 'inset');
-      const arcInsetResult = offsetShape(arc, 8, 'inset');
+      const lineInsetResult = offsetShape(lineShape, 8, 'inset');
+      const arcInsetResult = offsetShape(arcShape, 8, 'inset');
       
       if (lineInsetResult.success && arcInsetResult.success && 
           lineInsetResult.shapes.length > 0 && arcInsetResult.shapes.length > 0) {
@@ -332,27 +327,27 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test Arc-Arc gaps', () => {
       // Independent shape definitions for this test
-      const arc1 = {
+      const arc1: Shape = {
         id: 'arc1',
-        type: 'arc' as const,
+        type: 'arc',
         geometry: {
           center: { x: 240, y: 170 },
           radius: 60,
           startAngle: -Math.PI/6, // -30 degrees
           endAngle: Math.PI/6,    // +30 degrees (60 degree arc)
           clockwise: false
-        } as Arc
+        }
       };
-      const arc2 = {
+      const arc2: Shape = {
         id: 'arc2',
-        type: 'arc' as const,
+        type: 'arc',
         geometry: {
           center: { x: 200, y: 200 },
           radius: 50,
           startAngle: Math.PI*2/3,  // 120 degrees
           endAngle: Math.PI*4/3,    // 240 degrees (120 degree arc)
           clockwise: false
-        } as Arc
+        }
       };
       
       const count = visualizeIntersection(arc1, arc2, 'Arc-Arc');
@@ -360,41 +355,41 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
     });
 
     it('should test Arc-Circle gaps', () => {
-      const arc: import("$lib/types/geometry").Arc = {
+      const arc: Shape = {
         id: 'arc1',
-        type: 'arc' as const,
+        type: 'arc',
         geometry: {
           center: { x: 220, y: 180 },
           radius: 50,
           startAngle: -Math.PI/6, // -30 degrees
           endAngle: Math.PI/6,    // +30 degrees
           clockwise: false
-        } as Arc
+        }
       };
-      const circle: import("$lib/types/geometry").Circle = {
+      const circle: Shape = {
         id: 'circle1',
-        type: 'circle' as const,
-        geometry: { center: { x: 210, y: 200 }, radius: 35 } as Circle
+        type: 'circle',
+        geometry: { center: { x: 210, y: 200 }, radius: 35 }
       };
       const count = visualizeIntersection(arc, circle, 'Arc-Circle');
       expect(count).toBeGreaterThanOrEqual(0);
     });
 
     it('should test Arc-Polyline gaps', () => {
-      const arc: import("$lib/types/geometry").Arc = {
+      const arc: Shape = {
         id: 'arc1',
-        type: 'arc' as const,
+        type: 'arc',
         geometry: {
           center: { x: 160, y: 200 },
           radius: 40,
           startAngle: Math.PI*3/4,  // Flipped: was -Math.PI/4, now 3π/4
           endAngle: Math.PI/4,      // Flipped: was Math.PI/4, now π/4
           clockwise: true           // Flipped clockwise direction
-        } as Arc
+        }
       };
-      const polyline: import("$lib/types/geometry").Polyline = {
+      const polyline: Shape = {
         id: 'polyline1',
-        type: 'polyline' as const,
+        type: 'polyline',
         geometry: createPolylineFromVertices([
           { x: 240, y: 200, bulge: 0 },  // Made horizontal: all y coordinates are 200
           { x: 280, y: 200, bulge: 0 },
@@ -407,21 +402,21 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test Arc-Spline gaps', () => {
       // Independent shape definitions for this test - rotated 90 degrees CCW
-      const arc1 = {
+      const arc1: Shape = {
         id: 'arc1',
-        type: 'arc' as const,
+        type: 'arc',
         geometry: {
           center: { x: 240, y: 170 },
           radius: 60,
           startAngle: Math.PI/3,  // Rotated 90° CCW: was -π/6, now π/3
           endAngle: 2*Math.PI/3,  // Rotated 90° CCW: was π/6, now 2π/3
           clockwise: false
-        } as Arc
+        }
       };
       
-      const spline1 = {
+      const spline1: Shape = {
         id: 'spline1',
-        type: 'spline' as const,
+        type: 'spline',
         geometry: {
           controlPoints: [
             { x: 190, y: 170 },  // Moved left 10 and down 40 total (130+40)
@@ -433,7 +428,7 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
           weights: [1, 1, 1],
           fitPoints: [],
           closed: false
-        } as Spline
+        }
       };
       
       const count = visualizeIntersection(arc1, spline1, 'Arc-Spline');
@@ -441,25 +436,25 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
     });
 
     it('should test Arc-Ellipse gaps', () => {
-      const arc: import("$lib/types/geometry").Arc = {
+      const arc: Shape = {
         id: 'arc1',
-        type: 'arc' as const,
+        type: 'arc',
         geometry: {
           center: { x: 160, y: 200 },
           radius: 45,
           startAngle: Math.PI/6,   // 30 degrees
           endAngle: Math.PI/2,     // 90 degrees
           clockwise: false
-        } as Arc
+        }
       };
-      const ellipse: import("$lib/types/geometry").Ellipse = {
+      const ellipse: Shape = {
         id: 'ellipse1',
-        type: 'ellipse' as const,
+        type: 'ellipse',
         geometry: {
           center: { x: 220, y: 180 },
           majorAxisEndpoint: { x: 45, y: 0 },
           minorToMajorRatio: 0.6
-        } as Ellipse
+        }
       };
       const count = visualizeIntersection(arc, ellipse, 'Arc-Ellipse');
       expect(count).toBeGreaterThanOrEqual(0);
@@ -471,14 +466,14 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test Circle-Polyline gaps', () => {
       // Move circle down 40 units and right 30 units
-      const customCircle = {
+      const customCircle: Shape = {
         id: 'circle1',
-        type: 'circle' as const,
-        geometry: { center: { x: 180, y: 240 }, radius: 40 } as Circle
+        type: 'circle',
+        geometry: { center: { x: 180, y: 240 }, radius: 40 }
       };
-      const polyline1 = {
+      const polyline1: Shape = {
         id: 'polyline1',
-        type: 'polyline' as const,
+        type: 'polyline',
         geometry: createPolylineFromVertices([
           { x: 175, y: 120, bulge: 0 },
           { x: 235, y: 160, bulge: 0 },
@@ -490,14 +485,14 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
     });
 
     it('should test Circle-Spline gaps', () => {
-      const circle1 = {
+      const circle1: Shape = {
         id: 'circle1',
-        type: 'circle' as const,
-        geometry: { center: { x: 150, y: 200 }, radius: 40 } as Circle
+        type: 'circle',
+        geometry: { center: { x: 150, y: 200 }, radius: 40 }
       };
-      const spline1 = {
+      const spline1: Shape = {
         id: 'spline1',
-        type: 'spline' as const,
+        type: 'spline',
         geometry: {
           controlPoints: [
             { x: 200, y: 130 },
@@ -509,7 +504,7 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
           weights: [1, 1, 1],
           fitPoints: [],
           closed: false
-        } as Spline
+        }
       };
       const count = visualizeIntersection(circle1, spline1, 'Circle-Spline');
       expect(count).toBeGreaterThanOrEqual(0);
@@ -521,18 +516,18 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
   describe('Polyline gap tests', () => {
 
     it('should test Polyline-Polyline gaps', () => {
-      const polyline1 = {
+      const polyline1: Shape = {
         id: 'polyline1',
-        type: 'polyline' as const,
+        type: 'polyline',
         geometry: createPolylineFromVertices([
           { x: 260, y: 150, bulge: 0 },
           { x: 320, y: 190, bulge: 0 },
           { x: 300, y: 230, bulge: 0 }
         ], false).geometry
       };
-      const polyline2 = {
+      const polyline2: Shape = {
         id: 'polyline2',
-        type: 'polyline' as const,
+        type: 'polyline',
         geometry: createPolylineFromVertices([
           { x: 100, y: 280, bulge: 0 },
           { x: 140, y: 240, bulge: 0 },
@@ -544,18 +539,18 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
     });
 
     it('should test Polyline-Spline gaps', () => {
-      const polyline1 = {
+      const polyline1: Shape = {
         id: 'polyline1',
-        type: 'polyline' as const,
+        type: 'polyline',
         geometry: createPolylineFromVertices([
           { x: 260, y: 180, bulge: 0 },
           { x: 320, y: 220, bulge: 0 },
           { x: 300, y: 260, bulge: 0 }
         ], false).geometry
       };
-      const spline1 = {
+      const spline1: Shape = {
         id: 'spline1',
-        type: 'spline' as const,
+        type: 'spline',
         geometry: {
           controlPoints: [
             { x: 200, y: 130 },
@@ -567,30 +562,30 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
           weights: [1, 1, 1],
           fitPoints: [],
           closed: false
-        } as Spline
+        }
       };
       const count = visualizeIntersection(polyline1, spline1, 'Polyline-Spline');
       expect(count).toBeGreaterThanOrEqual(0);
     });
 
     it('should test Polyline-Ellipse gaps', () => {
-      const polyline: import("$lib/types/geometry").Polyline = {
+      const polyline: Shape = {
         id: 'polyline1',
-        type: 'polyline' as const,
+        type: 'polyline',
         geometry: createPolylineFromVertices([
           { x: 120, y: 180, bulge: 0 },
           { x: 160, y: 160, bulge: 0 },
           { x: 180, y: 180, bulge: 0 }
         ], false).geometry
       };
-      const ellipse: import("$lib/types/geometry").Ellipse = {
+      const ellipse: Shape = {
         id: 'ellipse1',
-        type: 'ellipse' as const,
+        type: 'ellipse',
         geometry: {
           center: { x: 240, y: 220 },
           majorAxisEndpoint: { x: 40, y: 0 },
           minorToMajorRatio: 0.8
-        } as Ellipse
+        }
       };
       const count = visualizeIntersection(polyline, ellipse, 'Polyline-Ellipse');
       expect(count).toBeGreaterThanOrEqual(0);
@@ -601,9 +596,9 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
   describe('Spline gap tests', () => {
 
     it('should test Spline-Spline gaps', () => {
-      const spline1 = {
+      const spline1: Shape = {
         id: 'spline1',
-        type: 'spline' as const,
+        type: 'spline',
         geometry: {
           controlPoints: [
             { x: 200, y: 130 },
@@ -615,11 +610,11 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
           weights: [1, 1, 1],
           fitPoints: [],
           closed: false
-        } as Spline
+        }
       };
-      const spline2 = {
+      const spline2: Shape = {
         id: 'spline2',
-        type: 'spline' as const,
+        type: 'spline',
         geometry: {
           controlPoints: [
             { x: 240, y: 150 },
@@ -631,16 +626,16 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
           weights: [1, 1, 1],
           fitPoints: [],
           closed: false
-        } as Spline
+        }
       };
       const count = visualizeIntersection(spline1, spline2, 'Spline-Spline');
       expect(count).toBeGreaterThanOrEqual(0);
     });
 
     it('should test Spline-Ellipse gaps', () => {
-      const spline1 = {
+      const spline1: Shape = {
         id: 'spline1',
-        type: 'spline' as const,
+        type: 'spline',
         geometry: {
           controlPoints: [
             { x: 200, y: 130 },
@@ -652,16 +647,16 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
           weights: [1, 1, 1],
           fitPoints: [],
           closed: false
-        } as Spline
+        }
       };
-      const ellipse1 = {
+      const ellipse1: Shape = {
         id: 'ellipse1',
-        type: 'ellipse' as const,
+        type: 'ellipse',
         geometry: {
           center: { x: 150, y: 200 },
           majorAxisEndpoint: { x: 45, y: 0 },
           minorToMajorRatio: 0.6
-        } as Ellipse
+        }
       };
       const count = visualizeIntersection(spline1, ellipse1, 'Spline-Ellipse');
       expect(count).toBeGreaterThanOrEqual(0);
@@ -673,28 +668,28 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
 
     it('should test EllipseArc-EllipseArc gaps', () => {
       // Create two ellipse arcs with gaps
-      const ellipseArc1 = {
+      const ellipseArc1: Shape = {
         id: 'ellipseArc1',
-        type: 'ellipse' as const,
+        type: 'ellipse',
         geometry: {
           center: { x: 150, y: 200 },
           majorAxisEndpoint: { x: 45, y: 0 },
           minorToMajorRatio: 0.6,
           startParam: 0,
           endParam: Math.PI/2
-        } as Ellipse
+        }
       };
       
-      const ellipseArc2 = {
+      const ellipseArc2: Shape = {
         id: 'ellipseArc2',
-        type: 'ellipse' as const,
+        type: 'ellipse',
         geometry: {
           center: { x: 270, y: 200 },
           majorAxisEndpoint: { x: 0, y: 40 }, // Rotated 90 degrees
           minorToMajorRatio: 0.8,
           startParam: Math.PI,
           endParam: 3*Math.PI/2
-        } as Ellipse
+        }
       };
       
       const count = visualizeIntersection(ellipseArc1, ellipseArc2, 'EllipseArc-EllipseArc');
@@ -702,25 +697,25 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
     });
 
     it('should test Ellipse-EllipseArc gaps', () => {
-      const ellipse1 = {
+      const ellipse1: Shape = {
         id: 'ellipse1',
-        type: 'ellipse' as const,
+        type: 'ellipse',
         geometry: {
           center: { x: 150, y: 200 },
           majorAxisEndpoint: { x: 45, y: 0 },
           minorToMajorRatio: 0.6
-        } as Ellipse
+        }
       };
-      const ellipseArc = {
+      const ellipseArc: Shape = {
         id: 'ellipseArc',
-        type: 'ellipse' as const,
+        type: 'ellipse',
         geometry: {
           center: { x: 200, y: 200 },
           majorAxisEndpoint: { x: 50, y: 0 },
           minorToMajorRatio: 0.5,
           startParam: 0,
           endParam: Math.PI/2
-        } as Ellipse
+        }
       };
       const count = visualizeIntersection(ellipse1, ellipseArc, 'Ellipse-EllipseArc');
       expect(count).toBeGreaterThanOrEqual(0);
@@ -730,21 +725,21 @@ describe('Intersection Gap Visual Validation Tests', { timeout: 180000 }, () => 
       // Based on ellipse-arc-chain.dxf test file
       // Ellipse arc from center (0,0), major axis (30,0), ratio 0.6, from 0 to π/2
       // Line from (0,18) to (50,50) - positioned to create gap with ellipse arc
-      const ellipseArc = {
+      const ellipseArc: Shape = {
         id: 'ellipseArc1',
-        type: 'ellipse' as const,
+        type: 'ellipse',
         geometry: {
           center: { x: 200, y: 200 },
           majorAxisEndpoint: { x: 30, y: 0 },
           minorToMajorRatio: 0.6,
           startParam: 0,
           endParam: Math.PI/2
-        } as Ellipse
+        }
       };
-      const line = {
+      const line: Shape = {
         id: 'line1',
-        type: 'line' as const,
-        geometry: { start: { x: 200, y: 218 }, end: { x: 250, y: 250 } } as Line
+        type: 'line',
+        geometry: { start: { x: 200, y: 218 }, end: { x: 250, y: 250 } }
       };
       const count = visualizeIntersection(line, ellipseArc, 'Line-EllipseArc');
       expect(count).toBeGreaterThanOrEqual(0);

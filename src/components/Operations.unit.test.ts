@@ -72,10 +72,12 @@ describe('Operations Store Integration', () => {
       leadInLength: 5,
       leadInFlipSide: false,
       leadInAngle: 0,
+      leadInFit: false,
       leadOutType: LeadType.NONE,
       leadOutLength: 5,
       leadOutFlipSide: false,
-      leadOutAngle: 0
+      leadOutAngle: 0,
+      leadOutFit: false
     });
 
     const operations = get(operationsStore);

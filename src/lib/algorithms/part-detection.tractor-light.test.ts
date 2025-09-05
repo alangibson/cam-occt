@@ -7,7 +7,7 @@ import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Chain as ShapeChain } from './chain-detection/chain-detection';
-import type { Shape, Point2D } from '../../lib/types';
+// Shape and Point2D types not needed in this test
 
 // Helper function to test chain closure (copied from part-detection.ts)
 function isChainClosedTest(chain: ShapeChain, tolerance: number = 0.1): boolean {
@@ -68,11 +68,12 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
     const partResult = await detectParts(chains, 0.1);
     
     normalizedChains.forEach(chain => {
-      const isClosed = isChainClosedTest(chain, 0.1);
-      const gapDistance = calculateChainGapDistanceTest(chain);
+      isChainClosedTest(chain, 0.1);
+      calculateChainGapDistanceTest(chain);
     });
     
     if (partResult.warnings.length > 0) {
+      // Warnings present but not processed in this test
     }
     
     // FIXED: Spline support has been added to chain detection

@@ -3,10 +3,11 @@ import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-ca
 import { CutDirection, LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import { createPolylineFromVertices } from '../geometry/polyline';
+import type { Shape } from '../types';
 
 describe('Lead Direction and Cut Direction Tangency', () => {
   // Create a simple circular chain for testing
-  function createCircleChain(center: { x: number; y: number }, radius: number, clockwise: boolean): Chain {
+  function createCircleChain(center: { x: number; y: number }, radius: number, _clockwise: boolean): Chain {
     return {
       id: 'test-circle',
       shapes: [{
@@ -36,15 +37,9 @@ describe('Lead Direction and Cut Direction Tangency', () => {
       { x, y, bulge: 0 } // Close the rectangle
     ];
 
-    const polyline: import("$lib/types/geometry").Polyline = createPolylineFromVertices(vertices, true);
-
     return {
       id: 'test-rectangle',
-      shapes: [{
-        id: 'rect-1',
-        type: 'polyline',
-        geometry: polyline
-      }]
+      shapes: [createPolylineFromVertices(vertices, true, { id: 'rect-1' })]
     };
   }
 
@@ -54,7 +49,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
   }
 
   // Helper to get the tangent direction based on cut direction
-  function getExpectedTangentDirection(shape: any, cutDirection: CutDirection.CLOCKWISE | 'counterclockwise'): number {
+  function _getExpectedTangentDirection(shape: Shape, cutDirection: CutDirection.CLOCKWISE | 'counterclockwise'): number {
     if (shape.type === 'circle') {
       // For circles, tangent should be perpendicular to radius
       // Clockwise cuts go in one direction, counterclockwise in the opposite
@@ -82,7 +77,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
     if (clockwiseResult.leadIn && clockwiseResult.leadIn.points.length >= 2) {
       const leadStart = clockwiseResult.leadIn.points[0];
       const leadEnd = clockwiseResult.leadIn.points[clockwiseResult.leadIn.points.length - 1];
-      const leadDirection = getVectorAngle(leadStart, leadEnd);
+      const _leadDirection = getVectorAngle(leadStart, leadEnd);
       
     }
     
@@ -94,7 +89,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
     if (counterclockwiseResult.leadIn && counterclockwiseResult.leadIn.points.length >= 2) {
       const leadStart = counterclockwiseResult.leadIn.points[0];
       const leadEnd = counterclockwiseResult.leadIn.points[counterclockwiseResult.leadIn.points.length - 1];
-      const leadDirection = getVectorAngle(leadStart, leadEnd);
+      const _leadDirection = getVectorAngle(leadStart, leadEnd);
       
     }
     
@@ -116,7 +111,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
       
       
       // The lead should approach the rectangle tangentially
-      const approachAngle = getVectorAngle(secondToLast, connectionPoint);
+      const _approachAngle = getVectorAngle(secondToLast, connectionPoint);
     }
     
     // Create counterclockwise rectangle
@@ -130,7 +125,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
       
       
       // The lead should approach the rectangle tangentially
-      const approachAngle = getVectorAngle(secondToLast, connectionPoint);
+      const _approachAngle = getVectorAngle(secondToLast, connectionPoint);
     }
     
   });

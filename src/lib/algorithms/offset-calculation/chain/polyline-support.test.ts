@@ -6,7 +6,7 @@ import { offsetChain } from './offset';
 import { scaleShape } from '../../../geometry';
 import { getPhysicalScaleFactor } from '../../../utils/units';
 import { calculateDynamicTolerance } from '../../../geometry/bounding-box';
-import type { Polyline, Shape, Line, Drawing } from '../../../types/geometry';
+import type { Polyline, Shape, Drawing } from '../../../types/geometry';
 import type { Chain } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '../../../utils/id';
@@ -231,7 +231,7 @@ describe('offsetChain Polyline Support', () => {
       
       // Scale shapes for proper processing
       const physicalScale = getPhysicalScaleFactor(drawing.units, 'mm');
-      let shapes = drawing.shapes.map(shape => scaleShape(shape, physicalScale, { x: 0, y: 0 }));
+      const shapes = drawing.shapes.map(shape => scaleShape(shape, physicalScale, { x: 0, y: 0 }));
       
       // Calculate tolerance and detect chains
       const tolerance = calculateDynamicTolerance(shapes, 0.1);
@@ -293,7 +293,7 @@ describe('offsetChain Polyline Support', () => {
       const drawing: Drawing = await parseDXF(dxfContent, { squashLayers: true });
       
       const physicalScale = getPhysicalScaleFactor(drawing.units, 'mm');
-      let shapes = drawing.shapes.map(shape => scaleShape(shape, physicalScale, { x: 0, y: 0 }));
+      const shapes = drawing.shapes.map(shape => scaleShape(shape, physicalScale, { x: 0, y: 0 }));
       
       const tolerance = calculateDynamicTolerance(shapes, 0.1);
       const detectedChains = detectShapeChains(shapes, { tolerance });

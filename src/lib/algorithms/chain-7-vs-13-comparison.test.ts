@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
+import { detectShapeChains, type Chain } from './chain-detection/chain-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
 import { isChainGeometricallyContained } from '../utils/geometric-operations';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
@@ -39,22 +39,23 @@ describe('Chain-7 vs Chain-13 Identical Letter T Comparison', () => {
     
     // Compare basic properties
     
-    // Analyze shape types
-    const getShapeTypes = (chain: any) => {
-      const types = chain.shapes.map((s: any) => s.type);
-      const counts = types.reduce((c: any, t: string) => { c[t] = (c[t] || 0) + 1; return c; }, {});
-      return counts;
-    };
+    // Analyze shape types (currently unused for debugging)
+    // const getShapeTypes = (chain: Chain): Record<string, number> => {
+    //   const types = chain.shapes.map((s: Shape) => s.type);
+    //   const counts = types.reduce((c: Record<string, number>, t: string) => { c[t] = (c[t] || 0) + 1; return c; }, {});
+    //   return counts;
+    // };
     
-    const chain7Types = getShapeTypes(chain7!);
-    const chain13Types = getShapeTypes(chain13!);
+    // Get shape types for comparison (currently unused for debugging)
+    // const chain7Types = getShapeTypes(chain7!);
+    // const chain13Types = getShapeTypes(chain13!);
     
     
-    // Check if they have identical shape compositions
-    const typesMatch = JSON.stringify(chain7Types) === JSON.stringify(chain13Types);
+    // Check if they have identical shape compositions (for debugging)
+    // const typesMatch = JSON.stringify(chain7Types) === JSON.stringify(chain13Types);
     
     // Check closure after normalization
-    const checkChainClosure = (chain: any, name: string) => {
+    const checkChainClosure = (chain: Chain, _name: string): number => {
       const firstShape = chain.shapes[0];
       const lastShape = chain.shapes[chain.shapes.length - 1];
       const firstStart = getShapeStartPoint(firstShape);
@@ -78,9 +79,9 @@ describe('Chain-7 vs Chain-13 Identical Letter T Comparison', () => {
     try {
       const chain7Contained = await isChainGeometricallyContained(chain7!, boundaryChain!);
       chain7ContainmentResult = chain7Contained ? 'CONTAINED' : 'NOT CONTAINED';
-    } catch (error: any) {
+    } catch (error) {
       chain7ContainmentResult = 'ERROR';
-      chain7ContainmentError = error.message;
+      chain7ContainmentError = error instanceof Error ? error.message : String(error);
     }
     
     let chain13ContainmentResult = 'UNKNOWN';
@@ -89,20 +90,23 @@ describe('Chain-7 vs Chain-13 Identical Letter T Comparison', () => {
     try {
       const chain13Contained = await isChainGeometricallyContained(chain13!, boundaryChain!);
       chain13ContainmentResult = chain13Contained ? 'CONTAINED' : 'NOT CONTAINED';
-    } catch (error: any) {
+    } catch (error) {
       chain13ContainmentResult = 'ERROR';
-      chain13ContainmentError = error.message;
+      chain13ContainmentError = error instanceof Error ? error.message : String(error);
     }
     
     if (chain7ContainmentError) {
+      // Chain 7 containment check failed
     }
     
     if (chain13ContainmentError) {
+      // Chain 13 containment check failed
     }
     
     // The key question: if they're identical, why different results?
     
     if (chain7ContainmentResult !== chain13ContainmentResult) {
+      // Different containment results for identical chains
     }
     
     // Verify they're actually closed with tight tolerance

@@ -6,15 +6,23 @@ import Paths from './Paths.svelte';
 import { pathStore, selectPath, highlightPath } from '$lib/stores/paths';
 import { operationsStore } from '$lib/stores/operations';
 import { toolStore } from '$lib/stores/tools';
+import { CutDirection, LeadType } from '$lib/types/direction';
+import { KerfCompensation } from '$lib/types/kerf-compensation';
 
 // Mock DragEvent for jsdom
-global.DragEvent = class DragEvent extends Event {
-  dataTransfer: any;
-  constructor(type: string, init?: any) {
+interface MockDragEventInit extends EventInit {
+  dataTransfer?: DataTransfer | null;
+}
+
+class MockDragEvent extends Event {
+  dataTransfer: DataTransfer | null;
+  constructor(type: string, init?: MockDragEventInit) {
     super(type, init);
     this.dataTransfer = init?.dataTransfer || null;
   }
-} as any;
+}
+
+global.DragEvent = MockDragEvent as unknown as typeof DragEvent;
 
 describe('Paths Component - Function Coverage', () => {
   beforeEach(() => {
@@ -42,23 +50,24 @@ describe('Paths Component - Function Coverage', () => {
     });
 
     operationsStore.addOperation({
-      id: 'op-1',
       name: 'Test Operation',
       toolId: get(toolStore)[0]?.id || null,
       targetType: 'parts',
       targetIds: ['part-1'],
       enabled: true,
       order: 1,
-      cutDirection: 'counterclockwise',
-      leadInType: 'none',
+      cutDirection: CutDirection.COUNTERCLOCKWISE,
+      leadInType: LeadType.NONE,
       leadInLength: 5,
       leadInAngle: 0,
       leadInFlipSide: false,
-      leadOutType: 'none',
+      leadInFit: false,
+      leadOutType: LeadType.NONE,
       leadOutLength: 5,
       leadOutAngle: 0,
       leadOutFlipSide: false,
-      kerfCompensation: 'part'
+      leadOutFit: false,
+      kerfCompensation: KerfCompensation.PART
     });
   });
 
@@ -72,7 +81,7 @@ describe('Paths Component - Function Coverage', () => {
         toolId: null,
         order: 1,
         enabled: true,
-        cutDirection: 'counterclockwise'
+        cutDirection: CutDirection.COUNTERCLOCKWISE
       });
 
       const { container } = render(Paths);
@@ -100,7 +109,7 @@ describe('Paths Component - Function Coverage', () => {
         toolId: null,
         order: 1,
         enabled: true,
-        cutDirection: 'counterclockwise'
+        cutDirection: CutDirection.COUNTERCLOCKWISE
       });
 
       const { container } = render(Paths);
@@ -128,7 +137,7 @@ describe('Paths Component - Function Coverage', () => {
         toolId: null,
         order: 1,
         enabled: true,
-        cutDirection: 'counterclockwise'
+        cutDirection: CutDirection.COUNTERCLOCKWISE
       });
 
       const { container } = render(Paths);
@@ -165,7 +174,7 @@ describe('Paths Component - Function Coverage', () => {
         toolId: null,
         order: 1,
         enabled: true,
-        cutDirection: 'counterclockwise'
+        cutDirection: CutDirection.COUNTERCLOCKWISE
       });
 
       const { container } = render(Paths);
@@ -191,7 +200,7 @@ describe('Paths Component - Function Coverage', () => {
         toolId: null,
         order: 1,
         enabled: true,
-        cutDirection: 'counterclockwise'
+        cutDirection: CutDirection.COUNTERCLOCKWISE
       });
       
       pathStore.addPath({
@@ -201,7 +210,7 @@ describe('Paths Component - Function Coverage', () => {
         toolId: null,
         order: 2,
         enabled: true,
-        cutDirection: 'clockwise'
+        cutDirection: CutDirection.CLOCKWISE
       });
 
       const { container } = render(Paths);
@@ -267,7 +276,7 @@ describe('Paths Component - Function Coverage', () => {
         toolId: null,
         order: 1,
         enabled: true,
-        cutDirection: 'counterclockwise'
+        cutDirection: CutDirection.COUNTERCLOCKWISE
       });
 
       const { container } = render(Paths);

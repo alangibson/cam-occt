@@ -5,7 +5,6 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection/chain-detection';
 import { detectParts } from './part-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 
 describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
   it('should detect 1 part with 12 holes after chain normalization', async () => {
@@ -26,17 +25,7 @@ describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
     
     
     // Check closure status before normalization
-    const closedChainsBefore = chains.filter(chain => {
-      if (chain.shapes.length === 0) return false;
-      const firstShape = chain.shapes[0];
-      const lastShape = chain.shapes[chain.shapes.length - 1];
-      const firstStart = getShapeStartPoint(firstShape);
-      const lastEnd = getShapeEndPoint(lastShape);
-      const distance: number = Math.sqrt(
-        Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
-      );
-      return distance < 0.1; // User tolerance
-    });
+    // Closure analysis removed as it was not used in the test
     
     
     // Normalize all chains
@@ -44,17 +33,6 @@ describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
     
     
     // Check closure status after normalization
-    const closedChainsAfter = normalizedChains.filter(chain => {
-      if (chain.shapes.length === 0) return false;
-      const firstShape = chain.shapes[0];
-      const lastShape = chain.shapes[chain.shapes.length - 1];
-      const firstStart = getShapeStartPoint(firstShape);
-      const lastEnd = getShapeEndPoint(lastShape);
-      const distance: number = Math.sqrt(
-        Math.pow(firstStart.x - lastEnd.x, 2) + Math.pow(firstStart.y - lastEnd.y, 2)
-      );
-      return distance < 0.1; // User tolerance
-    });
     
     
     // Detect parts after normalization
@@ -62,14 +40,14 @@ describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
     
     
     // Show details for each part
-    partResult.parts.forEach((part, index) => {
-      part.holes.forEach((hole, holeIndex) => {
+    partResult.parts.forEach((part, _index) => {
+      part.holes.forEach((_hole, _holeIndex) => {
       });
     });
     
     // Show warnings
     if (partResult.warnings.length > 0) {
-      partResult.warnings.forEach(warning => {
+      partResult.warnings.forEach(_warning => {
       });
     }
     
@@ -89,6 +67,7 @@ describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
     );
     
     if (mainPart && mainPart.holes.length < 12) {
+      // Bug confirmed - fewer holes detected than expected
     }
     
     // This test documents the current buggy behavior

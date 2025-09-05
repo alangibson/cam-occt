@@ -25,12 +25,13 @@ describe('Tractor Seat Mount Final Test', () => {
     const partResult = await detectParts(chains);
     
     
-    partResult.parts.forEach((part, index) => {
-      part.holes.forEach((hole, holeIndex) => {
+    partResult.parts.forEach((part) => {
+      part.holes.forEach(() => {
       });
     });
     
     if (partResult.warnings.length > 0) {
+      // Warnings detected but proceeding with test
     }
     
     // The expected behavior: 1 part with multiple holes

@@ -95,6 +95,7 @@ describe('Simulation Toolhead Movement', () => {
     it('should move smoothly along clockwise path without jerking', () => {
       // Create a simple rectangular path
       const line1: Shape = {
+        id: 'line1-cw',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -103,6 +104,7 @@ describe('Simulation Toolhead Movement', () => {
       };
       
       const line2: Shape = {
+        id: 'line2-cw',
         type: 'line',
         geometry: {
           start: { x: 10, y: 0 },
@@ -111,6 +113,7 @@ describe('Simulation Toolhead Movement', () => {
       };
       
       const line3: Shape = {
+        id: 'line3-cw',
         type: 'line',
         geometry: {
           start: { x: 10, y: 10 },
@@ -119,6 +122,7 @@ describe('Simulation Toolhead Movement', () => {
       };
       
       const line4: Shape = {
+        id: 'line4-cw',
         type: 'line',
         geometry: {
           start: { x: 0, y: 10 },
@@ -128,9 +132,7 @@ describe('Simulation Toolhead Movement', () => {
       
       const chain: Chain = {
         id: 'test-chain',
-        shapes: [line1, line2, line3, line4],
-        isClosed: true,
-        tolerance: 0.1
+        shapes: [line1, line2, line3, line4]
       };
       
       // Sample positions along the clockwise path
@@ -169,6 +171,7 @@ describe('Simulation Toolhead Movement', () => {
     it('should move smoothly along counterclockwise path without jerking', () => {
       // Same rectangular path as above
       const line1: Shape = {
+        id: 'line1-ccw2',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -177,6 +180,7 @@ describe('Simulation Toolhead Movement', () => {
       };
       
       const line2: Shape = {
+        id: 'line2-ccw2',
         type: 'line',
         geometry: {
           start: { x: 10, y: 0 },
@@ -185,6 +189,7 @@ describe('Simulation Toolhead Movement', () => {
       };
       
       const line3: Shape = {
+        id: 'line3-ccw2',
         type: 'line',
         geometry: {
           start: { x: 10, y: 10 },
@@ -193,6 +198,7 @@ describe('Simulation Toolhead Movement', () => {
       };
       
       const line4: Shape = {
+        id: 'line4-ccw2',
         type: 'line',
         geometry: {
           start: { x: 0, y: 10 },
@@ -202,9 +208,7 @@ describe('Simulation Toolhead Movement', () => {
       
       const chain: Chain = {
         id: 'test-chain',
-        shapes: [line1, line2, line3, line4],
-        isClosed: true,
-        tolerance: 0.1
+        shapes: [line1, line2, line3, line4]
       };
       
       // Sample positions along the counterclockwise path
@@ -231,7 +235,7 @@ describe('Simulation Toolhead Movement', () => {
       // For counterclockwise, the path should be traversed in reverse order
       // This means it should start from the end of the last shape and work backwards
       const firstPos = positions[0];
-      const lastPos = positions[positions.length - 1];
+      const _lastPos = positions[positions.length - 1];
       
       // Both should be reasonable positions within the rectangle
       expect(firstPos.x).toBeGreaterThanOrEqual(-1);
@@ -243,6 +247,7 @@ describe('Simulation Toolhead Movement', () => {
     it('should produce different but smooth paths for clockwise vs counterclockwise', () => {
       // Simple L-shaped path
       const line1: Shape = {
+        id: 'line1-L',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -251,6 +256,7 @@ describe('Simulation Toolhead Movement', () => {
       };
       
       const line2: Shape = {
+        id: 'line2-L',
         type: 'line',
         geometry: {
           start: { x: 10, y: 0 },
@@ -260,9 +266,7 @@ describe('Simulation Toolhead Movement', () => {
       
       const chain: Chain = {
         id: 'test-chain',
-        shapes: [line1, line2],
-        isClosed: false,
-        tolerance: 0.1
+        shapes: [line1, line2]
       };
       
       // Get mid-point positions for both directions
@@ -270,7 +274,7 @@ describe('Simulation Toolhead Movement', () => {
       const counterclockwisePos = getPositionOnChain(chain, 0.5, 'counterclockwise');
       
       // They should be different positions (or at least the logic should be working)
-      const distance = Math.sqrt(
+      const _distance = Math.sqrt(
         (clockwisePos.x - counterclockwisePos.x) ** 2 + 
         (clockwisePos.y - counterclockwisePos.y) ** 2
       );
@@ -294,6 +298,7 @@ describe('Simulation Toolhead Movement', () => {
       // This caused erratic movement as the toolhead tried to traverse shapes backwards twice
       
       const line: Shape = {
+        id: 'line-single',
         type: 'line',
         geometry: {
           start: { x: 0, y: 0 },
@@ -303,9 +308,7 @@ describe('Simulation Toolhead Movement', () => {
       
       const chain: Chain = {
         id: 'test-chain',
-        shapes: [line],
-        isClosed: false,
-        tolerance: 0.1
+        shapes: [line]
       };
       
       // Test clockwise movement - should go from start to end naturally

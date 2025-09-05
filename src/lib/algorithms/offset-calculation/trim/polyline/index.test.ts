@@ -1,7 +1,7 @@
-import { describe, it, expect, vi } from 'vitest';
-import type { Shape, Point2D, Polyline, PolylineVertex } from '../../../../types/geometry';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { Shape, Polyline, PolylineVertex } from '../../../../types/geometry';
 import { trimPolyline } from './index';
-import { type KeepSide, type TrimResult } from '../types';
+import { type KeepSide } from '../types';
 
 // Mock dependencies
 vi.mock('$lib/utils/id', () => ({
@@ -19,9 +19,8 @@ vi.mock('../../shared/trim-extend-utils', () => ({
 }));
 
 describe('Polyline Trimming Functions', () => {
-  const createTestPolyline = (points: Point2D[]): Polyline => ({
-    type: 'polyline',
-    vertices: points.map(p => ({ x: p.x, y: p.y, bulge: 0 })),
+  const createTestPolyline = (): Polyline => ({
+    shapes: [], // Polylines use shapes array, not vertices
     closed: false
   });
 
@@ -45,7 +44,7 @@ describe('Polyline Trimming Functions', () => {
         { x: 30, y: 0 }
       ];
       
-      const polyline = createTestPolyline(points);
+      const polyline = createTestPolyline();
       const shape = createPolylineShape(polyline);
       const trimPoint = { x: 15, y: 0 }; // On second segment
 
@@ -61,11 +60,7 @@ describe('Polyline Trimming Functions', () => {
         return -1; // Not on other segments
       });
 
-      const trimmedShape = createPolylineShape(createTestPolyline([
-        { x: 0, y: 0 },
-        { x: 10, y: 0 },
-        { x: 15, y: 0 }
-      ]));
+      const trimmedShape = createPolylineShape(createTestPolyline());
       vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
       const result = trimPolyline(shape, trimPoint, 'start', 0.1);
@@ -85,7 +80,7 @@ describe('Polyline Trimming Functions', () => {
         { x: 30, y: 0 }
       ];
       
-      const polyline = createTestPolyline(points);
+      const polyline = createTestPolyline();
       const shape = createPolylineShape(polyline);
       const trimPoint = { x: 15, y: 0 }; // On second segment
 
@@ -101,11 +96,7 @@ describe('Polyline Trimming Functions', () => {
         return -1; // Not on other segments
       });
 
-      const trimmedShape = createPolylineShape(createTestPolyline([
-        { x: 15, y: 0 },
-        { x: 20, y: 0 },
-        { x: 30, y: 0 }
-      ]));
+      const trimmedShape = createPolylineShape(createTestPolyline());
       vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
       const result = trimPolyline(shape, trimPoint, 'end', 0.1);
@@ -123,7 +114,7 @@ describe('Polyline Trimming Functions', () => {
         { x: 20, y: 0 }
       ];
       
-      const polyline = createTestPolyline(points);
+      const polyline = createTestPolyline();
       const shape = createPolylineShape(polyline);
       const trimPoint = { x: 10, y: 0 }; // Exactly at vertex
 
@@ -139,10 +130,7 @@ describe('Polyline Trimming Functions', () => {
         return -1; // Not on other segments
       });
 
-      const trimmedShape = createPolylineShape(createTestPolyline([
-        { x: 0, y: 0 },
-        { x: 10, y: 0 }
-      ]));
+      const trimmedShape = createPolylineShape(createTestPolyline());
       vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
       const result = trimPolyline(shape, trimPoint, 'start', 0.1);
@@ -158,7 +146,7 @@ describe('Polyline Trimming Functions', () => {
         { x: 20, y: 0 }
       ];
       
-      const polyline = createTestPolyline(points);
+      const polyline = createTestPolyline();
       const shape = createPolylineShape(polyline);
       const trimPoint = { x: 10, y: 0 }; // Exactly at vertex
 
@@ -174,10 +162,7 @@ describe('Polyline Trimming Functions', () => {
         return -1; // Not on other segments
       });
 
-      const trimmedShape = createPolylineShape(createTestPolyline([
-        { x: 10, y: 0 },
-        { x: 20, y: 0 }
-      ]));
+      const trimmedShape = createPolylineShape(createTestPolyline());
       vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
       const result = trimPolyline(shape, trimPoint, 'end', 0.1);
@@ -199,7 +184,7 @@ describe('Polyline Trimming Functions', () => {
         { x: 20, y: 0, bulge: 0 }
       ];
       
-      const polyline = createTestPolyline(points);
+      const polyline = createTestPolyline();
       const shape = createPolylineShape(polyline);
       const trimPoint = { x: 5, y: 0 };
 
@@ -215,10 +200,7 @@ describe('Polyline Trimming Functions', () => {
         return -1; // Not on other segments
       });
 
-      const trimmedShape = createPolylineShape(createTestPolyline([
-        { x: 0, y: 0 },
-        { x: 5, y: 0 }
-      ]));
+      const trimmedShape = createPolylineShape(createTestPolyline());
       vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
       const result = trimPolyline(shape, trimPoint, 'start', 0.1);
@@ -234,7 +216,7 @@ describe('Polyline Trimming Functions', () => {
         { x: 20, y: 0 }
       ];
       
-      const polyline = createTestPolyline(points);
+      const polyline = createTestPolyline();
       const shape = createPolylineShape(polyline);
       const trimPoint = { x: 5, y: 1 }; // Slightly off the line
 
@@ -245,10 +227,7 @@ describe('Polyline Trimming Functions', () => {
       vi.mocked(polylineToVertices).mockReturnValue([]);
       vi.mocked(calculateLineParameter).mockReturnValue(-1); // Not exactly on any segment
 
-      const trimmedShape = createPolylineShape(createTestPolyline([
-        { x: 0, y: 0 },
-        { x: 5, y: 1 }
-      ]));
+      const trimmedShape = createPolylineShape(createTestPolyline());
       vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
       const result = trimPolyline(shape, trimPoint, 'start', 0.1);
@@ -263,7 +242,7 @@ describe('Polyline Trimming Functions', () => {
         { x: 20, y: 0 }
       ];
       
-      const polyline = createTestPolyline(points);
+      const polyline = createTestPolyline();
       const shape = createPolylineShape(polyline);
       const trimPoint = { x: 5, y: 0 };
 
@@ -279,10 +258,7 @@ describe('Polyline Trimming Functions', () => {
         return -1; // Not on other segments
       });
 
-      const trimmedShape = createPolylineShape(createTestPolyline([
-        { x: 0, y: 0 },
-        { x: 5, y: 0 }
-      ]));
+      const trimmedShape = createPolylineShape(createTestPolyline());
       vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
       const result1 = trimPolyline(shape, trimPoint, 'before', 0.1);
@@ -300,7 +276,7 @@ describe('Polyline Trimming Functions', () => {
         { x: 20, y: 0 }
       ];
       
-      const polyline = createTestPolyline(points);
+      const polyline = createTestPolyline();
       const shape = createPolylineShape(polyline);
       const trimPoint = { x: 15, y: 0 };
 
@@ -316,10 +292,7 @@ describe('Polyline Trimming Functions', () => {
         return -1; // Not on other segments
       });
 
-      const trimmedShape = createPolylineShape(createTestPolyline([
-        { x: 15, y: 0 },
-        { x: 20, y: 0 }
-      ]));
+      const trimmedShape = createPolylineShape(createTestPolyline());
       vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
       const result = trimPolyline(shape, trimPoint, 'end', 0.1);
@@ -330,7 +303,7 @@ describe('Polyline Trimming Functions', () => {
     describe('Error Cases', () => {
       it('should return error for polyline with less than 2 points', async () => {
         const points = [{ x: 0, y: 0 }];
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: 5, y: 0 };
 
@@ -351,7 +324,7 @@ describe('Polyline Trimming Functions', () => {
           { x: 20, y: 0 }
         ];
         
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: 5, y: 100 }; // Far from polyline
 
@@ -376,7 +349,7 @@ describe('Polyline Trimming Functions', () => {
           { x: 20, y: 0 }
         ];
         
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: 5, y: 0 };
 
@@ -405,7 +378,7 @@ describe('Polyline Trimming Functions', () => {
           { x: 10, y: 0 }
         ];
         
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: 0, y: 0 }; // Trim at start
 
@@ -435,7 +408,7 @@ describe('Polyline Trimming Functions', () => {
           { x: 20, y: 0 }
         ];
         
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: 5, y: 0.1 }; // Exactly at tolerance
 
@@ -451,10 +424,7 @@ describe('Polyline Trimming Functions', () => {
           return -1; // Not on other segments
         });
 
-        const trimmedShape = createPolylineShape(createTestPolyline([
-          { x: 0, y: 0 },
-          { x: 5, y: 0.1 }
-        ]));
+        const trimmedShape = createPolylineShape(createTestPolyline());
         vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
         const result = trimPolyline(shape, trimPoint, 'start', 0.1);
@@ -470,7 +440,7 @@ describe('Polyline Trimming Functions', () => {
           { x: 20, y: 0 }
         ];
         
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: -5, y: 0 }; // Before first segment
 
@@ -486,10 +456,7 @@ describe('Polyline Trimming Functions', () => {
           return -1; // Not on other segments
         });
 
-        const trimmedShape = createPolylineShape(createTestPolyline([
-          { x: 0, y: 0 },
-          { x: -5, y: 0 }
-        ]));
+        const trimmedShape = createPolylineShape(createTestPolyline());
         vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
         const result = trimPolyline(shape, trimPoint, 'start', 0.6); // Large tolerance
@@ -504,7 +471,7 @@ describe('Polyline Trimming Functions', () => {
           { x: 5, y: 5 }
         ];
         
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: 5, y: 5 };
 
@@ -527,7 +494,7 @@ describe('Polyline Trimming Functions', () => {
           { x: 20, y: 0 }
         ];
         
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: 5, y: 0.001 }; // Very small deviation
 
@@ -543,10 +510,7 @@ describe('Polyline Trimming Functions', () => {
           return -1; // Not on other segments
         });
 
-        const trimmedShape = createPolylineShape(createTestPolyline([
-          { x: 0, y: 0 },
-          { x: 5, y: 0.001 }
-        ]));
+        const trimmedShape = createPolylineShape(createTestPolyline());
         vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
         const result = trimPolyline(shape, trimPoint, 'start', 1e-10);
@@ -564,7 +528,7 @@ describe('Polyline Trimming Functions', () => {
           { x: 10, y: 10 }
         ];
         
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: 10, y: 5 }; // On vertical segment
 
@@ -580,11 +544,7 @@ describe('Polyline Trimming Functions', () => {
           return -1; // Not on other segments
         });
 
-        const trimmedShape = createPolylineShape(createTestPolyline([
-          { x: 0, y: 0 },
-          { x: 10, y: 0 },
-          { x: 10, y: 5 }
-        ]));
+        const trimmedShape = createPolylineShape(createTestPolyline());
         vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
         const result = trimPolyline(shape, trimPoint, 'start', 0.1);
@@ -602,7 +562,7 @@ describe('Polyline Trimming Functions', () => {
           { x: 40, y: 0 }
         ];
         
-        const polyline = createTestPolyline(points);
+        const polyline = createTestPolyline();
         const shape = createPolylineShape(polyline);
         const trimPoint = { x: 25, y: 5 }; // On third segment
 
@@ -618,11 +578,7 @@ describe('Polyline Trimming Functions', () => {
           return -1; // Not on other segments
         });
 
-        const trimmedShape = createPolylineShape(createTestPolyline([
-          { x: 25, y: 5 },
-          { x: 30, y: 10 },
-          { x: 40, y: 0 }
-        ]));
+        const trimmedShape = createPolylineShape(createTestPolyline());
         vi.mocked(createPolylineFromVertices).mockReturnValue(trimmedShape);
 
         const result = trimPolyline(shape, trimPoint, 'end', 0.1);

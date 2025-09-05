@@ -1,10 +1,9 @@
 // @vitest-environment jsdom
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
-import { get } from 'svelte/store';
 import LayersList from './LayersList.svelte';
 import { drawingStore } from '../lib/stores/drawing';
-import type { Drawing, Shape } from '../lib/types';
+import type { Drawing } from '../lib/types';
 
 describe('LayersList Component', () => {
   beforeEach(() => {
@@ -62,7 +61,7 @@ describe('LayersList Component', () => {
           id: '2',
           type: 'line',
           geometry: { start: { x: 0, y: 0 }, end: { x: 5, y: 5 } },
-          layer: undefined as any
+          layer: undefined
         }
       ],
       bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },

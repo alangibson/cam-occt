@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { get } from 'svelte/store';
 import { chainStore, setChains, clearChains, setTolerance, getShapeChainId, getChainShapeIds, getChainById, highlightChain, clearChainHighlight, selectChain } from './chains';
-import type { ShapeChain } from '../algorithms/chain-detection';
-import { generateId } from '../utils/id';
-import { CutDirection, LeadType } from '../types/direction';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import { LeadType } from '../types/direction';
 
 describe('Chain Store', () => {
-  const mockChains: ShapeChain[] = [
+  const mockChains: Chain[] = [
     {
       id: 'chain-1',
       shapes: [

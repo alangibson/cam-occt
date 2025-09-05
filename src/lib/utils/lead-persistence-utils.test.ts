@@ -11,8 +11,12 @@ import {
 } from './lead-persistence-utils';
 import type { Path } from '../stores/paths';
 import type { Operation } from '../stores/operations';
-import type { ShapeChain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import { LeadType, CutDirection } from '../types/direction';
+import { KerfCompensation } from '../types/kerf-compensation';
+import type { GeometryType } from '../types/geometry';
+import { chainStore } from '../stores/chains';
+import { partStore } from '../stores/parts';
 
 // Mock the stores
 vi.mock('../stores/paths', () => ({
@@ -89,19 +93,21 @@ describe('Lead Persistence Utils', () => {
     leadInType: LeadType.ARC,
     leadInLength: 5,
     leadInFlipSide: false,
+    leadInFit: false,
     leadInAngle: 45,
     leadOutType: LeadType.LINE,
     leadOutLength: 3,
     leadOutFlipSide: false,
-    leadOutAngle: 90
+    leadOutFit: false,
+    leadOutAngle: 90,
+    kerfCompensation: 'none' as unknown as KerfCompensation
   };
 
-  const mockChain: ShapeChain = {
+  const mockChain: Chain = {
     id: 'chain-1',
     shapes: [
-      { id: 'shape-1', type: 'line', start: { x: 0, y: 0 }, end: { x: 10, y: 0 } }
-    ],
-    isClosed: true
+      { id: 'shape-1', type: 'line' as GeometryType, geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } } }
+    ]
   };
 
   beforeEach(() => {
@@ -375,7 +381,7 @@ describe('Lead Persistence Utils', () => {
         if (store === pathStore) {
           return { paths: [mockPath] };
         }
-        if (store.subscribe) { // chainStore or partStore
+        if (store === chainStore || store === partStore) { // chainStore or partStore
           return { chains: [mockChain], parts: [] };
         }
         return {};

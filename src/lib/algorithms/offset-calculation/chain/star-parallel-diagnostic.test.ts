@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { offsetPolyline } from '../offset/polyline/polyline';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import type { Polyline, Point2D, Line, Circle } from '$lib/types/geometry';
-import type { Shape } from '../types';
+import type { Polyline, Point2D, Line } from '$lib/types/geometry';
+import type { Shape } from '$lib/types/geometry';
 
 describe('Star Offset Parallelism Diagnostic', () => {
   const outputDir = 'tests/output/diagnostic';
@@ -15,7 +15,7 @@ describe('Star Offset Parallelism Diagnostic', () => {
   beforeEach(() => {
     try {
       mkdirSync(outputDir, { recursive: true });
-    } catch (e) {
+    } catch {
       // Directory might already exist
     }
   });
@@ -41,7 +41,7 @@ describe('Star Offset Parallelism Diagnostic', () => {
 
     // Generate offsets
     const outsetResult = offsetPolyline(starGeometry, 8, 'outset');
-    const insetResult = offsetPolyline(starGeometry, 8, 'inset');
+    void offsetPolyline(starGeometry, 8, 'inset');
 
     // Create diagnostic SVG
     const svg = new SVGBuilder(400, 300);
@@ -167,7 +167,7 @@ describe('Star Offset Parallelism Diagnostic', () => {
     
     if (nonParallelCount > 0) {
       console.log('\nNon-parallel segments:');
-      measurements.filter(m => !m.isParallel).forEach((m, idx) => {
+      measurements.filter(m => !m.isParallel).forEach((m) => {
         console.log(`  Segment ${m.originalSegment.index}: angle diff ${m.angle.toFixed(1)}°, dist ${m.perpDistance.toFixed(3)}`);
       });
     }
@@ -188,15 +188,6 @@ describe('Star Offset Parallelism Diagnostic', () => {
     
     const distance: number = Math.abs(A * point.x + B * point.y + C) / Math.sqrt(A * A + B * B);
     return distance;
-  }
-
-  /**
-   * Normalize angle to [0, 2π] range
-   */
-  function normalizeAngle(angle: number): number {
-    while (angle < 0) angle += 2 * Math.PI;
-    while (angle >= 2 * Math.PI) angle -= 2 * Math.PI;
-    return angle;
   }
 
   /**

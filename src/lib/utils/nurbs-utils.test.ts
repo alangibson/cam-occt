@@ -87,8 +87,8 @@ describe('nurbs-utils', () => {
     });
 
     it('should reject null or undefined knot vector', () => {
-      const result1 = validateKnotVector(null as any, 4, 2);
-      const result2 = validateKnotVector(undefined as any, 4, 2);
+      const result1 = validateKnotVector(null as unknown as number[], 4, 2);
+      const result2 = validateKnotVector(undefined as unknown as number[], 4, 2);
       
       expect(result1.isValid).toBe(false);
       expect(result1.error).toBe('Knot vector must be an array');
@@ -97,7 +97,7 @@ describe('nurbs-utils', () => {
     });
 
     it('should reject non-array input', () => {
-      const result = validateKnotVector('not-an-array' as any, 4, 2);
+      const result = validateKnotVector('not-an-array' as unknown as number[], 4, 2);
       
       expect(result.isValid).toBe(false);
       expect(result.error).toBe('Knot vector must be an array');

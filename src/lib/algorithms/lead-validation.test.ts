@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { validateLeadConfiguration, type LeadValidationResult } from './lead-validation';
+import { validateLeadConfiguration } from './lead-validation';
 import { LeadType, CutDirection } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';

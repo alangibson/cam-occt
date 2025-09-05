@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Shape, Polyline, Line, Arc, Point2D } from '../../../../../lib/types/geometry';
+import type { Shape, Polyline, Arc } from '../../../../../lib/types/geometry';
 import { findPolylineSelfIntersections, hasPolylineSelfIntersections } from './self';
 
 describe('Polyline Self-Intersection Detection', () => {
@@ -273,7 +273,7 @@ describe('Polyline Self-Intersection Detection', () => {
 
     it('should handle large polylines efficiently', () => {
       // Create a large non-intersecting sawtooth pattern
-      const segments: any[] = [];
+      const segments: Shape[] = [];
       const numSegments = 50;
       
       for (let i = 0; i < numSegments - 1; i++) {

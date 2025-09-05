@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createPolylineFromVertices, polylineToPoints, polylineToVertices } from './polyline';
-import type { PolylineVertex } from '$lib/types/geometry';
+import type { PolylineVertex, Polyline } from '$lib/types/geometry';
 
 describe('Polyline Segments Functionality', () => {
   it('should create segments for simple polyline without bulges', () => {
@@ -11,7 +11,7 @@ describe('Polyline Segments Functionality', () => {
     ];
 
     const shape = createPolylineFromVertices(points, false);
-    const polyline: import("$lib/types/geometry").Polyline = shape.geometry;
+    const polyline = shape.geometry as Polyline;
 
     expect(polyline.shapes).toBeDefined();
     expect(polyline.shapes).toHaveLength(2);
@@ -30,7 +30,7 @@ describe('Polyline Segments Functionality', () => {
     ];
 
     const shape = createPolylineFromVertices(vertices, false);
-    const polyline: import("$lib/types/geometry").Polyline = shape.geometry;
+    const polyline = shape.geometry as Polyline;
 
     expect(polyline.shapes).toBeDefined();
     expect(polyline.shapes).toHaveLength(2);
@@ -52,7 +52,7 @@ describe('Polyline Segments Functionality', () => {
     ];
 
     const shape = createPolylineFromVertices(originalPoints, false);
-    const polyline: import("$lib/types/geometry").Polyline = shape.geometry;
+    const polyline = shape.geometry as Polyline;
     
     const extractedPoints = polylineToPoints(polyline);
     
@@ -67,7 +67,7 @@ describe('Polyline Segments Functionality', () => {
     ];
 
     const shape = createPolylineFromVertices(originalVertices, false);
-    const polyline: import("$lib/types/geometry").Polyline = shape.geometry;
+    const polyline = shape.geometry as Polyline;
     
     const extractedVertices = polylineToVertices(polyline);
     

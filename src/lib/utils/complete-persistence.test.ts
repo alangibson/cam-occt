@@ -4,13 +4,15 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { saveApplicationState, restoreApplicationState } from '../stores/persistence';
-import { clearPersistedState } from './state-persistence';
 import { drawingStore } from '../stores/drawing';
 import { pathStore } from '../stores/paths';
 import { operationsStore } from '../stores/operations';
-import { chainStore, setChains } from '../stores/chains';
+import { setChains } from '../stores/chains';
 import { workflowStore } from '../stores/workflow';
 import { LeadType, CutDirection } from '../types/direction';
+import type { GeometryType } from '../types/geometry';
+import type { PathsState } from '../stores/paths';
+import type { WorkflowState } from '../stores/workflow';
 
 // Mock localStorage
 const localStorageMock = {
@@ -42,18 +44,16 @@ describe('Complete Persistence Integration', () => {
 
     // 1. Setup drawing and chains
     const testDrawing = {
-      id: 'complete-test-drawing',
       shapes: [
         {
           id: 'shape-1',
-          type: 'circle',
-          center: { x: 50, y: 50 },
-          radius: 25,
+          type: 'circle' as GeometryType,
+          geometry: { center: { x: 50, y: 50 }, radius: 25 },
           layer: 'default'
         }
       ],
-      layers: ['default'],
-      units: 'mm'
+      bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
+      units: 'mm' as 'mm' | 'inch'
     };
 
     const testChain = {
@@ -61,14 +61,13 @@ describe('Complete Persistence Integration', () => {
       shapes: [
         { 
           id: 'shape-1', 
-          type: 'circle', 
-          geometry: { center: { x: 50, y: 50 }, radius: 25 } 
+          type: 'circle' as GeometryType, 
+          geometry: { center: { x: 50, y: 50 }, radius: 25 }
         }
-      ],
-      isClosed: true
+      ]
     };
 
-    drawingStore.setDrawing(testDrawing, 'complete-test.dxf', 1.0, { x: 0, y: 0 }, 'mm', [], null);
+    drawingStore.setDrawing(testDrawing, 'complete-test.dxf');
     setChains([testChain]);
 
     // 2. Progress through workflow stages
@@ -79,10 +78,6 @@ describe('Complete Persistence Integration', () => {
     workflowStore.completeStage('prepare');
     workflowStore.setStage('program');
     
-    // Debug workflow progression
-    let debugWorkflow: any = null;
-    const debugUnsub = workflowStore.subscribe(state => { debugWorkflow = state; });
-    debugUnsub();
 
 
     // 3. Create operation with lead settings
@@ -98,10 +93,12 @@ describe('Complete Persistence Integration', () => {
       leadInLength: 8,
       leadInFlipSide: false,
       leadInAngle: 45,
+      leadInFit: true,
       leadOutType: LeadType.LINE,
       leadOutLength: 6,
       leadOutFlipSide: false,
-      leadOutAngle: 90
+      leadOutAngle: 90,
+      leadOutFit: true
     };
 
     operationsStore.addOperation(testOperation);
@@ -110,12 +107,12 @@ describe('Complete Persistence Integration', () => {
     await new Promise(resolve => setTimeout(resolve, 200));
 
     // 4. Verify paths and add lead geometry
-    let pathsState: any = null;
+    let pathsState: PathsState | null = null;
     const unsubscribe1 = pathStore.subscribe(state => { pathsState = state; });
     unsubscribe1();
-    expect(pathsState?.paths?.length).toBe(1);
+    expect(pathsState!.paths.length).toBe(1);
 
-    const createdPath = pathsState.paths[0];
+    const createdPath = pathsState!.paths[0];
     
     // Add lead geometry to simulate calculated leads
     pathStore.updatePathLeadGeometry(createdPath.id, {
@@ -137,18 +134,18 @@ describe('Complete Persistence Integration', () => {
 
 
     // 5. Verify current state before saving
-    let workflowState: any = null;
+    let workflowState: WorkflowState | null = null;
     const unsubscribe2 = workflowStore.subscribe(state => { workflowState = state; });
     unsubscribe2();
     
     const unsubscribe3 = pathStore.subscribe(state => { pathsState = state; });
     unsubscribe3();
-    const pathWithLeads = pathsState.paths[0];
+    const pathWithLeads = pathsState!.paths[0];
 
     
-    expect(workflowState.currentStage).toBe('program');
-    expect(workflowState.completedStages.has('import')).toBe(true);
-    expect(workflowState.completedStages.has('edit')).toBe(true);
+    expect(workflowState!.currentStage).toBe('program');
+    expect(workflowState!.completedStages.has('import')).toBe(true);
+    expect(workflowState!.completedStages.has('edit')).toBe(true);
     // Note: 'prepare' stage may be affected by path generation, focus on core functionality
     expect(pathWithLeads.calculatedLeadIn).toBeDefined();
     expect(pathWithLeads.calculatedLeadOut).toBeDefined();
@@ -169,8 +166,8 @@ describe('Complete Persistence Integration', () => {
     const unsubscribe5 = pathStore.subscribe(state => { pathsState = state; });
     unsubscribe5();
 
-    expect(workflowState.currentStage).toBe('import'); // Reset to initial
-    expect(pathsState.paths).toHaveLength(0); // No paths
+    expect(workflowState!.currentStage).toBe('import'); // Reset to initial
+    expect(pathsState!.paths).toHaveLength(0); // No paths
 
 
     // 8. Restore complete application state
@@ -183,14 +180,14 @@ describe('Complete Persistence Integration', () => {
     unsubscribe7();
 
     // Verify workflow stage restoration
-    expect(workflowState.currentStage).toBe('program');
-    expect(workflowState.completedStages.has('import')).toBe(true);
-    expect(workflowState.completedStages.has('edit')).toBe(true);
+    expect(workflowState!.currentStage).toBe('program');
+    expect(workflowState!.completedStages.has('import')).toBe(true);
+    expect(workflowState!.completedStages.has('edit')).toBe(true);
     // Note: Focus on key stages that are reliably persisted
 
     // Verify paths and lead geometry restoration
-    expect(pathsState.paths).toHaveLength(1);
-    const restoredPath = pathsState.paths[0];
+    expect(pathsState!.paths).toHaveLength(1);
+    const restoredPath = pathsState!.paths[0];
     
     expect(restoredPath.name).toBe('Complete Test Cut - Chain 1');
     expect(restoredPath.leadInType).toBe(LeadType.ARC);
@@ -200,24 +197,24 @@ describe('Complete Persistence Integration', () => {
 
     // Verify calculated lead geometry
     expect(restoredPath.calculatedLeadIn).toBeDefined();
-    expect(restoredPath.calculatedLeadIn.points).toEqual([
+    expect(restoredPath.calculatedLeadIn!.points).toEqual([
       { x: 42, y: 50 }, { x: 38, y: 48 }, { x: 35, y: 45 }
     ]);
-    expect(restoredPath.calculatedLeadIn.type).toBe(LeadType.ARC);
-    expect(restoredPath.calculatedLeadIn.version).toBe('1.0.0');
+    expect(restoredPath.calculatedLeadIn!.type).toBe(LeadType.ARC);
+    expect(restoredPath.calculatedLeadIn!.version).toBe('1.0.0');
 
     expect(restoredPath.calculatedLeadOut).toBeDefined();
-    expect(restoredPath.calculatedLeadOut.points).toEqual([
+    expect(restoredPath.calculatedLeadOut!.points).toEqual([
       { x: 75, y: 50 }, { x: 80, y: 50 }
     ]);
-    expect(restoredPath.calculatedLeadOut.type).toBe(LeadType.LINE);
-    expect(restoredPath.calculatedLeadOut.version).toBe('1.0.0');
+    expect(restoredPath.calculatedLeadOut!.type).toBe(LeadType.LINE);
+    expect(restoredPath.calculatedLeadOut!.version).toBe('1.0.0');
 
     // Verify lead validation
     expect(restoredPath.leadValidation).toBeDefined();
-    expect(restoredPath.leadValidation.isValid).toBe(true);
-    expect(restoredPath.leadValidation.warnings).toContain('Lead may be close to material edge');
-    expect(restoredPath.leadValidation.severity).toBe('warning');
+    expect(restoredPath.leadValidation!.isValid).toBe(true);
+    expect(restoredPath.leadValidation!.warnings).toContain('Lead may be close to material edge');
+    expect(restoredPath.leadValidation!.severity).toBe('warning');
 
 
   }, 10000); // 10 second timeout for async operations

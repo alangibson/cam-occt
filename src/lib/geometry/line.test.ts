@@ -6,7 +6,7 @@ import {
   getLinePointAt,
   isLine
 } from './line';
-import type { Line, Arc, Circle } from '../types/geometry';
+import type { Line, Arc, Circle, Geometry } from '../types/geometry';
 
 describe('getLineStartPoint', () => {
   it('should return the start point of the line', () => {
@@ -318,7 +318,7 @@ describe('isLine', () => {
       someOtherProperty: true
     };
     
-    expect(isLine(notLine as any)).toBe(false);
+    expect(isLine(notLine as unknown as Geometry)).toBe(false);
   });
 
   it('should return false for object without end property', () => {
@@ -327,7 +327,7 @@ describe('isLine', () => {
       someOtherProperty: true
     };
     
-    expect(isLine(notLine as any)).toBe(false);
+    expect(isLine(notLine as unknown as Geometry)).toBe(false);
   });
 
   it('should return false for object with only one endpoint', () => {
@@ -335,7 +335,7 @@ describe('isLine', () => {
       start: { x: 0, y: 0 }
     };
     
-    expect(isLine(notLine as any)).toBe(false);
+    expect(isLine(notLine as unknown as Geometry)).toBe(false);
   });
 
   it('should return true for object with extra properties', () => {
@@ -346,17 +346,17 @@ describe('isLine', () => {
       thickness: 2
     };
     
-    expect(isLine(lineWithExtra as any)).toBe(true);
+    expect(isLine(lineWithExtra as unknown as Geometry)).toBe(true);
   });
 
   it('should handle null and undefined', () => {
-    expect(isLine(null as any)).toBe(false);
-    expect(isLine(undefined as any)).toBe(false);
+    expect(isLine(null as unknown as Geometry)).toBe(false);
+    expect(isLine(undefined as unknown as Geometry)).toBe(false);
   });
 
   it('should handle primitive values', () => {
-    expect(isLine('string' as any)).toBe(false);
-    expect(isLine(123 as any)).toBe(false);
-    expect(isLine(true as any)).toBe(false);
+    expect(isLine('string' as unknown as Geometry)).toBe(false);
+    expect(isLine(123 as unknown as Geometry)).toBe(false);
+    expect(isLine(true as unknown as Geometry)).toBe(false);
   });
 });

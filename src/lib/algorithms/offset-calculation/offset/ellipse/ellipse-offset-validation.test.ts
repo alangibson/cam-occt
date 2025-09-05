@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { writeFileSync, mkdirSync } from 'fs';
 import { offsetEllipse } from './ellipse';
-import type { Shape, Point2D, Ellipse, Spline } from '../../../../types/geometry';
+import type { Shape, Ellipse, Spline, Polyline, Point2D } from '../../../../types/geometry';
 import { polylineToPoints } from '../../../../geometry/polyline';
 import verb from 'verb-nurbs';
 
@@ -17,7 +17,7 @@ describe('Ellipse Offset Visual Validation', () => {
   beforeAll(() => {
     try {
       mkdirSync(outputDir, { recursive: true });
-    } catch (e) {
+    } catch {
       // Directory might already exist
     }
   });
@@ -26,7 +26,7 @@ describe('Ellipse Offset Visual Validation', () => {
    * Calculates the true constant-distance offset points for an ellipse
    * This is the reference implementation from ellipse_offset.md
    */
-  function calculateTrueEllipticalOffsetPoints(
+  function _calculateTrueEllipticalOffsetPoints(
     ellipse: { cx: number; cy: number; rx: number; ry: number },
     offsetDistance: number,
     numSegments = 200
@@ -126,7 +126,7 @@ describe('Ellipse Offset Visual Validation', () => {
       // Get our implementation's result
       const approximatedResult = offsetEllipse(ellipseShape.geometry as Ellipse, offsetDistance, direction);
       const approximatedPoints = approximatedResult.success && approximatedResult.shapes[0].type === 'polyline' 
-        ? polylineToPoints(approximatedResult.shapes[0].geometry)
+        ? polylineToPoints(approximatedResult.shapes[0].geometry as Polyline)
         : [];
       
       // Generate true offset points for comparison
@@ -168,12 +168,12 @@ describe('Ellipse Offset Visual Validation', () => {
       // Our approximation - red dots for debug visualization
       if (approximatedPoints.length > 0) {
         // Show first 50 points as circles for debug visualization
-        approximatedPoints.slice(0, 50).forEach((point: any, idx: number) => {
+        approximatedPoints.slice(0, 50).forEach((point: Point2D, _idx: number) => {
           svg.push(`  <circle cx="${point.x}" cy="${point.y}" r="1" fill="red" opacity="0.6" />`);
         });
         
         // Also show as continuous path in red dashed line
-        const approxPathD = "M " + approximatedPoints.map((p: any) => `${p.x.toFixed(3)} ${p.y.toFixed(3)}`).join(" L ") + " Z";
+        const approxPathD = "M " + approximatedPoints.map((p: Point2D) => `${p.x.toFixed(3)} ${p.y.toFixed(3)}`).join(" L ") + " Z";
         svg.push(`  <path d="${approxPathD}" stroke="red" stroke-width="1" fill="none" stroke-dasharray="3,2" opacity="0.8" />`);
       }
       
@@ -215,7 +215,7 @@ describe('Ellipse Offset Visual Validation', () => {
   /**
    * Calculates the maximum deviation between two point arrays
    */
-  function calculateMaxDeviation(
+  function _calculateMaxDeviation(
     points1: Array<{ x: number; y: number }>,
     points2: Array<{ x: number; y: number }>
   ): number {
@@ -260,14 +260,14 @@ describe('Ellipse Offset Visual Validation', () => {
     let approximatedPoints: Array<{ x: number; y: number }> = [];
     
     if (approximatedResult.shapes[0].type === 'polyline') {
-      approximatedPoints = polylineToPoints(approximatedResult.shapes[0].geometry);
+      approximatedPoints = polylineToPoints(approximatedResult.shapes[0].geometry as Polyline);
     } else if (approximatedResult.shapes[0].type === 'spline') {
       // For splines, we need to sample points ON the curve (not control points)
       const splineGeometry = approximatedResult.shapes[0].geometry as Spline;
       
       try {
         // Recreate the NURBS curve from the spline geometry using verb static method
-        const controlPoints3D = splineGeometry.controlPoints.map((p: any) => [p.x, p.y, 0]);
+        const controlPoints3D = splineGeometry.controlPoints.map((p: Point2D) => [p.x, p.y, 0]);
         const nurbsCurve = verb.geom.NurbsCurve.byKnotsControlPointsWeights(
           splineGeometry.degree,
           splineGeometry.knots,
@@ -284,7 +284,7 @@ describe('Ellipse Offset Visual Validation', () => {
           const point3D = nurbsCurve.point(t);
           approximatedPoints.push({ x: point3D[0], y: point3D[1] });
         }
-      } catch (error) {
+      } catch {
         approximatedPoints = splineGeometry.controlPoints;
       }
     }
@@ -384,14 +384,14 @@ describe('Ellipse Offset Visual Validation', () => {
     let approximatedPoints: Array<{ x: number; y: number }> = [];
     
     if (approximatedResult.shapes[0].type === 'polyline') {
-      approximatedPoints = polylineToPoints(approximatedResult.shapes[0].geometry);
+      approximatedPoints = polylineToPoints(approximatedResult.shapes[0].geometry as Polyline);
     } else if (approximatedResult.shapes[0].type === 'spline') {
       // For splines, we need to sample points ON the curve (not control points)
       const splineGeometry = approximatedResult.shapes[0].geometry as Spline;
       
       try {
         // Recreate the NURBS curve from the spline geometry using verb static method
-        const controlPoints3D = splineGeometry.controlPoints.map((p: any) => [p.x, p.y, 0]);
+        const controlPoints3D = splineGeometry.controlPoints.map((p: Point2D) => [p.x, p.y, 0]);
         const nurbsCurve = verb.geom.NurbsCurve.byKnotsControlPointsWeights(
           splineGeometry.degree,
           splineGeometry.knots,
@@ -408,7 +408,7 @@ describe('Ellipse Offset Visual Validation', () => {
           const point3D = nurbsCurve.point(t);
           approximatedPoints.push({ x: point3D[0], y: point3D[1] });
         }
-      } catch (error) {
+      } catch {
         approximatedPoints = splineGeometry.controlPoints;
       }
     }
@@ -494,14 +494,14 @@ describe('Ellipse Offset Visual Validation', () => {
     let approximatedPoints: Array<{ x: number; y: number }> = [];
     
     if (approximatedResult.shapes[0].type === 'polyline') {
-      approximatedPoints = polylineToPoints(approximatedResult.shapes[0].geometry);
+      approximatedPoints = polylineToPoints(approximatedResult.shapes[0].geometry as Polyline);
     } else if (approximatedResult.shapes[0].type === 'spline') {
       // For splines, we need to sample points ON the curve (not control points)
       const splineGeometry = approximatedResult.shapes[0].geometry as Spline;
       
       try {
         // Recreate the NURBS curve from the spline geometry using verb static method
-        const controlPoints3D = splineGeometry.controlPoints.map((p: any) => [p.x, p.y, 0]);
+        const controlPoints3D = splineGeometry.controlPoints.map((p: Point2D) => [p.x, p.y, 0]);
         const nurbsCurve = verb.geom.NurbsCurve.byKnotsControlPointsWeights(
           splineGeometry.degree,
           splineGeometry.knots,
@@ -518,7 +518,7 @@ describe('Ellipse Offset Visual Validation', () => {
           const point3D = nurbsCurve.point(t);
           approximatedPoints.push({ x: point3D[0], y: point3D[1] });
         }
-      } catch (error) {
+      } catch {
         approximatedPoints = splineGeometry.controlPoints;
       }
     }
@@ -602,14 +602,14 @@ describe('Ellipse Offset Visual Validation', () => {
     let approximatedPoints: Array<{ x: number; y: number }> = [];
     
     if (approximatedResult.shapes[0].type === 'polyline') {
-      approximatedPoints = polylineToPoints(approximatedResult.shapes[0].geometry);
+      approximatedPoints = polylineToPoints(approximatedResult.shapes[0].geometry as Polyline);
     } else if (approximatedResult.shapes[0].type === 'spline') {
       // For splines, we need to sample points ON the curve (not control points)
       const splineGeometry = approximatedResult.shapes[0].geometry as Spline;
       
       try {
         // Recreate the NURBS curve from the spline geometry using verb static method
-        const controlPoints3D = splineGeometry.controlPoints.map((p: any) => [p.x, p.y, 0]);
+        const controlPoints3D = splineGeometry.controlPoints.map((p: Point2D) => [p.x, p.y, 0]);
         const nurbsCurve = verb.geom.NurbsCurve.byKnotsControlPointsWeights(
           splineGeometry.degree,
           splineGeometry.knots,
@@ -626,7 +626,7 @@ describe('Ellipse Offset Visual Validation', () => {
           const point3D = nurbsCurve.point(t);
           approximatedPoints.push({ x: point3D[0], y: point3D[1] });
         }
-      } catch (error) {
+      } catch {
         approximatedPoints = splineGeometry.controlPoints;
       }
     }

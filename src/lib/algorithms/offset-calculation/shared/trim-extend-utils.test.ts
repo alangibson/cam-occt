@@ -6,8 +6,7 @@ import {
   calculatePointToLineDistance,
   snapParameterToEndpoints,
   validateTrimExtendParameters,
-  type TrimExtendParams,
-  type TrimExtendValidationResult
+  type TrimExtendParams
 } from './trim-extend-utils';
 
 describe('trim-extend-utils', () => {
@@ -236,7 +235,7 @@ describe('trim-extend-utils', () => {
 
       it('should reject point with non-numeric coordinates', () => {
         const params: TrimExtendParams = {
-          point: { x: 'invalid' as any, y: 2 },
+          point: { x: 'invalid' as unknown as number, y: 2 },
           tolerance: 0.01
         };
         
@@ -272,7 +271,7 @@ describe('trim-extend-utils', () => {
       it('should reject non-numeric tolerance', () => {
         const params: TrimExtendParams = {
           point: { x: 1, y: 2 },
-          tolerance: 'invalid' as any
+          tolerance: 'invalid' as unknown as number
         };
         
         const result = validateTrimExtendParameters(params);
@@ -308,7 +307,7 @@ describe('trim-extend-utils', () => {
         const params: TrimExtendParams = {
           point: { x: 1, y: 2 },
           tolerance: 0.01,
-          maxExtension: 'invalid' as any
+          maxExtension: 'invalid' as unknown as number
         };
         
         const result = validateTrimExtendParameters(params);
@@ -344,7 +343,7 @@ describe('trim-extend-utils', () => {
     describe('multiple validation errors', () => {
       it('should collect multiple errors', () => {
         const params: TrimExtendParams = {
-          point: { x: 'invalid' as any, y: 2 },
+          point: { x: 'invalid' as unknown as number, y: 2 },
           tolerance: -1,
           maxExtension: 0
         };

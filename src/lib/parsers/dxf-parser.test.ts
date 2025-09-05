@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { readFileSync } from 'fs';
+import type { DXFEntity } from 'dxf';
 
 describe('DXF Parser', () => {
   it('should be able to import the DXF parser module without errors', async () => {
@@ -51,7 +52,7 @@ EOF`;
     
     
     expect(parsed.entities).toBeDefined();
-    expect(parsed.entities.length).toBeGreaterThan(0);
+    expect(parsed.entities!.length).toBeGreaterThan(0);
   });
 
   it('should debug SPLINE parsing with raw library output', async () => {
@@ -62,12 +63,13 @@ EOF`;
     const parsed = parseString(dxfContent);
     
     
-    const splineEntity = parsed.entities?.find((e: any) => e.type === 'SPLINE');
+    const splineEntity = parsed.entities?.find((e: DXFEntity) => e.type === 'SPLINE');
     if (splineEntity) {
+      // Spline entity found - could add validation here
     }
     
     expect(parsed.entities).toBeDefined();
-    expect(parsed.entities.length).toBeGreaterThan(0);
+    expect(parsed.entities!.length).toBeGreaterThan(0);
   });
 
   it('should parse CIRCLE entities from real DXF file', async () => {
@@ -84,7 +86,7 @@ EOF`;
     // Should contain CIRCLE entities
     const circleShapes = drawing.shapes.filter(s => s.type === 'circle');
     
-    if (parsed.entities?.some((e: any) => e.type === 'CIRCLE')) {
+    if (parsed.entities?.some((e: DXFEntity) => e.type === 'CIRCLE')) {
       expect(circleShapes.length).toBeGreaterThan(0);
     }
   });

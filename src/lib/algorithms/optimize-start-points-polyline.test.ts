@@ -2,9 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import { createPolylineFromVertices, polylineToPoints } from '$lib/geometry/polyline';
 import type { Shape } from '../../lib/types';
-import type { Polyline } from '../../lib/types/geometry';
+import type { Polyline, Line, Arc } from '../../lib/types/geometry';
 import type { Chain } from './chain-detection/chain-detection';
-import { LeadType } from '../types/direction';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
 
 describe('optimizeStartPoints - polyline splitting', () => {
@@ -70,12 +69,12 @@ describe('optimizeStartPoints - polyline splitting', () => {
       ], false, { id: 'L-polyline' }),
       {
         id: 'closing-line',
-        type: LeadType.LINE,
+        type: 'line',
         geometry: {
           start: { x: 10, y: 10 },
           end: { x: 0, y: 0 }
-        }
-      }
+        } as Line
+      } as Shape
     ];
 
     const chain: Chain = {
@@ -94,8 +93,8 @@ describe('optimizeStartPoints - polyline splitting', () => {
     const firstHalf: Shape | undefined = splitLines.find(s => s.id.includes('split-1'));
     const secondHalf: Shape | undefined = splitLines.find(s => s.id.includes('split-2'));
     
-    const firstGeom = firstHalf!.geometry as Polyline;
-    const secondGeom = secondHalf!.geometry as Polyline;
+    const firstGeom = firstHalf!.geometry as Line;
+    const secondGeom = secondHalf!.geometry as Line;
     
     // First half should go from (10,10) to (5,5)
     expect(firstGeom.start).toEqual({ x: 10, y: 10 });
@@ -221,12 +220,11 @@ describe('optimizeStartPoints - polyline splitting', () => {
       
       // Check that arc geometry is preserved
       const hasArc = geom.shapes.some(shape => shape.type === 'arc');
-      const hasLine = geom.shapes.some(shape => shape.type === 'line');
       
       // At least one piece should contain the original arc (not converted to line)
       if (hasArc) {
         const arcShape = geom.shapes.find(shape => shape.type === 'arc')!;
-        const arcGeom = arcShape.geometry as any;
+        const arcGeom = arcShape.geometry as Arc;
         
         // Verify arc properties are preserved
         expect(arcGeom.center).toBeDefined();
@@ -250,7 +248,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
     
     // Verify arc properties are intact
     arcShapes.forEach(arc => {
-      const geom = arc.geometry as any;
+      const geom = arc.geometry as Arc;
       expect(geom.center).toBeDefined();
       expect(geom.radius).toBe(5); // Should preserve original radius
       expect(typeof geom.startAngle).toBe('number');

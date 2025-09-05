@@ -336,9 +336,11 @@ describe('generateGCode', () => {
         layer: 'test',
         geometry: {
           controlPoints: [{ x: 0, y: 0 }], // Insufficient points
-          weights: undefined,
-          knots: undefined,
-          degree: 2
+          weights: [],
+          knots: [],
+          degree: 2,
+          fitPoints: [],
+          closed: false
         } as Spline
       };
 
@@ -383,10 +385,6 @@ describe('generateGCode', () => {
       
       // Check that coordinates appear with proper precision somewhere in the output
       // The exact formatting depends on how the path is processed
-      const lines = gcode.split('\n');
-      const hasCoordinateFormatting = lines.some(line => 
-        line.includes('X1.1235') || line.includes('Y2.9877')
-      );
       
       // Check Z coordinate precision (should be 3 decimal places for non-coordinates)
       expect(gcode).toContain('Z10.123');

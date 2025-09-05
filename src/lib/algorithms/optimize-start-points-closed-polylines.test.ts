@@ -2,7 +2,6 @@ import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import { isChainClosed } from './part-detection';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import type { Shape } from '../../lib/types';
 import type { Chain } from './chain-detection/chain-detection';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
 

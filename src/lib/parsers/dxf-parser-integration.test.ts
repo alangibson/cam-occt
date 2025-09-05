@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { readFileSync } from 'fs';
 import { parseString } from 'dxf';
+import type { DXFEntity } from 'dxf';
 import { polylineToVertices } from '../geometry/polyline';
+import type { Polyline, Ellipse, PolylineVertex } from '$lib/types/geometry';
 
 describe('DXF Parser - Integration Tests', () => {
   describe('Whitespace handling', () => {
@@ -47,12 +49,12 @@ describe('DXF Parser - Integration Tests', () => {
         expect(result.shapes).toBeDefined();
         
         if (result.shapes.length > 0) {
-          const ellipse: import("$lib/types/geometry").Ellipse = result.shapes.find(s => s.type === 'ellipse');
+          const ellipse = result.shapes.find(s => s.type === 'ellipse');
           expect(ellipse).toBeDefined();
         } else {
           // If no shapes parsed, this is a known limitation
         }
-      } catch (error) {
+      } catch {
         // This is expected - the dxf library doesn't handle whitespace well
       }
     });
@@ -92,7 +94,7 @@ EOF`;
       expect(result.shapes).toBeDefined();
       expect(result.shapes.length).toBeGreaterThan(0);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = result.shapes.find(s => s.type === 'ellipse');
+      const ellipse = result.shapes.find(s => s.type === 'ellipse');
       expect(ellipse).toBeDefined();
     });
   });
@@ -133,8 +135,8 @@ EOF`;
       // Verify bulge values are preserved in segments (via vertices utility)
       const polylinesWithBulge = polylines.filter(p => {
         if (p.type === 'polyline' && p.geometry) {
-          const vertices = polylineToVertices(p.geometry);
-          return vertices.some((vertex: any) => vertex.bulge !== undefined && vertex.bulge !== 0);
+          const vertices = polylineToVertices(p.geometry as Polyline);
+          return vertices.some((vertex: PolylineVertex) => vertex.bulge !== undefined && vertex.bulge !== 0);
         }
         return false;
       });
@@ -177,9 +179,10 @@ EOF`;
 
       const parsed = parseString(dxfContent);
       expect(parsed.entities).toBeDefined();
-      expect(parsed.entities.length).toBeGreaterThan(0);
+      expect(parsed.entities).toBeDefined();
+      expect(parsed.entities!.length).toBeGreaterThan(0);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = parsed.entities.find(e => e.type === 'ELLIPSE');
+      const ellipse = parsed.entities!.find(e => e.type === 'ELLIPSE') as DXFEntity | undefined;
       expect(ellipse).toBeDefined();
       
       // Log the actual structure to understand how dxf library returns ellipse data
@@ -227,7 +230,7 @@ EOF`;
       const result = await parseDXF(dxfContent);
       expect(result.shapes.length).toBeGreaterThan(0);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = result.shapes.find(s => s.type === 'ellipse');
+      const ellipse = result.shapes.find(s => s.type === 'ellipse');
       
       // Log what shapes were actually parsed
       
@@ -237,8 +240,9 @@ EOF`;
         // This is a partial ellipse (arc from 0 to π/2)
         // The parser stores angles in geometry.startParam and geometry.endParam
         expect(ellipse.geometry).toBeDefined();
-        expect(ellipse.geometry.startParam).toBe(0.0);
-        expect(ellipse.geometry.endParam).toBeCloseTo(1.570796327);
+        const ellipseGeometry = ellipse.geometry as Ellipse;
+        expect(ellipseGeometry.startParam).toBe(0.0);
+        expect(ellipseGeometry.endParam).toBeCloseTo(1.570796327);
       }
     });
 
@@ -258,13 +262,14 @@ EOF`;
             ellipses.forEach(e => {
               if (e.type === 'ellipse') {
                 expect(e.geometry).toBeDefined();
-                expect(e.geometry.center).toBeDefined();
-                expect(e.geometry.center.x).toBeDefined();
-                expect(e.geometry.center.y).toBeDefined();
+                const ellipseGeometry = e.geometry as Ellipse;
+                expect(ellipseGeometry.center).toBeDefined();
+                expect(ellipseGeometry.center.x).toBeDefined();
+                expect(ellipseGeometry.center.y).toBeDefined();
               }
             });
           }
-        } catch (e: any) {
+        } catch {
           // File might not exist, which is okay
         }
       }
@@ -314,17 +319,17 @@ ENDSEC
 EOF`;
 
       const parsed = parseString(dxfContent);
-      const polyline: import("$lib/types/geometry").Polyline = parsed.entities.find((e: any) => e.type === 'LWPOLYLINE');
+      const polyline = parsed.entities!.find(e => e.type === 'LWPOLYLINE') as DXFEntity | undefined;
       
       expect(polyline).toBeDefined();
-      expect(polyline.vertices).toBeDefined();
-      expect(polyline.vertices.length).toBe(4);
+      expect(polyline?.vertices).toBeDefined();
+      expect(polyline?.vertices?.length).toBe(4);
       
       // Check bulge values in the raw DXF entity (this tests the underlying library)
-      expect(polyline.vertices[0].bulge).toBe(1.0);
-      expect(polyline.vertices[1].bulge).toBe(-0.5);
-      expect(polyline.vertices[2].bulge).toBe(0.0);
-      expect(polyline.vertices[3].bulge).toBe(0.5);
+      expect(polyline?.vertices?.[0].bulge).toBe(1.0);
+      expect(polyline?.vertices?.[1].bulge).toBe(-0.5);
+      expect(polyline?.vertices?.[2].bulge).toBe(0.0);
+      expect(polyline?.vertices?.[3].bulge).toBe(0.5);
     });
   });
 });

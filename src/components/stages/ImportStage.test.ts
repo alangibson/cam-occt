@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { workflowStore } from '../../lib/stores/workflow';
 import { drawingStore } from '../../lib/stores/drawing';

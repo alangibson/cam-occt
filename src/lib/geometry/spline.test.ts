@@ -341,7 +341,9 @@ describe('getSplinePointAt', () => {
     vi.mocked(tessellateSpline).mockReturnValue({
       success: true,
       points: mockPoints,
-      method: 'verb-nurbs'
+      methodUsed: 'verb-nurbs',
+      warnings: [],
+      errors: []
     });
 
     const spline: Spline = {
@@ -368,7 +370,9 @@ describe('getSplinePointAt', () => {
     vi.mocked(tessellateSpline).mockReturnValue({
       success: true,
       points: mockPoints,
-      method: 'verb-nurbs'
+      methodUsed: 'verb-nurbs',
+      warnings: [],
+      errors: []
     });
 
     const spline: Spline = {
@@ -394,7 +398,9 @@ describe('getSplinePointAt', () => {
     vi.mocked(tessellateSpline).mockReturnValue({
       success: true,
       points: mockPoints,
-      method: 'verb-nurbs'
+      methodUsed: 'verb-nurbs',
+      warnings: [],
+      errors: []
     });
 
     const spline: Spline = {
@@ -416,7 +422,9 @@ describe('getSplinePointAt', () => {
     vi.mocked(tessellateSpline).mockReturnValue({
       success: false,
       points: [],
-      method: 'verb-nurbs'
+      methodUsed: 'verb-nurbs',
+      warnings: [],
+      errors: ['Tessellation failed']
     });
 
     const spline: Spline = {
@@ -457,7 +465,9 @@ describe('getSplinePointAt', () => {
     vi.mocked(tessellateSpline).mockReturnValue({
       success: true,
       points: mockPoints,
-      method: 'verb-nurbs'
+      methodUsed: 'verb-nurbs',
+      warnings: [],
+      errors: []
     });
 
     const spline: Spline = {
@@ -480,7 +490,9 @@ describe('getSplinePointAt', () => {
     vi.mocked(tessellateSpline).mockReturnValue({
       success: true,
       points: [],
-      method: 'verb-nurbs'
+      methodUsed: 'verb-nurbs',
+      warnings: [],
+      errors: []
     });
 
     const spline: Spline = {

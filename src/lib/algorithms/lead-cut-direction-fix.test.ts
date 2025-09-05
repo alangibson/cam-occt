@@ -7,6 +7,7 @@ import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
 import { createPolylineFromVertices, polylineToPoints } from '../geometry/polyline';
+import type { Shape } from '../types';
 
 describe('Lead Cut Direction Fix', () => {
   // Helper to check if a point is inside a polygon using ray casting
@@ -30,17 +31,19 @@ describe('Lead Cut Direction Fix', () => {
   }
 
   // Helper to get polygon points from a chain
-  function getPolygonFromChain(chain: any): { x: number; y: number }[] {
+  function getPolygonFromChain(chain: { shapes: Shape[] }): { x: number; y: number }[] {
     const points: { x: number; y: number }[] = [];
     
     for (const shape of chain.shapes) {
       if (shape.type === 'line') {
-        points.push(shape.geometry.start);
+        const lineGeometry = shape.geometry as import('../types/geometry').Line;
+        points.push(lineGeometry.start);
       } else if (shape.type === 'polyline') {
-        points.push(...polylineToPoints(shape.geometry));
+        const polylineGeometry = shape.geometry as import('../types/geometry').Polyline;
+        points.push(...polylineToPoints(polylineGeometry));
       } else if (shape.type === 'arc') {
         // Sample points along the arc
-        const arc: import("$lib/types/geometry").Arc = shape.geometry;
+        const arc = shape.geometry as import('../types/geometry').Arc;
         const segments = Math.max(8, Math.ceil(Math.abs(arc.endAngle - arc.startAngle) * arc.radius / 2));
         for (let i: number = 0; i < segments; i++) {
           const t: number = i / segments;
@@ -52,7 +55,7 @@ describe('Lead Cut Direction Fix', () => {
         }
       } else if (shape.type === 'circle') {
         // Sample points around the circle
-        const circle: import("$lib/types/geometry").Circle = shape.geometry;
+        const circle = shape.geometry as import('../types/geometry').Circle;
         const segments = Math.max(16, Math.ceil(2 * Math.PI * circle.radius / 2));
         for (let i: number = 0; i < segments; i++) {
           const angle: number = (2 * Math.PI * i) / segments;
@@ -68,7 +71,7 @@ describe('Lead Cut Direction Fix', () => {
   }
 
   // Helper to check if point is in solid area (inside shell, outside holes)
-  function isPointInSolidArea(point: { x: number; y: number }, part: any): boolean {
+  function isPointInSolidArea(point: { x: number; y: number }, part: { shell: { chain: { shapes: Shape[] } }, holes: { chain: { shapes: Shape[] } }[] }): boolean {
     const shellPolygon = getPolygonFromChain(part.shell.chain);
     
     // First check if point is inside the shell
@@ -141,7 +144,6 @@ describe('Lead Cut Direction Fix', () => {
     
     // At least one cut direction should be better than no cut direction
     const bestCutDir = Math.min(clockwiseSolid, counterclockwiseSolid);
-    const improvement = noCutDirSolid - bestCutDir;
     
     
     // Should show some improvement, or at least be no worse
@@ -159,13 +161,10 @@ describe('Lead Cut Direction Fix', () => {
       { x: 0, y: 0, bulge: 0 }
     ];
     
+    const squareShape = createPolylineFromVertices(squareVertices, true);
     const squareChain = {
       id: 'test-square',
-      shapes: [{
-        id: 'square-1',
-        type: 'polyline',
-        geometry: createPolylineFromVertices(squareVertices, true)
-      }]
+      shapes: [squareShape]
     };
     
     const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 5 };

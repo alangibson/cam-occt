@@ -2,18 +2,13 @@ import { describe, it, expect } from 'vitest';
 import { findPartContainingChain } from './chain-part-interactions';
 import type { DetectedPart, PartHole, PartShell } from '../algorithms/part-detection';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import type { BoundingBox } from '../types/geometry';
 
 describe('findPartContainingChain', () => {
   // Helper function to create a mock chain
   function createMockChain(id: string): Chain {
     return {
       id,
-      shapes: [],
-      isClosed: true,
-      tolerance: 0.1,
-      distance: 0,
-      boundingBox: { minX: 0, minY: 0, maxX: 10, maxY: 10 }
+      shapes: []
     };
   }
 
@@ -34,7 +29,8 @@ describe('findPartContainingChain', () => {
       id: `hole-${chainId}`,
       chain: createMockChain(chainId),
       type: 'hole',
-      boundingBox: { minX: 10, minY: 10, maxX: 20, maxY: 20 }
+      boundingBox: { minX: 10, minY: 10, maxX: 20, maxY: 20 },
+      holes: []
     };
   }
 
@@ -57,8 +53,8 @@ describe('findPartContainingChain', () => {
 
     it('should return undefined for null/undefined chainId', () => {
       const parts = [createMockPart('shell-1')];
-      expect(findPartContainingChain(null as any, parts)).toBeUndefined();
-      expect(findPartContainingChain(undefined as any, parts)).toBeUndefined();
+      expect(findPartContainingChain(null as unknown as string, parts)).toBeUndefined();
+      expect(findPartContainingChain(undefined as unknown as string, parts)).toBeUndefined();
     });
 
     it('should return undefined for empty parts array', () => {
@@ -67,8 +63,8 @@ describe('findPartContainingChain', () => {
     });
 
     it('should return undefined for null/undefined parts array', () => {
-      expect(findPartContainingChain('chain-1', null as any)).toBeUndefined();
-      expect(findPartContainingChain('chain-1', undefined as any)).toBeUndefined();
+      expect(findPartContainingChain('chain-1', null as unknown as DetectedPart[])).toBeUndefined();
+      expect(findPartContainingChain('chain-1', undefined as unknown as DetectedPart[])).toBeUndefined();
     });
 
     it('should return undefined when chain is not found in any part', () => {

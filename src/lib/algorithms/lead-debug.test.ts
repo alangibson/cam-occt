@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
 import { createPolylineFromVertices } from '../geometry/polyline';
+import type { DetectedPart } from './part-detection';
 
 describe('Lead Direction Debug', () => {
   it('should debug cut direction logic', () => {
@@ -17,43 +18,41 @@ describe('Lead Direction Debug', () => {
     
     const squareChain = {
       id: 'test-square',
-      shapes: [{
-        id: 'square-1',
-        type: 'polyline',
-        geometry: createPolylineFromVertices(squareVertices, true)
-      }]
+      shapes: [createPolylineFromVertices(squareVertices, true)]
     };
     
     const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 5 };
     const noLeadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
     
     // Create a simple part context to make it a shell
-    const simplePart = {
+    const simplePart: DetectedPart = {
       id: 'test-part',
       shell: {
         id: 'shell-1',
+        type: 'shell',
         chain: squareChain,
-        boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 }
+        boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
+        holes: []
       },
       holes: []
     };
     
     const noneResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.NONE, simplePart);
     if (noneResult.leadIn) {
-      const start = noneResult.leadIn.points[0];
-      const end = noneResult.leadIn.points[noneResult.leadIn.points.length - 1];
+      const _start = noneResult.leadIn.points[0];
+      const _end = noneResult.leadIn.points[noneResult.leadIn.points.length - 1];
     }
     
     const clockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.CLOCKWISE, simplePart);
     if (clockwiseResult.leadIn) {
-      const start = clockwiseResult.leadIn.points[0];
-      const end = clockwiseResult.leadIn.points[clockwiseResult.leadIn.points.length - 1];
+      const _start = clockwiseResult.leadIn.points[0];
+      const _end = clockwiseResult.leadIn.points[clockwiseResult.leadIn.points.length - 1];
     }
     
     const counterclockwiseResult = calculateLeads(squareChain, leadConfig, noLeadOut, CutDirection.COUNTERCLOCKWISE, simplePart);
     if (counterclockwiseResult.leadIn) {
-      const start = counterclockwiseResult.leadIn.points[0];
-      const end = counterclockwiseResult.leadIn.points[counterclockwiseResult.leadIn.points.length - 1];
+      const _start = counterclockwiseResult.leadIn.points[0];
+      const _end = counterclockwiseResult.leadIn.points[counterclockwiseResult.leadIn.points.length - 1];
     }
     
     // Test if results are different
@@ -65,7 +64,9 @@ describe('Lead Direction Debug', () => {
     const allSame = positions.every(pos => pos === positions[0]);
     
     if (allSame) {
+      // All cut directions produced the same lead position
     } else {
+      // Different cut directions produced different lead positions
     }
   });
   
@@ -81,11 +82,7 @@ describe('Lead Direction Debug', () => {
     
     const squareChain = {
       id: 'test-square',
-      shapes: [{
-        id: 'square-1',
-        type: 'polyline',
-        geometry: createPolylineFromVertices(squareVertices, true)
-      }]
+      shapes: [createPolylineFromVertices(squareVertices, true)]
     };
     
     const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 5 };
@@ -104,7 +101,9 @@ describe('Lead Direction Debug', () => {
     const allSame = positions.every(pos => pos === positions[0]);
     
     if (allSame) {
+      // All cut directions produced the same lead position
     } else {
+      // Different cut directions produced different lead positions
     }
   });
   
@@ -123,11 +122,7 @@ describe('Lead Direction Debug', () => {
     
     const originalChain = {
       id: 'test-square',
-      shapes: [{
-        id: 'square-1',
-        type: 'polyline' as const,
-        geometry: createPolylineFromVertices(squareVertices, true)
-      }]
+      shapes: [createPolylineFromVertices(squareVertices, true, { id: 'square-1' })]
     };
     
     const leadConfig: LeadInConfig = { type: LeadType.LINE, length: 2 }; // Shorter length to avoid validation warnings

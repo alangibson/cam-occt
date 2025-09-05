@@ -4,8 +4,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { saveApplicationState, restoreApplicationState } from '../stores/persistence';
-import { clearPersistedState } from './state-persistence';
-import { workflowStore } from '../stores/workflow';
+import { workflowStore, type WorkflowState, type WorkflowStage } from '../stores/workflow';
 
 // Mock localStorage
 const localStorageMock = {
@@ -34,10 +33,10 @@ describe('Workflow Stage Persistence', () => {
 
   it('should persist and restore current workflow stage', async () => {
     // Verify initial state
-    let workflowState: any = null;
+    let workflowState: WorkflowState | null = null;
     const unsubscribe1 = workflowStore.subscribe(state => { workflowState = state; });
     unsubscribe1();
-    expect(workflowState.currentStage).toBe('import'); // Initial stage
+    expect(workflowState!.currentStage).toBe('import'); // Initial stage
 
     // Progress through stages properly: complete current, then advance
     workflowStore.completeStage('import');
@@ -51,24 +50,21 @@ describe('Workflow Stage Persistence', () => {
     const unsubscribe2 = workflowStore.subscribe(state => { workflowState = state; });
     unsubscribe2();
     
-    expect(workflowState.currentStage).toBe('program');
-    expect(workflowState.completedStages.has('import')).toBe(true);
-    expect(workflowState.completedStages.has('edit')).toBe(true);
-    expect(workflowState.completedStages.has('prepare')).toBe(true);
+    expect(workflowState!.currentStage).toBe('program');
+    expect(workflowState!.completedStages.has('import')).toBe(true);
+    expect(workflowState!.completedStages.has('edit')).toBe(true);
+    expect(workflowState!.completedStages.has('prepare')).toBe(true);
 
     // Save application state
     await saveApplicationState();
     
-    // Debug: Check what was actually saved
-    const savedData = JSON.parse(localStorageMock.getItem('metalheadcam-state') || '{}');
-
     // Reset workflow to simulate fresh app load
     workflowStore.reset();
 
     // Verify reset worked
     const unsubscribe3 = workflowStore.subscribe(state => { workflowState = state; });
     unsubscribe3();
-    expect(workflowState.currentStage).toBe('import'); // Back to initial
+    expect(workflowState!.currentStage).toBe('import'); // Back to initial
 
     // Restore application state
     await restoreApplicationState();
@@ -76,10 +72,10 @@ describe('Workflow Stage Persistence', () => {
     // Verify stage was restored correctly
     const unsubscribe4 = workflowStore.subscribe(state => { workflowState = state; });
     unsubscribe4();
-    expect(workflowState.currentStage).toBe('program'); // Should be restored
-    expect(workflowState.completedStages.has('import')).toBe(true);
-    expect(workflowState.completedStages.has('edit')).toBe(true);
-    expect(workflowState.completedStages.has('prepare')).toBe(true);
+    expect(workflowState!.currentStage).toBe('program'); // Should be restored
+    expect(workflowState!.completedStages.has('import')).toBe(true);
+    expect(workflowState!.completedStages.has('edit')).toBe(true);
+    expect(workflowState!.completedStages.has('prepare')).toBe(true);
 
   });
 
@@ -100,11 +96,11 @@ describe('Workflow Stage Persistence', () => {
       
       // Complete prerequisite stages
       for (const completedStage of testCase.completed) {
-        workflowStore.completeStage(completedStage as any);
+        workflowStore.completeStage(completedStage as WorkflowStage);
       }
       
       // Set current stage
-      workflowStore.setStage(testCase.stage as any);
+      workflowStore.setStage(testCase.stage as WorkflowStage);
       
       // Save state
       await saveApplicationState();
@@ -116,10 +112,10 @@ describe('Workflow Stage Persistence', () => {
       await restoreApplicationState();
       
       // Verify
-      let workflowState: any = null;
+      let workflowState: WorkflowState | null = null;
       const unsubscribe = workflowStore.subscribe(state => { workflowState = state; });
       unsubscribe();
-      expect(workflowState.currentStage).toBe(testCase.stage);
+      expect(workflowState!.currentStage).toBe(testCase.stage);
       
     }
   });
@@ -141,16 +137,16 @@ describe('Workflow Stage Persistence', () => {
     await restoreApplicationState();
 
     // Verify completed stages were restored
-    let workflowState: any = null;
+    let workflowState: WorkflowState | null = null;
     const unsubscribe = workflowStore.subscribe(state => { workflowState = state; });
     unsubscribe();
     
-    expect(workflowState.currentStage).toBe('simulate');
-    expect(workflowState.completedStages.has('import')).toBe(true);
-    expect(workflowState.completedStages.has('edit')).toBe(true);
-    expect(workflowState.completedStages.has('prepare')).toBe(true);
-    expect(workflowState.completedStages.has('program')).toBe(true);
-    expect(workflowState.completedStages.has('simulate')).toBe(false); // Current stage, not completed
+    expect(workflowState!.currentStage).toBe('simulate');
+    expect(workflowState!.completedStages.has('import')).toBe(true);
+    expect(workflowState!.completedStages.has('edit')).toBe(true);
+    expect(workflowState!.completedStages.has('prepare')).toBe(true);
+    expect(workflowState!.completedStages.has('program')).toBe(true);
+    expect(workflowState!.completedStages.has('simulate')).toBe(false); // Current stage, not completed
 
   });
 });

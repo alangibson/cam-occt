@@ -1,8 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { Path } from '../../lib/stores/paths';
-import type { Chain } from '../../lib/algorithms/chain-detection';
-import type { Shape, Line, Arc, Circle } from '../../lib/types';
+import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
+import type { Shape, Line } from '../../lib/types';
 import type { OffsetDirection } from '../../lib/algorithms/offset-calculation/offset/types';
+import { LeadType, CutDirection } from '../../lib/types/direction';
 
 describe('SimulateStage offset path detection', () => {
   let mockPath: Path;
@@ -16,7 +17,7 @@ describe('SimulateStage offset path detection', () => {
       {
         id: 'shape1',
         type: 'line',
-        layerId: 'layer1',
+        layer: 'layer1',
         geometry: {
           start: { x: 0, y: 0 },
           end: { x: 100, y: 0 }
@@ -25,7 +26,7 @@ describe('SimulateStage offset path detection', () => {
       {
         id: 'shape2',
         type: 'line',
-        layerId: 'layer1',
+        layer: 'layer1',
         geometry: {
           start: { x: 100, y: 0 },
           end: { x: 100, y: 100 }
@@ -38,7 +39,7 @@ describe('SimulateStage offset path detection', () => {
       {
         id: 'offset-shape1',
         type: 'line',
-        layerId: 'layer1',
+        layer: 'layer1',
         geometry: {
           start: { x: -5, y: -5 },
           end: { x: 105, y: -5 }
@@ -47,7 +48,7 @@ describe('SimulateStage offset path detection', () => {
       {
         id: 'offset-shape2',
         type: 'line',
-        layerId: 'layer1',
+        layer: 'layer1',
         geometry: {
           start: { x: 105, y: -5 },
           end: { x: 105, y: 105 }
@@ -57,11 +58,7 @@ describe('SimulateStage offset path detection', () => {
 
     mockChain = {
       id: 'chain1',
-      shapes: mockShapes,
-      closed: false,
-      startPoint: { x: 0, y: 0 },
-      endPoint: { x: 100, y: 100 },
-      area: 0
+      shapes: mockShapes
     };
 
     mockPath = {
@@ -72,7 +69,7 @@ describe('SimulateStage offset path detection', () => {
       toolId: 'tool1',
       enabled: true,
       order: 0,
-      cutDirection: 'counterclockwise',
+      cutDirection: CutDirection.COUNTERCLOCKWISE,
       feedRate: 1000,
       kerfCompensation: 'outset' as OffsetDirection,
       calculatedOffset: undefined
@@ -112,17 +109,17 @@ describe('SimulateStage offset path detection', () => {
       };
 
       // Simulate the logic from SimulateStage
-      const shapes = mockPath.calculatedOffset?.offsetShapes || mockChain.shapes;
+      const shapes = mockPath.calculatedOffset ? mockPath.calculatedOffset.offsetShapes : mockChain.shapes;
       
       expect(shapes).toBe(mockOffsetShapes);
       expect(shapes).not.toBe(mockShapes);
     });
 
     it('should fall back to original chain shapes when no offset exists', () => {
-      mockPath.calculatedOffset = undefined;
+      const pathWithoutOffset: Path = { ...mockPath, calculatedOffset: undefined };
 
       // Simulate the logic from SimulateStage
-      const shapes = mockPath.calculatedOffset?.offsetShapes || mockChain.shapes;
+      const shapes = pathWithoutOffset.calculatedOffset?.offsetShapes || mockChain.shapes;
       
       expect(shapes).toBe(mockShapes);
     });
@@ -177,7 +174,7 @@ describe('SimulateStage offset path detection', () => {
         version: '1.0.0'
       };
 
-      mockPath.leadInType = 'line';
+      mockPath.leadInType = LeadType.LINE;
       mockPath.leadInLength = 10;
 
       // Simulate the chain used for lead calculation

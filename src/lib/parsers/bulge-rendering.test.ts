@@ -5,7 +5,7 @@ import { polylineToVertices } from '../geometry/polyline';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { EPSILON } from '../constants';
-import type { Polyline, Arc } from '../../lib/types/geometry';
+import type { Polyline, Arc, PolylineVertex } from '../../lib/types/geometry';
 
 describe('Bulge Rendering Fixes', () => {
   describe('Polylinie.dxf', () => {
@@ -26,7 +26,7 @@ describe('Bulge Rendering Fixes', () => {
       polylines.forEach(polyline => {
         const geometry = polyline.geometry as Polyline;
         const vertices = polylineToVertices(geometry);
-        const bulgedVertices = vertices.filter((v: any) => Math.abs(v.bulge || 0) > EPSILON);
+        const bulgedVertices = vertices.filter((v: PolylineVertex) => Math.abs(v.bulge || 0) > EPSILON);
         totalBulgedVertices += bulgedVertices.length;
       });
       
@@ -59,7 +59,7 @@ describe('Bulge Rendering Fixes', () => {
       expect(lines.length).toBeGreaterThan(0);
       
       // Check arc properties
-      arcs.forEach((arc, index) => {
+      arcs.forEach((arc) => {
         const geometry = arc.geometry as Arc;
         expect(geometry.center).toBeDefined();
         expect(geometry.radius).toBeGreaterThan(0);
@@ -74,8 +74,8 @@ describe('Bulge Rendering Fixes', () => {
   describe('Bulge calculation validation', () => {
     it('should correctly handle positive bulge (CCW)', () => {
       // Test the bulge conversion directly
-      const start = { x: 0, y: 0 };
-      const end = { x: 100, y: 0 };
+      const _start = { x: 0, y: 0 };
+      const _end = { x: 100, y: 0 };
       const bulge = 1.0; // Should create a semicircle CCW
       
       // This would be tested by importing the bulge conversion function
@@ -84,8 +84,8 @@ describe('Bulge Rendering Fixes', () => {
     });
     
     it('should correctly handle negative bulge (CW)', () => {
-      const start = { x: 0, y: 0 };
-      const end = { x: 100, y: 0 };
+      const _start = { x: 0, y: 0 };
+      const _end = { x: 100, y: 0 };
       const bulge = -1.0; // Should create a semicircle CW
       
       expect(bulge).toBeLessThan(0); // Negative = CW
@@ -99,9 +99,8 @@ describe('Bulge Rendering Fixes', () => {
         // Where θ is the included angle of the arc
         const includedAngle = 4 * Math.atan(Math.abs(bulge));
         const angleDegrees = (includedAngle * 180) / Math.PI;
-        const direction = bulge > 0 ? 'CCW' : 'CW';
         
-        
+       
         // Validate mathematical properties
         expect(typeof bulge).toBe('number');
         expect(isFinite(bulge)).toBe(true);

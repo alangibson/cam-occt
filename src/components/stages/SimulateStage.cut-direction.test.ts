@@ -1,9 +1,9 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { pathStore } from '$lib/stores/paths';
-import { chainStore, clearChains, clearChainSelection, setChains } from '$lib/stores/chains';
-import type { ShapeChain } from '$lib/algorithms/chain-detection';
+import { clearChains, clearChainSelection, setChains } from '$lib/stores/chains';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import type { Shape } from '../../lib/types';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/types/direction';
 
 describe('SimulateStage Cut Direction', () => {
   beforeEach(() => {
@@ -25,7 +25,7 @@ describe('SimulateStage Cut Direction', () => {
     };
 
     // Create a chain with the circle
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain-1',
       shapes: [circleShape]
     };
@@ -93,7 +93,7 @@ describe('SimulateStage Cut Direction', () => {
     };
 
     // Create a chain with the ellipse
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain-2',
       shapes: [ellipseShape]
     };
@@ -140,7 +140,7 @@ describe('SimulateStage Cut Direction', () => {
     };
 
     // Create an open chain
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain-3',
       shapes: [lineShape]
     };

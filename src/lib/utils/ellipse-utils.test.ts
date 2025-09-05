@@ -15,41 +15,29 @@ import type { Ellipse } from '../types/geometry';
 describe('ellipse-utils', () => {
   // Create test ellipses
   const unitCircle: Ellipse = {
-    id: 'circle',
-    type: 'ellipse',
     center: { x: 0, y: 0 },
     majorAxisEndpoint: { x: 1, y: 0 }, // Major axis length = 1
-    minorToMajorRatio: 1.0, // Circle
-    closed: true
+    minorToMajorRatio: 1.0 // Circle
   };
 
   const horizontalEllipse: Ellipse = {
-    id: 'h-ellipse',
-    type: 'ellipse',
     center: { x: 5, y: 3 },
     majorAxisEndpoint: { x: 4, y: 0 }, // Major axis length = 4
-    minorToMajorRatio: 0.5, // Minor axis length = 2
-    closed: true
+    minorToMajorRatio: 0.5 // Minor axis length = 2
   };
 
   const rotatedEllipse: Ellipse = {
-    id: 'rotated',
-    type: 'ellipse',
     center: { x: 2, y: 1 },
     majorAxisEndpoint: { x: 2, y: 3 }, // 45° rotation
-    minorToMajorRatio: 0.6,
-    closed: true
+    minorToMajorRatio: 0.6
   };
 
   const ellipseArc: Ellipse = {
-    id: 'arc',
-    type: 'ellipse',
     center: { x: 0, y: 0 },
     majorAxisEndpoint: { x: 3, y: 0 },
     minorToMajorRatio: 0.8,
     startParam: 0,
-    endParam: Math.PI,
-    closed: false
+    endParam: Math.PI
   };
 
   describe('calculateEllipsePoint', () => {
@@ -461,8 +449,6 @@ describe('ellipse-utils', () => {
     describe('Full ellipses (closed)', () => {
       it('should return true for ellipse with no start/end parameters', () => {
         const ellipse: Ellipse = {
-          id: 'full-ellipse',
-          type: 'ellipse',
           center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 50, y: 0 },
           minorToMajorRatio: 0.5
@@ -473,8 +459,6 @@ describe('ellipse-utils', () => {
 
       it('should return true for ellipse with undefined start/end parameters', () => {
         const ellipse: Ellipse = {
-          id: 'full-ellipse',
-          type: 'ellipse',
           center: { x: 100, y: 200 },
           majorAxisEndpoint: { x: 30, y: 0 },
           minorToMajorRatio: 0.6,
@@ -487,8 +471,6 @@ describe('ellipse-utils', () => {
 
       it('should return true for ellipse with start=0, end=2π', () => {
         const ellipse: Ellipse = {
-          id: 'full-ellipse',
-          type: 'ellipse',
           center: { x: 100, y: 200 },
           majorAxisEndpoint: { x: 50, y: 0 },
           minorToMajorRatio: 0.5,
@@ -501,8 +483,6 @@ describe('ellipse-utils', () => {
 
       it('should return true for ellipse with start≈0, end≈2π (within default tolerance)', () => {
         const ellipse: Ellipse = {
-          id: 'full-ellipse',
-          type: 'ellipse',
           center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 25, y: 0 },
           minorToMajorRatio: 0.8,
@@ -517,8 +497,6 @@ describe('ellipse-utils', () => {
     describe('Ellipse arcs (open)', () => {
       it('should return false for semicircular arc (0 to π)', () => {
         const ellipse: Ellipse = {
-          id: 'arc',
-          type: 'ellipse',
           center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 30, y: 0 },
           minorToMajorRatio: 0.6,
@@ -531,8 +509,6 @@ describe('ellipse-utils', () => {
 
       it('should return false for quarter arc (0 to π/2)', () => {
         const ellipse: Ellipse = {
-          id: 'quarter-arc',
-          type: 'ellipse',
           center: { x: 200, y: 200 },
           majorAxisEndpoint: { x: 50, y: 0 },
           minorToMajorRatio: 0.6,
@@ -545,8 +521,6 @@ describe('ellipse-utils', () => {
 
       it('should return false for three-quarter arc (0 to 3π/2)', () => {
         const ellipse: Ellipse = {
-          id: 'three-quarter-arc',
-          type: 'ellipse',
           center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 40, y: 0 },
           minorToMajorRatio: 0.75,
@@ -559,8 +533,6 @@ describe('ellipse-utils', () => {
 
       it('should return false for arbitrary arc (π/4 to 3π/4)', () => {
         const ellipse: Ellipse = {
-          id: 'arbitrary-arc',
-          type: 'ellipse',
           center: { x: 10, y: 15 },
           majorAxisEndpoint: { x: 20, y: 0 },
           minorToMajorRatio: 0.5,
@@ -575,9 +547,7 @@ describe('ellipse-utils', () => {
     describe('Edge cases and tolerance', () => {
       it('should use custom tolerance when provided', () => {
         const ellipse: Ellipse = {
-          id: 'almost-full',
-          type: 'ellipse',
-          center: { x: 0, y: 0 },
+                    center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 30, y: 0 },
           minorToMajorRatio: 0.6,
           startParam: 0.002, // Slightly larger than default tolerance
@@ -593,8 +563,6 @@ describe('ellipse-utils', () => {
 
       it('should handle negative start parameter', () => {
         const ellipse: Ellipse = {
-          id: 'negative-start',
-          type: 'ellipse',
           center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 25, y: 0 },
           minorToMajorRatio: 0.7,
@@ -607,9 +575,7 @@ describe('ellipse-utils', () => {
 
       it('should handle end parameter slightly larger than 2π', () => {
         const ellipse: Ellipse = {
-          id: 'over-2pi',
-          type: 'ellipse',
-          center: { x: 0, y: 0 },
+                    center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 35, y: 0 },
           minorToMajorRatio: 0.4,
           startParam: 0.0005,
@@ -621,9 +587,7 @@ describe('ellipse-utils', () => {
 
       it('should handle very small tolerance with exact values', () => {
         const ellipse: Ellipse = {
-          id: 'exact',
-          type: 'ellipse',
-          center: { x: 0, y: 0 },
+                    center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 30, y: 0 },
           minorToMajorRatio: 0.6,
           startParam: 0,
@@ -636,9 +600,7 @@ describe('ellipse-utils', () => {
 
       it('should handle very small arc near full circle', () => {
         const ellipse: Ellipse = {
-          id: 'almost-full-arc',
-          type: 'ellipse',
-          center: { x: 0, y: 0 },
+                    center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 30, y: 0 },
           minorToMajorRatio: 0.6,
           startParam: 0.01, // Small gap
@@ -655,8 +617,6 @@ describe('ellipse-utils', () => {
       it('should correctly identify first ellipse from ellipse-test.dxf as closed', () => {
         // This replicates the geometry from the actual test file
         const firstEllipse: Ellipse = {
-          id: 'dxf-ellipse-1',
-          type: 'ellipse',
           center: { x: 100, y: 200 },
           majorAxisEndpoint: { x: 50, y: 0 },
           minorToMajorRatio: 0.5,
@@ -670,8 +630,6 @@ describe('ellipse-utils', () => {
       it('should correctly identify second ellipse from ellipse-test.dxf as open', () => {
         // This replicates the geometry from the actual test file
         const secondEllipse: Ellipse = {
-          id: 'dxf-ellipse-2',
-          type: 'ellipse',
           center: { x: 200, y: 200 },
           majorAxisEndpoint: { x: 50, y: 0 },
           minorToMajorRatio: 0.6,
@@ -684,8 +642,6 @@ describe('ellipse-utils', () => {
 
       it('should handle perfect circle (ratio = 1)', () => {
         const circle: Ellipse = {
-          id: 'circle',
-          type: 'ellipse',
           center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 25, y: 0 },
           minorToMajorRatio: 1.0, // Perfect circle
@@ -698,8 +654,6 @@ describe('ellipse-utils', () => {
 
       it('should handle very flat ellipse', () => {
         const flatEllipse: Ellipse = {
-          id: 'flat',
-          type: 'ellipse',
           center: { x: 0, y: 0 },
           majorAxisEndpoint: { x: 100, y: 0 },
           minorToMajorRatio: 0.01, // Very flat

@@ -15,7 +15,10 @@ vi.mock('../geometry/spline-tessellation', () => ({
       { x: 0, y: 0 },
       { x: 1, y: 1 },
       { x: 2, y: 0 }
-    ]
+    ],
+    errors: [],
+    warnings: [],
+    methodUsed: 'verb-nurbs'
   }))
 }));
 
@@ -87,10 +90,7 @@ describe('tessellation-cache', () => {
         geometry: {
           center: { x: 0, y: 0 },
           minorToMajorRatio: 0.5,
-          majorAxisEndPoint: { x: 10, y: 0 },
-          startAngle: 0,
-          endAngle: 360,
-          rotation: 0
+          majorAxisEndpoint: { x: 10, y: 0 }
         } as Ellipse
       };
 
@@ -129,7 +129,9 @@ describe('tessellation-cache', () => {
       vi.mocked(tessellateSpline).mockReturnValueOnce({
         success: false,
         points: [],
-        error: 'Test error'
+        errors: ['Test error'],
+        warnings: [],
+        methodUsed: 'verb-nurbs'
       });
 
       const splineShape: Shape = {
@@ -189,7 +191,10 @@ describe('tessellation-cache', () => {
       const { tessellateSpline } = await import('../geometry/spline-tessellation');
       vi.mocked(tessellateSpline).mockReturnValueOnce({
         success: true,
-        points: []
+        points: [],
+        errors: [],
+        warnings: [],
+        methodUsed: 'verb-nurbs'
       });
 
       const splineShape: Shape = {
@@ -403,10 +408,7 @@ describe('tessellation-cache', () => {
         geometry: {
           center: { x: 0, y: 0 },
           minorToMajorRatio: 0.5,
-          majorAxisEndPoint: { x: 10, y: 0 },
-          startAngle: 0,
-          endAngle: 360,
-          rotation: 0
+          majorAxisEndpoint: { x: 10, y: 0 }
         } as Ellipse
       };
 
@@ -416,10 +418,7 @@ describe('tessellation-cache', () => {
         geometry: {
           center: { x: 5, y: 5 },
           minorToMajorRatio: 0.5,
-          majorAxisEndPoint: { x: 10, y: 0 },
-          startAngle: 0,
-          endAngle: 360,
-          rotation: 0
+          majorAxisEndpoint: { x: 10, y: 0 }
         } as Ellipse
       };
 

@@ -7,7 +7,7 @@ import {
   isCircle,
   generateCirclePoints
 } from './circle';
-import type { Circle, Arc, Line } from '../types/geometry';
+import type { Circle, Arc, Line, Geometry } from '../types/geometry';
 
 describe('getCircleStartPoint', () => {
   it('should return point at rightmost position of circle', () => {
@@ -239,7 +239,7 @@ describe('isCircle', () => {
       someOtherProperty: true
     };
     
-    expect(isCircle(notCircle as any)).toBe(false);
+    expect(isCircle(notCircle as unknown as Geometry)).toBe(false);
   });
 
   it('should return false for object without radius', () => {
@@ -248,7 +248,7 @@ describe('isCircle', () => {
       someOtherProperty: true
     };
     
-    expect(isCircle(notCircle as any)).toBe(false);
+    expect(isCircle(notCircle as unknown as Geometry)).toBe(false);
   });
 
   it('should return false for object with startAngle (arc)', () => {
@@ -258,7 +258,7 @@ describe('isCircle', () => {
       startAngle: 0
     };
     
-    expect(isCircle(notCircle as any)).toBe(false);
+    expect(isCircle(notCircle as unknown as Geometry)).toBe(false);
   });
 });
 

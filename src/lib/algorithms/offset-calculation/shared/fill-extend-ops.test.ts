@@ -3,7 +3,6 @@ import type { Ellipse, Circle, Point2D } from '../../../types/geometry';
 import {
   validateEllipseOperation,
   validateEllipseIntersectionPoint,
-  processEllipseOperation,
   calculateEllipseAngle,
   determineEllipseExtension,
   createEllipticalArcFromEllipse,
@@ -11,20 +10,14 @@ import {
   getEllipsePoint,
   validateCircleOperation,
   validateCircleIntersectionPoint,
-  processCircleOperation,
   calculateCircleAngle,
   determineCircleExtension,
   createArcFromCircle,
   getCirclePoint,
-  processFillExtendResult,
   applyRotation,
   type OperationParams,
-  type ValidationResult,
   type ExtensionResult,
-  type OperationResult,
-  type EllipseGeometry,
-  type EllipticalArcGeometry,
-  type ExtensionDirection
+  type EllipseGeometry
 } from './fill-extend-ops';
 
 // Mock dependencies
@@ -644,12 +637,12 @@ describe('Fill-Extend Operations Library', () => {
 
   describe('Error Handling', () => {
     it('should handle validation errors gracefully', () => {
-      const invalidEllipse = { center: { x: 0, y: 0 } } as any;
+      const invalidEllipse = { center: { x: 0, y: 0 }, radiusX: 0, radiusY: 0 };
       const params = createTestOperationParams();
 
       const result = validateEllipseOperation(invalidEllipse, params);
 
-      expect(result.isValid).toBe(true); // Actually passes validation
+      expect(result.isValid).toBe(false);
     });
 
     it('should handle extension calculation errors', () => {

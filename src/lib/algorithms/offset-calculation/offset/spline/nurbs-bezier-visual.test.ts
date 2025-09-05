@@ -137,7 +137,7 @@ function generateBezierSVG(data: SVGData): string {
 `;
 
   // Generate paths for each curve set
-  [data.original, data.outset, data.inset].forEach((curveData, index) => {
+  [data.original, data.outset, data.inset].forEach((curveData) => {
     const { curve, beziers, color, label } = curveData;
     
     // Main curve path using tessellation for smooth rendering
@@ -149,9 +149,9 @@ function generateBezierSVG(data: SVGData): string {
     svg += `  <path d="${mainPath}" stroke="${color}" stroke-width="2" fill="none"/>\n`;
     
     // Individual Bezier segments using proper C and Q commands
-    beziers.forEach((bezier, segIndex) => {
+    beziers.forEach((bezier) => {
       const bezierPath = generateBezierPath(bezier);
-      const segmentColor = adjustColorBrightness(color, 0.3);
+      const segmentColor = adjustColorBrightness(color);
       
       svg += `  <path d="${bezierPath}" stroke="${segmentColor}" stroke-width="1" stroke-dasharray="3,2" fill="none"/>\n`;
     });
@@ -232,46 +232,9 @@ function generateBezierPath(bezier: Spline): string {
 }
 
 /**
- * Gets approximate midpoint of a Bezier curve for labeling
- */
-function getBezierMidpoint(bezier: Spline): Point2D {
-  const points = bezier.controlPoints;
-  
-  if (!points || points.length === 0) {
-    return { x: 0, y: 0 };
-  }
-  
-  if (bezier.degree === 3 && points.length === 4) {
-    // Cubic Bezier at t=0.5
-    const t: number = 0.5;
-    const u = 1 - t;
-    
-    return {
-      x: u*u*u * points[0].x + 3*u*u*t * points[1].x + 3*u*t*t * points[2].x + t*t*t * points[3].x,
-      y: u*u*u * points[0].y + 3*u*u*t * points[1].y + 3*u*t*t * points[2].y + t*t*t * points[3].y
-    };
-  } else if (bezier.degree === 2 && points.length === 3) {
-    // Quadratic Bezier at t=0.5  
-    const t: number = 0.5;
-    const u = 1 - t;
-    
-    return {
-      x: u*u * points[0].x + 2*u*t * points[1].x + t*t * points[2].x,
-      y: u*u * points[0].y + 2*u*t * points[1].y + t*t * points[2].y
-    };
-  } else {
-    // Linear or fallback: simple midpoint
-    return {
-      x: (points[0].x + points[points.length - 1].x) / 2,
-      y: (points[0].y + points[points.length - 1].y) / 2
-    };
-  }
-}
-
-/**
  * Adjusts color brightness for segment visualization
  */
-function adjustColorBrightness(color: string, factor: number): string {
+function adjustColorBrightness(color: string): string {
   // Simple color adjustment - make it lighter/darker
   if (color === '#0066cc') return '#4d9fdb';
   if (color === '#00aa00') return '#4dbf4d';

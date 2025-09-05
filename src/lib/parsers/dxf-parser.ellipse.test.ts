@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
-import type { Shape, Ellipse } from '../../lib/types';
+import type { Ellipse } from '../../lib/types';
 
 describe('DXF Parser - ELLIPSE entity support', () => {
   describe('Full ellipse parsing', () => {
@@ -61,10 +61,10 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
-      expect(ellipse.type).toBe('ellipse');
+      const ellipseShape: import("$lib/types/geometry").Shape = drawing.shapes[0];
+      expect(ellipseShape.type).toBe('ellipse');
       
-      const geometry = ellipse.geometry as Ellipse;
+      const geometry = ellipseShape.geometry as Ellipse;
       expect(geometry.center).toEqual({ x: 100, y: 200 });
       expect(geometry.majorAxisEndpoint).toEqual({ x: 50, y: 0 });
       expect(geometry.minorToMajorRatio).toBe(0.5);
@@ -102,10 +102,10 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
-      expect(ellipse.type).toBe('ellipse');
+      const ellipseShape: import("$lib/types/geometry").Shape = drawing.shapes[0];
+      expect(ellipseShape.type).toBe('ellipse');
       
-      const geometry = ellipse.geometry as Ellipse;
+      const geometry = ellipseShape.geometry as Ellipse;
       expect(geometry.center).toEqual({ x: 0, y: 0 });
       expect(geometry.majorAxisEndpoint).toEqual({ x: 0, y: 30 });
       expect(geometry.minorToMajorRatio).toBe(0.8);
@@ -147,10 +147,10 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
-      expect(ellipse.type).toBe('ellipse');
+      const ellipseShape: import("$lib/types/geometry").Shape = drawing.shapes[0];
+      expect(ellipseShape.type).toBe('ellipse');
       
-      const geometry = ellipse.geometry as Ellipse;
+      const geometry = ellipseShape.geometry as Ellipse;
       expect(geometry.center).toEqual({ x: 50, y: 75 });
       expect(geometry.majorAxisEndpoint).toEqual({ x: 25, y: 0 });
       expect(geometry.minorToMajorRatio).toBe(0.6);
@@ -192,10 +192,10 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
-      expect(ellipse.type).toBe('ellipse');
+      const ellipseShape: import("$lib/types/geometry").Shape = drawing.shapes[0];
+      expect(ellipseShape.type).toBe('ellipse');
       
-      const geometry = ellipse.geometry as Ellipse;
+      const geometry = ellipseShape.geometry as Ellipse;
       expect(geometry.center).toEqual({ x: 0, y: 0 });
       expect(geometry.majorAxisEndpoint).toEqual({ x: 40, y: 0 });
       expect(geometry.minorToMajorRatio).toBe(0.75);
@@ -269,10 +269,10 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
-      expect(ellipse.type).toBe('ellipse');
+      const ellipseShape: import("$lib/types/geometry").Shape = drawing.shapes[0];
+      expect(ellipseShape.type).toBe('ellipse');
       
-      const geometry = ellipse.geometry as Ellipse;
+      const geometry = ellipseShape.geometry as Ellipse;
       
       // Verify center is transformed correctly
       // Original: (10, 20), scaled by (2, 1.5), rotated 45°, translated to (100, 200)
@@ -317,10 +317,10 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
-      expect(ellipse.type).toBe('ellipse');
+      const ellipseShape: import("$lib/types/geometry").Shape = drawing.shapes[0];
+      expect(ellipseShape.type).toBe('ellipse');
       
-      const geometry = ellipse.geometry as Ellipse;
+      const geometry = ellipseShape.geometry as Ellipse;
       expect(geometry.minorToMajorRatio).toBe(1.0); // Perfect circle
     });
 
@@ -354,10 +354,10 @@ EOF`;
       
       expect(drawing.shapes).toHaveLength(1);
       
-      const ellipse: import("$lib/types/geometry").Ellipse = drawing.shapes[0];
-      expect(ellipse.type).toBe('ellipse');
+      const ellipseShape: import("$lib/types/geometry").Shape = drawing.shapes[0];
+      expect(ellipseShape.type).toBe('ellipse');
       
-      const geometry = ellipse.geometry as Ellipse;
+      const geometry = ellipseShape.geometry as Ellipse;
       expect(geometry.minorToMajorRatio).toBe(0.1); // Very flat ellipse
     });
 

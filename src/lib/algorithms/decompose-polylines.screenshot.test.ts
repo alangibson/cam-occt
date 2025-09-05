@@ -6,37 +6,40 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import type { Shape } from '../../lib/types';
 import { EPSILON } from '../constants';
-import type { Line, Arc, Polyline } from '../types/geometry';
+import type { Line, Arc, Polyline, PolylineVertex } from '../types/geometry';
 
 // Mock canvas for screenshot comparison
 function createTestCanvas(width: number = 800, height: number = 600) {
+  // Create a minimal mock context with just the properties we need
+  const mockContext = {
+    clearRect: () => {},
+    beginPath: () => {},
+    moveTo: () => {},
+    lineTo: () => {},
+    arc: () => {},
+    closePath: () => {},
+    stroke: () => {},
+    fillRect: () => {},
+    setLineDash: () => {},
+    save: () => {},
+    restore: () => {},
+    translate: () => {},
+    scale: () => {},
+    strokeStyle: '',
+    lineWidth: 1,
+    lineDashOffset: 0
+  } as Partial<CanvasRenderingContext2D>;
+  
   const canvas = {
     width,
     height,
-    getContext: () => ({
-      clearRect: () => {},
-      beginPath: () => {},
-      moveTo: () => {},
-      lineTo: () => {},
-      arc: () => {},
-      closePath: () => {},
-      stroke: () => {},
-      fillRect: () => {},
-      setLineDash: () => {},
-      save: () => {},
-      restore: () => {},
-      translate: () => {},
-      scale: () => {},
-      strokeStyle: '',
-      lineWidth: 1,
-      lineDashOffset: 0
-    })
+    getContext: () => mockContext as CanvasRenderingContext2D
   };
   return canvas;
 }
 
 // Simple drawing function for shapes
-function drawShapes(shapes: Shape[], ctx: any, scale: number = 1) {
+function drawShapes(shapes: Shape[], ctx: CanvasRenderingContext2D, scale: number = 1) {
   shapes.forEach(shape => {
     ctx.beginPath();
     ctx.strokeStyle = shape.type === 'arc' ? '#ff0000' : '#000000'; // Red for arcs, black for lines
@@ -111,7 +114,7 @@ function calculateShapeBounds(shapes: Shape[]): { min: { x: number, y: number },
         points.push({ x: endX, y: endY });
         
         // Sample intermediate points along the arc
-        let startAngle = arc.startAngle;
+        const startAngle = arc.startAngle;
         let endAngle = arc.endAngle;
         
         // Handle angle wrapping for clockwise arcs
@@ -163,23 +166,16 @@ describe('Polylinie.dxf Decomposition Visual Test', () => {
     const decomposedShapes = decomposePolylines(originalDrawing.shapes);
     
     // Log shape details for debugging
-    originalDrawing.shapes.forEach((shape, i) => {
+    originalDrawing.shapes.forEach((shape) => {
       if (shape.type === 'polyline') {
         const geom = shape.geometry as Polyline;
-        if (geom.vertices) {
-          const bulgedVertices = geom.vertices.filter((v: any) => Math.abs(v.bulge || 0) > EPSILON);
-          bulgedVertices.forEach((v: any, idx: number) => {
-          });
+        if ('vertices' in geom && Array.isArray((geom as { vertices?: PolylineVertex[] }).vertices)) {
+          (geom as { vertices: PolylineVertex[] }).vertices.filter((v: PolylineVertex) => Math.abs(v.bulge || 0) > EPSILON);
         }
       }
     });
     
-    const arcs = decomposedShapes.filter(s => s.type === 'arc');
-    const lines = decomposedShapes.filter(s => s.type === 'line');
-    
-    arcs.forEach((arc, i) => {
-      const geom = arc.geometry as Arc;
-    });
+    decomposedShapes.filter(s => s.type === 'arc');
     
     // Calculate bounds for both versions
     const originalBounds = calculateShapeBounds(originalDrawing.shapes);

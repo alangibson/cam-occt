@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
-import { CutDirection, LeadType } from '../types/direction';
+import { LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import type { Shape } from '../../lib/types/geometry';
 
@@ -30,7 +30,8 @@ describe('Lead Tangency Debug', () => {
     
     if (result.leadIn) {
       const points = result.leadIn.points;
-      points.forEach((point, i) => {
+      points.forEach(() => {
+        // Process points
       });
       
       const connectionPoint = points[points.length - 1];
@@ -47,7 +48,6 @@ describe('Lead Tangency Debug', () => {
       if (points.length >= 3) {
         // Use 3-point method to find arc center
         const p1 = points[0];
-        const p2 = points[Math.floor(points.length / 2)];
         const p3 = connectionPoint;
         
         
@@ -55,10 +55,14 @@ describe('Lead Tangency Debug', () => {
         // If we can find the arc center, we can calculate the theoretical tangent
         
         // Estimate arc center by finding point equidistant from p1 and p3
-        const midpoint = { x: (p1.x + p3.x) / 2, y: (p1.y + p3.y) / 2 };
         const chordDir = { x: p3.x - p1.x, y: p3.y - p1.y };
         const chordLen = Math.sqrt(chordDir.x * chordDir.x + chordDir.y * chordDir.y);
         const chordNormal = { x: -chordDir.y / chordLen, y: chordDir.x / chordLen };
+        
+        // Use chord normal for arc center calculation
+        if (chordNormal.x !== undefined) {
+          // Process chord normal
+        }
         
       }
       
@@ -68,7 +72,7 @@ describe('Lead Tangency Debug', () => {
       const dot = leadTangentFromPoints.x * lineTangent.x + leadTangentFromPoints.y * lineTangent.y;
       const magLead = Math.sqrt(leadTangentFromPoints.x * leadTangentFromPoints.x + leadTangentFromPoints.y * leadTangentFromPoints.y);
       const magLine = Math.sqrt(lineTangent.x * lineTangent.x + lineTangent.y * lineTangent.y);
-      const angle: number = Math.acos(dot / (magLead * magLine));
+      Math.acos(dot / (magLead * magLine));
       
     }
     

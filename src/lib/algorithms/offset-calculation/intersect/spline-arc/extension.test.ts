@@ -12,10 +12,13 @@ describe('Spline-Arc Extension Intersections', () => {
         { x: 10, y: 0 }
       ],
       knots: [0, 0, 1, 1],
-      weights: [1, 1]
+      weights: [1, 1],
+      fitPoints: [],
+      closed: false
     };
     
     const splineShape: Shape = {
+      id: 'test-spline-1',
       type: 'spline',
       geometry: spline
     };
@@ -30,6 +33,7 @@ describe('Spline-Arc Extension Intersections', () => {
     };
     
     const arcShape: Shape = {
+      id: 'test-arc-1',
       type: 'arc',
       geometry: arc
     };
@@ -56,10 +60,13 @@ describe('Spline-Arc Extension Intersections', () => {
         { x: 20, y: 0 }
       ],
       knots: [0, 0, 1, 1],
-      weights: [1, 1]
+      weights: [1, 1],
+      fitPoints: [],
+      closed: false
     };
     
     const splineShape: Shape = {
+      id: 'test-spline-2',
       type: 'spline',
       geometry: spline
     };
@@ -74,6 +81,7 @@ describe('Spline-Arc Extension Intersections', () => {
     };
     
     const arcShape: Shape = {
+      id: 'test-arc-2',
       type: 'arc',
       geometry: arc
     };
@@ -100,10 +108,13 @@ describe('Spline-Arc Extension Intersections', () => {
         { x: 8, y: 0 }
       ],
       knots: [0, 0, 1, 1],
-      weights: [1, 1]
+      weights: [1, 1],
+      fitPoints: [],
+      closed: false
     };
     
     const splineShape: Shape = {
+      id: 'test-spline-3',
       type: 'spline',
       geometry: spline
     };
@@ -118,6 +129,7 @@ describe('Spline-Arc Extension Intersections', () => {
     };
     
     const arcShape: Shape = {
+      id: 'test-arc-3',
       type: 'arc',
       geometry: arc
     };
@@ -144,10 +156,13 @@ describe('Spline-Arc Extension Intersections', () => {
         { x: 25, y: 5 }
       ],
       knots: [0, 0, 1, 1],
-      weights: [1, 1]
+      weights: [1, 1],
+      fitPoints: [],
+      closed: false
     };
     
     const splineShape: Shape = {
+      id: 'test-spline-4',
       type: 'spline',
       geometry: spline
     };
@@ -162,6 +177,7 @@ describe('Spline-Arc Extension Intersections', () => {
     };
     
     const arcShape: Shape = {
+      id: 'test-arc-4',
       type: 'arc',
       geometry: arc
     };

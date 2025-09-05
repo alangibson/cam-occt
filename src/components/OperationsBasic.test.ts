@@ -4,7 +4,19 @@ import { describe, it, expect, vi } from 'vitest';
 // Direct function testing for Operations.svelte functions
 describe('Operations Component Basic Function Coverage', () => {
   it('should cover getSelectedTargetsText function', () => {
-    function getSelectedTargetsText(operation: any, parts: any[], chains: any[]): string {
+    interface MockOperation {
+      targetIds: string[];
+      targetType: 'parts' | 'chains';
+    }
+    interface MockPart {
+      id: string;
+      holes: unknown[];
+    }
+    interface MockChain {
+      id: string;
+      shapes: unknown[];
+    }
+    function getSelectedTargetsText(operation: MockOperation, parts: MockPart[], chains: MockChain[]): string {
       if (operation.targetIds.length === 0) {
         return 'None selected';
       }
@@ -45,7 +57,12 @@ describe('Operations Component Basic Function Coverage', () => {
   });
 
   it('should cover getFilteredTools function', () => {
-    function getFilteredTools(operationId: string, availableTools: any[], toolSearchTerms: any): any[] {
+    interface MockTool {
+      id: string;
+      toolName: string;
+      toolNumber: number;
+    }
+    function getFilteredTools(operationId: string, availableTools: MockTool[], toolSearchTerms: Record<string, string>): MockTool[] {
       const searchTerm = toolSearchTerms[operationId] || '';
       if (!searchTerm) return availableTools;
       return availableTools.filter(tool => 
@@ -74,7 +91,11 @@ describe('Operations Component Basic Function Coverage', () => {
   });
 
   it('should cover getToolName function', () => {
-    function getToolName(toolId: string | null, tools: any[]): string {
+    interface MockTool {
+      id: string;
+      toolName: string;
+    }
+    function getToolName(toolId: string | null, tools: MockTool[]): string {
       if (!toolId) return 'No Tool';
       const tool = tools.find(t => t.id === toolId);
       return tool ? tool.toolName : 'Unknown Tool';
@@ -88,7 +109,8 @@ describe('Operations Component Basic Function Coverage', () => {
   });
 
   it('should cover isTargetAssignedToOther function', () => {
-    function isTargetAssignedToOther(targetId: string, targetType: 'parts' | 'chains', operationId: string, getAssignedTargets: any): boolean {
+    type GetAssignedTargetsFunc = (operationId: string) => { parts: Set<string>; chains: Set<string> };
+    function isTargetAssignedToOther(targetId: string, targetType: 'parts' | 'chains', operationId: string, getAssignedTargets: GetAssignedTargetsFunc): boolean {
       const assigned = getAssignedTargets(operationId);
       if (targetType === 'chains') {
         return assigned.chains.has(targetId);
@@ -110,12 +132,12 @@ describe('Operations Component Basic Function Coverage', () => {
 
   it('should cover positionDropdown function edge cases', () => {
     function positionDropdown(operationId: string, type: 'tool' | 'apply-to'): void {
-      const buttonSelector = type === 'tool' ? 'tool-select-button' : 'apply-to-button';
-      const dropdownSelector = type === 'tool' ? 'tool-dropdown' : 'apply-to-dropdown';
+      const _buttonSelector = type === 'tool' ? 'tool-select-button' : 'apply-to-button';
+      const _dropdownSelector = type === 'tool' ? 'tool-dropdown' : 'apply-to-dropdown';
       
       // Mock document.querySelector to return null (element not found case)
       const originalQuerySelector = global.document?.querySelector;
-      global.document = global.document || {} as any;
+      global.document = global.document || {} as unknown as Document;
       global.document.querySelector = vi.fn().mockReturnValue(null);
       
       // This should handle the null case gracefully
@@ -133,7 +155,12 @@ describe('Operations Component Basic Function Coverage', () => {
   });
 
   it('should cover viewport boundary calculations', () => {
-    function calculateDropdownPosition(buttonRect: any, viewportHeight: number, viewportWidth: number) {
+    interface ButtonRect {
+      bottom: number;
+      top: number;
+      left: number;
+    }
+    function calculateDropdownPosition(buttonRect: ButtonRect, viewportHeight: number, viewportWidth: number) {
       let top = buttonRect.bottom + 4;
       let left = buttonRect.left;
       

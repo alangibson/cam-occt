@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { getShapePoints } from './shape-utils';
-import type { Shape, Line, Circle, Arc, Polyline, Ellipse, Spline } from '../types/geometry';
+import type { Shape, Line, Circle, Arc, Polyline, Ellipse, Spline, GeometryType, Geometry } from '../types/geometry';
 
 // Mock the dependencies
 vi.mock('./nurbs', () => ({
@@ -302,8 +302,8 @@ describe('getShapePoints', () => {
   it('should return empty array for unknown shape type', () => {
     const shape: Shape = {
       id: 'unknown1',
-      type: 'unknown' as any,
-      geometry: {} as any
+      type: 'unknown' as unknown as GeometryType,
+      geometry: {} as unknown as Geometry
     };
 
     const points = getShapePoints(shape);

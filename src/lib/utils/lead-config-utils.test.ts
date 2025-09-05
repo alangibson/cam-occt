@@ -4,16 +4,20 @@ import {
   createLeadOutConfig,
   createLeadConfigs
 } from './lead-config-utils';
-import { LeadType } from '../types/direction';
+import { LeadType, CutDirection } from '../types/direction';
 import type { Path } from '../stores/paths';
 
 // Helper function to create test path
 function createTestPath(overrides: Partial<Path> = {}): Path {
   const defaultPath: Path = {
     id: 'test-path',
+    name: 'Test Path',
     chainId: 'test-chain',
     operationId: 'test-operation',
+    toolId: null,
     enabled: true,
+    order: 1,
+    cutDirection: CutDirection.COUNTERCLOCKWISE,
     leadInType: LeadType.LINE,
     leadInLength: 5,
     leadInFlipSide: false,
@@ -332,7 +336,7 @@ describe('createLeadConfigs', () => {
       { in: LeadType.ARC, out: LeadType.LINE }
     ];
     
-    testCases.forEach(({ in: inType, out: outType }, index) => {
+    testCases.forEach(({ in: inType, out: outType }) => {
       const path = createTestPath({
         leadInType: inType,
         leadOutType: outType

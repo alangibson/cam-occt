@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isPointInsideChainExact, arePointsInsideChainExact, anyPointInsideChainExact, countPointsInsideChainExact } from './point-in-chain';
 import type { Shape, Point2D } from '../../types/geometry';
-import type { Chain } from '../chain-detection';
+import type { Chain } from '../chain-detection/chain-detection';
 import { generateId } from '../../utils/id';
 
 describe('Point-in-Chain Exact Testing', () => {

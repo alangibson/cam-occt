@@ -17,14 +17,14 @@ describe('UI Flow Integration Test', () => {
     // Step 2: Detect chains (matching UI flow)
     const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
     
-    chains.forEach((chain, index) => {
+    chains.forEach(() => {
     });
     
     // Step 3: Detect parts (matching UI flow)
     const partResult = await detectParts(chains);
     
-    partResult.parts.forEach((part, index) => {
-      part.holes.forEach((hole, holeIndex) => {
+    partResult.parts.forEach((part) => {
+      part.holes.forEach(() => {
       });
     });
     

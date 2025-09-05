@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import ToolTable from './ToolTable.svelte';
@@ -17,13 +17,19 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Mock DragEvent for jsdom
-global.DragEvent = class DragEvent extends Event {
-  dataTransfer: any;
-  constructor(type: string, init?: any) {
+interface MockDragEventInit extends EventInit {
+  dataTransfer?: DataTransfer | null;
+}
+
+class MockDragEvent extends Event {
+  dataTransfer: DataTransfer | null;
+  constructor(type: string, init?: MockDragEventInit) {
     super(type, init);
     this.dataTransfer = init?.dataTransfer || null;
   }
-} as any;
+}
+
+global.DragEvent = MockDragEvent as unknown as typeof DragEvent;
 
 // Mock getAnimations for jsdom
 Object.defineProperty(Element.prototype, 'getAnimations', {
@@ -34,8 +40,6 @@ Object.defineProperty(Element.prototype, 'getAnimations', {
 });
 
 describe('ToolTable Component - Function Coverage', () => {
-  let component: any;
-
   beforeEach(() => {
     vi.clearAllMocks();
     toolStore.reset();
@@ -44,9 +48,7 @@ describe('ToolTable Component - Function Coverage', () => {
   });
 
   afterEach(() => {
-    if (component?.$$?.ctx) {
-      component?.$destroy();
-    }
+    // Svelte 5 doesn't use $destroy(), component cleanup happens automatically
   });
 
   describe('addNewTool function', () => {
@@ -54,8 +56,7 @@ describe('ToolTable Component - Function Coverage', () => {
       // Enable auto tool creation for this test
       localStorageMock.getItem.mockReturnValue(null);
       
-      const { component: comp } = render(ToolTable);
-      component = comp;
+      render(ToolTable);
       
       // Should automatically add a tool on mount when no saved tools
       const tools = get(toolStore);
@@ -75,7 +76,9 @@ describe('ToolTable Component - Function Coverage', () => {
       expect(tools.length).toBe(1);
       
       const addButton = container.querySelector('.btn-primary') || container.querySelector('button');
-      await fireEvent.click(addButton);
+      if (addButton) {
+        await fireEvent.click(addButton);
+      }
       
       tools = get(toolStore);
       expect(tools.length).toBe(2);
@@ -87,7 +90,9 @@ describe('ToolTable Component - Function Coverage', () => {
       const { container } = render(ToolTable);
       
       const addButton = container.querySelector('.btn-primary') || container.querySelector('button');
-      await fireEvent.click(addButton);
+      if (addButton) {
+        await fireEvent.click(addButton);
+      }
       
       const tools = get(toolStore);
       const newTool = tools[tools.length - 1];

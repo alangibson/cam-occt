@@ -197,7 +197,7 @@ test.describe('ARC and SPLINE Entity Rendering Tests', () => {
     // Debug: Check what shapes were actually parsed
     const debugInfo = await page.evaluate(() => {
       // Access the drawing store to see what shapes were parsed
-      const app = document.querySelector('[data-sveltekit-preload-data]');
+      document.querySelector('[data-sveltekit-preload-data]');
       return {
         canvasExists: !!document.querySelector('.drawing-canvas'),
         sidebarText: document.querySelector('.sidebar')?.textContent,

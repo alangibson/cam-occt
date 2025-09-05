@@ -6,7 +6,6 @@ describe('Spline Offset Diagnostic Tests', () => {
   // Test individual verb-nurbs operations to find the hanging one
 
   const simpleSpline: Spline = {
-    id: 'simple-diagnostic',
     controlPoints: [
       { x: 0, y: 0 },
       { x: 100, y: 0 },
@@ -15,11 +14,11 @@ describe('Spline Offset Diagnostic Tests', () => {
     degree: 2,
     knots: [0, 0, 0, 1, 1, 1],
     weights: [1, 1, 1],
+    fitPoints: [],
     closed: false
   };
 
-  const problematicSpline: Spline = {
-    id: 'c-curve-diagnostic', 
+  const problematicSpline: Spline = { 
     controlPoints: [
       { x: 50, y: 250 },
       { x: 150, y: 300 },
@@ -31,6 +30,7 @@ describe('Spline Offset Diagnostic Tests', () => {
     degree: 3,
     knots: [0, 0, 0, 0, 0.33, 0.66, 1, 1, 1, 1],
     weights: [1, 1, 1, 1, 1, 1],
+    fitPoints: [],
     closed: false
   };
 
@@ -47,7 +47,6 @@ describe('Spline Offset Diagnostic Tests', () => {
   it('should handle reduced complexity spline', { timeout: 5000 }, () => {
     // Create a much simpler spline that should definitely work
     const reducedSpline: Spline = {
-      id: 'simple-reduced',
       controlPoints: [
         { x: 0, y: 0 },
         { x: 5, y: 5 },
@@ -56,6 +55,7 @@ describe('Spline Offset Diagnostic Tests', () => {
       degree: 2,
       knots: [0, 0, 0, 1, 1, 1], // 3 control points + 2 degree + 1 = 6 knots
       weights: [1, 1, 1],
+      fitPoints: [],
       closed: false
     };
     
@@ -65,7 +65,6 @@ describe('Spline Offset Diagnostic Tests', () => {
 
   it('should handle spline with fewer control points', { timeout: 5000 }, () => {
     const fewerPointsSpline: Spline = {
-      id: 'fewer-points',
       controlPoints: [
         { x: 50, y: 250 },
         { x: 150, y: 300 },
@@ -74,6 +73,7 @@ describe('Spline Offset Diagnostic Tests', () => {
       degree: 2,
       knots: [0, 0, 0, 1, 1, 1],
       weights: [1, 1, 1],
+      fitPoints: [],
       closed: false
     };
     

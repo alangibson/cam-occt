@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import verb from 'verb-nurbs';
+import _verb from 'verb-nurbs';
 import { offsetSpline } from './spline';
 import type { Spline } from '../../../../types/geometry';
 
 describe('Spline offset adaptive refinement', () => {
   // Create a test spline with high curvature that will require refinement
   const highCurvatureSpline: Spline = {
-    id: 'high-curvature-spline',
     controlPoints: [
       { x: 0, y: 0 },
       { x: 50, y: 100 },
@@ -17,6 +16,7 @@ describe('Spline offset adaptive refinement', () => {
     degree: 3,
     knots: [0, 0, 0, 0, 0.5, 1, 1, 1, 1],
     weights: [1, 1, 1, 1, 1],
+    fitPoints: [],
     closed: false
   };
 
@@ -66,7 +66,6 @@ describe('Spline offset adaptive refinement', () => {
   it('should validate offset accuracy', () => {
     // Create a simple curve where we can manually verify the offset
     const simpleSpline: Spline = {
-      id: 'simple-spline',
       controlPoints: [
         { x: 0, y: 0 },
         { x: 100, y: 0 },
@@ -76,6 +75,7 @@ describe('Spline offset adaptive refinement', () => {
       degree: 3,
       knots: [0, 0, 0, 0, 1, 1, 1, 1],
       weights: [1, 1, 1, 1],
+      fitPoints: [],
       closed: false
     };
 
@@ -110,7 +110,6 @@ describe('Spline offset adaptive refinement', () => {
 
   it('should handle closed splines with refinement', () => {
     const closedSpline: Spline = {
-      id: 'closed-spline',
       controlPoints: [
         { x: 100, y: 50 },
         { x: 150, y: 100 },
@@ -120,6 +119,7 @@ describe('Spline offset adaptive refinement', () => {
       degree: 2,
       knots: [0, 0, 0, 0.5, 1, 1, 1],
       weights: [1, 1, 1, 1],
+      fitPoints: [],
       closed: true
     };
 
@@ -147,7 +147,6 @@ describe('Spline offset adaptive refinement', () => {
   it('should increase sample count during refinement', () => {
     // Create a curve that will need refinement
     const complexSpline: Spline = {
-      id: 'complex-spline',
       controlPoints: [
         { x: 0, y: 0 },
         { x: 25, y: 50 },
@@ -160,6 +159,7 @@ describe('Spline offset adaptive refinement', () => {
       degree: 3,
       knots: [0, 0, 0, 0, 0.25, 0.5, 0.75, 1, 1, 1, 1],
       weights: [1, 1, 1, 1, 1, 1, 1],
+      fitPoints: [],
       closed: false
     };
 

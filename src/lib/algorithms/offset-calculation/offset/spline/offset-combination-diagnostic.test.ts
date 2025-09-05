@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline } from './spline';
-import type { Spline } from '../../../../types/geometry';
+import type { Spline, Polyline } from '../../../../types/geometry';
 import { polylineToPoints } from '../../../../geometry/polyline';
 
 describe('Combination Operations Diagnostic', () => {
@@ -13,14 +13,13 @@ describe('Combination Operations Diagnostic', () => {
     // Create directory
     try {
       mkdirSync(outputDir, { recursive: true });
-    } catch (e) {
+    } catch {
       // Directory might already exist
     }
 
     // Test the exact splines from visual validation
     const testSplines: Spline[] = [
       {
-        id: 'open-c-curve',
         controlPoints: [
           { x: 50, y: 250 },
           { x: 150, y: 300 },
@@ -32,10 +31,10 @@ describe('Combination Operations Diagnostic', () => {
         degree: 3,
         knots: [0, 0, 0, 0, 0.33, 0.66, 1, 1, 1, 1],
         weights: [1, 1, 1, 1, 1, 1],
+        fitPoints: [],
         closed: false
       },
       {
-        id: 'closed-spline-loop',
         controlPoints: [
           { x: 100, y: 50 },
           { x: 300, y: 50 },
@@ -47,6 +46,7 @@ describe('Combination Operations Diagnostic', () => {
         degree: 2,
         knots: [0, 0, 0, 0.25, 0.5, 0.75, 1, 1, 1],
         weights: [1, 1, 1, 1, 1, 1],
+        fitPoints: [],
         closed: true
       }
     ];
@@ -67,15 +67,16 @@ describe('Combination Operations Diagnostic', () => {
       // Test the exact operations that hang
       const originalResult = offsetSpline(originalSpline, 0.1, 'outset', 1.0, 3);
       
-      const outsetResult = offsetSpline(originalSpline, 25, 'outset', 0.1, 5);
+      const _outsetResult = offsetSpline(originalSpline, 25, 'outset', 0.1, 5);
       
-      const insetResult = offsetSpline(originalSpline, 25, 'inset', 0.1, 5);  
+      const _insetResult = offsetSpline(originalSpline, 25, 'inset', 0.1, 5);  
       
       // Add some SVG content
       if (originalResult.success && originalResult.shapes.length > 0) {
         const shape = originalResult.shapes[0];
         if (shape.type === 'polyline') {
-          const points = polylineToPoints(shape.geometry);
+          const polylineGeometry = shape.geometry as Polyline;
+          const points = polylineToPoints(polylineGeometry);
           const pointsStr = points.map(p => `${p.x},${400 - p.y}`).join(' ');
           svg += `  <polyline points="${pointsStr}" stroke="blue" stroke-width="1" fill="none"/>\n`;
         }

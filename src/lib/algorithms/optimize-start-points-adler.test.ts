@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import type { Shape } from '../../lib/types';
 import type { Chain } from './chain-detection/chain-detection';
-import { CutDirection, LeadType } from '../types/direction';
+import { LeadType } from '../types/direction';
 import { createPolylineFromVertices } from '../geometry/polyline';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
 
@@ -94,7 +94,6 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
     
     // NEW EXPECTATION: All chains should be modified now that we support polylines
     // Each chain should have one shape split into two
-    const expectedModifiedChains = 6; // All 6 chains
     
     // Count how many shapes have "-split-" in their ID
     const splitShapeCount = result.filter(s => s.id.includes('-split-')).length;

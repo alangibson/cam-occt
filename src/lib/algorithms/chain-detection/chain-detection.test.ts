@@ -297,7 +297,7 @@ describe('Chain Detection Algorithm', () => {
         id: generateId(),
         type: 'polyline',
         geometry: polyline1Shape
-      };
+      } as unknown as Shape;
 
       // Create second closed polyline with bulges - a rounded triangle, separate from the first
       const polyline2Shape = createPolylineFromVertices([
@@ -310,7 +310,7 @@ describe('Chain Detection Algorithm', () => {
         id: generateId(),
         type: 'polyline',
         geometry: polyline2Shape
-      };
+      } as unknown as Shape;
 
       const shapes: Shape[] = [polyline1, polyline2];
       const chains = detectShapeChains(shapes, { tolerance: 0.05 });
@@ -338,7 +338,7 @@ describe('Chain Detection Algorithm', () => {
         id: generateId(),
         type: 'polyline',
         geometry: polyline1Shape
-      };
+      } as unknown as Shape;
 
       // Create second closed polyline with bulges - adjacent but not overlapping
       // Note: With bulges, the actual arc endpoints may differ from vertex positions
@@ -353,7 +353,7 @@ describe('Chain Detection Algorithm', () => {
         id: generateId(),
         type: 'polyline',
         geometry: polyline2Shape
-      };
+      } as unknown as Shape;
 
       const shapes: Shape[] = [polyline1, polyline2];
       const chains = detectShapeChains(shapes, { tolerance: 0.05 });

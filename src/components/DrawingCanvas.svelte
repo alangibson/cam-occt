@@ -652,8 +652,7 @@
     
     ctx.restore();
   }
-  
-  
+    
   function drawLine(line: Line) {
     ctx.beginPath();
     ctx.moveTo(line.start.x, line.start.y);

@@ -11,6 +11,7 @@ import {
   getPersistedStateSize,
   type PersistedState 
 } from './state-persistence';
+import { LeadType, CutDirection } from '../types/direction';
 
 // Mock localStorage
 const localStorageMock = {
@@ -38,7 +39,7 @@ describe('State Persistence', () => {
   it('should save and load state correctly', () => {
     const testState: PersistedState = {
       // Drawing state
-      drawing: { id: 'test-drawing', shapes: [] },
+      drawing: { shapes: [], bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } }, units: 'mm' as 'mm' | 'inch' },
       selectedShapes: ['shape1', 'shape2'],
       hoveredShape: 'shape3',
       scale: 1.5,
@@ -52,12 +53,12 @@ describe('State Persistence', () => {
       completedStages: ['import', 'edit'],
       
       // Chains state
-      chains: [{ id: 'chain1' }],
+      chains: [{ id: 'chain1', shapes: [] }],
       tolerance: 0.1,
       selectedChainId: 'chain1',
       
       // Parts state
-      parts: [{ id: 'part1' }],
+      parts: [{ id: 'part1', shell: { id: 'shell1', type: 'shell', chain: { id: 'chain1', shapes: [] }, boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 }, holes: [] }, holes: [] }],
       partWarnings: [],
       highlightedPartId: null,
       
@@ -86,19 +87,26 @@ describe('State Persistence', () => {
         algorithmParams: {
           chainDetection: { tolerance: 0.1 },
           chainNormalization: { traversalTolerance: 0.01, maxTraversalAttempts: 5 },
-          partDetection: { tolerance: 0.05, maxIterations: 100 }
+          partDetection: { circleTessellationPoints: 64, minArcTessellationPoints: 16, arcTessellationDensity: 0.1, decimalPrecision: 3, enableTessellation: false },
+          joinColinearLines: { tolerance: 0.05 },
+          startPointOptimization: { splitPosition: 'midpoint', tolerance: 0.05 }
         },
         chainNormalizationResults: [
           { chainId: 'chain1', canTraverse: true, description: 'Test chain', issues: [] }
         ],
         leftColumnWidth: 350,
         rightColumnWidth: 400,
-        lastAnalysisTimestamp: Date.now()
+        lastAnalysisTimestamp: Date.now(),
+        originalShapesBeforeNormalization: null,
+        originalChainsBeforeNormalization: null,
+        originalShapesBeforeOptimization: null,
+        originalChainsBeforeOptimization: null,
+        partsDetected: false
       },
       
       // Operations, paths, and tools
       operations: [
-        { id: 'op1', name: 'Cut Part', toolId: 'tool1', targetType: 'parts', targetIds: ['part1'], enabled: true, order: 1 }
+        { id: 'op1', name: 'Cut Part', toolId: 'tool1', targetType: 'parts', targetIds: ['part1'], enabled: true, order: 1, cutDirection: CutDirection.CLOCKWISE, leadInType: LeadType.ARC, leadInLength: 5, leadInFlipSide: false, leadInAngle: 45, leadInFit: false, leadOutType: LeadType.LINE, leadOutLength: 3, leadOutFlipSide: false, leadOutAngle: 90, leadOutFit: false }
       ],
       paths: [
         { 
@@ -106,17 +114,19 @@ describe('State Persistence', () => {
           name: 'Cut Path', 
           operationId: 'op1', 
           chainId: 'chain1', 
+          toolId: 'tool1',
+          cutDirection: CutDirection.CLOCKWISE,
           enabled: true, 
           order: 1,
           calculatedLeadIn: {
             points: [{ x: 0, y: 0 }, { x: 5, y: 5 }],
-            type: 'arc',
+            type: LeadType.ARC,
             generatedAt: '2023-01-01T12:00:00.000Z',
             version: '1.0.0'
           },
           calculatedLeadOut: {
             points: [{ x: 10, y: 10 }, { x: 15, y: 15 }],
-            type: 'line',
+            type: LeadType.LINE,
             generatedAt: '2023-01-01T12:00:00.000Z',
             version: '1.0.0'
           },
@@ -130,11 +140,13 @@ describe('State Persistence', () => {
         }
       ],
       tools: [
-        { id: 'tool1', name: 'Plasma Torch', type: 'plasma', kerf: 1.0 }
+        { id: 'tool1', toolNumber: 1, toolName: 'Plasma Torch', feedRate: 100, rapidRate: 1000, pierceHeight: 3, pierceDelay: 0.5, arcVoltage: 120, kerfWidth: 1.0, thcEnable: true, gasPressure: 5, pauseAtEnd: 0, puddleJumpHeight: 0, puddleJumpDelay: 0, plungeRate: 50 }
       ],
       
       // Timestamp
-      savedAt: '2023-01-01T00:00:00.000Z'
+      savedAt: '2023-01-01T00:00:00.000Z',
+      selectedPathId: null,
+      highlightedPathId: null
     };
 
     // Save state
@@ -199,17 +211,26 @@ describe('State Persistence', () => {
         algorithmParams: {
           chainDetection: { tolerance: 0.05 },
           chainNormalization: { traversalTolerance: 0.01, maxTraversalAttempts: 5 },
-          partDetection: { tolerance: 0.05, maxIterations: 100 }
+          partDetection: { circleTessellationPoints: 64, minArcTessellationPoints: 16, arcTessellationDensity: 0.1, decimalPrecision: 3, enableTessellation: false },
+          joinColinearLines: { tolerance: 0.05 },
+          startPointOptimization: { splitPosition: 'midpoint', tolerance: 0.05 }
         },
         chainNormalizationResults: [],
         leftColumnWidth: 280,
         rightColumnWidth: 280,
-        lastAnalysisTimestamp: 0
+        lastAnalysisTimestamp: 0,
+        originalShapesBeforeNormalization: null,
+        originalChainsBeforeNormalization: null,
+        originalShapesBeforeOptimization: null,
+        originalChainsBeforeOptimization: null,
+        partsDetected: false
       },
       operations: [],
       paths: [],
       tools: [],
-      savedAt: '2023-01-01T00:00:00.000Z'
+      savedAt: '2023-01-01T00:00:00.000Z',
+      selectedPathId: null,
+      highlightedPathId: null
     };
 
     saveState(testState);

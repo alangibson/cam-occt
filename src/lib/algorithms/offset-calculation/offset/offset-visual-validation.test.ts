@@ -11,12 +11,18 @@ import { offsetEllipse } from './ellipse/ellipse';
 import type { Line, Arc, Circle, Polyline, Spline, Ellipse, Point2D, Shape } from '../../../types/geometry';
 import { polylineToPoints, createPolylineFromVertices } from '../../../geometry/polyline';
 import { calculateSignedArea } from '../../../utils/geometry-utils';
-import { getBoundingBoxForShapes } from '../../../geometry/bounding-box';
+import { getBoundingBoxForShapes as _getBoundingBoxForShapes } from '../../../geometry/bounding-box';
 import { SVGBuilder } from '../../../test/svg-builder';
 import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';
-import { ChainOffsetResult, DEFAULT_CHAIN_OFFSET_PARAMETERS } from '../chain/types';
+import type { ChainOffsetResult } from '../chain/types';
+import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from '../chain/types';
 import { offsetChain } from '../chain/offset';
-import { Chain } from '../../chain-detection/chain-detection';
+import type { Chain } from '../../chain-detection/chain-detection';
+
+// Type guard function to check if a shape has polyline geometry
+function isPolylineShape(shape: Shape): shape is Shape & { geometry: Polyline } {
+  return shape.type === 'polyline';
+}
 
 describe('Minimal Visual Validation Test', { timeout: 60000 }, () => {
   const outputDir = 'test-output/minimal-validation';
@@ -24,7 +30,7 @@ describe('Minimal Visual Validation Test', { timeout: 60000 }, () => {
   beforeAll(() => {
     try {
       mkdirSync(outputDir, { recursive: true });
-    } catch (e) {
+    } catch {
       // Directory might already exist
     }
   });
@@ -37,7 +43,7 @@ describe('Minimal Visual Validation Test', { timeout: 60000 }, () => {
       { start: { x: 200, y: 50 }, end: { x: 200, y: 350 } }
     ];
 
-    let svg1 = createSVG(400, 300);
+    const svg1 = createSVG(400, 300);
     testLines.forEach((line, index) => {
       const lineShape: Shape = {
         id: `test-line-${index}`,
@@ -64,7 +70,7 @@ describe('Minimal Visual Validation Test', { timeout: 60000 }, () => {
       { center: { x: 280, y: 120 }, radius: 40 }
     ];
 
-    let svg2 = createSVG(400, 300);
+    const svg2 = createSVG(400, 300);
     testCircles.forEach((circle, index) => {
       const circleShape: Shape = {
         id: `test-circle-${index}`,
@@ -96,7 +102,7 @@ describe('Minimal Visual Validation Test', { timeout: 60000 }, () => {
       }
     ];
 
-    let svg3 = createSVG(400, 300);
+    const svg3 = createSVG(400, 300);
     testArcs.forEach((arc, index) => {
       const arcShape: Shape = {
         id: `test-arc-${index}`,
@@ -132,7 +138,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
   beforeAll(() => {
     try {
       mkdirSync(outputDir, { recursive: true });
-    } catch (e) {
+    } catch {
       // Directory might already exist
     }
   });
@@ -698,7 +704,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 160, y: 80, bulge: 0 },
             { x: 160, y: 160, bulge: 0 },
             { x: 80, y: 160, bulge: 0 }
-          ], true).geometry,
+          ], true).geometry as Polyline,
           label: 'Square'
         },
         {
@@ -706,7 +712,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 220, y: 80, bulge: 0 },
             { x: 320, y: 160, bulge: 0 },
             { x: 180, y: 160, bulge: 0 }
-          ], true).geometry,
+          ], true).geometry as Polyline,
           label: 'Triangle'
         },
         {
@@ -717,7 +723,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 100, y: 260, bulge: 0 },
             { x: 100, y: 340, bulge: 0 },
             { x: 60, y: 340, bulge: 0 }
-          ], true).geometry,
+          ], true).geometry as Polyline,
           label: 'L-shape'
         },
         // Open polylines
@@ -727,7 +733,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 280, y: 220, bulge: 0 },
             { x: 320, y: 260, bulge: 0 },
             { x: 360, y: 220, bulge: 0 }
-          ], false).geometry,
+          ], false).geometry as Polyline,
           label: 'Open Path'
         },
         {
@@ -737,7 +743,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 280, y: 300, bulge: 0 },
             { x: 320, y: 340, bulge: 0 },
             { x: 360, y: 300, bulge: 0 }
-          ], false).geometry,
+          ], false).geometry as Polyline,
           label: 'Zigzag'
         }
       ];
@@ -802,7 +808,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 160, y: 80, bulge: 0 },
             { x: 160, y: 160, bulge: 0 },
             { x: 80, y: 160, bulge: 0 }
-          ], true).geometry,
+          ], true).geometry as Polyline,
           label: 'Square'
         },
         {
@@ -810,7 +816,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 220, y: 80, bulge: 0 },
             { x: 320, y: 160, bulge: 0 },
             { x: 180, y: 160, bulge: 0 }
-          ], true).geometry,
+          ], true).geometry as Polyline,
           label: 'Triangle'
         },
         {
@@ -821,7 +827,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 100, y: 260, bulge: 0 },
             { x: 100, y: 340, bulge: 0 },
             { x: 60, y: 340, bulge: 0 }
-          ], true).geometry,
+          ], true).geometry as Polyline,
           label: 'L-shape'
         },
         // Open polylines
@@ -831,7 +837,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 280, y: 220, bulge: 0 },
             { x: 320, y: 260, bulge: 0 },
             { x: 360, y: 220, bulge: 0 }
-          ], false).geometry,
+          ], false).geometry as Polyline,
           label: 'Open Path'
         },
         {
@@ -841,7 +847,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 280, y: 300, bulge: 0 },
             { x: 320, y: 340, bulge: 0 },
             { x: 360, y: 300, bulge: 0 }
-          ], false).geometry,
+          ], false).geometry as Polyline,
           label: 'Zigzag'
         }
       ];
@@ -870,7 +876,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
         
         // Handle outset results - positive offset creates outer chain
         if (outsetResult.success && outsetResult.outerChain) {
-          outsetResult.outerChain.shapes.forEach((shape: any) => {
+          outsetResult.outerChain.shapes.forEach((shape: Shape) => {
             if (shape.type === 'polyline') {
               const polylineGeometry = shape.geometry as Polyline;
               const outsetShape: Shape = {
@@ -885,7 +891,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
         
         // Handle inset results - negative offset creates inner chain
         if (insetResult.success && insetResult.innerChain) {
-          insetResult.innerChain.shapes.forEach((shape: any) => {
+          insetResult.innerChain.shapes.forEach((shape: Shape) => {
             if (shape.type === 'polyline') {
               const polylineGeometry = shape.geometry as Polyline;
               const insetShape: Shape = {
@@ -912,7 +918,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
     it('should generate SVG for chain-wrapped short polyline offsets', async () => {
       // Function to break up lines longer than maxLength
       const breakUpPolyline = (polyline: Polyline, maxLength: number): Polyline => {
-        const newShapes: any[] = [];
+        const newShapes: Shape[] = [];
         
         polyline.shapes.forEach(shape => {
           if (shape.type === 'line') {
@@ -968,7 +974,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 160, y: 80, bulge: 0 },
             { x: 160, y: 160, bulge: 0 },
             { x: 80, y: 160, bulge: 0 }
-          ], true).geometry, 2),
+          ], true).geometry as Polyline, 2),
           label: 'Square'
         },
         {
@@ -976,7 +982,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 220, y: 80, bulge: 0 },
             { x: 320, y: 160, bulge: 0 },
             { x: 180, y: 160, bulge: 0 }
-          ], true).geometry, 2),
+          ], true).geometry as Polyline, 2),
           label: 'Triangle'
         },
         {
@@ -987,7 +993,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 100, y: 260, bulge: 0 },
             { x: 100, y: 340, bulge: 0 },
             { x: 60, y: 340, bulge: 0 }
-          ], true).geometry, 2),
+          ], true).geometry as Polyline, 2),
           label: 'L-shape'
         },
         // Open polylines
@@ -997,7 +1003,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 280, y: 220, bulge: 0 },
             { x: 320, y: 260, bulge: 0 },
             { x: 360, y: 220, bulge: 0 }
-          ], false).geometry, 2),
+          ], false).geometry as Polyline, 2),
           label: 'Open Path'
         },
         {
@@ -1007,7 +1013,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
             { x: 280, y: 300, bulge: 0 },
             { x: 320, y: 340, bulge: 0 },
             { x: 360, y: 300, bulge: 0 }
-          ], false).geometry, 2),
+          ], false).geometry as Polyline, 2),
           label: 'Zigzag'
         }
       ];
@@ -1037,7 +1043,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
         
         // Handle outset results - positive offset creates outer chain
         if (outsetResult.success && outsetResult.outerChain) {
-          outsetResult.outerChain.shapes.forEach((shape: any) => {
+          outsetResult.outerChain.shapes.forEach((shape: Shape) => {
             if (shape.type === 'polyline') {
               const polylineGeometry = shape.geometry as Polyline;
               const outsetShape: Shape = {
@@ -1053,7 +1059,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
 
           // Add yellow circles for intersection points
           if (outsetResult.outerChain.intersectionPoints) {
-            outsetResult.outerChain.intersectionPoints.forEach((intersection, idx) => {
+            outsetResult.outerChain.intersectionPoints.forEach((intersection, _idx) => {
               svg.addIntersectionPoint(intersection.point, 'yellow', 1);
             });
           }
@@ -1061,7 +1067,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
         
         // Handle inset results - negative offset creates inner chain
         if (insetResult.success && insetResult.innerChain) {
-          insetResult.innerChain.shapes.forEach((shape: any) => {
+          insetResult.innerChain.shapes.forEach((shape: Shape) => {
             if (shape.type === 'polyline') {
               const polylineGeometry = shape.geometry as Polyline;
               const insetShape: Shape = {
@@ -1077,7 +1083,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
 
           // Add yellow circles for intersection points
           if (insetResult.innerChain.intersectionPoints) {
-            insetResult.innerChain.intersectionPoints.forEach((intersection, idx) => {
+            insetResult.innerChain.intersectionPoints.forEach((intersection, _idx) => {
               svg.addIntersectionPoint(intersection.point, 'yellow', 1);
             });
           }
@@ -1147,7 +1153,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
         // Note: calculateSignedArea is now imported from geometry-utils module
         
         // Process CCW shape
-        const ccwPoints = polylineToPoints(ccwShape.geometry);
+        const ccwPoints = polylineToPoints(ccwShape.geometry as Polyline);
         const ccwArea = calculateSignedArea(ccwPoints);
         const ccwWinding = ccwArea > 0 ? 'CW' : 'CCW';
         
@@ -1160,6 +1166,9 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
         svg.addShape(ccwShapeObj, 'black', 2);
         
         // Offsets for CCW shape
+        if (!isPolylineShape(ccwShape)) {
+          throw new Error(`Expected polyline shape, got ${ccwShape.type}`);
+        }
         const ccwOutsetResult = offsetPolyline(ccwShape.geometry, 8, 'outset');
         const ccwInsetResult = offsetPolyline(ccwShape.geometry, 8, 'inset');
         
@@ -1191,7 +1200,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
         svg.addText(baseShape.labelPos.x + 30, baseShape.labelPos.y + yOffset + 30, `${baseShape.name} (${ccwWinding})`, 'black', '12px');
         
         // Process CW shape
-        const cwPoints = polylineToPoints(cwShape.geometry);
+        const cwPoints = polylineToPoints(cwShape.geometry as Polyline);
         const cwArea = calculateSignedArea(cwPoints);
         const cwWinding = cwArea > 0 ? 'CW' : 'CCW';
         
@@ -1204,6 +1213,9 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
         svg.addShape(cwShapeObj, 'black', 2);
         
         // Offsets for CW shape
+        if (!isPolylineShape(cwShape)) {
+          throw new Error(`Expected polyline shape, got ${cwShape.type}`);
+        }
         const cwOutsetResult = offsetPolyline(cwShape.geometry, 8, 'outset');
         const cwInsetResult = offsetPolyline(cwShape.geometry, 8, 'inset');
         
@@ -1252,7 +1264,6 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
       const testSplines: Spline[] = [
         // Open C-shaped curve (degree 3)
         {
-          id: 'open-c-curve',
           controlPoints: [
             { x: 50, y: 250 },
             { x: 150, y: 300 },
@@ -1264,11 +1275,11 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
           degree: 3,
           knots: [0, 0, 0, 0, 0.33, 0.66, 1, 1, 1, 1],
           weights: [1, 1, 1, 1, 1, 1],
+          fitPoints: [],
           closed: false
         },
         // Closed curve - simple spline loop (degree 2 for simplicity)
         {
-          id: 'closed-spline-loop',
           controlPoints: [
             { x: 100, y: 50 },
             { x: 300, y: 50 },
@@ -1280,6 +1291,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
           degree: 2,
           knots: [0, 0, 0, 0.25, 0.5, 0.75, 1, 1, 1],
           weights: [1, 1, 1, 1, 1, 1],
+          fitPoints: [],
           closed: true
         }
       ];
@@ -1395,7 +1407,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
           svg.addShape(insetShape, '#d62728', 1.5);
         }
         
-        const splineTotal = originalDuration + outsetDuration + insetDuration;
+        const _splineTotal = originalDuration + outsetDuration + insetDuration;
         
         // Add labels
         const labelY = yOffset + (index === 0 ? -10 : 270);
@@ -1715,7 +1727,7 @@ describe('Visual Validation - SVG Output Generator', { timeout: 120000 }, () => 
   });
 
   // Helper function to get label position for a shape
-  const getShapeLabelPosition = (shape: Shape, yOffset: number = 0): Point2D => {
+  const _getShapeLabelPosition = (shape: Shape, yOffset: number = 0): Point2D => {
     switch (shape.type) {
       case 'line':
         const lineGeom = shape.geometry as Line;

@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { detectChainSide, isPointInsideChain, determineChainOrientation} from './side-detection';
-import type { Shape, Line, Arc, Circle } from '../../../../lib/types/geometry';
-import type { Chain } from '../../chain-detection/chain-detection';
+import type { Shape } from '../../../../lib/types/geometry';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '../../../utils/id';
@@ -31,18 +30,6 @@ describe('side-detection', () => {
         startAngle,
         endAngle,
         clockwise: false
-      }
-    };
-  }
-
-  // Helper to create a circle shape
-  function createCircle(cx: number, cy: number, radius: number): Shape {
-    return {
-      id: generateId(),
-      type: 'circle',
-      geometry: {
-        center: { x: cx, y: cy },
-        radius
       }
     };
   }
@@ -270,24 +257,24 @@ describe('side-detection', () => {
 
   describe('getShapeMidpoint', () => {
     it('should get midpoint of a line', () => {
-      const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 0);
-      const midpoint = getShapeMidpoint(line);
+      const lineShape = createLine(0, 0, 10, 0);
+      const midpoint = getShapeMidpoint(lineShape);
       
       expect(midpoint.x).toBeCloseTo(5, 5);
       expect(midpoint.y).toBeCloseTo(0, 5);
     });
 
     it('should get point at custom parameter', () => {
-      const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 0);
-      const point = getShapeMidpoint(line, 0.25);
+      const lineShape = createLine(0, 0, 10, 0);
+      const point = getShapeMidpoint(lineShape, 0.25);
       
       expect(point.x).toBeCloseTo(2.5, 5);
       expect(point.y).toBeCloseTo(0, 5);
     });
 
     it('should get midpoint of an arc', () => {
-      const arc: import("$lib/types/geometry").Arc = createArc(0, 0, 10, 0, Math.PI / 2);
-      const midpoint = getShapeMidpoint(arc);
+      const arcShape = createArc(0, 0, 10, 0, Math.PI / 2);
+      const midpoint = getShapeMidpoint(arcShape);
       
       // At 45 degrees
       expect(midpoint.x).toBeCloseTo(10 * Math.cos(Math.PI / 4), 5);
@@ -297,8 +284,8 @@ describe('side-detection', () => {
 
   describe('getShapeNormal', () => {
     it('should get normal for horizontal line pointing up', () => {
-      const line: import("$lib/types/geometry").Line = createLine(0, 0, 10, 0);
-      const normal = getShapeNormal(line, 0.5);
+      const lineShape = createLine(0, 0, 10, 0);
+      const normal = getShapeNormal(lineShape, 0.5);
       
       // For horizontal line going right, normal should point up (counterclockwise rotation)
       expect(normal.x).toBeCloseTo(0, 5);
@@ -306,8 +293,8 @@ describe('side-detection', () => {
     });
 
     it('should get normal for vertical line pointing left', () => {
-      const line: import("$lib/types/geometry").Line = createLine(0, 0, 0, 10);
-      const normal = getShapeNormal(line, 0.5);
+      const lineShape = createLine(0, 0, 0, 10);
+      const normal = getShapeNormal(lineShape, 0.5);
       
       // For vertical line going up, normal should point left (counterclockwise rotation)
       expect(normal.x).toBeCloseTo(-1, 5);
@@ -315,8 +302,8 @@ describe('side-detection', () => {
     });
 
     it('should get normal for arc pointing outward', () => {
-      const arc: import("$lib/types/geometry").Arc = createArc(0, 0, 10, 0, Math.PI / 2);
-      const normal = getShapeNormal(arc, 0.5);
+      const arcShape = createArc(0, 0, 10, 0, Math.PI / 2);
+      const normal = getShapeNormal(arcShape, 0.5);
       
       // For an arc at 45 degrees, the tangent is perpendicular to the radius vector
       // The radius vector at 45 degrees is (cos(45°), sin(45°)) = (√2/2, √2/2)

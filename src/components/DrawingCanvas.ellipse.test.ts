@@ -25,7 +25,7 @@ const mockCanvasContext = {
 };
 
 // Mock HTMLCanvasElement
-const mockCanvas = {
+const _mockCanvas = {
   getContext: vi.fn(() => mockCanvasContext),
   width: 800,
   height: 600,

@@ -3,6 +3,7 @@ import { parseDXF } from './dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Line } from '../types/geometry';
+import type { DXFEntity } from 'dxf';
 
 describe('DXF Parser - INSERT Entities', () => {
   it('should parse INSERT entities from Blocktest.dxf', async () => {
@@ -72,8 +73,7 @@ describe('DXF Parser - INSERT Entities', () => {
     // Filter to actual squares (should have 6 lines each)
     const actualSquares = squareCenters.filter(s => s.count >= 6);
     
-    actualSquares.forEach((square, i) => {
-    });
+    // All squares found - forEach removed as it was empty
     
     // Should have 8 visually distinct squares
     // For now, let's accept 6 as progress toward 8 (some squares may overlap)
@@ -114,13 +114,12 @@ describe('DXF Parser - INSERT Entities', () => {
     
     
     if (parsed.entities) {
-      const entityTypes = parsed.entities.map((e: any) => e.type);
+      // Entity types available but not used in this test
       
-      const insertEntities = parsed.entities.filter((e: any) => e.type === 'INSERT');
+      const insertEntities = parsed.entities.filter((e: DXFEntity) => e.type === 'INSERT');
       
       if (insertEntities.length > 0) {
-        insertEntities.forEach((entity: any, i: number) => {
-        });
+        // INSERT entities found but not processed in this test
       }
     }
     
@@ -128,6 +127,7 @@ describe('DXF Parser - INSERT Entities', () => {
       for (const blockName in parsed.blocks) {
         const block = parsed.blocks[blockName];
         if (block && block.entities) {
+          // Block entities found but not processed in this test
         }
       }
     }

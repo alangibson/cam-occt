@@ -20,7 +20,6 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
     });
 
     it('should only allow access to import stage initially', () => {
-      const stages: WorkflowStage[] = ['import', 'edit', 'prepare', 'program', 'simulate', 'export'];
       
       expect(get(workflowStore).canAdvanceTo('import')).toBe(true);
       expect(get(workflowStore).canAdvanceTo('edit')).toBe(false);
@@ -222,7 +221,6 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
       // setStage with invalid stage should be allowed if canAdvanceTo allows it
       // Since 'invalid' is not in WORKFLOW_ORDER, indexOf returns -1, 
       // and the canAdvanceTo logic will return true (no previous stages to check)
-      const currentStageBefore = get(workflowStore).currentStage;
       workflowStore.setStage('invalid' as WorkflowStage);
       
       // The invalid stage should be set as current (this is the actual behavior)

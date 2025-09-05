@@ -21,7 +21,7 @@ describe('fillLineToIntersection', () => {
 
   describe('basic extension functionality', () => {
     it('should extend line forward to intersection point', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 10, 0);
+      const line = createLineShape(0, 0, 10, 0);
       const intersectionPoint = { x: 15, y: 0 };
       
       const result = fillLineToIntersection(line, intersectionPoint, defaultOptions);
@@ -40,7 +40,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should extend line backward to intersection point', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(10, 0, 20, 0);
+      const line = createLineShape(10, 0, 20, 0);
       const intersectionPoint = { x: 5, y: 0 };
       
       const result = fillLineToIntersection(line, intersectionPoint, defaultOptions);
@@ -56,7 +56,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should handle diagonal lines correctly', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 3, 4); // 3-4-5 right triangle
+      const line = createLineShape(0, 0, 3, 4); // 3-4-5 right triangle
       const intersectionPoint = { x: 6, y: 8 }; // Extends by factor of 2
       
       const result = fillLineToIntersection(line, intersectionPoint, defaultOptions);
@@ -73,7 +73,7 @@ describe('fillLineToIntersection', () => {
 
   describe('direction determination', () => {
     it('should respect explicit start direction', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(10, 0, 20, 0);
+      const line = createLineShape(10, 0, 20, 0);
       const intersectionPoint = { x: 5, y: 0 };
       
       const result = fillLineToIntersection(line, intersectionPoint, {
@@ -86,7 +86,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should respect explicit end direction', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 10, 0);
+      const line = createLineShape(0, 0, 10, 0);
       const intersectionPoint = { x: 15, y: 0 };
       
       const result = fillLineToIntersection(line, intersectionPoint, {
@@ -99,7 +99,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should auto-determine direction based on intersection point position', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(10, 0, 20, 0);
+      const line = createLineShape(10, 0, 20, 0);
       
       // Point before start should extend start
       const beforeStart = { x: 5, y: 0 };
@@ -117,7 +117,7 @@ describe('fillLineToIntersection', () => {
 
   describe('perpendicular distance invariant', () => {
     it('should maintain perpendicular distance for extended portions', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 10, 0);
+      const line = createLineShape(0, 0, 10, 0);
       const intersectionPoint = { x: 15, y: 0 };
       
       const result = fillLineToIntersection(line, intersectionPoint, defaultOptions);
@@ -138,7 +138,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should handle non-axis-aligned lines correctly', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(1, 1, 4, 5); // Slope = 4/3
+      const line = createLineShape(1, 1, 4, 5); // Slope = 4/3
       const intersectionPoint = { x: 7, y: 9 }; // Continues same slope
       
       const result = fillLineToIntersection(line, intersectionPoint, defaultOptions);
@@ -179,7 +179,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should reject extensions beyond maximum distance', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 10, 0);
+      const line = createLineShape(0, 0, 10, 0);
       const veryFarPoint = { x: 200, y: 0 }; // 190 units away from end
       
       const result = fillLineToIntersection(line, veryFarPoint, {
@@ -192,7 +192,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should reject intersection points not aligned with line direction', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 10, 0); // Horizontal line
+      const line = createLineShape(0, 0, 10, 0); // Horizontal line
       const offAxisPoint = { x: 15, y: 5 }; // Not on line extension
       
       // This should fail because the intersection point is not on the line's projection
@@ -206,7 +206,7 @@ describe('fillLineToIntersection', () => {
 
   describe('edge cases', () => {
     it('should handle intersection point very close to line endpoint', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 10, 0);
+      const line = createLineShape(0, 0, 10, 0);
       const nearEndpoint = { x: 10.001, y: 0 }; // Very small extension
       
       const result = fillLineToIntersection(line, nearEndpoint, defaultOptions);
@@ -216,7 +216,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should handle intersection point between line endpoints', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 20, 0);
+      const line = createLineShape(0, 0, 20, 0);
       const midPoint = { x: 10, y: 0 }; // Between start and end
       
       const result = fillLineToIntersection(line, midPoint, defaultOptions);
@@ -227,7 +227,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should handle very small tolerance values', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 10, 0);
+      const line = createLineShape(0, 0, 10, 0);
       const intersectionPoint = { x: 15, y: 0 };
       
       const result = fillLineToIntersection(line, intersectionPoint, {
@@ -242,7 +242,7 @@ describe('fillLineToIntersection', () => {
 
   describe('extension metadata', () => {
     it('should provide correct extension metadata', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(5, 10, 15, 10);
+      const line = createLineShape(5, 10, 15, 10);
       const intersectionPoint = { x: 25, y: 10 };
       
       const result = fillLineToIntersection(line, intersectionPoint, defaultOptions);
@@ -260,7 +260,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should provide correct intersection point in result', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 10, 0);
+      const line = createLineShape(0, 0, 10, 0);
       const intersectionPoint = { x: 15, y: 0 };
       
       const result = fillLineToIntersection(line, intersectionPoint, defaultOptions);
@@ -270,7 +270,7 @@ describe('fillLineToIntersection', () => {
     });
 
     it('should have high confidence for successful extensions', () => {
-      const line: import("$lib/types/geometry").Line = createLineShape(0, 0, 10, 0);
+      const line = createLineShape(0, 0, 10, 0);
       const intersectionPoint = { x: 15, y: 0 };
       
       const result = fillLineToIntersection(line, intersectionPoint, defaultOptions);

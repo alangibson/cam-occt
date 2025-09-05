@@ -32,7 +32,7 @@ describe('CuttingParameters Component - Function Coverage', () => {
     });
 
     it('should update parameters when inputs change', async () => {
-      let parameters = { ...defaultParameters };
+      const parameters = { ...defaultParameters };
       
       const { container } = render(CuttingParameters, { 
         props: { parameters, units: 'mm' }
@@ -91,14 +91,14 @@ describe('CuttingParameters Component - Function Coverage', () => {
 
   describe('reactive unit display', () => {
     it('should update unit display when units prop changes', () => {
-      let units: 'mm' | 'inch' = 'mm';
+      const units: 'mm' | 'inch' = 'mm';
       
-      const { container, rerender } = render(CuttingParameters, { 
+      const { container, rerender: _rerender } = render(CuttingParameters, { 
         props: { parameters: defaultParameters, units } 
       });
       
       // Initially mm
-      let feedRateLabel = container.querySelector('label[for="feedRate"]');
+      const feedRateLabel = container.querySelector('label[for="feedRate"]');
       expect(feedRateLabel?.textContent).toContain('mm/min');
       
       // Change to inch and re-render component

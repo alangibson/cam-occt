@@ -1,34 +1,36 @@
 import { describe, it, expect } from 'vitest';
 import { detectShapeChains, isShapeClosed } from './chain-detection';
-import type { Shape } from '../../types';
-import { CutDirection, LeadType } from '../../types/direction';
+import type { Shape, Ellipse, Point2D } from '../../types/geometry';
+import { LeadType } from '../../types/direction';
 
 // Helper function to create ellipse shapes
 function createEllipse(
   id: string,
-  center: { x: number; y: number },
-  majorAxisEndpoint: { x: number; y: number },
+  center: Point2D,
+  majorAxisEndpoint: Point2D,
   minorToMajorRatio: number,
   startParam?: number,
   endParam?: number
 ): Shape {
+  const ellipseGeometry: Ellipse = {
+    center,
+    majorAxisEndpoint,
+    minorToMajorRatio,
+    ...(startParam !== undefined && { startParam }),
+    ...(endParam !== undefined && { endParam })
+  };
+  
   return {
     id,
     type: 'ellipse',
-    geometry: {
-      center,
-      majorAxisEndpoint,
-      minorToMajorRatio,
-      ...(startParam !== undefined && { startParam }),
-      ...(endParam !== undefined && { endParam })
-    }
+    geometry: ellipseGeometry
   };
 }
 
 describe('Chain Detection - Ellipse Support', () => {
   describe('Full ellipse chains', () => {
     it('should detect single full ellipse as a chain', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipse('ellipse1', { x: 0, y: 0 }, { x: 30, y: 0 }, 0.6);
+      const ellipse = createEllipse('ellipse1', { x: 0, y: 0 }, { x: 30, y: 0 }, 0.6);
       
       const chains = detectShapeChains([ellipse], { tolerance: 0.05 });
       
@@ -38,7 +40,7 @@ describe('Chain Detection - Ellipse Support', () => {
     });
 
     it('should detect full ellipse with explicit parameters (0 to 2π) as closed', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipse('ellipse1', { x: 0, y: 0 }, { x: 30, y: 0 }, 0.6, 0, 2 * Math.PI);
+      const ellipse = createEllipse('ellipse1', { x: 0, y: 0 }, { x: 30, y: 0 }, 0.6, 0, 2 * Math.PI);
       
       const chains = detectShapeChains([ellipse], { tolerance: 0.05 });
       
@@ -93,11 +95,11 @@ describe('Chain Detection - Ellipse Support', () => {
       // Create a line that connects to the ellipse arc's start point (30, 0)
       const line: Shape = {
         id: 'line1',
-        type: LeadType.LINE,
+        type: 'line' as const,
         geometry: {
           start: { x: 30, y: 0 },
           end: { x: 50, y: 20 }
-        }
+        } as const
       };
       
       const chains = detectShapeChains([ellipseArc, line], { tolerance: 0.05 });
@@ -129,7 +131,7 @@ describe('Chain Detection - Ellipse Support', () => {
       // Line connecting to arc end point
       const line: Shape = {
         id: 'line1',
-        type: LeadType.LINE,
+        type: 'line',
         geometry: {
           start: { x: 0, y: 20 }, // Arc end point
           end: { x: 30, y: 50 }

@@ -72,10 +72,9 @@ describe('Gap Filling Visual Validation', () => {
     }
 
     // Generate SVG with custom path for gap filling tests
-    const svgContent = generateChainOffsetSVG(chain, offsets, 'line-arc-gap-filling', {
+    void generateChainOffsetSVG(chain, offsets, 'line-arc-gap-filling', {
       width: 800,
-      height: 600,
-      outputDir: 'tests/output/visual/gap-filling'
+      height: 600
     });
 
     // Verify results
@@ -136,8 +135,7 @@ describe('Gap Filling Visual Validation', () => {
 
     generateChainOffsetSVG(chain, offsets, 'problematic-geometry-gap-filling', {
       width: 1000,
-      height: 700,
-      outputDir: 'tests/output/visual/gap-filling'
+      height: 700
     });
 
     expect(chainOffsetResult.success).toBe(true);
@@ -179,8 +177,7 @@ describe('Gap Filling Visual Validation', () => {
 
     generateChainOffsetSVG(chain, offsets, 'multiple-gap-types', {
       width: 800,
-      height: 500,
-      outputDir: 'tests/output/visual/gap-filling'
+      height: 500
     });
 
     expect(chainOffsetResult.success).toBe(true);

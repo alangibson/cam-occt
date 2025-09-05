@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { offsetPolyline } from './polyline';
-import type { Polyline, Point2D, Drawing, Shape } from '../../../../types/geometry';
+import type { Polyline, Point2D, Drawing, Shape, Line, Arc, Circle } from '../../../../types/geometry';
 import { createPolylineFromVertices, polylineToPoints } from '../../../../geometry/polyline';
 import { parseDXF } from '../../../../parsers/dxf-parser';
 import { offsetShape } from '..';
@@ -373,17 +373,13 @@ describe('offsetPolyline', () => {
         
         // Test outset (outer) offset
         const outsetResult = offsetShape(polylineShape, 5, 'outset');
-        expect(outsetResult.success).toBe(true, 
-          `Outset offset should succeed for polyline ${i}. Errors: ${outsetResult.errors.join(', ')}`);
-        expect(outsetResult.shapes.length).toBeGreaterThan(0, 
-          `Should produce outset offset shapes for polyline ${i}`);
+        expect(outsetResult.success, `Outset offset should succeed for polyline ${i}. Errors: ${outsetResult.errors.join(', ')}`).toBe(true);
+        expect(outsetResult.shapes.length, `Should produce outset offset shapes for polyline ${i}`).toBeGreaterThan(0);
         
         // Test inset (inner) offset  
         const insetResult = offsetShape(polylineShape, 5, 'inset');
-        expect(insetResult.success).toBe(true, 
-          `Inset offset should succeed for polyline ${i}. Errors: ${insetResult.errors.join(', ')}`);
-        expect(insetResult.shapes.length).toBeGreaterThan(0, 
-          `Should produce inset offset shapes for polyline ${i}`);
+        expect(insetResult.success, `Inset offset should succeed for polyline ${i}. Errors: ${insetResult.errors.join(', ')}`).toBe(true);
+        expect(insetResult.shapes.length, `Should produce inset offset shapes for polyline ${i}`).toBeGreaterThan(0);
         
         // Verify the offset shapes are valid
         for (const shape of outsetResult.shapes) {
@@ -412,11 +408,11 @@ function extractPointsFromShapes(shapes: Shape[]): Point2D[] {
         allPoints.push(...polylineToPoints(shape.geometry as Polyline));
         break;
       case 'line':
-        const line: import("$lib/types/geometry").Line = shape.geometry as any;
+        const line = shape.geometry as Line;
         allPoints.push(line.start, line.end);
         break;
       case 'arc':
-        const arc: import("$lib/types/geometry").Arc = shape.geometry as any;
+        const arc = shape.geometry as Arc;
         // Sample points along the arc
         const startPoint = {
           x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
@@ -440,7 +436,7 @@ function extractPointsFromShapes(shapes: Shape[]): Point2D[] {
         }
         break;
       case 'circle':
-        const circle: import("$lib/types/geometry").Circle = shape.geometry as any;
+        const circle = shape.geometry as Circle;
         // Sample points around the circle
         for (let i: number = 0; i < 8; i++) {
           const angle: number = (i * Math.PI * 2) / 8;

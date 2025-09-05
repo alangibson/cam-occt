@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 import { generateToolPaths } from '../lib/cam/path-generator';
 import { generateGCode } from '../lib/cam/gcode-generator';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { LeadType } from '$lib/types/direction';
+import type { ToolPath } from '$lib/types';
 
 // Mock the modules
 vi.mock('../lib/cam/path-generator');
@@ -33,11 +34,16 @@ describe('GCodeExport Component Logic', () => {
         leadOutLength: 5
       };
 
-      const mockToolPaths = [{ id: '1', type: 'cut', points: [] }];
+      const mockToolPaths: ToolPath[] = [{
+        id: '1',
+        shapeId: '1',
+        points: [],
+        isRapid: false
+      }];
       const mockGCode = 'G21 ; Units in mm\nG90 ; Absolute positioning\nM3 ; Start plasma';
 
       // Set up mocks
-      vi.mocked(generateToolPaths).mockReturnValue(mockToolPaths as any);
+      vi.mocked(generateToolPaths).mockReturnValue(mockToolPaths);
       vi.mocked(generateGCode).mockReturnValue(mockGCode);
 
       // Call the functions that would be called in the component

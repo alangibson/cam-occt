@@ -8,7 +8,7 @@ import {
   validateEllipseGeometry,
   type EllipseTessellationConfig
 } from './ellipse-tessellation';
-import type { Point2D, Ellipse } from '../types/geometry';
+import type { Ellipse } from '../types/geometry';
 
 describe('Ellipse Tessellation', () => {
   // Test ellipse shapes with known properties

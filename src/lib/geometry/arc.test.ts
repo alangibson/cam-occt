@@ -8,7 +8,7 @@ import {
   isArc,
   generateArcPoints
 } from './arc';
-import type { Arc, Line } from '../types/geometry';
+import type { Arc, Line, Geometry } from '../types/geometry';
 
 describe('getArcStartPoint', () => {
   it('should calculate start point for arc at 0 degrees', () => {
@@ -342,7 +342,7 @@ describe('isArc', () => {
       someOtherProperty: true
     };
     
-    expect(isArc(notArc as any)).toBe(false);
+    expect(isArc(notArc as unknown as Geometry)).toBe(false);
   });
 });
 

@@ -40,7 +40,6 @@ describe('Test Circle Face Creation and Containment', () => {
     
     // Test each circle chain individually
     let successfulContainments = 0;
-    let failedContainments = 0;
     
     for (const circleChain of circleChains) {
       
@@ -50,11 +49,11 @@ describe('Test Circle Face Creation and Containment', () => {
         if (isContained) {
           successfulContainments++;
         } else {
-          failedContainments++;
+          // Containment failed but not processed
         }
         
       } catch {
-        failedContainments++;
+        // Error caught but not processed
       }
     }
     

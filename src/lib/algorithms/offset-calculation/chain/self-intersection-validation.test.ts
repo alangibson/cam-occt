@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Chain } from '../../chain-detection/chain-detection';
-import type { Shape, Polyline, Point2D } from '../../../types/geometry';
+import type { Shape } from '../../../types/geometry';
 import type { ChainOffsetResult, ChainOffsetParameters } from './types';
 import { offsetChain } from './offset';
 import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from './types';
@@ -11,17 +11,10 @@ describe('Chain Self-Intersection Validation', () => {
   /**
    * Helper function to create a chain from a polyline
    */
-  function createChainFromPolyline(polyline: Polyline, id: string = 'test-chain'): Chain {
-    const shape: Shape = {
-      id: `${id}-polyline`,
-      type: 'polyline',
-      geometry: polyline
-    };
-
+  function createChainFromPolylineShape(polylineShape: Shape, id: string = 'test-chain'): Chain {
     return {
       id,
-      shapes: [shape],
-      closed: polyline.closed
+      shapes: [polylineShape]
     };
   }
 
@@ -37,7 +30,7 @@ describe('Chain Self-Intersection Validation', () => {
       ];
 
       const polyline = createPolylineFromVertices(figure8Points, true);
-      const chain = createChainFromPolyline(polyline.geometry, 'figure8-chain');
+      const chain = createChainFromPolylineShape(polyline, 'figure8-chain');
 
       // Enable self-intersection detection
       const params: ChainOffsetParameters = {
@@ -85,7 +78,7 @@ describe('Chain Self-Intersection Validation', () => {
       ];
 
       const polyline = createPolylineFromVertices(starPoints, true);
-      const chain = createChainFromPolyline(polyline.geometry, 'star-chain');
+      const chain = createChainFromPolylineShape(polyline, 'star-chain');
 
       const params: ChainOffsetParameters = {
         ...DEFAULT_CHAIN_OFFSET_PARAMETERS,
@@ -114,7 +107,7 @@ describe('Chain Self-Intersection Validation', () => {
       ];
 
       const polyline = createPolylineFromVertices(rectanglePoints, true);
-      const chain = createChainFromPolyline(polyline.geometry, 'rectangle-chain');
+      const chain = createChainFromPolylineShape(polyline, 'rectangle-chain');
 
       const params: ChainOffsetParameters = {
         ...DEFAULT_CHAIN_OFFSET_PARAMETERS,
@@ -148,7 +141,7 @@ describe('Chain Self-Intersection Validation', () => {
       ];
 
       const polyline = createPolylineFromVertices(figure8Points, true);
-      const chain = createChainFromPolyline(polyline.geometry, 'figure8-detailed');
+      const chain = createChainFromPolylineShape(polyline, 'figure8-detailed');
 
       const params: ChainOffsetParameters = {
         ...DEFAULT_CHAIN_OFFSET_PARAMETERS,
@@ -195,7 +188,7 @@ describe('Chain Self-Intersection Validation', () => {
       }
 
       const polyline = createPolylineFromVertices(zigzagPoints, true);
-      const chain = createChainFromPolyline(polyline.geometry, 'zigzag-chain');
+      const chain = createChainFromPolylineShape(polyline, 'zigzag-chain');
 
       const params: ChainOffsetParameters = {
         ...DEFAULT_CHAIN_OFFSET_PARAMETERS,
@@ -228,7 +221,7 @@ describe('Chain Self-Intersection Validation', () => {
       ];
 
       const polyline = createPolylineFromVertices(testPoints, true);
-      const chain = createChainFromPolyline(polyline.geometry, 'test-param-chain');
+      const chain = createChainFromPolylineShape(polyline, 'test-param-chain');
 
       // Test with polylineIntersections disabled
       const paramsDisabled: ChainOffsetParameters = {
@@ -267,7 +260,7 @@ describe('Chain Self-Intersection Validation', () => {
       ];
 
       const polyline = createPolylineFromVertices(simplePoints, true);
-      const chain = createChainFromPolyline(polyline.geometry, 'simple-rectangle-chain');
+      const chain = createChainFromPolylineShape(polyline, 'simple-rectangle-chain');
 
       const params: ChainOffsetParameters = {
         ...DEFAULT_CHAIN_OFFSET_PARAMETERS,

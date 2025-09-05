@@ -45,7 +45,7 @@ describe('findSplineLineIntersectionsVerb - Deterministic Behavior', () => {
     const lineShape = createLine({ x: 80, y: 80 }, { x: 100, y: 50 });
     
     // Run intersection detection multiple times
-    const results: any[] = [];
+    const results: number[] = [];
     for (let i: number = 0; i < 10; i++) {
       const intersections = findSplineLineIntersectionsVerb(
         splineShape, 

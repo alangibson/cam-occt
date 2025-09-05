@@ -2,9 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
 import type { Path } from '../stores/paths';
 import type { Chain } from './chain-detection/chain-detection';
-import type { Shape, Ellipse, Spline, Polyline, Circle, Line } from '../../lib/types';
-import type { DetectedPart } from './part-detection';
-import { CutDirection, LeadType } from '../types/direction';
+import type { Shape, Ellipse, Spline, Circle, Line, Arc, Polyline, GeometryType } from '../../lib/types';
+import { CutDirection } from '../types/direction';
 import { createPolylineFromVertices } from '../geometry/polyline';
 
 describe('Optimize Cut Order', () => {
@@ -118,14 +117,14 @@ describe('Optimize Cut Order', () => {
 
     // Create a shape for each type
     shapeTypes.forEach((type, index) => {
-      let geometry: any;
+      let geometry: Line | Arc | Circle | Polyline | Ellipse | Spline;
       
       switch (type) {
         case 'line':
           geometry = { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } } as Line;
           break;
         case 'arc':
-          geometry = { center: { x: 5, y: 5 }, radius: 5, startAngle: 0, endAngle: 90, clockwise: true } as Arc;
+          geometry = { center: { x: 5, y: 5 }, radius: 5, startAngle: 0, endAngle: 90, clockwise: true };
           break;
         case 'circle':
           geometry = { center: { x: 5, y: 5 }, radius: 5 } as Circle;
@@ -150,11 +149,14 @@ describe('Optimize Cut Order', () => {
             minorToMajorRatio: 0.5 
           } as Ellipse;
           break;
+        default:
+          geometry = { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } } as Line;
+          break;
       }
 
       const shape: Shape = {
         id: `shape-${index}`,
-        type: type as any,
+        type: type as GeometryType,
         geometry
       };
 

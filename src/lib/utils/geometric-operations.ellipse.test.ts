@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { isChainGeometricallyContained, isPointInPolygon, calculatePolygonArea } from './geometric-operations';
-import type { Shape, Ellipse } from '../../lib/types';
-import type { ShapeChain } from '../algorithms/chain-detection';
-import { CutDirection, LeadType } from '../types/direction';
+import { isChainGeometricallyContained } from './geometric-operations';
+import type { Shape, Ellipse, GeometryType } from '../types/geometry';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import { LeadType } from '../types/direction';
 
 // Helper function to create ellipse shapes for testing
 function createEllipseShape(
@@ -22,13 +22,13 @@ function createEllipseShape(
 
   return {
     id: 'test-ellipse-' + Math.random(),
-    type: 'ellipse',
+    type: 'ellipse' as GeometryType,
     geometry
   };
 }
 
 // Helper function to create a chain from shapes
-function createChain(shapes: Shape[], id: string = 'test-chain'): ShapeChain {
+function createChain(shapes: Shape[], id: string = 'test-chain'): Chain {
   return {
     id,
     shapes
@@ -38,7 +38,7 @@ function createChain(shapes: Shape[], id: string = 'test-chain'): ShapeChain {
 describe('Geometric Operations - Ellipse support', () => {
   describe('Ellipse polygon approximation', () => {
     it('should generate polygon points for a full ellipse', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipseShape(
+      const ellipse: Shape = createEllipseShape(
         { x: 0, y: 0 },
         { x: 10, y: 0 }, // Horizontal major axis
         0.5 // Minor axis is half of major
@@ -54,7 +54,7 @@ describe('Geometric Operations - Ellipse support', () => {
     });
 
     it('should generate polygon points for an ellipse arc', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipseShape(
+      const ellipse: Shape = createEllipseShape(
         { x: 0, y: 0 },
         { x: 20, y: 0 },
         0.6,
@@ -71,7 +71,7 @@ describe('Geometric Operations - Ellipse support', () => {
     });
 
     it('should handle rotated ellipse correctly', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipseShape(
+      const ellipse: Shape = createEllipseShape(
         { x: 50, y: 50 },
         { x: 0, y: 15 }, // Vertical major axis
         0.8
@@ -157,7 +157,7 @@ describe('Geometric Operations - Ellipse support', () => {
   describe('Mixed geometry containment with ellipses', () => {
     it('should handle containment between ellipse and other shapes', () => {
       // Create a large ellipse
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipseShape(
+      const ellipse: Shape = createEllipseShape(
         { x: 0, y: 0 },
         { x: 100, y: 0 },
         0.8
@@ -206,7 +206,7 @@ describe('Geometric Operations - Ellipse support', () => {
       ];
 
       // Create ellipse that fits within rectangle
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipseShape(
+      const ellipse: Shape = createEllipseShape(
         { x: 0, y: 0 },
         { x: 40, y: 0 },
         0.75
@@ -222,15 +222,12 @@ describe('Geometric Operations - Ellipse support', () => {
 
   describe('Ellipse polygon quality', () => {
     it('should generate sufficient points for accurate containment testing', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createEllipseShape(
+      const ellipse: Shape = createEllipseShape(
         { x: 0, y: 0 },
         { x: 30, y: 0 },
         0.5
       );
 
-      // Create a point that should be inside the ellipse
-      const testPoint = { x: 10, y: 5 }; // Well inside the ellipse
-      
       // Extract polygon points manually to test quality
       const chain = createChain([ellipse]);
       

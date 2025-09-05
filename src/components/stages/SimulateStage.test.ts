@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { workflowStore } from '../../lib/stores/workflow';
 import { pathStore } from '../../lib/stores/paths';
@@ -7,7 +7,7 @@ import { chainStore } from '../../lib/stores/chains';
 import { operationsStore } from '../../lib/stores/operations';
 import { drawingStore } from '../../lib/stores/drawing';
 import { uiStore } from '../../lib/stores/ui';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/types/direction';
 
 describe('SimulateStage store subscription cleanup', () => {
   beforeEach(() => {
@@ -15,7 +15,7 @@ describe('SimulateStage store subscription cleanup', () => {
     workflowStore.reset();
     pathStore.reset();
     rapidStore.reset();
-    chainStore.set({ chains: [], tolerance: 0.1, selectedChainId: null });
+    chainStore.set({ chains: [], tolerance: 0.1, selectedChainId: null, highlightedChainId: null });
   });
 
   it('should properly manage store subscriptions without memory leaks', () => {

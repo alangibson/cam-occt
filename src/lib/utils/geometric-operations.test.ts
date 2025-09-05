@@ -6,7 +6,7 @@ import {
   calculatePolygonCentroid,
   calculatePolygonBounds
 } from './geometric-operations';
-import type { Chain } from '../algorithms/chain-detection';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Shape, Line, Circle, Arc, Ellipse, Spline, Polyline } from '../../lib/types';
 
 // Helper function to create test chains

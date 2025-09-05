@@ -48,7 +48,7 @@ describe('Line-Ellipse Intersections', () => {
   function validateIntersectionResults(results: IntersectionResult[], expectedCount: number, description: string): void {
     expect(results).toHaveLength(expectedCount);
     
-    results.forEach((result, index) => {
+    results.forEach((result, _index) => {
       expect(result.point).toBeDefined();
       expect(typeof result.point.x).toBe('number');
       expect(typeof result.point.y).toBe('number');
@@ -508,7 +508,7 @@ describe('Line-Ellipse Intersections', () => {
         { ellipse: createEllipse(0, 0, 2, 0, 0.5), line: createLine(-3, 1, 3, 1) }
       ];
 
-      testCases.forEach((testCase, index) => {
+      testCases.forEach((testCase, _index) => {
         const parametricResults = findEllipseLineIntersections(testCase.ellipse, testCase.line, false);
         const verbResults = findEllipseLineIntersectionsVerb(testCase.ellipse, testCase.line, false);
         
@@ -548,10 +548,10 @@ describe('Line-Ellipse Intersections', () => {
       const ellipse = createEllipse(0, 0, 4, 0, 0.5);
       const line = createLine(-5, 2, 5, 2); // Tangent line
       
-      [findEllipseLineIntersections, findEllipseLineIntersectionsVerb].forEach((method, methodIndex) => {
+      [findEllipseLineIntersections, findEllipseLineIntersectionsVerb].forEach((method, _methodIndex) => {
         const results = method(ellipse, line, false);
         
-        results.forEach((result, resultIndex) => {
+        results.forEach((result, _resultIndex) => {
           expect(['exact', 'tangent', 'approximate']).toContain(result.type);
           expect(result.confidence).toBeGreaterThanOrEqual(0);
           expect(result.confidence).toBeLessThanOrEqual(1);

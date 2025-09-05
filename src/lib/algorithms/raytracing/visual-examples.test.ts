@@ -13,8 +13,8 @@
 
 import { test, expect, describe } from 'vitest'
 import { isPointInsideChainExact } from './point-in-chain'
-import type { Chain } from '$lib/algorithms/chain-detection'
-import type { Shape, Arc, Circle, Line, GeometryType } from '$lib/types/geometry'
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection'
+import type { Shape } from '$lib/types/geometry'
 
 describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
   
@@ -51,8 +51,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
     
     const chain: Chain = {
       id: 'circle-offset-test',
-      shapes: [circleShape],
-      isClosed: true
+      shapes: [circleShape]
     }
     
     console.log('\n=== EXAMPLE 1: Circle with High-Precision Offsets ===')
@@ -149,8 +148,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
     
     const chain: Chain = {
       id: 'rounded-rectangle',
-      shapes: [bottomLineShape, rightArcShape, topLineShape, leftArcShape],
-      isClosed: true
+      shapes: [bottomLineShape, rightArcShape, topLineShape, leftArcShape]
     }
     
     console.log('\n=== EXAMPLE 2: Complex Chain Classification ===')
@@ -212,8 +210,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
     
     const chain: Chain = {
       id: 'precision-circle',
-      shapes: [circleShape],
-      isClosed: true
+      shapes: [circleShape]
     }
     
     console.log('\n=== EXAMPLE 3: High Precision Offset Testing ===')
@@ -291,8 +288,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
     
     const chain: Chain = {
       id: 'consistency-test',
-      shapes,
-      isClosed: true
+      shapes
     }
     
     const testPoint = { x: 25, y: 25 }
@@ -336,8 +332,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
     
     const circleChain: Chain = {
       id: 'circle-shape',
-      shapes: [circle],
-      isClosed: true
+      shapes: [circle]
     }
     
     console.log('\n=== EXAMPLE 5: Simple Circle Test ===')

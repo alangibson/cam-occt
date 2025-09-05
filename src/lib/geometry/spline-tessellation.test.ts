@@ -36,19 +36,6 @@ describe('Spline Tessellation', () => {
     closed: false
   };
 
-  const cubicSpline: Spline = {
-    controlPoints: [
-      { x: 0, y: 0 },
-      { x: 1, y: 1 },
-      { x: 2, y: -1 },
-      { x: 3, y: 0 }
-    ],
-    degree: 3,
-    knots: [0, 0, 0, 0, 1, 1, 1, 1],
-    weights: [1, 1, 1, 1],
-    fitPoints: [],
-    closed: false
-  };
 
   const closedSpline: Spline = {
     controlPoints: [
@@ -65,13 +52,11 @@ describe('Spline Tessellation', () => {
   };
 
   // Skip verb-nurbs tests if the library is not available in test environment
-  let verbAvailable = true;
   beforeAll(async () => {
     try {
-      const verb = await import('verb-nurbs');
-      verbAvailable = !!verb.default;
+      await import('verb-nurbs');
     } catch {
-      verbAvailable = false;
+      // verb-nurbs not available
     }
   });
 
@@ -612,7 +597,7 @@ describe('Spline Tessellation', () => {
         weights: [],
         fitPoints: [],
         closed: false
-      } as any;
+      } as unknown as Spline;
       
       const result = tessellateSpline(malformedSpline);
       expect(result.success).toBe(false);

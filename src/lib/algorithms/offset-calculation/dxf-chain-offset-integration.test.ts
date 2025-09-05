@@ -4,18 +4,13 @@ import { join } from 'path';
 import { parseDXF } from '../../parsers/dxf-parser';
 import { detectShapeChains } from '../chain-detection/chain-detection';
 import { normalizeChain } from '../chain-normalization/chain-normalization';
-import { translateToPositiveQuadrant } from '../translate-to-positive';
-import { decomposePolylines } from '../decompose-polylines';
 import { offsetChain } from './chain/offset';
 import { SVGBuilder } from '../../test/svg-builder';
-import { polylineToPoints } from '../../geometry/polyline';
 import { calculateDynamicTolerance } from '../../geometry/bounding-box';
-import type { Point2D, Line, Arc, Circle, Polyline, Spline, Ellipse, Drawing } from '../../types/geometry';
-import type { Shape } from './types';
-import type { Unit } from '../../utils/units';
+import type { Shape, Circle } from '../../types/geometry';
 import { getPhysicalScaleFactor } from '../../utils/units';
-import type { Chain } from '../chain-detection';
-import { ChainOffsetResult } from './chain/types';
+import type { Chain } from '../chain-detection/chain-detection';
+import type { ChainOffsetResult } from './chain/types';
 import { scaleShape } from '../../geometry';
 
 // Shared function for DXF processing and offset visualization

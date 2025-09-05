@@ -1,12 +1,10 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
 import { toolStore } from '$lib/stores/tools';
 import { operationsStore } from '$lib/stores/operations';
-import { chainStore } from '$lib/stores/chains';
-import { partStore } from '$lib/stores/parts';
 
 describe('Operations Component', () => {
   beforeEach(() => {

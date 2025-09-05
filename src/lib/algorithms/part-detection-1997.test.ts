@@ -25,19 +25,19 @@ describe('1997.dxf Part Detection', () => {
     const chains = detectShapeChains(decomposed, { tolerance: 0.1 });
     
     // Log chain details
-    chains.forEach((chain, i) => {
+    chains.forEach(() => {
     });
     
     // Detect parts
     const partResult = await detectParts(chains);
     
     // Log part details
-    partResult.parts.forEach((part, i) => {
+    partResult.parts.forEach(() => {
     });
     
     // Log warnings if any
     if (partResult.warnings.length > 0) {
-      partResult.warnings.forEach((warning, i) => {
+      partResult.warnings.forEach(() => {
       });
     }
     

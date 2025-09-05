@@ -29,7 +29,7 @@ describe('Quick Ellipse Intersection Test', () => {
     };
 
     const results = findEllipseEllipseIntersectionsVerb(ellipse1, ellipse2);
-    results.forEach((result, i) => {
+    results.forEach((_result, _i) => {
     });
     
     expect(results.length).toBeGreaterThan(0);
@@ -37,9 +37,9 @@ describe('Quick Ellipse Intersection Test', () => {
 
   it('should find intersections between arc and ellipse', () => {
     // Create an arc and ellipse that should intersect
-    const arc: import("$lib/types/geometry").Arc = {
+    const arcShape: import("$lib/types/geometry").Shape = {
       id: 'arc1',
-      type: 'arc' as const, 
+      type: 'arc',
       geometry: {
         center: { x: 0, y: 0 },
         radius: 8,
@@ -49,9 +49,9 @@ describe('Quick Ellipse Intersection Test', () => {
       }
     };
 
-    const ellipse: import("$lib/types/geometry").Ellipse = {
+    const ellipseShape: import("$lib/types/geometry").Shape = {
       id: 'ellipse1',
-      type: 'ellipse' as const,
+      type: 'ellipse',
       geometry: {
         center: { x: 5, y: 0 },
         majorAxisEndpoint: { x: 10, y: 0 }, // 20x10 ellipse
@@ -59,8 +59,8 @@ describe('Quick Ellipse Intersection Test', () => {
       }
     };
 
-    const results = findEllipseArcIntersectionsVerb(ellipse, arc);
-    results.forEach((result, i) => {
+    const results = findEllipseArcIntersectionsVerb(ellipseShape, arcShape);
+    results.forEach((_result, _i) => {
     });
     
     expect(results.length).toBeGreaterThan(0);

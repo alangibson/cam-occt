@@ -3,7 +3,7 @@ import { pathToToolPath, pathsToToolPaths } from './path-to-toolpath';
 import type { Path } from '../stores/paths';
 import type { Shape, Point2D, Line } from '../types';
 import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
-import { LeadType } from '../types/direction';
+import { LeadType, CutDirection } from '../types/direction';
 
 // Mock getShapePoints function
 vi.mock('../geometry/shape-utils', () => ({
@@ -22,7 +22,7 @@ describe('pathToToolPath', () => {
     toolId: null,
     enabled: true,
     order: 0,
-    cutDirection: 'clockwise' as any,
+    cutDirection: 'clockwise' as CutDirection,
     feedRate: 2000,
     pierceHeight: 4.0,
     pierceDelay: 1.0,
@@ -423,7 +423,7 @@ describe('pathsToToolPaths', () => {
     toolId: null,
     enabled: true,
     order: 0,
-    cutDirection: 'clockwise' as any,
+    cutDirection: 'clockwise' as CutDirection,
     feedRate: 2000,
     pierceHeight: 4.0,
     pierceDelay: 1.0,

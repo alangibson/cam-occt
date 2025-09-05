@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
+import { detectShapeChains, type Chain } from './chain-detection/chain-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
 import { polylineToPoints } from '../geometry/polyline';
 
@@ -36,18 +36,20 @@ describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {
     expect(chain13).toBeDefined();
     
     // Calculate bounding boxes
-    const calculateBoundingBox = (chain: any) => {
+    const calculateBoundingBox = (chain: Chain) => {
       let minX = Infinity, maxX = -Infinity;
       let minY = Infinity, maxY = -Infinity;
       
       for (const shape of chain.shapes) {
         if (shape.type === 'line') {
-          minX = Math.min(minX, shape.geometry.start.x, shape.geometry.end.x);
-          maxX = Math.max(maxX, shape.geometry.start.x, shape.geometry.end.x);
-          minY = Math.min(minY, shape.geometry.start.y, shape.geometry.end.y);
-          maxY = Math.max(maxY, shape.geometry.start.y, shape.geometry.end.y);
+          const lineGeom = shape.geometry as import('../types/geometry').Line;
+          minX = Math.min(minX, lineGeom.start.x, lineGeom.end.x);
+          maxX = Math.max(maxX, lineGeom.start.x, lineGeom.end.x);
+          minY = Math.min(minY, lineGeom.start.y, lineGeom.end.y);
+          maxY = Math.max(maxY, lineGeom.start.y, lineGeom.end.y);
         } else if (shape.type === 'polyline') {
-          for (const point of polylineToPoints(shape.geometry)) {
+          const polylineGeom = shape.geometry as import('../types/geometry').Polyline;
+          for (const point of polylineToPoints(polylineGeom)) {
             minX = Math.min(minX, point.x);
             maxX = Math.max(maxX, point.x);
             minY = Math.min(minY, point.y);
@@ -60,26 +62,22 @@ describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {
     };
     
     const boundaryBox = calculateBoundingBox(boundaryChain!);
-    const chain7Box = calculateBoundingBox(chain7!);
     const chain13Box = calculateBoundingBox(chain13!);
     
     
     
     
     
-    const yOffset = chain7Box.minY - chain13Box.minY;
     
     // Check if both shapes are identical in X but different in Y
-    const xSimilar = Math.abs(chain7Box.minX - chain13Box.minX) < 0.01 && Math.abs(chain7Box.maxX - chain13Box.maxX) < 0.01;
-    const sizeSimilar = Math.abs(chain7Box.width - chain13Box.width) < 0.01 && Math.abs(chain7Box.height - chain13Box.height) < 0.01;
     
     
     if (chain13Box.minY < boundaryBox.minY) {
-      const overflow = boundaryBox.minY - chain13Box.minY;
+      // Chain 13 extends below boundary
     }
     
     if (chain13Box.maxY > boundaryBox.maxY) {
-      const overflow = chain13Box.maxY - boundaryBox.maxY;
+      // Chain 13 extends above boundary
     }
     
     

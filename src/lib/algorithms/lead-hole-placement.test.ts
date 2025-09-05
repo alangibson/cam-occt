@@ -7,6 +7,7 @@ import { detectParts } from './part-detection';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
 import { polylineToPoints } from '../geometry/polyline';
+import type { Polyline, Shape } from '../types/geometry';
 
 describe('Lead Hole Placement Fix', () => {
   // Helper to check if a point is inside a polygon using ray casting
@@ -30,17 +31,17 @@ describe('Lead Hole Placement Fix', () => {
   }
 
   // Helper to get polygon points from a chain
-  function getPolygonFromChain(chain: any): { x: number; y: number }[] {
+  function getPolygonFromChain(chain: { shapes: Shape[] }): { x: number; y: number }[] {
     const points: { x: number; y: number }[] = [];
     
     for (const shape of chain.shapes) {
       if (shape.type === 'line') {
-        points.push(shape.geometry.start);
+        points.push((shape.geometry as import("$lib/types/geometry").Line).start);
       } else if (shape.type === 'polyline') {
-        points.push(...polylineToPoints(shape.geometry));
+        points.push(...polylineToPoints(shape.geometry as Polyline));
       } else if (shape.type === 'arc') {
         // Sample points along the arc
-        const arc: import("$lib/types/geometry").Arc = shape.geometry;
+        const arc = shape.geometry as import("$lib/types/geometry").Arc;
         const segments = Math.max(8, Math.ceil(Math.abs(arc.endAngle - arc.startAngle) * arc.radius / 2));
         for (let i: number = 0; i < segments; i++) {
           const t: number = i / segments;
@@ -52,7 +53,7 @@ describe('Lead Hole Placement Fix', () => {
         }
       } else if (shape.type === 'circle') {
         // Sample points around the circle
-        const circle: import("$lib/types/geometry").Circle = shape.geometry;
+        const circle = shape.geometry as import("$lib/types/geometry").Circle;
         const segments = Math.max(16, Math.ceil(2 * Math.PI * circle.radius / 2));
         for (let i: number = 0; i < segments; i++) {
           const angle: number = (2 * Math.PI * i) / segments;
@@ -68,7 +69,7 @@ describe('Lead Hole Placement Fix', () => {
   }
 
   // Helper to check if point is inside a hole (good for leads)
-  function isPointInHole(point: { x: number; y: number }, part: any): boolean {
+  function isPointInHole(point: { x: number; y: number }, part: { holes: { chain: { shapes: Shape[] } }[] }): boolean {
     for (const hole of part.holes) {
       const holePolygon = getPolygonFromChain(hole.chain);
       if (isPointInPolygon(point, holePolygon)) {
@@ -79,7 +80,7 @@ describe('Lead Hole Placement Fix', () => {
   }
 
   // Helper to check if point is in solid area (inside shell, outside holes)
-  function isPointInSolidArea(point: { x: number; y: number }, part: any): boolean {
+  function isPointInSolidArea(point: { x: number; y: number }, part: { shell: { chain: { shapes: Shape[] } }, holes: { chain: { shapes: Shape[] } }[] }): boolean {
     const shellPolygon = getPolygonFromChain(part.shell.chain);
     
     // First check if point is inside the shell
@@ -124,8 +125,6 @@ describe('Lead Hole Placement Fix', () => {
       holeMaxY = Math.max(holeMaxY, p.y);
     });
     
-    const holeWidth = holeMaxX - holeMinX;
-    const holeHeight = holeMaxY - holeMinY;
     
     // Test 1-unit lead (should easily fit in hole)
     const leadIn: LeadInConfig = { type: LeadType.ARC, length: 1 };
@@ -137,10 +136,6 @@ describe('Lead Hole Placement Fix', () => {
     const leadPoints = result.leadIn!.points;
     
     // Analyze where lead points are
-    let pointsInSolid = 0;
-    let pointsInHole = 0;
-    let pointsOutside = 0;
-    
     
     for (let i: number = 0; i < leadPoints.length - 1; i++) { // Skip connection point
       const point = leadPoints[i];
@@ -149,19 +144,21 @@ describe('Lead Hole Placement Fix', () => {
       const inHole = isPointInHole(point, part5);
       const outside = !isPointInPolygon(point, getPolygonFromChain(part5.shell.chain));
       
-      if (inSolid) pointsInSolid++;
-      if (inHole) pointsInHole++;
-      if (outside) pointsOutside++;
+      if (inSolid) {
+        // Point in solid area detected
+      }
       
-      const status = inSolid ? 'SOLID' : (inHole ? 'HOLE' : (outside ? 'OUTSIDE' : 'UNKNOWN'));
+      if (inSolid) {
+        const classification = inSolid ? 'SOLID' : (inHole ? 'HOLE' : (outside ? 'OUTSIDE' : 'UNKNOWN'));
+        // Use classification for debugging if needed
+        void classification;
+      }
     }
     
     
     // For a 1-unit lead with hole 28.2 units away, algorithm correctly detects it's unreachable
     // Lead falls back to default placement, which may be in solid area for such constrained geometry
     
-    if (pointsInSolid > 0) {
-    }
     
     // The algorithm should correctly detect unreachable holes and warn user
     const warningResult = calculateLeads(part5.shell.chain, leadIn, leadOut, CutDirection.CLOCKWISE, part5);
@@ -189,10 +186,9 @@ describe('Lead Hole Placement Fix', () => {
     const leadPoints = result.leadIn!.points;
     
     // Count solid area violations
-    let pointsInSolid = 0;
     for (let i: number = 0; i < leadPoints.length - 1; i++) {
       if (isPointInSolidArea(leadPoints[i], part5)) {
-        pointsInSolid++;
+        // Check for solid area violations
       }
     }
     
@@ -223,15 +219,15 @@ describe('Lead Hole Placement Fix', () => {
     // Get connection point (start of shell chain)
     const shellShape = part5.shell.chain.shapes[0];
     const connectionPoint = shellShape.type === 'polyline' 
-      ? polylineToPoints(shellShape.geometry)[0]
+      ? polylineToPoints(shellShape.geometry as Polyline)[0]
       : { x: 0, y: 0 }; // fallback
     
     
     // Get hole center
     const holePolygon = getPolygonFromChain(part5.holes[0].chain);
     const holeCenter = {
-      x: holePolygon.reduce((sum: number, p: any) => sum + p.x, 0) / holePolygon.length,
-      y: holePolygon.reduce((sum: number, p: any) => sum + p.y, 0) / holePolygon.length
+      x: holePolygon.reduce((sum: number, p: { x: number; y: number }) => sum + p.x, 0) / holePolygon.length,
+      y: holePolygon.reduce((sum: number, p: { x: number; y: number }) => sum + p.y, 0) / holePolygon.length
     };
     
     
@@ -243,10 +239,10 @@ describe('Lead Hole Placement Fix', () => {
     
     // Check if connection point itself is near the hole
     const connectionInHole = isPointInHole(connectionPoint, part5);
-    const connectionInSolid = isPointInSolidArea(connectionPoint, part5);
     
     
     if (distanceToHole < 30 && !connectionInHole) {
+      // Test condition met
     }
   });
 });

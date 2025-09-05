@@ -31,7 +31,7 @@ describe('Ray-Ellipse Intersection', () => {
 
   describe('countRayEllipseCrossings', () => {
     it('should count 2 crossings for ray intersecting ellipse', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 3, 2);
+      const ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 3, 2);
       
       const horizontalRay: Ray = {
         origin: { x: -5, y: 0 },
@@ -42,7 +42,7 @@ describe('Ray-Ellipse Intersection', () => {
     });
 
     it('should count 1 crossing for ray tangent to ellipse', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 3, 2);
+      const ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 3, 2);
       
       // Ray at y = 2 (minor axis length) should be tangent
       const tangentRay: Ray = {
@@ -54,7 +54,7 @@ describe('Ray-Ellipse Intersection', () => {
     });
 
     it('should count 0 crossings for ray missing ellipse', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 3, 2);
+      const ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 3, 2);
       
       const missRay: Ray = {
         origin: { x: -5, y: 5 },
@@ -65,7 +65,7 @@ describe('Ray-Ellipse Intersection', () => {
     });
 
     it('should handle circular ellipse (a = b)', () => {
-      const circle: import("$lib/types/geometry").Circle = createAxisAlignedEllipse({ x: 0, y: 0 }, 2, 2);
+      const circle = createAxisAlignedEllipse({ x: 0, y: 0 }, 2, 2);
       
       const ray: Ray = {
         origin: { x: -3, y: 0 },
@@ -76,7 +76,7 @@ describe('Ray-Ellipse Intersection', () => {
     });
 
     it('should handle ray originating inside ellipse', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 3, 2);
+      const ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 3, 2);
       
       const insideRay: Ray = {
         origin: { x: 0, y: 0 },
@@ -89,7 +89,7 @@ describe('Ray-Ellipse Intersection', () => {
 
   describe('findRayEllipseIntersections', () => {
     it('should find correct intersection points for axis-aligned ellipse', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 2, y: 1 }, 3, 2);
+      const ellipse = createAxisAlignedEllipse({ x: 2, y: 1 }, 3, 2);
       
       const ray: Ray = {
         origin: { x: -2, y: 1 },
@@ -112,7 +112,7 @@ describe('Ray-Ellipse Intersection', () => {
 
     it('should handle rotated ellipse correctly', () => {
       // 45-degree rotated ellipse
-      const ellipse: import("$lib/types/geometry").Ellipse = createRotatedEllipse({ x: 0, y: 0 }, 3, 2, Math.PI / 4);
+      const ellipse = createRotatedEllipse({ x: 0, y: 0 }, 3, 2, Math.PI / 4);
       
       const ray: Ray = {
         origin: { x: -5, y: 0 },
@@ -131,7 +131,7 @@ describe('Ray-Ellipse Intersection', () => {
     });
 
     it('should return empty array for no intersections', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 10, y: 10 }, 1, 0.5);
+      const ellipse = createAxisAlignedEllipse({ x: 10, y: 10 }, 1, 0.5);
       
       const ray: Ray = {
         origin: { x: 0, y: 0 },
@@ -143,7 +143,7 @@ describe('Ray-Ellipse Intersection', () => {
     });
 
     it('should handle tangent case with single intersection', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 2, 1);
+      const ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 2, 1);
       
       // Ray tangent at top of ellipse
       const tangentRay: Ray = {
@@ -162,7 +162,7 @@ describe('Ray-Ellipse Intersection', () => {
   describe('Rotated Ellipses', () => {
     it('should handle 90-degree rotated ellipse', () => {
       // Rotate 90 degrees: major axis becomes vertical
-      const ellipse: import("$lib/types/geometry").Ellipse = createRotatedEllipse({ x: 0, y: 0 }, 3, 1, Math.PI / 2);
+      const ellipse = createRotatedEllipse({ x: 0, y: 0 }, 3, 1, Math.PI / 2);
       
       const ray: Ray = {
         origin: { x: -2, y: 0 },
@@ -174,7 +174,7 @@ describe('Ray-Ellipse Intersection', () => {
     });
 
     it('should handle arbitrary rotation angle', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createRotatedEllipse({ x: 0, y: 0 }, 4, 2, Math.PI / 6); // 30 degrees
+      const ellipse = createRotatedEllipse({ x: 0, y: 0 }, 4, 2, Math.PI / 6); // 30 degrees
       
       const ray: Ray = {
         origin: { x: -6, y: 1 },
@@ -227,7 +227,7 @@ describe('Ray-Ellipse Intersection', () => {
 
   describe('countHorizontalRayEllipseCrossings', () => {
     it('should count crossings for horizontal ray from point', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 5, y: 3 }, 2, 1);
+      const ellipse = createAxisAlignedEllipse({ x: 5, y: 3 }, 2, 1);
 
       // Point to the left of ellipse
       const leftPoint = { x: 0, y: 3 };
@@ -271,7 +271,7 @@ describe('Ray-Ellipse Intersection', () => {
     });
 
     it('should handle ray with zero direction', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 2, 1);
+      const ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 2, 1);
       
       const pointRay: Ray = {
         origin: { x: 1, y: 0 },
@@ -284,7 +284,7 @@ describe('Ray-Ellipse Intersection', () => {
     });
 
     it('should handle numerical precision near boundaries', () => {
-      const ellipse: import("$lib/types/geometry").Ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 1, 1);
+      const ellipse = createAxisAlignedEllipse({ x: 0, y: 0 }, 1, 1);
       
       // Ray very close to tangent
       const nearTangentRay: Ray = {

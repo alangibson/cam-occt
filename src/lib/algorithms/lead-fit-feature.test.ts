@@ -55,11 +55,13 @@ describe('Lead Fit Feature', () => {
   const testPart: DetectedPart = {
     id: 'test-part-1',
     shell: {
+      id: 'shell-1',
+      type: 'shell',
       chain: testChain,
-      area: 100
+      boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
+      holes: []
     },
-    holes: [],
-    area: 100
+    holes: []
   };
 
   it('should preserve full length when fit=false', () => {

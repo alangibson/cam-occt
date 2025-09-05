@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import type { Shape } from '../../lib/types';
-import type { ShapeChain } from './chain-detection/chain-detection';
-import { CutDirection, LeadType } from '../types/direction';
+import type { Chain } from './chain-detection/chain-detection';
+import { LeadType } from '../types/direction';
 import type { Line, Arc } from '../types/geometry';
 import { createPolylineFromVertices } from '../geometry/polyline';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
@@ -42,7 +42,7 @@ describe('optimizeStartPoints', () => {
       }
     ];
 
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain1',
       shapes
     };
@@ -91,7 +91,7 @@ describe('optimizeStartPoints', () => {
       ], false, { id: 'polyline2' })
     ];
 
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain1',
       shapes
     };
@@ -151,7 +151,7 @@ describe('optimizeStartPoints', () => {
       }
     ];
 
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain1',
       shapes
     };
@@ -192,7 +192,7 @@ describe('optimizeStartPoints', () => {
       }
     ];
 
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain1',
       shapes
     };
@@ -220,7 +220,7 @@ describe('optimizeStartPoints', () => {
       }
     ];
 
-    const chain: ShapeChain = {
+    const chain: Chain = {
       id: 'chain1',
       shapes
     };
@@ -234,7 +234,7 @@ describe('optimizeStartPoints', () => {
 
   it('should handle multiple chains correctly', () => {
     // Create two chains, one closed and one open
-    const chain1: ShapeChain = {
+    const chain1: Chain = {
       id: 'chain1',
       shapes: [
         {
@@ -256,7 +256,7 @@ describe('optimizeStartPoints', () => {
       ]
     };
 
-    const chain2: ShapeChain = {
+    const chain2: Chain = {
       id: 'chain2',
       shapes: [
         {
