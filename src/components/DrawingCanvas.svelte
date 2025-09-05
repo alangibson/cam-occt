@@ -22,6 +22,7 @@
   import { tessellateEllipse } from '../lib/geometry/ellipse-tessellation';
   import { tessellateSpline } from '../lib/geometry/spline-tessellation';
   import { getCachedTessellation, clearTessellationCache } from '../lib/rendering/tessellation-cache';
+  import { getEllipseParameters, isFullEllipse, distanceFromEllipsePerimeter } from '../lib/utils/ellipse-utils';
   import { RenderStateManager, PanStateManager } from '../lib/rendering/render-state';
   import { calculateViewportBounds, cullShapesToViewport } from '../lib/rendering/viewport-culling';
   import LeadVisualization from './LeadVisualization.svelte';
@@ -1105,13 +1106,22 @@
         
       case 'ellipse':
         const ellipse = shape.geometry as Ellipse;
-        // Use a simpler approximation for hit testing: check if point is within ellipse bounds + tolerance
-        const majorAxisLength = Math.sqrt(
-          ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x + 
-          ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-        );
-        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-        const majorAxisAngle = Math.atan2(ellipse.majorAxisEndpoint.y, ellipse.majorAxisEndpoint.x);
+        
+        // Calculate distance from point to ellipse perimeter
+        const distanceToPerimeter = distanceFromEllipsePerimeter(point, ellipse);
+        
+        // Check if within tolerance
+        if (distanceToPerimeter > tolerance) {
+          return false;
+        }
+        
+        // For full ellipses, no additional checks needed
+        if (isFullEllipse(ellipse)) {
+          return true;
+        }
+        
+        // For ellipse arcs, check if point is within angular range
+        const { majorAxisLength, minorAxisLength, majorAxisAngle } = getEllipseParameters(ellipse);
         
         // Transform point to ellipse coordinate system
         const dx = point.x - ellipse.center.x;
@@ -1119,40 +1129,31 @@
         const rotatedX = dx * Math.cos(-majorAxisAngle) - dy * Math.sin(-majorAxisAngle);
         const rotatedY = dx * Math.sin(-majorAxisAngle) + dy * Math.cos(-majorAxisAngle);
         
-        // Check if point is on the ellipse perimeter within tolerance
+        // Calculate point parameter in ellipse coordinate system
         const normalizedX = rotatedX / majorAxisLength;
         const normalizedY = rotatedY / minorAxisLength;
-        const distanceFromEllipse = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+        const pointParam = Math.atan2(normalizedY, normalizedX);
         
-        if (typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number') {
-          // For ellipse arcs, also check if point is within angular range
-          const pointParam = Math.atan2(normalizedY, normalizedX);
-          let startParam = ellipse.startParam;
-          let endParam = ellipse.endParam;
-          
-          // Normalize parameters to [0, 2π]
-          while (startParam < 0) startParam += 2 * Math.PI;
-          while (endParam < 0) endParam += 2 * Math.PI;
-          while (startParam >= 2 * Math.PI) startParam -= 2 * Math.PI;
-          while (endParam >= 2 * Math.PI) endParam -= 2 * Math.PI;
-          
-          let normalizedPointParam = pointParam;
-          while (normalizedPointParam < 0) normalizedPointParam += 2 * Math.PI;
-          while (normalizedPointParam >= 2 * Math.PI) normalizedPointParam -= 2 * Math.PI;
-          
-          // Check if point parameter is within arc range
-          let withinRange = false;
-          if (startParam <= endParam) {
-            withinRange = normalizedPointParam >= startParam && normalizedPointParam <= endParam;
-          } else {
-            // Arc crosses 0 degrees
-            withinRange = normalizedPointParam >= startParam || normalizedPointParam <= endParam;
-          }
-          
-          return Math.abs(distanceFromEllipse - 1) < tolerance / Math.min(majorAxisLength, minorAxisLength) && withinRange;
+        // Check if point parameter is within arc range
+        const startParam = ellipse.startParam!;
+        const endParam = ellipse.endParam!;
+        
+        // Normalize parameters to [0, 2π]
+        const normalizeParam = (param: number) => {
+          while (param < 0) param += 2 * Math.PI;
+          while (param >= 2 * Math.PI) param -= 2 * Math.PI;
+          return param;
+        };
+        
+        const normStart = normalizeParam(startParam);
+        const normEnd = normalizeParam(endParam);
+        const normPoint = normalizeParam(pointParam);
+        
+        if (normStart <= normEnd) {
+          return normPoint >= normStart && normPoint <= normEnd;
         } else {
-          // Full ellipse
-          return Math.abs(distanceFromEllipse - 1) < tolerance / Math.min(majorAxisLength, minorAxisLength);
+          // Arc crosses 0 degrees
+          return normPoint >= normStart || normPoint <= normEnd;
         }
         
       case 'spline':

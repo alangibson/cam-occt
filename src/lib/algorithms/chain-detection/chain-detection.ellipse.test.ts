@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { detectShapeChains } from './chain-detection';
+import { detectShapeChains, isShapeClosed } from './chain-detection';
 import type { Shape } from '../../types';
 import { CutDirection, LeadType } from '../../types/direction';
 
@@ -37,6 +37,19 @@ describe('Chain Detection - Ellipse Support', () => {
       expect(chains[0].shapes[0].id).toBe('ellipse1');
     });
 
+    it('should detect full ellipse with explicit parameters (0 to 2π) as closed', () => {
+      const ellipse: import("$lib/types/geometry").Ellipse = createEllipse('ellipse1', { x: 0, y: 0 }, { x: 30, y: 0 }, 0.6, 0, 2 * Math.PI);
+      
+      const chains = detectShapeChains([ellipse], { tolerance: 0.05 });
+      
+      expect(chains).toHaveLength(1);
+      expect(chains[0].shapes).toHaveLength(1);
+      expect(chains[0].shapes[0].id).toBe('ellipse1');
+      
+      // Verify it's detected as closed
+      expect(isShapeClosed(ellipse, 0.05)).toBe(true);
+    });
+
     it('should not connect separate full ellipses', () => {
       const ellipse1 = createEllipse('ellipse1', { x: 0, y: 0 }, { x: 30, y: 0 }, 0.6);
       const ellipse2 = createEllipse('ellipse2', { x: 100, y: 100 }, { x: 25, y: 0 }, 0.8);
@@ -69,6 +82,9 @@ describe('Chain Detection - Ellipse Support', () => {
       expect(chains).toHaveLength(1);
       expect(chains[0].shapes).toHaveLength(1);
       expect(chains[0].shapes[0].id).toBe('arc1');
+      
+      // Verify it's detected as open
+      expect(isShapeClosed(ellipseArc, 0.05)).toBe(false);
     });
 
     it('should connect ellipse arc with other shapes at endpoints', () => {

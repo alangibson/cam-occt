@@ -161,3 +161,80 @@ export function getEllipseParameters(ellipse: Ellipse): {
   
   return { majorAxisLength, minorAxisLength, majorAxisAngle };
 }
+
+/**
+ * Determine if an ellipse represents a full ellipse (closed) or an arc
+ * A full ellipse has either no start/end parameters or spans approximately 2π
+ */
+export function isFullEllipse(ellipse: Ellipse): boolean {
+  // If no start/end parameters, it's a full ellipse
+  if (typeof ellipse.startParam !== 'number' || typeof ellipse.endParam !== 'number') {
+    return true;
+  }
+  
+  // Calculate parameter span
+  let paramSpan = ellipse.endParam - ellipse.startParam;
+  if (paramSpan < 0) {
+    paramSpan += 2 * Math.PI;
+  }
+  
+  // Consider it a full ellipse if span is approximately 2π (within small tolerance)
+  const fullCircle = 2 * Math.PI;
+  const tolerance = 1e-10;
+  return Math.abs(paramSpan - fullCircle) < tolerance;
+}
+
+/**
+ * Determine if an ellipse is closed (represents a full ellipse) or open (ellipse arc)
+ * 
+ * This function consolidates the ellipse closed detection logic used across the application:
+ * - If no start/end parameters exist, assume it's a full closed ellipse
+ * - If start parameter is near 0 and end parameter is near 2π, it's a full closed ellipse  
+ * - Otherwise, it's an open ellipse arc
+ * 
+ * @param ellipse - The ellipse geometry to check
+ * @param tolerance - Numeric tolerance for comparing parameter values (default: 0.001)
+ * @returns true if ellipse is closed (full ellipse), false if open (ellipse arc)
+ */
+export function isEllipseClosed(ellipse: Ellipse, tolerance: number = 0.001): boolean {
+  // If no start/end parameters, assume it's a full closed ellipse
+  if (typeof ellipse.startParam !== 'number' || typeof ellipse.endParam !== 'number') {
+    return true;
+  }
+  
+  // Check if it's a full ellipse (start ≈ 0, end ≈ 2π)
+  const startParam = ellipse.startParam;
+  const endParam = ellipse.endParam;
+  const fullCircle = 2 * Math.PI;
+  
+  // Consider it a full ellipse if start is near 0 and end is near 2π
+  const isFullEllipse = Math.abs(startParam) < tolerance && Math.abs(endParam - fullCircle) < tolerance;
+  
+  return isFullEllipse;
+}
+
+/**
+ * Calculate distance from a point to an ellipse perimeter
+ * Returns the minimum distance from the point to the ellipse outline
+ */
+export function distanceFromEllipsePerimeter(point: Point2D, ellipse: Ellipse): number {
+  const { majorAxisLength, minorAxisLength, majorAxisAngle } = getEllipseParameters(ellipse);
+  
+  // Transform point to ellipse coordinate system (centered at origin, aligned with axes)
+  const dx = point.x - ellipse.center.x;
+  const dy = point.y - ellipse.center.y;
+  const rotatedX = dx * Math.cos(-majorAxisAngle) - dy * Math.sin(-majorAxisAngle);
+  const rotatedY = dx * Math.sin(-majorAxisAngle) + dy * Math.cos(-majorAxisAngle);
+  
+  // Normalize coordinates by axis lengths
+  const normalizedX = rotatedX / majorAxisLength;
+  const normalizedY = rotatedY / minorAxisLength;
+  
+  // Calculate distance from unit ellipse (where both axes = 1)
+  const distanceFromUnit = Math.sqrt(normalizedX * normalizedX + normalizedY * normalizedY);
+  
+  // Convert back to actual distance
+  // For points on the ellipse perimeter, distanceFromUnit = 1
+  // Distance from perimeter = |distanceFromUnit - 1| * minimum axis length
+  return Math.abs(distanceFromUnit - 1) * Math.min(majorAxisLength, minorAxisLength);
+}

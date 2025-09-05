@@ -3,6 +3,7 @@ import type { Shape, Point2D, Line, Arc, Circle, Polyline, Ellipse, Spline } fro
 import { evaluateNURBS } from '../../geometry/nurbs';
 import { polylineToPoints } from '../../geometry/polyline';
 import { calculateSquaredDistance } from '../../utils/math-utils';
+import { isEllipseClosed } from '../../utils/ellipse-utils';
 
 export interface ChainDetectionOptions {
   tolerance: number;
@@ -257,8 +258,8 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
     
     case 'ellipse':
       const ellipse: Ellipse = shape.geometry as Ellipse;
-      // Full ellipses are closed, ellipse arcs are open
-      return !(typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number');
+      // Use the centralized ellipse closed detection logic
+      return isEllipseClosed(ellipse, 0.001);
     
     case 'spline':
       const splineGeom: Spline = shape.geometry as Spline;

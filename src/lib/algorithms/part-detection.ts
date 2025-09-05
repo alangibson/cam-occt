@@ -21,6 +21,7 @@ import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detectio
 import { normalizeChain } from './chain-normalization/chain-normalization';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { calculateChainBoundingBox, type BoundingBox } from '../utils/shape-bounds-utils';
+import { isEllipseClosed } from '../utils/ellipse-utils';
 
 export interface PartHole {
   id: string;
@@ -217,10 +218,9 @@ export function isChainClosed(chain: Chain, tolerance: number = 0.1): boolean {
       return true;
     }
     if (shape.type === 'ellipse') {
-      // Full ellipses are closed, elliptical arcs may not be
       const ellipse: Ellipse = shape.geometry as Ellipse;
-      // If no start/end parameters, it's a full ellipse (closed)
-      return ellipse.startParam === undefined && ellipse.endParam === undefined;
+      // Use the centralized ellipse closed detection logic
+      return isEllipseClosed(ellipse, 0.001);
     }
     if (shape.type === 'polyline') {
       // Check the explicit closed flag from DXF parsing
