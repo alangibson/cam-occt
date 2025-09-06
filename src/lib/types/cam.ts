@@ -8,6 +8,16 @@ export interface CuttingParameters {
   kerf: number; // mm or inch
   leadInLength: number; // mm or inch
   leadOutLength: number; // mm or inch
+  // Optional QtPlasmaC material parameters
+  toolName?: string; // Material name
+  kerfWidth?: number; // Kerf width override
+  enableTHC?: boolean; // THC enable/disable
+  cutAmps?: number; // Cut amps
+  cutVolts?: number; // Cut voltage
+  pauseAtEnd?: number; // Pause at end delay
+  cutMode?: number; // Cut mode
+  gasPresure?: number; // Gas pressure
+  torchEnable?: boolean; // Torch enable
 }
 
 export interface ToolPath {
@@ -39,4 +49,5 @@ export interface GCodeCommand {
   code: string;
   parameters: Record<string, number | string>;
   comment?: string;
+  rawValue?: number | string; // For special commands like F that need raw value
 }

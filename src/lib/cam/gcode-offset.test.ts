@@ -93,7 +93,7 @@ describe('G-code generation with offset paths', () => {
       safeZ: 10,
       rapidFeedRate: 5000,
       includeComments: true,
-      plasmaMode: true
+      cutterCompensation: 'off'
     });
 
     // Verify G-code contains original coordinates
@@ -146,7 +146,7 @@ describe('G-code generation with offset paths', () => {
       safeZ: 10,
       rapidFeedRate: 5000,
       includeComments: true,
-      plasmaMode: true
+      cutterCompensation: 'off'
     });
 
     // Verify G-code contains offset coordinates
@@ -211,7 +211,7 @@ describe('G-code generation with offset paths', () => {
       safeZ: 10,
       rapidFeedRate: 5000,
       includeComments: true,
-      plasmaMode: true
+      cutterCompensation: 'off'
     });
 
     // Should contain lead-in moves
@@ -253,7 +253,7 @@ describe('G-code generation with offset paths', () => {
       safeZ: 10.123456,
       rapidFeedRate: 5000,
       includeComments: true,
-      plasmaMode: true
+      cutterCompensation: 'off'
     });
 
     // Should format coordinates to 4 decimal places

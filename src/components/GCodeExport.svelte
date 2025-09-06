@@ -5,9 +5,18 @@
   import { pathStore } from '../lib/stores/paths';
   import { chainStore } from '../lib/stores/chains';
   import type { CuttingParameters } from '../lib/types';
-  import { onMount } from 'svelte';
+  import { onMount, createEventDispatcher } from 'svelte';
+  
+  // Props from parent component
+  export let includeComments: boolean = true;
+  export let cutterCompensation: 'left_outer' | 'right_inner' | 'off' | null = 'off';
+  export let adaptiveFeedControl: boolean | null = true;
+  export let enableTHC: boolean | null = true;
+  
+  const dispatch = createEventDispatcher();
   
   $: drawing = $drawingStore.drawing;
+  $: displayUnit = $drawingStore.displayUnit;
   $: paths = $pathStore.paths;
   $: chains = $chainStore.chains;
   
@@ -16,12 +25,7 @@
   
   function handleGenerateGCode() {
     if (!drawing) {
-      alert('Please import a drawing first');
-      return;
-    }
-    
-    if (paths.length === 0) {
-      alert('No paths available. Please create operations first.');
+      console.log('No drawing available for G-code generation');
       return;
     }
     
@@ -36,18 +40,19 @@
       });
       
       // Convert paths to tool paths (uses offset geometry when available)
+      // This handles empty paths array gracefully
       const toolPaths = pathsToToolPaths(paths, chainShapes);
       
-      // Generate G-code
+      // Generate G-code with settings from props
+      // The generateGCode function can handle empty toolPaths and will still generate header/footer
       const gcode = generateGCode(toolPaths, drawing, {
-        units: drawing.units,
+        units: displayUnit,
         safeZ: 10,
         rapidFeedRate: 5000,
-        includeComments: true,
-        plasmaMode: true,
-        materialNumber: 1, // Default material
-        enableTHC: true,
-        enableVelocityReduction: true
+        includeComments,
+        cutterCompensation,
+        adaptiveFeedControl,
+        enableTHC
       });
       
       // Display the generated G-code
@@ -85,10 +90,22 @@
     });
   }
   
-  // Automatically generate G-code when component mounts
+  // Automatically generate G-code when component mounts or props change
   onMount(() => {
-    handleGenerateGCode();
+    // Small delay to ensure all stores are loaded after page refresh
+    setTimeout(() => {
+      handleGenerateGCode();
+    }, 100);
   });
+  
+  // Regenerate when settings or display units change
+  $: if (drawing) {
+    // Include all props and display units in the reactive dependencies
+    includeComments, cutterCompensation, adaptiveFeedControl, enableTHC;
+    displayUnit; // Watch for display unit changes
+    paths; // Watch for path changes
+    handleGenerateGCode();
+  }
 </script>
 
 <div class="export-container">

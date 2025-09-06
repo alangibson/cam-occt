@@ -21,6 +21,13 @@
     leadInLength: 5,
     leadOutLength: 5
   };
+  
+  // G-code generation options with localStorage persistence
+  let includeComments = true;
+  let cutterCompensation: 'left_outer' | 'right_inner' | 'off' | null = 'off';
+  let adaptiveFeedControl: boolean | null = true;
+  let enableTHC: boolean | null = true;
+  let settingsLoaded = false; // Flag to prevent saving during initial load
 
   function handleStartOver() {
     workflowStore.reset();
@@ -30,18 +37,60 @@
   // Auto-complete export stage
   workflowStore.completeStage('export');
 
-  // Load column widths from localStorage on mount
+  // Load settings from localStorage on mount
   onMount(() => {
     const savedSideWidth = localStorage.getItem('metalheadcam-export-side-column-width');
+    const savedIncludeComments = localStorage.getItem('metalheadcam-gcode-include-comments');
+    const savedCutterCompensation = localStorage.getItem('metalheadcam-gcode-cutter-compensation');
+    const savedAdaptiveFeedControl = localStorage.getItem('metalheadcam-gcode-adaptive-feed-control');
+    const savedEnableTHC = localStorage.getItem('metalheadcam-gcode-enable-thc');
     
     if (savedSideWidth) {
       sideColumnWidth = parseInt(savedSideWidth, 10);
     }
+    
+    if (savedIncludeComments !== null) {
+      includeComments = savedIncludeComments === 'true';
+    }
+    
+    if (savedCutterCompensation !== null) {
+      if (savedCutterCompensation === 'null') {
+        cutterCompensation = null;
+      } else {
+        cutterCompensation = savedCutterCompensation as 'left_outer' | 'right_inner' | 'off';
+      }
+    }
+    
+    if (savedAdaptiveFeedControl !== null) {
+      if (savedAdaptiveFeedControl === 'null') {
+        adaptiveFeedControl = null;
+      } else {
+        adaptiveFeedControl = savedAdaptiveFeedControl === 'true';
+      }
+    }
+    
+    if (savedEnableTHC !== null) {
+      if (savedEnableTHC === 'null') {
+        enableTHC = null;
+      } else {
+        enableTHC = savedEnableTHC === 'true';
+      }
+    }
+    
+    // Mark settings as loaded so reactive statements can start saving
+    settingsLoaded = true;
   });
 
-  // Save column widths to localStorage
+  // Save settings to localStorage
   function saveColumnWidths() {
     localStorage.setItem('metalheadcam-export-side-column-width', sideColumnWidth.toString());
+  }
+  
+  function saveGCodeSettings() {
+    localStorage.setItem('metalheadcam-gcode-include-comments', includeComments.toString());
+    localStorage.setItem('metalheadcam-gcode-cutter-compensation', cutterCompensation === null ? 'null' : cutterCompensation);
+    localStorage.setItem('metalheadcam-gcode-adaptive-feed-control', adaptiveFeedControl === null ? 'null' : adaptiveFeedControl.toString());
+    localStorage.setItem('metalheadcam-gcode-enable-thc', enableTHC === null ? 'null' : enableTHC.toString());
   }
 
   // Side column resize handlers
@@ -80,13 +129,36 @@
       e.preventDefault();
     }
   }
+  
+  // Save G-code settings to localStorage whenever they change (only after initial load)
+  $: if (settingsLoaded && typeof includeComments !== 'undefined') {
+    saveGCodeSettings();
+  }
+  
+  $: if (settingsLoaded && typeof cutterCompensation !== 'undefined') {
+    saveGCodeSettings();
+  }
+  
+  $: if (settingsLoaded && typeof adaptiveFeedControl !== 'undefined') {
+    saveGCodeSettings();
+  }
+  
+  $: if (settingsLoaded && typeof enableTHC !== 'undefined') {
+    saveGCodeSettings();
+  }
 </script>
 
 <div class="export-stage">
   <div class="export-layout" class:no-select={isDraggingSide}>
     <!-- Main Content -->
     <div class="main-column">
-      <GCodeExport />
+      <GCodeExport 
+        {includeComments}
+        {cutterCompensation}
+        {adaptiveFeedControl}
+        {enableTHC}
+        on:regenerate={() => {}}
+      />
     </div>
 
     <!-- Side Panel -->
@@ -100,7 +172,49 @@
         aria-label="Resize side panel (Arrow keys to adjust)"
         type="button"
       ></button>
-      <AccordionPanel title="Export Summary" isExpanded={true}>
+      
+      <AccordionPanel title="G-Code Settings" isExpanded={true}>
+        <div class="settings-content">
+          <div class="setting-item">
+            <label class="setting-label">
+              <input type="checkbox" bind:checked={includeComments} />
+              <span>Include Comments</span>
+            </label>
+          </div>
+          
+          <div class="setting-item">
+            <label class="setting-label-text" for="cutter-comp">Cutter Compensation</label>
+            <select id="cutter-comp" class="setting-select" bind:value={cutterCompensation}>
+              <option value="off">Off (G40)</option>
+              <option value="left_outer">Left/Outer (G41)</option>
+              <option value="right_inner">Right/Inner (G42)</option>
+              <option value={null}>No G-code</option>
+            </select>
+          </div>
+          
+          <div class="setting-item">
+            <label class="setting-label-text" for="adaptive-feed-select">Adaptive Feed Control</label>
+            <select id="adaptive-feed-select" class="setting-select" bind:value={adaptiveFeedControl}>
+              <option value={true}>Enabled (M52 P1)</option>
+              <option value={false}>Disabled (M52 P0)</option>
+              <option value={null}>No G-code</option>
+            </select>
+            <span class="setting-help">Allow hole feed rate reduction and motion during cut recovery</span>
+          </div>
+          
+          <div class="setting-item">
+            <label class="setting-label-text" for="thc-select">Torch Height Control (THC)</label>
+            <select id="thc-select" class="setting-select" bind:value={enableTHC}>
+              <option value={true}>Enabled (M65 P2)</option>
+              <option value={false}>Disabled (M64 P2)</option>
+              <option value={null}>No G-code</option>
+            </select>
+            <span class="setting-help">Torch Height Control enable/disable</span>
+          </div>
+        </div>
+      </AccordionPanel>
+      
+      <AccordionPanel title="Export Summary" isExpanded={false}>
         <div class="summary-grid">
           <div class="summary-item">
             <span class="summary-label">Target Controller:</span>
@@ -238,6 +352,72 @@
     font-size: 0.875rem;
     color: rgba(255, 255, 255, 0.9);
     line-height: 1.4;
+  }
+  
+  /* Settings styles */
+  .settings-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .setting-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+    cursor: pointer;
+    user-select: none;
+  }
+  
+  .setting-label input[type="checkbox"] {
+    cursor: pointer;
+  }
+  
+  .setting-label span {
+    font-weight: 500;
+  }
+  
+  .setting-label-text {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.25rem;
+  }
+  
+  .setting-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    background-color: white;
+    font-size: 0.875rem;
+    color: #374151;
+    cursor: pointer;
+  }
+  
+  .setting-select:hover {
+    border-color: #9ca3af;
+  }
+  
+  .setting-select:focus {
+    outline: none;
+    border-color: rgb(0, 83, 135);
+    box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.1);
+  }
+  
+  .setting-help {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-left: 1.5rem;
   }
 
   /* Resize handle styles */

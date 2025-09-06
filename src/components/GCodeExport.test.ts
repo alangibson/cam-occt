@@ -53,7 +53,7 @@ describe('GCodeExport Component Logic', () => {
         safeZ: 10,
         rapidFeedRate: 5000,
         includeComments: true,
-        plasmaMode: true
+        cutterCompensation: 'off'
       });
 
       // Verify the functions were called correctly
@@ -66,7 +66,7 @@ describe('GCodeExport Component Logic', () => {
           safeZ: 10,
           rapidFeedRate: 5000,
           includeComments: true,
-          plasmaMode: true
+          cutterCompensation: 'off'
         }
       );
       expect(gcode).toBe(mockGCode);
