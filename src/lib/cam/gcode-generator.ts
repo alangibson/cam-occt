@@ -247,14 +247,18 @@ function generateTemporaryMaterial(
   const commands: GCodeCommand[] = [];
 
   // Build the magic comment for temporary material
-  let magicComment = `o=2, nu=${materialNumber}`;
+  let magicComment = 'o=0';
+
+  // TODO not required for o=0
+  // magicComment += `, nu=${materialNumber}`;
   
   // Add material name if available
-  if (parameters.toolName) {
-    magicComment += `, na=${parameters.toolName}`;
-  } else {
-    magicComment += `, na=Temp Material ${materialNumber}`;
-  }
+  // TODO not required for o=0
+  // if (parameters.toolName) {
+  //   magicComment += `, na=${parameters.toolName}`;
+  // } else {
+  //   magicComment += `, na=Temp Material ${materialNumber}`;
+  // }
   
   // Mandatory parameters
   magicComment += `, ph=${parameters.pierceHeight || 3.8}`; // Pierce height
@@ -304,28 +308,31 @@ function generateTemporaryMaterial(
   });
 
   // Select the temporary material
-  commands.push({
-    code: "M190",
-    parameters: { P: materialNumber },
-    comment: `Select temporary material ${materialNumber}`
-  });
+  // TODO we use temporary materials
+  // commands.push({
+  //   code: "M190",
+  //   parameters: { P: materialNumber },
+  //   comment: `Select temporary material ${materialNumber}`
+  // });
 
   // Wait for material change confirmation
-  commands.push({
-    code: "M66",
-    parameters: { P: 3, L: 3, Q: 1 },
-    comment: "Wait for material change confirmation"
-  });
+  // TODO we use temporary materials
+  // commands.push({
+  //   code: "M66",
+  //   parameters: { P: 3, L: 3, Q: 1 },
+  //   comment: "Wait for material change confirmation"
+  // });
 
   // Set the feed rate explicitly
-  if (parameters.feedRate) {
-    commands.push({
-      code: "F",
-      parameters: {},
-      comment: `Set feed rate to ${parameters.feedRate}`,
-      rawValue: parameters.feedRate
-    });
-  }
+  // TODO this is done with F#<_hal[plasmac.cut-feed-rate]>
+  // if (parameters.feedRate) {
+  //   commands.push({
+  //     code: "F",
+  //     parameters: {},
+  //     comment: `Set feed rate to ${parameters.feedRate}`,
+  //     rawValue: parameters.feedRate
+  //   });
+  // }
 
   return commands;
 }
@@ -496,9 +503,10 @@ function generatePierceCommands(parameters: CuttingParameters): GCodeCommand[] {
   }
 
   // Move to cut height
+  // TODO should me manually move to cut height?
   commands.push({
     code: "G1",
-    parameters: { Z: parameters.cutHeight, F: 100 },
+    parameters: { Z: parameters.cutHeight },
     comment: "Move to cut height",
   });
 

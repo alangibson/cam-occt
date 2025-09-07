@@ -1,19 +1,29 @@
 import type { ToolPath, Point2D, Shape } from '../types';
 import type { Path } from '../stores/paths';
 import { getShapePoints } from '../geometry/shape-utils';
+import { hasValidCachedLeads, getCachedLeadGeometry } from '../utils/lead-persistence-utils';
+import { calculateLeads, type LeadInConfig, type LeadOutConfig } from '../algorithms/lead-calculation';
+import { LeadType } from '../types/direction';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { DetectedPart } from '../algorithms/part-detection';
 
 /**
  * Convert a Path from the path store to a ToolPath for G-code generation.
- * Uses offset geometry when available, otherwise falls back to original geometry.
+ * Uses simulation's validated geometry resolution approach:
+ * 1. path.cutChain?.shapes (preferred - execution-ordered shapes)
+ * 2. path.calculatedOffset?.offsetShapes (fallback - offset geometry)
+ * 3. originalShapes (final fallback)
  */
-export function pathToToolPath(path: Path, originalShapes: Shape[]): ToolPath {
-  // Use cut chain if available (contains shapes in correct execution order)
+export function pathToToolPath(path: Path, originalShapes: Shape[], chainMap?: Map<string, Chain>, partMap?: Map<string, DetectedPart>): ToolPath {
+  // Use simulation's validated geometry resolution approach
+  // Priority: cutChain > calculatedOffset > original shapes
   let shapesToUse: Shape[];
   
+  // First priority: Use execution chain if available (contains shapes in correct execution order)
   if (path.cutChain && path.cutChain.shapes.length > 0) {
     shapesToUse = path.cutChain.shapes;
   } else {
-    // Fallback for backward compatibility
+    // Second priority: Use offset shapes if available, otherwise fall back to original
     shapesToUse = path.calculatedOffset?.offsetShapes || originalShapes;
   }
   
@@ -42,10 +52,10 @@ export function pathToToolPath(path: Path, originalShapes: Shape[]): ToolPath {
     }
   });
   
-  // Prepare lead-in points if available
-  // IMPORTANT: Lead geometry must be recalculated when offset geometry exists
-  // to ensure leads connect to the offset path start/end points, not original geometry
+  // Prepare lead-in points using both simulation and legacy approaches
   let leadIn: Point2D[] | undefined;
+  
+  // First check for existing calculatedLeadIn (backward compatibility)
   if (path.calculatedLeadIn?.points && path.calculatedLeadIn.points.length > 0) {
     if (shapesToUse !== originalShapes && points.length > 0) {
       // Using offset geometry - verify lead connects to first point
@@ -53,21 +63,78 @@ export function pathToToolPath(path: Path, originalShapes: Shape[]): ToolPath {
       const pathStart: Point2D = points[0];
       const tolerance: number = 0.1; // Allow small tolerance for connection
       
-      if (Math.abs(leadEnd.x - pathStart.x) > tolerance || 
-          Math.abs(leadEnd.y - pathStart.y) > tolerance) {
-        // Lead doesn't connect properly to offset path - mark for recalculation
-        console.warn(`Lead-in doesn't connect to offset path for path ${path.id}. Lead connects to (${leadEnd.x}, ${leadEnd.y}) but path starts at (${pathStart.x}, ${pathStart.y})`);
-        leadIn = undefined; // Don't use disconnected lead
-      } else {
+      if (Math.abs(leadEnd.x - pathStart.x) <= tolerance && 
+          Math.abs(leadEnd.y - pathStart.y) <= tolerance) {
         leadIn = path.calculatedLeadIn.points;
+      } else {
+        console.warn(`Cached lead-in doesn't connect to offset path for path ${path.id}. Lead connects to (${leadEnd.x}, ${leadEnd.y}) but path starts at (${pathStart.x}, ${pathStart.y})`);
+        leadIn = undefined; // Don't use disconnected lead
       }
     } else {
       leadIn = path.calculatedLeadIn.points;
     }
   }
+  // If no calculatedLeadIn, try simulation's approach with leadInType/Length
+  else if (path.leadInType && path.leadInType !== LeadType.NONE && path.leadInLength && path.leadInLength > 0) {
+    // First try to use cached lead geometry (simulation's approach)
+    if (hasValidCachedLeads(path)) {
+      const cached = getCachedLeadGeometry(path);
+      if (cached.leadIn && cached.leadIn.points.length > 0) {
+        // Verify cached lead connects properly to current geometry
+        const leadEnd: Point2D = cached.leadIn.points[cached.leadIn.points.length - 1];
+        const pathStart: Point2D = points[0];
+        const tolerance: number = 0.1;
+        
+        if (Math.abs(leadEnd.x - pathStart.x) <= tolerance && 
+            Math.abs(leadEnd.y - pathStart.y) <= tolerance) {
+          leadIn = cached.leadIn.points;
+        } else {
+          console.warn(`Cached lead-in doesn't connect to current geometry for path ${path.id}`);
+          leadIn = undefined; // Will trigger recalculation below
+        }
+      }
+    }
+    
+    // Fallback to calculating if no valid cache (simulation's approach)
+    if (!leadIn && chainMap && partMap) {
+      try {
+        const chain = chainMap.get(path.chainId);
+        if (chain) {
+          const part = partMap.get(path.chainId); // Part lookup for lead fitting
+          
+          // Use offset shapes for lead calculation if available (simulation's approach)
+          const chainForLeads = path.calculatedOffset ? 
+            { ...chain, shapes: path.calculatedOffset.offsetShapes } : chain;
+          
+          const leadInConfig: LeadInConfig = {
+            type: path.leadInType,
+            length: path.leadInLength,
+            flipSide: path.leadInFlipSide || false,
+            angle: path.leadInAngle
+          };
+          const leadOutConfig: LeadOutConfig = {
+            type: path.leadOutType || LeadType.NONE,
+            length: path.leadOutLength || 0,
+            flipSide: path.leadOutFlipSide || false,
+            angle: path.leadOutAngle
+          };
+          
+          const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
+          
+          if (leadResult.leadIn && leadResult.leadIn.points.length > 0) {
+            leadIn = leadResult.leadIn.points;
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to calculate lead-in for G-code generation:', path.name, error);
+      }
+    }
+  }
   
-  // Prepare lead-out points if available
+  // Prepare lead-out points using both simulation and legacy approaches  
   let leadOut: Point2D[] | undefined;
+  
+  // First check for existing calculatedLeadOut (backward compatibility)
   if (path.calculatedLeadOut?.points && path.calculatedLeadOut.points.length > 0) {
     if (shapesToUse !== originalShapes && points.length > 0) {
       // Using offset geometry - verify lead connects to last point
@@ -75,16 +142,71 @@ export function pathToToolPath(path: Path, originalShapes: Shape[]): ToolPath {
       const pathEnd: Point2D = points[points.length - 1];
       const tolerance: number = 0.1; // Allow small tolerance for connection
       
-      if (Math.abs(leadStart.x - pathEnd.x) > tolerance || 
-          Math.abs(leadStart.y - pathEnd.y) > tolerance) {
-        // Lead doesn't connect properly to offset path - mark for recalculation
-        console.warn(`Lead-out doesn't connect to offset path for path ${path.id}. Lead connects to (${leadStart.x}, ${leadStart.y}) but path ends at (${pathEnd.x}, ${pathEnd.y})`);
-        leadOut = undefined; // Don't use disconnected lead
-      } else {
+      if (Math.abs(leadStart.x - pathEnd.x) <= tolerance && 
+          Math.abs(leadStart.y - pathEnd.y) <= tolerance) {
         leadOut = path.calculatedLeadOut.points;
+      } else {
+        console.warn(`Cached lead-out doesn't connect to offset path for path ${path.id}. Lead connects to (${leadStart.x}, ${leadStart.y}) but path ends at (${pathEnd.x}, ${pathEnd.y})`);
+        leadOut = undefined; // Don't use disconnected lead
       }
     } else {
       leadOut = path.calculatedLeadOut.points;
+    }
+  }
+  // If no calculatedLeadOut, try simulation's approach with leadOutType/Length
+  else if (path.leadOutType && path.leadOutType !== LeadType.NONE && path.leadOutLength && path.leadOutLength > 0) {
+    // First try to use cached lead geometry (simulation's approach)
+    if (hasValidCachedLeads(path)) {
+      const cached = getCachedLeadGeometry(path);
+      if (cached.leadOut && cached.leadOut.points.length > 0) {
+        // Verify cached lead connects properly to current geometry
+        const leadStart: Point2D = cached.leadOut.points[0];
+        const pathEnd: Point2D = points[points.length - 1];
+        const tolerance: number = 0.1;
+        
+        if (Math.abs(leadStart.x - pathEnd.x) <= tolerance && 
+            Math.abs(leadStart.y - pathEnd.y) <= tolerance) {
+          leadOut = cached.leadOut.points;
+        } else {
+          console.warn(`Cached lead-out doesn't connect to current geometry for path ${path.id}`);
+          leadOut = undefined; // Will trigger recalculation below
+        }
+      }
+    }
+    
+    // Fallback to calculating if no valid cache (simulation's approach)
+    if (!leadOut && chainMap && partMap) {
+      try {
+        const chain = chainMap.get(path.chainId);
+        if (chain) {
+          const part = partMap.get(path.chainId); // Part lookup for lead fitting
+          
+          // Use offset shapes for lead calculation if available (simulation's approach)
+          const chainForLeads = path.calculatedOffset ? 
+            { ...chain, shapes: path.calculatedOffset.offsetShapes } : chain;
+          
+          const leadInConfig: LeadInConfig = {
+            type: path.leadInType || LeadType.NONE,
+            length: path.leadInLength || 0,
+            flipSide: path.leadInFlipSide || false,
+            angle: path.leadInAngle
+          };
+          const leadOutConfig: LeadOutConfig = {
+            type: path.leadOutType,
+            length: path.leadOutLength,
+            flipSide: path.leadOutFlipSide || false,
+            angle: path.leadOutAngle
+          };
+          
+          const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
+          
+          if (leadResult.leadOut && leadResult.leadOut.points.length > 0) {
+            leadOut = leadResult.leadOut.points;
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to calculate lead-out for G-code generation:', path.name, error);
+      }
     }
   }
   
@@ -115,8 +237,14 @@ export function pathToToolPath(path: Path, originalShapes: Shape[]): ToolPath {
 
 /**
  * Convert multiple Paths to ToolPaths, preserving cut order
+ * Uses simulation's validated approach for geometry resolution
  */
-export function pathsToToolPaths(paths: Path[], chainShapes: Map<string, Shape[]>): ToolPath[] {
+export function pathsToToolPaths(
+  paths: Path[], 
+  chainShapes: Map<string, Shape[]>, 
+  chainMap?: Map<string, Chain>, 
+  partMap?: Map<string, DetectedPart>
+): ToolPath[] {
   const toolPaths: ToolPath[] = [];
   
   // Sort paths by their order field
@@ -128,7 +256,7 @@ export function pathsToToolPaths(paths: Path[], chainShapes: Map<string, Shape[]
     const originalShapes: Shape[] | undefined = chainShapes.get(path.chainId);
     if (!originalShapes) continue;
     
-    const toolPath: ToolPath = pathToToolPath(path, originalShapes);
+    const toolPath: ToolPath = pathToToolPath(path, originalShapes, chainMap, partMap);
     toolPaths.push(toolPath);
   }
   

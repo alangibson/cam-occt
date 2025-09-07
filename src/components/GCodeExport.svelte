@@ -4,6 +4,7 @@
   import { drawingStore } from '../lib/stores/drawing';
   import { pathStore } from '../lib/stores/paths';
   import { chainStore } from '../lib/stores/chains';
+  import { partStore } from '../lib/stores/parts';
   import type { CuttingParameters } from '../lib/types';
   import { onMount, createEventDispatcher } from 'svelte';
   
@@ -19,6 +20,7 @@
   $: displayUnit = $drawingStore.displayUnit;
   $: paths = $pathStore.paths;
   $: chains = $chainStore.chains;
+  $: parts = $partStore.parts;
   
   let generatedGCode = '';
   let isGenerating = false;
@@ -33,15 +35,25 @@
     generatedGCode = '';
     
     try {
-      // Create a map of chain IDs to their shapes
+      // Create maps for chain and part data (simulation's approach)
       const chainShapes = new Map();
+      const chainMap = new Map();
       chains.forEach(chain => {
         chainShapes.set(chain.id, chain.shapes);
+        chainMap.set(chain.id, chain);
       });
       
-      // Convert paths to tool paths (uses offset geometry when available)
+      const partMap = new Map();
+      parts.forEach(part => {
+        // Map parts by their shell chain ID for lead fitting
+        if (part.shell && part.shell.id) {
+          partMap.set(part.shell.id, part);
+        }
+      });
+      
+      // Convert paths to tool paths using simulation's validated approach
       // This handles empty paths array gracefully
-      const toolPaths = pathsToToolPaths(paths, chainShapes);
+      const toolPaths = pathsToToolPaths(paths, chainShapes, chainMap, partMap);
       
       // Generate G-code with settings from props
       // The generateGCode function can handle empty toolPaths and will still generate header/footer
