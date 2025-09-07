@@ -34,6 +34,25 @@ export interface ChainNormalizationResult {
 }
 
 /**
+ * Normalizes a chain by reordering and reversing shapes for proper traversal
+ */
+export function normalizeChain(chain: Chain, params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): Chain {
+  if (chain.shapes.length <= 1) {
+    return chain;
+  }
+
+  const { traversalTolerance }: { traversalTolerance: number } = params;
+  
+  // First, try to find a valid traversal order by building the chain step by step
+  const normalizedShapes: Shape[] = buildOptimalTraversalOrder(chain.shapes, traversalTolerance);
+  
+  return {
+    ...chain,
+    shapes: normalizedShapes
+  };
+}
+
+/**
  * Analyzes all chains for traversal issues
  */
 export function analyzeChainTraversal(chains: Chain[], params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): ChainNormalizationResult[] {
@@ -240,7 +259,6 @@ function detectCoincidentPointIssues(chain: Chain): ChainTraversalIssue[] {
   return issues;
 }
 
-
 /**
  * Gets all significant points from a shape (start, end, center for arcs/circles)
  */
@@ -302,25 +320,6 @@ function generateChainDescription(chain: Chain, issues: ChainTraversalIssue[], c
   const traversalStatus: string = canTraverse ? 'can be traversed' : 'cannot be traversed properly';
   
   return `Chain ${chain.id} (${chain.shapes.length} shapes): ${issueCount} issue${issueCount === 1 ? '' : 's'} detected. Chain ${traversalStatus}.`;
-}
-
-/**
- * Normalizes a chain by reordering and reversing shapes for proper traversal
- */
-export function normalizeChain(chain: Chain, params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS): Chain {
-  if (chain.shapes.length <= 1) {
-    return chain;
-  }
-
-  const { traversalTolerance }: { traversalTolerance: number } = params;
-  
-  // First, try to find a valid traversal order by building the chain step by step
-  const normalizedShapes: Shape[] = buildOptimalTraversalOrder(chain.shapes, traversalTolerance);
-  
-  return {
-    ...chain,
-    shapes: normalizedShapes
-  };
 }
 
 /**

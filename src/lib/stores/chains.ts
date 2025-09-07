@@ -1,5 +1,6 @@
 import { writable } from 'svelte/store';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import { setChainsDirection } from '../algorithms/chain-detection/chain-detection';
 
 export interface ChainStore {
   chains: Chain[];
@@ -19,10 +20,14 @@ export const chainStore: ReturnType<typeof writable<ChainStore>> = writable<Chai
 
 // Helper functions
 export function setChains(chains: Chain[]) {
-  chainStore.update(state => ({
-    ...state,
-    chains
-  }));
+  chainStore.update(state => {
+    // Automatically analyze and set clockwise property for all chains when they're first set
+    const chainsWithDirection = setChainsDirection(chains, state.tolerance);
+    return {
+      ...state,
+      chains: chainsWithDirection
+    };
+  });
 }
 
 export function clearChains() {

@@ -91,8 +91,20 @@
       // Fall back to dynamic calculation if no valid cache
       console.log(`Calculating lead geometry dynamically for path ${path.name}`);
 
-      // Get the chain for this path
-      const chain = chains.find(c => c.id === path.chainId);
+      // Get the chain for this path - prefer cut chain if available
+      let chain = path.cutChain;
+      
+      // Fallback to original chain lookup for backward compatibility
+      if (!chain) {
+        chain = chains.find(c => c.id === path.chainId);
+        if (!chain || chain.shapes.length === 0) return null;
+        
+        // Apply cut direction ordering if using fallback chain
+        if (path.cutDirection === 'counterclockwise') {
+          chain = { ...chain, shapes: [...chain.shapes].reverse() };
+        }
+      }
+      
       if (!chain || chain.shapes.length === 0) return null;
 
       // Get the part if the path is part of a part

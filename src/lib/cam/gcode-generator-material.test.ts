@@ -46,7 +46,7 @@ describe('GCode Generator - Temporary Materials', () => {
     });
 
     // Check for magic comment
-    expect(gcode).toContain('(o=0, nu=1000000');
+    expect(gcode).toContain('(o=2, nu=1000000');
     expect(gcode).toContain('na=Test Material');
     expect(gcode).toContain('ph=3.8');
     expect(gcode).toContain('pd=0.5');
@@ -110,13 +110,13 @@ describe('GCode Generator - Temporary Materials', () => {
     });
 
     // Check for first material
-    expect(gcode).toContain('(o=0, nu=1000000');
+    expect(gcode).toContain('(o=2, nu=1000000');
     expect(gcode).toContain('na=Material 1');
     expect(gcode).toContain('fr=2500');
     expect(gcode).toContain('M190 P1000000');
     
     // Check for second material
-    expect(gcode).toContain('(o=0, nu=1000001');
+    expect(gcode).toContain('(o=2, nu=1000001');
     expect(gcode).toContain('na=Material 2');
     expect(gcode).toContain('fr=3500');
     expect(gcode).toContain('M190 P1000001');
@@ -143,7 +143,7 @@ describe('GCode Generator - Temporary Materials', () => {
     });
 
     // Should not contain any material magic comments
-    expect(gcode).not.toContain('(o=0');
+    expect(gcode).not.toContain('(o=2');
     expect(gcode).not.toContain('M190 P1000000');
   });
 

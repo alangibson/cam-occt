@@ -179,7 +179,7 @@ export function getShapeLength(shape: Shape): number {
 /**
  * Sample points along a path of shapes at regular distance intervals
  */
-export function samplePathAtDistanceIntervals(shapes: Shape[], intervalDistance: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): { point: Point2D; direction: Point2D }[] {
+export function samplePathAtDistanceIntervals(shapes: Shape[], intervalDistance: number): { point: Point2D; direction: Point2D }[] {
   if (shapes.length === 0 || intervalDistance <= 0) return [];
   
   const samples: { point: Point2D; direction: Point2D }[] = [];
@@ -210,17 +210,10 @@ export function samplePathAtDistanceIntervals(shapes: Shape[], intervalDistance:
       const p2 = getShapePointAt(shape, t2);
       
       // Calculate direction vector
-      let direction = normalizeVector({
+      const direction = normalizeVector({
         x: p2.x - p1.x,
         y: p2.y - p1.y
       });
-      
-      // For counterclockwise cuts, the calling code reverses shape order,
-      // but we also need to reverse the direction within each shape
-      // to match the old behavior
-      if (cutDirection === 'counterclockwise') {
-        direction = { x: -direction.x, y: -direction.y };
-      }
       
       samples.push({ point, direction });
       nextSampleDistance += intervalDistance;

@@ -22,6 +22,8 @@
   import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
   import { handleChainClick as sharedHandleChainClick, handleChainMouseEnter, handleChainMouseLeave, handlePartClick as sharedHandlePartClick, handlePartMouseEnter, handlePartMouseLeave } from '../../lib/utils/chain-part-interactions';
   import { polylineToPoints } from '$lib/geometry/polyline';
+  import { detectCutDirection } from '../../lib/algorithms/cut-direction';
+  import { CutDirection } from '../../lib/types/direction';
 
   // Resizable columns state - initialize from store, update local variables during drag
   let leftColumnWidth = $prepareStageStore.leftColumnWidth;
@@ -809,7 +811,7 @@
         <LayersInfo />
       </AccordionPanel>
 
-      <AccordionPanel title="Parts{detectedParts.length > 0 ? ` (${detectedParts.length} parts detected)` : ''}" isExpanded={true}>
+      <AccordionPanel title="Parts" isExpanded={true}>
         {#if detectedParts.length > 0}
           <div class="parts-list">
             {#each detectedParts as part, index}
@@ -1266,8 +1268,8 @@
           </div>
         </details>
       </AccordionPanel>
-      {#if selectedChain && selectedChainAnalysis}
-        <AccordionPanel title="Chain" isExpanded={true}>
+      <AccordionPanel title="Chain" isExpanded={selectedChain && selectedChainAnalysis ? true : false}>
+        {#if selectedChain && selectedChainAnalysis}
           <div class="chain-detail">
             <div class="chain-detail-header">
               <span class="chain-id">{selectedChain.id}</span>
@@ -1277,13 +1279,20 @@
             </div>
             <div class="chain-properties">
               <div class="property">
-                <span class="property-label">Shapes:</span>
-                <span class="property-value">{selectedChain.shapes.length}</span>
-              </div>
-              <div class="property">
                 <span class="property-label">Status:</span>
                 <span class="property-value {isChainClosed(selectedChain) ? 'closed' : 'open'}">
                   {isChainClosed(selectedChain) ? 'Closed' : 'Open'}
+                </span>
+              </div>
+              <div class="property">
+                <span class="property-label">Winding:</span>
+                <span class="property-value">
+                  {(() => {
+                    const direction = detectCutDirection(selectedChain, algorithmParams.chainDetection.tolerance);
+                    return direction === CutDirection.CLOCKWISE ? 'CW' : 
+                           direction === CutDirection.COUNTERCLOCKWISE ? 'CCW' : 
+                           'N/A';
+                  })()}
                 </span>
               </div>
               <div class="property">
@@ -1292,12 +1301,26 @@
               </div>
             </div>
             <div class="chain-shapes-list">
-              <h4 class="shapes-title">Shapes in Chain:</h4>
+              <h4 class="shapes-title">Shapes in Chain ({selectedChain.shapes.length}):</h4>
               {#each selectedChain.shapes as shape, index}
+                {@const startPoint = getShapeStartPoint(shape)}
+                {@const endPoint = getShapeEndPoint(shape)}
                 <div class="shape-item">
-                  <span class="shape-index">{index + 1}.</span>
-                  <span class="shape-type">{shape.type}</span>
-                  <span class="shape-id">({shape.id})</span>
+                  <div class="shape-header">
+                    <span class="shape-index">{index + 1}.</span>
+                    <span class="shape-type">{shape.type}</span>
+                    <span class="shape-id">({shape.id})</span>
+                  </div>
+                  <div class="shape-points">
+                    <div class="point-info">
+                      <span class="point-label">Start:</span>
+                      <span class="point-coords">({startPoint.x.toFixed(2)}, {startPoint.y.toFixed(2)})</span>
+                    </div>
+                    <div class="point-info">
+                      <span class="point-label">End:</span>
+                      <span class="point-coords">({endPoint.x.toFixed(2)}, {endPoint.y.toFixed(2)})</span>
+                    </div>
+                  </div>
                 </div>
               {/each}
             </div>
@@ -1313,8 +1336,12 @@
               </div>
             {/if}
           </div>
-        </AccordionPanel>
-      {/if}
+        {:else}
+          <div class="empty-state">
+            <p>No chain selected. Click a chain to see details.</p>
+          </div>
+        {/if}
+      </AccordionPanel>
 
       {#if partWarnings.length > 0}
         <AccordionPanel title="Part Detection Warnings" isExpanded={true}>
@@ -1873,7 +1900,7 @@
 
   .shape-item {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 0.5rem;
     padding: 0.5rem;
     background-color: #f8fafc;
@@ -1881,6 +1908,40 @@
     border-radius: 0.25rem;
     margin-bottom: 0.25rem;
     font-size: 0.75rem;
+  }
+
+  .shape-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .shape-points {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-left: 1.5rem;
+  }
+
+  .point-info {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .point-label {
+    font-weight: 500;
+    color: #6b7280;
+    min-width: 2.5rem;
+  }
+
+  .point-coords {
+    font-family: monospace;
+    color: #374151;
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.125rem;
+    font-size: 0.7rem;
   }
 
   .shape-index {

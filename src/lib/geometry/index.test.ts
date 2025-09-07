@@ -4,7 +4,7 @@ import type { Shape, Line } from '../types';
 
 describe('samplePathAtDistanceIntervals', () => {
   describe('Cut Direction Handling', () => {
-    it('should produce correct direction vectors for counterclockwise cuts on simple line', () => {
+    it('should produce correct direction vectors in natural shape direction', () => {
       // Create a simple horizontal line from (0,0) to (10,0)
       const line: Shape = {
         id: 'line1',
@@ -16,14 +16,14 @@ describe('samplePathAtDistanceIntervals', () => {
       };
       
       const shapes = [line];
-      const samples = samplePathAtDistanceIntervals(shapes, 5, 'counterclockwise');
+      const samples = samplePathAtDistanceIntervals(shapes, 5);
       
-      // For counterclockwise cuts, direction should be reversed (pointing left)
+      // Function now always returns natural direction (from start to end)
       expect(samples.length).toBeGreaterThan(0);
       
-      // First sample should be pointing in negative X direction (left)
+      // First sample should be pointing in positive X direction (right)
       const firstSample = samples[0];
-      expect(firstSample.direction.x).toBeLessThan(0);
+      expect(firstSample.direction.x).toBeGreaterThan(0);
       expect(Math.abs(firstSample.direction.y)).toBeLessThan(0.1); // Should be essentially 0
       
       // Direction should be normalized
@@ -43,7 +43,7 @@ describe('samplePathAtDistanceIntervals', () => {
       };
       
       const shapes = [line];
-      const samples = samplePathAtDistanceIntervals(shapes, 5, 'clockwise');
+      const samples = samplePathAtDistanceIntervals(shapes, 5);
       
       // For clockwise cuts, direction should be natural (pointing right)
       expect(samples.length).toBeGreaterThan(0);
@@ -58,9 +58,9 @@ describe('samplePathAtDistanceIntervals', () => {
       expect(magnitude).toBeCloseTo(1.0, 2);
     });
     
-    it('should produce opposite directions for same shape with different cut directions', () => {
-      // Create a vertical line from (0,0) to (0,10)
-      const line: Shape = {
+    it('should produce opposite directions when shapes are in opposite order', () => {
+      // Create a vertical line and its reverse
+      const originalLine: Shape = {
         id: 'line1',
         type: 'line',
         geometry: {
@@ -69,19 +69,28 @@ describe('samplePathAtDistanceIntervals', () => {
         } as Line
       };
       
-      const shapes = [line];
-      const clockwiseSamples = samplePathAtDistanceIntervals(shapes, 5, 'clockwise');
-      const counterclockwiseSamples = samplePathAtDistanceIntervals(shapes, 5, 'counterclockwise');
+      // For counterclockwise behavior, reverse the line's start/end
+      const reversedLine: Shape = {
+        id: 'line1-reversed',
+        type: 'line',
+        geometry: {
+          start: { x: 0, y: 10 },
+          end: { x: 0, y: 0 }
+        } as Line
+      };
       
-      expect(clockwiseSamples.length).toBeGreaterThan(0);
-      expect(counterclockwiseSamples.length).toBeGreaterThan(0);
+      const originalSamples = samplePathAtDistanceIntervals([originalLine], 5);
+      const reversedSamples = samplePathAtDistanceIntervals([reversedLine], 5);
+      
+      expect(originalSamples.length).toBeGreaterThan(0);
+      expect(reversedSamples.length).toBeGreaterThan(0);
       
       // Directions should be opposite
-      const cwDir = clockwiseSamples[0].direction;
-      const ccwDir = counterclockwiseSamples[0].direction;
+      const origDir = originalSamples[0].direction;
+      const revDir = reversedSamples[0].direction;
       
-      expect(cwDir.x).toBeCloseTo(-ccwDir.x, 2);
-      expect(cwDir.y).toBeCloseTo(-ccwDir.y, 2);
+      expect(origDir.x).toBeCloseTo(-revDir.x, 2);
+      expect(origDir.y).toBeCloseTo(-revDir.y, 2);
     });
     
     it('should handle multi-shape paths correctly', () => {
@@ -106,20 +115,20 @@ describe('samplePathAtDistanceIntervals', () => {
       
       const shapes = [horizontalLine, verticalLine];
       
-      const clockwiseSamples = samplePathAtDistanceIntervals(shapes, 5, 'clockwise');
-      const counterclockwiseSamples = samplePathAtDistanceIntervals(shapes, 5, 'counterclockwise');
+      const originalSamples = samplePathAtDistanceIntervals(shapes, 5);
+      const reversedSamples = samplePathAtDistanceIntervals([verticalLine, horizontalLine], 5);
       
       // Should have samples from both shapes
-      expect(clockwiseSamples.length).toBeGreaterThanOrEqual(2);
-      expect(counterclockwiseSamples.length).toBeGreaterThanOrEqual(2);
+      expect(originalSamples.length).toBeGreaterThanOrEqual(2);
+      expect(reversedSamples.length).toBeGreaterThanOrEqual(2);
       
-      // For clockwise, first samples should point right (positive X)
-      const cwFirstSample = clockwiseSamples[0];
-      expect(cwFirstSample.direction.x).toBeGreaterThan(0);
+      // For original order, first samples should point right (positive X)
+      const originalFirstSample = originalSamples[0];
+      expect(originalFirstSample.direction.x).toBeGreaterThan(0);
       
-      // For counterclockwise, first samples should point left (negative X) due to reversal
-      const ccwFirstSample = counterclockwiseSamples[0];
-      expect(ccwFirstSample.direction.x).toBeLessThan(0);
+      // For reversed order, first samples should point up (positive Y) from vertical line
+      const reversedFirstSample = reversedSamples[0];
+      expect(reversedFirstSample.direction.y).toBeGreaterThan(0);
     });
   });
   
@@ -136,7 +145,7 @@ describe('samplePathAtDistanceIntervals', () => {
       };
       
       const shapes = [line];
-      const samples = samplePathAtDistanceIntervals(shapes, 5, 'clockwise'); // Sample every 5 units
+      const samples = samplePathAtDistanceIntervals(shapes, 5); // Sample every 5 units
       
       // Should have samples at positions ~5, ~10, ~15 (and possibly one more at end)
       expect(samples.length).toBeGreaterThanOrEqual(3);
@@ -157,7 +166,7 @@ describe('samplePathAtDistanceIntervals', () => {
     
     it('should handle edge cases gracefully', () => {
       // Empty shapes array
-      expect(samplePathAtDistanceIntervals([], 5, 'clockwise')).toEqual([]);
+      expect(samplePathAtDistanceIntervals([], 5)).toEqual([]);
       
       // Zero interval distance
       const line: Shape = {
@@ -168,19 +177,18 @@ describe('samplePathAtDistanceIntervals', () => {
           end: { x: 10, y: 0 }
         } as Line
       };
-      expect(samplePathAtDistanceIntervals([line], 0, 'clockwise')).toEqual([]);
+      expect(samplePathAtDistanceIntervals([line], 0)).toEqual([]);
       
       // Negative interval distance
-      expect(samplePathAtDistanceIntervals([line], -5, 'clockwise')).toEqual([]);
+      expect(samplePathAtDistanceIntervals([line], -5)).toEqual([]);
     });
   });
 });
 
 describe('Cut Direction Regression Tests', () => {
-  it('should prevent the commit 3d71ad4 regression where arrows always pointed clockwise', () => {
-    // This test specifically catches the bug where direction calculation didn't respect cut direction
-    // The bug was: samplePathAtDistanceIntervals always calculated direction in natural parameter order
-    // regardless of cut direction, while calling code reversed shape order
+  it('should now return natural directions since cut direction is handled at Path level', () => {
+    // With the new architecture, samplePathAtDistanceIntervals always returns natural directions
+    // The cut direction handling is moved to the Path level via execution chains
     
     const line: Shape = {
       id: 'line1',
@@ -191,17 +199,16 @@ describe('Cut Direction Regression Tests', () => {
       } as Line
     };
     
-    // When DrawingCanvas calls with counterclockwise and reversed shape order,
-    // the direction vectors should point in the opposite direction to match the reversal
-    const samples = samplePathAtDistanceIntervals([line], 5, 'counterclockwise');
+    // Function now always returns natural direction
+    const samples = samplePathAtDistanceIntervals([line], 5);
     
     expect(samples.length).toBeGreaterThan(0);
     
-    // Direction should be reversed (pointing left) for counterclockwise
+    // Direction should always be natural (pointing right) for this line
     const direction = samples[0].direction;
-    expect(direction.x).toBeLessThan(0); // Should point left, not right
+    expect(direction.x).toBeGreaterThan(0); // Should point right in natural direction
     expect(Math.abs(direction.y)).toBeLessThan(0.1); // Should be horizontal
     
-    // The bug would cause direction.x > 0 (pointing right) even for counterclockwise cuts
+    // The old behavior would have reversed this based on cut direction parameter
   });
 });

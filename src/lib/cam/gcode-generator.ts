@@ -242,7 +242,7 @@ function generateHeader(options: GCodeOptions): GCodeCommand[] {
 function generateTemporaryMaterial(
   parameters: CuttingParameters,
   materialNumber: number,
-  options: GCodeOptions
+  _options: GCodeOptions
 ): GCodeCommand[] {
   const commands: GCodeCommand[] = [];
 

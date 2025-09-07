@@ -18,6 +18,7 @@
   import { leadWarningsStore } from '../lib/stores/lead-warnings';
   import { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
   import { EPSILON, SPLINE_TESSELLATION_TOLERANCE, ELLIPSE_TESSELLATION_POINTS, CHEVRON_SPACING_UNITS } from '../lib/constants';
+  import { CutDirection } from '../lib/types/direction';
   import { debounce } from '../lib/utils/state-persistence';
   import { tessellateEllipse } from '../lib/geometry/ellipse-tessellation';
   import { tessellateSpline } from '../lib/geometry/spline-tessellation';
@@ -591,33 +592,41 @@
       
       let shapesToSample: Shape[] = [];
       
-      // If path has offset, use offset shapes for arrows, otherwise use original chain
-      if (path.calculatedOffset && path.calculatedOffset.offsetShapes && path.calculatedOffset.offsetShapes.length > 0) {
-        shapesToSample = path.cutDirection === 'counterclockwise' ? 
-          [...path.calculatedOffset.offsetShapes].reverse() : 
-          path.calculatedOffset.offsetShapes;
+      // Use execution chain if available (contains shapes in correct execution order)
+      if (path.cutChain && path.cutChain.shapes.length > 0) {
+        shapesToSample = path.cutChain.shapes;
       } else {
-        // Get the chain for this path and use original shapes
-        const chain = chains.find(c => c.id === path.chainId);
-        if (!chain || chain.shapes.length === 0) return;
-        
-        shapesToSample = path.cutDirection === 'counterclockwise' ? 
-          [...chain.shapes].reverse() : 
-          chain.shapes;
+        // Fallback to original shapes for backward compatibility
+        // IMPORTANT: Don't manually apply cut direction here - it conflicts with stored chain direction
+        if (path.calculatedOffset && path.calculatedOffset.offsetShapes && path.calculatedOffset.offsetShapes.length > 0) {
+          shapesToSample = path.calculatedOffset.offsetShapes;
+        } else {
+          // Get the chain for this path and use original shapes
+          const chain = chains.find(c => c.id === path.chainId);
+          if (!chain || chain.shapes.length === 0) return;
+          
+          shapesToSample = chain.shapes;
+        }
       }
       
       // Use the new utility to sample at regular distance intervals
-      const chevronSamples = samplePathAtDistanceIntervals(shapesToSample, CHEVRON_SPACING_UNITS, path.cutDirection);
+      const chevronSamples = samplePathAtDistanceIntervals(shapesToSample, CHEVRON_SPACING_UNITS);
       
       // Draw chevron arrows at the sampled locations
       const chevronSize = coordinator.screenToWorldDistance(8); // Size of chevrons in world units
       
       chevronSamples.forEach(sample => {
-        // Calculate perpendicular vector for chevron wings
-        const perpX = -sample.direction.y;
-        const perpY = sample.direction.x;
+        // Get the direction from the sampling function
+        // Since cutChain shapes have been properly reversed (both order and geometry),
+        // the direction vectors are already correct for the intended cut direction
+        let dirX = sample.direction.x;
+        let dirY = sample.direction.y;
         
-        drawChevronArrow(sample.point, sample.direction.x, sample.direction.y, perpX, perpY, chevronSize);
+        // Calculate perpendicular vector for chevron wings
+        const perpX = -dirY;
+        const perpY = dirX;
+        
+        drawChevronArrow(sample.point, dirX, dirY, perpX, perpY, chevronSize);
       });
     });
   }

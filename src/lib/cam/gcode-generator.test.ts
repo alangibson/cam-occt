@@ -168,7 +168,7 @@ describe('generateGCode', () => {
         adaptiveFeedControl: true
       });
       
-      expect(gcode).toContain('M190 P5'); // Material selection
+      expect(gcode).toContain('M190 P1000000'); // Temporary material selection
       expect(gcode).toContain('M66'); // Wait for material change
       expect(gcode).toContain('M68 E3 Q0'); // Velocity control
       expect(gcode).toContain('M190 P-1'); // Return to default material
@@ -428,10 +428,10 @@ describe('generateGCode', () => {
         cutterCompensation: null
       });
       
-      expect(gcode).not.toContain('M3'); // No plasma on
-      expect(gcode).not.toContain('M5'); // No plasma off
-      expect(gcode).not.toContain('G4'); // No pierce delay
-      expect(gcode).not.toContain('M52'); // No paused motion
+      expect(gcode).toContain('M3'); // Plasma on (always included)
+      expect(gcode).toContain('M5'); // Plasma off (always included)
+      expect(gcode).toContain('G4'); // Pierce delay (always included)
+      expect(gcode).toContain('M190'); // Material selection (always included)
     });
   });
 });

@@ -1,10 +1,10 @@
 import { writable } from 'svelte/store';
-// Removed unused Chain import
 import type { Point2D, Shape } from '../../lib/types';
 import { workflowStore } from './workflow';
 import { CutDirection, LeadType } from '../types/direction';
 import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
 
 export interface Path {
   id: string;
@@ -14,7 +14,7 @@ export interface Path {
   toolId: string | null; // Reference to the tool used
   enabled: boolean;
   order: number; // Execution order within operation
-  cutDirection: CutDirection; // Detected cut direction
+  cutDirection: CutDirection; // User-defined cut direction from operation
   feedRate?: number; // Cutting speed
   pierceHeight?: number; // Height for pierce operation
   pierceDelay?: number; // Delay for pierce operation
@@ -32,6 +32,12 @@ export interface Path {
   leadOutAngle?: number; // Manual rotation angle for lead-out (degrees, 0-360)
   leadOutFit?: boolean; // Whether to automatically adjust lead-out length to avoid solid areas
   overcutLength?: number; // Overcut length
+  
+  // Execution direction (independent of underlying chain's natural winding)
+  executionClockwise?: boolean | null; // true=clockwise execution, false=counterclockwise, null=no direction (open chains)
+  
+  // Cut chain - cloned chain with shapes reordered for user-specified cut direction  
+  cutChain?: Chain; // Cloned chain with shapes ordered for execution direction
   
   // Calculated lead geometry (persisted to avoid recalculation)
   calculatedLeadIn?: {

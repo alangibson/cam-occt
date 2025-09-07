@@ -272,10 +272,14 @@
    * @returns The starting point coordinates
    */
   function getPathStartPoint(path: Path): Point2D {
-    // Check if path has offset geometry from kerf compensation
-    // If offset exists, use offset shapes; otherwise fall back to original chain shapes
-    const shapes = path.calculatedOffset?.offsetShapes || 
-                   chainStoreState?.chains?.find((c: any) => c.id === path.chainId)?.shapes;
+    // Use execution chain if available (contains shapes in correct execution order)
+    let shapes = path.cutChain?.shapes;
+    
+    // Fallback to offset shapes or original chain for backward compatibility
+    if (!shapes) {
+      shapes = path.calculatedOffset?.offsetShapes || 
+               chainStoreState?.chains?.find((c: any) => c.id === path.chainId)?.shapes;
+    }
     
     if (!shapes || shapes.length === 0) return { x: 0, y: 0 };
     
@@ -342,12 +346,17 @@
    * @returns The ending point coordinates
    */
   function getPathEndPoint(path: Path): Point2D {
-    // Check if path has offset geometry
+    // Use execution chain if available
+    let shapes = path.cutChain?.shapes;
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
-    if (!chain) return { x: 0, y: 0 };
     
-    const shapes = path.calculatedOffset?.offsetShapes || chain.shapes;
-    if (shapes.length === 0) return { x: 0, y: 0 };
+    // Fallback for backward compatibility
+    if (!shapes) {
+      if (!chain) return { x: 0, y: 0 };
+      shapes = path.calculatedOffset?.offsetShapes || path.cutChain?.shapes || chain.shapes;
+    }
+    
+    if (!shapes || shapes.length === 0) return { x: 0, y: 0 };
     
     // Check if path has lead-out
     if (path.leadOutType && path.leadOutType !== 'none' && path.leadOutLength && path.leadOutLength > 0) {
@@ -368,7 +377,7 @@
           angle: path.leadOutAngle
         };
         
-        const chainForLeads = path.calculatedOffset ? 
+        const chainForLeads = path.calculatedOffset && chain ? 
           { ...chain, shapes: path.calculatedOffset.offsetShapes } : chain;
         
         const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
@@ -402,16 +411,22 @@
    * @returns Total path distance including leads
    */
   function getPathDistance(path: Path): number {
+    // Use execution chain if available
+    let shapes = path.cutChain?.shapes;
     const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
-    if (!chain) return 0;
     
-    // Use offset shapes if available
-    const shapes = path.calculatedOffset?.offsetShapes || chain.shapes;
+    // Fallback for backward compatibility
+    if (!shapes) {
+      if (!chain) return 0;
+      shapes = path.calculatedOffset?.offsetShapes || path.cutChain?.shapes || chain.shapes;
+    }
     
     // Calculate chain distance
     let chainDistance = 0;
-    for (const shape of shapes) {
-      chainDistance += getShapeLength(shape);
+    if (shapes) {
+      for (const shape of shapes) {
+        chainDistance += getShapeLength(shape);
+      }
     }
     
     // Add lead distances if present
@@ -448,7 +463,7 @@
             angle: path.leadOutAngle
           };
           
-          const chainForLeads = path.calculatedOffset ? 
+          const chainForLeads = path.calculatedOffset && chain ? 
             { ...chain, shapes: path.calculatedOffset.offsetShapes } : chain;
           
           const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
@@ -668,12 +683,18 @@
    * @param progress - Progress along the path (0-1)
    */
   function updateToolHeadOnPath(path: Path, progress: number) {
-    const chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
-    if (!chain) return;
+    // Use execution chain if available
+    let shapes = path.cutChain?.shapes;
+    let chain = path.cutChain;
     
-    // Use offset shapes if available
-    const shapes = path.calculatedOffset?.offsetShapes || chain.shapes;
-    if (shapes.length === 0) return;
+    // Fallback for backward compatibility
+    if (!shapes) {
+      chain = chainStoreState?.chains?.find((c: any) => c.id === path.chainId);
+      if (!chain) return;
+      shapes = path.calculatedOffset?.offsetShapes || path.cutChain?.shapes || chain.shapes;
+    }
+    
+    if (!shapes || shapes.length === 0) return;
     
     // Get lead geometry if available
     let leadInGeometry: Point2D[] = [];
@@ -709,16 +730,18 @@
             angle: path.leadOutAngle
           };
           
-          const chainForLeads = path.calculatedOffset ? 
+          const chainForLeads = path.calculatedOffset && chain ? 
             { ...chain, shapes: path.calculatedOffset.offsetShapes } : chain;
           
-          const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
-          
-          if (leadResult.leadIn && leadResult.leadIn.points.length > 1) {
-            leadInGeometry = leadResult.leadIn.points;
-          }
-          if (leadResult.leadOut && leadResult.leadOut.points.length > 1) {
-            leadOutGeometry = leadResult.leadOut.points;
+          if (chainForLeads) {
+            const leadResult = calculateLeads(chainForLeads, leadInConfig, leadOutConfig, path.cutDirection, part);
+            
+            if (leadResult.leadIn && leadResult.leadIn.points.length > 1) {
+              leadInGeometry = leadResult.leadIn.points;
+            }
+            if (leadResult.leadOut && leadResult.leadOut.points.length > 1) {
+              leadOutGeometry = leadResult.leadOut.points;
+            }
           }
         }
       }
@@ -728,7 +751,7 @@
     
     // Calculate lengths
     const leadInLength = calculatePolylineLength(leadInGeometry);
-    const chainLength = getChainDistance({ ...chain, shapes }); // Use offset shapes if available
+    const chainLength = chain && shapes ? getChainDistance({ ...chain, shapes }) : 0; // Use offset shapes if available
     const leadOutLength = calculatePolylineLength(leadOutGeometry);
     const totalLength = leadInLength + chainLength + leadOutLength;
     
@@ -739,11 +762,11 @@
       // We're in the lead-in
       const leadInProgress = leadInLength > 0 ? targetDistance / leadInLength : 0;
       toolHeadPosition = getPositionOnPolyline(leadInGeometry, leadInProgress);
-    } else if (targetDistance <= leadInLength + chainLength) {
+    } else if (targetDistance <= leadInLength + chainLength && chain && shapes) {
       // We're in the main chain
       const chainTargetDistance = targetDistance - leadInLength;
       const chainProgress = chainLength > 0 ? chainTargetDistance / chainLength : 0;
-      toolHeadPosition = getPositionOnChain({ ...chain, shapes }, chainProgress, path.cutDirection);
+      toolHeadPosition = getPositionOnChain({ ...chain, shapes }, chainProgress);
     } else {
       // We're in the lead-out
       const leadOutTargetDistance = targetDistance - leadInLength - chainLength;
@@ -795,12 +818,12 @@
   }
   
   // Get position along a chain (original chain geometry)
-  function getPositionOnChain(chain: Chain, progress: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D {
+  function getPositionOnChain(chain: Chain, progress: number): Point2D {
     const totalLength = getChainDistance(chain);
     const targetDistance = totalLength * progress;
     
-    // Determine shape order based on cut direction
-    const shapes = cutDirection === 'counterclockwise' ? [...chain.shapes].reverse() : chain.shapes;
+    // Use shapes in the order they appear in the chain (already correct for execution chains)
+    const shapes = chain.shapes;
     
     let currentDistance = 0;
     for (const shape of shapes) {
@@ -808,10 +831,7 @@
       if (currentDistance + shapeLength >= targetDistance) {
         // Tool head is on this shape
         const shapeProgress = shapeLength > 0 ? (targetDistance - currentDistance) / shapeLength : 0;
-        // For counterclockwise cuts, we reverse both shape order AND individual shape direction
-        // This matches the old sampling behavior that was working correctly
-        const shapeDirection = cutDirection === 'counterclockwise' ? 'clockwise' : 'counterclockwise';
-        return getPositionOnShape(shape, shapeProgress, shapeDirection);
+        return getPositionOnShape(shape, shapeProgress);
       }
       currentDistance += shapeLength;
     }
@@ -819,9 +839,7 @@
     // Fallback to last shape end
     if (shapes.length > 0) {
       const lastShape = shapes[shapes.length - 1];
-      // For the fallback end position, also respect the double reversal logic
-      const shapeDirection = cutDirection === 'counterclockwise' ? 'clockwise' : 'counterclockwise';  
-      return getPositionOnShape(lastShape, 1.0, shapeDirection);
+      return getPositionOnShape(lastShape, 1.0);
     }
     
     return { x: 0, y: 0 };
@@ -837,43 +855,30 @@
   }
 
   // Get position along a shape at given progress (0-1) - simplified
-  function getPositionOnShape(shape: Shape, progress: number, cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'): Point2D {
+  function getPositionOnShape(shape: Shape, progress: number): Point2D {
     progress = Math.max(0, Math.min(1, progress)); // Clamp to 0-1
     
     switch (shape.type) {
       case 'line':
         const line = shape.geometry as Line;
-        
-        // Respect cut direction for lines
-        if (cutDirection === 'clockwise') {
-          // Reverse direction: go from end to start
-          return {
-            x: line.end.x + (line.start.x - line.end.x) * progress,
-            y: line.end.y + (line.start.y - line.end.y) * progress
-          };
-        } else {
-          // Default/counterclockwise: go from start to end
-          return {
-            x: line.start.x + (line.end.x - line.start.x) * progress,
-            y: line.start.y + (line.end.y - line.start.y) * progress
-          };
-        }
+        // Natural direction: go from start to end
+        return {
+          x: line.start.x + (line.end.x - line.start.x) * progress,
+          y: line.start.y + (line.end.y - line.start.y) * progress
+        };
       case 'circle':
-        // Use proper geometry function and handle cut direction by reversing progress
-        const effectiveProgressCircle = cutDirection === 'clockwise' ? 1.0 - progress : progress;
-        return getShapePointAt(shape, effectiveProgressCircle);
+        // Use natural direction
+        return getShapePointAt(shape, progress);
       case 'arc':
-        // Use proper geometry function that respects Arc's clockwise property
-        // Handle cut direction by reversing progress for clockwise cuts
-        const effectiveProgressArc = cutDirection === 'clockwise' ? 1.0 - progress : progress;
-        return getShapePointAt(shape, effectiveProgressArc);
+        // Use natural direction
+        return getShapePointAt(shape, progress);
       case 'polyline':
         const polyline = shape.geometry as Polyline;
         const polylinePoints = polylineToPoints(polyline);
         if (polylinePoints.length < 2) return polylinePoints[0] || { x: 0, y: 0 };
         
-        // Respect cut direction for polylines
-        const points = cutDirection === 'clockwise' ? [...polylinePoints].reverse() : polylinePoints;
+        // Use natural direction for polylines
+        const points = polylinePoints;
         
         // Find which segment we're on
         const totalLength = getShapeLength(shape);
@@ -947,22 +952,11 @@
         
         let param: number;
         if (typeof ellipse.startParam === 'number' && typeof ellipse.endParam === 'number') {
-          // It's an elliptical arc
-          if (cutDirection === 'clockwise') {
-            // For clockwise, reverse the progress
-            param = ellipse.endParam - (ellipse.endParam - ellipse.startParam) * progress;
-          } else {
-            param = ellipse.startParam + (ellipse.endParam - ellipse.startParam) * progress;
-          }
+          // It's an elliptical arc - use natural direction
+          param = ellipse.startParam + (ellipse.endParam - ellipse.startParam) * progress;
         } else {
-          // It's a full ellipse
-          if (cutDirection === 'clockwise') {
-            // For clockwise, start at 0 and go negative
-            param = -progress * 2 * Math.PI;
-          } else {
-            // For counterclockwise (default), start at 0 and go positive
-            param = progress * 2 * Math.PI;
-          }
+          // It's a full ellipse - use natural direction
+          param = progress * 2 * Math.PI;
         }
         
         // Calculate point on canonical ellipse (axes aligned)

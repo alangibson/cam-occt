@@ -33,7 +33,13 @@ describe('Chain Store', () => {
   it('should set chains correctly', () => {
     setChains(mockChains);
     const state = get(chainStore);
-    expect(state.chains).toEqual(mockChains);
+    // Expect that chains are set with clockwise property automatically analyzed
+    expect(state.chains).toHaveLength(2);
+    expect(state.chains[0].id).toBe('chain-1');
+    expect(state.chains[1].id).toBe('chain-2');
+    // Both chains in this test should be open (non-closed), so clockwise should be null
+    expect(state.chains[0].clockwise).toBe(null);
+    expect(state.chains[1].clockwise).toBe(null);
   });
 
   it('should clear chains', () => {

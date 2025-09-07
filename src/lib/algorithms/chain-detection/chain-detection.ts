@@ -4,6 +4,8 @@ import { evaluateNURBS } from '../../geometry/nurbs';
 import { polylineToPoints } from '../../geometry/polyline';
 import { calculateSquaredDistance } from '../../utils/math-utils';
 import { isEllipseClosed } from '../../utils/ellipse-utils';
+import { detectCutDirection } from '../cut-direction';
+import { CutDirection } from '../../types/direction';
 
 export interface ChainDetectionOptions {
   tolerance: number;
@@ -12,6 +14,7 @@ export interface ChainDetectionOptions {
 export interface Chain {
   id: string;
   shapes: Shape[];
+  clockwise?: boolean | null; // true=clockwise, false=counterclockwise, null=open chain, undefined=not analyzed
 }
 
 /**
@@ -335,4 +338,33 @@ class UnionFind {
 
     return true;
   }
+}
+
+/**
+ * Analyze and set the clockwise property for a chain.
+ * This should be called once during the Prepare stage when chains are first created.
+ * 
+ * @param chain - The chain to analyze
+ * @param tolerance - Tolerance for determining if chain is closed
+ * @returns The chain with clockwise property set
+ */
+export function setChainDirection(chain: Chain, tolerance: number = 0.1): Chain {
+  const direction = detectCutDirection(chain, tolerance);
+  
+  return {
+    ...chain,
+    clockwise: direction === CutDirection.CLOCKWISE ? true :
+              direction === CutDirection.COUNTERCLOCKWISE ? false : null
+  };
+}
+
+/**
+ * Analyze and set clockwise properties for multiple chains.
+ * 
+ * @param chains - Array of chains to analyze
+ * @param tolerance - Tolerance for determining if chains are closed
+ * @returns Array of chains with clockwise properties set
+ */
+export function setChainsDirection(chains: Chain[], tolerance: number = 0.1): Chain[] {
+  return chains.map(chain => setChainDirection(chain, tolerance));
 }

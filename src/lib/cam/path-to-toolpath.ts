@@ -7,8 +7,15 @@ import { getShapePoints } from '../geometry/shape-utils';
  * Uses offset geometry when available, otherwise falls back to original geometry.
  */
 export function pathToToolPath(path: Path, originalShapes: Shape[]): ToolPath {
-  // Determine which shapes to use for G-code generation
-  const shapesToUse: Shape[] = path.calculatedOffset?.offsetShapes || originalShapes;
+  // Use cut chain if available (contains shapes in correct execution order)
+  let shapesToUse: Shape[];
+  
+  if (path.cutChain && path.cutChain.shapes.length > 0) {
+    shapesToUse = path.cutChain.shapes;
+  } else {
+    // Fallback for backward compatibility
+    shapesToUse = path.calculatedOffset?.offsetShapes || originalShapes;
+  }
   
   // Combine all points from the shapes
   const points: Point2D[] = [];

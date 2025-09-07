@@ -5,7 +5,20 @@ import { workflowStore } from './workflow';
 import { chainStore } from './chains';
 import { toolStore } from './tools';
 import { get } from 'svelte/store';
-import { detectCutDirection } from '../algorithms/cut-direction';
+import { reverseChain } from '$lib/geometry/chain';
+// Removed detectCutDirection import - we now use stored chain.clockwise property
+
+/**
+ * Get CutDirection from chain's stored clockwise property.
+ * This replaces the unreliable detectCutDirection() calls.
+ */
+function getChainCutDirection(chain: Chain | undefined): CutDirection {
+  if (!chain) return CutDirection.NONE;
+  
+  return chain.clockwise === true ? CutDirection.CLOCKWISE :
+         chain.clockwise === false ? CutDirection.COUNTERCLOCKWISE : 
+         CutDirection.NONE;
+}
 import { leadWarningsStore } from './lead-warnings';
 import { offsetWarningsStore } from './offset-warnings';
 import { CutDirection, LeadType } from '../types/direction';
@@ -103,7 +116,9 @@ function createOperationsStore(): {
           // Clear existing warnings for this operation before regenerating
           leadWarningsStore.clearWarningsForOperation(id);
           offsetWarningsStore.clearWarningsForOperation(id);
-          setTimeout(() => generatePathsForOperation(operation), 0);
+          setTimeout(() => {
+            generatePathsForOperation(operation);
+          }, 0);
         }
         
         return newOperations;
@@ -284,6 +299,55 @@ function calculateChainOffset(
   }
 }
 
+// Helper function to create cut chain with deep cloned shapes ordered for execution
+function createCutChain(originalChain: Chain, userCutDirection: CutDirection, offsetShapes?: Shape[]): { cutChain: Chain; executionClockwise: boolean | null } {
+  // Determine which shapes to clone (offset shapes take priority)
+  const shapesToClone = offsetShapes || originalChain.shapes;
+  
+  // Deep clone the shapes array to ensure Path owns its execution order
+  const clonedShapes: Shape[] = shapesToClone.map(shape => ({
+    ...shape,
+    geometry: { ...shape.geometry }
+  }));
+  
+  // For open chains, no execution direction
+  if (userCutDirection === CutDirection.NONE) {
+    return {
+      cutChain: {
+        id: `${originalChain.id}-cut`,
+        shapes: clonedShapes
+      },
+      executionClockwise: null
+    };
+  }
+  
+  // Get the natural direction of the ORIGINAL chain (geometric property)
+  const naturalDirection = getChainCutDirection(originalChain);
+  
+  // Determine final execution order based on user preference vs natural direction
+  let executionShapes: Shape[];
+  let executionClockwise: boolean;
+  
+  if (naturalDirection !== userCutDirection) {
+    // User wants opposite of natural direction - reverse the entire chain
+    const reversedChain = reverseChain({ id: originalChain.id, shapes: clonedShapes });
+    executionShapes = reversedChain.shapes;
+    executionClockwise = userCutDirection === CutDirection.CLOCKWISE;
+  } else {
+    // User wants same as natural direction - keep cloned shapes in order
+    executionShapes = clonedShapes;
+    executionClockwise = userCutDirection === CutDirection.CLOCKWISE;
+  }
+  
+  // Create cut chain with execution-ordered shapes
+  const cutChain: Chain = {
+    id: `${originalChain.id}-cut`,
+    shapes: executionShapes
+  };
+  
+  return { cutChain, executionClockwise };
+}
+
 // Function to generate paths from an operation
 function generatePathsForOperation(operation: Operation) {
   // Remove existing paths for this operation
@@ -298,11 +362,11 @@ function generatePathsForOperation(operation: Operation) {
   operation.targetIds.forEach((targetId, index) => {
     if (operation.targetType === 'chains') {
       // Use the operation's preferred cut direction
-      // For open paths, detect if they can support a direction, otherwise use 'none'
+      // For open paths, the stored clockwise property will be null (indicating 'none')
       const chainsState: { chains: Chain[] } = get(chainStore);
       const chain: Chain | undefined = chainsState.chains.find(c => c.id === targetId);
-      const detectedDirection: CutDirection = chain ? detectCutDirection(chain, 0.1) : CutDirection.NONE;
-      const cutDirection: CutDirection = detectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
+      const storedDirection: CutDirection = getChainCutDirection(chain);
+      const cutDirection: CutDirection = storedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
       
       // Convert KerfCompensation to OffsetDirection for chains
       let kerfCompensation: OffsetDirection = 'none';
@@ -342,6 +406,19 @@ function generatePathsForOperation(operation: Operation) {
         }
       }
       
+      // Create execution chain with correct ordering
+      let cutChain: Chain | undefined = undefined;
+      let executionClockwise: boolean | null = null;
+      if (chain) {
+        const cutChainResult = createCutChain(
+          chain, 
+          cutDirection, 
+          calculatedOffset?.offsetShapes
+        );
+        cutChain = cutChainResult.cutChain;
+        executionClockwise = cutChainResult.executionClockwise;
+      }
+      
       // Create one path per chain
       pathStore.addPath({
         name: `${operation.name} - Chain ${targetId.split('-')[1]}`,
@@ -351,6 +428,7 @@ function generatePathsForOperation(operation: Operation) {
         enabled: true,
         order: index + 1,
         cutDirection: cutDirection,
+        executionClockwise: executionClockwise,
         leadInType: operation.leadInType,
         leadInLength: operation.leadInLength,
         leadInFlipSide: operation.leadInFlipSide,
@@ -362,7 +440,8 @@ function generatePathsForOperation(operation: Operation) {
         leadOutAngle: operation.leadOutAngle,
         leadOutFit: operation.leadOutFit,
         kerfCompensation: kerfCompensation,
-        calculatedOffset: calculatedOffset
+        calculatedOffset: calculatedOffset,
+        cutChain: cutChain
       });
     } else if (operation.targetType === 'parts') {
       // For parts, create paths for all chains that make up the part
@@ -375,8 +454,8 @@ function generatePathsForOperation(operation: Operation) {
         
         // Create a path for the shell chain using operation's preferred direction
         const shellChain: Chain | undefined = chainsState.chains.find(c => c.id === part.shell.chain.id);
-        const shellDetectedDirection: CutDirection = shellChain ? detectCutDirection(shellChain, 0.1) : CutDirection.NONE;
-        const shellCutDirection: CutDirection = shellDetectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
+        const shellStoredDirection: CutDirection = getChainCutDirection(shellChain);
+        const shellCutDirection: CutDirection = shellStoredDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
         
         // Convert KerfCompensation to OffsetDirection for shell
         let shellKerfCompensation: OffsetDirection = 'none';
@@ -416,6 +495,19 @@ function generatePathsForOperation(operation: Operation) {
           }
         }
         
+        // Create execution chain for shell
+        let shellExecutionChain: Chain | undefined = undefined;
+        let shellExecutionClockwise: boolean | null = null;
+        if (shellChain) {
+          const shellCutChainResult = createCutChain(
+            shellChain, 
+            shellCutDirection, 
+            shellCalculatedOffset?.offsetShapes
+          );
+          shellExecutionChain = shellCutChainResult.cutChain;
+          shellExecutionClockwise = shellCutChainResult.executionClockwise;
+        }
+        
         pathStore.addPath({
           name: `${operation.name} - Part ${targetId.split('-')[1]} (Shell)`,
           operationId: operation.id,
@@ -424,6 +516,7 @@ function generatePathsForOperation(operation: Operation) {
           enabled: true,
           order: index + 1,
           cutDirection: shellCutDirection,
+          executionClockwise: shellExecutionClockwise,
           leadInType: operation.leadInType,
           leadInLength: operation.leadInLength,
           leadInFlipSide: operation.leadInFlipSide,
@@ -435,7 +528,8 @@ function generatePathsForOperation(operation: Operation) {
           leadOutAngle: operation.leadOutAngle,
           leadOutFit: operation.leadOutFit,
           kerfCompensation: shellKerfCompensation,
-          calculatedOffset: shellCalculatedOffset
+          calculatedOffset: shellCalculatedOffset,
+          cutChain: shellExecutionChain
         });
         
         // Create paths for all hole chains (including nested holes)
@@ -445,8 +539,8 @@ function generatePathsForOperation(operation: Operation) {
           holes.forEach((hole, holeIndex) => {
             // Use operation's preferred cut direction for the hole chain
             const holeChain: Chain | undefined = chainsState.chains.find(c => c.id === hole.chain.id);
-            const holeDetectedDirection: CutDirection = holeChain ? detectCutDirection(holeChain, 0.1) : CutDirection.NONE;
-            const holeCutDirection: CutDirection = holeDetectedDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
+            const holeStoredDirection: CutDirection = getChainCutDirection(holeChain);
+            const holeCutDirection: CutDirection = holeStoredDirection === CutDirection.NONE ? CutDirection.NONE : operation.cutDirection;
             
             // Convert KerfCompensation to OffsetDirection for hole
             let holeKerfCompensation: OffsetDirection = 'none';
@@ -486,6 +580,19 @@ function generatePathsForOperation(operation: Operation) {
               }
             }
             
+            // Create execution chain for hole
+            let holeExecutionChain: Chain | undefined = undefined;
+            let holeExecutionClockwise: boolean | null = null;
+            if (holeChain) {
+              const holeCutChainResult = createCutChain(
+                holeChain, 
+                holeCutDirection, 
+                holeCalculatedOffset?.offsetShapes
+              );
+              holeExecutionChain = holeCutChainResult.cutChain;
+              holeExecutionClockwise = holeCutChainResult.executionClockwise;
+            }
+            
             pathStore.addPath({
               name: `${operation.name} - Part ${targetId.split('-')[1]} ${prefix}(Hole ${holeIndex + 1})`,
               operationId: operation.id,
@@ -494,6 +601,7 @@ function generatePathsForOperation(operation: Operation) {
               enabled: true,
               order: pathOrder++,
               cutDirection: holeCutDirection,
+              executionClockwise: holeExecutionClockwise,
               leadInType: operation.leadInType,
               leadInLength: operation.leadInLength,
               leadInFlipSide: operation.leadInFlipSide,
@@ -505,7 +613,8 @@ function generatePathsForOperation(operation: Operation) {
               leadOutAngle: operation.leadOutAngle,
               leadOutFit: operation.leadOutFit,
               kerfCompensation: holeKerfCompensation,
-              calculatedOffset: holeCalculatedOffset
+              calculatedOffset: holeCalculatedOffset,
+              cutChain: holeExecutionChain
             });
             
             // Process nested holes if any

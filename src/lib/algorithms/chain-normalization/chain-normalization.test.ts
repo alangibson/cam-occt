@@ -4,6 +4,7 @@ import type { Chain } from '../chain-detection/chain-detection';
 import type { Shape, Polyline, Line, Arc } from '../../types';
 import { LeadType } from '../../types/direction';
 import { polylineToPoints, createPolylineFromVertices } from '../../geometry/polyline';
+import { getShapeStartPoint, getShapeEndPoint } from '../../geometry';
 import { EPSILON } from '../../constants';
 
 describe('Chain Normalization', () => {
@@ -124,6 +125,121 @@ describe('Chain Normalization', () => {
       expect(results).toHaveLength(1);
       expect(results[0].canTraverse).toBe(true);
       expect(results[0].issues).toHaveLength(0);
+    });
+
+    it('should detect when non-sequent shapes have coincident points indicating improper ordering', () => {
+      // This test reproduces the exact issue from 2013-11-08_test.dxf
+      // Where "Non-sequent shapes 1 and 7 have coincident points at (60.000, 75.000)"
+      // This indicates the normalization didn't properly order the shapes
+      
+      // Create a chain that mimics the problematic inner chain from the DXF
+      // After normalization, shapes at indices 1 and 7 will have coincident points
+      const shapes = [
+        createLine('shape0', { x: 60, y: 75 }, { x: 65, y: 75 }),   // Index 0 after norm
+        createLine('shape7', { x: 60, y: 75 }, { x: 60, y: 80 }),   // Will be index 1 after norm - starts at (60,75)
+        createLine('shape2', { x: 65, y: 75 }, { x: 70, y: 75 }),   // Index 2 after norm
+        createLine('shape3', { x: 70, y: 75 }, { x: 70, y: 85 }),   // Index 3 after norm
+        createLine('shape4', { x: 70, y: 85 }, { x: 60, y: 85 }),   // Index 4 after norm
+        createLine('shape5', { x: 60, y: 85 }, { x: 60, y: 80 }),   // Index 5 after norm
+        createLine('shape6', { x: 60, y: 80 }, { x: 55, y: 80 }),   // Index 6 after norm
+        createLine('shape1', { x: 55, y: 80 }, { x: 60, y: 75 }),   // Will be index 7 after norm - ends at (60,75)
+      ];
+
+      const chain = createChain('chain-1', shapes);
+      
+      // Normalize the chain
+      const normalizedChain = normalizeChain(chain, { traversalTolerance: 0.01, maxTraversalAttempts: 10 });
+      
+      console.log('Original indices:', shapes.map((s, i) => `${i}:${s.id}`));
+      console.log('Normalized order:', normalizedChain.shapes.map((s, i) => `${i}:${s.id}`));
+      
+      // Now analyze the normalized chain to detect the issue
+      const results = analyzeChainTraversal([normalizedChain]);
+      
+      // Find if there are shapes at indices 1 and 7 with coincident points
+      if (normalizedChain.shapes.length >= 8) {
+        const shape1 = normalizedChain.shapes[1];
+        const shape7 = normalizedChain.shapes[7];
+        
+        const shape1Start = getShapeStartPoint(shape1);
+        const shape1End = getShapeEndPoint(shape1);
+        const shape7Start = getShapeStartPoint(shape7);
+        const shape7End = getShapeEndPoint(shape7);
+        
+        console.log(`Shape at index 1 (${shape1.id}): start (${shape1Start.x},${shape1Start.y}), end (${shape1End.x},${shape1End.y})`);
+        console.log(`Shape at index 7 (${shape7.id}): start (${shape7Start.x},${shape7Start.y}), end (${shape7End.x},${shape7End.y})`);
+      }
+      
+      // The issue: broken traversal warnings for non-sequent shapes with coincident points
+      const brokenTraversalIssues = results[0].issues.filter(issue => 
+        issue.type === 'broken_traversal' && 
+        issue.description.includes('Non-sequent shapes')
+      );
+      
+      if (brokenTraversalIssues.length > 0) {
+        console.log('Broken traversal issues:', brokenTraversalIssues.map(i => i.description));
+      }
+      
+      // The bug is that these warnings appear even when the chain is traversable
+      expect(results[0].canTraverse).toBe(true);
+      
+      // This test expects the current buggy behavior - there will be false warnings
+      // After fixing, we should update this test
+      expect(brokenTraversalIssues.length).toBeGreaterThan(0);
+      expect(brokenTraversalIssues[0].description).toContain('Non-sequent shapes');
+      expect(brokenTraversalIssues[0].description).toContain('have coincident points');
+    });
+
+    it('should ensure shapes with coincident points are adjacent after normalization', () => {
+      // This test reproduces the issue from 2013-11-08_test.dxf
+      // Create a chain where shapes are out of order
+      // After normalization, all shapes with coincident points should be adjacent
+      
+      // Create shapes that are scrambled and need normalization
+      // shape1 and shape7 have coincident points at (60,75)
+      const shapes = [
+        createLine('shape1', { x: 60, y: 75 }, { x: 70, y: 75 }),  // Start at (60,75)
+        createLine('shape3', { x: 70, y: 80 }, { x: 70, y: 85 }),  // Out of order
+        createLine('shape4', { x: 70, y: 85 }, { x: 60, y: 85 }),  // Out of order
+        createLine('shape5', { x: 60, y: 85 }, { x: 60, y: 80 }),  // Out of order
+        createLine('shape6', { x: 60, y: 80 }, { x: 65, y: 80 }),  // Out of order
+        createLine('shape2', { x: 70, y: 75 }, { x: 70, y: 80 }),  // Should come after shape1
+        createLine('shape7', { x: 65, y: 80 }, { x: 65, y: 75 }),  // Out of order
+        createLine('shape8', { x: 65, y: 75 }, { x: 60, y: 75 }),  // End at (60,75) - coincident with shape1 start
+      ];
+
+      const chain = createChain('chain-1', shapes);
+      
+      // Normalize the chain - this should reorder shapes so connected shapes are adjacent
+      const normalizedChain = normalizeChain(chain, { traversalTolerance: 0.01, maxTraversalAttempts: 10 });
+      
+      console.log('Original order:', shapes.map(s => s.id));
+      console.log('Normalized order:', normalizedChain.shapes.map(s => s.id));
+      
+      // Find indices of shape1 and shape8 (which have coincident points at 60,75)
+      const shape1Index = normalizedChain.shapes.findIndex(s => s.id === 'shape1');
+      const shape8Index = normalizedChain.shapes.findIndex(s => s.id === 'shape8');
+      
+      console.log(`shape1 index: ${shape1Index}, shape8 index: ${shape8Index}`);
+      console.log(`Distance between them: ${Math.abs(shape1Index - shape8Index)}`);
+      
+      // After proper normalization, shapes with coincident points should be adjacent
+      // Either shape8 should be right before shape1, or shape1 should be at start and shape8 at end (closed chain)
+      const isAdjacent = Math.abs(shape1Index - shape8Index) === 1;
+      const isClosedChain = (shape1Index === 0 && shape8Index === normalizedChain.shapes.length - 1) ||
+                            (shape8Index === 0 && shape1Index === normalizedChain.shapes.length - 1);
+      
+      // The bug: normalization doesn't ensure shapes with coincident points are adjacent
+      // This test will fail if normalization leaves them non-adjacent
+      expect(isAdjacent || isClosedChain).toBe(true);
+      
+      // Also verify the chain is traversable
+      const results = analyzeChainTraversal([normalizedChain]);
+      expect(results[0].canTraverse).toBe(true);
+      
+      // And there should be no broken traversal warnings
+      const brokenTraversalIssues = results[0].issues.filter(issue => issue.type === 'broken_traversal');
+      expect(brokenTraversalIssues).toHaveLength(0);
     });
   });
 
