@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { pathToToolPath, pathsToToolPaths } from './path-to-toolpath';
 import type { Path } from '../stores/paths';
+import type { Tool } from '../stores/tools';
 import type { Shape, Point2D, Line } from '../types';
 import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import { LeadType, CutDirection } from '../types/direction';
@@ -45,15 +46,32 @@ describe('pathToToolPath', () => {
 
   describe('basic path conversion', () => {
     it('should convert path with original shapes', () => {
-      const path = createMockPath();
+      const path = createMockPath({ toolId: 'test-tool-1' });
       const shapes: Shape[] = [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })];
+      const tools: Tool[] = [{
+        id: 'test-tool-1',
+        toolNumber: 1,
+        toolName: 'Test Tool',
+        feedRate: 2000,
+        rapidRate: 5000,
+        pierceHeight: 4.0,
+        pierceDelay: 1.0,
+        arcVoltage: 120,
+        kerfWidth: 1.5,
+        thcEnable: true,
+        gasPressure: 4.5,
+        pauseAtEnd: 0,
+        puddleJumpHeight: 50,
+        puddleJumpDelay: 0,
+        plungeRate: 500
+      }];
       
       mockGetShapePoints.mockReturnValueOnce([
         { x: 0, y: 0 },
         { x: 10, y: 0 }
       ]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, tools);
 
       expect(result).toEqual({
         id: 'test-path',
@@ -93,7 +111,7 @@ describe('pathToToolPath', () => {
         { x: 11, y: 1 }
       ]);
 
-      const result = pathToToolPath(path, originalShapes);
+      const result = pathToToolPath(path, originalShapes, []);
 
       expect(result.points).toEqual([{ x: 1, y: 1 }, { x: 11, y: 1 }]);
       expect(mockGetShapePoints).toHaveBeenCalledWith(path.calculatedOffset!.offsetShapes[0]);
@@ -112,7 +130,7 @@ describe('pathToToolPath', () => {
       
       mockGetShapePoints.mockReturnValueOnce([{ x: 0, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       expect(result.parameters).toEqual({
         feedRate: 1000,
@@ -138,7 +156,7 @@ describe('pathToToolPath', () => {
         .mockReturnValueOnce([{ x: 0, y: 0 }, { x: 5, y: 0 }])
         .mockReturnValueOnce([{ x: 5, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       expect(result.points).toEqual([
         { x: 0, y: 0 },
@@ -158,7 +176,7 @@ describe('pathToToolPath', () => {
         .mockReturnValueOnce([{ x: 0, y: 0 }, { x: 5, y: 0 }])
         .mockReturnValueOnce([{ x: 5, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       // Should skip the duplicate point at (5, 0)
       expect(result.points).toEqual([
@@ -179,7 +197,7 @@ describe('pathToToolPath', () => {
         .mockReturnValueOnce([{ x: 0, y: 0 }, { x: 5, y: 0 }])
         .mockReturnValueOnce([{ x: 6, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       expect(result.points).toEqual([
         { x: 0, y: 0 },
@@ -200,7 +218,7 @@ describe('pathToToolPath', () => {
         .mockReturnValueOnce([{ x: 0, y: 0 }, { x: 5, y: 0 }])
         .mockReturnValueOnce([{ x: 5.0005, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       // Should skip duplicate point since within tolerance
       expect(result.points).toEqual([
@@ -226,7 +244,7 @@ describe('pathToToolPath', () => {
       
       mockGetShapePoints.mockReturnValueOnce([{ x: 0, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       expect(result.leadIn).toEqual(leadInPoints);
     });
@@ -253,7 +271,7 @@ describe('pathToToolPath', () => {
       
       mockGetShapePoints.mockReturnValueOnce([{ x: 1, y: 1 }, { x: 11, y: 1 }]);
 
-      const result = pathToToolPath(path, originalShapes);
+      const result = pathToToolPath(path, originalShapes, []);
 
       expect(result.leadIn).toEqual(leadInPoints);
     });
@@ -281,7 +299,7 @@ describe('pathToToolPath', () => {
       
       mockGetShapePoints.mockReturnValueOnce([{ x: 1, y: 1 }, { x: 11, y: 1 }]);
 
-      const result = pathToToolPath(path, originalShapes);
+      const result = pathToToolPath(path, originalShapes, []);
 
       expect(result.leadIn).toBeUndefined();
       expect(consoleSpy).toHaveBeenCalledWith(
@@ -304,7 +322,7 @@ describe('pathToToolPath', () => {
       
       mockGetShapePoints.mockReturnValueOnce([{ x: 0, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       expect(result.leadIn).toBeUndefined();
     });
@@ -325,7 +343,7 @@ describe('pathToToolPath', () => {
       
       mockGetShapePoints.mockReturnValueOnce([{ x: 0, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       expect(result.leadOut).toEqual(leadOutPoints);
     });
@@ -352,7 +370,7 @@ describe('pathToToolPath', () => {
       
       mockGetShapePoints.mockReturnValueOnce([{ x: 1, y: 1 }, { x: 11, y: 1 }]);
 
-      const result = pathToToolPath(path, originalShapes);
+      const result = pathToToolPath(path, originalShapes, []);
 
       expect(result.leadOut).toEqual(leadOutPoints);
     });
@@ -380,7 +398,7 @@ describe('pathToToolPath', () => {
       
       mockGetShapePoints.mockReturnValueOnce([{ x: 1, y: 1 }, { x: 11, y: 1 }]);
 
-      const result = pathToToolPath(path, originalShapes);
+      const result = pathToToolPath(path, originalShapes, []);
 
       expect(result.leadOut).toBeUndefined();
       expect(consoleSpy).toHaveBeenCalledWith(
@@ -396,7 +414,7 @@ describe('pathToToolPath', () => {
       const path = createMockPath();
       const shapes: Shape[] = [];
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       expect(result.points).toEqual([]);
     });
@@ -407,7 +425,7 @@ describe('pathToToolPath', () => {
       
       mockGetShapePoints.mockReturnValueOnce([{ x: 5, y: 5 }]);
 
-      const result = pathToToolPath(path, shapes);
+      const result = pathToToolPath(path, shapes, []);
 
       expect(result.points).toEqual([{ x: 5, y: 5 }]);
     });
@@ -459,7 +477,7 @@ describe('pathsToToolPaths', () => {
       mockGetShapePoints
         .mockReturnValue([{ x: 0, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathsToToolPaths(paths, chainShapes);
+      const result = pathsToToolPaths(paths, chainShapes, []);
 
       expect(result).toHaveLength(5); // 3 paths + 2 rapids
       expect(result[0].id).toBe('path-1');
@@ -483,7 +501,7 @@ describe('pathsToToolPaths', () => {
       mockGetShapePoints
         .mockReturnValue([{ x: 0, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathsToToolPaths(paths, chainShapes);
+      const result = pathsToToolPaths(paths, chainShapes, []);
 
       expect(result).toHaveLength(3); // 2 enabled paths + 1 rapid
       expect(result[0].id).toBe('path-1');
@@ -504,7 +522,7 @@ describe('pathsToToolPaths', () => {
       mockGetShapePoints
         .mockReturnValueOnce([{ x: 0, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathsToToolPaths(paths, chainShapes);
+      const result = pathsToToolPaths(paths, chainShapes, []);
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('path-1');
@@ -525,7 +543,7 @@ describe('pathsToToolPaths', () => {
       mockGetShapePoints
         .mockReturnValue([{ x: 0, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathsToToolPaths(paths, chainShapes);
+      const result = pathsToToolPaths(paths, chainShapes, []);
 
       expect(result).toHaveLength(3); // 2 paths + 1 rapid
       
@@ -562,7 +580,7 @@ describe('pathsToToolPaths', () => {
       mockGetShapePoints
         .mockReturnValue([{ x: 0, y: 0 }, { x: 10, y: 0 }]);
 
-      const result = pathsToToolPaths(paths, chainShapes);
+      const result = pathsToToolPaths(paths, chainShapes, []);
 
       const rapid = result[1];
       expect(rapid.points).toEqual([
@@ -584,7 +602,7 @@ describe('pathsToToolPaths', () => {
       mockGetShapePoints
         .mockReturnValue([{ x: 0, y: 0 }]);
 
-      const result = pathsToToolPaths(paths, chainShapes);
+      const result = pathsToToolPaths(paths, chainShapes, []);
 
       expect(result).toHaveLength(2); // Only 2 paths, no rapid
       expect(result.every(tp => !tp.isRapid)).toBe(true);
@@ -604,7 +622,7 @@ describe('pathsToToolPaths', () => {
         .mockReturnValueOnce([{ x: 0, y: 0 }, { x: 0.0005, y: 0 }])
         .mockReturnValueOnce([{ x: 0, y: 0 }, { x: 0.0005, y: 0 }]);
 
-      const result = pathsToToolPaths(paths, chainShapes);
+      const result = pathsToToolPaths(paths, chainShapes, []);
 
       expect(result).toHaveLength(2); // Only 2 paths, no rapid due to small distance
     });
@@ -615,7 +633,7 @@ describe('pathsToToolPaths', () => {
       const paths: Path[] = [];
       const chainShapes = new Map<string, Shape[]>();
 
-      const result = pathsToToolPaths(paths, chainShapes);
+      const result = pathsToToolPaths(paths, chainShapes, []);
 
       expect(result).toEqual([]);
     });
@@ -624,7 +642,7 @@ describe('pathsToToolPaths', () => {
       const paths: Path[] = [createMockPath()];
       const chainShapes = new Map<string, Shape[]>();
 
-      const result = pathsToToolPaths(paths, chainShapes);
+      const result = pathsToToolPaths(paths, chainShapes, []);
 
       expect(result).toEqual([]);
     });

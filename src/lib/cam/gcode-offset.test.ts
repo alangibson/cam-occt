@@ -77,7 +77,7 @@ describe('G-code generation with offset paths', () => {
     };
 
     const chainShapes = new Map([['chain-1', testShapes]]);
-    const toolPaths = pathsToToolPaths([testPath], chainShapes);
+    const toolPaths = pathsToToolPaths([testPath], chainShapes, []);
 
     expect(toolPaths).toHaveLength(1);
     expect(toolPaths[0].points).toEqual([
@@ -129,7 +129,7 @@ describe('G-code generation with offset paths', () => {
     };
 
     const chainShapes = new Map([['chain-1', testShapes]]);
-    const toolPaths = pathsToToolPaths([testPath], chainShapes);
+    const toolPaths = pathsToToolPaths([testPath], chainShapes, []);
 
     expect(toolPaths).toHaveLength(1);
     // Should use offset geometry
@@ -200,7 +200,7 @@ describe('G-code generation with offset paths', () => {
     };
 
     const chainShapes = new Map([['chain-1', testShapes]]);
-    const toolPaths = pathsToToolPaths([testPath], chainShapes);
+    const toolPaths = pathsToToolPaths([testPath], chainShapes, []);
 
     expect(toolPaths).toHaveLength(1);
     expect(toolPaths[0].leadIn).toEqual([{ x: -4, y: 1 }, { x: 1, y: 1 }]);
@@ -246,7 +246,7 @@ describe('G-code generation with offset paths', () => {
     };
 
     const chainShapes = new Map([['chain-1', testShapes]]);
-    const toolPaths = pathsToToolPaths([testPath], chainShapes);
+    const toolPaths = pathsToToolPaths([testPath], chainShapes, []);
     
     const gcode = generateGCode(toolPaths, testDrawing, {
       units: 'mm',

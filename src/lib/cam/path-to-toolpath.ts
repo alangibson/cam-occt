@@ -1,5 +1,6 @@
 import type { ToolPath, Point2D, Shape } from '../types';
 import type { Path } from '../stores/paths';
+import type { Tool } from '../stores/tools';
 import { getShapePoints } from '../geometry/shape-utils';
 import { hasValidCachedLeads, getCachedLeadGeometry } from '../utils/lead-persistence-utils';
 import { calculateLeads, type LeadInConfig, type LeadOutConfig } from '../algorithms/lead-calculation';
@@ -14,7 +15,7 @@ import type { DetectedPart } from '../algorithms/part-detection';
  * 2. path.calculatedOffset?.offsetShapes (fallback - offset geometry)
  * 3. originalShapes (final fallback)
  */
-export function pathToToolPath(path: Path, originalShapes: Shape[], chainMap?: Map<string, Chain>, partMap?: Map<string, DetectedPart>): ToolPath {
+export function pathToToolPath(path: Path, originalShapes: Shape[], tools: Tool[], chainMap?: Map<string, Chain>, partMap?: Map<string, DetectedPart>): ToolPath {
   // Use simulation's validated geometry resolution approach
   // Priority: cutChain > calculatedOffset > original shapes
   let shapesToUse: Shape[];
@@ -210,13 +211,14 @@ export function pathToToolPath(path: Path, originalShapes: Shape[], chainMap?: M
     }
   }
   
-  // Build cutting parameters from path settings
+  // Build cutting parameters from tool settings
+  const tool = path.toolId ? tools.find(t => t.id === path.toolId) : null;
   const parameters: ToolPath['parameters'] = {
-    feedRate: path.feedRate || 1000,
-    pierceHeight: path.pierceHeight || 3.8,
-    pierceDelay: path.pierceDelay || 0.5,
+    feedRate: tool?.feedRate || 1000,
+    pierceHeight: tool?.pierceHeight || 3.8,
+    pierceDelay: tool?.pierceDelay || 0.5,
     cutHeight: 1.5, // Default cut height
-    kerf: path.kerfWidth || 0,
+    kerf: tool?.kerfWidth || 0,
     leadInLength: path.leadInLength || 0,
     leadOutLength: path.leadOutLength || 0
   };
@@ -241,7 +243,8 @@ export function pathToToolPath(path: Path, originalShapes: Shape[], chainMap?: M
  */
 export function pathsToToolPaths(
   paths: Path[], 
-  chainShapes: Map<string, Shape[]>, 
+  chainShapes: Map<string, Shape[]>,
+  tools: Tool[],
   chainMap?: Map<string, Chain>, 
   partMap?: Map<string, DetectedPart>
 ): ToolPath[] {
@@ -256,7 +259,7 @@ export function pathsToToolPaths(
     const originalShapes: Shape[] | undefined = chainShapes.get(path.chainId);
     if (!originalShapes) continue;
     
-    const toolPath: ToolPath = pathToToolPath(path, originalShapes, chainMap, partMap);
+    const toolPath: ToolPath = pathToToolPath(path, originalShapes, tools, chainMap, partMap);
     toolPaths.push(toolPath);
   }
   

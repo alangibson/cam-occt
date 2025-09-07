@@ -90,6 +90,17 @@
   let pierceCount = 0;
   let estimatedCutTime = 0;
   
+  // Helper function to get feedRate from tool or use default
+  function getFeedRateForPath(path: Path): number {
+    if (path.toolId && toolStoreState) {
+      const tool = toolStoreState.find((t: any) => t.id === path.toolId);
+      if (tool?.feedRate) {
+        return tool.feedRate;
+      }
+    }
+    return 1000; // Default feed rate
+  }
+  
   // Reactive formatted statistics for display - updates when drawingState or values change
   $: formattedCutDistance = drawingState ? formatDistance(totalCutDistance) : '0.0';
   $: formattedRapidDistance = drawingState ? formatDistance(totalRapidDistance) : '0.0';
@@ -231,7 +242,7 @@
       
       // Add cut path
       const pathDistance = getPathDistance(path);
-      const feedRate = path.feedRate || 1000; // Default feed rate
+      const feedRate = getFeedRateForPath(path); // Get feed rate from tool
       const cutTime = (pathDistance / feedRate) * 60; // Convert to seconds (feedRate is units/min)
       
       // Update statistics
@@ -669,7 +680,7 @@
         y: rapid.start.y + (rapid.end.y - rapid.start.y) * stepProgress
       };
     } else if (currentStep.type === 'cut' && currentStep.path) {
-      currentOperation = `Cutting (${currentStep.path.feedRate || 1000} units/min)`;
+      currentOperation = `Cutting (${getFeedRateForPath(currentStep.path)} units/min)`;
       updateToolHeadOnPath(currentStep.path, stepProgress);
     }
   }

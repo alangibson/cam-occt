@@ -5,6 +5,7 @@
   import { pathStore } from '../lib/stores/paths';
   import { chainStore } from '../lib/stores/chains';
   import { partStore } from '../lib/stores/parts';
+  import { toolStore } from '../lib/stores/tools';
   import type { CuttingParameters } from '../lib/types';
   import { onMount, createEventDispatcher } from 'svelte';
   
@@ -21,6 +22,7 @@
   $: paths = $pathStore.paths;
   $: chains = $chainStore.chains;
   $: parts = $partStore.parts;
+  $: tools = $toolStore;
   
   let generatedGCode = '';
   let isGenerating = false;
@@ -53,7 +55,7 @@
       
       // Convert paths to tool paths using simulation's validated approach
       // This handles empty paths array gracefully
-      const toolPaths = pathsToToolPaths(paths, chainShapes, chainMap, partMap);
+      const toolPaths = pathsToToolPaths(paths, chainShapes, tools, chainMap, partMap);
       
       // Generate G-code with settings from props
       // The generateGCode function can handle empty toolPaths and will still generate header/footer
