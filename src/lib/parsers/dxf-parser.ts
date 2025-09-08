@@ -279,28 +279,40 @@ function convertDXFEntity(entity: DXFEntity, options: DXFOptions = {}, blocks: M
         if (entity.vertices && Array.isArray(entity.vertices) && entity.vertices.length > 0) {
           // Filter and map vertices to preserve bulge data
           const vertices: PolylineVertex[] = entity.vertices
-            .filter((v: {x?: number, y?: number}) => v && typeof v.x === 'number' && typeof v.y === 'number')
+            .filter((v: {x?: number | null, y?: number | null}) => 
+              v && 
+              typeof v.x === 'number' && 
+              typeof v.y === 'number' && 
+              v.x !== null && 
+              v.y !== null &&
+              isFinite(v.x) &&
+              isFinite(v.y)
+            )
             .map((v: {x: number, y: number, bulge?: number}) => ({
               x: v.x,
               y: v.y,
               bulge: v.bulge || 0
             }));
           
-          if (vertices.length > 0) {
+          // Need at least 2 vertices to create a valid polyline
+          if (vertices.length >= 2) {
             const isClosed: boolean = entity.shape || entity.closed || false;
             
             // Generate shapes using the utility function
             const shapes: Shape[] = generateSegments(vertices, isClosed);
             
-            return {
-              id: generateId(),
-              type: 'polyline',
-              geometry: {
-                closed: isClosed,
-                shapes
-              },
-              ...getLayerInfo(entity, options)
-            };
+            // Only create polyline if we have valid segments
+            if (shapes.length > 0) {
+              return {
+                id: generateId(),
+                type: 'polyline',
+                geometry: {
+                  closed: isClosed,
+                  shapes
+                },
+                ...getLayerInfo(entity, options)
+              };
+            }
           }
         }
         return null;
