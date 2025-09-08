@@ -168,8 +168,8 @@ describe('generateGCode', () => {
         adaptiveFeedControl: true
       });
       
-      expect(gcode).toContain('M190 P1000000'); // Temporary material selection
-      expect(gcode).toContain('M66'); // Wait for material change
+      // With o=0 format, M190 and M66 are not used
+      expect(gcode).toContain('(o=0'); // Material parameters in magic comment
       expect(gcode).toContain('M68 E3 Q0'); // Velocity control
       expect(gcode).toContain('M190 P-1'); // Return to default material
     });
@@ -431,7 +431,8 @@ describe('generateGCode', () => {
       expect(gcode).toContain('M3'); // Plasma on (always included)
       expect(gcode).toContain('M5'); // Plasma off (always included)
       expect(gcode).toContain('G4'); // Pierce delay (always included)
-      expect(gcode).toContain('M190'); // Material selection (always included)
+      // M190 is not used with o=0 format, material params are in magic comment
+      expect(gcode).toContain('(o=0'); // Material parameters in magic comment
     });
   });
 });

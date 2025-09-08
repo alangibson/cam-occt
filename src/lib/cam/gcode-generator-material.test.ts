@@ -45,9 +45,8 @@ describe('GCode Generator - Temporary Materials', () => {
       cutterCompensation: 'off'
     });
 
-    // Check for magic comment
-    expect(gcode).toContain('(o=2, nu=1000000');
-    expect(gcode).toContain('na=Test Material');
+    // Check for magic comment - using o=0 format
+    expect(gcode).toContain('(o=0');
     expect(gcode).toContain('ph=3.8');
     expect(gcode).toContain('pd=0.5');
     expect(gcode).toContain('ch=1.5');
@@ -57,12 +56,9 @@ describe('GCode Generator - Temporary Materials', () => {
     expect(gcode).toContain('ca=45');
     expect(gcode).toContain('cv=120');
     
-    // Check for material selection
-    expect(gcode).toContain('M190 P1000000');
-    expect(gcode).toContain('M66 P3 L3 Q1');
-    
-    // Check for feed rate setting
-    expect(gcode).toContain('F3000');
+    // M190 and M66 commands are not used with o=0 format
+    // Feed rate is set via F#<_hal[plasmac.cut-feed-rate]>
+    expect(gcode).toContain('F#<_hal[plasmac.cut-feed-rate]>');
   });
 
   it('should generate multiple temporary materials for multiple paths', () => {
@@ -109,17 +105,20 @@ describe('GCode Generator - Temporary Materials', () => {
       cutterCompensation: null
     });
 
-    // Check for first material
-    expect(gcode).toContain('(o=2, nu=1000000');
-    expect(gcode).toContain('na=Material 1');
+    // Check for first material - using o=0 format
+    expect(gcode).toContain('(o=0');
     expect(gcode).toContain('fr=2500');
-    expect(gcode).toContain('M190 P1000000');
+    expect(gcode).toContain('ph=3.5');
+    expect(gcode).toContain('pd=0.4');
+    expect(gcode).toContain('ch=1.2');
     
-    // Check for second material
-    expect(gcode).toContain('(o=2, nu=1000001');
-    expect(gcode).toContain('na=Material 2');
+    // Check for second material - using o=0 format
+    // Note: Both use o=0, parameters are in separate comments
     expect(gcode).toContain('fr=3500');
-    expect(gcode).toContain('M190 P1000001');
+    expect(gcode).toContain('ph=4');
+    expect(gcode).toContain('pd=0.6');
+    expect(gcode).toContain('ch=1.8');
+    // M190 commands are not used with o=0 format
   });
 
   it('should handle paths without parameters', () => {

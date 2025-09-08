@@ -303,7 +303,7 @@ describe('pathToToolPath', () => {
 
       expect(result.leadIn).toBeUndefined();
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Lead-in doesn't connect to offset path")
+        expect.stringContaining("Cached lead-in doesn't connect to offset path")
       );
       
       consoleSpy.mockRestore();
@@ -402,7 +402,7 @@ describe('pathToToolPath', () => {
 
       expect(result.leadOut).toBeUndefined();
       expect(consoleSpy).toHaveBeenCalledWith(
-        expect.stringContaining("Lead-out doesn't connect to offset path")
+        expect.stringContaining("Cached lead-out doesn't connect to offset path")
       );
       
       consoleSpy.mockRestore();
