@@ -5,185 +5,228 @@ import { pointDistance } from '..';
 import { calculateLineParameter } from '../../shared/trim-extend-utils';
 import { type KeepSide, type TrimResult } from '../types';
 
-
 /**
  * Trim a spline at a specific point
  */
-export function trimSpline(shape: Shape, point: Point2D, keepSide: KeepSide, tolerance: number): TrimResult {
-  const spline: import("$lib/types/geometry").Spline = shape.geometry as Spline;
-  const result: TrimResult = {
-    success: false,
-    shape: null,
-    warnings: [],
-    errors: []
-  };
+export function trimSpline(
+    shape: Shape,
+    point: Point2D,
+    keepSide: KeepSide,
+    tolerance: number
+): TrimResult {
+    const spline: import('$lib/types/geometry').Spline =
+        shape.geometry as Spline;
+    const result: TrimResult = {
+        success: false,
+        shape: null,
+        warnings: [],
+        errors: [],
+    };
 
-  if (spline.controlPoints.length < 2) {
-    result.errors.push('Cannot trim spline with less than 2 control points');
-    return result;
-  }
-
-  // For spline trimming, we'll use a simplified approach:
-  // 1. Find the parameter t where the intersection occurs
-  // 2. Adjust the control points and fit points accordingly
-  // First, try to find the parameter by checking against fit points if available
-  let trimParam: number = -1;
-
-  if (spline.fitPoints && spline.fitPoints.length > 0) {
-    // Use fit points to estimate the parameter
-    for (let i: number = 0; i < spline.fitPoints.length; i++) {
-      const fitPoint: Point2D = spline.fitPoints[i];
-      const distance: number = pointDistance(point, fitPoint);
-
-      if (distance <= tolerance) {
-        trimParam = i / (spline.fitPoints.length - 1); // Normalize to [0,1]
-        break;
-      }
+    if (spline.controlPoints.length < 2) {
+        result.errors.push(
+            'Cannot trim spline with less than 2 control points'
+        );
+        return result;
     }
 
-    // If not found on exact fit points, interpolate between closest ones
-    if (trimParam === -1) {
-      for (let i: number = 0; i < spline.fitPoints.length - 1; i++) {
-        const segStart: Point2D = spline.fitPoints[i];
-        const segEnd: Point2D = spline.fitPoints[i + 1];
+    // For spline trimming, we'll use a simplified approach:
+    // 1. Find the parameter t where the intersection occurs
+    // 2. Adjust the control points and fit points accordingly
+    // First, try to find the parameter by checking against fit points if available
+    let trimParam: number = -1;
 
-        // Check if point is on this segment
-        const segment: Line = { start: segStart, end: segEnd };
-        const param: number = calculateLineParameter(point, segment);
+    if (spline.fitPoints && spline.fitPoints.length > 0) {
+        // Use fit points to estimate the parameter
+        for (let i: number = 0; i < spline.fitPoints.length; i++) {
+            const fitPoint: Point2D = spline.fitPoints[i];
+            const distance: number = pointDistance(point, fitPoint);
 
-        if (param >= 0 && param <= 1) {
-          const segmentLength: number = pointDistance(segStart, segEnd);
-          if (segmentLength > EPSILON) {
-            const segmentVec: Point2D = { x: segEnd.x - segStart.x, y: segEnd.y - segStart.y };
-            const pointVec: Point2D = { x: point.x - segStart.x, y: point.y - segStart.y };
-            const perpDistance: number = Math.abs(segmentVec.x * pointVec.y - segmentVec.y * pointVec.x) / segmentLength;
-
-            if (perpDistance <= tolerance) {
-              trimParam = (i + param) / (spline.fitPoints.length - 1);
-              break;
+            if (distance <= tolerance) {
+                trimParam = i / (spline.fitPoints.length - 1); // Normalize to [0,1]
+                break;
             }
-          }
         }
-      }
-    }
-  } else {
-    // Fallback: use control points for estimation
-    for (let i: number = 0; i < spline.controlPoints.length; i++) {
-      const controlPoint: Point2D = spline.controlPoints[i];
-      const distance: number = pointDistance(point, controlPoint);
 
-      if (distance <= tolerance) {
-        trimParam = i / (spline.controlPoints.length - 1);
-        break;
-      }
-    }
-  }
+        // If not found on exact fit points, interpolate between closest ones
+        if (trimParam === -1) {
+            for (let i: number = 0; i < spline.fitPoints.length - 1; i++) {
+                const segStart: Point2D = spline.fitPoints[i];
+                const segEnd: Point2D = spline.fitPoints[i + 1];
 
-  if (trimParam === -1) {
-    // If we can't find the point on the spline exactly, use a more relaxed approach
-    // Find the closest point on the spline's bounding box or control points
-    let minDistance: number = Infinity;
-    let bestIndex: number = -1;
+                // Check if point is on this segment
+                const segment: Line = { start: segStart, end: segEnd };
+                const param: number = calculateLineParameter(point, segment);
 
-    // Check against all control points with relaxed tolerance
-    for (let i: number = 0; i < spline.controlPoints.length; i++) {
-      const controlPoint: Point2D = spline.controlPoints[i];
-      const distance: number = pointDistance(point, controlPoint);
-      if (distance < minDistance) {
-        minDistance = distance;
-        bestIndex = i;
-      }
-    }
+                if (param >= 0 && param <= 1) {
+                    const segmentLength: number = pointDistance(
+                        segStart,
+                        segEnd
+                    );
+                    if (segmentLength > EPSILON) {
+                        const segmentVec: Point2D = {
+                            x: segEnd.x - segStart.x,
+                            y: segEnd.y - segStart.y,
+                        };
+                        const pointVec: Point2D = {
+                            x: point.x - segStart.x,
+                            y: point.y - segStart.y,
+                        };
+                        const perpDistance: number =
+                            Math.abs(
+                                segmentVec.x * pointVec.y -
+                                    segmentVec.y * pointVec.x
+                            ) / segmentLength;
 
-    // Use a much more relaxed tolerance for splines (10x the normal tolerance)
-    const relaxedTolerance: number = tolerance * 10;
-    if (bestIndex !== -1 && minDistance <= relaxedTolerance) {
-      trimParam = bestIndex / (spline.controlPoints.length - 1);
-      result.warnings.push('Spline trim point found via relaxed control point matching');
+                        if (perpDistance <= tolerance) {
+                            trimParam =
+                                (i + param) / (spline.fitPoints.length - 1);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
     } else {
-      result.errors.push('Trim point is not on the spline');
-      return result;
-    }
-  }
+        // Fallback: use control points for estimation
+        for (let i: number = 0; i < spline.controlPoints.length; i++) {
+            const controlPoint: Point2D = spline.controlPoints[i];
+            const distance: number = pointDistance(point, controlPoint);
 
-  // Clamp parameter to valid range
-  trimParam = Math.max(0, Math.min(1, trimParam));
-
-  // Create trimmed spline based on keepSide
-  let newControlPoints: Point2D[] = [];
-  let newFitPoints: Point2D[] = [];
-  let newKnots: number[] = [];
-  let newWeights: number[] = [];
-
-  if (keepSide === 'start' || keepSide === 'before') {
-    // Keep the beginning portion of the spline
-    const splitIndex: number = Math.ceil(trimParam * (spline.controlPoints.length - 1));
-    newControlPoints = spline.controlPoints.slice(0, splitIndex + 1);
-    // Ensure the last control point is the intersection
-    if (newControlPoints.length > 0) {
-      newControlPoints[newControlPoints.length - 1] = { ...point };
+            if (distance <= tolerance) {
+                trimParam = i / (spline.controlPoints.length - 1);
+                break;
+            }
+        }
     }
 
-    if (spline.fitPoints && spline.fitPoints.length > 0) {
-      const fitSplitIndex: number = Math.ceil(trimParam * (spline.fitPoints.length - 1));
-      newFitPoints = spline.fitPoints.slice(0, fitSplitIndex + 1);
-      if (newFitPoints.length > 0) {
-        newFitPoints[newFitPoints.length - 1] = { ...point };
-      }
+    if (trimParam === -1) {
+        // If we can't find the point on the spline exactly, use a more relaxed approach
+        // Find the closest point on the spline's bounding box or control points
+        let minDistance: number = Infinity;
+        let bestIndex: number = -1;
+
+        // Check against all control points with relaxed tolerance
+        for (let i: number = 0; i < spline.controlPoints.length; i++) {
+            const controlPoint: Point2D = spline.controlPoints[i];
+            const distance: number = pointDistance(point, controlPoint);
+            if (distance < minDistance) {
+                minDistance = distance;
+                bestIndex = i;
+            }
+        }
+
+        // Use a much more relaxed tolerance for splines (10x the normal tolerance)
+        const relaxedTolerance: number = tolerance * 10;
+        if (bestIndex !== -1 && minDistance <= relaxedTolerance) {
+            trimParam = bestIndex / (spline.controlPoints.length - 1);
+            result.warnings.push(
+                'Spline trim point found via relaxed control point matching'
+            );
+        } else {
+            result.errors.push('Trim point is not on the spline');
+            return result;
+        }
     }
 
-  } else if (keepSide === 'end' || keepSide === 'after') {
-    // Keep the ending portion of the spline
-    const splitIndex: number = Math.floor(trimParam * (spline.controlPoints.length - 1));
-    newControlPoints = [{ ...point }, ...spline.controlPoints.slice(splitIndex + 1)];
+    // Clamp parameter to valid range
+    trimParam = Math.max(0, Math.min(1, trimParam));
 
-    if (spline.fitPoints && spline.fitPoints.length > 0) {
-      const fitSplitIndex: number = Math.floor(trimParam * (spline.fitPoints.length - 1));
-      newFitPoints = [{ ...point }, ...spline.fitPoints.slice(fitSplitIndex + 1)];
+    // Create trimmed spline based on keepSide
+    let newControlPoints: Point2D[] = [];
+    let newFitPoints: Point2D[] = [];
+    let newKnots: number[] = [];
+    let newWeights: number[] = [];
+
+    if (keepSide === 'start' || keepSide === 'before') {
+        // Keep the beginning portion of the spline
+        const splitIndex: number = Math.ceil(
+            trimParam * (spline.controlPoints.length - 1)
+        );
+        newControlPoints = spline.controlPoints.slice(0, splitIndex + 1);
+        // Ensure the last control point is the intersection
+        if (newControlPoints.length > 0) {
+            newControlPoints[newControlPoints.length - 1] = { ...point };
+        }
+
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+            const fitSplitIndex: number = Math.ceil(
+                trimParam * (spline.fitPoints.length - 1)
+            );
+            newFitPoints = spline.fitPoints.slice(0, fitSplitIndex + 1);
+            if (newFitPoints.length > 0) {
+                newFitPoints[newFitPoints.length - 1] = { ...point };
+            }
+        }
+    } else if (keepSide === 'end' || keepSide === 'after') {
+        // Keep the ending portion of the spline
+        const splitIndex: number = Math.floor(
+            trimParam * (spline.controlPoints.length - 1)
+        );
+        newControlPoints = [
+            { ...point },
+            ...spline.controlPoints.slice(splitIndex + 1),
+        ];
+
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+            const fitSplitIndex: number = Math.floor(
+                trimParam * (spline.fitPoints.length - 1)
+            );
+            newFitPoints = [
+                { ...point },
+                ...spline.fitPoints.slice(fitSplitIndex + 1),
+            ];
+        }
+    } else {
+        result.errors.push(
+            `Invalid keepSide value for spline trimming: ${keepSide}`
+        );
+        return result;
     }
 
-  } else {
-    result.errors.push(`Invalid keepSide value for spline trimming: ${keepSide}`);
+    // Ensure minimum points for a valid spline
+    if (newControlPoints.length < 2) {
+        result.errors.push(
+            'Trimmed spline would have less than 2 control points'
+        );
+        return result;
+    }
+
+    // Adjust other spline properties
+    newWeights = spline.weights.slice(0, newControlPoints.length);
+    if (newWeights.length < newControlPoints.length) {
+        // Pad with unit weights if needed
+        while (newWeights.length < newControlPoints.length) {
+            newWeights.push(1.0);
+        }
+    }
+
+    // Simplified knot vector (uniform)
+    newKnots = [];
+    for (
+        let i: number = 0;
+        i < newControlPoints.length + spline.degree + 1;
+        i++
+    ) {
+        newKnots.push(i);
+    }
+
+    const trimmedSpline: Spline = {
+        controlPoints: newControlPoints,
+        knots: newKnots,
+        weights: newWeights,
+        degree: spline.degree,
+        fitPoints: newFitPoints,
+        closed: false, // Trimmed splines are always open
+    };
+
+    result.shape = {
+        ...shape,
+        id: generateId(),
+        geometry: trimmedSpline,
+    };
+    result.success = true;
+    result.warnings.push('Spline trimming uses simplified approximation');
+
     return result;
-  }
-
-  // Ensure minimum points for a valid spline
-  if (newControlPoints.length < 2) {
-    result.errors.push('Trimmed spline would have less than 2 control points');
-    return result;
-  }
-
-  // Adjust other spline properties
-  newWeights = spline.weights.slice(0, newControlPoints.length);
-  if (newWeights.length < newControlPoints.length) {
-    // Pad with unit weights if needed
-    while (newWeights.length < newControlPoints.length) {
-      newWeights.push(1.0);
-    }
-  }
-
-  // Simplified knot vector (uniform)
-  newKnots = [];
-  for (let i: number = 0; i < newControlPoints.length + spline.degree + 1; i++) {
-    newKnots.push(i);
-  }
-
-  const trimmedSpline: Spline = {
-    controlPoints: newControlPoints,
-    knots: newKnots,
-    weights: newWeights,
-    degree: spline.degree,
-    fitPoints: newFitPoints,
-    closed: false // Trimmed splines are always open
-  };
-
-  result.shape = {
-    ...shape,
-    id: generateId(),
-    geometry: trimmedSpline
-  };
-  result.success = true;
-  result.warnings.push('Spline trimming uses simplified approximation');
-
-  return result;
 }

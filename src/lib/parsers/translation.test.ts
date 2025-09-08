@@ -4,64 +4,83 @@ import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
 import { getBoundingBoxForArc } from '../geometry/bounding-box';
-import type { Shape, Point2D, Line, Circle, Arc, Polyline } from '../../lib/types/geometry';
+import type {
+    Shape,
+    Point2D,
+    Line,
+    Circle,
+    Arc,
+    Polyline,
+} from '../../lib/types/geometry';
 import { EPSILON } from '../constants';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {
-  if (shapes.length === 0) {
-    return { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
-  }
-  
-  let minX = Infinity, maxX = -Infinity;
-  let minY = Infinity, maxY = -Infinity;
-  
-  shapes.forEach(shape => {
-    const points = getShapePoints(shape);
-    points.forEach(point => {
-      minX = Math.min(minX, point.x);
-      maxX = Math.max(maxX, point.x);
-      minY = Math.min(minY, point.y);
-      maxY = Math.max(maxY, point.y);
+    if (shapes.length === 0) {
+        return { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
+    }
+
+    let minX = Infinity,
+        maxX = -Infinity;
+    let minY = Infinity,
+        maxY = -Infinity;
+
+    shapes.forEach((shape) => {
+        const points = getShapePoints(shape);
+        points.forEach((point) => {
+            minX = Math.min(minX, point.x);
+            maxX = Math.max(maxX, point.x);
+            minY = Math.min(minY, point.y);
+            maxY = Math.max(maxY, point.y);
+        });
     });
-  });
-  
-  return {
-    min: { x: isFinite(minX) ? minX : 0, y: isFinite(minY) ? minY : 0 },
-    max: { x: isFinite(maxX) ? maxX : 0, y: isFinite(maxY) ? maxY : 0 }
-  };
+
+    return {
+        min: { x: isFinite(minX) ? minX : 0, y: isFinite(minY) ? minY : 0 },
+        max: { x: isFinite(maxX) ? maxX : 0, y: isFinite(maxY) ? maxY : 0 },
+    };
 }
 
 // Helper function to get shape points (copied from translate-to-positive.ts)
 function getShapePoints(shape: Shape): Point2D[] {
-  switch (shape.type) {
-    case 'line':
-      const line: import("$lib/types/geometry").Line = shape.geometry as Line;
-      return [line.start, line.end];
-    case 'circle':
-      const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle;
-      return [
-        { x: circle.center.x - circle.radius, y: circle.center.y - circle.radius },
-        { x: circle.center.x + circle.radius, y: circle.center.y + circle.radius }
-      ];
-    case 'arc':
-      const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
-      // Use actual arc bounds instead of full circle bounds
-      const arcBounds = getBoundingBoxForArc(arc);
-      return [arcBounds.min, arcBounds.max];
-    case 'polyline':
-      const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
-      return polylineToPoints(polyline);
-    default:
-      return [];
-  }
+    switch (shape.type) {
+        case 'line':
+            const line: import('$lib/types/geometry').Line =
+                shape.geometry as Line;
+            return [line.start, line.end];
+        case 'circle':
+            const circle: import('$lib/types/geometry').Circle =
+                shape.geometry as Circle;
+            return [
+                {
+                    x: circle.center.x - circle.radius,
+                    y: circle.center.y - circle.radius,
+                },
+                {
+                    x: circle.center.x + circle.radius,
+                    y: circle.center.y + circle.radius,
+                },
+            ];
+        case 'arc':
+            const arc: import('$lib/types/geometry').Arc =
+                shape.geometry as Arc;
+            // Use actual arc bounds instead of full circle bounds
+            const arcBounds = getBoundingBoxForArc(arc);
+            return [arcBounds.min, arcBounds.max];
+        case 'polyline':
+            const polyline: import('$lib/types/geometry').Polyline =
+                shape.geometry as Polyline;
+            return polylineToPoints(polyline);
+        default:
+            return [];
+    }
 }
 
 describe('Translation to Positive Quadrant Feature', () => {
-  describe('Basic translation functionality', () => {
-    it('should translate drawing with negative coordinates to origin', async () => {
-      // Mock DXF content with shapes in negative quadrant
-      const mockDXFContent = `0
+    describe('Basic translation functionality', () => {
+        it('should translate drawing with negative coordinates to origin', async () => {
+            // Mock DXF content with shapes in negative quadrant
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -88,47 +107,47 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no translation in parser)
-      const parsed = await parseDXF(mockDXFContent);
-      
-      // Apply translation separately
-      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-      
-      // Create translated drawing for bounds checking
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        // Recalculate bounds for translated shapes
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no translation in parser)
+            const parsed = await parseDXF(mockDXFContent);
 
-      // Check that bounds start at origin
-      expect(drawing.bounds.min.x).toBe(0);
-      expect(drawing.bounds.min.y).toBe(0);
-      expect(drawing.bounds.max.x).toBeGreaterThan(0);
-      expect(drawing.bounds.max.y).toBeGreaterThan(0);
+            // Apply translation separately
+            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
 
-      // Check that shapes were translated
-      const lineShape = drawing.shapes.find(s => s.type === 'line');
-      const circleShape = drawing.shapes.find(s => s.type === 'circle');
+            // Create translated drawing for bounds checking
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                // Recalculate bounds for translated shapes
+                bounds: calculateBounds(translatedShapes),
+            };
 
-      if (lineShape) {
-        const lineGeom = lineShape.geometry as Line;
-        expect(lineGeom.start.x).toBeGreaterThanOrEqual(0);
-        expect(lineGeom.start.y).toBeGreaterThanOrEqual(0);
-        expect(lineGeom.end.x).toBeGreaterThanOrEqual(0);
-        expect(lineGeom.end.y).toBeGreaterThanOrEqual(0);
-      }
+            // Check that bounds start at origin
+            expect(drawing.bounds.min.x).toBe(0);
+            expect(drawing.bounds.min.y).toBe(0);
+            expect(drawing.bounds.max.x).toBeGreaterThan(0);
+            expect(drawing.bounds.max.y).toBeGreaterThan(0);
 
-      if (circleShape) {
-        const circleGeom = circleShape.geometry as Circle;
-        expect(circleGeom.center.x).toBeGreaterThanOrEqual(0);
-        expect(circleGeom.center.y).toBeGreaterThanOrEqual(0);
-      }
-    });
+            // Check that shapes were translated
+            const lineShape = drawing.shapes.find((s) => s.type === 'line');
+            const circleShape = drawing.shapes.find((s) => s.type === 'circle');
 
-    it('should not translate drawing already in positive quadrant', async () => {
-      const mockDXFContent = `0
+            if (lineShape) {
+                const lineGeom = lineShape.geometry as Line;
+                expect(lineGeom.start.x).toBeGreaterThanOrEqual(0);
+                expect(lineGeom.start.y).toBeGreaterThanOrEqual(0);
+                expect(lineGeom.end.x).toBeGreaterThanOrEqual(0);
+                expect(lineGeom.end.y).toBeGreaterThanOrEqual(0);
+            }
+
+            if (circleShape) {
+                const circleGeom = circleShape.geometry as Circle;
+                expect(circleGeom.center.x).toBeGreaterThanOrEqual(0);
+                expect(circleGeom.center.y).toBeGreaterThanOrEqual(0);
+            }
+        });
+
+        it('should not translate drawing already in positive quadrant', async () => {
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -155,34 +174,34 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF
-      const parsed = await parseDXF(mockDXFContent);
-      
-      // Apply translation (should not change anything)
-      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-      
-      // Create translated drawing
-      const translatedDrawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF
+            const parsed = await parseDXF(mockDXFContent);
 
-      // Should be identical since already in positive quadrant
-      expect(translatedDrawing.bounds).toEqual(parsed.bounds);
-      
-      // Check shapes are identical
-      expect(translatedDrawing.shapes.length).toBe(parsed.shapes.length);
-      
-      for (let i: number = 0; i < translatedDrawing.shapes.length; i++) {
-        const original = parsed.shapes[i];
-        const translated = translatedDrawing.shapes[i];
-        expect(translated.geometry).toEqual(original.geometry);
-      }
-    });
+            // Apply translation (should not change anything)
+            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
 
-    it('should handle mixed quadrant drawing correctly', async () => {
-      const mockDXFContent = `0
+            // Create translated drawing
+            const translatedDrawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            // Should be identical since already in positive quadrant
+            expect(translatedDrawing.bounds).toEqual(parsed.bounds);
+
+            // Check shapes are identical
+            expect(translatedDrawing.shapes.length).toBe(parsed.shapes.length);
+
+            for (let i: number = 0; i < translatedDrawing.shapes.length; i++) {
+                const original = parsed.shapes[i];
+                const translated = translatedDrawing.shapes[i];
+                expect(translated.geometry).toEqual(original.geometry);
+            }
+        });
+
+        it('should handle mixed quadrant drawing correctly', async () => {
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -209,46 +228,52 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no translation in parser)
-      const parsed = await parseDXF(mockDXFContent);
-      
-      // Apply translation separately
-      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-      
-      // Create translated drawing
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no translation in parser)
+            const parsed = await parseDXF(mockDXFContent);
 
-      // Should start at origin
-      expect(drawing.bounds.min.x).toBe(0);
-      expect(drawing.bounds.min.y).toBe(0);
+            // Apply translation separately
+            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
 
-      // All shapes should be in positive quadrant
-      drawing.shapes.forEach(shape => {
-        switch (shape.type) {
-          case 'line':
-            const line: import("$lib/types/geometry").Line = shape.geometry as Line;
-            expect(line.start.x).toBeGreaterThanOrEqual(0);
-            expect(line.start.y).toBeGreaterThanOrEqual(0);
-            expect(line.end.x).toBeGreaterThanOrEqual(0);
-            expect(line.end.y).toBeGreaterThanOrEqual(0);
-            break;
-          case 'circle':
-            const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle;
-            expect(circle.center.x - circle.radius).toBeGreaterThanOrEqual(0);
-            expect(circle.center.y - circle.radius).toBeGreaterThanOrEqual(0);
-            break;
-        }
-      });
+            // Create translated drawing
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            // Should start at origin
+            expect(drawing.bounds.min.x).toBe(0);
+            expect(drawing.bounds.min.y).toBe(0);
+
+            // All shapes should be in positive quadrant
+            drawing.shapes.forEach((shape) => {
+                switch (shape.type) {
+                    case 'line':
+                        const line: import('$lib/types/geometry').Line =
+                            shape.geometry as Line;
+                        expect(line.start.x).toBeGreaterThanOrEqual(0);
+                        expect(line.start.y).toBeGreaterThanOrEqual(0);
+                        expect(line.end.x).toBeGreaterThanOrEqual(0);
+                        expect(line.end.y).toBeGreaterThanOrEqual(0);
+                        break;
+                    case 'circle':
+                        const circle: import('$lib/types/geometry').Circle =
+                            shape.geometry as Circle;
+                        expect(
+                            circle.center.x - circle.radius
+                        ).toBeGreaterThanOrEqual(0);
+                        expect(
+                            circle.center.y - circle.radius
+                        ).toBeGreaterThanOrEqual(0);
+                        break;
+                }
+            });
+        });
     });
-  });
 
-  describe('Polyline translation', () => {
-    it('should translate simple polylines correctly', async () => {
-      const mockDXFContent = `0
+    describe('Polyline translation', () => {
+        it('should translate simple polylines correctly', async () => {
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -273,38 +298,40 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no translation in parser)
-      const parsed = await parseDXF(mockDXFContent);
-      
-      // Apply translation separately
-      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-      
-      // Create translated drawing
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no translation in parser)
+            const parsed = await parseDXF(mockDXFContent);
 
-      const polylineShape = drawing.shapes.find(s => s.type === 'polyline');
-      expect(polylineShape).toBeDefined();
+            // Apply translation separately
+            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
 
-      if (polylineShape) {
-        const geom = polylineShape.geometry as Polyline;
-        
-        // Check points array
-        polylineToPoints(geom).forEach(point => {
-          expect(point.x).toBeGreaterThanOrEqual(0);
-          expect(point.y).toBeGreaterThanOrEqual(0);
+            // Create translated drawing
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            const polylineShape = drawing.shapes.find(
+                (s) => s.type === 'polyline'
+            );
+            expect(polylineShape).toBeDefined();
+
+            if (polylineShape) {
+                const geom = polylineShape.geometry as Polyline;
+
+                // Check points array
+                polylineToPoints(geom).forEach((point) => {
+                    expect(point.x).toBeGreaterThanOrEqual(0);
+                    expect(point.y).toBeGreaterThanOrEqual(0);
+                });
+
+                // Vertices are represented as shapes in the Polyline interface
+            }
         });
 
-        // Vertices are represented as shapes in the Polyline interface
-      }
-    });
-
-    it('should translate polylines with bulges correctly', async () => {
-      // Create a more complex DXF with bulge data
-      const mockDXFContent = `0
+        it('should translate polylines with bulges correctly', async () => {
+            // Create a more complex DXF with bulge data
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -341,47 +368,49 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no translation in parser)
-      const parsed = await parseDXF(mockDXFContent);
-      
-      // Apply translation separately
-      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-      
-      // Create translated drawing
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no translation in parser)
+            const parsed = await parseDXF(mockDXFContent);
 
-      const polylineShape = drawing.shapes.find(s => s.type === 'polyline');
-      expect(polylineShape).toBeDefined();
+            // Apply translation separately
+            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
 
-      if (polylineShape) {
-        const geom = polylineShape.geometry as Polyline;
-        
-        // All coordinates should be non-negative
-        polylineToPoints(geom).forEach(point => {
-          expect(point.x).toBeGreaterThanOrEqual(0);
-          expect(point.y).toBeGreaterThanOrEqual(0);
+            // Create translated drawing
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            const polylineShape = drawing.shapes.find(
+                (s) => s.type === 'polyline'
+            );
+            expect(polylineShape).toBeDefined();
+
+            if (polylineShape) {
+                const geom = polylineShape.geometry as Polyline;
+
+                // All coordinates should be non-negative
+                polylineToPoints(geom).forEach((point) => {
+                    expect(point.x).toBeGreaterThanOrEqual(0);
+                    expect(point.y).toBeGreaterThanOrEqual(0);
+                });
+
+                // Polylines don't have a vertices property in our Polyline type
+                // They have a shapes property containing Line and Arc geometries
+                const vertices = polylineToVertices(geom);
+                vertices.forEach((vertex) => {
+                    expect(vertex.x).toBeGreaterThanOrEqual(0);
+                    expect(vertex.y).toBeGreaterThanOrEqual(0);
+                    // Bulge values should be preserved
+                    if (vertex.bulge !== undefined) {
+                        expect(typeof vertex.bulge).toBe('number');
+                    }
+                });
+            }
         });
 
-        // Polylines don't have a vertices property in our Polyline type
-        // They have a shapes property containing Line and Arc geometries
-        const vertices = polylineToVertices(geom);
-        vertices.forEach(vertex => {
-          expect(vertex.x).toBeGreaterThanOrEqual(0);
-          expect(vertex.y).toBeGreaterThanOrEqual(0);
-          // Bulge values should be preserved
-          if (vertex.bulge !== undefined) {
-            expect(typeof vertex.bulge).toBe('number');
-          }
-        });
-      }
-    });
-
-    it('should translate decomposed polylines correctly', async () => {
-      const mockDXFContent = `0
+        it('should translate decomposed polylines correctly', async () => {
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -410,46 +439,52 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no options in parser)
-      const parsed = await parseDXF(mockDXFContent);
-      
-      // Apply decomposition first, then translation
-      const decomposed = decomposePolylines(parsed.shapes);
-      const translatedShapes = translateToPositiveQuadrant(decomposed);
-      
-      // Create final drawing
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no options in parser)
+            const parsed = await parseDXF(mockDXFContent);
 
-      // Should have multiple shapes (decomposed)
-      expect(drawing.shapes.length).toBeGreaterThan(1);
+            // Apply decomposition first, then translation
+            const decomposed = decomposePolylines(parsed.shapes);
+            const translatedShapes = translateToPositiveQuadrant(decomposed);
 
-      // All shapes should be in positive quadrant
-      drawing.shapes.forEach(shape => {
-        switch (shape.type) {
-          case 'line':
-            const line: import("$lib/types/geometry").Line = shape.geometry as Line;
-            expect(line.start.x).toBeGreaterThanOrEqual(0);
-            expect(line.start.y).toBeGreaterThanOrEqual(0);
-            expect(line.end.x).toBeGreaterThanOrEqual(0);
-            expect(line.end.y).toBeGreaterThanOrEqual(0);
-            break;
-          case 'arc':
-            const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
-            expect(arc.center.x - arc.radius).toBeGreaterThanOrEqual(0);
-            expect(arc.center.y - arc.radius).toBeGreaterThanOrEqual(0);
-            break;
-        }
-      });
+            // Create final drawing
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            // Should have multiple shapes (decomposed)
+            expect(drawing.shapes.length).toBeGreaterThan(1);
+
+            // All shapes should be in positive quadrant
+            drawing.shapes.forEach((shape) => {
+                switch (shape.type) {
+                    case 'line':
+                        const line: import('$lib/types/geometry').Line =
+                            shape.geometry as Line;
+                        expect(line.start.x).toBeGreaterThanOrEqual(0);
+                        expect(line.start.y).toBeGreaterThanOrEqual(0);
+                        expect(line.end.x).toBeGreaterThanOrEqual(0);
+                        expect(line.end.y).toBeGreaterThanOrEqual(0);
+                        break;
+                    case 'arc':
+                        const arc: import('$lib/types/geometry').Arc =
+                            shape.geometry as Arc;
+                        expect(
+                            arc.center.x - arc.radius
+                        ).toBeGreaterThanOrEqual(0);
+                        expect(
+                            arc.center.y - arc.radius
+                        ).toBeGreaterThanOrEqual(0);
+                        break;
+                }
+            });
+        });
     });
-  });
 
-  describe('Translation calculations', () => {
-    it('should calculate correct translation vector', async () => {
-      const mockDXFContent = `0
+    describe('Translation calculations', () => {
+        it('should calculate correct translation vector', async () => {
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -468,33 +503,39 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (original)
-      const originalDrawing = await parseDXF(mockDXFContent);
-      
-      // Apply translation separately
-      const translatedShapes = translateToPositiveQuadrant(originalDrawing.shapes);
-      const translatedDrawing = {
-        ...originalDrawing,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (original)
+            const originalDrawing = await parseDXF(mockDXFContent);
 
-      // Translation should be (75, 100) to move (-75, -100) to (0, 0)
-      const expectedTranslationX = -originalDrawing.bounds.min.x;
-      const expectedTranslationY = -originalDrawing.bounds.min.y;
+            // Apply translation separately
+            const translatedShapes = translateToPositiveQuadrant(
+                originalDrawing.shapes
+            );
+            const translatedDrawing = {
+                ...originalDrawing,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
 
-      expect(expectedTranslationX).toBe(75);
-      expect(expectedTranslationY).toBe(100);
+            // Translation should be (75, 100) to move (-75, -100) to (0, 0)
+            const expectedTranslationX = -originalDrawing.bounds.min.x;
+            const expectedTranslationY = -originalDrawing.bounds.min.y;
 
-      // Check that translation was applied correctly
-      expect(translatedDrawing.bounds.min.x).toBe(0);
-      expect(translatedDrawing.bounds.min.y).toBe(0);
-      expect(translatedDrawing.bounds.max.x).toBe(originalDrawing.bounds.max.x + expectedTranslationX);
-      expect(translatedDrawing.bounds.max.y).toBe(originalDrawing.bounds.max.y + expectedTranslationY);
-    });
+            expect(expectedTranslationX).toBe(75);
+            expect(expectedTranslationY).toBe(100);
 
-    it('should preserve relative positions after translation', async () => {
-      const mockDXFContent = `0
+            // Check that translation was applied correctly
+            expect(translatedDrawing.bounds.min.x).toBe(0);
+            expect(translatedDrawing.bounds.min.y).toBe(0);
+            expect(translatedDrawing.bounds.max.x).toBe(
+                originalDrawing.bounds.max.x + expectedTranslationX
+            );
+            expect(translatedDrawing.bounds.max.y).toBe(
+                originalDrawing.bounds.max.y + expectedTranslationY
+            );
+        });
+
+        it('should preserve relative positions after translation', async () => {
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -523,45 +564,49 @@ ENDSEC
 0
 EOF`;
 
-      const originalDrawing = await parseDXF(mockDXFContent, { 
-        translateToPositiveQuadrant: false 
-      });
-      
-      const translatedDrawing = await parseDXF(mockDXFContent, { 
-        translateToPositiveQuadrant: true 
-      });
+            const originalDrawing = await parseDXF(mockDXFContent, {
+                translateToPositiveQuadrant: false,
+            });
 
-      // Get the two lines
-      const originalLines = originalDrawing.shapes.filter(s => s.type === 'line');
-      const translatedLines = translatedDrawing.shapes.filter(s => s.type === 'line');
+            const translatedDrawing = await parseDXF(mockDXFContent, {
+                translateToPositiveQuadrant: true,
+            });
 
-      expect(originalLines.length).toBe(2);
-      expect(translatedLines.length).toBe(2);
+            // Get the two lines
+            const originalLines = originalDrawing.shapes.filter(
+                (s) => s.type === 'line'
+            );
+            const translatedLines = translatedDrawing.shapes.filter(
+                (s) => s.type === 'line'
+            );
 
-      // Calculate relative distances in original drawing
-      const origLine1 = originalLines[0].geometry as Line;
-      const origLine2 = originalLines[1].geometry as Line;
-      const origDistance = Math.sqrt(
-        Math.pow(origLine2.start.x - origLine1.start.x, 2) + 
-        Math.pow(origLine2.start.y - origLine1.start.y, 2)
-      );
+            expect(originalLines.length).toBe(2);
+            expect(translatedLines.length).toBe(2);
 
-      // Calculate relative distances in translated drawing
-      const transLine1 = translatedLines[0].geometry as Line;
-      const transLine2 = translatedLines[1].geometry as Line;
-      const transDistance = Math.sqrt(
-        Math.pow(transLine2.start.x - transLine1.start.x, 2) + 
-        Math.pow(transLine2.start.y - transLine1.start.y, 2)
-      );
+            // Calculate relative distances in original drawing
+            const origLine1 = originalLines[0].geometry as Line;
+            const origLine2 = originalLines[1].geometry as Line;
+            const origDistance = Math.sqrt(
+                Math.pow(origLine2.start.x - origLine1.start.x, 2) +
+                    Math.pow(origLine2.start.y - origLine1.start.y, 2)
+            );
 
-      // Distances should be preserved
-      expect(transDistance).toBeCloseTo(origDistance, 5);
+            // Calculate relative distances in translated drawing
+            const transLine1 = translatedLines[0].geometry as Line;
+            const transLine2 = translatedLines[1].geometry as Line;
+            const transDistance = Math.sqrt(
+                Math.pow(transLine2.start.x - transLine1.start.x, 2) +
+                    Math.pow(transLine2.start.y - transLine1.start.y, 2)
+            );
+
+            // Distances should be preserved
+            expect(transDistance).toBeCloseTo(origDistance, 5);
+        });
     });
-  });
 
-  describe('Edge cases', () => {
-    it('should handle empty drawing', async () => {
-      const emptyDXFContent = `0
+    describe('Edge cases', () => {
+        it('should handle empty drawing', async () => {
+            const emptyDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -570,28 +615,28 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no translation in parser)
-      const parsed = await parseDXF(emptyDXFContent);
-      
-      // Apply translation separately
-      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-      
-      // Create translated drawing
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no translation in parser)
+            const parsed = await parseDXF(emptyDXFContent);
 
-      expect(drawing.shapes.length).toBe(0);
-      expect(drawing.bounds.min.x).toBe(0);
-      expect(drawing.bounds.min.y).toBe(0);
-      expect(drawing.bounds.max.x).toBe(0);
-      expect(drawing.bounds.max.y).toBe(0);
-    });
+            // Apply translation separately
+            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
 
-    it('should handle drawing at exact origin', async () => {
-      const originDXFContent = `0
+            // Create translated drawing
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            expect(drawing.shapes.length).toBe(0);
+            expect(drawing.bounds.min.x).toBe(0);
+            expect(drawing.bounds.min.y).toBe(0);
+            expect(drawing.bounds.max.x).toBe(0);
+            expect(drawing.bounds.max.y).toBe(0);
+        });
+
+        it('should handle drawing at exact origin', async () => {
+            const originDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -610,28 +655,28 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no translation in parser)
-      const parsed = await parseDXF(originDXFContent);
-      
-      // Apply translation separately
-      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-      
-      // Create translated drawing
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no translation in parser)
+            const parsed = await parseDXF(originDXFContent);
 
-      // Should remain unchanged
-      expect(drawing.bounds.min.x).toBe(0);
-      expect(drawing.bounds.min.y).toBe(0);
-      expect(drawing.bounds.max.x).toBe(50);
-      expect(drawing.bounds.max.y).toBe(50);
-    });
+            // Apply translation separately
+            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
 
-    it('should handle very small negative coordinates', async () => {
-      const smallNegativeDXFContent = `0
+            // Create translated drawing
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            // Should remain unchanged
+            expect(drawing.bounds.min.x).toBe(0);
+            expect(drawing.bounds.min.y).toBe(0);
+            expect(drawing.bounds.max.x).toBe(50);
+            expect(drawing.bounds.max.y).toBe(50);
+        });
+
+        it('should handle very small negative coordinates', async () => {
+            const smallNegativeDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -650,28 +695,28 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no translation in parser)
-      const parsed = await parseDXF(smallNegativeDXFContent);
-      
-      // Apply translation separately
-      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-      
-      // Create translated drawing
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no translation in parser)
+            const parsed = await parseDXF(smallNegativeDXFContent);
 
-      // Should still translate to origin
-      expect(drawing.bounds.min.x).toBe(0);
-      expect(drawing.bounds.min.y).toBe(0);
+            // Apply translation separately
+            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
+
+            // Create translated drawing
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            // Should still translate to origin
+            expect(drawing.bounds.min.x).toBe(0);
+            expect(drawing.bounds.min.y).toBe(0);
+        });
     });
-  });
 
-  describe('Option toggling', () => {
-    it('should respect translateToPositiveQuadrant option when false', async () => {
-      const mockDXFContent = `0
+    describe('Option toggling', () => {
+        it('should respect translateToPositiveQuadrant option when false', async () => {
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -690,21 +735,22 @@ ENDSEC
 0
 EOF`;
 
-      const drawing = await parseDXF(mockDXFContent, { 
-        translateToPositiveQuadrant: false 
-      });
+            const drawing = await parseDXF(mockDXFContent, {
+                translateToPositiveQuadrant: false,
+            });
 
-      // Should preserve original negative coordinates
-      expect(drawing.bounds.min.x).toBeLessThan(0);
-      expect(drawing.bounds.min.y).toBeLessThan(0);
+            // Should preserve original negative coordinates
+            expect(drawing.bounds.min.x).toBeLessThan(0);
+            expect(drawing.bounds.min.y).toBeLessThan(0);
 
-      const line: import("$lib/types/geometry").Line = drawing.shapes[0].geometry as Line;
-      expect(line.start.x).toBe(-50);
-      expect(line.start.y).toBe(-25);
-    });
+            const line: import('$lib/types/geometry').Line = drawing.shapes[0]
+                .geometry as Line;
+            expect(line.start.x).toBe(-50);
+            expect(line.start.y).toBe(-25);
+        });
 
-    it('should work with both decomposePolylines and translateToPositiveQuadrant enabled', async () => {
-      const mockDXFContent = `0
+        it('should work with both decomposePolylines and translateToPositiveQuadrant enabled', async () => {
+            const mockDXFContent = `0
 SECTION
 2
 ENTITIES
@@ -733,77 +779,82 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no options in parser)
-      const parsed = await parseDXF(mockDXFContent);
-      
-      // Apply both decomposition and translation separately
-      const decomposed = decomposePolylines(parsed.shapes);
-      const translatedShapes = translateToPositiveQuadrant(decomposed);
-      
-      // Create final drawing
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no options in parser)
+            const parsed = await parseDXF(mockDXFContent);
 
-      // Should have decomposed shapes
-      expect(drawing.shapes.length).toBeGreaterThan(1);
-      
-      // All shapes should be in positive quadrant (allowing for floating point precision)
-      expect(drawing.bounds.min.x).toBeCloseTo(0, 10);
-      expect(drawing.bounds.min.y).toBeCloseTo(0, 10);
+            // Apply both decomposition and translation separately
+            const decomposed = decomposePolylines(parsed.shapes);
+            const translatedShapes = translateToPositiveQuadrant(decomposed);
 
-      drawing.shapes.forEach(shape => {
-        const bounds = getShapeBounds(shape);
-        expect(bounds.min.x).toBeGreaterThanOrEqual(-EPSILON); // Allow for floating point precision
-        expect(bounds.min.y).toBeGreaterThanOrEqual(-EPSILON);
-      });
+            // Create final drawing
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            // Should have decomposed shapes
+            expect(drawing.shapes.length).toBeGreaterThan(1);
+
+            // All shapes should be in positive quadrant (allowing for floating point precision)
+            expect(drawing.bounds.min.x).toBeCloseTo(0, 10);
+            expect(drawing.bounds.min.y).toBeCloseTo(0, 10);
+
+            drawing.shapes.forEach((shape) => {
+                const bounds = getShapeBounds(shape);
+                expect(bounds.min.x).toBeGreaterThanOrEqual(-EPSILON); // Allow for floating point precision
+                expect(bounds.min.y).toBeGreaterThanOrEqual(-EPSILON);
+            });
+        });
     });
-  });
 });
 
 // Helper function to get shape bounds
 function getShapeBounds(shape: Shape) {
-  let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  
-  switch (shape.type) {
-    case 'line':
-      const line = shape.geometry as Line;
-      minX = Math.min(line.start.x, line.end.x);
-      maxX = Math.max(line.start.x, line.end.x);
-      minY = Math.min(line.start.y, line.end.y);
-      maxY = Math.max(line.start.y, line.end.y);
-      break;
-    case 'circle':
-      const circle = shape.geometry as import("$lib/types/geometry").Circle;
-      minX = circle.center.x - circle.radius;
-      maxX = circle.center.x + circle.radius;
-      minY = circle.center.y - circle.radius;
-      maxY = circle.center.y + circle.radius;
-      break;
-    case 'arc':
-      const arc = shape.geometry as import("$lib/types/geometry").Arc;
-      // Use actual arc bounds instead of full circle bounds
-      const arcBounds = getBoundingBoxForArc(arc);
-      minX = arcBounds.min.x;
-      maxX = arcBounds.max.x;
-      minY = arcBounds.min.y;
-      maxY = arcBounds.max.y;
-      break;
-    case 'polyline':
-      const polyline = shape.geometry as import("$lib/types/geometry").Polyline;
-      polylineToPoints(polyline).forEach((point: Point2D) => {
-        minX = Math.min(minX, point.x);
-        maxX = Math.max(maxX, point.x);
-        minY = Math.min(minY, point.y);
-        maxY = Math.max(maxY, point.y);
-      });
-      break;
-  }
-  
-  return {
-    min: { x: minX, y: minY },
-    max: { x: maxX, y: maxY }
-  };
+    let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
+
+    switch (shape.type) {
+        case 'line':
+            const line = shape.geometry as Line;
+            minX = Math.min(line.start.x, line.end.x);
+            maxX = Math.max(line.start.x, line.end.x);
+            minY = Math.min(line.start.y, line.end.y);
+            maxY = Math.max(line.start.y, line.end.y);
+            break;
+        case 'circle':
+            const circle =
+                shape.geometry as import('$lib/types/geometry').Circle;
+            minX = circle.center.x - circle.radius;
+            maxX = circle.center.x + circle.radius;
+            minY = circle.center.y - circle.radius;
+            maxY = circle.center.y + circle.radius;
+            break;
+        case 'arc':
+            const arc = shape.geometry as import('$lib/types/geometry').Arc;
+            // Use actual arc bounds instead of full circle bounds
+            const arcBounds = getBoundingBoxForArc(arc);
+            minX = arcBounds.min.x;
+            maxX = arcBounds.max.x;
+            minY = arcBounds.min.y;
+            maxY = arcBounds.max.y;
+            break;
+        case 'polyline':
+            const polyline =
+                shape.geometry as import('$lib/types/geometry').Polyline;
+            polylineToPoints(polyline).forEach((point: Point2D) => {
+                minX = Math.min(minX, point.x);
+                maxX = Math.max(maxX, point.x);
+                minY = Math.min(minY, point.y);
+                maxY = Math.max(maxY, point.y);
+            });
+            break;
+    }
+
+    return {
+        min: { x: minX, y: minY },
+        max: { x: maxX, y: maxY },
+    };
 }

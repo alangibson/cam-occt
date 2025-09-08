@@ -2,14 +2,7 @@
   "threshold": 0.4,
   "minLines": 5,
   "minTokens": 70,
-  "ignore": [
-    "**/*.d.ts",
-    "**/node_modules/**",
-    "**/*.test.ts"
-  ],
-  "reporters": [
-    "html",
-    "console"
-  ],
+  "ignore": ["**/*.d.ts", "**/node_modules/**", "**/*.test.ts"],
+  "reporters": ["html", "console"],
   "output": "report/jscpd"
 }

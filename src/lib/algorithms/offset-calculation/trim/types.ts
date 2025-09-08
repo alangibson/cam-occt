@@ -11,18 +11,18 @@ export type KeepSide = 'start' | 'end' | 'before' | 'after';
  */
 
 export interface TrimResult {
-  /** Whether the trim operation was successful */
-  success: boolean;
+    /** Whether the trim operation was successful */
+    success: boolean;
 
-  /** The trimmed shape (null if trim failed) */
-  shape: Shape | null;
+    /** The trimmed shape (null if trim failed) */
+    shape: Shape | null;
 
-  /** Information about the trim operation */
-  trimPoint?: TrimPoint;
+    /** Information about the trim operation */
+    trimPoint?: TrimPoint;
 
-  /** Any warnings generated during trimming */
-  warnings: string[];
+    /** Any warnings generated during trimming */
+    warnings: string[];
 
-  /** Any errors that occurred during trimming */
-  errors: string[];
+    /** Any errors that occurred during trimming */
+    errors: string[];
 }

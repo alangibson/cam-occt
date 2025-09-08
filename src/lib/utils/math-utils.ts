@@ -8,31 +8,33 @@ import type { Point2D } from '../types/geometry';
  * @param epsilon tolerance for numerical comparisons
  * @returns array of real roots
  */
-export function solveQuadratic(a: number, b: number, c: number, epsilon: number = 1e-10): number[] {
-  if (Math.abs(a) < epsilon) {
-    // Linear equation bx + c = 0
-    if (Math.abs(b) < epsilon) {
-      return []; // No solution or infinite solutions
+export function solveQuadratic(
+    a: number,
+    b: number,
+    c: number,
+    epsilon: number = 1e-10
+): number[] {
+    if (Math.abs(a) < epsilon) {
+        // Linear equation bx + c = 0
+        if (Math.abs(b) < epsilon) {
+            return []; // No solution or infinite solutions
+        }
+        return [-c / b];
     }
-    return [-c / b];
-  }
-  
-  const discriminant = b * b - 4 * a * c;
-  
-  if (discriminant < -epsilon) {
-    // No real roots
-    return [];
-  } else if (Math.abs(discriminant) < epsilon) {
-    // One repeated root
-    return [-b / (2 * a)];
-  } else {
-    // Two distinct roots
-    const sqrtDisc = Math.sqrt(discriminant);
-    return [
-      (-b - sqrtDisc) / (2 * a),
-      (-b + sqrtDisc) / (2 * a)
-    ];
-  }
+
+    const discriminant = b * b - 4 * a * c;
+
+    if (discriminant < -epsilon) {
+        // No real roots
+        return [];
+    } else if (Math.abs(discriminant) < epsilon) {
+        // One repeated root
+        return [-b / (2 * a)];
+    } else {
+        // Two distinct roots
+        const sqrtDisc = Math.sqrt(discriminant);
+        return [(-b - sqrtDisc) / (2 * a), (-b + sqrtDisc) / (2 * a)];
+    }
 }
 
 /**
@@ -41,18 +43,18 @@ export function solveQuadratic(a: number, b: number, c: number, epsilon: number 
  * @returns perimeter length
  */
 export function calculatePerimeter(points: Point2D[]): number {
-  if (points.length < 2) {
-    return 0;
-  }
-  
-  let perimeter: number = 0;
-  for (let i = 0; i < points.length; i++) {
-    const j: number = (i + 1) % points.length;
-    const dx: number = points[j].x - points[i].x;
-    const dy: number = points[j].y - points[i].y;
-    perimeter += Math.sqrt(dx * dx + dy * dy);
-  }
-  return perimeter;
+    if (points.length < 2) {
+        return 0;
+    }
+
+    let perimeter: number = 0;
+    for (let i = 0; i < points.length; i++) {
+        const j: number = (i + 1) % points.length;
+        const dx: number = points[j].x - points[i].x;
+        const dy: number = points[j].y - points[i].y;
+        perimeter += Math.sqrt(dx * dx + dy * dy);
+    }
+    return perimeter;
 }
 
 /**
@@ -62,9 +64,9 @@ export function calculatePerimeter(points: Point2D[]): number {
  * @returns squared distance
  */
 export function calculateSquaredDistance(p1: Point2D, p2: Point2D): number {
-  const dx = p2.x - p1.x;
-  const dy = p2.y - p1.y;
-  return dx * dx + dy * dy;
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    return dx * dx + dy * dy;
 }
 
 /**
@@ -74,6 +76,10 @@ export function calculateSquaredDistance(p1: Point2D, p2: Point2D): number {
  * @param epsilon tolerance for comparison
  * @returns true if numbers are nearly equal
  */
-export function isNearlyEqual(a: number, b: number, epsilon: number = 1e-10): boolean {
-  return Math.abs(a - b) < epsilon;
+export function isNearlyEqual(
+    a: number,
+    b: number,
+    epsilon: number = 1e-10
+): boolean {
+    return Math.abs(a - b) < epsilon;
 }

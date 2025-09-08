@@ -3,63 +3,82 @@ import { parseDXF } from './dxf-parser';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
-import type { Shape, Point2D, Line, Circle, Arc, Polyline } from '../../lib/types/geometry';
+import type {
+    Shape,
+    Point2D,
+    Line,
+    Circle,
+    Arc,
+    Polyline,
+} from '../../lib/types/geometry';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {
-  if (shapes.length === 0) {
-    return { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
-  }
-  
-  let minX = Infinity, maxX = -Infinity;
-  let minY = Infinity, maxY = -Infinity;
-  
-  shapes.forEach(shape => {
-    const points = getShapePoints(shape);
-    points.forEach(point => {
-      minX = Math.min(minX, point.x);
-      maxX = Math.max(maxX, point.x);
-      minY = Math.min(minY, point.y);
-      maxY = Math.max(maxY, point.y);
+    if (shapes.length === 0) {
+        return { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
+    }
+
+    let minX = Infinity,
+        maxX = -Infinity;
+    let minY = Infinity,
+        maxY = -Infinity;
+
+    shapes.forEach((shape) => {
+        const points = getShapePoints(shape);
+        points.forEach((point) => {
+            minX = Math.min(minX, point.x);
+            maxX = Math.max(maxX, point.x);
+            minY = Math.min(minY, point.y);
+            maxY = Math.max(maxY, point.y);
+        });
     });
-  });
-  
-  return {
-    min: { x: isFinite(minX) ? minX : 0, y: isFinite(minY) ? minY : 0 },
-    max: { x: isFinite(maxX) ? maxX : 0, y: isFinite(maxY) ? maxY : 0 }
-  };
+
+    return {
+        min: { x: isFinite(minX) ? minX : 0, y: isFinite(minY) ? minY : 0 },
+        max: { x: isFinite(maxX) ? maxX : 0, y: isFinite(maxY) ? maxY : 0 },
+    };
 }
 
 // Helper function to get shape points
 function getShapePoints(shape: Shape): Point2D[] {
-  switch (shape.type) {
-    case 'line':
-      const line: import("$lib/types/geometry").Line = shape.geometry as Line;
-      return [line.start, line.end];
-    case 'circle':
-      const circle: import("$lib/types/geometry").Circle = shape.geometry as Circle;
-      return [
-        { x: circle.center.x - circle.radius, y: circle.center.y - circle.radius },
-        { x: circle.center.x + circle.radius, y: circle.center.y + circle.radius }
-      ];
-    case 'arc':
-      const arc: import("$lib/types/geometry").Arc = shape.geometry as Arc;
-      return [
-        { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
-        { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius }
-      ];
-    case 'polyline':
-      const polyline: import("$lib/types/geometry").Polyline = shape.geometry as Polyline;
-      return polylineToPoints(polyline);
-    default:
-      return [];
-  }
+    switch (shape.type) {
+        case 'line':
+            const line: import('$lib/types/geometry').Line =
+                shape.geometry as Line;
+            return [line.start, line.end];
+        case 'circle':
+            const circle: import('$lib/types/geometry').Circle =
+                shape.geometry as Circle;
+            return [
+                {
+                    x: circle.center.x - circle.radius,
+                    y: circle.center.y - circle.radius,
+                },
+                {
+                    x: circle.center.x + circle.radius,
+                    y: circle.center.y + circle.radius,
+                },
+            ];
+        case 'arc':
+            const arc: import('$lib/types/geometry').Arc =
+                shape.geometry as Arc;
+            return [
+                { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
+                { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius },
+            ];
+        case 'polyline':
+            const polyline: import('$lib/types/geometry').Polyline =
+                shape.geometry as Polyline;
+            return polylineToPoints(polyline);
+        default:
+            return [];
+    }
 }
 
 describe('DXF Unit Detection', () => {
-  describe('$INSUNITS header variable parsing', () => {
-    it('should detect millimeters from $INSUNITS=4', async () => {
-      const dxfWithMM = `0
+    describe('$INSUNITS header variable parsing', () => {
+        it('should detect millimeters from $INSUNITS=4', async () => {
+            const dxfWithMM = `0
 SECTION
 2
 HEADER
@@ -88,12 +107,12 @@ ENDSEC
 0
 EOF`;
 
-      const drawing = await parseDXF(dxfWithMM);
-      expect(drawing.units).toBe('mm');
-    });
+            const drawing = await parseDXF(dxfWithMM);
+            expect(drawing.units).toBe('mm');
+        });
 
-    it('should detect inches from $INSUNITS=1', async () => {
-      const dxfWithInches = `0
+        it('should detect inches from $INSUNITS=1', async () => {
+            const dxfWithInches = `0
 SECTION
 2
 HEADER
@@ -122,12 +141,12 @@ ENDSEC
 0
 EOF`;
 
-      const drawing = await parseDXF(dxfWithInches);
-      expect(drawing.units).toBe('inch');
-    });
+            const drawing = await parseDXF(dxfWithInches);
+            expect(drawing.units).toBe('inch');
+        });
 
-    it('should default to mm when $INSUNITS is not specified', async () => {
-      const dxfWithoutUnits = `0
+        it('should default to mm when $INSUNITS is not specified', async () => {
+            const dxfWithoutUnits = `0
 SECTION
 2
 ENTITIES
@@ -146,12 +165,12 @@ ENDSEC
 0
 EOF`;
 
-      const drawing = await parseDXF(dxfWithoutUnits);
-      expect(drawing.units).toBe('mm');
-    });
+            const drawing = await parseDXF(dxfWithoutUnits);
+            expect(drawing.units).toBe('mm');
+        });
 
-    it('should default to mm for unsupported $INSUNITS values', async () => {
-      const dxfWithUnsupportedUnits = `0
+        it('should default to mm for unsupported $INSUNITS values', async () => {
+            const dxfWithUnsupportedUnits = `0
 SECTION
 2
 HEADER
@@ -180,12 +199,12 @@ ENDSEC
 0
 EOF`;
 
-      const drawing = await parseDXF(dxfWithUnsupportedUnits);
-      expect(drawing.units).toBe('mm');
-    });
+            const drawing = await parseDXF(dxfWithUnsupportedUnits);
+            expect(drawing.units).toBe('mm');
+        });
 
-    it('should treat centimeters as mm', async () => {
-      const dxfWithCM = `0
+        it('should treat centimeters as mm', async () => {
+            const dxfWithCM = `0
 SECTION
 2
 HEADER
@@ -214,12 +233,12 @@ ENDSEC
 0
 EOF`;
 
-      const drawing = await parseDXF(dxfWithCM);
-      expect(drawing.units).toBe('mm');
-    });
+            const drawing = await parseDXF(dxfWithCM);
+            expect(drawing.units).toBe('mm');
+        });
 
-    it('should treat meters as mm', async () => {
-      const dxfWithMeters = `0
+        it('should treat meters as mm', async () => {
+            const dxfWithMeters = `0
 SECTION
 2
 HEADER
@@ -248,14 +267,14 @@ ENDSEC
 0
 EOF`;
 
-      const drawing = await parseDXF(dxfWithMeters);
-      expect(drawing.units).toBe('mm');
+            const drawing = await parseDXF(dxfWithMeters);
+            expect(drawing.units).toBe('mm');
+        });
     });
-  });
 
-  describe('Unit detection with geometry', () => {
-    it('should preserve geometry regardless of detected units', async () => {
-      const dxfTemplate = (insunits: number) => `0
+    describe('Unit detection with geometry', () => {
+        it('should preserve geometry regardless of detected units', async () => {
+            const dxfTemplate = (insunits: number) => `0
 SECTION
 2
 HEADER
@@ -292,36 +311,41 @@ ENDSEC
 0
 EOF`;
 
-      const mmDrawing = await parseDXF(dxfTemplate(4)); // mm
-      const inchDrawing = await parseDXF(dxfTemplate(1)); // inch
+            const mmDrawing = await parseDXF(dxfTemplate(4)); // mm
+            const inchDrawing = await parseDXF(dxfTemplate(1)); // inch
 
-      // Units should be different
-      expect(mmDrawing.units).toBe('mm');
-      expect(inchDrawing.units).toBe('inch');
+            // Units should be different
+            expect(mmDrawing.units).toBe('mm');
+            expect(inchDrawing.units).toBe('inch');
 
-      // But geometry should be identical
-      expect(mmDrawing.shapes.length).toBe(inchDrawing.shapes.length);
-      
-      const mmLine = mmDrawing.shapes.find(s => s.type === 'line')?.geometry as Line;
-      const inchLine = inchDrawing.shapes.find(s => s.type === 'line')?.geometry as Line;
-      
-      expect(mmLine.start.x).toBe(inchLine.start.x);
-      expect(mmLine.start.y).toBe(inchLine.start.y);
-      expect(mmLine.end.x).toBe(inchLine.end.x);
-      expect(mmLine.end.y).toBe(inchLine.end.y);
+            // But geometry should be identical
+            expect(mmDrawing.shapes.length).toBe(inchDrawing.shapes.length);
 
-      const mmCircle = mmDrawing.shapes.find(s => s.type === 'circle')?.geometry as Circle;
-      const inchCircle = inchDrawing.shapes.find(s => s.type === 'circle')?.geometry as Circle;
-      
-      expect(mmCircle.center.x).toBe(inchCircle.center.x);
-      expect(mmCircle.center.y).toBe(inchCircle.center.y);
-      expect(mmCircle.radius).toBe(inchCircle.radius);
+            const mmLine = mmDrawing.shapes.find((s) => s.type === 'line')
+                ?.geometry as Line;
+            const inchLine = inchDrawing.shapes.find((s) => s.type === 'line')
+                ?.geometry as Line;
+
+            expect(mmLine.start.x).toBe(inchLine.start.x);
+            expect(mmLine.start.y).toBe(inchLine.start.y);
+            expect(mmLine.end.x).toBe(inchLine.end.x);
+            expect(mmLine.end.y).toBe(inchLine.end.y);
+
+            const mmCircle = mmDrawing.shapes.find((s) => s.type === 'circle')
+                ?.geometry as Circle;
+            const inchCircle = inchDrawing.shapes.find(
+                (s) => s.type === 'circle'
+            )?.geometry as Circle;
+
+            expect(mmCircle.center.x).toBe(inchCircle.center.x);
+            expect(mmCircle.center.y).toBe(inchCircle.center.y);
+            expect(mmCircle.radius).toBe(inchCircle.radius);
+        });
     });
-  });
 
-  describe('Integration with translation feature', () => {
-    it('should detect units correctly when translation is enabled', async () => {
-      const dxfWithNegativeCoords = `0
+    describe('Integration with translation feature', () => {
+        it('should detect units correctly when translation is enabled', async () => {
+            const dxfWithNegativeCoords = `0
 SECTION
 2
 HEADER
@@ -350,26 +374,26 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no translation in parser)
-      const parsed = await parseDXF(dxfWithNegativeCoords);
-      
-      // Apply translation separately
-      const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
-      
-      // Create translated drawing
-      const drawing = {
-        ...parsed,
-        shapes: translatedShapes,
-        bounds: calculateBounds(translatedShapes)
-      };
+            // Parse DXF (no translation in parser)
+            const parsed = await parseDXF(dxfWithNegativeCoords);
 
-      expect(drawing.units).toBe('inch');
-      expect(drawing.bounds.min.x).toBe(0);
-      expect(drawing.bounds.min.y).toBe(0);
-    });
+            // Apply translation separately
+            const translatedShapes = translateToPositiveQuadrant(parsed.shapes);
 
-    it('should detect units correctly when polyline decomposition is enabled', async () => {
-      const dxfWithPolyline = `0
+            // Create translated drawing
+            const drawing = {
+                ...parsed,
+                shapes: translatedShapes,
+                bounds: calculateBounds(translatedShapes),
+            };
+
+            expect(drawing.units).toBe('inch');
+            expect(drawing.bounds.min.x).toBe(0);
+            expect(drawing.bounds.min.y).toBe(0);
+        });
+
+        it('should detect units correctly when polyline decomposition is enabled', async () => {
+            const dxfWithPolyline = `0
 SECTION
 2
 HEADER
@@ -408,20 +432,20 @@ ENDSEC
 0
 EOF`;
 
-      // Parse DXF (no decomposition in parser)
-      const parsed = await parseDXF(dxfWithPolyline);
-      
-      // Apply decomposition separately
-      const decomposed = decomposePolylines(parsed.shapes);
-      
-      // Create decomposed drawing
-      const drawing = {
-        ...parsed,
-        shapes: decomposed
-      };
+            // Parse DXF (no decomposition in parser)
+            const parsed = await parseDXF(dxfWithPolyline);
 
-      expect(drawing.units).toBe('mm');
-      expect(drawing.shapes.length).toBeGreaterThan(1); // Should be decomposed
+            // Apply decomposition separately
+            const decomposed = decomposePolylines(parsed.shapes);
+
+            // Create decomposed drawing
+            const drawing = {
+                ...parsed,
+                shapes: decomposed,
+            };
+
+            expect(drawing.units).toBe('mm');
+            expect(drawing.shapes.length).toBeGreaterThan(1); // Should be decomposed
+        });
     });
-  });
 });

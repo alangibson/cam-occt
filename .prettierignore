@@ -1,0 +1,47 @@
+# Build outputs
+.svelte-kit/
+build/
+dist/
+.wrangler/
+worker/
+
+# Dependencies
+node_modules/
+
+# Coverage
+coverage/
+report/
+
+# Test results
+test-results/
+playwright-report/
+
+# Reference files
+reference/
+
+# Generated files
+*.d.ts
+src/worker-configuration.d.ts
+
+# Config files
+*.config.js
+*.config.ts
+vite.config.ts
+playwright.config.ts
+
+# Package files
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Environment files
+.env
+.env.*
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.log

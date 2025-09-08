@@ -15,36 +15,42 @@ MetalHead CAM is a web-based Computer-Aided Manufacturing (CAM) application that
 The application implements a complete 6-stage workflow from DXF import to G-code export:
 
 ### 1. Import Stage
+
 - DXF/SVG import with drag-and-drop interface
-- Unit detection from DXF `$INSUNITS` header  
+- Unit detection from DXF `$INSUNITS` header
 - File validation and error handling
 - Support for all standard DXF entities
 
 ### 2. Edit Stage
+
 - Shape selection with orange hover/selection highlighting
 - Display unit switching (mm/inch) with accurate physical scaling
 - Layer management with visibility controls
 - Properties panel showing detailed shape information
 
 ### 3. Prepare Stage
+
 - Automatic chain detection from connected shapes
 - Part detection (shells with holes)
 - User-configurable tolerance for chain closure
 - Chain analysis with optimization tools
 
 ### 4. Program Stage
+
 - Operations management with plasma cutting parameters
 - Automatic path generation with green canvas highlighting
 - Advanced lead-in/lead-out with line/arc geometry
 - Cut order optimization and rapid generation
 
 ### 5. Simulate Stage
+
 - Real-time 3D cutting simulation with Three.js
 - Animated tool head movement and progress tracking
 - Timeline controls (play, pause, scrub, speed)
 - Visual cut path tracing
 
 ### 6. Export Stage
+
 - LinuxCNC QtPlasmaC G-code generation
 - Plasma-specific M-codes and THC control
 - G-code preview with download functionality
@@ -55,11 +61,13 @@ The application implements a complete 6-stage workflow from DXF import to G-code
 ### Operations and Paths
 
 **Operations** are user instructions that specify HOW to cut geometry:
+
 - Define tool and cutting parameters (feed rate, pierce settings, etc.)
 - Target specific chains or parts
 - Automatically applied when created/modified
 
 **Paths** are generated FROM operations:
+
 - One path per chain for chain operations
 - Multiple paths for part operations (shell + holes)
 - Displayed with green highlighting on canvas
@@ -70,11 +78,13 @@ The application implements a complete 6-stage workflow from DXF import to G-code
 The drawing canvas must maintain perfect synchronization with UI state:
 
 **Fixed Origin Position**:
+
 - Origin at 25% from left, 75% from top of canvas
 - Independent of column widths or UI layout
 - Only changes via user panning
 
 **Real-time Synchronization**:
+
 - Operations enabled/disabled → immediate canvas update
 - Path creation/deletion → instant green highlighting change
 - Selection in panels → corresponding canvas highlight
@@ -82,6 +92,7 @@ The drawing canvas must maintain perfect synchronization with UI state:
 
 **Selection Synchronization**:
 When any object is selected in UI panels, it MUST be highlighted on canvas:
+
 - Parts list → canvas part highlighting
 - Chains list → canvas chain selection
 - Paths list → canvas path selection
@@ -117,15 +128,18 @@ When any object is selected in UI panels, it MUST be highlighted on canvas:
 
 ### Testing Strategy
 
-**Unit Tests**: 
+**Unit Tests**:
+
 - Place next to source files (`foo.ts` → `foo.test.ts`)
 - Run with `npm run test`
 
 **E2E Tests**:
+
 - All in `tests/e2e/`
 - Run with `npm run test:e2e`
 
 **Test File Rules**:
+
 - NO test files in root directory
 - NO temporary scripts in root
 - Convert debug scripts to proper tests
@@ -174,11 +188,13 @@ Never run `npm run dev` - the user manages the dev server. If you need it runnin
 ### Shape System
 
 **Shape Origins**:
+
 - Circle/Arc/Ellipse: center point
 - Line: start point
 - Polyline/Spline: first point
 
 **Shape Colors**:
+
 - Normal: Black (`#000000`) 1px
 - Hovered: Orange (`#ff6600`) 1.5px
 - Selected: Orange (`#ff6600`) 2px
@@ -190,12 +206,14 @@ Never run `npm run dev` - the user manages the dev server. If you need it runnin
 
 **Physical Size Requirement**: At 100% zoom, drawings MUST appear at exact physical size on screen. A 186.2mm drawing must measure 186.2mm with a physical ruler when display unit = mm.
 
-**Unit Detection**: 
+**Unit Detection**:
+
 - DXF `$INSUNITS`: 1=inch, 4=mm, others default to mm
 - Display unit controls visual scale
 - Unit switching changes physical interpretation, not geometry data
 
 **Scaling**:
+
 ```typescript
 const physicalScale = getPhysicalScaleFactor(drawing.units, displayUnit);
 const totalScale = zoomScale * physicalScale;
@@ -204,6 +222,7 @@ const totalScale = zoomScale * physicalScale;
 ### Geometry Processing
 
 Use mathematically sound algorithms for:
+
 - Bounding boxes, boolean operations, containment detection
 - Offset calculations, distance calculations
 - Complex curves (arcs, splines, NURBS)

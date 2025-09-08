@@ -11,14 +11,14 @@ export function getLineEndPoint(line: Line): Point2D {
 export function reverseLine(line: Line): Line {
     return {
         start: line.end,
-        end: line.start
+        end: line.start,
     };
 }
 
 export function getLinePointAt(line: Line, t: number): Point2D {
     return {
         x: line.start.x + t * (line.end.x - line.start.x),
-        y: line.start.y + t * (line.end.y - line.start.y)
+        y: line.start.y + t * (line.end.y - line.start.y),
     };
 }
 
@@ -26,5 +26,10 @@ export function getLinePointAt(line: Line, t: number): Point2D {
  * Type guard to check if a segment is a Line
  */
 export function isLine(segment: Geometry): boolean {
-  return segment != null && typeof segment === 'object' && 'start' in segment && 'end' in segment;
+    return (
+        segment != null &&
+        typeof segment === 'object' &&
+        'start' in segment &&
+        'end' in segment
+    );
 }

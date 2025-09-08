@@ -6,68 +6,70 @@ import Units from './Units.svelte';
 import { drawingStore } from '../lib/stores/drawing';
 
 describe('Units Component', () => {
-  beforeEach(() => {
-    // Initialize store with default state
-    drawingStore.setDisplayUnit('mm');
-  });
+    beforeEach(() => {
+        // Initialize store with default state
+        drawingStore.setDisplayUnit('mm');
+    });
 
-  it('should render without errors', () => {
-    const { container } = render(Units);
-    expect(container).toBeDefined();
-  });
+    it('should render without errors', () => {
+        const { container } = render(Units);
+        expect(container).toBeDefined();
+    });
 
-  it('should display current unit from drawing store', () => {
-    // Set initial unit
-    drawingStore.setDisplayUnit('mm');
-    
-    const { getByRole } = render(Units);
-    const dropdown = getByRole('combobox') as HTMLSelectElement;
-    expect(dropdown.value).toBe('mm');
-  });
+    it('should display current unit from drawing store', () => {
+        // Set initial unit
+        drawingStore.setDisplayUnit('mm');
 
-  it('should update drawing store when unit is changed', async () => {
-    drawingStore.setDisplayUnit('mm');
-    
-    const { getByRole } = render(Units);
-    const dropdown = getByRole('combobox') as HTMLSelectElement;
-    
-    // Change to inches
-    dropdown.value = 'inch';
-    await fireEvent.change(dropdown);
-    
-    // Verify store was updated
-    expect(get(drawingStore).displayUnit).toBe('inch');
-  });
+        const { getByRole } = render(Units);
+        const dropdown = getByRole('combobox') as HTMLSelectElement;
+        expect(dropdown.value).toBe('mm');
+    });
 
-  it('should show both mm and inch options', () => {
-    const { getByText } = render(Units);
-    
-    expect(getByText('Millimeters (mm)')).toBeDefined();
-    expect(getByText('Inches (in)')).toBeDefined();
-  });
+    it('should update drawing store when unit is changed', async () => {
+        drawingStore.setDisplayUnit('mm');
 
-  it('should update reactive selectedUnit when store changes', async () => {
-    const { getByRole, rerender } = render(Units);
-    const dropdown = getByRole('combobox') as HTMLSelectElement;
-    
-    // Initial state
-    expect(dropdown.value).toBe('mm'); // Default unit
-    
-    // Change store externally
-    drawingStore.setDisplayUnit('inch');
-    
-    // Re-render to get updated store value
-    await rerender({});
-    
-    // Should react to store change
-    expect(dropdown.value).toBe('inch');
-  });
+        const { getByRole } = render(Units);
+        const dropdown = getByRole('combobox') as HTMLSelectElement;
 
-  it('should display informational note about units', () => {
-    const { getByText } = render(Units);
-    
-    const note = getByText(/Units are for display only/);
-    expect(note).toBeDefined();
-    expect(note.textContent).toContain('will not modify the underlying geometry');
-  });
+        // Change to inches
+        dropdown.value = 'inch';
+        await fireEvent.change(dropdown);
+
+        // Verify store was updated
+        expect(get(drawingStore).displayUnit).toBe('inch');
+    });
+
+    it('should show both mm and inch options', () => {
+        const { getByText } = render(Units);
+
+        expect(getByText('Millimeters (mm)')).toBeDefined();
+        expect(getByText('Inches (in)')).toBeDefined();
+    });
+
+    it('should update reactive selectedUnit when store changes', async () => {
+        const { getByRole, rerender } = render(Units);
+        const dropdown = getByRole('combobox') as HTMLSelectElement;
+
+        // Initial state
+        expect(dropdown.value).toBe('mm'); // Default unit
+
+        // Change store externally
+        drawingStore.setDisplayUnit('inch');
+
+        // Re-render to get updated store value
+        await rerender({});
+
+        // Should react to store change
+        expect(dropdown.value).toBe('inch');
+    });
+
+    it('should display informational note about units', () => {
+        const { getByText } = render(Units);
+
+        const note = getByText(/Units are for display only/);
+        expect(note).toBeDefined();
+        expect(note.textContent).toContain(
+            'will not modify the underlying geometry'
+        );
+    });
 });

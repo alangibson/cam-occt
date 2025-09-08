@@ -2,9 +2,9 @@ import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
 
 describe('DXF Parser Error Handling', () => {
-  it('should handle entities without vertices gracefully', async () => {
-    // This test should catch the error where entities don't have vertices property
-    const dxfWithMissingVertices = `0
+    it('should handle entities without vertices gracefully', async () => {
+        // This test should catch the error where entities don't have vertices property
+        const dxfWithMissingVertices = `0
 SECTION
 2
 ENTITIES
@@ -24,14 +24,14 @@ LINE
 ENDSEC
 0
 EOF`;
-    
-    // This should not throw an error
-    await expect(parseDXF(dxfWithMissingVertices)).resolves.toBeDefined();
-  });
 
-  it('should handle empty or malformed DXF entities', async () => {
-    // Test with various edge cases that might cause undefined access
-    const problematicDXF = `0
+        // This should not throw an error
+        await expect(parseDXF(dxfWithMissingVertices)).resolves.toBeDefined();
+    });
+
+    it('should handle empty or malformed DXF entities', async () => {
+        // Test with various edge cases that might cause undefined access
+        const problematicDXF = `0
 SECTION
 2
 ENTITIES
@@ -63,16 +63,16 @@ ARC
 ENDSEC
 0
 EOF`;
-    
-    // This should parse without throwing errors
-    const result = await parseDXF(problematicDXF);
-    expect(result).toBeDefined();
-    expect(result.shapes).toBeDefined();
-    expect(Array.isArray(result.shapes)).toBe(true);
-  });
 
-  it('should handle polyline entities without proper structure', async () => {
-    const polylineDXF = `0
+        // This should parse without throwing errors
+        const result = await parseDXF(problematicDXF);
+        expect(result).toBeDefined();
+        expect(result.shapes).toBeDefined();
+        expect(Array.isArray(result.shapes)).toBe(true);
+    });
+
+    it('should handle polyline entities without proper structure', async () => {
+        const polylineDXF = `0
 SECTION
 2
 ENTITIES
@@ -104,9 +104,9 @@ LWPOLYLINE
 ENDSEC
 0
 EOF`;
-    
-    const result = await parseDXF(polylineDXF);
-    expect(result).toBeDefined();
-    expect(result.shapes).toBeDefined();
-  });
+
+        const result = await parseDXF(polylineDXF);
+        expect(result).toBeDefined();
+        expect(result.shapes).toBeDefined();
+    });
 });

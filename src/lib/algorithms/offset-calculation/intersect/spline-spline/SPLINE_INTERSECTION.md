@@ -1,15 +1,15 @@
 ## General Intersection Framework for Spliens
 
 1. **Parameterize both curves**
-
-   * A NURBS spline is given as
+   - A NURBS spline is given as
 
      $$
      P(t), \quad t \in [t_{\min}, t_{\max}]
      $$
 
      where $P(t)$ evaluates the curve from its control points, knots, and degree.
-   * The other curve (arc, line, etc.) can be parameterized as $Q(s)$ in a similar form.
+
+   - The other curve (arc, line, etc.) can be parameterized as $Q(s)$ in a similar form.
 
 2. **Set up the intersection equation**
 
@@ -20,18 +20,15 @@
    Which gives two equations in two unknowns $(t, s)$ in 2D.
 
 3. **Use bounding-box pruning first**
-
-   * Recursively subdivide the curves and discard boxes that don’t overlap (Bezier clipping or interval pruning).
-   * This avoids unnecessary numeric solving.
+   - Recursively subdivide the curves and discard boxes that don’t overlap (Bezier clipping or interval pruning).
+   - This avoids unnecessary numeric solving.
 
 4. **Numerically solve candidate pairs**
-
-   * Use Newton–Raphson or bivariate root finding on $f(t, s) = P(t) - Q(s)$ to refine intersection points to within tolerance.
+   - Use Newton–Raphson or bivariate root finding on $f(t, s) = P(t) - Q(s)$ to refine intersection points to within tolerance.
 
 5. **Validate**
-
-   * Check that solutions are within both curves’ parameter domains (respect arc angles, segment lengths, knot range).
-   * Remove duplicates within tolerance.
+   - Check that solutions are within both curves’ parameter domains (respect arc angles, segment lengths, knot range).
+   - Remove duplicates within tolerance.
 
 ---
 
@@ -39,12 +36,13 @@
 
 ### **1. Spline vs. Circle Arc**
 
-* **Parameterize circle arc:**
+- **Parameterize circle arc:**
 
   $$
   Q(s) = C + R \cdot (\cos s, \sin s), \quad s \in [\theta_1, \theta_2]
   $$
-* After pruning with bounding boxes, solve:
+
+- After pruning with bounding boxes, solve:
 
   $$
   \|P(t) - C\|^2 - R^2 = 0
@@ -56,59 +54,65 @@
 
 ### **2. Spline vs. Ellipse Arc**
 
-* **Parameterize ellipse arc:**
+- **Parameterize ellipse arc:**
 
   $$
   Q(s) = C + (a \cos s, b \sin s), \quad s \in [\theta_1, \theta_2]
   $$
 
   with optional rotation transform.
-* Intersection equation is:
+
+- Intersection equation is:
 
   $$
   \frac{(x - C_x)^2}{a^2} + \frac{(y - C_y)^2}{b^2} - 1 = 0
   $$
-* Angle filtering as with the circle arc.
+
+- Angle filtering as with the circle arc.
 
 ---
 
 ### **3. Spline vs. Line**
 
-* **Parameterize line:**
+- **Parameterize line:**
 
   $$
   Q(s) = P_0 + s \cdot (P_1 - P_0), \quad s \in [0, 1]
   $$
-* Solve:
+
+- Solve:
 
   $$
   P(t) - Q(s) = 0
   $$
-* Or, substitute $Q(s)$ into $P(t)$ and solve one equation by projecting onto the perpendicular direction of the line.
+
+- Or, substitute $Q(s)$ into $P(t)$ and solve one equation by projecting onto the perpendicular direction of the line.
 
 ---
 
 ### **4. Spline vs. Polyline**
 
-* Treat each polyline segment as a line (case 3) and check intersections segment-by-segment.
-* Keep all valid intersection points.
+- Treat each polyline segment as a line (case 3) and check intersections segment-by-segment.
+- Keep all valid intersection points.
 
 ---
 
 ### **5. Spline vs. Spline**
 
-* Both curves are NURBS:
+- Both curves are NURBS:
 
   $$
   P(t), \quad Q(s)
   $$
-* Use recursive subdivision (Bezier clipping) on both until segments are flat enough to approximate as lines, then test those lines for intersection (case 3).
-* Alternatively, run a full bivariate Newton solve:
+
+- Use recursive subdivision (Bezier clipping) on both until segments are flat enough to approximate as lines, then test those lines for intersection (case 3).
+- Alternatively, run a full bivariate Newton solve:
 
   $$
   P(t) - Q(s) = 0
   $$
-* Multiple intersections possible; subdivision helps ensure none are missed.
+
+- Multiple intersections possible; subdivision helps ensure none are missed.
 
 ---
 
@@ -139,16 +143,19 @@ Based on the visual output showing excessive yellow intersection points for spli
 ### Solution Strategy
 
 #### Phase 1: Reduce False Positives Immediately
+
 1. **Tighten tolerance** from 0.1 to 0.01 (90% reduction)
 2. **Strengthen geometric validation** in candidate detection
 3. **Improve clustering** to merge near-duplicates more aggressively
 
-#### Phase 2: Improve Spline Evaluation  
+#### Phase 2: Improve Spline Evaluation
+
 1. **Replace simplified evaluation** with proper NURBS math using control points, knots, and weights
 2. **Fix derivative calculations** to use analytical derivatives instead of finite differences
 3. **Handle degenerate cases** properly (single point, linear splines)
 
 #### Phase 3: Adaptive Algorithms
+
 1. **Implement adaptive subdivision** based on curve curvature
 2. **Add bounding box pre-filtering** for better performance
 3. **Improve Newton-Raphson convergence** criteria
@@ -176,7 +183,7 @@ Based on the visual output showing excessive yellow intersection points for spli
 
 - [ ] **Phase 1: Immediate fixes**
   - [ ] Reduce `SUBDIVISION_FLATNESS_TOLERANCE` from 0.1 to 0.01
-  - [ ] Strengthen geometric validation in `findSplineLineCandidates()` 
+  - [ ] Strengthen geometric validation in `findSplineLineCandidates()`
   - [ ] Improve duplicate filtering in `filterDuplicateCandidates()`
   - [ ] Run visual tests to verify improvement
 - [ ] **Phase 2: Proper NURBS evaluation**

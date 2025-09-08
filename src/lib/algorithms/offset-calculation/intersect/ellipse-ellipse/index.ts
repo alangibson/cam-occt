@@ -7,16 +7,19 @@ import { findEllipseEllipseIntersectionsVerb as findEllipseEllipseIntersectionsV
  * Implements INTERSECTION.md recommendation #135: "Use verb.intersect.curves() with two ellipse objects"
  */
 export function findEllipseEllipseIntersectionsVerb(
-  shape1: Shape,
-  shape2: Shape
+    shape1: Shape,
+    shape2: Shape
 ): IntersectionResult[] {
-  return findEllipseEllipseIntersectionsVerbUtil(shape1, shape2, false);
+    return findEllipseEllipseIntersectionsVerbUtil(shape1, shape2, false);
 }
 
 /**
  * Find intersections between two ellipses using NURBS
  */
-export function findEllipseEllipseIntersections(shape1: Shape, shape2: Shape): IntersectionResult[] {
-  // Use NURBS-based intersection as recommended in INTERSECTION.md
-  return findEllipseEllipseIntersectionsVerb(shape1, shape2);
+export function findEllipseEllipseIntersections(
+    shape1: Shape,
+    shape2: Shape
+): IntersectionResult[] {
+    // Use NURBS-based intersection as recommended in INTERSECTION.md
+    return findEllipseEllipseIntersectionsVerb(shape1, shape2);
 }

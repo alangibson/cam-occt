@@ -9,7 +9,7 @@ export const EPSILON: number = 1e-10;
 
 /**
  * Machining tolerance
-*/
+ */
 export const TOLERANCE: number = 0.05;
 
 /**

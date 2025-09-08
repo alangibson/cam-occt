@@ -1,6 +1,8 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
 import eslintPluginImport from "eslint-plugin-import";
+import eslintPluginPrettier from "eslint-plugin-prettier";
+import eslintConfigPrettier from "eslint-config-prettier";
 
 export default [
   {
@@ -23,10 +25,12 @@ export default [
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  eslintConfigPrettier,
   {
     files: ["src/**/*.js", "src/**/*.ts"],
     plugins: {
       import: eslintPluginImport,
+      prettier: eslintPluginPrettier,
     },
     settings: {
       "import/resolver": {
@@ -63,6 +67,7 @@ export default [
       "prefer-const": "warn",
       "@typescript-eslint/no-inferrable-types": 0,
       "import/no-relative-packages": "error",
+      "prettier/prettier": ["error", {}, { "usePrettierrc": true }],
       // "@typescript-eslint/typedef": [
       //     "warn",
       //     {

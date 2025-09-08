@@ -1,17 +1,21 @@
 import type { Shape, Point2D, Arc } from '../../../../../lib/types/geometry';
 import type { FillOptions, FillResult, ShapeExtension } from '../types';
-import { 
-  extendArcToPoint, 
-  calculateArcExtension,
-  getArcEndpoint, 
-  type ArcExtensionResult
+import {
+    extendArcToPoint,
+    calculateArcExtension,
+    getArcEndpoint,
+    type ArcExtensionResult,
 } from '../../extend/arc';
 import { pointDistance } from '../../trim';
-import { calculateIntersectionAngle, createArcExtensionConfig, createArcExtensionOptions } from '../../../arc-operations-utils';
+import {
+    calculateIntersectionAngle,
+    createArcExtensionConfig,
+    createArcExtensionOptions,
+} from '../../../arc-operations-utils';
 
 /**
  * Arc Fill Module
- * 
+ *
  * This module provides gap filling for arc shapes by extending their
  * angular range to reach intersection points. It preserves all arc
  * properties (center, radius, clockwise direction) while extending
@@ -20,129 +24,171 @@ import { calculateIntersectionAngle, createArcExtensionConfig, createArcExtensio
 
 /**
  * Extend an arc to reach a specific intersection point
- * 
+ *
  * @param shape - The arc shape to extend
  * @param intersectionPoint - Target point to extend to
  * @param options - Fill operation options
  * @returns Result containing the extended arc or error information
  */
 export function fillArcToIntersection(
-  shape: Shape,
-  intersectionPoint: Point2D,
-  options: FillOptions
+    shape: Shape,
+    intersectionPoint: Point2D,
+    options: FillOptions
 ): FillResult {
-  if (shape.type !== 'arc') {
-    return createFailureResult('Shape must be an arc');
-  }
-
-  const arc: Arc = shape.geometry as Arc;
-  
-  try {
-    // Validate arc geometry and intersection point
-    const validationResult = validateArcAndIntersection(arc, intersectionPoint, options.tolerance);
-    if (!validationResult.isValid) {
-      return createFailureResult(validationResult.error);
+    if (shape.type !== 'arc') {
+        return createFailureResult('Shape must be an arc');
     }
 
-    // Use the extend module for all extension logic
-    const extendConfig = createArcExtensionOptions(options);
-    const extendedArc = extendArcToPoint(arc, intersectionPoint, extendConfig);
+    const arc: Arc = shape.geometry as Arc;
 
-    if (!extendedArc) {
-      // Calculate if extension would exceed maximum
-      const intersectionAngle = calculateIntersectionAngle(intersectionPoint, arc);
-      const extendDirection = createArcExtensionConfig(arc, intersectionAngle, options);
-
-      if (extendDirection) {
-        const extensionInfo: ArcExtensionResult = calculateArcExtension(arc, intersectionAngle, extendDirection);
-        if (extensionInfo.success) {
-          const linearExtension: number = extensionInfo.angularExtension * arc.radius;
-          if (linearExtension > options.maxExtension) {
-            return createFailureResult('Extension distance exceeds maximum allowed');
-          }
+    try {
+        // Validate arc geometry and intersection point
+        const validationResult = validateArcAndIntersection(
+            arc,
+            intersectionPoint,
+            options.tolerance
+        );
+        if (!validationResult.isValid) {
+            return createFailureResult(validationResult.error);
         }
-      }
-      
-      return createFailureResult('Failed to extend arc to intersection point');
+
+        // Use the extend module for all extension logic
+        const extendConfig = createArcExtensionOptions(options);
+        const extendedArc = extendArcToPoint(
+            arc,
+            intersectionPoint,
+            extendConfig
+        );
+
+        if (!extendedArc) {
+            // Calculate if extension would exceed maximum
+            const intersectionAngle = calculateIntersectionAngle(
+                intersectionPoint,
+                arc
+            );
+            const extendDirection = createArcExtensionConfig(
+                arc,
+                intersectionAngle,
+                options
+            );
+
+            if (extendDirection) {
+                const extensionInfo: ArcExtensionResult = calculateArcExtension(
+                    arc,
+                    intersectionAngle,
+                    extendDirection
+                );
+                if (extensionInfo.success) {
+                    const linearExtension: number =
+                        extensionInfo.angularExtension * arc.radius;
+                    if (linearExtension > options.maxExtension) {
+                        return createFailureResult(
+                            'Extension distance exceeds maximum allowed'
+                        );
+                    }
+                }
+            }
+
+            return createFailureResult(
+                'Failed to extend arc to intersection point'
+            );
+        }
+
+        // Calculate extension info for the shape extension data
+        const intersectionAngle = calculateIntersectionAngle(
+            intersectionPoint,
+            arc
+        );
+        const extendDirection = createArcExtensionConfig(
+            arc,
+            intersectionAngle,
+            options
+        );
+
+        if (!extendDirection) {
+            return createFailureResult(
+                'Could not determine arc extension direction'
+            );
+        }
+
+        const extensionInfo: ArcExtensionResult = calculateArcExtension(
+            arc,
+            intersectionAngle,
+            extendDirection
+        );
+        if (!extensionInfo.success) {
+            return createFailureResult(
+                extensionInfo.error || 'Arc extension calculation failed'
+            );
+        }
+
+        const extension: ShapeExtension = {
+            type: 'angular',
+            amount: extensionInfo.angularExtension,
+            direction: extendDirection,
+            originalShape: shape,
+            extensionStart: getArcEndpoint(
+                arc,
+                extendDirection === 'start' ? arc.startAngle : arc.endAngle
+            ),
+            extensionEnd: intersectionPoint,
+        };
+
+        return {
+            success: true,
+            extendedShape: {
+                ...shape,
+                geometry: extendedArc,
+            },
+            extension,
+            intersectionPoint,
+            warnings: [],
+            errors: [],
+            confidence: 1.0,
+        };
+    } catch (error) {
+        return createFailureResult(
+            `Arc extension failed: ${error instanceof Error ? (error as Error).message : String(error)}`
+        );
     }
-
-    // Calculate extension info for the shape extension data
-    const intersectionAngle = calculateIntersectionAngle(intersectionPoint, arc);
-    const extendDirection = createArcExtensionConfig(arc, intersectionAngle, options);
-
-    if (!extendDirection) {
-      return createFailureResult('Could not determine arc extension direction');
-    }
-
-    const extensionInfo: ArcExtensionResult = calculateArcExtension(arc, intersectionAngle, extendDirection);
-    if (!extensionInfo.success) {
-      return createFailureResult(extensionInfo.error || 'Arc extension calculation failed');
-    }
-
-    const extension: ShapeExtension = {
-      type: 'angular',
-      amount: extensionInfo.angularExtension,
-      direction: extendDirection,
-      originalShape: shape,
-      extensionStart: getArcEndpoint(arc, extendDirection === 'start' ? arc.startAngle : arc.endAngle),
-      extensionEnd: intersectionPoint
-    };
-
-    return {
-      success: true,
-      extendedShape: {
-        ...shape,
-        geometry: extendedArc
-      },
-      extension,
-      intersectionPoint,
-      warnings: [],
-      errors: [],
-      confidence: 1.0
-    };
-
-  } catch (error) {
-    return createFailureResult(`Arc extension failed: ${error instanceof Error ? (error as Error).message : String(error)}`);
-  }
 }
-
 
 /**
  * Validate arc geometry and intersection point
  */
 function validateArcAndIntersection(
-  arc: Arc, 
-  intersectionPoint: Point2D, 
-  tolerance: number
+    arc: Arc,
+    intersectionPoint: Point2D,
+    tolerance: number
 ): { isValid: boolean; error: string } {
-  // Validate arc geometry first
-  if (arc.radius <= 0) {
-    return { isValid: false, error: 'Arc radius must be positive' };
-  }
+    // Validate arc geometry first
+    if (arc.radius <= 0) {
+        return { isValid: false, error: 'Arc radius must be positive' };
+    }
 
-  // Check if intersection point is on the arc's circle
-  const distanceFromCenter = pointDistance(intersectionPoint, arc.center);
-  const radiusTolerance = Math.max(tolerance, arc.radius * 1e-6);
-  
-  if (Math.abs(distanceFromCenter - arc.radius) > radiusTolerance) {
-    return { isValid: false, error: 'Intersection point is not on arc circle' };
-  }
+    // Check if intersection point is on the arc's circle
+    const distanceFromCenter = pointDistance(intersectionPoint, arc.center);
+    const radiusTolerance = Math.max(tolerance, arc.radius * 1e-6);
 
-  return { isValid: true, error: '' };
+    if (Math.abs(distanceFromCenter - arc.radius) > radiusTolerance) {
+        return {
+            isValid: false,
+            error: 'Intersection point is not on arc circle',
+        };
+    }
+
+    return { isValid: true, error: '' };
 }
-
-
-
 
 /**
  * Create a failed fill result
  */
 function createFailureResult(error: string): FillResult {
-  return {
-    success: false,
-    extendedShape: null,
-    warnings: [],
-    errors: [error],
-    confidence: 0.0
-  };
+    return {
+        success: false,
+        extendedShape: null,
+        warnings: [],
+        errors: [error],
+        confidence: 0.0,
+    };
 }

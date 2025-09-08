@@ -7,200 +7,210 @@ import { toolStore } from '$lib/stores/tools';
 import { operationsStore } from '$lib/stores/operations';
 
 describe('Operations Component', () => {
-  beforeEach(() => {
-    // Reset all stores before each test
-    toolStore.reset();
-    operationsStore.reset();
-    // chainStore and partStore may not have reset methods, so skip for now
-  });
-
-  it('should show tools from tool store in dropdown', async () => {
-    // Add a test tool to the store
-    toolStore.addTool({
-      toolNumber: 1,
-      toolName: 'Test Tool 1',
-      feedRate: 100,
-      rapidRate: 3000,
-      pierceHeight: 3.8,
-      pierceDelay: 0.5,
-      arcVoltage: 120,
-      kerfWidth: 1.5,
-      thcEnable: true,
-      gasPressure: 4.5,
-      pauseAtEnd: 0,
-      puddleJumpHeight: 50,
-      puddleJumpDelay: 0,
-      plungeRate: 500
+    beforeEach(() => {
+        // Reset all stores before each test
+        toolStore.reset();
+        operationsStore.reset();
+        // chainStore and partStore may not have reset methods, so skip for now
     });
 
-    // Verify tool was added to store
-    const toolsInStore = get(toolStore);
-    expect(toolsInStore).toHaveLength(1);
-    expect(toolsInStore[0].toolName).toBe('Test Tool 1');
+    it('should show tools from tool store in dropdown', async () => {
+        // Add a test tool to the store
+        toolStore.addTool({
+            toolNumber: 1,
+            toolName: 'Test Tool 1',
+            feedRate: 100,
+            rapidRate: 3000,
+            pierceHeight: 3.8,
+            pierceDelay: 0.5,
+            arcVoltage: 120,
+            kerfWidth: 1.5,
+            thcEnable: true,
+            gasPressure: 4.5,
+            pauseAtEnd: 0,
+            puddleJumpHeight: 50,
+            puddleJumpDelay: 0,
+            plungeRate: 500,
+        });
 
-    // Render the Operations component
-    const { container, component } = render(Operations);
+        // Verify tool was added to store
+        const toolsInStore = get(toolStore);
+        expect(toolsInStore).toHaveLength(1);
+        expect(toolsInStore[0].toolName).toBe('Test Tool 1');
 
-    // Add an operation using the exported function
-    component.addNewOperation();
-    
-    // Wait for the component to update
-    await new Promise(resolve => setTimeout(resolve, 0));
+        // Render the Operations component
+        const { container, component } = render(Operations);
 
-    // Find and click the tool dropdown button
-    const toolButtons = container.querySelectorAll('.tool-select-button');
-    expect(toolButtons.length).toBeGreaterThan(0);
-    
-    const toolButton = toolButtons[0];
-    await fireEvent.click(toolButton);
+        // Add an operation using the exported function
+        component.addNewOperation();
 
-    // Check if the dropdown is open and contains the tool
-    const dropdown = container.querySelector('.tool-dropdown');
-    expect(dropdown).toBeTruthy();
+        // Wait for the component to update
+        await new Promise((resolve) => setTimeout(resolve, 0));
 
-    // Look for the tool in the dropdown
-    const toolOptions = container.querySelectorAll('.tool-option');
-    
-    // Should have at least "No Tool" + our test tool
-    expect(toolOptions.length).toBeGreaterThanOrEqual(2);
+        // Find and click the tool dropdown button
+        const toolButtons = container.querySelectorAll('.tool-select-button');
+        expect(toolButtons.length).toBeGreaterThan(0);
 
-    // Check if our test tool appears
-    const testToolOption = Array.from(toolOptions).find(option => 
-      option.textContent?.includes('Test Tool 1')
-    );
-    expect(testToolOption).toBeTruthy();
-    expect(testToolOption?.textContent).toContain('#1 - Test Tool 1');
-  });
+        const toolButton = toolButtons[0];
+        await fireEvent.click(toolButton);
 
-  it('should show multiple tools in dropdown', async () => {
-    // Add multiple tools
-    toolStore.addTool({
-      toolNumber: 1,
-      toolName: 'Tool One',
-      feedRate: 100,
-      rapidRate: 3000,
-      pierceHeight: 3.8,
-      pierceDelay: 0.5,
-      arcVoltage: 120,
-      kerfWidth: 1.5,
-      thcEnable: true,
-      gasPressure: 4.5,
-      pauseAtEnd: 0,
-      puddleJumpHeight: 50,
-      puddleJumpDelay: 0,
-      plungeRate: 500
+        // Check if the dropdown is open and contains the tool
+        const dropdown = container.querySelector('.tool-dropdown');
+        expect(dropdown).toBeTruthy();
+
+        // Look for the tool in the dropdown
+        const toolOptions = container.querySelectorAll('.tool-option');
+
+        // Should have at least "No Tool" + our test tool
+        expect(toolOptions.length).toBeGreaterThanOrEqual(2);
+
+        // Check if our test tool appears
+        const testToolOption = Array.from(toolOptions).find((option) =>
+            option.textContent?.includes('Test Tool 1')
+        );
+        expect(testToolOption).toBeTruthy();
+        expect(testToolOption?.textContent).toContain('#1 - Test Tool 1');
     });
 
-    toolStore.addTool({
-      toolNumber: 2,
-      toolName: 'Tool Two',
-      feedRate: 200,
-      rapidRate: 4000,
-      pierceHeight: 4.0,
-      pierceDelay: 0.6,
-      arcVoltage: 130,
-      kerfWidth: 2.0,
-      thcEnable: false,
-      gasPressure: 5.0,
-      pauseAtEnd: 1,
-      puddleJumpHeight: 60,
-      puddleJumpDelay: 0.5,
-      plungeRate: 600
+    it('should show multiple tools in dropdown', async () => {
+        // Add multiple tools
+        toolStore.addTool({
+            toolNumber: 1,
+            toolName: 'Tool One',
+            feedRate: 100,
+            rapidRate: 3000,
+            pierceHeight: 3.8,
+            pierceDelay: 0.5,
+            arcVoltage: 120,
+            kerfWidth: 1.5,
+            thcEnable: true,
+            gasPressure: 4.5,
+            pauseAtEnd: 0,
+            puddleJumpHeight: 50,
+            puddleJumpDelay: 0,
+            plungeRate: 500,
+        });
+
+        toolStore.addTool({
+            toolNumber: 2,
+            toolName: 'Tool Two',
+            feedRate: 200,
+            rapidRate: 4000,
+            pierceHeight: 4.0,
+            pierceDelay: 0.6,
+            arcVoltage: 130,
+            kerfWidth: 2.0,
+            thcEnable: false,
+            gasPressure: 5.0,
+            pauseAtEnd: 1,
+            puddleJumpHeight: 60,
+            puddleJumpDelay: 0.5,
+            plungeRate: 600,
+        });
+
+        const toolsInStore = get(toolStore);
+        expect(toolsInStore).toHaveLength(2);
+
+        const { container, component } = render(Operations);
+
+        // Add an operation using the exported function
+        component.addNewOperation();
+
+        // Wait for the component to update
+        await new Promise((resolve) => setTimeout(resolve, 0));
+
+        // Click tool dropdown
+        const toolButton = container.querySelector('.tool-select-button');
+        await fireEvent.click(toolButton!);
+
+        // Should show both tools + "No Tool" option
+        const toolOptions = container.querySelectorAll('.tool-option');
+        expect(toolOptions.length).toBe(3); // No Tool + Tool One + Tool Two
+
+        const optionTexts = Array.from(toolOptions).map(
+            (opt) => opt.textContent
+        );
+        expect(optionTexts).toContain('No Tool');
+        expect(optionTexts.some((text) => text?.includes('Tool One'))).toBe(
+            true
+        );
+        expect(optionTexts.some((text) => text?.includes('Tool Two'))).toBe(
+            true
+        );
     });
 
-    const toolsInStore = get(toolStore);
-    expect(toolsInStore).toHaveLength(2);
+    it('should filter tools by search term', async () => {
+        // Add tools with different names
+        toolStore.addTool({
+            toolNumber: 1,
+            toolName: 'Plasma Cutter',
+            feedRate: 100,
+            rapidRate: 3000,
+            pierceHeight: 3.8,
+            pierceDelay: 0.5,
+            arcVoltage: 120,
+            kerfWidth: 1.5,
+            thcEnable: true,
+            gasPressure: 4.5,
+            pauseAtEnd: 0,
+            puddleJumpHeight: 50,
+            puddleJumpDelay: 0,
+            plungeRate: 500,
+        });
 
-    const { container, component } = render(Operations);
+        toolStore.addTool({
+            toolNumber: 2,
+            toolName: 'Laser Cutter',
+            feedRate: 200,
+            rapidRate: 4000,
+            pierceHeight: 4.0,
+            pierceDelay: 0.6,
+            arcVoltage: 130,
+            kerfWidth: 2.0,
+            thcEnable: false,
+            gasPressure: 5.0,
+            pauseAtEnd: 1,
+            puddleJumpHeight: 60,
+            puddleJumpDelay: 0.5,
+            plungeRate: 600,
+        });
 
-    // Add an operation using the exported function
-    component.addNewOperation();
-    
-    // Wait for the component to update
-    await new Promise(resolve => setTimeout(resolve, 0));
+        const { container, component } = render(Operations);
 
-    // Click tool dropdown
-    const toolButton = container.querySelector('.tool-select-button');
-    await fireEvent.click(toolButton!);
+        // Add an operation using the exported function
+        component.addNewOperation();
 
-    // Should show both tools + "No Tool" option
-    const toolOptions = container.querySelectorAll('.tool-option');
-    expect(toolOptions.length).toBe(3); // No Tool + Tool One + Tool Two
+        // Wait for the component to update
+        await new Promise((resolve) => setTimeout(resolve, 0));
 
-    const optionTexts = Array.from(toolOptions).map(opt => opt.textContent);
-    expect(optionTexts).toContain('No Tool');
-    expect(optionTexts.some(text => text?.includes('Tool One'))).toBe(true);
-    expect(optionTexts.some(text => text?.includes('Tool Two'))).toBe(true);
-  });
+        // Click tool dropdown
+        const toolButton = container.querySelector('.tool-select-button');
+        await fireEvent.click(toolButton!);
 
-  it('should filter tools by search term', async () => {
-    // Add tools with different names
-    toolStore.addTool({
-      toolNumber: 1,
-      toolName: 'Plasma Cutter',
-      feedRate: 100,
-      rapidRate: 3000,
-      pierceHeight: 3.8,
-      pierceDelay: 0.5,
-      arcVoltage: 120,
-      kerfWidth: 1.5,
-      thcEnable: true,
-      gasPressure: 4.5,
-      pauseAtEnd: 0,
-      puddleJumpHeight: 50,
-      puddleJumpDelay: 0,
-      plungeRate: 500
+        // Type in search box
+        const searchInput = container.querySelector(
+            '.tool-search-input'
+        ) as HTMLInputElement;
+        expect(searchInput).toBeTruthy();
+
+        await fireEvent.input(searchInput, { target: { value: 'Plasma' } });
+
+        // Should filter tools by search term
+        const toolOptions = container.querySelectorAll('.tool-option');
+        const visibleOptions = Array.from(toolOptions).filter(
+            (opt) => opt.textContent && !opt.textContent.includes('No Tool')
+        );
+
+        // TODO: Fix tool search filtering - currently shows all tools instead of filtered results
+        // This is a component logic issue, not a test configuration issue
+        // expect(visibleOptions.length).toBe(1);
+        // expect(visibleOptions[0].textContent).toContain('Plasma Cutter');
+
+        // For now, just verify the search input exists and accept current behavior
+        expect(visibleOptions.length).toBeGreaterThan(0);
+        const hasPlasmaOption = visibleOptions.some((opt) =>
+            opt.textContent?.includes('Plasma Cutter')
+        );
+        expect(hasPlasmaOption).toBe(true);
     });
-
-    toolStore.addTool({
-      toolNumber: 2,
-      toolName: 'Laser Cutter',
-      feedRate: 200,
-      rapidRate: 4000,
-      pierceHeight: 4.0,
-      pierceDelay: 0.6,
-      arcVoltage: 130,
-      kerfWidth: 2.0,
-      thcEnable: false,
-      gasPressure: 5.0,
-      pauseAtEnd: 1,
-      puddleJumpHeight: 60,
-      puddleJumpDelay: 0.5,
-      plungeRate: 600
-    });
-
-    const { container, component } = render(Operations);
-
-    // Add an operation using the exported function
-    component.addNewOperation();
-    
-    // Wait for the component to update
-    await new Promise(resolve => setTimeout(resolve, 0));
-
-    // Click tool dropdown
-    const toolButton = container.querySelector('.tool-select-button');
-    await fireEvent.click(toolButton!);
-
-    // Type in search box
-    const searchInput = container.querySelector('.tool-search-input') as HTMLInputElement;
-    expect(searchInput).toBeTruthy();
-    
-    await fireEvent.input(searchInput, { target: { value: 'Plasma' } });
-
-    // Should filter tools by search term
-    const toolOptions = container.querySelectorAll('.tool-option');
-    const visibleOptions = Array.from(toolOptions).filter(opt => 
-      opt.textContent && !opt.textContent.includes('No Tool')
-    );
-    
-    // TODO: Fix tool search filtering - currently shows all tools instead of filtered results
-    // This is a component logic issue, not a test configuration issue
-    // expect(visibleOptions.length).toBe(1);
-    // expect(visibleOptions[0].textContent).toContain('Plasma Cutter');
-    
-    // For now, just verify the search input exists and accept current behavior
-    expect(visibleOptions.length).toBeGreaterThan(0);
-    const hasPlasmaOption = visibleOptions.some(opt => opt.textContent?.includes('Plasma Cutter'));
-    expect(hasPlasmaOption).toBe(true);
-  });
 });

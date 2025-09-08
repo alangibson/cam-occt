@@ -2,17 +2,20 @@ import { test, expect } from '@playwright/test';
 import path from 'path';
 
 test.describe('Ellipse Chain Detection', () => {
-  test('should detect chains containing ellipses', async ({ page }) => {
-    // Navigate to the app
-    await page.goto('/');
-    
-    // Already on import stage by default, no need to click
-    
-    // Import a DXF file with ellipses
-    const testFilePath = path.join(process.cwd(), 'tests/dxf/ellipse-test.dxf');
-    
-    // Create a simple DXF with an ellipse
-    const dxfContent = `0
+    test('should detect chains containing ellipses', async ({ page }) => {
+        // Navigate to the app
+        await page.goto('/');
+
+        // Already on import stage by default, no need to click
+
+        // Import a DXF file with ellipses
+        const testFilePath = path.join(
+            process.cwd(),
+            'tests/dxf/ellipse-test.dxf'
+        );
+
+        // Create a simple DXF with an ellipse
+        const dxfContent = `0
 SECTION
 2
 HEADER
@@ -97,62 +100,65 @@ ENDSEC
 0
 EOF`;
 
-    // Write the test file
-    const fs = await import('fs').then(m => m.promises);
-    await fs.writeFile(testFilePath, dxfContent);
-    
-    // Upload the file
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(testFilePath);
-    
-    // Wait for file to be processed
-    await page.waitForTimeout(1000);
-    
-    // Go to Edit stage
-    await page.getByRole('button', { name: '2 Edit' }).click();
-    await page.waitForTimeout(500);
-    
-    // Go to Program stage  
-    await page.getByRole('button', { name: '3 Program' }).click();
-    await page.waitForTimeout(500);
-    
-    // Click Detect Chains button
-    await page.getByRole('button', { name: 'Detect Chains' }).click();
-    
-    // Wait for chain detection to complete
-    await page.waitForTimeout(500);
-    
-    // Check that chains are detected (this should fail with current implementation)
-    const chainSummary = page.locator('.chain-summary-inline');
-    await expect(chainSummary).toBeVisible();
-    
-    // Should detect at least 1 chain with ellipses
-    const chainText = await chainSummary.textContent();
-    console.log('Chain detection result:', chainText);
-    
-    // With the fix, both ellipses form chains (ALL shapes form chains, open or closed)
-    // One full ellipse + one ellipse arc = 2 single-shape chains
-    expect(chainText).toContain('2 chains');
-    expect(chainText).toContain('2 connected shapes');
-    
-    // The chain detection correctly identifies all shapes as chains
-    expect(chainText).toMatch(/2 chains? with 2 connected shapes?/);
-    
-    // Clean up test file
-    await fs.unlink(testFilePath).catch(() => {});
-  });
-  
-  test('should handle ellipse arcs in chain detection', async ({ page }) => {
-    // Navigate to the app
-    await page.goto('/');
-    
-    // Already on import stage by default, no need to click
-    
-    // Import a DXF file with ellipse arc connected to a line
-    const testFilePath = path.join(process.cwd(), 'tests/dxf/ellipse-arc-chain.dxf');
-    
-    // Create DXF with ellipse arc and connecting line
-    const dxfContent = `0
+        // Write the test file
+        const fs = await import('fs').then((m) => m.promises);
+        await fs.writeFile(testFilePath, dxfContent);
+
+        // Upload the file
+        const fileInput = page.locator('input[type="file"]');
+        await fileInput.setInputFiles(testFilePath);
+
+        // Wait for file to be processed
+        await page.waitForTimeout(1000);
+
+        // Go to Edit stage
+        await page.getByRole('button', { name: '2 Edit' }).click();
+        await page.waitForTimeout(500);
+
+        // Go to Program stage
+        await page.getByRole('button', { name: '3 Program' }).click();
+        await page.waitForTimeout(500);
+
+        // Click Detect Chains button
+        await page.getByRole('button', { name: 'Detect Chains' }).click();
+
+        // Wait for chain detection to complete
+        await page.waitForTimeout(500);
+
+        // Check that chains are detected (this should fail with current implementation)
+        const chainSummary = page.locator('.chain-summary-inline');
+        await expect(chainSummary).toBeVisible();
+
+        // Should detect at least 1 chain with ellipses
+        const chainText = await chainSummary.textContent();
+        console.log('Chain detection result:', chainText);
+
+        // With the fix, both ellipses form chains (ALL shapes form chains, open or closed)
+        // One full ellipse + one ellipse arc = 2 single-shape chains
+        expect(chainText).toContain('2 chains');
+        expect(chainText).toContain('2 connected shapes');
+
+        // The chain detection correctly identifies all shapes as chains
+        expect(chainText).toMatch(/2 chains? with 2 connected shapes?/);
+
+        // Clean up test file
+        await fs.unlink(testFilePath).catch(() => {});
+    });
+
+    test('should handle ellipse arcs in chain detection', async ({ page }) => {
+        // Navigate to the app
+        await page.goto('/');
+
+        // Already on import stage by default, no need to click
+
+        // Import a DXF file with ellipse arc connected to a line
+        const testFilePath = path.join(
+            process.cwd(),
+            'tests/dxf/ellipse-arc-chain.dxf'
+        );
+
+        // Create DXF with ellipse arc and connecting line
+        const dxfContent = `0
 SECTION
 2
 HEADER
@@ -225,45 +231,45 @@ ENDSEC
 0
 EOF`;
 
-    // Write the test file
-    const fs = await import('fs').then(m => m.promises);
-    await fs.writeFile(testFilePath, dxfContent);
-    
-    // Upload the file
-    const fileInput = page.locator('input[type="file"]');
-    await fileInput.setInputFiles(testFilePath);
-    
-    // Wait for file to be processed
-    await page.waitForTimeout(1000);
-    
-    // Go to Edit stage
-    await page.getByRole('button', { name: '2 Edit' }).click();
-    await page.waitForTimeout(500);
-    
-    // Go to Program stage  
-    await page.getByRole('button', { name: '3 Program' }).click();
-    await page.waitForTimeout(500);
-    
-    // Set a larger tolerance to ensure connection
-    const toleranceInput = page.locator('input[type="number"]');
-    await toleranceInput.fill('1.0');
-    
-    // Click Detect Chains button
-    await page.getByRole('button', { name: 'Detect Chains' }).click();
-    
-    // Wait for chain detection to complete
-    await page.waitForTimeout(500);
-    
-    // Check that chains are detected
-    const chainSummary = page.locator('.chain-summary-inline');
-    await expect(chainSummary).toBeVisible();
-    
-    // Should detect 1 chain with 2 shapes (ellipse arc + line)
-    const chainText = await chainSummary.textContent();
-    expect(chainText).toContain('1 chain');
-    expect(chainText).toContain('2 connected shapes');
-    
-    // Clean up test file
-    await fs.unlink(testFilePath).catch(() => {});
-  });
+        // Write the test file
+        const fs = await import('fs').then((m) => m.promises);
+        await fs.writeFile(testFilePath, dxfContent);
+
+        // Upload the file
+        const fileInput = page.locator('input[type="file"]');
+        await fileInput.setInputFiles(testFilePath);
+
+        // Wait for file to be processed
+        await page.waitForTimeout(1000);
+
+        // Go to Edit stage
+        await page.getByRole('button', { name: '2 Edit' }).click();
+        await page.waitForTimeout(500);
+
+        // Go to Program stage
+        await page.getByRole('button', { name: '3 Program' }).click();
+        await page.waitForTimeout(500);
+
+        // Set a larger tolerance to ensure connection
+        const toleranceInput = page.locator('input[type="number"]');
+        await toleranceInput.fill('1.0');
+
+        // Click Detect Chains button
+        await page.getByRole('button', { name: 'Detect Chains' }).click();
+
+        // Wait for chain detection to complete
+        await page.waitForTimeout(500);
+
+        // Check that chains are detected
+        const chainSummary = page.locator('.chain-summary-inline');
+        await expect(chainSummary).toBeVisible();
+
+        // Should detect 1 chain with 2 shapes (ellipse arc + line)
+        const chainText = await chainSummary.textContent();
+        expect(chainText).toContain('1 chain');
+        expect(chainText).toContain('2 connected shapes');
+
+        // Clean up test file
+        await fs.unlink(testFilePath).catch(() => {});
+    });
 });

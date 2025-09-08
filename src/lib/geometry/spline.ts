@@ -12,7 +12,7 @@ export function getSplineStartPoint(spline: Spline): Point2D {
     } catch {
         // Fallback to first control point if NURBS evaluation fails
         if (spline.fitPoints && spline.fitPoints.length > 0) {
-        return spline.fitPoints[0];
+            return spline.fitPoints[0];
         }
         if (spline.controlPoints.length > 0) {
             return spline.controlPoints[0];
@@ -32,7 +32,7 @@ export function getSplineEndPoint(spline: Spline): Point2D {
     } catch {
         // Fallback to last control point if NURBS evaluation fails
         if (spline.fitPoints && spline.fitPoints.length > 0) {
-        return spline.fitPoints[spline.fitPoints.length - 1];
+            return spline.fitPoints[spline.fitPoints.length - 1];
         }
         if (spline.controlPoints.length > 0) {
             return spline.controlPoints[spline.controlPoints.length - 1];
@@ -45,14 +45,18 @@ export function getSplineEndPoint(spline: Spline): Point2D {
 export function reverseSpline(spline: Spline): Spline {
     // Reverse splines by reversing control points and fit points
     const reversedControlPoints = [...spline.controlPoints].reverse();
-    const reversedFitPoints = spline.fitPoints ? [...spline.fitPoints].reverse() : [];
+    const reversedFitPoints = spline.fitPoints
+        ? [...spline.fitPoints].reverse()
+        : [];
 
     // For NURBS, we also need to reverse the knot vector if present
     let reversedKnots = spline.knots || [];
     if (reversedKnots.length > 0) {
         // Reverse and remap knot vector to [0,1] domain
         const maxKnotValue = reversedKnots[reversedKnots.length - 1];
-        reversedKnots = reversedKnots.map((knot: number) => maxKnotValue - knot).reverse();
+        reversedKnots = reversedKnots
+            .map((knot: number) => maxKnotValue - knot)
+            .reverse();
     }
 
     return {
@@ -61,16 +65,25 @@ export function reverseSpline(spline: Spline): Spline {
         fitPoints: reversedFitPoints,
         knots: reversedKnots,
         // Weights don't need reversal, but need to be reordered with control points
-        weights: spline.weights ? [...spline.weights].reverse() : []
+        weights: spline.weights ? [...spline.weights].reverse() : [],
     };
 }
 
 export function getSplinePointAt(spline: Spline, t: number): Point2D {
     try {
-        const tessellationResult = tessellateSpline(spline, { method: 'verb-nurbs', numSamples: 200 });
-        if (tessellationResult.success && tessellationResult.points.length > 1) {
+        const tessellationResult = tessellateSpline(spline, {
+            method: 'verb-nurbs',
+            numSamples: 200,
+        });
+        if (
+            tessellationResult.success &&
+            tessellationResult.points.length > 1
+        ) {
             // Use arc-length parameterization for better accuracy
-            return getPointAtParameterWithArcLength(tessellationResult.points, t);
+            return getPointAtParameterWithArcLength(
+                tessellationResult.points,
+                t
+            );
         }
     } catch {
         // Fallback to midpoint if tessellation fails
@@ -78,7 +91,10 @@ export function getSplinePointAt(spline: Spline, t: number): Point2D {
     return { x: 0, y: 0 };
 }
 
-function getPointAtParameterWithArcLength(points: Point2D[], t: number): Point2D {
+function getPointAtParameterWithArcLength(
+    points: Point2D[],
+    t: number
+): Point2D {
     if (points.length === 0) return { x: 0, y: 0 };
     if (points.length === 1) return points[0];
     if (t <= 0) return points[0];
@@ -105,7 +121,8 @@ function getPointAtParameterWithArcLength(points: Point2D[], t: number): Point2D
         if (arcLengths[i] >= targetLength) {
             const segmentStart = arcLengths[i - 1];
             const segmentEnd = arcLengths[i];
-            const segmentT = (targetLength - segmentStart) / (segmentEnd - segmentStart);
+            const segmentT =
+                (targetLength - segmentStart) / (segmentEnd - segmentStart);
 
             // Interpolate between the two points
             const p1 = points[i - 1];
@@ -113,7 +130,7 @@ function getPointAtParameterWithArcLength(points: Point2D[], t: number): Point2D
 
             return {
                 x: p1.x + segmentT * (p2.x - p1.x),
-                y: p1.y + segmentT * (p2.y - p1.y)
+                y: p1.y + segmentT * (p2.y - p1.y),
             };
         }
     }
@@ -122,16 +139,18 @@ function getPointAtParameterWithArcLength(points: Point2D[], t: number): Point2D
 }
 
 export function normalizeSplineWeights(spline: Spline): Spline {
-  // Ensure spline has valid weights array matching control points length
-  const needsWeights = !spline.weights || spline.weights.length === 0 || 
-                      spline.weights.length !== spline.controlPoints.length;
-  
-  if (needsWeights) {
-    return {
-      ...spline,
-      weights: spline.controlPoints.map(() => 1)
-    };
-  }
-  
-  return spline;
+    // Ensure spline has valid weights array matching control points length
+    const needsWeights =
+        !spline.weights ||
+        spline.weights.length === 0 ||
+        spline.weights.length !== spline.controlPoints.length;
+
+    if (needsWeights) {
+        return {
+            ...spline,
+            weights: spline.controlPoints.map(() => 1),
+        };
+    }
+
+    return spline;
 }

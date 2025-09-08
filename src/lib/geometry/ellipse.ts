@@ -1,7 +1,9 @@
 import { tessellateEllipse } from '$lib/geometry/ellipse-tessellation';
 import type { Ellipse, Point2D } from '$lib/types/geometry';
-import { calculateEllipsePoint, getEllipseParameters } from '$lib/utils/ellipse-utils';
-
+import {
+    calculateEllipsePoint,
+    getEllipseParameters,
+} from '$lib/utils/ellipse-utils';
 
 export function getEllipseStartPoint(ellipse: Ellipse): Point2D {
     // return {
@@ -17,13 +19,20 @@ export function getEllipseStartPoint(ellipse: Ellipse): Point2D {
     // From DrawingCanvas
     if (typeof ellipse.startParam === 'number') {
         // For ellipse arcs, calculate start point from start parameter
-        const { majorAxisLength, minorAxisLength, majorAxisAngle } = getEllipseParameters(ellipse);
-        return calculateEllipsePoint(ellipse, ellipse.startParam, majorAxisLength, minorAxisLength, majorAxisAngle);
+        const { majorAxisLength, minorAxisLength, majorAxisAngle } =
+            getEllipseParameters(ellipse);
+        return calculateEllipsePoint(
+            ellipse,
+            ellipse.startParam,
+            majorAxisLength,
+            minorAxisLength,
+            majorAxisAngle
+        );
     } else {
         // For full ellipses, use rightmost point (parameter 0)
         return {
             x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
-            y: ellipse.center.y + ellipse.majorAxisEndpoint.y
+            y: ellipse.center.y + ellipse.majorAxisEndpoint.y,
         };
     }
 }
@@ -46,13 +55,20 @@ export function getEllipseEndPoint(ellipse: Ellipse): Point2D {
     // From DrawingCanvas
     if (typeof ellipse.endParam === 'number') {
         // For ellipse arcs, calculate end point from end parameter
-        const { majorAxisLength, minorAxisLength, majorAxisAngle } = getEllipseParameters(ellipse);
-        return calculateEllipsePoint(ellipse, ellipse.endParam, majorAxisLength, minorAxisLength, majorAxisAngle);
+        const { majorAxisLength, minorAxisLength, majorAxisAngle } =
+            getEllipseParameters(ellipse);
+        return calculateEllipsePoint(
+            ellipse,
+            ellipse.endParam,
+            majorAxisLength,
+            minorAxisLength,
+            majorAxisAngle
+        );
     } else {
         // For full ellipses, start and end points are the same (rightmost point at parameter 0)
         return {
             x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
-            y: ellipse.center.y + ellipse.majorAxisEndpoint.y
+            y: ellipse.center.y + ellipse.majorAxisEndpoint.y,
         };
     }
 }
@@ -60,11 +76,11 @@ export function getEllipseEndPoint(ellipse: Ellipse): Point2D {
 export function reverseEllipse(ellipse: Ellipse): Ellipse {
     // For ellipses, swap start and end parameters to reverse direction
     const startParam: number = ellipse.startParam ?? 0;
-    const endParam: number = ellipse.endParam ?? (2 * Math.PI);
+    const endParam: number = ellipse.endParam ?? 2 * Math.PI;
     return {
         ...ellipse,
         startParam: endParam,
-        endParam: startParam
+        endParam: startParam,
     };
 }
 
@@ -72,7 +88,10 @@ export function getEllipsePointAt(ellipse: Ellipse, t: number): Point2D {
     try {
         const points: Point2D[] = tessellateEllipse(ellipse, { numPoints: 32 });
         if (points.length > 0) {
-            const index: number = Math.min(Math.floor(t * (points.length - 1)), points.length - 1);
+            const index: number = Math.min(
+                Math.floor(t * (points.length - 1)),
+                points.length - 1
+            );
             return points[index];
         }
     } catch {

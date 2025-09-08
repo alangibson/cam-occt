@@ -5,6 +5,7 @@ The Lead Validation Pipeline provides comprehensive validation for lead configur
 ## Overview
 
 The validation system separates validation concerns from calculation logic, providing:
+
 - **Early error detection** - Catch invalid configurations before expensive calculations
 - **Actionable feedback** - Provide specific warnings and suggestions to users
 - **Layered validation** - Multiple validation levels from basic config to complex geometry
@@ -35,12 +36,18 @@ The pipeline performs validation in 5 layers:
 Validation runs automatically when calling `calculateLeads()`:
 
 ```typescript
-const result = calculateLeads(chain, leadInConfig, leadOutConfig, cutDirection, part);
+const result = calculateLeads(
+  chain,
+  leadInConfig,
+  leadOutConfig,
+  cutDirection,
+  part
+);
 
 // Access validation results
-console.log(result.validation?.isValid);     // boolean
-console.log(result.validation?.severity);    // 'info' | 'warning' | 'error' 
-console.log(result.validation?.warnings);    // string[]
+console.log(result.validation?.isValid); // boolean
+console.log(result.validation?.severity); // 'info' | 'warning' | 'error'
+console.log(result.validation?.warnings); // string[]
 console.log(result.validation?.suggestions); // string[] | undefined
 ```
 
@@ -67,25 +74,30 @@ if (!validation.isValid) {
 ## Validation Rules
 
 ### Basic Configuration
+
 - ❌ **Error**: Negative lead lengths
 - ❌ **Error**: Invalid angles (< 0 or >= 360)
 - ⚠️ **Warning**: Type "none" with length > 0
 
 ### Chain Geometry
+
 - ❌ **Error**: Empty chains
 - ⚠️ **Warning**: Lead length > 2x chain size
 - ⚠️ **Warning**: Long leads on very small geometry
 
 ### Part Context
+
 - ⚠️ **Warning**: Chain not belonging to specified part
 - ⚠️ **Warning**: Potential hole collisions
 - ℹ️ **Info**: Hole lead placement notification
 
 ### Lead Length
+
 - ⚠️ **Warning**: Very long leads (> 50 units)
 - ℹ️ **Info**: Very short leads (< 0.5 units)
 
 ### Cut Direction
+
 - ℹ️ **Info**: Missing cut direction on closed chains
 - ℹ️ **Info**: Unnecessary cut direction on open chains
 - ℹ️ **Info**: Manual angles overriding automatic tangency
@@ -93,16 +105,19 @@ if (!validation.isValid) {
 ## Severity Levels
 
 ### Error (`severity: 'error'`)
+
 - **Behavior**: Calculation is prevented
 - **Use case**: Invalid configurations that would crash or produce meaningless results
 - **Examples**: Negative lengths, empty chains
 
 ### Warning (`severity: 'warning'`)
+
 - **Behavior**: Calculation proceeds with warnings
 - **Use case**: Potentially problematic but workable configurations
 - **Examples**: Very long leads, type/length mismatches
 
 ### Info (`severity: 'info'`)
+
 - **Behavior**: Calculation proceeds normally
 - **Use case**: Educational or optimization suggestions
 - **Examples**: Missing cut direction, very short leads
@@ -115,6 +130,7 @@ The validation pipeline includes comprehensive tests:
 - **`lead-calculation-validation.test.ts`** - Integration tests with calculation
 
 Run tests:
+
 ```bash
 npm run test -- lead-validation.test.ts
 npm run test -- lead-calculation-validation.test.ts
@@ -126,9 +142,9 @@ npm run test -- lead-calculation-validation.test.ts
 
 ```typescript
 interface LeadValidationResult {
-  isValid: boolean;           // Overall validation status
-  warnings: string[];         // Human-readable warning messages
-  suggestions?: string[];     // Actionable suggestions for fixes
+  isValid: boolean; // Overall validation status
+  warnings: string[]; // Human-readable warning messages
+  suggestions?: string[]; // Actionable suggestions for fixes
   severity: 'info' | 'warning' | 'error'; // Highest severity level
 }
 
@@ -147,7 +163,7 @@ function validateLeadConfiguration(
   config: LeadConfig,
   chain: ShapeChain,
   part?: DetectedPart
-): LeadValidationResult
+): LeadValidationResult;
 
 // Updated calculation function with validation
 function calculateLeads(
@@ -156,7 +172,7 @@ function calculateLeads(
   leadOutConfig: LeadOutConfig,
   cutDirection: CutDirection = CutDirection.NONE,
   part?: DetectedPart
-): LeadResult // Now includes validation?: LeadValidationResult
+): LeadResult; // Now includes validation?: LeadValidationResult
 ```
 
 ## Benefits
