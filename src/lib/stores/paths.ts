@@ -32,6 +32,8 @@ export interface Path {
   leadOutAngle?: number; // Manual rotation angle for lead-out (degrees, 0-360)
   leadOutFit?: boolean; // Whether to automatically adjust lead-out length to avoid solid areas
   overcutLength?: number; // Overcut length
+  isHole?: boolean; // Whether this path is a hole (for velocity reduction)
+  holeUnderspeedPercent?: number; // Velocity percentage for hole cutting (10-100)
   
   // Execution direction (independent of underlying chain's natural winding)
   executionClockwise?: boolean | null; // true=clockwise execution, false=counterclockwise, null=no direction (open chains)

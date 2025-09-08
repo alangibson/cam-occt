@@ -220,7 +220,9 @@ export function pathToToolPath(path: Path, originalShapes: Shape[], tools: Tool[
     cutHeight: 1.5, // Default cut height
     kerf: tool?.kerfWidth || 0,
     leadInLength: path.leadInLength || 0,
-    leadOutLength: path.leadOutLength || 0
+    leadOutLength: path.leadOutLength || 0,
+    isHole: path.isHole || false,
+    holeUnderspeedPercent: path.holeUnderspeedPercent
   };
   
   return {

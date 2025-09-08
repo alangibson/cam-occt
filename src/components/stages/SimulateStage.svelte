@@ -90,15 +90,23 @@
   let pierceCount = 0;
   let estimatedCutTime = 0;
   
-  // Helper function to get feedRate from tool or use default
+  // Helper function to get feedRate from tool or use default, accounting for hole underspeed
   function getFeedRateForPath(path: Path): number {
+    let baseFeedRate = 1000; // Default feed rate
+    
     if (path.toolId && toolStoreState) {
       const tool = toolStoreState.find((t: any) => t.id === path.toolId);
       if (tool?.feedRate) {
-        return tool.feedRate;
+        baseFeedRate = tool.feedRate;
       }
     }
-    return 1000; // Default feed rate
+    
+    // Apply hole underspeed if applicable
+    if (path.isHole && path.holeUnderspeedPercent !== undefined && path.holeUnderspeedPercent < 100) {
+      return baseFeedRate * (path.holeUnderspeedPercent / 100);
+    }
+    
+    return baseFeedRate;
   }
   
   // Reactive formatted statistics for display - updates when drawingState or values change

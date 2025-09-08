@@ -87,7 +87,9 @@ describe('pathToToolPath', () => {
           cutHeight: 1.5,
           kerf: 1.5,
           leadInLength: 5.0,
-          leadOutLength: 5.0
+          leadOutLength: 5.0,
+          isHole: false,
+          holeUnderspeedPercent: undefined
         },
         originalShape: undefined
       });
@@ -139,7 +141,9 @@ describe('pathToToolPath', () => {
         cutHeight: 1.5,
         kerf: 0,
         leadInLength: 0,
-        leadOutLength: 0
+        leadOutLength: 0,
+        isHole: false,
+        holeUnderspeedPercent: undefined
       });
     });
   });

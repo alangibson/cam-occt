@@ -108,7 +108,9 @@
       leadOutAngle: 0,
       leadOutFlipSide: false,
       leadOutFit: true,
-      kerfCompensation: targetType === 'parts' ? KerfCompensation.PART : KerfCompensation.NONE
+      kerfCompensation: targetType === 'parts' ? KerfCompensation.PART : KerfCompensation.NONE,
+      holeUnderspeedEnabled: false,
+      holeUnderspeedPercent: 60
     });
   }
   
@@ -642,6 +644,38 @@
           </div>
         </div>
         
+        <!-- Hole Cutting Settings (only for part operations) -->
+        {#if operation.targetType === 'parts'}
+        <div class="hole-cutting-settings">
+          <div class="field-group">
+            <label class="hole-underspeed-label">
+              <input
+                type="checkbox"
+                checked={operation.holeUnderspeedEnabled || false}
+                onchange={(e) => updateOperationField(operation.id, 'holeUnderspeedEnabled', e.currentTarget.checked)}
+                class="hole-checkbox"
+              />
+              Enable hole underspeed
+            </label>
+          </div>
+          {#if operation.holeUnderspeedEnabled}
+          <div class="field-group">
+            <label for="hole-underspeed-{operation.id}">Velocity (%):</label>
+            <input
+              id="hole-underspeed-{operation.id}"
+              type="number"
+              min="10"
+              max="100"
+              step="5"
+              value={operation.holeUnderspeedPercent || 60}
+              onchange={(e) => updateOperationField(operation.id, 'holeUnderspeedPercent', Math.max(10, Math.min(100, parseInt(e.currentTarget.value) || 60)))}
+              class="hole-input"
+            />
+          </div>
+          {/if}
+        </div>
+        {/if}
+        
         <div class="operation-actions">
           <button onclick={() => duplicateOperation(operation.id)} class="btn btn-secondary btn-xs" title="Duplicate operation">
             ⎘
@@ -1111,5 +1145,55 @@
 
   .fit-checkbox-label:hover {
     color: #374151;
+  }
+
+  /* Hole cutting settings styling */
+  .hole-cutting-settings {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .hole-underspeed-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: #374151;
+    cursor: pointer;
+  }
+
+  .hole-checkbox {
+    margin: 0;
+    cursor: pointer;
+  }
+
+  .hole-cutting-settings .field-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .hole-input {
+    width: 80px;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    background: white;
+  }
+
+  .hole-input:hover {
+    border-color: #9ca3af;
+    background: #f9fafb;
+  }
+
+  .hole-input:focus {
+    outline: none;
+    border-color: rgb(0, 83, 135);
+    box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
   }
 </style>

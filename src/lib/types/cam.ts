@@ -18,6 +18,9 @@ export interface CuttingParameters {
   cutMode?: number; // Cut mode
   gasPresure?: number; // Gas pressure
   torchEnable?: boolean; // Torch enable
+  // Hole cutting parameters
+  isHole?: boolean; // Whether this is a hole (for velocity reduction)
+  holeUnderspeedPercent?: number; // Velocity percentage for hole cutting (10-100)
 }
 
 export interface ToolPath {

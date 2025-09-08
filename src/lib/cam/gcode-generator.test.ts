@@ -188,16 +188,14 @@ describe('generateGCode', () => {
       expect(gcode).not.toContain('M67 E3'); // No velocity reduction
     });
 
-    it('should detect and handle hole cutting with velocity reduction', () => {
+    it('should handle hole cutting with velocity reduction when enabled', () => {
       const holeToolPath: ToolPath = {
         ...mockPath,
-        points: [
-          { x: 10, y: 10 },
-          { x: 20, y: 10 },
-          { x: 20, y: 20 },
-          { x: 10, y: 20 },
-          { x: 10, y: 10 } // Closed path (hole)
-        ]
+        parameters: {
+          ...mockPath.parameters!,
+          isHole: true,
+          holeUnderspeedPercent: 60
+        }
       };
       
       const gcode = generateGCode([holeToolPath], mockDrawing, {
@@ -210,6 +208,74 @@ describe('generateGCode', () => {
       });
       
       expect(gcode).toContain('M67 E3 Q60'); // Reduce velocity for hole
+      expect(gcode).toContain('M67 E3 Q0'); // Reset velocity after hole
+    });
+
+    it('should not apply velocity reduction for holes when disabled', () => {
+      const holeToolPath: ToolPath = {
+        ...mockPath,
+        parameters: {
+          ...mockPath.parameters!,
+          isHole: true,
+          holeUnderspeedPercent: undefined // undefined means disabled
+        }
+      };
+      
+      const gcode = generateGCode([holeToolPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        cutterCompensation: 'off',
+        adaptiveFeedControl: true
+      });
+      
+      expect(gcode).not.toContain('M67 E3'); // No velocity commands at all
+    });
+
+    it('should not apply velocity reduction when set to 100%', () => {
+      const holeToolPath: ToolPath = {
+        ...mockPath,
+        parameters: {
+          ...mockPath.parameters!,
+          isHole: true,
+          holeUnderspeedPercent: 100 // 100% means no underspeed
+        }
+      };
+      
+      const gcode = generateGCode([holeToolPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        cutterCompensation: 'off',
+        adaptiveFeedControl: true
+      });
+      
+      expect(gcode).not.toContain('M67 E3 Q100'); // No velocity commands for 100%
+      expect(gcode).not.toContain('M67 E3 Q0'); // No reset needed
+    });
+
+    it('should use custom velocity percentage for holes', () => {
+      const holeToolPath: ToolPath = {
+        ...mockPath,
+        parameters: {
+          ...mockPath.parameters!,
+          isHole: true,
+          holeUnderspeedPercent: 40
+        }
+      };
+      
+      const gcode = generateGCode([holeToolPath], mockDrawing, {
+        units: 'mm',
+        safeZ: 10,
+        rapidFeedRate: 5000,
+        includeComments: true,
+        cutterCompensation: 'off',
+        adaptiveFeedControl: true
+      });
+      
+      expect(gcode).toContain('M67 E3 Q40'); // Use custom 40% velocity
       expect(gcode).toContain('M67 E3 Q0'); // Reset velocity after hole
     });
 

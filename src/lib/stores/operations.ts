@@ -69,6 +69,8 @@ export interface Operation {
   leadOutAngle: number; // Manual rotation angle for lead-out (degrees, 0-360)
   leadOutFit: boolean; // Whether to automatically adjust lead-out length to avoid solid areas
   kerfCompensation?: KerfCompensation; // Kerf compensation type (none, inner, outer, part)
+  holeUnderspeedEnabled?: boolean; // Enable velocity reduction for holes
+  holeUnderspeedPercent?: number; // Velocity percentage for holes (10-100)
 }
 
 function createOperationsStore(): {
@@ -441,7 +443,9 @@ function generatePathsForOperation(operation: Operation) {
         leadOutFit: operation.leadOutFit,
         kerfCompensation: kerfCompensation,
         calculatedOffset: calculatedOffset,
-        cutChain: cutChain
+        cutChain: cutChain,
+        isHole: false,
+        holeUnderspeedPercent: undefined
       });
     } else if (operation.targetType === 'parts') {
       // For parts, create paths for all chains that make up the part
@@ -529,7 +533,9 @@ function generatePathsForOperation(operation: Operation) {
           leadOutFit: operation.leadOutFit,
           kerfCompensation: shellKerfCompensation,
           calculatedOffset: shellCalculatedOffset,
-          cutChain: shellExecutionChain
+          cutChain: shellExecutionChain,
+          isHole: false,
+          holeUnderspeedPercent: operation.holeUnderspeedEnabled ? operation.holeUnderspeedPercent : undefined
         });
         
         // Create paths for all hole chains (including nested holes)
@@ -614,7 +620,9 @@ function generatePathsForOperation(operation: Operation) {
               leadOutFit: operation.leadOutFit,
               kerfCompensation: holeKerfCompensation,
               calculatedOffset: holeCalculatedOffset,
-              cutChain: holeExecutionChain
+              cutChain: holeExecutionChain,
+              isHole: true,
+              holeUnderspeedPercent: operation.holeUnderspeedEnabled ? operation.holeUnderspeedPercent : undefined
             });
             
             // Process nested holes if any

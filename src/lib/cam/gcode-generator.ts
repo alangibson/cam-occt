@@ -402,18 +402,15 @@ function generatePathCommands(
     }
   }
 
-  // Detect if this is a hole (closed path with small area for velocity reduction)
-  const pathPoints: { x: number; y: number }[] = path.points || [];
-  const isHole: boolean = pathPoints.length > 3 &&
-    Math.abs(pathPoints[0].x - pathPoints[pathPoints.length - 1].x) < 0.1 &&
-    Math.abs(pathPoints[0].y - pathPoints[pathPoints.length - 1].y) < 0.1;
-
-  // Apply velocity reduction for hole cutting
-  if (isHole && options.adaptiveFeedControl === true) {
+  // Apply velocity reduction for hole cutting based on path parameters
+  const isHole: boolean = path.parameters?.isHole || false;
+  const underspeedPercent: number | undefined = path.parameters?.holeUnderspeedPercent;
+  
+  if (isHole && options.adaptiveFeedControl === true && underspeedPercent !== undefined && underspeedPercent < 100) {
     commands.push({
       code: "M67",
-      parameters: { E: 3, Q: 60 },
-      comment: "Reduce velocity to 60% for hole cutting",
+      parameters: { E: 3, Q: underspeedPercent },
+      comment: `Reduce velocity to ${underspeedPercent}% for hole cutting`,
     });
   }
 
@@ -438,7 +435,7 @@ function generatePathCommands(
   }
 
   // Reset velocity after hole cutting
-  if (isHole && options.adaptiveFeedControl === true) {
+  if (isHole && options.adaptiveFeedControl === true && underspeedPercent !== undefined && underspeedPercent < 100) {
     commands.push({
       code: "M67",
       parameters: { E: 3, Q: 0 },
