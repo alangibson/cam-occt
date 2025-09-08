@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { getShapePoints } from './shape-utils';
+import { GeometryType } from '../types/geometry';
 import type {
     Shape,
     Line,
@@ -8,7 +9,6 @@ import type {
     Polyline,
     Ellipse,
     Spline,
-    GeometryType,
     Geometry,
 } from '../types/geometry';
 
@@ -42,7 +42,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'line1',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: lineGeometry,
         };
 
@@ -70,7 +70,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'circle1',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: circleGeometry,
         };
 
@@ -98,7 +98,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'arc1',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: arcGeometry,
         };
 
@@ -123,7 +123,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'polyline1',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: polylineGeometry,
         };
 
@@ -150,7 +150,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'ellipse1',
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: ellipseGeometry,
         };
 
@@ -187,7 +187,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'spline1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: splineGeometry,
         };
 
@@ -222,7 +222,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'spline2',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: splineGeometry,
         };
 
@@ -253,7 +253,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'spline3',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: splineGeometry,
         };
 
@@ -278,7 +278,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'spline4',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: splineGeometry,
         };
 
@@ -303,7 +303,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'spline5',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: splineGeometry,
         };
 
@@ -330,7 +330,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'line2',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: lineGeometry,
         };
 
@@ -349,7 +349,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'line3',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: lineGeometry,
         };
 
@@ -384,7 +384,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'spline6',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: splineGeometry,
         };
 
@@ -416,7 +416,7 @@ describe('getShapePoints', () => {
 
         const shape: Shape = {
             id: 'spline7',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: splineGeometry,
         };
 

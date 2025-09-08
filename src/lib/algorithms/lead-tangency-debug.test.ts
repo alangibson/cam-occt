@@ -7,6 +7,7 @@ import {
 import { LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import type { Shape } from '../../lib/types/geometry';
+import { GeometryType } from '../../lib/types/geometry';
 
 describe('Lead Tangency Debug', () => {
     function createLineChain(
@@ -15,7 +16,7 @@ describe('Lead Tangency Debug', () => {
     ): Chain {
         const shape: Shape = {
             id: 'shape1',
-            type: LeadType.LINE,
+            type: GeometryType.LINE,
             geometry: { start, end },
             layer: 'layer1',
         };

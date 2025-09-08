@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { offsetSpline, splitVerbCurve } from './spline';
+import { OffsetDirection } from '../types';
 import type { Spline } from '../../../../types/geometry';
 import verb from 'verb-nurbs';
 
@@ -19,19 +20,19 @@ describe('offsetSpline', () => {
     };
 
     it('should return no shapes when direction is none', () => {
-        const result = offsetSpline(testSpline, 2, 'none');
+        const result = offsetSpline(testSpline, 2, OffsetDirection.NONE);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
     it('should return no shapes when distance is zero', () => {
-        const result = offsetSpline(testSpline, 0, 'outset');
+        const result = offsetSpline(testSpline, 0, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
     it('should offset spline outward', () => {
-        const result = offsetSpline(testSpline, 1, 'outset');
+        const result = offsetSpline(testSpline, 1, OffsetDirection.OUTSET);
         if (!result.success) {
             // Handle error case if needed
         }
@@ -44,7 +45,7 @@ describe('offsetSpline', () => {
     });
 
     it('should offset spline inward', () => {
-        const result = offsetSpline(testSpline, 1, 'inset');
+        const result = offsetSpline(testSpline, 1, OffsetDirection.INSET);
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBeGreaterThan(0);
     });
@@ -55,7 +56,7 @@ describe('offsetSpline', () => {
             closed: true,
         };
 
-        const result = offsetSpline(closedSpline, 0.5, 'outset');
+        const result = offsetSpline(closedSpline, 0.5, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
 
         if (result.shapes.length > 0) {
@@ -75,7 +76,7 @@ describe('offsetSpline', () => {
             closed: false,
         };
 
-        const result1 = offsetSpline(invalidSpline1, 1, 'outset');
+        const result1 = offsetSpline(invalidSpline1, 1, OffsetDirection.OUTSET);
         expect(result1.success).toBe(false);
         expect(result1.errors[0]).toContain('at least 2 control points');
 
@@ -92,7 +93,7 @@ describe('offsetSpline', () => {
             closed: false,
         };
 
-        const result2 = offsetSpline(invalidSpline2, 1, 'outset');
+        const result2 = offsetSpline(invalidSpline2, 1, OffsetDirection.OUTSET);
         expect(result2.success).toBe(false);
         expect(result2.errors[0]).toContain('Invalid degree');
 
@@ -109,13 +110,19 @@ describe('offsetSpline', () => {
             closed: false,
         };
 
-        const result3 = offsetSpline(invalidSpline3, 1, 'outset');
+        const result3 = offsetSpline(invalidSpline3, 1, OffsetDirection.OUTSET);
         expect(result3.success).toBe(false);
         expect(result3.errors[0]).toContain('Expected 4 knots but got 2');
     });
 
     it('should handle adaptive refinement with tolerance', () => {
-        const result = offsetSpline(testSpline, 1, 'outset', 0.01, 3);
+        const result = offsetSpline(
+            testSpline,
+            1,
+            OffsetDirection.OUTSET,
+            0.01,
+            3
+        );
         expect(result.success).toBe(true);
 
         // Check if warnings were generated about refinement
@@ -145,7 +152,13 @@ describe('offsetSpline', () => {
         };
 
         // Use reasonable parameters that should definitely succeed
-        const result = offsetSpline(simpleSpline, 0.5, 'outset', 0.1, 3);
+        const result = offsetSpline(
+            simpleSpline,
+            0.5,
+            OffsetDirection.OUTSET,
+            0.1,
+            3
+        );
         expect(result.success).toBe(true);
     });
 });

@@ -12,6 +12,9 @@ import {
     type PersistedState,
 } from './state-persistence';
 import { LeadType, CutDirection } from '../types/direction';
+import { Unit } from './units';
+import { PartType } from '$lib/algorithms/part-detection';
+import { WorkflowStage } from '../stores/workflow';
 
 // Mock localStorage
 const localStorageMock = {
@@ -42,7 +45,7 @@ describe('State Persistence', () => {
             drawing: {
                 shapes: [],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
-                units: 'mm' as 'mm' | 'inch',
+                units: Unit.MM,
             },
             selectedShapes: ['shape1', 'shape2'],
             hoveredShape: 'shape3',
@@ -50,11 +53,11 @@ describe('State Persistence', () => {
             offset: { x: 100, y: 200 },
             fileName: 'test.dxf',
             layerVisibility: { layer1: true, layer2: false },
-            displayUnit: 'mm',
+            displayUnit: Unit.MM,
 
             // Workflow state
-            currentStage: 'program',
-            completedStages: ['import', 'edit'],
+            currentStage: WorkflowStage.PROGRAM,
+            completedStages: [WorkflowStage.IMPORT, WorkflowStage.EDIT],
 
             // Chains state
             chains: [{ id: 'chain1', shapes: [] }],
@@ -67,7 +70,7 @@ describe('State Persistence', () => {
                     id: 'part1',
                     shell: {
                         id: 'shell1',
-                        type: 'shell',
+                        type: PartType.SHELL,
                         chain: { id: 'chain1', shapes: [] },
                         boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
                         holes: [],
@@ -92,7 +95,7 @@ describe('State Persistence', () => {
             tessellationPoints: [],
 
             // Overlay state
-            overlayStage: 'program',
+            overlayStage: WorkflowStage.PROGRAM,
             overlays: {},
 
             // Lead warnings
@@ -265,8 +268,8 @@ describe('State Persistence', () => {
             offset: { x: 0, y: 0 },
             fileName: null,
             layerVisibility: {},
-            displayUnit: 'mm',
-            currentStage: 'import',
+            displayUnit: Unit.MM,
+            currentStage: WorkflowStage.IMPORT,
             completedStages: [],
             chains: [],
             tolerance: 0.1,
@@ -281,7 +284,7 @@ describe('State Persistence', () => {
             showToolTable: false,
             tessellationActive: false,
             tessellationPoints: [],
-            overlayStage: 'import',
+            overlayStage: WorkflowStage.IMPORT,
             overlays: {},
             leadWarnings: [],
             prepareStageState: {

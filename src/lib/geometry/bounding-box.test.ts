@@ -12,6 +12,7 @@ import {
     calculateDynamicTolerance,
 } from './bounding-box';
 import { createPolylineFromVertices } from './polyline';
+import { GeometryType } from '../types/geometry';
 import type {
     Line,
     Circle,
@@ -22,7 +23,6 @@ import type {
     Shape,
     BoundingBox,
     Point2D,
-    GeometryType,
     Geometry,
 } from '../types/geometry';
 
@@ -398,7 +398,7 @@ describe('getBoundingBoxForShape', () => {
     it('delegates to appropriate function based on shape type', () => {
         const lineShape: Shape = {
             id: 'test-line',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },
                 end: { x: 10, y: 10 },
@@ -475,12 +475,12 @@ describe('getBoundingBoxForShapes', () => {
         const shapes: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 5 } },
             },
             {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: { center: { x: 20, y: 15 }, radius: 5 },
             },
         ];
@@ -917,7 +917,7 @@ describe('calculateDynamicTolerance', () => {
         const invalidShapes: Shape[] = [
             {
                 id: 'invalid1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: { center: { x: NaN, y: 0 }, radius: -1 }, // Invalid circle
             },
         ];
@@ -930,7 +930,7 @@ describe('calculateDynamicTolerance', () => {
         const shapes: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 1000, y: 1000 } }, // Large diagonal
             },
         ];
@@ -945,7 +945,7 @@ describe('calculateDynamicTolerance', () => {
         const shapes: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 0.1, y: 0.1 } }, // Very small diagonal
             },
         ];
@@ -958,7 +958,7 @@ describe('calculateDynamicTolerance', () => {
         const shapes: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 100000, y: 100000 },

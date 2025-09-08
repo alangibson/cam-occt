@@ -1,12 +1,20 @@
 import { writable } from 'svelte/store';
-import type { Drawing, Shape, Point2D } from '../../lib/types';
+import {
+    type Drawing,
+    type Shape,
+    type Point2D,
+    WorkflowStage,
+} from '../../lib/types';
+import { Unit } from '../utils/units';
 import { clearChains } from './chains';
 import { clearParts } from './parts';
 import { moveShape, rotateShape, scaleShape } from '$lib/geometry';
 
 // Import workflow store for state management
 interface WorkflowStore {
-    invalidateDownstreamStages: (fromStage: 'edit' | 'prepare') => void;
+    invalidateDownstreamStages: (
+        fromStage: 'edit' | WorkflowStage.PREPARE
+    ) => void;
 }
 
 let workflowStore: WorkflowStore | null = null;
@@ -20,7 +28,7 @@ const getWorkflowStore = async (): Promise<WorkflowStore> => {
 
 // Helper function to reset downstream stages when drawing is modified
 const resetDownstreamStages = async (
-    fromStage: 'edit' | 'prepare' = 'edit'
+    fromStage: 'edit' | WorkflowStage.PREPARE = 'edit'
 ): Promise<void> => {
     // Clear stage-specific data
     clearChains();
@@ -33,10 +41,10 @@ const resetDownstreamStages = async (
     const { operationsStore } = await import('./operations');
     const { rapidStore } = await import('./rapids');
 
-    overlayStore.clearStageOverlay('prepare');
-    overlayStore.clearStageOverlay('program');
-    overlayStore.clearStageOverlay('simulate');
-    overlayStore.clearStageOverlay('export');
+    overlayStore.clearStageOverlay(WorkflowStage.PREPARE);
+    overlayStore.clearStageOverlay(WorkflowStage.PROGRAM);
+    overlayStore.clearStageOverlay(WorkflowStage.SIMULATE);
+    overlayStore.clearStageOverlay(WorkflowStage.EXPORT);
     tessellationStore.clearTessellation();
 
     // Clear program-specific stores
@@ -60,7 +68,7 @@ export interface DrawingState {
     offset: Point2D;
     fileName: string | null;
     layerVisibility: { [layerName: string]: boolean };
-    displayUnit: 'mm' | 'inch';
+    displayUnit: Unit;
 }
 
 function createDrawingStore(): {
@@ -80,14 +88,14 @@ function createDrawingStore(): {
     setViewTransform: (scale: number, offset: Point2D) => void;
     setLayerVisibility: (layerName: string, visible: boolean) => void;
     setHoveredShape: (shapeId: string | null) => void;
-    setDisplayUnit: (unit: 'mm' | 'inch') => void;
+    setDisplayUnit: (unit: Unit) => void;
     replaceAllShapes: (shapes: Shape[]) => void;
     restoreDrawing: (
         drawing: Drawing,
         fileName: string | null,
         scale: number,
         offset: Point2D,
-        displayUnit: 'mm' | 'inch',
+        displayUnit: Unit,
         selectedShapes: Set<string>,
         hoveredShape: string | null
     ) => void;
@@ -105,7 +113,7 @@ function createDrawingStore(): {
         offset: { x: 0, y: 0 },
         fileName: null,
         layerVisibility: {},
-        displayUnit: 'mm',
+        displayUnit: Unit.MM,
     });
 
     return {
@@ -256,7 +264,7 @@ function createDrawingStore(): {
                 hoveredShape: shapeId,
             })),
 
-        setDisplayUnit: (unit: 'mm' | 'inch') =>
+        setDisplayUnit: (unit: Unit) =>
             update((state) => ({
                 ...state,
                 displayUnit: unit,
@@ -267,7 +275,7 @@ function createDrawingStore(): {
                 if (!state.drawing) return state;
 
                 // Reset downstream stages when shapes are replaced (this happens during prepare stage operations)
-                resetDownstreamStages('prepare');
+                resetDownstreamStages(WorkflowStage.PREPARE);
 
                 return {
                     ...state,
@@ -282,7 +290,7 @@ function createDrawingStore(): {
             fileName: string | null,
             scale: number,
             offset: Point2D,
-            displayUnit: 'mm' | 'inch',
+            displayUnit: Unit,
             selectedShapes: Set<string>,
             hoveredShape: string | null
         ) => {

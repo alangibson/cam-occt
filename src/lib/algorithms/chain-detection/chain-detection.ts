@@ -8,6 +8,7 @@ import type {
     Ellipse,
     Spline,
 } from '../../types';
+import { GeometryType } from '../../types';
 // Unused imports removed to fix lint warnings
 import { evaluateNURBS } from '../../geometry/nurbs';
 import { polylineToPoints } from '../../geometry/polyline';
@@ -130,11 +131,11 @@ function arePointsWithinTolerance(
  */
 function getShapePoints(shape: Shape): Point2D[] {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             return [line.start, line.end];
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
             // For circles, use key points around the circumference
             return [
@@ -145,7 +146,7 @@ function getShapePoints(shape: Shape): Point2D[] {
                 circle.center, // Center
             ];
 
-        case 'arc':
+        case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
             const startX: number =
                 arc.center.x + arc.radius * Math.cos(arc.startAngle);
@@ -162,11 +163,11 @@ function getShapePoints(shape: Shape): Point2D[] {
                 arc.center, // Center
             ];
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             return polylineToPoints(polyline);
 
-        case 'spline':
+        case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;
 
             // For chain detection, start with fit points or control points as fallback
@@ -185,7 +186,7 @@ function getShapePoints(shape: Shape): Point2D[] {
 
             return points;
 
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
 
             // Calculate major and minor axis lengths
@@ -280,11 +281,11 @@ function getShapePoints(shape: Shape): Point2D[] {
  */
 export function isShapeClosed(shape: Shape, tolerance: number): boolean {
     switch (shape.type) {
-        case 'circle':
+        case GeometryType.CIRCLE:
             // Circles are always closed
             return true;
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             const points: Point2D[] = polylineToPoints(polyline);
             if (!points || points.length < 3) return false;
@@ -310,20 +311,20 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
 
             return distance <= tolerance;
 
-        case 'arc':
+        case GeometryType.ARC:
             // Arcs are open by definition (unless they're a full circle, but that would be a circle)
             return false;
 
-        case 'line':
+        case GeometryType.LINE:
             // Lines are open by definition
             return false;
 
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
             // Use the centralized ellipse closed detection logic
             return isEllipseClosed(ellipse, 0.001);
 
-        case 'spline':
+        case GeometryType.SPLINE:
             const splineGeom: Spline = shape.geometry as Spline;
 
             // For splines, use proper NURBS evaluation to get actual start and end points

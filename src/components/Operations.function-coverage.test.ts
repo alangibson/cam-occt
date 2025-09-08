@@ -14,6 +14,7 @@ import { partStore, clearParts, selectPart } from '$lib/stores/parts';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { PartShell } from '$lib/algorithms/part-detection';
+import { PartType } from '$lib/algorithms/part-detection';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 
 // Mock DragEvent for jsdom
@@ -38,7 +39,7 @@ function createMockPartShell(id: string): PartShell {
     return {
         id: `shell-${id}`,
         chain: mockChain,
-        type: 'shell',
+        type: PartType.SHELL,
         boundingBox: {
             minX: 0,
             minY: 0,

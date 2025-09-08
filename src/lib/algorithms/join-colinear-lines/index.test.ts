@@ -2,7 +2,9 @@ import { describe, it, expect } from 'vitest';
 import {
     joinColinearLinesInPolyline,
     joinColinearLinesInChains,
+    arePointsCollinear,
 } from './index';
+import { GeometryType } from '../../types/geometry';
 import type { Polyline, Shape, Line } from '../../types/geometry';
 import { generateId } from '../../utils/id';
 import type { Chain } from '../chain-detection/chain-detection';
@@ -12,7 +14,7 @@ describe('join-colinear-lines', () => {
         it('should join two collinear lines in a polyline', () => {
             const line1: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -21,7 +23,7 @@ describe('join-colinear-lines', () => {
 
             const line2: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 20, y: 0 },
@@ -45,7 +47,7 @@ describe('join-colinear-lines', () => {
         it('should join three collinear lines in a polyline', () => {
             const line1: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 5, y: 0 },
@@ -54,7 +56,7 @@ describe('join-colinear-lines', () => {
 
             const line2: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 5, y: 0 },
                     end: { x: 10, y: 0 },
@@ -63,7 +65,7 @@ describe('join-colinear-lines', () => {
 
             const line3: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 15, y: 0 },
@@ -86,7 +88,7 @@ describe('join-colinear-lines', () => {
         it('should not join non-collinear lines', () => {
             const line1: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -95,7 +97,7 @@ describe('join-colinear-lines', () => {
 
             const line2: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 15, y: 5 },
@@ -117,7 +119,7 @@ describe('join-colinear-lines', () => {
         it('should preserve non-line shapes', () => {
             const line1: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -126,7 +128,7 @@ describe('join-colinear-lines', () => {
 
             const arc: Shape = {
                 id: generateId(),
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 15, y: 0 },
                     radius: 5,
@@ -138,7 +140,7 @@ describe('join-colinear-lines', () => {
 
             const line2: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 20, y: 0 },
                     end: { x: 30, y: 0 },
@@ -173,7 +175,7 @@ describe('join-colinear-lines', () => {
         it('should respect tolerance for near-collinear lines', () => {
             const line1: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -182,7 +184,7 @@ describe('join-colinear-lines', () => {
 
             const line2: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 20, y: 0.01 }, // Slightly off collinear
@@ -207,7 +209,7 @@ describe('join-colinear-lines', () => {
             // Create three lines where line1-line2 is collinear, but line3 deviates too much from line1
             const line1: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -216,7 +218,7 @@ describe('join-colinear-lines', () => {
 
             const line2: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 20, y: 0.01 }, // Slight deviation
@@ -225,7 +227,7 @@ describe('join-colinear-lines', () => {
 
             const line3: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 20, y: 0.01 },
                     end: { x: 30, y: 0.2 }, // Too much total deviation from line1
@@ -256,7 +258,7 @@ describe('join-colinear-lines', () => {
         it('should handle lines in reverse direction', () => {
             const line1: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -265,7 +267,7 @@ describe('join-colinear-lines', () => {
 
             const line2: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 20, y: 0 },
                     end: { x: 10, y: 0 }, // Reversed direction but collinear
@@ -294,7 +296,7 @@ describe('join-colinear-lines', () => {
         it('should join collinear lines in a simple chain', () => {
             const line1: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -303,7 +305,7 @@ describe('join-colinear-lines', () => {
 
             const line2: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 20, y: 0 },
@@ -333,7 +335,7 @@ describe('join-colinear-lines', () => {
                 shapes: [
                     {
                         id: generateId(),
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 0, y: 0 },
                             end: { x: 10, y: 0 },
@@ -341,7 +343,7 @@ describe('join-colinear-lines', () => {
                     },
                     {
                         id: generateId(),
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 10, y: 0 },
                             end: { x: 20, y: 0 },
@@ -355,7 +357,7 @@ describe('join-colinear-lines', () => {
                 shapes: [
                     {
                         id: generateId(),
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 0, y: 10 },
                             end: { x: 5, y: 10 },
@@ -363,7 +365,7 @@ describe('join-colinear-lines', () => {
                     },
                     {
                         id: generateId(),
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 5, y: 10 },
                             end: { x: 10, y: 10 },
@@ -391,13 +393,13 @@ describe('join-colinear-lines', () => {
         it('should handle chains with polylines containing collinear lines', () => {
             const polylineShape: Shape = {
                 id: generateId(),
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     closed: false,
                     shapes: [
                         {
                             id: generateId(),
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
@@ -405,7 +407,7 @@ describe('join-colinear-lines', () => {
                         },
                         {
                             id: generateId(),
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 0 },
                                 end: { x: 20, y: 0 },
@@ -445,12 +447,12 @@ describe('join-colinear-lines', () => {
                 shapes: [
                     {
                         id: generateId(),
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: { center: { x: 0, y: 0 }, radius: 5 },
                     },
                     {
                         id: generateId(),
-                        type: 'arc',
+                        type: GeometryType.ARC,
                         geometry: {
                             center: { x: 10, y: 0 },
                             radius: 5,
@@ -466,6 +468,77 @@ describe('join-colinear-lines', () => {
 
             expect(result).toHaveLength(1);
             expect(result[0]).toEqual(chain);
+        });
+    });
+
+    describe('arePointsCollinear', () => {
+        it('should detect perfectly collinear horizontal points', () => {
+            const p1 = { x: 0, y: 0 };
+            const p2 = { x: 5, y: 0 };
+            const p3 = { x: 10, y: 0 };
+
+            expect(arePointsCollinear(p1, p2, p3, 0.01)).toBe(true);
+        });
+
+        it('should detect perfectly collinear vertical points', () => {
+            const p1 = { x: 0, y: 0 };
+            const p2 = { x: 0, y: 5 };
+            const p3 = { x: 0, y: 10 };
+
+            expect(arePointsCollinear(p1, p2, p3, 0.01)).toBe(true);
+        });
+
+        it('should detect perfectly collinear diagonal points', () => {
+            const p1 = { x: 0, y: 0 };
+            const p2 = { x: 3, y: 4 };
+            const p3 = { x: 6, y: 8 };
+
+            expect(arePointsCollinear(p1, p2, p3, 0.01)).toBe(true);
+        });
+
+        it('should reject non-collinear points', () => {
+            const p1 = { x: 0, y: 0 };
+            const p2 = { x: 5, y: 0 };
+            const p3 = { x: 10, y: 5 };
+
+            expect(arePointsCollinear(p1, p2, p3, 0.01)).toBe(false);
+        });
+
+        it('should handle near-collinear points within tolerance', () => {
+            const p1 = { x: 0, y: 0 };
+            const p2 = { x: 5, y: 0 };
+            const p3 = { x: 10, y: 0.005 }; // Slightly off horizontal
+
+            // Cross product = |(5-0)*(0.005-0) - (0-0)*(10-0)| = |5*0.005 - 0*10| = 0.025
+            expect(arePointsCollinear(p1, p2, p3, 0.03)).toBe(true);
+            expect(arePointsCollinear(p1, p2, p3, 0.01)).toBe(false);
+        });
+
+        it('should handle identical points', () => {
+            const p1 = { x: 5, y: 5 };
+            const p2 = { x: 5, y: 5 };
+            const p3 = { x: 5, y: 5 };
+
+            expect(arePointsCollinear(p1, p2, p3, 0.01)).toBe(true);
+        });
+
+        it('should handle negative coordinates', () => {
+            const p1 = { x: -10, y: -5 };
+            const p2 = { x: -5, y: -2.5 };
+            const p3 = { x: 0, y: 0 };
+
+            expect(arePointsCollinear(p1, p2, p3, 0.01)).toBe(true);
+        });
+
+        it('should use correct tolerance threshold', () => {
+            const p1 = { x: 0, y: 0 };
+            const p2 = { x: 10, y: 0 };
+            const p3 = { x: 20, y: 1 };
+
+            // Cross product = |0*1 - 0*20| = 0, but actually:
+            // Cross product = |(10-0)*(1-0) - (0-0)*(20-0)| = |10*1 - 0*20| = 10
+            expect(arePointsCollinear(p1, p2, p3, 15)).toBe(true);
+            expect(arePointsCollinear(p1, p2, p3, 5)).toBe(false);
         });
     });
 });

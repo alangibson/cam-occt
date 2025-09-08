@@ -5,13 +5,14 @@
 
 import { writable, type Writable } from 'svelte/store';
 
-export type WorkflowStage =
-    | 'import'
-    | 'edit'
-    | 'prepare'
-    | 'program'
-    | 'simulate'
-    | 'export';
+export enum WorkflowStage {
+    IMPORT = 'import',
+    EDIT = 'edit',
+    PREPARE = 'prepare',
+    PROGRAM = 'program',
+    SIMULATE = 'simulate',
+    EXPORT = 'export',
+}
 
 export interface WorkflowState {
     currentStage: WorkflowStage;
@@ -21,12 +22,12 @@ export interface WorkflowState {
 
 // Define the workflow progression order
 const WORKFLOW_ORDER: WorkflowStage[] = [
-    'import',
-    'edit',
-    'prepare',
-    'program',
-    'simulate',
-    'export',
+    WorkflowStage.IMPORT,
+    WorkflowStage.EDIT,
+    WorkflowStage.PREPARE,
+    WorkflowStage.PROGRAM,
+    WorkflowStage.SIMULATE,
+    WorkflowStage.EXPORT,
 ];
 
 /**
@@ -42,13 +43,13 @@ function validateStageAdvancement(
     const targetIndex = WORKFLOW_ORDER.indexOf(targetStage);
 
     // Special case: Export stage becomes available when Program is completed (same as Simulate)
-    if (targetStage === 'export') {
+    if (targetStage === WorkflowStage.EXPORT) {
         // Export requires program to be completed, but not simulate
         return (
-            completedStages.has('import') &&
-            completedStages.has('edit') &&
-            completedStages.has('prepare') &&
-            completedStages.has('program')
+            completedStages.has(WorkflowStage.IMPORT) &&
+            completedStages.has(WorkflowStage.EDIT) &&
+            completedStages.has(WorkflowStage.PREPARE) &&
+            completedStages.has(WorkflowStage.PROGRAM)
         );
     }
 
@@ -76,7 +77,7 @@ function createWorkflowStore(): Writable<WorkflowState> & {
     ) => void;
 } {
     const initialState: WorkflowState = {
-        currentStage: 'import',
+        currentStage: WorkflowStage.IMPORT,
         completedStages: new Set(),
         canAdvanceTo: (stage: WorkflowStage) =>
             validateStageAdvancement(stage, initialState.completedStages),
@@ -153,7 +154,7 @@ function createWorkflowStore(): Writable<WorkflowState> & {
 
         reset: () => {
             set({
-                currentStage: 'import',
+                currentStage: WorkflowStage.IMPORT,
                 completedStages: new Set(),
                 canAdvanceTo: (stage: WorkflowStage) => {
                     const targetIndex: number = WORKFLOW_ORDER.indexOf(stage);
@@ -241,17 +242,17 @@ export const workflowStore: ReturnType<typeof createWorkflowStore> =
 // Helper function to get stage display names
 export function getStageDisplayName(stage: WorkflowStage): string {
     switch (stage) {
-        case 'import':
+        case WorkflowStage.IMPORT:
             return 'Import';
-        case 'edit':
+        case WorkflowStage.EDIT:
             return 'Edit';
-        case 'prepare':
+        case WorkflowStage.PREPARE:
             return 'Prepare';
-        case 'program':
+        case WorkflowStage.PROGRAM:
             return 'Program';
-        case 'simulate':
+        case WorkflowStage.SIMULATE:
             return 'Simulate';
-        case 'export':
+        case WorkflowStage.EXPORT:
             return 'Export';
         default:
             return stage;
@@ -261,19 +262,26 @@ export function getStageDisplayName(stage: WorkflowStage): string {
 // Helper function to get stage descriptions
 export function getStageDescription(stage: WorkflowStage): string {
     switch (stage) {
-        case 'import':
+        case WorkflowStage.IMPORT:
             return 'Import DXF or SVG drawings';
-        case 'edit':
+        case WorkflowStage.EDIT:
             return 'Edit drawing using basic tools';
-        case 'prepare':
+        case WorkflowStage.PREPARE:
             return 'Analyze chains and detect parts';
-        case 'program':
+        case WorkflowStage.PROGRAM:
             return 'Build tool paths with cut parameters';
-        case 'simulate':
+        case WorkflowStage.SIMULATE:
             return 'Simulate cutting process';
-        case 'export':
+        case WorkflowStage.EXPORT:
             return 'Generate and download G-code';
         default:
             return '';
     }
+}
+
+/**
+ * Type guard for checking if a value is a valid WorkflowStage
+ */
+export function isWorkflowStage(value: unknown): value is WorkflowStage {
+    return Object.values(WorkflowStage).includes(value as WorkflowStage);
 }

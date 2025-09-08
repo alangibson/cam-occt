@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { offsetCircle } from './circle';
 import type { Circle } from '../../../../types/geometry';
+import { OffsetDirection } from '../types';
 
 describe('offsetCircle', () => {
     const testCircle: Circle = {
@@ -9,13 +10,13 @@ describe('offsetCircle', () => {
     };
 
     it('should return no shapes when direction is none', () => {
-        const result = offsetCircle(testCircle, 2, 'none');
+        const result = offsetCircle(testCircle, 2, OffsetDirection.NONE);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
     it('should offset circle outward by increasing radius', () => {
-        const result = offsetCircle(testCircle, 4, 'outset');
+        const result = offsetCircle(testCircle, 4, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(1);
 
@@ -26,7 +27,7 @@ describe('offsetCircle', () => {
     });
 
     it('should offset circle inward by decreasing radius', () => {
-        const result = offsetCircle(testCircle, 3, 'inset');
+        const result = offsetCircle(testCircle, 3, OffsetDirection.INSET);
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Circle;
@@ -34,7 +35,7 @@ describe('offsetCircle', () => {
     });
 
     it('should fail when inset would create negative radius', () => {
-        const result = offsetCircle(testCircle, 10, 'inset'); // 10 > 8 (original radius)
+        const result = offsetCircle(testCircle, 10, OffsetDirection.INSET); // 10 > 8 (original radius)
         expect(result.success).toBe(false);
         expect(result.errors[0]).toContain('negative radius');
     });
@@ -49,12 +50,12 @@ describe('offsetCircle', () => {
         const outsetResult = offsetCircle(
             originalCircle,
             offsetDistance,
-            'outset'
+            OffsetDirection.OUTSET
         );
         const insetResult = offsetCircle(
             originalCircle,
             offsetDistance,
-            'inset'
+            OffsetDirection.INSET
         );
 
         expect(outsetResult.success).toBe(true);
@@ -86,10 +87,14 @@ describe('offsetCircle', () => {
             radius: 0.001,
         };
 
-        const outsetResult = offsetCircle(tinyCircle, 2, 'outset');
+        const outsetResult = offsetCircle(
+            tinyCircle,
+            2,
+            OffsetDirection.OUTSET
+        );
         expect(outsetResult.success).toBe(true);
 
-        const insetResult = offsetCircle(tinyCircle, 2, 'inset');
+        const insetResult = offsetCircle(tinyCircle, 2, OffsetDirection.INSET);
         expect(insetResult.success).toBe(false); // Should fail - negative radius
         expect(insetResult.errors[0]).toContain('negative radius');
     });
@@ -100,7 +105,7 @@ describe('offsetCircle', () => {
             radius: 2,
         };
 
-        const result = offsetCircle(smallCircle, 5, 'inset'); // Larger than radius
+        const result = offsetCircle(smallCircle, 5, OffsetDirection.INSET); // Larger than radius
         expect(result.success).toBe(false);
         expect(result.errors[0]).toContain('negative radius');
     });

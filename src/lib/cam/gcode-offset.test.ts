@@ -1,31 +1,34 @@
 import { describe, it, expect } from 'vitest';
 import { pathsToToolPaths } from './path-to-toolpath';
 import { generateGCode } from './gcode-generator';
+import { CutterCompensation } from '../types/cam';
 import type { Path } from '../stores/paths';
-import type { Shape, Drawing } from '../types';
+import { type Shape, type Drawing, Unit } from '../types';
 import { CutDirection, LeadType } from '../types/direction';
+import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('G-code generation with offset paths', () => {
     // Create test shapes for a simple rectangle
     const testShapes: Shape[] = [
         {
             id: 'line1',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
         },
         {
             id: 'line2',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 10, y: 0 }, end: { x: 10, y: 10 } },
         },
         {
             id: 'line3',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 10, y: 10 }, end: { x: 0, y: 10 } },
         },
         {
             id: 'line4',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 0, y: 10 }, end: { x: 0, y: 0 } },
         },
     ];
@@ -34,22 +37,22 @@ describe('G-code generation with offset paths', () => {
     const offsetShapes: Shape[] = [
         {
             id: 'offset-line1',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 1, y: 1 }, end: { x: 9, y: 1 } },
         },
         {
             id: 'offset-line2',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 9, y: 1 }, end: { x: 9, y: 9 } },
         },
         {
             id: 'offset-line3',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 9, y: 9 }, end: { x: 1, y: 9 } },
         },
         {
             id: 'offset-line4',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 1, y: 9 }, end: { x: 1, y: 1 } },
         },
     ];
@@ -57,7 +60,7 @@ describe('G-code generation with offset paths', () => {
     const testDrawing: Drawing = {
         shapes: testShapes,
         bounds: { min: { x: 0, y: 0 }, max: { x: 30, y: 20 } },
-        units: 'mm',
+        units: Unit.MM,
     };
 
     it('should generate G-code using original geometry when no offset is available', () => {
@@ -89,11 +92,11 @@ describe('G-code generation with offset paths', () => {
         ]);
 
         const gcode = generateGCode(toolPaths, testDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         // Verify G-code contains original coordinates
@@ -121,7 +124,7 @@ describe('G-code generation with offset paths', () => {
             calculatedOffset: {
                 offsetShapes,
                 originalShapes: testShapes,
-                direction: 'inset',
+                direction: OffsetDirection.INSET,
                 kerfWidth: 1.5,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
@@ -142,11 +145,11 @@ describe('G-code generation with offset paths', () => {
         ]);
 
         const gcode = generateGCode(toolPaths, testDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         // Verify G-code contains offset coordinates
@@ -198,7 +201,7 @@ describe('G-code generation with offset paths', () => {
             calculatedOffset: {
                 offsetShapes,
                 originalShapes: testShapes,
-                direction: 'inset',
+                direction: OffsetDirection.INSET,
                 kerfWidth: 1.5,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
@@ -219,11 +222,11 @@ describe('G-code generation with offset paths', () => {
         ]);
 
         const gcode = generateGCode(toolPaths, testDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         // Should contain lead-in moves
@@ -247,7 +250,7 @@ describe('G-code generation with offset paths', () => {
                 offsetShapes: [
                     {
                         id: 'precise-line',
-                        type: LeadType.LINE,
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 1.123456, y: 2.987654 },
                             end: { x: 3.456789, y: 4.321098 },
@@ -255,7 +258,7 @@ describe('G-code generation with offset paths', () => {
                     },
                 ],
                 originalShapes: testShapes,
-                direction: 'inset',
+                direction: OffsetDirection.INSET,
                 kerfWidth: 1.5,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
@@ -266,11 +269,11 @@ describe('G-code generation with offset paths', () => {
         const toolPaths = pathsToToolPaths([testPath], chainShapes, []);
 
         const gcode = generateGCode(toolPaths, testDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10.123456,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         // Should format coordinates to 4 decimal places

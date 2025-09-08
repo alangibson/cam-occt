@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import { pathStore, type Path } from './paths';
 import { partStore } from './parts';
-import { workflowStore } from './workflow';
+import { workflowStore, WorkflowStage } from './workflow';
 import { chainStore } from './chains';
 import { toolStore } from './tools';
 import { get } from 'svelte/store';
@@ -27,7 +27,7 @@ import { CutDirection, LeadType } from '../types/direction';
 import { calculateAndStoreOperationLeads } from '../utils/lead-persistence-utils';
 import type { DetectedPart, PartHole } from '$lib/algorithms/part-detection';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
-import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import { KerfCompensation } from '../types/kerf-compensation';
 import { offsetChain } from '../algorithms/offset-calculation/chain/offset';
 import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
@@ -247,7 +247,11 @@ function calculateChainOffset(
     operationId: string,
     chainId: string
 ): ChainOffsetResult | null {
-    if (!kerfCompensation || kerfCompensation === 'none' || !toolId) {
+    if (
+        !kerfCompensation ||
+        kerfCompensation === OffsetDirection.NONE ||
+        !toolId
+    ) {
         return null;
     }
 
@@ -269,7 +273,8 @@ function calculateChainOffset(
     try {
         // Call offset calculation
         // For inset, use negative distance; for outset, use positive
-        const direction: number = kerfCompensation === 'inset' ? -1 : 1;
+        const direction: number =
+            kerfCompensation === OffsetDirection.INSET ? -1 : 1;
         const offsetResult = offsetChain(chain, offsetDistance * direction, {
             tolerance: 0.1,
             maxExtension: 50,
@@ -297,7 +302,7 @@ function calculateChainOffset(
         let selectedChain: Shape[];
         let selectedGapFills: GapFillingResult[] | undefined;
 
-        if (kerfCompensation === 'inset') {
+        if (kerfCompensation === OffsetDirection.INSET) {
             selectedChain = offsetResult.innerChain?.shapes || [];
             selectedGapFills = offsetResult.innerChain?.gapFills;
         } else {
@@ -411,29 +416,33 @@ function generatePathsForOperation(operation: Operation) {
                     : operation.cutDirection;
 
             // Convert KerfCompensation to OffsetDirection for chains
-            let kerfCompensation: OffsetDirection = 'none';
+            let kerfCompensation: OffsetDirection = OffsetDirection.NONE;
             if (operation.kerfCompensation) {
                 switch (operation.kerfCompensation) {
                     case KerfCompensation.INNER:
-                        kerfCompensation = 'inset';
+                        kerfCompensation = OffsetDirection.INSET;
                         break;
                     case KerfCompensation.OUTER:
-                        kerfCompensation = 'outset';
+                        kerfCompensation = OffsetDirection.OUTSET;
                         break;
                     case KerfCompensation.PART:
                         // For standalone chains, part mode doesn't make sense, treat as none
-                        kerfCompensation = 'none';
+                        kerfCompensation = OffsetDirection.NONE;
                         break;
                     case KerfCompensation.NONE:
                     default:
-                        kerfCompensation = 'none';
+                        kerfCompensation = OffsetDirection.NONE;
                         break;
                 }
             }
 
             // Calculate offset if kerf compensation is enabled
             let calculatedOffset: OffsetCalculation | undefined = undefined;
-            if (kerfCompensation !== 'none' && chain && operation.toolId) {
+            if (
+                kerfCompensation !== OffsetDirection.NONE &&
+                chain &&
+                operation.toolId
+            ) {
                 const offsetResult = calculateChainOffset(
                     chain,
                     kerfCompensation,
@@ -516,22 +525,23 @@ function generatePathsForOperation(operation: Operation) {
                         : operation.cutDirection;
 
                 // Convert KerfCompensation to OffsetDirection for shell
-                let shellKerfCompensation: OffsetDirection = 'none';
+                let shellKerfCompensation: OffsetDirection =
+                    OffsetDirection.NONE;
                 if (operation.kerfCompensation) {
                     switch (operation.kerfCompensation) {
                         case KerfCompensation.INNER:
-                            shellKerfCompensation = 'inset';
+                            shellKerfCompensation = OffsetDirection.INSET;
                             break;
                         case KerfCompensation.OUTER:
-                            shellKerfCompensation = 'outset';
+                            shellKerfCompensation = OffsetDirection.OUTSET;
                             break;
                         case KerfCompensation.PART:
                             // For shells (outer boundaries) in part mode, use outset
-                            shellKerfCompensation = 'outset';
+                            shellKerfCompensation = OffsetDirection.OUTSET;
                             break;
                         case KerfCompensation.NONE:
                         default:
-                            shellKerfCompensation = 'none';
+                            shellKerfCompensation = OffsetDirection.NONE;
                             break;
                     }
                 }
@@ -540,7 +550,7 @@ function generatePathsForOperation(operation: Operation) {
                 let shellCalculatedOffset: OffsetCalculation | undefined =
                     undefined;
                 if (
-                    shellKerfCompensation !== 'none' &&
+                    shellKerfCompensation !== OffsetDirection.NONE &&
                     shellChain &&
                     operation.toolId
                 ) {
@@ -624,22 +634,26 @@ function generatePathsForOperation(operation: Operation) {
                                 : operation.cutDirection;
 
                         // Convert KerfCompensation to OffsetDirection for hole
-                        let holeKerfCompensation: OffsetDirection = 'none';
+                        let holeKerfCompensation: OffsetDirection =
+                            OffsetDirection.NONE;
                         if (operation.kerfCompensation) {
                             switch (operation.kerfCompensation) {
                                 case KerfCompensation.INNER:
-                                    holeKerfCompensation = 'inset';
+                                    holeKerfCompensation =
+                                        OffsetDirection.INSET;
                                     break;
                                 case KerfCompensation.OUTER:
-                                    holeKerfCompensation = 'outset';
+                                    holeKerfCompensation =
+                                        OffsetDirection.OUTSET;
                                     break;
                                 case KerfCompensation.PART:
                                     // For holes (inner boundaries) in part mode, use inset
-                                    holeKerfCompensation = 'inset';
+                                    holeKerfCompensation =
+                                        OffsetDirection.INSET;
                                     break;
                                 case KerfCompensation.NONE:
                                 default:
-                                    holeKerfCompensation = 'none';
+                                    holeKerfCompensation = OffsetDirection.NONE;
                                     break;
                             }
                         }
@@ -649,7 +663,7 @@ function generatePathsForOperation(operation: Operation) {
                             | OffsetCalculation
                             | undefined = undefined;
                         if (
-                            holeKerfCompensation !== 'none' &&
+                            holeKerfCompensation !== OffsetDirection.NONE &&
                             holeChain &&
                             operation.toolId
                         ) {
@@ -735,7 +749,7 @@ function generatePathsForOperation(operation: Operation) {
     setTimeout(() => {
         const pathsState: { paths: Path[] } = get(pathStore);
         if (pathsState.paths.length > 0) {
-            workflowStore.completeStage('program');
+            workflowStore.completeStage(WorkflowStage.PROGRAM);
         }
     }, 100); // Small delay to ensure path store is updated
 

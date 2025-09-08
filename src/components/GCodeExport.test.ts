@@ -1,7 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { generateToolPaths } from '../lib/cam/path-generator';
 import { generateGCode } from '../lib/cam/gcode-generator';
-import { LeadType } from '$lib/types/direction';
+import { GeometryType } from '$lib/types/geometry';
+import { Unit } from '../lib/utils/units';
+import { CutterCompensation } from '../lib/types/cam';
 import type { ToolPath } from '$lib/types';
 
 // Mock the modules
@@ -15,7 +17,7 @@ describe('GCodeExport Component Logic', () => {
                 shapes: [
                     {
                         id: '1',
-                        type: LeadType.LINE as const,
+                        type: GeometryType.LINE as const,
                         geometry: {
                             start: { x: 0, y: 0 },
                             end: { x: 10, y: 10 },
@@ -24,7 +26,7 @@ describe('GCodeExport Component Logic', () => {
                     },
                 ],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-                units: 'mm' as const,
+                units: Unit.MM,
             };
 
             const mockParameters = {
@@ -59,7 +61,7 @@ describe('GCodeExport Component Logic', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
             });
 
             // Verify the functions were called correctly
@@ -71,11 +73,11 @@ describe('GCodeExport Component Logic', () => {
                 mockToolPaths,
                 mockDrawing,
                 {
-                    units: 'mm',
+                    units: Unit.MM,
                     safeZ: 10,
                     rapidFeedRate: 5000,
                     includeComments: true,
-                    cutterCompensation: 'off',
+                    cutterCompensation: CutterCompensation.OFF,
                 }
             );
             expect(gcode).toBe(mockGCode);

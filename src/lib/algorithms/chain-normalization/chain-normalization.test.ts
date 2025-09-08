@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest';
-import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
-import type { Chain } from '../chain-detection/chain-detection';
-import type { Shape, Polyline, Line, Arc } from '../../types';
-import { LeadType } from '../../types/direction';
-import {
-    polylineToPoints,
-    createPolylineFromVertices,
-} from '../../geometry/polyline';
-import { getShapeStartPoint, getShapeEndPoint } from '../../geometry';
+import { describe, expect, it } from 'vitest';
 import { EPSILON } from '../../constants';
+import { getShapeEndPoint, getShapeStartPoint } from '../../geometry';
+import {
+    createPolylineFromVertices,
+    polylineToPoints,
+} from '../../geometry/polyline';
+import type { Arc, Line, Polyline, Shape } from '../../types';
+import { GeometryType } from '../../types/geometry';
+import type { Chain } from '../chain-detection/chain-detection';
+import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
 
 describe('Chain Normalization', () => {
     // Helper function for floating point comparison with EPSILON tolerance
@@ -28,7 +28,7 @@ describe('Chain Normalization', () => {
     ): Shape {
         return {
             id,
-            type: LeadType.LINE,
+            type: GeometryType.LINE,
             geometry: { start, end },
         } as Shape;
     }
@@ -406,7 +406,7 @@ describe('Chain Normalization', () => {
             ): Shape {
                 return {
                     id,
-                    type: LeadType.ARC,
+                    type: GeometryType.ARC,
                     geometry: {
                         center,
                         radius,

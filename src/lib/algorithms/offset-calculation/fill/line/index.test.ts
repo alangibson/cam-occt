@@ -1,7 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { fillLineToIntersection } from './index';
-import type { Shape, Line } from '../../../../../lib/types/geometry';
+import { describe, expect, it } from 'vitest';
+import {
+    GeometryType,
+    type Line,
+    type Shape,
+} from '../../../../../lib/types/geometry';
 import type { FillOptions } from '../types';
+import { fillLineToIntersection } from './index';
 
 describe('fillLineToIntersection', () => {
     const createLineShape = (
@@ -11,7 +15,7 @@ describe('fillLineToIntersection', () => {
         endY: number
     ): Shape => ({
         id: 'test-line',
-        type: 'line',
+        type: GeometryType.LINE,
         geometry: {
             start: { x: startX, y: startY },
             end: { x: endX, y: endY },
@@ -196,7 +200,7 @@ describe('fillLineToIntersection', () => {
         it('should reject non-line shapes', () => {
             const notALine: Shape = {
                 id: 'test-arc',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 0, y: 0 },
                     radius: 10,

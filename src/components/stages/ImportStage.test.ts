@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { workflowStore } from '../../lib/stores/workflow';
+import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
 import { drawingStore } from '../../lib/stores/drawing';
+import { Unit } from '../../lib/utils/units';
 
 describe('ImportStage workflow behavior', () => {
     beforeEach(() => {
@@ -13,27 +14,29 @@ describe('ImportStage workflow behavior', () => {
         const mockDrawing = {
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: 'mm' as const,
+            units: Unit.MM,
         };
 
         // Simulate having imported a file and advanced to edit
         drawingStore.setDrawing(mockDrawing, 'test.dxf');
-        workflowStore.completeStage('import');
-        workflowStore.setStage('edit');
+        workflowStore.completeStage(WorkflowStage.IMPORT);
+        workflowStore.setStage(WorkflowStage.EDIT);
 
         // Verify we're on edit stage
-        expect(get(workflowStore).currentStage).toBe('edit');
+        expect(get(workflowStore).currentStage).toBe(WorkflowStage.EDIT);
 
         // Now navigate back to import stage (user clicks import breadcrumb)
-        workflowStore.setStage('import');
+        workflowStore.setStage(WorkflowStage.IMPORT);
 
         // Should remain on import stage, not auto-advance
-        expect(get(workflowStore).currentStage).toBe('import');
+        expect(get(workflowStore).currentStage).toBe(WorkflowStage.IMPORT);
 
         // Wait to ensure no delayed auto-advance happens
         return new Promise((resolve) => {
             setTimeout(() => {
-                expect(get(workflowStore).currentStage).toBe('import');
+                expect(get(workflowStore).currentStage).toBe(
+                    WorkflowStage.IMPORT
+                );
                 resolve(undefined);
             }, 600); // Wait longer than the 500ms timeout in the component
         });
@@ -41,17 +44,19 @@ describe('ImportStage workflow behavior', () => {
 
     it('should only advance to edit when a new file is imported', () => {
         // Start at import stage
-        expect(get(workflowStore).currentStage).toBe('import');
+        expect(get(workflowStore).currentStage).toBe(WorkflowStage.IMPORT);
 
         // The ImportStage component would call handleFileImported when FileImport dispatches the event
         // This simulates what happens when the event handler is called
-        workflowStore.completeStage('import');
+        workflowStore.completeStage(WorkflowStage.IMPORT);
 
         // After a new file import, it should advance to edit
         return new Promise((resolve) => {
             setTimeout(() => {
-                workflowStore.setStage('edit');
-                expect(get(workflowStore).currentStage).toBe('edit');
+                workflowStore.setStage(WorkflowStage.EDIT);
+                expect(get(workflowStore).currentStage).toBe(
+                    WorkflowStage.EDIT
+                );
                 resolve(undefined);
             }, 500);
         });
@@ -62,28 +67,32 @@ describe('ImportStage workflow behavior', () => {
         const mockDrawing = {
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: 'mm' as const,
+            units: Unit.MM,
         };
 
         drawingStore.setDrawing(mockDrawing, 'first.dxf');
-        workflowStore.completeStage('import');
-        workflowStore.setStage('program'); // User advanced to program stage
+        workflowStore.completeStage(WorkflowStage.IMPORT);
+        workflowStore.setStage(WorkflowStage.PROGRAM); // User advanced to program stage
 
         // User wants to load a different file, goes back to import
-        workflowStore.setStage('import');
-        expect(get(workflowStore).currentStage).toBe('import');
+        workflowStore.setStage(WorkflowStage.IMPORT);
+        expect(get(workflowStore).currentStage).toBe(WorkflowStage.IMPORT);
 
         // User should be able to stay on import and load another file
         // without being kicked to edit stage
         return new Promise((resolve) => {
             setTimeout(() => {
-                expect(get(workflowStore).currentStage).toBe('import');
+                expect(get(workflowStore).currentStage).toBe(
+                    WorkflowStage.IMPORT
+                );
 
                 // Simulate loading a new file
                 drawingStore.setDrawing(mockDrawing, 'second.dxf');
 
                 // Should still be on import until the file import event is triggered
-                expect(get(workflowStore).currentStage).toBe('import');
+                expect(get(workflowStore).currentStage).toBe(
+                    WorkflowStage.IMPORT
+                );
 
                 resolve(undefined);
             }, 600);

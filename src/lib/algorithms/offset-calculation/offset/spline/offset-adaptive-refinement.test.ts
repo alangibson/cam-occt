@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import _verb from 'verb-nurbs';
 import { offsetSpline } from './spline';
+import { OffsetDirection } from '../types';
 import type { Spline } from '../../../../types/geometry';
 
 describe('Spline offset adaptive refinement', () => {
@@ -22,7 +23,12 @@ describe('Spline offset adaptive refinement', () => {
 
     it('should achieve tolerance with initial sampling', () => {
         // Use a very large tolerance that should be achievable without refinement
-        const result = offsetSpline(highCurvatureSpline, 10, 'outset', 100.0);
+        const result = offsetSpline(
+            highCurvatureSpline,
+            10,
+            OffsetDirection.OUTSET,
+            100.0
+        );
 
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBe(1);
@@ -32,7 +38,13 @@ describe('Spline offset adaptive refinement', () => {
 
     it('should refine when tolerance is not met', () => {
         // Use a moderate tolerance that will require refinement but be achievable
-        const result = offsetSpline(highCurvatureSpline, 5, 'outset', 0.01, 5);
+        const result = offsetSpline(
+            highCurvatureSpline,
+            5,
+            OffsetDirection.OUTSET,
+            0.01,
+            5
+        );
 
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBe(1);
@@ -54,7 +66,7 @@ describe('Spline offset adaptive refinement', () => {
         const result = offsetSpline(
             highCurvatureSpline,
             10,
-            'outset',
+            OffsetDirection.OUTSET,
             0.000001,
             2
         );
@@ -89,7 +101,7 @@ describe('Spline offset adaptive refinement', () => {
         const result = offsetSpline(
             simpleSpline,
             offsetDistance,
-            'outset',
+            OffsetDirection.OUTSET,
             0.5
         );
 
@@ -134,7 +146,12 @@ describe('Spline offset adaptive refinement', () => {
             closed: true,
         };
 
-        const result = offsetSpline(closedSpline, 5, 'inset', 0.5);
+        const result = offsetSpline(
+            closedSpline,
+            5,
+            OffsetDirection.INSET,
+            0.5
+        );
 
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBe(1);
@@ -173,7 +190,13 @@ describe('Spline offset adaptive refinement', () => {
             closed: false,
         };
 
-        const result = offsetSpline(complexSpline, 8, 'outset', 0.0005, 5);
+        const result = offsetSpline(
+            complexSpline,
+            8,
+            OffsetDirection.OUTSET,
+            0.0005,
+            5
+        );
 
         expect(result.success).toBe(true);
 

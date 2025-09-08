@@ -1,7 +1,11 @@
-import type { Point2D, Spline } from '../../../../types/geometry';
-import type { OffsetDirection, OffsetResult } from '../types';
 import verb, { type VerbDerivatives, type VerbPoint } from 'verb-nurbs';
+import {
+    GeometryType,
+    type Point2D,
+    type Spline,
+} from '../../../../types/geometry';
 import { generateUniformKnotVector } from '../../../../utils/nurbs-utils';
+import { OffsetDirection, type OffsetResult } from '../types';
 
 // Type definitions for verb-nurbs library
 type VerbPoint3D = [number, number, number];
@@ -607,7 +611,7 @@ function createOffsetResult(
         shapes: [
             {
                 id: `spline-offset-${direction}`,
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: offsetSplineGeometry,
             },
         ],

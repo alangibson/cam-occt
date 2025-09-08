@@ -7,6 +7,7 @@ import {
 import { CutDirection, LeadType } from '../types/direction';
 import { createPolylineFromVertices } from '../geometry/polyline';
 import type { DetectedPart } from './part-detection';
+import { PartType } from './part-detection';
 
 describe('Lead Direction Debug', () => {
     it('should debug cut direction logic', () => {
@@ -32,7 +33,7 @@ describe('Lead Direction Debug', () => {
             id: 'test-part',
             shell: {
                 id: 'shell-1',
-                type: 'shell',
+                type: PartType.SHELL,
                 chain: squareChain,
                 boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
                 holes: [],

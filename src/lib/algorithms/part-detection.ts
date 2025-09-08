@@ -26,10 +26,18 @@ import {
 } from '../utils/shape-bounds-utils';
 import { isEllipseClosed } from '../utils/ellipse-utils';
 
+/**
+ * Part type enumeration
+ */
+export enum PartType {
+    SHELL = 'shell',
+    HOLE = 'hole',
+}
+
 export interface PartHole {
     id: string;
     chain: Chain;
-    type: 'hole';
+    type: PartType.HOLE;
     boundingBox: BoundingBox;
     holes: PartHole[]; // Nested holes within this hole (parts)
 }
@@ -37,7 +45,7 @@ export interface PartHole {
 export interface PartShell {
     id: string;
     chain: Chain;
-    type: 'shell';
+    type: PartType.SHELL;
     boundingBox: BoundingBox;
     holes: PartHole[];
 }
@@ -162,14 +170,14 @@ export async function detectParts(
             shell: {
                 id: `shell-${partCounter}`,
                 chain: partChain,
-                type: 'shell',
+                type: PartType.SHELL,
                 boundingBox: chainBounds.get(partChain.id)!,
                 holes: [],
             },
             holes: directHoles.map((hole, idx) => ({
                 id: `hole-${partCounter}-${idx + 1}`,
                 chain: hole,
-                type: 'hole' as const,
+                type: PartType.HOLE,
                 boundingBox: chainBounds.get(hole.id)!,
                 holes: [], // No nested holes in simple part structure
             })),
@@ -379,4 +387,11 @@ function isPointInBoundingBox(
         point.y >= bbox.minY &&
         point.y <= bbox.maxY
     );
+}
+
+/**
+ * Type guard for checking if a value is a valid PartType
+ */
+export function isPartType(value: unknown): value is PartType {
+    return Object.values(PartType).includes(value as PartType);
 }

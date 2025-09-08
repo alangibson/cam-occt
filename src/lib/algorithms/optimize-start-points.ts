@@ -1,4 +1,5 @@
 import type { Shape, Polyline } from '../../lib/types';
+import { GeometryType } from '../../lib/types';
 import type { Chain } from './chain-detection/chain-detection';
 import { isChainClosed } from './part-detection';
 import { polylineToPoints } from '../geometry/polyline';
@@ -25,7 +26,7 @@ interface OptimizeResult {
  * Uses the same chain-based approach to preserve arc geometry
  */
 function splitPolylineAtMidpoint(polyline: Shape): [Shape, Shape] | null {
-    if (polyline.type !== 'polyline') return null;
+    if (polyline.type !== GeometryType.POLYLINE) return null;
 
     const geom: Polyline = polyline.geometry as Polyline;
 
@@ -55,13 +56,13 @@ function splitPolylineAtMidpoint(polyline: Shape): [Shape, Shape] | null {
         const firstHalf = createSplitShape(
             polyline,
             '1',
-            'polyline',
+            GeometryType.POLYLINE,
             firstGeometry
         );
         const secondHalf = createSplitShape(
             polyline,
             '2',
-            'polyline',
+            GeometryType.POLYLINE,
             secondGeometry
         );
 
@@ -84,7 +85,7 @@ function splitPolylineAtMidpoint(polyline: Shape): [Shape, Shape] | null {
     let splitShapes: [Shape, Shape] | null = null;
 
     // Split the shape based on its type
-    if (shapeToSplit.type === 'polyline') {
+    if (shapeToSplit.type === GeometryType.POLYLINE) {
         splitShapes = splitPolylineAtMidpoint(shapeToSplit);
     } else {
         splitShapes = splitShapeAtMidpoint(shapeToSplit);
@@ -117,7 +118,7 @@ function splitPolylineAtMidpoint(polyline: Shape): [Shape, Shape] | null {
     const firstHalf = createSplitShape(
         polyline,
         '1',
-        'polyline',
+        GeometryType.POLYLINE,
         firstGeometry
     );
 
@@ -125,7 +126,7 @@ function splitPolylineAtMidpoint(polyline: Shape): [Shape, Shape] | null {
     const secondHalf = createSplitShape(
         polyline,
         '2',
-        'polyline',
+        GeometryType.POLYLINE,
         secondGeometry
     );
 
@@ -138,14 +139,14 @@ function splitPolylineAtMidpoint(polyline: Shape): [Shape, Shape] | null {
 function findBestShapeToSplit(shapes: Shape[]): number {
     // First pass: look for lines
     for (let i: number = 0; i < shapes.length; i++) {
-        if (shapes[i].type === 'line') {
+        if (shapes[i].type === GeometryType.LINE) {
             return i;
         }
     }
 
     // Second pass: look for 2-point polylines (essentially lines)
     for (let i: number = 0; i < shapes.length; i++) {
-        if (shapes[i].type === 'polyline') {
+        if (shapes[i].type === GeometryType.POLYLINE) {
             const geom: Polyline = shapes[i].geometry as Polyline;
             const points: Point2D[] | null = polylineToPoints(geom);
             if (points && points.length === 2) {
@@ -156,14 +157,14 @@ function findBestShapeToSplit(shapes: Shape[]): number {
 
     // Third pass: look for arcs
     for (let i: number = 0; i < shapes.length; i++) {
-        if (shapes[i].type === 'arc') {
+        if (shapes[i].type === GeometryType.ARC) {
             return i;
         }
     }
 
     // Fourth pass: if no simple shapes, look for any polyline
     for (let i: number = 0; i < shapes.length; i++) {
-        if (shapes[i].type === 'polyline') {
+        if (shapes[i].type === GeometryType.POLYLINE) {
             return i;
         }
     }
@@ -194,7 +195,7 @@ function optimizeChainStartPoint(
         const singleShape: Shape = chain.shapes[0];
 
         // Only certain single shapes can be optimized (polylines, not circles)
-        if (singleShape.type === 'circle') {
+        if (singleShape.type === GeometryType.CIRCLE) {
             return {
                 originalChain: chain,
                 optimizedChain: null,
@@ -204,7 +205,7 @@ function optimizeChainStartPoint(
         }
 
         // Single closed polylines CAN be optimized by splitting them
-        if (singleShape.type === 'polyline') {
+        if (singleShape.type === GeometryType.POLYLINE) {
             const polylineGeom: Polyline = singleShape.geometry as Polyline;
 
             // Check if polyline has enough points
@@ -263,7 +264,7 @@ function optimizeChainStartPoint(
     let splitShapes: [Shape, Shape] | null = null;
 
     // Split the shape based on its type
-    if (shapeToSplit.type === 'polyline') {
+    if (shapeToSplit.type === GeometryType.POLYLINE) {
         splitShapes = splitPolylineAtMidpoint(shapeToSplit);
     } else {
         splitShapes = splitShapeAtMidpoint(shapeToSplit);

@@ -16,14 +16,13 @@
      */
     import AccordionPanel from '../AccordionPanel.svelte';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
-    import { workflowStore } from '../../lib/stores/workflow';
+    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
     import { pathStore } from '../../lib/stores/paths';
     import { rapidStore } from '../../lib/stores/rapids';
     import { chainStore } from '../../lib/stores/chains';
     import { operationsStore } from '../../lib/stores/operations';
     import { drawingStore } from '../../lib/stores/drawing';
     import { toolStore } from '../../lib/stores/tools';
-    import { uiStore } from '../../lib/stores/ui';
     import { overlayStore } from '../../lib/stores/overlay';
     import { partStore } from '../../lib/stores/parts';
     import { findPartContainingChain } from '../../lib/utils/chain-part-interactions';
@@ -32,15 +31,16 @@
         getCachedLeadGeometry,
     } from '../../lib/utils/lead-persistence-utils';
     import { onMount, onDestroy } from 'svelte';
-    import type {
-        Shape,
-        Point2D,
-        Line,
-        Arc,
-        Circle,
-        Polyline,
-        Ellipse,
-        Spline,
+    import {
+        type Shape,
+        type Point2D,
+        type Line,
+        type Arc,
+        type Circle,
+        type Polyline,
+        type Ellipse,
+        type Spline,
+        GeometryType,
     } from '../../lib/types';
     import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
     import type { Path } from '../../lib/stores/paths';
@@ -142,13 +142,13 @@
     let unsubscribers: Array<() => void> = [];
 
     function handleNext() {
-        workflowStore.completeStage('simulate');
-        workflowStore.setStage('export');
+        workflowStore.completeStage(WorkflowStage.SIMULATE);
+        workflowStore.setStage(WorkflowStage.EXPORT);
     }
 
     // Update tool head overlay when position changes
     $: if (toolHeadPosition) {
-        overlayStore.setToolHead('simulate', toolHeadPosition);
+        overlayStore.setToolHead(WorkflowStage.SIMULATE, toolHeadPosition);
     }
 
     // Auto-complete simulate stage when simulation data is available
@@ -156,7 +156,7 @@
         pathStoreState?.paths?.length > 0 ||
         rapidStoreState?.rapids?.length > 0
     ) {
-        workflowStore.completeStage('simulate');
+        workflowStore.completeStage(WorkflowStage.SIMULATE);
     }
 
     // Setup store subscriptions
@@ -624,20 +624,20 @@
     // Calculate length of a shape (simplified but functional)
     function getShapeLength(shape: Shape): number {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 const line = shape.geometry as Line;
                 return Math.sqrt(
                     Math.pow(line.end.x - line.start.x, 2) +
                         Math.pow(line.end.y - line.start.y, 2)
                 );
-            case 'circle':
+            case GeometryType.CIRCLE:
                 const circle = shape.geometry as Circle;
                 return 2 * Math.PI * circle.radius;
-            case 'arc':
+            case GeometryType.ARC:
                 const arc = shape.geometry as Arc;
                 const angleRange = Math.abs(arc.endAngle - arc.startAngle); // Angles are in radians
                 return angleRange * arc.radius; // Arc length = radius * angle (in radians)
-            case 'polyline':
+            case GeometryType.POLYLINE:
                 const polyline = shape.geometry as Polyline;
                 const polylinePoints = polylineToPoints(polyline);
                 let polylineDistance = 0;
@@ -649,7 +649,7 @@
                     );
                 }
                 return polylineDistance;
-            case 'spline':
+            case GeometryType.SPLINE:
                 const spline = shape.geometry as Spline;
                 try {
                     // Calculate arc length by sampling the NURBS curve
@@ -697,7 +697,7 @@
                     }
                     return 100; // Final fallback
                 }
-            case 'ellipse':
+            case GeometryType.ELLIPSE:
                 const ellipse = shape.geometry as Ellipse;
                 // Calculate major and minor axis lengths
                 const majorAxisLength = Math.sqrt(
@@ -810,7 +810,7 @@
             currentProgress = 100;
             currentOperation = 'Complete';
             isPlaying = false;
-            workflowStore.completeStage('simulate');
+            workflowStore.completeStage(WorkflowStage.SIMULATE);
             return;
         }
 
@@ -1099,20 +1099,20 @@
         progress = Math.max(0, Math.min(1, progress)); // Clamp to 0-1
 
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 const line = shape.geometry as Line;
                 // Natural direction: go from start to end
                 return {
                     x: line.start.x + (line.end.x - line.start.x) * progress,
                     y: line.start.y + (line.end.y - line.start.y) * progress,
                 };
-            case 'circle':
+            case GeometryType.CIRCLE:
                 // Use natural direction
                 return getShapePointAt(shape, progress);
-            case 'arc':
+            case GeometryType.ARC:
                 // Use natural direction
                 return getShapePointAt(shape, progress);
-            case 'polyline':
+            case GeometryType.POLYLINE:
                 const polyline = shape.geometry as Polyline;
                 const polylinePoints = polylineToPoints(polyline);
                 if (polylinePoints.length < 2)
@@ -1144,7 +1144,7 @@
                     currentDistance += segmentLength;
                 }
                 return points[points.length - 1];
-            case 'spline':
+            case GeometryType.SPLINE:
                 const splineGeom = shape.geometry as Spline;
                 try {
                     // Use NURBS evaluation to get position at progress along curve
@@ -1214,7 +1214,7 @@
                     }
                     return { x: 0, y: 0 }; // Final fallback
                 }
-            case 'ellipse':
+            case GeometryType.ELLIPSE:
                 const ellipse = shape.geometry as Ellipse;
                 // Calculate major and minor axis lengths
                 const majorAxisLength = Math.sqrt(
@@ -1418,7 +1418,7 @@
 
             <div class="simulation-viewport">
                 <DrawingCanvasContainer
-                    currentStage="simulate"
+                    currentStage={WorkflowStage.SIMULATE}
                     disableDragging={true}
                     respectLayerVisibility={false}
                     treatChainsAsEntities={true}

@@ -7,7 +7,7 @@ import {
 } from '../../extend/line';
 import type { LineExtensionResult } from '../../extend/line';
 import { pointDistance } from '../../shared/trim-extend-utils';
-import { EPSILON } from '../../../../constants';
+import { calculateLineDirectionAndLength } from '../../../../utils/geometry-utils';
 
 /**
  * Line Fill Module
@@ -38,18 +38,13 @@ export function fillLineToIntersection(
     const line: import('$lib/types/geometry').Line = shape.geometry as Line;
 
     try {
-        // Validate line geometry first
-        const lineDir: Point2D = {
-            x: line.end.x - line.start.x,
-            y: line.end.y - line.start.y,
-        };
-
-        const lineLength: number = Math.sqrt(
-            lineDir.x * lineDir.x + lineDir.y * lineDir.y
-        );
-        if (lineLength < EPSILON) {
+        // Validate line geometry using shared utility
+        const lineProps = calculateLineDirectionAndLength(line);
+        if (!lineProps) {
             return createFailureResult('Line is degenerate (zero length)');
         }
+
+        const { direction: lineDir, length: lineLength } = lineProps;
 
         // Check if extension would exceed maximum before attempting
         const distanceToStart: number = pointDistance(

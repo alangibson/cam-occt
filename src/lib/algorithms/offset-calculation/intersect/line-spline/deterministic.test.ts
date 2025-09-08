@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { findSplineLineIntersectionsVerb } from './index';
-import type { Shape, Spline, Line } from '../../../../types/geometry';
+import {
+    GeometryType,
+    type Shape,
+    type Spline,
+    type Line,
+} from '../../../../types/geometry';
 
 describe('findSplineLineIntersectionsVerb - Deterministic Behavior', () => {
     // Helper to create a spline shape
@@ -16,7 +21,7 @@ describe('findSplineLineIntersectionsVerb - Deterministic Behavior', () => {
 
         return {
             id: `spline-${Math.random()}`,
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
     }
@@ -30,7 +35,7 @@ describe('findSplineLineIntersectionsVerb - Deterministic Behavior', () => {
 
         return {
             id: `line-${Math.random()}`,
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: line,
         };
     }
@@ -146,7 +151,7 @@ describe('findSplineLineIntersectionsVerb - Deterministic Behavior', () => {
         // Create a spline with invalid knot vector
         const invalidSpline: Shape = {
             id: 'invalid-spline',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: {
                 controlPoints: [
                     { x: 0, y: 0 },

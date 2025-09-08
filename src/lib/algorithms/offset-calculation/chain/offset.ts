@@ -22,6 +22,8 @@ import type {
     Spline,
     Ellipse,
 } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
+import { OffsetDirection } from '../offset/types';
 import { findShapeIntersections } from '../intersect';
 import { findPolylineSelfIntersections } from '../intersect/polyline/self';
 import { polylineToPoints } from '$lib/geometry/polyline';
@@ -212,16 +214,16 @@ export function generateAllOffsets(
 
         // For clockwise arcs in chains, we need to flip the offset directions
         // because clockwise arcs curve opposite to counter-clockwise arcs
-        let positiveDirection: 'outset' | 'inset' = 'outset';
-        let negativeDirection: 'outset' | 'inset' = 'inset';
+        let positiveDirection: OffsetDirection = OffsetDirection.OUTSET;
+        let negativeDirection: OffsetDirection = OffsetDirection.INSET;
 
         if (
             shape.type === 'arc' &&
             (shape.geometry as Arc).clockwise === true
         ) {
             // Flip directions for clockwise arcs
-            positiveDirection = 'inset';
-            negativeDirection = 'outset';
+            positiveDirection = OffsetDirection.INSET;
+            negativeDirection = OffsetDirection.OUTSET;
         }
 
         // Generate both positive and negative offsets
@@ -779,10 +781,10 @@ function getShapeEndpoint(
     endpoint: 'start' | 'end'
 ): { x: number; y: number } {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             return endpoint === 'start' ? line.start : line.end;
-        case 'arc':
+        case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
             const angle: number =
                 endpoint === 'start' ? arc.startAngle : arc.endAngle;
@@ -790,19 +792,19 @@ function getShapeEndpoint(
                 x: arc.center.x + arc.radius * Math.cos(angle),
                 y: arc.center.y + arc.radius * Math.sin(angle),
             };
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
             // For circles, return a point on the circle (arbitrary choice)
             return {
                 x: circle.center.x + circle.radius,
                 y: circle.center.y,
             };
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             const points: Array<{ x: number; y: number }> =
                 polylineToPoints(polyline);
             return endpoint === 'start' ? points[0] : points[points.length - 1];
-        case 'spline':
+        case GeometryType.SPLINE:
             // For splines, use the first or last control point as approximation
             const spline: Spline = shape.geometry as Spline;
             const controlPoints: Array<{ x: number; y: number }> =
@@ -811,7 +813,7 @@ function getShapeEndpoint(
             return endpoint === 'start'
                 ? controlPoints[0]
                 : controlPoints[controlPoints.length - 1];
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
             // For ellipses, return a point on the ellipse (arbitrary choice)
             // Calculate major axis radius from the majorAxisEndpoint vector
@@ -839,7 +841,7 @@ function calculateTrimAmount(
 ): number {
     try {
         switch (originalShape.type) {
-            case 'line': {
+            case GeometryType.LINE: {
                 const original: Line = originalShape.geometry as Line;
                 const trimmed: Line = trimmedShape.geometry as Line;
 
@@ -856,7 +858,7 @@ function calculateTrimAmount(
                 return Math.abs(originalLength - trimmedLength);
             }
 
-            case 'arc': {
+            case GeometryType.ARC: {
                 const original: Arc = originalShape.geometry as Arc;
                 const trimmed: Arc = trimmedShape.geometry as Arc;
 
@@ -873,7 +875,7 @@ function calculateTrimAmount(
                 return arcLengthDiff;
             }
 
-            case 'polyline': {
+            case GeometryType.POLYLINE: {
                 const original: Polyline = originalShape.geometry as Polyline;
                 const trimmed: Polyline = trimmedShape.geometry as Polyline;
 

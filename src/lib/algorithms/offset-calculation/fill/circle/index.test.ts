@@ -1,15 +1,21 @@
-import { describe, it, expect } from 'vitest';
-import { fillCircleToIntersection } from './index';
-import type { FillOptions, FillResult } from '../types';
-import type { Shape, Circle, Arc, Point2D } from '$lib/types/geometry';
+import {
+    GeometryType,
+    type Arc,
+    type Circle,
+    type Point2D,
+    type Shape,
+} from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
+import { describe, expect, it } from 'vitest';
+import { type FillOptions, type FillResult } from '../types';
+import { fillCircleToIntersection } from './index';
 
 describe('fillCircleToIntersection', () => {
     // Helper function to create test circles
     function createCircle(cx: number, cy: number, radius: number): Shape {
         return {
             id: generateId(),
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: cx, y: cy },
                 radius,
@@ -235,7 +241,7 @@ describe('fillCircleToIntersection', () => {
         it('should reject non-circle shapes', () => {
             const line: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },

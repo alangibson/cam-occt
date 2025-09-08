@@ -8,12 +8,14 @@ import type {
     Circle,
     Spline,
 } from '../../lib/types';
+import { Unit, CutterCompensation } from '../../lib/types';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('generateGCode', () => {
     const mockDrawing: Drawing = {
         shapes: [],
         bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
-        units: 'mm',
+        units: Unit.MM,
     };
 
     const mockPath: ToolPath = {
@@ -48,11 +50,11 @@ describe('generateGCode', () => {
 
     it('should generate valid G-code header', () => {
         const gcode = generateGCode([mockPath], mockDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         expect(gcode).toContain('G21'); // Metric units
@@ -62,11 +64,11 @@ describe('generateGCode', () => {
 
     it('should generate plasma-specific commands', () => {
         const gcode = generateGCode([mockPath], mockDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         expect(gcode).toContain('M3'); // Plasma on
@@ -76,11 +78,11 @@ describe('generateGCode', () => {
 
     it('should include comments when requested', () => {
         const gcode = generateGCode([mockPath], mockDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         expect(gcode).toContain(
@@ -91,11 +93,11 @@ describe('generateGCode', () => {
 
     it('should not include comments when not requested', () => {
         const gcode = generateGCode([mockPath], mockDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: false,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         expect(gcode).not.toContain(
@@ -105,11 +107,11 @@ describe('generateGCode', () => {
 
     it('should handle imperial units', () => {
         const gcode = generateGCode([mockPath], mockDrawing, {
-            units: 'inch',
+            units: Unit.INCH,
             safeZ: 0.5,
             rapidFeedRate: 200,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         expect(gcode).toContain('G20'); // Imperial units
@@ -118,11 +120,11 @@ describe('generateGCode', () => {
     describe('edge cases and advanced features', () => {
         it('should handle empty paths array', () => {
             const gcode = generateGCode([], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: false,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
             });
 
             expect(gcode).toContain('G21'); // Should still have header
@@ -141,11 +143,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([rapidPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
             });
 
             // Current implementation treats rapids as regular paths but without parameters
@@ -162,11 +164,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([simpleToolPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
             });
 
             expect(gcode).toContain('M3'); // Should still pierce
@@ -175,11 +177,11 @@ describe('generateGCode', () => {
 
         it('should handle material selection and THC features', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 materialNumber: 5,
                 enableTHC: true,
                 adaptiveFeedControl: true,
@@ -193,11 +195,11 @@ describe('generateGCode', () => {
 
         it('should disable velocity reduction when requested', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: false,
             });
 
@@ -216,11 +218,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([holeToolPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: true,
             });
 
@@ -239,11 +241,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([holeToolPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: true,
             });
 
@@ -261,11 +263,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([holeToolPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: true,
             });
 
@@ -284,11 +286,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([holeToolPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: true,
             });
 
@@ -303,11 +305,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([pathWithoutParams], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
             });
 
             // Should not crash and should include basic commands
@@ -318,7 +320,7 @@ describe('generateGCode', () => {
         it('should handle native spline commands when enabled', () => {
             const splineShape: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 layer: 'test',
                 geometry: {
                     controlPoints: [
@@ -338,11 +340,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([splineToolPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 useNativeSplines: true,
             });
 
@@ -354,7 +356,7 @@ describe('generateGCode', () => {
         it('should handle native arc commands when enabled', () => {
             const arcShape: Shape = {
                 id: 'arc1',
-                type: 'arc',
+                type: GeometryType.ARC,
                 layer: 'test',
                 geometry: {
                     center: { x: 10, y: 10 },
@@ -371,11 +373,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([arcToolPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 useNativeSplines: true,
             });
 
@@ -386,7 +388,7 @@ describe('generateGCode', () => {
         it('should handle native circle commands when enabled', () => {
             const circleShape: Shape = {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 layer: 'test',
                 geometry: {
                     center: { x: 10, y: 10 },
@@ -400,11 +402,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([circleToolPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 useNativeSplines: true,
             });
 
@@ -415,7 +417,7 @@ describe('generateGCode', () => {
         it('should handle incomplete spline data with fallback', () => {
             const incompleteSpline: Shape = {
                 id: 'incomplete-spline',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 layer: 'test',
                 geometry: {
                     controlPoints: [{ x: 0, y: 0 }], // Insufficient points
@@ -433,11 +435,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([splineToolPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 useNativeSplines: true,
             });
 
@@ -459,11 +461,11 @@ describe('generateGCode', () => {
             };
 
             const gcode = generateGCode([precisionPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10.123456,
                 rapidFeedRate: 5000,
                 includeComments: false,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
             });
 
             // Check that coordinates appear with proper precision somewhere in the output
@@ -479,11 +481,11 @@ describe('generateGCode', () => {
 
         it('should handle QtPlasmaC-specific tool syntax', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
             });
 
             expect(gcode).toContain('M3 $0'); // QtPlasmaC plasma on syntax
@@ -492,11 +494,11 @@ describe('generateGCode', () => {
 
         it('should generate proper HAL feed rate command', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
             });
 
             expect(gcode).toContain('F#<_hal[plasmac.cut-feed-rate]>'); // HAL feed rate
@@ -504,7 +506,7 @@ describe('generateGCode', () => {
 
         it('should not include plasma commands in non-plasma mode', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,

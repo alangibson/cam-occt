@@ -2,7 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render } from '@testing-library/svelte';
 import DrawingCanvas from './DrawingCanvas.svelte';
 import { drawingStore } from '../lib/stores/drawing';
+import { Unit } from '../lib/utils/units';
+import { WorkflowStage } from '../lib/stores/workflow';
 import type { Shape, Drawing, Ellipse } from '../lib/types';
+import { GeometryType } from '$lib/types/geometry';
 
 // Mock canvas context
 const mockCanvasContext = {
@@ -54,7 +57,7 @@ function createEllipseShape(
 
     return {
         id,
-        type: 'ellipse',
+        type: GeometryType.ELLIPSE,
         geometry,
     };
 }
@@ -92,12 +95,14 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: 50, y: 90 }, max: { x: 150, y: 210 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
 
-            render(DrawingCanvas, { props: { currentStage: 'edit' } });
+            render(DrawingCanvas, {
+                props: { currentStage: WorkflowStage.EDIT },
+            });
 
             // Verify canvas context methods were called for ellipse rendering
             expect(mockCanvasContext.save).toHaveBeenCalled();
@@ -127,12 +132,14 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: -30, y: -40 }, max: { x: 30, y: 40 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
 
-            render(DrawingCanvas, { props: { currentStage: 'edit' } });
+            render(DrawingCanvas, {
+                props: { currentStage: WorkflowStage.EDIT },
+            });
 
             // Check that transform methods were called correctly
             expect(mockCanvasContext.translate).toHaveBeenCalledWith(0, 0);
@@ -150,12 +157,14 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: 5, y: 5 }, max: { x: 45, y: 45 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
 
-            render(DrawingCanvas, { props: { currentStage: 'edit' } });
+            render(DrawingCanvas, {
+                props: { currentStage: WorkflowStage.EDIT },
+            });
 
             // Should render as circle with equal major and minor axes
             expect(mockCanvasContext.scale).toHaveBeenCalledWith(20, 20);
@@ -183,12 +192,14 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: -30, y: -15 }, max: { x: 30, y: 15 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
 
-            render(DrawingCanvas, { props: { currentStage: 'edit' } });
+            render(DrawingCanvas, {
+                props: { currentStage: WorkflowStage.EDIT },
+            });
 
             // Should render arc instead of full ellipse
             expect(mockCanvasContext.arc).toHaveBeenCalledWith(
@@ -213,12 +224,14 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: 25, y: 30 }, max: { x: 75, y: 70 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
 
-            render(DrawingCanvas, { props: { currentStage: 'edit' } });
+            render(DrawingCanvas, {
+                props: { currentStage: WorkflowStage.EDIT },
+            });
 
             // Should handle parameter wrapping by adding 2π to end parameter
             expect(mockCanvasContext.arc).toHaveBeenCalledWith(
@@ -246,7 +259,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: 60, y: 76 }, max: { x: 140, y: 124 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
@@ -273,7 +286,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: 45, y: 104 }, max: { x: 105, y: 146 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
@@ -299,7 +312,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: -25, y: -20 }, max: { x: 25, y: 20 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
@@ -323,7 +336,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: 50, y: 70 }, max: { x: 150, y: 130 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
@@ -361,7 +374,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [ellipse],
                 bounds: { min: { x: 70, y: 85 }, max: { x: 130, y: 115 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
@@ -400,7 +413,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [flatEllipse],
                 bounds: { min: { x: -100, y: -1 }, max: { x: 100, y: 1 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
@@ -419,7 +432,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [degenerateEllipse],
                 bounds: { min: { x: -1, y: -1 }, max: { x: 1, y: 1 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);
@@ -438,7 +451,7 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
             const drawing: Drawing = {
                 shapes: [zeroRatioEllipse],
                 bounds: { min: { x: 25, y: 50 }, max: { x: 75, y: 50 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             drawingStore.setDrawing(drawing);

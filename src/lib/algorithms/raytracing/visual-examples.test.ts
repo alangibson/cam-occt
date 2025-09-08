@@ -15,6 +15,7 @@ import { test, expect, describe } from 'vitest';
 import { isPointInsideChainExact } from './point-in-chain';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import type { Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
     test('Example 1: Circle with High-Precision Offsets', () => {
@@ -44,7 +45,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
         // Create a full circle
         const circleShape: Shape = {
             id: 'reference-circle',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: { center: { x: 0, y: 0 }, radius: 50 },
         };
 
@@ -118,13 +119,13 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
 
         const bottomLineShape: Shape = {
             id: 'bottom-line',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
         };
 
         const rightArcShape: Shape = {
             id: 'right-arc',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: 100, y: 10 },
                 radius: 10,
@@ -136,13 +137,13 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
 
         const topLineShape: Shape = {
             id: 'top-line',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start: { x: 100, y: 20 }, end: { x: 0, y: 20 } },
         };
 
         const leftArcShape: Shape = {
             id: 'left-arc',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: 0, y: 10 },
                 radius: 10,
@@ -225,7 +226,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
 
         const circleShape: Shape = {
             id: 'precision-circle',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: { center: { x: 0, y: 0 }, radius: 10 },
         };
 
@@ -287,12 +288,12 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
         const shapes: Shape[] = [
             {
                 id: 'bottom-edge',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 50, y: 0 } },
             },
             {
                 id: 'right-arc',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 50, y: 25 },
                     radius: 25,
@@ -303,12 +304,12 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             },
             {
                 id: 'top-edge',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 50, y: 50 }, end: { x: 0, y: 50 } },
             },
             {
                 id: 'left-edge',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 50 }, end: { x: 0, y: 0 } },
             },
         ];
@@ -352,7 +353,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
 
         const circle: Shape = {
             id: 'test-circle',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: 0, y: 0 },
                 radius: 15,

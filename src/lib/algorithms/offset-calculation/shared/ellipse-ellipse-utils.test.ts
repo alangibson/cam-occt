@@ -1,6 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Ellipse, Shape } from '../../../types/geometry';
+import verb from 'verb-nurbs';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
+    GeometryType,
+    type Ellipse,
+    type Shape,
+} from '../../../types/geometry';
 import type { IntersectionResult } from '../chain/types';
+import {
+    calculateEllipseEllipseIntersection,
+    calculateIntersectionScore,
+    findEllipseEllipseIntersectionsVerb,
+    processEllipseIntersectionResults,
+    validateEllipseIntersectionParameters,
+} from './ellipse-ellipse-utils';
 // VerbCurve interface for testing
 interface VerbCurve {
     degree(): number;
@@ -8,14 +20,6 @@ interface VerbCurve {
     controlPoints(): number[][];
     weights(): number[];
 }
-import verb from 'verb-nurbs';
-import {
-    calculateEllipseEllipseIntersection,
-    validateEllipseIntersectionParameters,
-    processEllipseIntersectionResults,
-    calculateIntersectionScore,
-    findEllipseEllipseIntersectionsVerb,
-} from './ellipse-ellipse-utils';
 
 // Mock verb-nurbs
 vi.mock('verb-nurbs', () => ({
@@ -44,7 +48,7 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
     });
 
     const createEllipseShape = (ellipse: Ellipse): Shape => ({
-        type: 'ellipse',
+        type: GeometryType.ELLIPSE,
         geometry: ellipse,
         id: 'test-ellipse',
         layer: 'default',

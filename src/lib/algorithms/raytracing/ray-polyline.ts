@@ -6,6 +6,7 @@
  */
 
 import type { Polyline, Point2D, Arc, Line } from '../../types/geometry';
+import { GeometryType } from '../../types/geometry';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { countRayLineCrossings, findRayLineIntersections } from './ray-line';
@@ -29,14 +30,14 @@ export function countRayPolylineCrossings(
     // Iterate through all shapes in the polyline
     for (const shape of polyline.shapes) {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 totalCrossings += countRayLineCrossings(
                     ray,
                     shape.geometry as Line,
                     config
                 );
                 break;
-            case 'arc':
+            case GeometryType.ARC:
                 totalCrossings += countRayArcCrossings(
                     ray,
                     shape.geometry as Arc,
@@ -71,7 +72,7 @@ export function findRayPolylineIntersections(
     // Collect intersections from all shapes in the polyline
     for (const shape of polyline.shapes) {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 intersections.push(
                     ...findRayLineIntersections(
                         ray,
@@ -80,7 +81,7 @@ export function findRayPolylineIntersections(
                     )
                 );
                 break;
-            case 'arc':
+            case GeometryType.ARC:
                 intersections.push(
                     ...findRayArcIntersections(
                         ray,

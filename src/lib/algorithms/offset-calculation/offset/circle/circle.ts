@@ -1,5 +1,9 @@
-import type { Circle, Shape } from '../../../../types/geometry';
-import type { OffsetDirection, OffsetResult } from '../types';
+import {
+    GeometryType,
+    type Circle,
+    type Shape,
+} from '../../../../types/geometry';
+import { OffsetDirection, type OffsetResult } from '../types';
 
 /**
  * Offset a circle by the specified distance
@@ -38,7 +42,7 @@ export function offsetCircle(
 
         const offsetShape: Shape = {
             id: `offset_${Math.random().toString(36).substr(2, 9)}`,
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { ...circle.center },
                 radius: newRadius,

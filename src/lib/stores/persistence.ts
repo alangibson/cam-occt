@@ -12,6 +12,7 @@ import {
     debouncedSave,
     type PersistedState,
 } from '../utils/state-persistence';
+import { Unit } from '../utils/units';
 
 // Import all stores
 import { drawingStore, type DrawingState } from './drawing';
@@ -141,7 +142,7 @@ function restoreStateToStores(state: PersistedState): void {
                 state.fileName,
                 state.scale,
                 state.offset,
-                state.displayUnit,
+                state.displayUnit === 'mm' ? Unit.MM : Unit.INCH,
                 new Set(state.selectedShapes),
                 state.hoveredShape
             );

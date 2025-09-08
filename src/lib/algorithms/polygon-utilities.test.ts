@@ -14,6 +14,7 @@ import {
     type PolygonSimplificationConfig,
 } from './polygon-utilities';
 import type { Point2D } from '../types/geometry';
+import { WindingDirection } from '$lib/utils/geometry-utils';
 
 describe('Polygon Utilities', () => {
     // Standard test polygons
@@ -47,7 +48,7 @@ describe('Polygon Utilities', () => {
             const result = analyzePolygon(unitSquareCW, defaultConfig);
 
             expect(result.isClosed).toBe(false); // Last point doesn't match first exactly
-            expect(result.winding).toBe('CW');
+            expect(result.winding).toBe(WindingDirection.CW);
             expect(result.area).toBe(1);
             expect(result.perimeter).toBeCloseTo(4, 5);
             expect(result.boundingBox.min).toEqual({ x: 0, y: 0 });
@@ -58,7 +59,7 @@ describe('Polygon Utilities', () => {
         it('should analyze a counter-clockwise square correctly', () => {
             const result = analyzePolygon(unitSquareCCW, defaultConfig);
 
-            expect(result.winding).toBe('CCW');
+            expect(result.winding).toBe(WindingDirection.CCW);
             expect(result.area).toBe(1); // Absolute area
             expect(result.isSimple).toBe(true);
         });
@@ -364,12 +365,18 @@ describe('Polygon Utilities', () => {
 
     describe('normalizePolygonWinding', () => {
         it('should leave correctly wound polygon unchanged', () => {
-            const result = normalizePolygonWinding(unitSquareCW, 'CW');
+            const result = normalizePolygonWinding(
+                unitSquareCW,
+                WindingDirection.CW
+            );
             expect(result).toEqual(unitSquareCW);
         });
 
         it('should reverse incorrectly wound polygon', () => {
-            const result = normalizePolygonWinding(unitSquareCW, 'CCW');
+            const result = normalizePolygonWinding(
+                unitSquareCW,
+                WindingDirection.CCW
+            );
             expect(result).toEqual([...unitSquareCW].reverse());
         });
 
@@ -379,7 +386,10 @@ describe('Polygon Utilities', () => {
                 { x: 1, y: 0 },
                 { x: 2, y: 0 },
             ];
-            const result = normalizePolygonWinding(degenerate, 'CW');
+            const result = normalizePolygonWinding(
+                degenerate,
+                WindingDirection.CW
+            );
             expect(result).toEqual(degenerate); // Should be unchanged
         });
     });
@@ -592,7 +602,9 @@ describe('Polygon Utilities', () => {
             const result = analyzePolygon(partOutline, { tolerance: 0.1 });
 
             // Accept whatever winding direction the algorithm determines
-            expect(['CW', 'CCW']).toContain(result.winding);
+            expect([WindingDirection.CW, WindingDirection.CCW]).toContain(
+                result.winding
+            );
             expect(result.isSimple).toBe(true);
             // Area is approximately 3200 for this L-bracket shape
             expect(result.area).toBeCloseTo(3200, 100);

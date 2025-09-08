@@ -7,6 +7,7 @@ import {
     type ViewportBounds,
     type ShapeBounds,
 } from './viewport-culling';
+import { GeometryType } from '../types/geometry';
 import type { Shape, Line, Circle, BoundingBox } from '../types/geometry';
 
 // Mock the bounding box function
@@ -30,7 +31,7 @@ describe('viewport-culling', () => {
 
             const shape: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: -5, y: -3 },
                     end: { x: 15, y: 12 },
@@ -58,7 +59,7 @@ describe('viewport-culling', () => {
 
             const shape: Shape = {
                 id: 'invalid-shape',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {} as Line,
             };
 
@@ -301,9 +302,9 @@ describe('viewport-culling', () => {
                 });
 
             const shapes: Shape[] = [
-                { id: '1', type: 'circle', geometry: {} as Circle },
-                { id: '2', type: 'circle', geometry: {} as Circle },
-                { id: '3', type: 'circle', geometry: {} as Circle },
+                { id: '1', type: GeometryType.CIRCLE, geometry: {} as Circle },
+                { id: '2', type: GeometryType.CIRCLE, geometry: {} as Circle },
+                { id: '3', type: GeometryType.CIRCLE, geometry: {} as Circle },
             ];
 
             const result = cullShapesToViewport(shapes, viewport);
@@ -334,9 +335,9 @@ describe('viewport-culling', () => {
                 }); // Inside
 
             const shapes: Shape[] = [
-                { id: '1', type: 'circle', geometry: {} as Circle },
-                { id: '2', type: 'circle', geometry: {} as Circle },
-                { id: '3', type: 'circle', geometry: {} as Circle },
+                { id: '1', type: GeometryType.CIRCLE, geometry: {} as Circle },
+                { id: '2', type: GeometryType.CIRCLE, geometry: {} as Circle },
+                { id: '3', type: GeometryType.CIRCLE, geometry: {} as Circle },
             ];
 
             const result = cullShapesToViewport(shapes, viewport);
@@ -359,7 +360,7 @@ describe('viewport-culling', () => {
             });
 
             const shapes: Shape[] = [
-                { id: '1', type: 'circle', geometry: {} as Circle },
+                { id: '1', type: GeometryType.CIRCLE, geometry: {} as Circle },
             ];
 
             // Without margin - should be culled
@@ -395,8 +396,8 @@ describe('viewport-culling', () => {
                 });
 
             const shapes: Shape[] = [
-                { id: '1', type: 'circle', geometry: {} as Circle },
-                { id: '2', type: 'circle', geometry: {} as Circle },
+                { id: '1', type: GeometryType.CIRCLE, geometry: {} as Circle },
+                { id: '2', type: GeometryType.CIRCLE, geometry: {} as Circle },
             ];
 
             const consoleSpy = vi
@@ -435,9 +436,21 @@ describe('viewport-culling', () => {
                 });
 
             const shapes: Shape[] = [
-                { id: 'first', type: 'circle', geometry: {} as Circle },
-                { id: 'second', type: 'circle', geometry: {} as Circle },
-                { id: 'third', type: 'circle', geometry: {} as Circle },
+                {
+                    id: 'first',
+                    type: GeometryType.CIRCLE,
+                    geometry: {} as Circle,
+                },
+                {
+                    id: 'second',
+                    type: GeometryType.CIRCLE,
+                    geometry: {} as Circle,
+                },
+                {
+                    id: 'third',
+                    type: GeometryType.CIRCLE,
+                    geometry: {} as Circle,
+                },
             ];
 
             const result = cullShapesToViewport(shapes, viewport);

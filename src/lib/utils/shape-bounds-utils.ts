@@ -17,6 +17,7 @@ import type {
     Ellipse,
     Spline,
 } from '../types';
+import { GeometryType } from '../types/geometry';
 import { polylineToPoints } from '../geometry/polyline';
 import { sampleNURBS } from '../geometry/nurbs';
 import { getBoundingBoxForArc } from '../geometry/bounding-box';
@@ -53,7 +54,7 @@ export function calculateChainBoundingBox(chain: Chain): BoundingBox {
  */
 export function getShapeBoundingBox(shape: Shape): BoundingBox {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line = shape.geometry as Line;
             return {
                 minX: Math.min(line.start.x, line.end.x),
@@ -62,7 +63,7 @@ export function getShapeBoundingBox(shape: Shape): BoundingBox {
                 maxY: Math.max(line.start.y, line.end.y),
             };
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle = shape.geometry as Circle;
             return {
                 minX: circle.center.x - circle.radius,
@@ -71,7 +72,7 @@ export function getShapeBoundingBox(shape: Shape): BoundingBox {
                 maxY: circle.center.y + circle.radius,
             };
 
-        case 'arc':
+        case GeometryType.ARC:
             const arc = shape.geometry as Arc;
             // Use actual arc bounds instead of conservative circle bounds
             const arcBounds = getBoundingBoxForArc(arc);
@@ -82,10 +83,10 @@ export function getShapeBoundingBox(shape: Shape): BoundingBox {
                 maxY: arcBounds.max.y,
             };
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             return calculatePolylineBoundingBox(shape.geometry as Polyline);
 
-        case 'spline':
+        case GeometryType.SPLINE:
             return calculateSplineBoundingBox(shape.geometry as Spline);
 
         default:
@@ -163,11 +164,11 @@ export function calculatePolylineBoundingBox(polyline: Polyline): BoundingBox {
  */
 export function getShapePointsForBounds(shape: Shape): Point2D[] {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             return [line.start, line.end];
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
             return [
                 {
@@ -180,13 +181,13 @@ export function getShapePointsForBounds(shape: Shape): Point2D[] {
                 },
             ];
 
-        case 'arc':
+        case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
             // Use actual arc bounds instead of full circle bounds
             const arcBounds = getBoundingBoxForArc(arc);
             return [arcBounds.min, arcBounds.max];
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             // If polyline has segments (new format), get bounds from all segments
             if (polyline.shapes && polyline.shapes.length > 0) {
@@ -200,7 +201,7 @@ export function getShapePointsForBounds(shape: Shape): Point2D[] {
                 return polylineToPoints(polyline);
             }
 
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
             // Calculate bounding box points for ellipse
             const majorAxisLength: number = Math.sqrt(
@@ -228,7 +229,7 @@ export function getShapePointsForBounds(shape: Shape): Point2D[] {
                 },
             ];
 
-        case 'spline':
+        case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;
             try {
                 // Sample points along the NURBS curve for accurate bounds

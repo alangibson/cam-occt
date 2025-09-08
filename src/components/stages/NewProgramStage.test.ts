@@ -1,5 +1,6 @@
 import { render } from '@testing-library/svelte';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { WorkflowStage } from '../../lib/stores/workflow';
 import NewProgramStage from './NewProgramStage.svelte';
 
 // Mock all store dependencies
@@ -7,7 +8,7 @@ vi.mock('../../lib/stores/workflow', () => ({
     workflowStore: {
         subscribe: vi.fn((callback) => {
             callback({
-                currentStage: 'program',
+                currentStage: WorkflowStage.PROGRAM,
                 canAdvanceTo: () => false,
             });
             return vi.fn(); // unsubscribe function

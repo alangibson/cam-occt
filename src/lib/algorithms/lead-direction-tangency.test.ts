@@ -8,6 +8,7 @@ import { CutDirection, LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import { createPolylineFromVertices } from '../geometry/polyline';
 import type { Shape } from '../types';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('Lead Direction and Cut Direction Tangency', () => {
     // Create a simple circular chain for testing
@@ -21,7 +22,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
             shapes: [
                 {
                     id: 'circle-1',
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: {
                         center,
                         radius,

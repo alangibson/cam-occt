@@ -12,6 +12,8 @@ import type {
     Ellipse,
     Spline,
 } from '../../lib/types';
+import { GeometryType } from '../types/geometry';
+import { Unit } from '../utils/units';
 import { generateId } from '../utils/id';
 import { generateSegments } from '../geometry/polyline';
 import { normalizeSplineWeights } from '../geometry/spline';
@@ -70,7 +72,7 @@ export async function parseDXF(
     };
 
     // Extract units from DXF header
-    let drawingUnits: 'mm' | 'inch' = 'mm'; // Default to mm
+    let drawingUnits: Unit = Unit.MM; // Default to mm
 
     if (
         parsed &&
@@ -83,20 +85,20 @@ export async function parseDXF(
         // Convert DXF $INSUNITS values to our unit system
         switch (insunits) {
             case 1: // Inches
-                drawingUnits = 'inch';
+                drawingUnits = Unit.INCH;
                 break;
             case 4: // Millimeters
-                drawingUnits = 'mm';
+                drawingUnits = Unit.MM;
                 break;
             case 5: // Centimeters - treat as mm for now
-                drawingUnits = 'mm';
+                drawingUnits = Unit.MM;
                 break;
             case 6: // Meters - treat as mm for now
-                drawingUnits = 'mm';
+                drawingUnits = Unit.MM;
                 break;
             default:
                 // For all other units (unitless, feet, etc.), default to mm
-                drawingUnits = 'mm';
+                drawingUnits = Unit.MM;
                 break;
         }
     }
@@ -248,7 +250,7 @@ function convertDXFEntity(
                 if (entity.vertices && entity.vertices.length >= 2) {
                     return {
                         id: generateId(),
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: {
                                 x: entity.vertices[0].x,
@@ -265,7 +267,7 @@ function convertDXFEntity(
                     // Alternative LINE format
                     return {
                         id: generateId(),
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: entity.start.x, y: entity.start.y },
                             end: { x: entity.end.x, y: entity.end.y },
@@ -284,7 +286,7 @@ function convertDXFEntity(
                 ) {
                     return {
                         id: generateId(),
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: {
                             center: { x: entity.x, y: entity.y },
                             radius: entity.r,
@@ -305,7 +307,7 @@ function convertDXFEntity(
                 ) {
                     return {
                         id: generateId(),
-                        type: 'arc',
+                        type: GeometryType.ARC,
                         geometry: {
                             center: { x: entity.x, y: entity.y },
                             radius: entity.r,
@@ -352,7 +354,7 @@ function convertDXFEntity(
 
                     return {
                         id: generateId(),
-                        type: 'spline',
+                        type: GeometryType.SPLINE,
                         geometry: normalizedGeometry,
                         ...getLayerInfo(entity, options),
                     };
@@ -399,7 +401,7 @@ function convertDXFEntity(
                         if (shapes.length > 0) {
                             return {
                                 id: generateId(),
-                                type: 'polyline',
+                                type: GeometryType.POLYLINE,
                                 geometry: {
                                     closed: isClosed,
                                     shapes,
@@ -449,7 +451,7 @@ function convertDXFEntity(
 
                     return {
                         id: generateId(),
-                        type: 'ellipse',
+                        type: GeometryType.ELLIPSE,
                         geometry: ellipse,
                         ...getLayerInfo(entity, options),
                     };
@@ -537,14 +539,14 @@ function transformShape(
 
     // Transform geometry based on shape type
     switch (clonedShape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: Line = clonedShape.geometry as Line;
             line.start = transformPoint(line.start);
             line.end = transformPoint(line.end);
             break;
 
-        case 'circle':
-        case 'arc':
+        case GeometryType.CIRCLE:
+        case GeometryType.ARC:
             const circleOrArc: Circle | Arc = clonedShape.geometry as
                 | Circle
                 | Arc;
@@ -552,14 +554,14 @@ function transformShape(
             // Scale radius (use average of scaleX and scaleY for uniform scaling)
             circleOrArc.radius *= (scaleX + scaleY) / 2;
             // Adjust arc angles for rotation
-            if (clonedShape.type === 'arc' && rotationRad !== 0) {
+            if (clonedShape.type === GeometryType.ARC && rotationRad !== 0) {
                 const arc: Arc = circleOrArc as Arc;
                 arc.startAngle += rotationRad;
                 arc.endAngle += rotationRad;
             }
             break;
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: Polyline = clonedShape.geometry as Polyline;
             // Transform all shapes
             polyline.shapes = polyline.shapes.map((shape) => {
@@ -593,7 +595,7 @@ function transformShape(
             });
             break;
 
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             const ellipse: Ellipse = clonedShape.geometry as Ellipse;
             ellipse.center = transformPoint(ellipse.center);
             // Transform the major axis endpoint vector

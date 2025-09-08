@@ -4,7 +4,7 @@
  */
 
 import { writable } from 'svelte/store';
-import type { WorkflowStage } from './workflow';
+import { WorkflowStage } from './workflow';
 import type {
     Point2D,
     Shape,
@@ -80,40 +80,40 @@ function createOverlayStore(): {
     clearAllOverlays: () => void;
 } {
     const initialState: OverlayState = {
-        currentStage: 'import',
+        currentStage: WorkflowStage.IMPORT,
         overlays: {
             import: {
-                stage: 'import',
+                stage: WorkflowStage.IMPORT,
                 shapePoints: [],
                 chainEndpoints: [],
                 tessellationPoints: [],
             },
             edit: {
-                stage: 'edit',
+                stage: WorkflowStage.EDIT,
                 shapePoints: [],
                 chainEndpoints: [],
                 tessellationPoints: [],
             },
             prepare: {
-                stage: 'prepare',
+                stage: WorkflowStage.PREPARE,
                 shapePoints: [],
                 chainEndpoints: [],
                 tessellationPoints: [],
             },
             program: {
-                stage: 'program',
+                stage: WorkflowStage.PROGRAM,
                 shapePoints: [],
                 chainEndpoints: [],
                 tessellationPoints: [],
             },
             simulate: {
-                stage: 'simulate',
+                stage: WorkflowStage.SIMULATE,
                 shapePoints: [],
                 chainEndpoints: [],
                 tessellationPoints: [],
             },
             export: {
-                stage: 'export',
+                stage: WorkflowStage.EXPORT,
                 shapePoints: [],
                 chainEndpoints: [],
                 tessellationPoints: [],

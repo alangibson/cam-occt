@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { workflowStore } from './stores/workflow';
+import { workflowStore, WorkflowStage } from './stores/workflow';
 import { drawingStore } from './stores/drawing';
+import { Unit } from './utils/units';
 
 describe('Workflow Integration', () => {
     beforeEach(() => {
@@ -11,49 +12,57 @@ describe('Workflow Integration', () => {
     describe('Import to Edit transition', () => {
         it('should allow advancing to edit stage after completing import', () => {
             // Initially should be at import stage
-            expect(get(workflowStore).currentStage).toBe('import');
-            expect(get(workflowStore).canAdvanceTo('edit')).toBe(false);
+            expect(get(workflowStore).currentStage).toBe(WorkflowStage.IMPORT);
+            expect(get(workflowStore).canAdvanceTo(WorkflowStage.EDIT)).toBe(
+                false
+            );
 
             // Complete import stage
-            workflowStore.completeStage('import');
+            workflowStore.completeStage(WorkflowStage.IMPORT);
 
             // Should now be able to advance to edit
-            expect(get(workflowStore).canAdvanceTo('edit')).toBe(true);
+            expect(get(workflowStore).canAdvanceTo(WorkflowStage.EDIT)).toBe(
+                true
+            );
 
-            workflowStore.setStage('edit');
-            expect(get(workflowStore).currentStage).toBe('edit');
+            workflowStore.setStage(WorkflowStage.EDIT);
+            expect(get(workflowStore).currentStage).toBe(WorkflowStage.EDIT);
         });
 
         it('should auto-complete edit stage when drawing exists', () => {
             // Progress to edit stage
-            workflowStore.completeStage('import');
-            workflowStore.setStage('edit');
+            workflowStore.completeStage(WorkflowStage.IMPORT);
+            workflowStore.setStage(WorkflowStage.EDIT);
 
             // Simulate drawing being loaded (this would happen in ImportStage component)
             const mockDrawing = {
                 shapes: [],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-                units: 'mm' as const,
+                units: Unit.MM as const,
             };
 
             drawingStore.setDrawing(mockDrawing);
 
             // Edit stage should be completable now
-            workflowStore.completeStage('edit');
-            expect(get(workflowStore).completedStages.has('edit')).toBe(true);
-            expect(get(workflowStore).canAdvanceTo('prepare')).toBe(true);
+            workflowStore.completeStage(WorkflowStage.EDIT);
+            expect(
+                get(workflowStore).completedStages.has(WorkflowStage.EDIT)
+            ).toBe(true);
+            expect(get(workflowStore).canAdvanceTo(WorkflowStage.PREPARE)).toBe(
+                true
+            );
         });
     });
 
     describe('Full workflow progression', () => {
         it('should allow complete workflow progression with proper stages', () => {
             const stages = [
-                'import',
-                'edit',
-                'prepare',
-                'program',
-                'simulate',
-                'export',
+                WorkflowStage.IMPORT,
+                WorkflowStage.EDIT,
+                WorkflowStage.PREPARE,
+                WorkflowStage.PROGRAM,
+                WorkflowStage.SIMULATE,
+                WorkflowStage.EXPORT,
             ] as const;
 
             // Progress through each stage
@@ -87,15 +96,15 @@ describe('Workflow Integration', () => {
     describe('Workflow reset', () => {
         it('should reset workflow state completely', () => {
             // Progress through some stages
-            workflowStore.completeStage('import');
-            workflowStore.setStage('edit');
-            workflowStore.completeStage('edit');
+            workflowStore.completeStage(WorkflowStage.IMPORT);
+            workflowStore.setStage(WorkflowStage.EDIT);
+            workflowStore.completeStage(WorkflowStage.EDIT);
 
             // Add a drawing
             const mockDrawing = {
                 shapes: [],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-                units: 'mm' as const,
+                units: Unit.MM as const,
             };
             drawingStore.setDrawing(mockDrawing);
 
@@ -104,9 +113,9 @@ describe('Workflow Integration', () => {
 
             // Should be back to initial state
             const state = get(workflowStore);
-            expect(state.currentStage).toBe('import');
+            expect(state.currentStage).toBe(WorkflowStage.IMPORT);
             expect(state.completedStages.size).toBe(0);
-            expect(state.canAdvanceTo('edit')).toBe(false);
+            expect(state.canAdvanceTo(WorkflowStage.EDIT)).toBe(false);
 
             // Drawing should still exist (workflow reset doesn't clear drawing)
             expect(get(drawingStore).drawing).toBeTruthy();
@@ -116,25 +125,25 @@ describe('Workflow Integration', () => {
     describe('Stage validation', () => {
         it('should prevent skipping stages', () => {
             // Try to jump directly to program stage
-            workflowStore.setStage('program');
-            expect(get(workflowStore).currentStage).toBe('import'); // Should remain at import
+            workflowStore.setStage(WorkflowStage.PROGRAM);
+            expect(get(workflowStore).currentStage).toBe(WorkflowStage.IMPORT); // Should remain at import
 
             // Try to jump to export
-            workflowStore.setStage('export');
-            expect(get(workflowStore).currentStage).toBe('import'); // Should remain at import
+            workflowStore.setStage(WorkflowStage.EXPORT);
+            expect(get(workflowStore).currentStage).toBe(WorkflowStage.IMPORT); // Should remain at import
 
             // Complete import, should still not be able to skip to program
-            workflowStore.completeStage('import');
-            workflowStore.setStage('program');
-            expect(get(workflowStore).currentStage).toBe('import'); // Should remain at import (edit not completed)
+            workflowStore.completeStage(WorkflowStage.IMPORT);
+            workflowStore.setStage(WorkflowStage.PROGRAM);
+            expect(get(workflowStore).currentStage).toBe(WorkflowStage.IMPORT); // Should remain at import (edit not completed)
 
             // Only after completing edit should program be accessible
-            workflowStore.setStage('edit');
-            workflowStore.completeStage('edit');
-            workflowStore.setStage('prepare');
-            workflowStore.completeStage('prepare');
-            workflowStore.setStage('program');
-            expect(get(workflowStore).currentStage).toBe('program'); // Now should work
+            workflowStore.setStage(WorkflowStage.EDIT);
+            workflowStore.completeStage(WorkflowStage.EDIT);
+            workflowStore.setStage(WorkflowStage.PREPARE);
+            workflowStore.completeStage(WorkflowStage.PREPARE);
+            workflowStore.setStage(WorkflowStage.PROGRAM);
+            expect(get(workflowStore).currentStage).toBe(WorkflowStage.PROGRAM); // Now should work
         });
     });
 });

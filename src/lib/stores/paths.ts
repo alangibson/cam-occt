@@ -1,8 +1,8 @@
 import { writable } from 'svelte/store';
 import type { Point2D, Shape } from '../../lib/types';
-import { workflowStore } from './workflow';
+import { WorkflowStage, workflowStore } from './workflow';
 import { CutDirection, LeadType } from '../types/direction';
-import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 
@@ -88,10 +88,10 @@ export interface PathsState {
 // Helper function to check if program stage should be completed
 function checkProgramStageCompletion(paths: Path[]) {
     if (paths.length > 0) {
-        workflowStore.completeStage('program');
+        workflowStore.completeStage(WorkflowStage.PROGRAM);
     } else {
-        // If no paths exist, invalidate stages after 'prepare'
-        workflowStore.invalidateDownstreamStages('prepare');
+        // If no paths exist, invalidate stages after WorkflowStage.PREPARE
+        workflowStore.invalidateDownstreamStages(WorkflowStage.PREPARE);
     }
 }
 

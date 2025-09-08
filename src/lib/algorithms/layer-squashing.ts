@@ -16,6 +16,7 @@ import type {
     Point2D,
     PolylineVertex,
 } from '../../lib/types';
+import { GeometryType } from '../../lib/types';
 import { polylineToVertices, polylineToPoints } from '../geometry/polyline';
 
 export interface LayerSquashingOptions {
@@ -128,28 +129,28 @@ function areShapesGeometricallyEqual(
     if (shape1.type !== shape2.type) return false;
 
     switch (shape1.type) {
-        case 'circle':
+        case GeometryType.CIRCLE:
             return areCirclesEqual(
                 shape1.geometry as Circle,
                 shape2.geometry as Circle,
                 tolerance
             );
 
-        case 'line':
+        case GeometryType.LINE:
             return areLinesEqual(
                 shape1.geometry as Line,
                 shape2.geometry as Line,
                 tolerance
             );
 
-        case 'arc':
+        case GeometryType.ARC:
             return areArcsEqual(
                 shape1.geometry as Arc,
                 shape2.geometry as Arc,
                 tolerance
             );
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             return arePolylinesEqual(
                 shape1.geometry as Polyline,
                 shape2.geometry as Polyline,

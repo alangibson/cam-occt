@@ -2,20 +2,21 @@
     import {
         workflowStore,
         getStageDisplayName,
-        type WorkflowStage,
+        WorkflowStage,
+        type WorkflowStage as WorkflowStageType,
     } from '../lib/stores/workflow';
     import { uiStore } from '../lib/stores/ui';
 
-    const stages: WorkflowStage[] = [
-        'import',
-        'edit',
-        'prepare',
-        'program',
-        'simulate',
-        'export',
+    const stages: WorkflowStageType[] = [
+        WorkflowStage.IMPORT,
+        WorkflowStage.EDIT,
+        WorkflowStage.PREPARE,
+        WorkflowStage.PROGRAM,
+        WorkflowStage.SIMULATE,
+        WorkflowStage.EXPORT,
     ];
 
-    function handleStageClick(stage: WorkflowStage) {
+    function handleStageClick(stage: WorkflowStageType) {
         if ($workflowStore.canAdvanceTo(stage)) {
             // Hide tool table when navigating to a stage
             uiStore.hideToolTable();

@@ -2,7 +2,7 @@
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import LayersInfo from '../LayersInfo.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
-    import { workflowStore } from '../../lib/stores/workflow';
+    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
     import { drawingStore } from '../../lib/stores/drawing';
     import {
         chainStore,
@@ -47,14 +47,15 @@
     import { decomposePolylines } from '../../lib/algorithms/decompose-polylines';
     import { translateToPositiveQuadrant } from '../../lib/algorithms/translate-to-positive';
     import { joinColinearLines } from '../../lib/algorithms/join-colinear-lines';
-    import type {
-        Shape,
-        Line,
-        Arc,
-        Circle,
-        Polyline,
-        Ellipse,
-        Spline,
+    import {
+        type Shape,
+        type Line,
+        type Arc,
+        type Circle,
+        type Polyline,
+        type Ellipse,
+        type Spline,
+        GeometryType,
     } from '../../lib/types';
     import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
     import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
@@ -95,19 +96,22 @@
 
     // Update Prepare stage overlay when chains are detected (but not during normalization, and only when on prepare stage)
     $: if (
-        $workflowStore.currentStage === 'prepare' &&
+        $workflowStore.currentStage === WorkflowStage.PREPARE &&
         !isNormalizing &&
         detectedChains.length > 0
     ) {
         const chainEndpoints = generateChainEndpoints(detectedChains);
-        overlayStore.setChainEndpoints('prepare', chainEndpoints);
-    } else if ($workflowStore.currentStage === 'prepare' && !isNormalizing) {
-        overlayStore.clearChainEndpoints('prepare');
+        overlayStore.setChainEndpoints(WorkflowStage.PREPARE, chainEndpoints);
+    } else if (
+        $workflowStore.currentStage === WorkflowStage.PREPARE &&
+        !isNormalizing
+    ) {
+        overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
     }
 
     // Update Prepare stage overlay when tessellation changes (only when on prepare stage)
     $: if (
-        $workflowStore.currentStage === 'prepare' &&
+        $workflowStore.currentStage === WorkflowStage.PREPARE &&
         $tessellationStore.isActive &&
         $tessellationStore.points.length > 0
     ) {
@@ -118,9 +122,12 @@
             shapeId: point.shapeId, // Use existing shapeId from tessellation store
             chainId: point.chainId,
         }));
-        overlayStore.setTessellationPoints('prepare', tessellationPoints);
-    } else if ($workflowStore.currentStage === 'prepare') {
-        overlayStore.clearTessellationPoints('prepare');
+        overlayStore.setTessellationPoints(
+            WorkflowStage.PREPARE,
+            tessellationPoints
+        );
+    } else if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
+        overlayStore.clearTessellationPoints(WorkflowStage.PREPARE);
     }
 
     // Chain normalization analysis - use store for persistence
@@ -186,8 +193,8 @@
     );
 
     function handleNext() {
-        workflowStore.completeStage('prepare');
-        workflowStore.setStage('program');
+        workflowStore.completeStage(WorkflowStage.PREPARE);
+        workflowStore.setStage(WorkflowStage.PROGRAM);
     }
 
     function handleDetectChains() {
@@ -224,8 +231,8 @@
             prepareStageStore.clearOriginalNormalizationState();
             prepareStageStore.clearOriginalOptimizationState();
             prepareStageStore.setPartsDetected(false);
-            overlayStore.clearChainEndpoints('prepare');
-            overlayStore.clearTessellationPoints('prepare');
+            overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
+            overlayStore.clearTessellationPoints(WorkflowStage.PREPARE);
             selectChain(null);
             console.log('Cleared all chains and dependent state');
             return;
@@ -278,11 +285,14 @@
                 prepareStageStore.clearOriginalNormalizationState();
 
                 // Update overlays
-                if ($workflowStore.currentStage === 'prepare') {
+                if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
                     const chainEndpoints = generateChainEndpoints(
                         originalState.chains
                     );
-                    overlayStore.setChainEndpoints('prepare', chainEndpoints);
+                    overlayStore.setChainEndpoints(
+                        WorkflowStage.PREPARE,
+                        chainEndpoints
+                    );
                 }
 
                 console.log('Restored original chains before normalization');
@@ -331,19 +341,19 @@
 
             // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
             setTimeout(() => {
-                if ($workflowStore.currentStage === 'prepare') {
+                if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
                     if (newChains.length > 0) {
                         const chainEndpoints =
                             generateChainEndpoints(newChains);
                         overlayStore.setChainEndpoints(
-                            'prepare',
+                            WorkflowStage.PREPARE,
                             chainEndpoints
                         );
                         console.log(
                             `Updated overlay with ${chainEndpoints.length} chain endpoints after normalization.`
                         );
                     } else {
-                        overlayStore.clearChainEndpoints('prepare');
+                        overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
                     }
                 }
                 isNormalizing = false; // Reset flag after overlay is updated
@@ -374,11 +384,14 @@
                 prepareStageStore.clearOriginalOptimizationState();
 
                 // Update overlays
-                if ($workflowStore.currentStage === 'prepare') {
+                if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
                     const chainEndpoints = generateChainEndpoints(
                         originalState.chains
                     );
-                    overlayStore.setChainEndpoints('prepare', chainEndpoints);
+                    overlayStore.setChainEndpoints(
+                        WorkflowStage.PREPARE,
+                        chainEndpoints
+                    );
                 }
 
                 console.log('Restored original chains before optimization');
@@ -423,19 +436,19 @@
 
             // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
             setTimeout(() => {
-                if ($workflowStore.currentStage === 'prepare') {
+                if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
                     if (newChains.length > 0) {
                         const chainEndpoints =
                             generateChainEndpoints(newChains);
                         overlayStore.setChainEndpoints(
-                            'prepare',
+                            WorkflowStage.PREPARE,
                             chainEndpoints
                         );
                         console.log(
                             `Updated overlay with ${chainEndpoints.length} chain endpoints after optimization.`
                         );
                     } else {
-                        overlayStore.clearChainEndpoints('prepare');
+                        overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
                     }
                 }
                 isOptimizingStarts = false; // Reset flag after overlay is updated
@@ -573,12 +586,12 @@
             const shape = chain.shapes[0];
 
             // Single circle is always closed
-            if (shape.type === 'circle') {
+            if (shape.type === GeometryType.CIRCLE) {
                 return true;
             }
 
             // Single full ellipse is always closed
-            if (shape.type === 'ellipse') {
+            if (shape.type === GeometryType.ELLIPSE) {
                 const ellipse = shape.geometry as Ellipse;
                 // Full ellipses are closed, ellipse arcs are open
                 return !(
@@ -588,7 +601,7 @@
             }
 
             // Single closed polyline
-            if (shape.type === 'polyline') {
+            if (shape.type === GeometryType.POLYLINE) {
                 const polyline = shape.geometry as Polyline;
                 // Use the explicit closed flag from DXF parsing if available
                 if (typeof polyline.closed === 'boolean') {
@@ -642,7 +655,7 @@
         maxY: number;
     } {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 const line = shape.geometry as Line;
                 return {
                     minX: Math.min(line.start.x, line.end.x),
@@ -650,7 +663,7 @@
                     minY: Math.min(line.start.y, line.end.y),
                     maxY: Math.max(line.start.y, line.end.y),
                 };
-            case 'circle':
+            case GeometryType.CIRCLE:
                 const circle = shape.geometry as Circle;
                 return {
                     minX: circle.center.x - circle.radius,
@@ -658,7 +671,7 @@
                     minY: circle.center.y - circle.radius,
                     maxY: circle.center.y + circle.radius,
                 };
-            case 'arc':
+            case GeometryType.ARC:
                 const arc = shape.geometry as Arc;
                 return {
                     minX: arc.center.x - arc.radius,
@@ -666,7 +679,7 @@
                     minY: arc.center.y - arc.radius,
                     maxY: arc.center.y + arc.radius,
                 };
-            case 'polyline':
+            case GeometryType.POLYLINE:
                 const polyline = shape.geometry as Polyline;
                 let minX = Infinity,
                     maxX = -Infinity,
@@ -679,7 +692,7 @@
                     maxY = Math.max(maxY, point.y);
                 }
                 return { minX, maxX, minY, maxY };
-            case 'ellipse':
+            case GeometryType.ELLIPSE:
                 const ellipse = shape.geometry as Ellipse;
 
                 // Calculate major and minor axis lengths
@@ -899,7 +912,7 @@
 
     // Auto-complete prepare stage when chains or parts are detected
     $: if (detectedChains.length > 0 || detectedParts.length > 0) {
-        workflowStore.completeStage('prepare');
+        workflowStore.completeStage(WorkflowStage.PREPARE);
     }
 
     // Column widths are now persisted via the prepare stage store - no need for localStorage
@@ -1145,7 +1158,7 @@
         <!-- Center Column -->
         <div class="center-column">
             <DrawingCanvasContainer
-                currentStage="prepare"
+                currentStage={WorkflowStage.PREPARE}
                 treatChainsAsEntities={true}
                 interactionMode="chains"
                 onChainClick={handleChainClick}

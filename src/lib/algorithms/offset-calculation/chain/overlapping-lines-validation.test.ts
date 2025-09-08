@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import type { Shape, Line } from '../../../../lib/types/geometry';
+import {
+    GeometryType,
+    type Shape,
+    type Line,
+} from '../../../../lib/types/geometry';
 import type { OffsetChain } from './types';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
@@ -10,7 +14,7 @@ describe('overlapping lines validation', () => {
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
         return {
             id: generateId(),
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x1, y: y1 },
                 end: { x: x2, y: y2 },

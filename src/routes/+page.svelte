@@ -14,6 +14,7 @@
         clearApplicationState,
     } from '../lib/stores/persistence';
     import { migrateLegacyData } from '../lib/utils/migration';
+    import { Unit } from '../lib/utils/units';
     import { prepareStageStore } from '../lib/stores/prepare-stage';
     import { leadWarningsStore } from '../lib/stores/lead-warnings';
     import { offsetWarningsStore } from '../lib/stores/offset-warnings';
@@ -35,7 +36,7 @@
         drawingStore.setDrawing({
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-            units: 'mm',
+            units: Unit.MM,
             layers: {},
         });
 

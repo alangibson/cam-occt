@@ -1,31 +1,33 @@
-import { describe, it, beforeAll } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import verb from 'verb-nurbs';
-import { offsetLine } from '../offset/line/line';
-import { offsetArc } from '../offset/arc/arc';
-import { offsetPolyline } from '../offset/polyline/polyline';
-import { offsetSpline, tessellateVerbCurve } from '../offset/spline/spline';
-import { offsetEllipse } from '../offset/ellipse/ellipse';
-import { createExtendedLine } from './line';
-import { createExtendedArc } from './arc';
-import { createExtendedPolyline } from './polyline';
-import { createExtendedSplineVerb } from './spline';
-import type {
-    Line,
-    Arc,
-    Polyline,
-    Spline,
-    Ellipse,
-    Circle,
-} from '../../../types/geometry';
-import type { Shape } from '../../../types/geometry';
+import { beforeAll, describe, it } from 'vitest';
+import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';
 import {
-    polylineToPoints,
     createPolylineFromVertices,
+    polylineToPoints,
 } from '../../../geometry/polyline';
 import { SVGBuilder } from '../../../test/svg-builder';
-import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';
+import {
+    GeometryType,
+    type Arc,
+    type Circle,
+    type Ellipse,
+    type Line,
+    type Polyline,
+    type Shape,
+    type Spline,
+} from '../../../types/geometry';
+import { offsetArc } from '../offset/arc/arc';
+import { offsetEllipse } from '../offset/ellipse/ellipse';
+import { offsetLine } from '../offset/line/line';
+import { offsetPolyline } from '../offset/polyline/polyline';
+import { offsetSpline, tessellateVerbCurve } from '../offset/spline/spline';
+import { OffsetDirection } from '../offset/types';
+import { createExtendedArc } from './arc';
+import { createExtendedLine } from './line';
+import { createExtendedPolyline } from './polyline';
+import { createExtendedSplineVerb } from './spline';
 
 describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
     const outputDir = 'tests/output/visual/extend';
@@ -50,21 +52,21 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         // Original line in black
         const originalLineShape: Shape = {
             id: 'original-line',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: testLine,
         };
         svg.addShape(originalLineShape, 'black', 3);
 
         // Create offsets
-        const outsetResult = offsetLine(testLine, 20, 'outset');
-        const insetResult = offsetLine(testLine, 20, 'inset');
+        const outsetResult = offsetLine(testLine, 20, OffsetDirection.OUTSET);
+        const insetResult = offsetLine(testLine, 20, OffsetDirection.INSET);
 
         // Draw offset lines
         if (outsetResult.success) {
             const outsetGeometry = outsetResult.shapes[0].geometry as Line;
             const outsetLineShape: Shape = {
                 id: 'outset-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: outsetGeometry,
             };
             svg.addShape(outsetLineShape, 'red', 2);
@@ -77,7 +79,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             const insetGeometry = insetResult.shapes[0].geometry as Line;
             const insetLineShape: Shape = {
                 id: 'inset-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: insetGeometry,
             };
             svg.addShape(insetLineShape, 'blue', 2);
@@ -98,7 +100,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         };
         const startExtensionShape: Shape = {
             id: 'start-extension',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: startExtensionLine,
         };
         svg.addShape(startExtensionShape, 'green', 2, undefined, '5,5');
@@ -109,7 +111,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         };
         const endExtensionShape: Shape = {
             id: 'end-extension',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: endExtensionLine,
         };
         svg.addShape(endExtensionShape, 'green', 2, undefined, '5,5');
@@ -140,7 +142,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         // Original arc in black
         const originalArcShape: Shape = {
             id: 'original-arc',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: testArc,
         };
         svg.addShape(originalArcShape, 'black', 3);
@@ -149,21 +151,21 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
         const centerCircle: Circle = { center: testArc.center, radius: 3 };
         const centerCircleShape: Shape = {
             id: 'arc-center',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: centerCircle,
         };
         svg.addShape(centerCircleShape, 'black', 1);
 
         // Create offsets
-        const outsetResult = offsetArc(testArc, 20, 'outset');
-        const insetResult = offsetArc(testArc, 20, 'inset');
+        const outsetResult = offsetArc(testArc, 20, OffsetDirection.OUTSET);
+        const insetResult = offsetArc(testArc, 20, OffsetDirection.INSET);
 
         // Draw offset arcs
         if (outsetResult.success) {
             const outsetGeometry = outsetResult.shapes[0].geometry as Arc;
             const outsetArcShape: Shape = {
                 id: 'outset-arc',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: outsetGeometry,
             };
             svg.addShape(outsetArcShape, 'red', 2);
@@ -176,7 +178,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             const insetGeometry = insetResult.shapes[0].geometry as Arc;
             const insetArcShape: Shape = {
                 id: 'inset-arc',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: insetGeometry,
             };
             svg.addShape(insetArcShape, 'blue', 2);
@@ -267,14 +269,14 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                 const polylineFromSpline: Polyline = {
                     shapes: points.slice(0, -1).map((p, i) => ({
                         id: `spline-seg-${index}-${i}`,
-                        type: 'line' as const,
+                        type: GeometryType.LINE,
                         geometry: { start: p, end: points[i + 1] } as Line,
                     })),
                     closed: spline.closed,
                 };
                 const splinePolylineShape: Shape = {
                     id: `spline-polyline-${index}`,
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: polylineFromSpline,
                 };
                 svg.addShape(splinePolylineShape, 'black', 2);
@@ -283,7 +285,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                 const fallbackPolyline: Polyline = {
                     shapes: spline.controlPoints.slice(0, -1).map((p, i) => ({
                         id: `spline-fallback-seg-${index}-${i}`,
-                        type: 'line' as const,
+                        type: GeometryType.LINE,
                         geometry: {
                             start: p,
                             end: spline.controlPoints[i + 1],
@@ -293,7 +295,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                 };
                 const fallbackShape: Shape = {
                     id: `spline-fallback-${index}`,
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: fallbackPolyline,
                 };
                 svg.addShape(fallbackShape, 'black', 2);
@@ -304,7 +306,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                 const controlPointCircle: Circle = { center: point, radius: 3 };
                 const controlPointShape: Shape = {
                     id: `control-point-${index}-${i}`,
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: controlPointCircle,
                 };
                 svg.addShape(controlPointShape, 'purple', 1);
@@ -312,8 +314,20 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             });
 
             // Create offsets
-            const outsetResult = offsetSpline(spline, 20, 'outset', 0.5, 3);
-            const insetResult = offsetSpline(spline, 20, 'inset', 0.5, 3);
+            const outsetResult = offsetSpline(
+                spline,
+                20,
+                OffsetDirection.OUTSET,
+                0.5,
+                3
+            );
+            const insetResult = offsetSpline(
+                spline,
+                20,
+                OffsetDirection.INSET,
+                0.5,
+                3
+            );
 
             // Draw offset splines
             if (outsetResult.success && outsetResult.shapes.length > 0) {
@@ -335,14 +349,14 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     const outsetPolyline: Polyline = {
                         shapes: points.slice(0, -1).map((p, i) => ({
                             id: `outset-spline-seg-${index}-${i}`,
-                            type: 'line' as const,
+                            type: GeometryType.LINE,
                             geometry: { start: p, end: points[i + 1] } as Line,
                         })),
                         closed: outsetGeometry.closed,
                     };
                     const outsetPolylineShape: Shape = {
                         id: `outset-spline-polyline-${index}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: outsetPolyline,
                     };
                     svg.addShape(outsetPolylineShape, 'red', 2);
@@ -352,7 +366,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                             .slice(0, -1)
                             .map((p, i) => ({
                                 id: `outset-fallback-seg-${index}-${i}`,
-                                type: 'line' as const,
+                                type: GeometryType.LINE,
                                 geometry: {
                                     start: p,
                                     end: outsetGeometry.controlPoints[i + 1],
@@ -362,7 +376,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     };
                     const outsetFallbackShape: Shape = {
                         id: `outset-fallback-${index}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: outsetFallbackPolyline,
                     };
                     svg.addShape(outsetFallbackShape, 'red', 2);
@@ -390,14 +404,14 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     const insetPolyline: Polyline = {
                         shapes: points.slice(0, -1).map((p, i) => ({
                             id: `inset-spline-seg-${index}-${i}`,
-                            type: 'line' as const,
+                            type: GeometryType.LINE,
                             geometry: { start: p, end: points[i + 1] } as Line,
                         })),
                         closed: insetGeometry.closed,
                     };
                     const insetPolylineShape: Shape = {
                         id: `inset-spline-polyline-${index}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: insetPolyline,
                     };
                     svg.addShape(insetPolylineShape, 'blue', 2);
@@ -407,7 +421,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                             .slice(0, -1)
                             .map((p, i) => ({
                                 id: `inset-fallback-seg-${index}-${i}`,
-                                type: 'line' as const,
+                                type: GeometryType.LINE,
                                 geometry: {
                                     start: p,
                                     end: insetGeometry.controlPoints[i + 1],
@@ -417,7 +431,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     };
                     const insetFallbackShape: Shape = {
                         id: `inset-fallback-${index}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: insetFallbackPolyline,
                     };
                     svg.addShape(insetFallbackShape, 'blue', 2);
@@ -451,14 +465,14 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                 const extendedPolyline: Polyline = {
                     shapes: points.slice(0, -1).map((p, i) => ({
                         id: `extended-spline-seg-${index}-${i}`,
-                        type: 'line' as const,
+                        type: GeometryType.LINE,
                         geometry: { start: p, end: points[i + 1] } as Line,
                     })),
                     closed: spline.closed,
                 };
                 const extendedPolylineShape: Shape = {
                     id: `extended-spline-${index}`,
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: extendedPolyline,
                 };
                 svg.addShape(extendedPolylineShape, 'green', 1);
@@ -528,7 +542,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             // Original polyline in black
             const originalPolylineShape: Shape = {
                 id: `original-polyline-${index}`,
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: polyline,
             };
             svg.addShape(originalPolylineShape, 'black', 2);
@@ -538,15 +552,23 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                 const vertexCircle: Circle = { center: point, radius: 2 };
                 const vertexShape: Shape = {
                     id: `vertex-${index}-${i}`,
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: vertexCircle,
                 };
                 svg.addShape(vertexShape, 'black', 1);
             });
 
             // Create offsets
-            const outsetResult = offsetPolyline(polyline, 12, 'outset');
-            const insetResult = offsetPolyline(polyline, 12, 'inset');
+            const outsetResult = offsetPolyline(
+                polyline,
+                12,
+                OffsetDirection.OUTSET
+            );
+            const insetResult = offsetPolyline(
+                polyline,
+                12,
+                OffsetDirection.INSET
+            );
 
             // Draw offset polylines
             if (outsetResult.success && outsetResult.shapes.length > 0) {
@@ -554,7 +576,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     const polylineGeometry = shape.geometry as Polyline;
                     const outsetPolylineShape: Shape = {
                         id: `outset-polyline-${index}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: polylineGeometry,
                     };
                     svg.addShape(outsetPolylineShape, 'red', 2);
@@ -576,7 +598,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     const polylineGeometry = shape.geometry as Polyline;
                     const insetPolylineShape: Shape = {
                         id: `inset-polyline-${index}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: polylineGeometry,
                     };
                     svg.addShape(insetPolylineShape, 'blue', 2);
@@ -616,7 +638,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     };
                     const startExtShape: Shape = {
                         id: `polyline-start-ext-${index}`,
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: startExtLine,
                     };
                     svg.addShape(startExtShape, 'green', 1, undefined, '3,3');
@@ -632,7 +654,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     };
                     const endExtShape: Shape = {
                         id: `polyline-end-ext-${index}`,
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: endExtLine,
                     };
                     svg.addShape(endExtShape, 'green', 1, undefined, '3,3');
@@ -709,14 +731,14 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             const ellipsePolyline: Polyline = {
                 shapes: arcPoints.slice(0, -1).map((p, i) => ({
                     id: `ellipse-arc-seg-${index}-${i}`,
-                    type: 'line' as const,
+                    type: GeometryType.LINE,
                     geometry: { start: p, end: arcPoints[i + 1] } as Line,
                 })),
                 closed: false,
             };
             const ellipsePolylineShape: Shape = {
                 id: `ellipse-arc-${index}`,
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: ellipsePolyline,
             };
             svg.addShape(ellipsePolylineShape, 'black', 2);
@@ -728,7 +750,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             };
             const centerShape: Shape = {
                 id: `ellipse-center-${index}`,
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: centerCircle,
             };
             svg.addShape(centerShape, 'black', 1);
@@ -743,7 +765,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             };
             const majorAxisShape: Shape = {
                 id: `major-axis-${index}`,
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: majorAxisLine,
             };
             svg.addShape(majorAxisShape, 'purple', 1, undefined, '2,2');
@@ -753,7 +775,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                 const startCircle: Circle = { center: arcPoints[0], radius: 3 };
                 const startShape: Shape = {
                     id: `ellipse-start-${index}`,
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: startCircle,
                 };
                 svg.addShape(startShape, 'green', 1);
@@ -764,7 +786,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                 };
                 const endShape: Shape = {
                     id: `ellipse-end-${index}`,
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: endCircle,
                 };
                 svg.addShape(endShape, 'orange', 1);
@@ -821,7 +843,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     };
                     const startExtShape: Shape = {
                         id: `ellipse-start-ext-${index}`,
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: startExtLine,
                     };
                     svg.addShape(startExtShape, 'gray', 1, undefined, '5,5');
@@ -832,7 +854,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                     };
                     const endExtShape: Shape = {
                         id: `ellipse-end-ext-${index}`,
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: endExtLine,
                     };
                     svg.addShape(endExtShape, 'gray', 1, undefined, '5,5');
@@ -870,7 +892,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                                     .slice(0, -1)
                                     .map((p, i) => ({
                                         id: `ellipse-ext-start-seg-${index}-${i}`,
-                                        type: 'line' as const,
+                                        type: GeometryType.LINE,
                                         geometry: {
                                             start: p,
                                             end: startExtPoints[i + 1],
@@ -880,7 +902,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                             };
                             const startExtPolyShape: Shape = {
                                 id: `ellipse-ext-start-${index}`,
-                                type: 'polyline',
+                                type: GeometryType.POLYLINE,
                                 geometry: startExtPolyline,
                             };
                             svg.addShape(startExtPolyShape, 'green', 1);
@@ -893,7 +915,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                                     .slice(0, -1)
                                     .map((p, i) => ({
                                         id: `ellipse-ext-end-seg-${index}-${i}`,
-                                        type: 'line' as const,
+                                        type: GeometryType.LINE,
                                         geometry: {
                                             start: p,
                                             end: endExtPoints[i + 1],
@@ -903,7 +925,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                             };
                             const endExtPolyShape: Shape = {
                                 id: `ellipse-ext-end-${index}`,
-                                type: 'polyline',
+                                type: GeometryType.POLYLINE,
                                 geometry: endExtPolyline,
                             };
                             svg.addShape(endExtPolyShape, 'green', 1);
@@ -915,8 +937,16 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             }
 
             // Create both outset and inset offsets to show relationship with extensions
-            const outsetResult = offsetEllipse(ellipseArc, 12, 'outset');
-            const insetResult = offsetEllipse(ellipseArc, 12, 'inset');
+            const outsetResult = offsetEllipse(
+                ellipseArc,
+                12,
+                OffsetDirection.OUTSET
+            );
+            const insetResult = offsetEllipse(
+                ellipseArc,
+                12,
+                OffsetDirection.INSET
+            );
 
             // Draw outset offset
             if (outsetResult.success && outsetResult.shapes.length > 0) {
@@ -939,7 +969,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         const offsetPolyline: Polyline = {
                             shapes: offsetPoints.slice(0, -1).map((p, i) => ({
                                 id: `ellipse-outset-seg-${index}-${i}`,
-                                type: 'line' as const,
+                                type: GeometryType.LINE,
                                 geometry: {
                                     start: p,
                                     end: offsetPoints[i + 1],
@@ -949,7 +979,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         };
                         const offsetPolyShape: Shape = {
                             id: `ellipse-outset-${index}`,
-                            type: 'polyline',
+                            type: GeometryType.POLYLINE,
                             geometry: offsetPolyline,
                         };
                         svg.addShape(offsetPolyShape, 'red', 1);
@@ -962,7 +992,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                                 .slice(0, -1)
                                 .map((p, i) => ({
                                     id: `ellipse-outset-fallback-seg-${index}-${i}`,
-                                    type: 'line' as const,
+                                    type: GeometryType.LINE,
                                     geometry: {
                                         start: p,
                                         end: splineGeometry.controlPoints[
@@ -974,7 +1004,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         };
                         const fallbackShape: Shape = {
                             id: `ellipse-outset-fallback-${index}`,
-                            type: 'polyline',
+                            type: GeometryType.POLYLINE,
                             geometry: fallbackPolyline,
                         };
                         svg.addShape(fallbackShape, 'red', 1);
@@ -1003,7 +1033,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         const insetPolyline: Polyline = {
                             shapes: offsetPoints.slice(0, -1).map((p, i) => ({
                                 id: `ellipse-inset-seg-${index}-${i}`,
-                                type: 'line' as const,
+                                type: GeometryType.LINE,
                                 geometry: {
                                     start: p,
                                     end: offsetPoints[i + 1],
@@ -1013,7 +1043,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         };
                         const insetPolyShape: Shape = {
                             id: `ellipse-inset-${index}`,
-                            type: 'polyline',
+                            type: GeometryType.POLYLINE,
                             geometry: insetPolyline,
                         };
                         svg.addShape(insetPolyShape, 'blue', 1);
@@ -1026,7 +1056,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                                 .slice(0, -1)
                                 .map((p, i) => ({
                                     id: `ellipse-inset-fallback-seg-${index}-${i}`,
-                                    type: 'line' as const,
+                                    type: GeometryType.LINE,
                                     geometry: {
                                         start: p,
                                         end: splineGeometry.controlPoints[
@@ -1038,7 +1068,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         };
                         const insetFallbackShape: Shape = {
                             id: `ellipse-inset-fallback-${index}`,
-                            type: 'polyline',
+                            type: GeometryType.POLYLINE,
                             geometry: insetFallbackPolyline,
                         };
                         svg.addShape(insetFallbackShape, 'blue', 1);

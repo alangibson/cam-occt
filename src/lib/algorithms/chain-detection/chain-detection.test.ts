@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { detectShapeChains } from './chain-detection';
+import { GeometryType } from '$lib/types/geometry';
+import { describe, expect, it } from 'vitest';
+import { createPolylineFromVertices } from '../../geometry/polyline';
 import type { Shape } from '../../types';
 import { generateId } from '../../utils/id';
-import { LeadType } from '../../types/direction';
-import { createPolylineFromVertices } from '../../geometry/polyline';
+import { detectShapeChains } from './chain-detection';
 
 describe('Chain Detection Algorithm', () => {
     // Helper function to create test shapes
@@ -15,7 +15,7 @@ describe('Chain Detection Algorithm', () => {
     ): Shape {
         return {
             id: generateId(),
-            type: LeadType.LINE,
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: startX, y: startY },
                 end: { x: endX, y: endY },
@@ -30,7 +30,7 @@ describe('Chain Detection Algorithm', () => {
     ): Shape {
         return {
             id: generateId(),
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: centerX, y: centerY },
                 radius,
@@ -47,7 +47,7 @@ describe('Chain Detection Algorithm', () => {
     ): Shape {
         return {
             id: generateId(),
-            type: LeadType.ARC,
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: centerX, y: centerY },
                 radius,
@@ -324,7 +324,7 @@ describe('Chain Detection Algorithm', () => {
 
             const polyline1: Shape = {
                 id: generateId(),
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: polyline1Shape,
             } as unknown as Shape;
 
@@ -340,7 +340,7 @@ describe('Chain Detection Algorithm', () => {
 
             const polyline2: Shape = {
                 id: generateId(),
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: polyline2Shape,
             } as unknown as Shape;
 
@@ -371,7 +371,7 @@ describe('Chain Detection Algorithm', () => {
 
             const polyline1: Shape = {
                 id: generateId(),
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: polyline1Shape,
             } as unknown as Shape;
 
@@ -389,7 +389,7 @@ describe('Chain Detection Algorithm', () => {
 
             const polyline2: Shape = {
                 id: generateId(),
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: polyline2Shape,
             } as unknown as Shape;
 

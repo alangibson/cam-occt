@@ -1,12 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
-import { offsetPolyline } from '../offset/polyline/polyline';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import {
+    createPolylineFromVertices,
+    polylineToPoints,
+} from '$lib/geometry/polyline';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import type { Polyline, Point2D, Line } from '$lib/types/geometry';
-import type { Shape } from '$lib/types/geometry';
+import {
+    GeometryType,
+    type Line,
+    type Point2D,
+    type Polyline,
+    type Shape,
+} from '$lib/types/geometry';
+import { mkdirSync, writeFileSync } from 'fs';
+import { join } from 'path';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { offsetPolyline } from '../offset/polyline/polyline';
+import { OffsetDirection } from '../offset/types';
 
 describe('Star Offset Parallelism Diagnostic', () => {
     const outputDir = 'tests/output/diagnostic';
@@ -40,8 +48,12 @@ describe('Star Offset Parallelism Diagnostic', () => {
         const originalPoints = polylineToPoints(starGeometry);
 
         // Generate offsets
-        const outsetResult = offsetPolyline(starGeometry, 8, 'outset');
-        void offsetPolyline(starGeometry, 8, 'inset');
+        const outsetResult = offsetPolyline(
+            starGeometry,
+            8,
+            OffsetDirection.OUTSET
+        );
+        void offsetPolyline(starGeometry, 8, OffsetDirection.INSET);
 
         // Create diagnostic SVG
         const svg = new SVGBuilder(400, 300);
@@ -49,7 +61,7 @@ describe('Star Offset Parallelism Diagnostic', () => {
         // Original star in black
         const originalStarShape: Shape = {
             id: 'original-star',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: starGeometry,
         };
         svg.addShape(originalStarShape, 'black', 2);
@@ -70,7 +82,7 @@ describe('Star Offset Parallelism Diagnostic', () => {
             // Draw offset in red
             const offsetPolylineShape: Shape = {
                 id: 'offset-star',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: offsetPolyline,
             };
             svg.addShape(offsetPolylineShape, 'red', 1);
@@ -141,7 +153,7 @@ describe('Star Offset Parallelism Diagnostic', () => {
                 };
                 const measurementShape: Shape = {
                     id: `measurement-${i}`,
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: measurementLine,
                 };
                 svg.addShape(

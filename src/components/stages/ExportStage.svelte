@@ -1,8 +1,9 @@
 <script lang="ts">
     import GCodeExport from '../GCodeExport.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
-    import { workflowStore } from '../../lib/stores/workflow';
+    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
     import type { CuttingParameters } from '../../lib/types';
+    import { CutterCompensation } from '../../lib/types/cam';
     import { onMount } from 'svelte';
 
     // Resizable columns state
@@ -24,18 +25,18 @@
 
     // G-code generation options with localStorage persistence
     let includeComments = true;
-    let cutterCompensation: 'left_outer' | 'right_inner' | 'off' | null = 'off';
+    let cutterCompensation: CutterCompensation | null = CutterCompensation.OFF;
     let adaptiveFeedControl: boolean | null = true;
     let enableTHC: boolean | null = true;
     let settingsLoaded = false; // Flag to prevent saving during initial load
 
     function handleStartOver() {
         workflowStore.reset();
-        workflowStore.setStage('import');
+        workflowStore.setStage(WorkflowStage.IMPORT);
     }
 
     // Auto-complete export stage
-    workflowStore.completeStage('export');
+    workflowStore.completeStage(WorkflowStage.EXPORT);
 
     // Load settings from localStorage on mount
     onMount(() => {
@@ -67,10 +68,8 @@
             if (savedCutterCompensation === 'null') {
                 cutterCompensation = null;
             } else {
-                cutterCompensation = savedCutterCompensation as
-                    | 'left_outer'
-                    | 'right_inner'
-                    | 'off';
+                cutterCompensation =
+                    savedCutterCompensation as CutterCompensation;
             }
         }
 

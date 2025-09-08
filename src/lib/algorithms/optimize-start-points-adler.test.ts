@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { optimizeStartPoints } from './optimize-start-points';
+import { GeometryType } from '$lib/types/geometry';
+import { describe, expect, it } from 'vitest';
 import type { Shape } from '../../lib/types';
-import type { Chain } from './chain-detection/chain-detection';
-import { LeadType } from '../types/direction';
 import { createPolylineFromVertices } from '../geometry/polyline';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
+import type { Chain } from './chain-detection/chain-detection';
+import { optimizeStartPoints } from './optimize-start-points';
 
 describe('optimizeStartPoints - ADLER.dxf scenario', () => {
     const optimizationParams = {
@@ -22,7 +22,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
             const shapes: Shape[] = [
                 {
                     id: `polyline-${i}-1`,
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: xOffset + 0, y: 0, bulge: 0 },
@@ -34,7 +34,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
                 },
                 {
                     id: `polyline-${i}-2`,
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: xOffset + 10, y: 5, bulge: 0 },
@@ -46,7 +46,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
                 },
                 {
                     id: `polyline-${i}-3`,
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: xOffset + 0, y: 10, bulge: 0 },
@@ -69,7 +69,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
             shapes: [
                 {
                     id: 'line-1',
-                    type: LeadType.LINE,
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 0 },
                         end: { x: 110, y: 0 },
@@ -77,7 +77,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
                 },
                 {
                     id: 'polyline-mixed-1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 110, y: 0, bulge: 0 },
@@ -89,7 +89,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
                 },
                 {
                     id: 'polyline-mixed-2',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 100, y: 10, bulge: 0 },
@@ -136,7 +136,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
             shapes: [
                 {
                     id: 'polyline-1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 0, y: 0, bulge: 0 },
@@ -148,7 +148,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
                 },
                 {
                     id: 'spline-1',
-                    type: 'spline',
+                    type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [
                             { x: 10, y: 10 },
@@ -164,7 +164,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
                 },
                 {
                     id: 'polyline-2',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 0, y: 10, bulge: 0 },
@@ -191,7 +191,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
             shapes: [
                 {
                     id: 'converted-polyline-1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 0, y: 0, bulge: 0 },
@@ -208,7 +208,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
                 },
                 {
                     id: 'converted-polyline-2',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 20, y: 10, bulge: 0 },

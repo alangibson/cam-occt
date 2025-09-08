@@ -9,6 +9,7 @@ import type {
     Polyline,
 } from '../types';
 import type { VerbCurve } from 'verb-nurbs';
+import { GeometryType } from '../types/geometry';
 import { tessellateEllipse } from '../geometry/ellipse-tessellation';
 import type { Shape } from '../algorithms/offset-calculation/chain/types';
 import { tessellateVerbCurve } from '../algorithms/offset-calculation/offset/spline/spline';
@@ -174,7 +175,7 @@ export class SVGBuilder {
         // Add green point at arc start and red point at arc end
         const arcShape: Shape = {
             id: `arc-${Date.now()}`,
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: arc,
         };
         const startPoint: Point2D = getShapeStartPoint(arcShape);
@@ -339,11 +340,11 @@ export class SVGBuilder {
         dashArray?: string
     ) {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 const lineGeom: Line = shape.geometry as Line;
                 this.addLine(lineGeom, color, strokeWidth, dashArray);
                 break;
-            case 'arc':
+            case GeometryType.ARC:
                 this.addArc(
                     shape.geometry as Arc,
                     color,
@@ -351,7 +352,7 @@ export class SVGBuilder {
                     dashArray
                 );
                 break;
-            case 'circle':
+            case GeometryType.CIRCLE:
                 const circleGeom: Circle = shape.geometry as Circle;
                 this.addCircle(
                     circleGeom,
@@ -361,7 +362,7 @@ export class SVGBuilder {
                     dashArray
                 );
                 break;
-            case 'polyline':
+            case GeometryType.POLYLINE:
                 this.addPolyline(
                     shape.geometry as Polyline,
                     color,
@@ -369,7 +370,7 @@ export class SVGBuilder {
                     dashArray
                 );
                 break;
-            case 'spline':
+            case GeometryType.SPLINE:
                 this.addSpline(
                     shape.geometry as Spline,
                     color,
@@ -377,7 +378,7 @@ export class SVGBuilder {
                     dashArray
                 );
                 break;
-            case 'ellipse':
+            case GeometryType.ELLIPSE:
                 this.addEllipse(
                     shape.geometry as Ellipse,
                     color,
@@ -507,7 +508,7 @@ export class SVGBuilder {
         if (isArc) {
             const ellipseShape: Shape = {
                 id: `ellipse-${Date.now()}`,
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: ellipse,
             };
             const startPoint: Point2D = getShapeStartPoint(ellipseShape);
@@ -887,7 +888,7 @@ export class SVGBuilder {
         extensionLength: number = 100
     ) {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 this.addLineExtensions(
                     shape.geometry as Line,
                     color,
@@ -895,7 +896,7 @@ export class SVGBuilder {
                     extensionLength
                 );
                 break;
-            case 'arc':
+            case GeometryType.ARC:
                 this.addArcExtensions(
                     shape.geometry as Arc,
                     color,
@@ -903,7 +904,7 @@ export class SVGBuilder {
                     extensionLength
                 );
                 break;
-            case 'spline':
+            case GeometryType.SPLINE:
                 this.addSplineExtensions(
                     shape.geometry as Spline,
                     color,
@@ -911,7 +912,7 @@ export class SVGBuilder {
                     extensionLength
                 );
                 break;
-            case 'polyline':
+            case GeometryType.POLYLINE:
                 this.addPolylineExtensions(
                     shape.geometry as Polyline,
                     color,

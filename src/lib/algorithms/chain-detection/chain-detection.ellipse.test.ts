@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import type { Ellipse, Point2D, Shape } from '../../types/geometry';
+import { GeometryType } from '../../types/geometry';
 import { detectShapeChains, isShapeClosed } from './chain-detection';
-import type { Shape, Ellipse, Point2D } from '../../types/geometry';
-import { LeadType } from '../../types/direction';
 
 // Helper function to create ellipse shapes
 function createEllipse(
@@ -22,7 +22,7 @@ function createEllipse(
 
     return {
         id,
-        type: 'ellipse',
+        type: GeometryType.ELLIPSE,
         geometry: ellipseGeometry,
     };
 }
@@ -145,11 +145,11 @@ describe('Chain Detection - Ellipse Support', () => {
             // Create a line that connects to the ellipse arc's start point (30, 0)
             const line: Shape = {
                 id: 'line1',
-                type: 'line' as const,
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 30, y: 0 },
                     end: { x: 50, y: 20 },
-                } as const,
+                },
             };
 
             const chains = detectShapeChains([ellipseArc, line], {
@@ -207,7 +207,7 @@ describe('Chain Detection - Ellipse Support', () => {
             // Line connecting to arc end point
             const line: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 20 }, // Arc end point
                     end: { x: 30, y: 50 },
@@ -217,7 +217,7 @@ describe('Chain Detection - Ellipse Support', () => {
             // Circle touching line end point
             const circle: Shape = {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: {
                     center: { x: 30, y: 60 },
                     radius: 10,
@@ -251,7 +251,7 @@ describe('Chain Detection - Ellipse Support', () => {
                 ), // Arc
                 {
                     id: 'line1',
-                    type: LeadType.LINE,
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 20, y: 50 }, // Near arc start
                         end: { x: 0, y: 0 }, // Connects to ellipse1 center

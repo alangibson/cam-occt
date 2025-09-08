@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline } from './spline';
+import { OffsetDirection } from '../types';
 import type { Spline, Polyline } from '../../../../types/geometry';
 import { polylineToPoints } from '../../../../geometry/polyline';
 
@@ -72,7 +73,7 @@ describe('Combination Operations Diagnostic', () => {
                 const originalResult = offsetSpline(
                     originalSpline,
                     0.1,
-                    'outset',
+                    OffsetDirection.OUTSET,
                     1.0,
                     3
                 );
@@ -80,7 +81,7 @@ describe('Combination Operations Diagnostic', () => {
                 const _outsetResult = offsetSpline(
                     originalSpline,
                     25,
-                    'outset',
+                    OffsetDirection.OUTSET,
                     0.1,
                     5
                 );
@@ -88,7 +89,7 @@ describe('Combination Operations Diagnostic', () => {
                 const _insetResult = offsetSpline(
                     originalSpline,
                     25,
-                    'inset',
+                    OffsetDirection.INSET,
                     0.1,
                     5
                 );

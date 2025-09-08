@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { decomposePolylines } from './decompose-polylines';
+import { describe, expect, it } from 'vitest';
 import type { Shape } from '../../lib/types';
 import { createPolylineFromVertices } from '../geometry/polyline';
-import { LeadType } from '../types/direction';
 import type { Line } from '../types/geometry';
+import { GeometryType } from '../types/geometry';
+import { decomposePolylines } from './decompose-polylines';
 
 describe('Decompose Polylines Algorithm', () => {
     describe('Basic Functionality', () => {
@@ -65,7 +65,7 @@ describe('Decompose Polylines Algorithm', () => {
             const shapes: Shape[] = [
                 {
                     id: 'line1',
-                    type: LeadType.LINE,
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 0, y: 0 },
                         end: { x: 10, y: 10 },
@@ -73,7 +73,7 @@ describe('Decompose Polylines Algorithm', () => {
                 },
                 {
                     id: 'circle1',
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: {
                         center: { x: 5, y: 5 },
                         radius: 3,
@@ -186,13 +186,13 @@ describe('Decompose Polylines Algorithm', () => {
             const shapes: Shape[] = [
                 {
                     id: 'line1',
-                    type: LeadType.LINE,
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 5, y: 5 } },
                 },
                 polylineShape,
                 {
                     id: 'circle1',
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: { center: { x: 30, y: 30 }, radius: 5 },
                 },
             ];

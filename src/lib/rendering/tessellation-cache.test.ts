@@ -5,6 +5,7 @@ import {
     cleanupTessellationCache,
     getTessellationCacheStats,
 } from './tessellation-cache';
+import { GeometryType } from '../types/geometry';
 import type { Shape, Spline, Ellipse, Line } from '../types/geometry';
 
 // Mock the tessellation functions
@@ -49,7 +50,7 @@ describe('tessellation-cache', () => {
         it('should return null for non-tessellatable shapes', () => {
             const lineShape: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 10 },
@@ -63,7 +64,7 @@ describe('tessellation-cache', () => {
         it('should tessellate and cache spline shapes', () => {
             const splineShape: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -86,7 +87,7 @@ describe('tessellation-cache', () => {
         it('should tessellate and cache ellipse shapes', () => {
             const ellipseShape: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     minorToMajorRatio: 0.5,
@@ -104,7 +105,7 @@ describe('tessellation-cache', () => {
         it('should return cached result on second call', () => {
             const splineShape: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -138,7 +139,7 @@ describe('tessellation-cache', () => {
 
             const splineShape: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -165,7 +166,7 @@ describe('tessellation-cache', () => {
 
             const splineShape: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -207,7 +208,7 @@ describe('tessellation-cache', () => {
 
             const splineShape: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -231,7 +232,7 @@ describe('tessellation-cache', () => {
         it('should expire old cache entries', () => {
             const splineShape: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -262,7 +263,7 @@ describe('tessellation-cache', () => {
         it('should clear all cached tessellations', () => {
             const splineShape: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -287,7 +288,7 @@ describe('tessellation-cache', () => {
         it('should remove only expired entries', () => {
             const spline1: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -302,7 +303,7 @@ describe('tessellation-cache', () => {
 
             const spline2: Shape = {
                 id: 'spline2',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -350,7 +351,7 @@ describe('tessellation-cache', () => {
         it('should update size as items are cached', () => {
             const splineShape: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -375,7 +376,7 @@ describe('tessellation-cache', () => {
         it('should generate different hashes for different splines', () => {
             const spline1: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -390,7 +391,7 @@ describe('tessellation-cache', () => {
 
             const spline2: Shape = {
                 id: 'spline2',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     degree: 3,
                     controlPoints: [
@@ -412,7 +413,7 @@ describe('tessellation-cache', () => {
         it('should generate different hashes for different ellipses', () => {
             const ellipse1: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     minorToMajorRatio: 0.5,
@@ -422,7 +423,7 @@ describe('tessellation-cache', () => {
 
             const ellipse2: Shape = {
                 id: 'ellipse2',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 5, y: 5 },
                     minorToMajorRatio: 0.5,

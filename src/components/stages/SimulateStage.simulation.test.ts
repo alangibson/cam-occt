@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Shape, Line, Arc, Point2D } from '../../lib/types';
 import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
+import { GeometryType } from '$lib/types/geometry';
 
 // Import the simulation functions - we'll need to extract these from the component
 // For now, let's test the core logic by recreating the key functions
@@ -116,7 +117,7 @@ describe('Simulation Toolhead Movement', () => {
             // Create a simple rectangular path
             const line1: Shape = {
                 id: 'line1-cw',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 }, // Right
@@ -125,7 +126,7 @@ describe('Simulation Toolhead Movement', () => {
 
             const line2: Shape = {
                 id: 'line2-cw',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 }, // Up
@@ -134,7 +135,7 @@ describe('Simulation Toolhead Movement', () => {
 
             const line3: Shape = {
                 id: 'line3-cw',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 10 },
                     end: { x: 0, y: 10 }, // Left
@@ -143,7 +144,7 @@ describe('Simulation Toolhead Movement', () => {
 
             const line4: Shape = {
                 id: 'line4-cw',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 10 },
                     end: { x: 0, y: 0 }, // Down
@@ -198,7 +199,7 @@ describe('Simulation Toolhead Movement', () => {
             // Same rectangular path as above
             const line1: Shape = {
                 id: 'line1-ccw2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 }, // Right
@@ -207,7 +208,7 @@ describe('Simulation Toolhead Movement', () => {
 
             const line2: Shape = {
                 id: 'line2-ccw2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 }, // Up
@@ -216,7 +217,7 @@ describe('Simulation Toolhead Movement', () => {
 
             const line3: Shape = {
                 id: 'line3-ccw2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 10 },
                     end: { x: 0, y: 10 }, // Left
@@ -225,7 +226,7 @@ describe('Simulation Toolhead Movement', () => {
 
             const line4: Shape = {
                 id: 'line4-ccw2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 10 },
                     end: { x: 0, y: 0 }, // Down
@@ -280,7 +281,7 @@ describe('Simulation Toolhead Movement', () => {
             // Simple L-shaped path
             const line1: Shape = {
                 id: 'line1-L',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 }, // Horizontal
@@ -289,7 +290,7 @@ describe('Simulation Toolhead Movement', () => {
 
             const line2: Shape = {
                 id: 'line2-L',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 }, // Vertical
@@ -335,7 +336,7 @@ describe('Simulation Toolhead Movement', () => {
 
             const line: Shape = {
                 id: 'line-single',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },

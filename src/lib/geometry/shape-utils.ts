@@ -8,6 +8,7 @@ import type {
     Ellipse,
     Spline,
 } from '../types';
+import { GeometryType } from '../types/geometry';
 import { sampleNURBS } from './nurbs';
 import { tessellateEllipse } from './ellipse-tessellation';
 import { polylineToPoints } from './polyline';
@@ -19,27 +20,27 @@ import { generateCirclePoints } from './circle';
  */
 export function getShapePoints(shape: Shape): Point2D[] {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             return [line.start, line.end];
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
             return generateCirclePoints(circle.center, circle.radius);
 
-        case 'arc':
+        case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
             return generateArcPoints(arc);
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             return polylineToPoints(polyline);
 
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
             return tessellateEllipse(ellipse, { numPoints: 64 });
 
-        case 'spline':
+        case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;
             try {
                 // Use NURBS sampling for tool path generation

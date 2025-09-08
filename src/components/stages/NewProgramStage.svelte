@@ -5,7 +5,7 @@
     import Paths from '../Paths.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
     import ShapeProperties from '../ShapeProperties.svelte';
-    import { workflowStore } from '../../lib/stores/workflow';
+    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
     import { drawingStore } from '../../lib/stores/drawing';
     import {
         chainStore,
@@ -104,8 +104,8 @@
     }
 
     function handleNext() {
-        if ($workflowStore.canAdvanceTo('simulate')) {
-            workflowStore.setStage('simulate');
+        if ($workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)) {
+            workflowStore.setStage(WorkflowStage.SIMULATE);
         }
     }
 
@@ -307,15 +307,17 @@
                     <button
                         class="next-button"
                         class:disabled={!$workflowStore.canAdvanceTo(
-                            'simulate'
+                            WorkflowStage.SIMULATE
                         )}
-                        disabled={!$workflowStore.canAdvanceTo('simulate')}
+                        disabled={!$workflowStore.canAdvanceTo(
+                            WorkflowStage.SIMULATE
+                        )}
                         onclick={handleNext}
                     >
                         Next: Simulate Cutting
                     </button>
                     <p class="next-help">
-                        {#if !$workflowStore.canAdvanceTo('simulate')}
+                        {#if !$workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)}
                             Create at least one operation with paths to simulate
                             the cutting process.
                         {:else}
@@ -341,7 +343,7 @@
                 </div>
             </div>
             <DrawingCanvasContainer
-                currentStage="program"
+                currentStage={WorkflowStage.PROGRAM}
                 treatChainsAsEntities={true}
                 interactionMode="chains"
                 onChainClick={handleChainClick}

@@ -10,7 +10,12 @@ import type { Path, PathsState } from '../stores/paths';
 import type { Operation } from '../stores/operations';
 import type { DetectedPart, PartHole } from '../algorithms/part-detection';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import { calculateLeads } from '../algorithms/lead-calculation';
+import type { Point2D } from '../types';
+import {
+    calculateLeads,
+    type LeadInConfig,
+    type LeadOutConfig,
+} from '../algorithms/lead-calculation';
 import { LeadType } from '../types/direction';
 import { createLeadInConfig, createLeadOutConfig } from './lead-config-utils';
 import { pathStore } from '../stores/paths';
@@ -239,4 +244,79 @@ export async function calculateAndStoreOperationLeads(
             error
         );
     }
+}
+
+/**
+ * Calculate lead points for a path using the fallback approach
+ * This function encapsulates the common lead calculation logic used in multiple places
+ */
+export function calculateLeadPoints(
+    path: Path,
+    chainMap: Map<string, Chain> | undefined,
+    partMap: Map<string, DetectedPart> | undefined,
+    leadType: 'leadIn' | 'leadOut'
+): Point2D[] | undefined {
+    if (!chainMap || !partMap) {
+        return undefined;
+    }
+
+    try {
+        const chain = chainMap.get(path.chainId);
+        if (!chain) {
+            return undefined;
+        }
+
+        const part = partMap.get(path.chainId); // Part lookup for lead fitting
+        const { chainForLeads, leadInConfig, leadOutConfig } =
+            prepareLeadCalculation(path, chain);
+
+        const leadResult = calculateLeads(
+            chainForLeads,
+            leadInConfig,
+            leadOutConfig,
+            path.cutDirection,
+            part
+        );
+
+        const lead =
+            leadType === 'leadIn' ? leadResult.leadIn : leadResult.leadOut;
+
+        if (lead && lead.points.length > 0) {
+            return lead.points;
+        }
+
+        return undefined;
+    } catch (error) {
+        const actionName = leadType === 'leadIn' ? 'lead-in' : 'lead-out';
+        console.warn(
+            `Failed to calculate ${actionName} for G-code generation:`,
+            path.name,
+            error
+        );
+        return undefined;
+    }
+}
+
+/**
+ * Helper function to prepare chain and configs for lead calculation
+ * Moved here to be shared across different modules
+ */
+function prepareLeadCalculation(
+    path: Path,
+    chain: Chain
+): {
+    chainForLeads: Chain;
+    leadInConfig: LeadInConfig;
+    leadOutConfig: LeadOutConfig;
+} {
+    // Use offset shapes for lead calculation if available
+    const chainForLeads = path.calculatedOffset
+        ? { ...chain, shapes: path.calculatedOffset.offsetShapes }
+        : chain;
+
+    // Create lead configurations based on path properties
+    const leadInConfig = createLeadInConfig(path);
+    const leadOutConfig = createLeadOutConfig(path);
+
+    return { chainForLeads, leadInConfig, leadOutConfig };
 }

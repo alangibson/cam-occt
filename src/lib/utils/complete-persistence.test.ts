@@ -11,11 +11,12 @@ import { drawingStore } from '../stores/drawing';
 import { pathStore } from '../stores/paths';
 import { operationsStore } from '../stores/operations';
 import { setChains } from '../stores/chains';
-import { workflowStore } from '../stores/workflow';
+import { WorkflowStage, workflowStore } from '../stores/workflow';
 import { LeadType, CutDirection } from '../types/direction';
-import type { GeometryType } from '../types/geometry';
+import { GeometryType } from '../types/geometry';
 import type { PathsState } from '../stores/paths';
 import type { WorkflowState } from '../stores/workflow';
+import { Unit } from './units';
 
 // Mock localStorage
 const localStorageMock = {
@@ -49,13 +50,13 @@ describe('Complete Persistence Integration', () => {
             shapes: [
                 {
                     id: 'shape-1',
-                    type: 'circle' as GeometryType,
+                    type: GeometryType.CIRCLE as GeometryType,
                     geometry: { center: { x: 50, y: 50 }, radius: 25 },
                     layer: 'default',
                 },
             ],
             bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
-            units: 'mm' as 'mm' | 'inch',
+            units: Unit.MM,
         };
 
         const testChain = {
@@ -63,7 +64,7 @@ describe('Complete Persistence Integration', () => {
             shapes: [
                 {
                     id: 'shape-1',
-                    type: 'circle' as GeometryType,
+                    type: GeometryType.CIRCLE as GeometryType,
                     geometry: { center: { x: 50, y: 50 }, radius: 25 },
                 },
             ],
@@ -73,12 +74,12 @@ describe('Complete Persistence Integration', () => {
         setChains([testChain]);
 
         // 2. Progress through workflow stages
-        workflowStore.completeStage('import');
-        workflowStore.setStage('edit');
-        workflowStore.completeStage('edit');
-        workflowStore.setStage('prepare');
-        workflowStore.completeStage('prepare');
-        workflowStore.setStage('program');
+        workflowStore.completeStage(WorkflowStage.IMPORT);
+        workflowStore.setStage(WorkflowStage.EDIT);
+        workflowStore.completeStage(WorkflowStage.EDIT);
+        workflowStore.setStage(WorkflowStage.PREPARE);
+        workflowStore.completeStage(WorkflowStage.PREPARE);
+        workflowStore.setStage(WorkflowStage.PROGRAM);
 
         // 3. Create operation with lead settings
         const testOperation = {
@@ -154,10 +155,14 @@ describe('Complete Persistence Integration', () => {
         unsubscribe3();
         const pathWithLeads = pathsState!.paths[0];
 
-        expect(workflowState!.currentStage).toBe('program');
-        expect(workflowState!.completedStages.has('import')).toBe(true);
-        expect(workflowState!.completedStages.has('edit')).toBe(true);
-        // Note: 'prepare' stage may be affected by path generation, focus on core functionality
+        expect(workflowState!.currentStage).toBe(WorkflowStage.PROGRAM);
+        expect(workflowState!.completedStages.has(WorkflowStage.IMPORT)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.EDIT)).toBe(
+            true
+        );
+        // Note: WorkflowStage.PREPARE stage may be affected by path generation, focus on core functionality
         expect(pathWithLeads.calculatedLeadIn).toBeDefined();
         expect(pathWithLeads.calculatedLeadOut).toBeDefined();
         expect(pathWithLeads.leadValidation).toBeDefined();
@@ -180,7 +185,7 @@ describe('Complete Persistence Integration', () => {
         });
         unsubscribe5();
 
-        expect(workflowState!.currentStage).toBe('import'); // Reset to initial
+        expect(workflowState!.currentStage).toBe(WorkflowStage.IMPORT); // Reset to initial
         expect(pathsState!.paths).toHaveLength(0); // No paths
 
         // 8. Restore complete application state
@@ -197,9 +202,13 @@ describe('Complete Persistence Integration', () => {
         unsubscribe7();
 
         // Verify workflow stage restoration
-        expect(workflowState!.currentStage).toBe('program');
-        expect(workflowState!.completedStages.has('import')).toBe(true);
-        expect(workflowState!.completedStages.has('edit')).toBe(true);
+        expect(workflowState!.currentStage).toBe(WorkflowStage.PROGRAM);
+        expect(workflowState!.completedStages.has(WorkflowStage.IMPORT)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.EDIT)).toBe(
+            true
+        );
         // Note: Focus on key stages that are reliably persisted
 
         // Verify paths and lead geometry restoration

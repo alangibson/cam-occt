@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { offsetChain } from '../chain/offset';
-import { detectShapeChains } from '../../chain-detection/chain-detection';
-import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import { generateChainOffsetSVG } from '../chain/visual-tests';
-import type { Shape } from '../../../types/geometry';
-import type { OffsetChain } from '../chain/types';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { GeometryType, type Shape } from '../../../types/geometry';
+import { detectShapeChains } from '../../chain-detection/chain-detection';
+import { normalizeChain } from '../../chain-normalization/chain-normalization';
+import { offsetChain } from '../chain/offset';
+import type { OffsetChain } from '../chain/types';
+import { generateChainOffsetSVG } from '../chain/visual-tests';
 
 describe('Gap Filling Visual Validation', () => {
     // Ensure output directory exists
@@ -25,7 +25,7 @@ describe('Gap Filling Visual Validation', () => {
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
         return {
             id: `line-${Math.random()}`,
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x1, y: y1 },
                 end: { x: x2, y: y2 },
@@ -43,7 +43,7 @@ describe('Gap Filling Visual Validation', () => {
     ): Shape {
         return {
             id: `arc-${Math.random()}`,
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: cx, y: cy },
                 radius,

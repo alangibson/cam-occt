@@ -3,7 +3,11 @@ import type { Shape } from '../../../types/geometry';
 /**
  * Direction for offset operation
  */
-export type OffsetDirection = 'none' | 'inset' | 'outset';
+export enum OffsetDirection {
+    NONE = 'none',
+    INSET = 'inset',
+    OUTSET = 'outset',
+}
 
 /**
  * Result of an offset operation

@@ -4,6 +4,8 @@ import { render, fireEvent } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '../lib/stores/drawing';
 import type { Drawing } from '../lib/types';
+import { Unit } from '../lib/utils/units';
+import { GeometryType } from '$lib/types/geometry';
 
 // Mock window.prompt
 const mockPrompt = vi.fn();
@@ -15,7 +17,7 @@ Object.defineProperty(window, 'prompt', {
 describe('ToolBar Component - Function Coverage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        drawingStore.setDisplayUnit('mm');
+        drawingStore.setDisplayUnit(Unit.MM);
         mockPrompt.mockReturnValue('1');
     });
 
@@ -23,19 +25,19 @@ describe('ToolBar Component - Function Coverage', () => {
         shapes: [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
                 layer: '0',
             },
             {
                 id: '2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 5, y: 5 }, end: { x: 15, y: 15 } },
                 layer: '0',
             },
         ],
         bounds: { min: { x: 0, y: 0 }, max: { x: 15, y: 15 } },
-        units: 'mm',
+        units: Unit.MM,
     };
 
     describe('handleScale function', () => {

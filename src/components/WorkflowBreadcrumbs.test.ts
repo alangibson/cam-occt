@@ -2,9 +2,18 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import WorkflowBreadcrumbs from './WorkflowBreadcrumbs.svelte';
+import { WorkflowStage } from '../lib/stores/workflow';
 
 // Mock the stores
 vi.mock('../lib/stores/workflow', () => ({
+    WorkflowStage: {
+        IMPORT: 'import',
+        EDIT: 'edit',
+        PREPARE: 'prepare',
+        PROGRAM: 'program',
+        SIMULATE: 'simulate',
+        EXPORT: 'export',
+    },
     workflowStore: {
         subscribe: vi.fn(),
         currentStage: 'import',
@@ -39,7 +48,7 @@ describe('WorkflowBreadcrumbs Component', () => {
         // Mock store subscription
         vi.mocked(workflowStore.subscribe).mockImplementation((callback) => {
             callback({
-                currentStage: 'import',
+                currentStage: WorkflowStage.IMPORT,
                 completedStages: new Set(),
                 canAdvanceTo: workflowStore.canAdvanceTo,
             });
@@ -81,7 +90,7 @@ describe('WorkflowBreadcrumbs Component', () => {
 
         await fireEvent.click(editButton!);
 
-        expect(workflowStore.setStage).toHaveBeenCalledWith('edit');
+        expect(workflowStore.setStage).toHaveBeenCalledWith(WorkflowStage.EDIT);
         expect(uiStore.hideToolTable).toHaveBeenCalled();
     });
 
@@ -101,7 +110,10 @@ describe('WorkflowBreadcrumbs Component', () => {
         const { workflowStore } = await import('../lib/stores/workflow');
         vi.mocked(workflowStore.canAdvanceTo).mockImplementation(
             (stage: string) => {
-                return stage === 'import' || stage === 'edit';
+                return (
+                    stage === WorkflowStage.IMPORT ||
+                    stage === WorkflowStage.EDIT
+                );
             }
         );
 
@@ -120,8 +132,11 @@ describe('WorkflowBreadcrumbs Component', () => {
         const { workflowStore } = await import('../lib/stores/workflow');
         vi.mocked(workflowStore.subscribe).mockImplementation((callback) => {
             callback({
-                currentStage: 'prepare',
-                completedStages: new Set(['import', 'edit']),
+                currentStage: WorkflowStage.PREPARE,
+                completedStages: new Set([
+                    WorkflowStage.IMPORT,
+                    WorkflowStage.EDIT,
+                ]),
                 canAdvanceTo: workflowStore.canAdvanceTo,
             });
             return () => {};

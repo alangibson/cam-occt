@@ -3,11 +3,13 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import LayersList from './LayersList.svelte';
 import { drawingStore } from '../lib/stores/drawing';
+import { Unit } from '../lib/utils/units';
 import type { Drawing } from '../lib/types';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('LayersList Component', () => {
     beforeEach(() => {
-        drawingStore.setDisplayUnit('mm');
+        drawingStore.setDisplayUnit(Unit.MM);
     });
 
     it('should render without errors', () => {
@@ -25,19 +27,19 @@ describe('LayersList Component', () => {
             shapes: [
                 {
                     id: '1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
                     layer: 'Layer1',
                 },
                 {
                     id: '2',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 5, y: 5 } },
                     layer: 'Layer2',
                 },
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         drawingStore.setDrawing(mockDrawing);
@@ -53,19 +55,19 @@ describe('LayersList Component', () => {
             shapes: [
                 {
                     id: '1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
                     layer: '',
                 },
                 {
                     id: '2',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 5, y: 5 } },
                     layer: undefined,
                 },
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         drawingStore.setDrawing(mockDrawing);
@@ -80,25 +82,25 @@ describe('LayersList Component', () => {
             shapes: [
                 {
                     id: '1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
                     layer: 'Layer1',
                 },
                 {
                     id: '2',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 5, y: 5 } },
                     layer: 'Layer1',
                 },
                 {
                     id: '3',
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: { center: { x: 0, y: 0 }, radius: 5 },
                     layer: 'Layer2',
                 },
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         drawingStore.setDrawing(mockDrawing);
@@ -117,13 +119,13 @@ describe('LayersList Component', () => {
             shapes: [
                 {
                     id: '1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
                     layer: 'TestLayer',
                 },
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         drawingStore.setDrawing(mockDrawing);
@@ -144,25 +146,25 @@ describe('LayersList Component', () => {
             shapes: [
                 {
                     id: '1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
                     layer: 'ZLayer',
                 },
                 {
                     id: '2',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 5, y: 5 } },
                     layer: 'ALayer',
                 },
                 {
                     id: '3',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 3, y: 3 } },
                     layer: '', // Will become layer '0'
                 },
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         drawingStore.setDrawing(mockDrawing);

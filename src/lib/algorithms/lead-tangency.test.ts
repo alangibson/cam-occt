@@ -7,6 +7,8 @@ import {
 import { CutDirection, LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
+import { PartType } from './part-detection';
+import { GeometryType } from '../../lib/types/geometry';
 import type { Shape } from '../../lib/types/geometry';
 
 describe('Lead Tangency Tests', () => {
@@ -17,7 +19,7 @@ describe('Lead Tangency Tests', () => {
     ): Chain {
         const shape: Shape = {
             id: 'shape1',
-            type: LeadType.LINE,
+            type: GeometryType.LINE,
             geometry: { start, end },
             layer: 'layer1',
         };
@@ -35,7 +37,7 @@ describe('Lead Tangency Tests', () => {
     ): Chain {
         const shape: Shape = {
             id: 'shape1',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: { center, radius },
             layer: 'layer1',
         };
@@ -171,7 +173,7 @@ describe('Lead Tangency Tests', () => {
                 shell: {
                     id: 'shell1',
                     chain: shellChain,
-                    type: 'shell',
+                    type: PartType.SHELL,
                     boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
                     holes: [],
                 },
@@ -183,7 +185,7 @@ describe('Lead Tangency Tests', () => {
                 shell: {
                     id: 'shell2',
                     chain: shellChain,
-                    type: 'shell',
+                    type: PartType.SHELL,
                     boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
                     holes: [],
                 },
@@ -191,7 +193,7 @@ describe('Lead Tangency Tests', () => {
                     {
                         id: 'hole1',
                         chain: holeChain,
-                        type: 'hole',
+                        type: PartType.HOLE,
                         boundingBox: { minX: 4, maxX: 6, minY: 4, maxY: 6 },
                         holes: [],
                     },

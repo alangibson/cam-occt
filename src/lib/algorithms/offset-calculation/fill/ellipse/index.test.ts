@@ -1,8 +1,13 @@
-import { describe, it, expect } from 'vitest';
-import { fillEllipseToIntersection } from './index';
-import type { FillOptions, FillResult } from '../types';
-import type { Shape, Ellipse, Point2D } from '$lib/types/geometry';
+import {
+    GeometryType,
+    type Ellipse,
+    type Point2D,
+    type Shape,
+} from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
+import { describe, expect, it } from 'vitest';
+import { type FillOptions, type FillResult } from '../types';
+import { fillEllipseToIntersection } from './index';
 
 describe('fillEllipseToIntersection', () => {
     // Helper function to create test ellipses
@@ -17,7 +22,7 @@ describe('fillEllipseToIntersection', () => {
     ): Shape {
         return {
             id: generateId(),
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center: { x: cx, y: cy },
                 majorAxisEndpoint: { x: majorAxisX, y: majorAxisY },
@@ -321,7 +326,7 @@ describe('fillEllipseToIntersection', () => {
         it('should reject non-ellipse shapes', () => {
             const circle: Shape = {
                 id: generateId(),
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     radius: 5,

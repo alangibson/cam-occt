@@ -1,13 +1,18 @@
 import { describe, it, expect } from 'vitest';
 import { findSplineCircleIntersectionsVerb } from './index';
-import type { Shape, Circle, Spline } from '../../../../../lib/types/geometry';
+import {
+    type Shape,
+    type Circle,
+    type Spline,
+    GeometryType,
+} from '../../../../../lib/types/geometry';
 
 describe('Circle-Spline Intersection with Extensions', () => {
     it('should find intersection when spline is extended', () => {
         // Create a circle at origin
         const circleShape: Shape = {
             id: 'circle1',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: 0, y: 0 },
                 radius: 50,
@@ -18,7 +23,7 @@ describe('Circle-Spline Intersection with Extensions', () => {
         // The spline starts at (60, 0) and curves away, but if extended backward would hit the circle
         const splineShape: Shape = {
             id: 'spline1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: {
                 controlPoints: [
                     { x: 60, y: 0 }, // Start just outside the circle
@@ -72,7 +77,7 @@ describe('Circle-Spline Intersection with Extensions', () => {
         // Create a circle at origin
         const circleShape: Shape = {
             id: 'circle1',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: 0, y: 0 },
                 radius: 50,
@@ -82,7 +87,7 @@ describe('Circle-Spline Intersection with Extensions', () => {
         // Create a spline that passes through the circle
         const splineShape: Shape = {
             id: 'spline1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: {
                 controlPoints: [
                     { x: -60, y: 0 }, // Start outside
@@ -119,7 +124,7 @@ describe('Circle-Spline Intersection with Extensions', () => {
         // Create a circle at (100, 100)
         const circleShape: Shape = {
             id: 'circle1',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: 100, y: 100 },
                 radius: 30,
@@ -129,7 +134,7 @@ describe('Circle-Spline Intersection with Extensions', () => {
         // Create a straight spline that points toward the circle center when extended
         const splineShape: Shape = {
             id: 'spline1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: {
                 controlPoints: [
                     { x: 0, y: 0 }, // Start at origin

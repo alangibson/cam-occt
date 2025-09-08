@@ -1,3 +1,4 @@
+import { GeometryType } from '../../lib/types/geometry';
 import type {
     Shape,
     Point2D,
@@ -51,21 +52,21 @@ function translateShape(shape: Shape, dx: number, dy: number): Shape {
     const translated: Shape = { ...shape };
 
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             translated.geometry = {
                 start: { x: line.start.x + dx, y: line.start.y + dy },
                 end: { x: line.end.x + dx, y: line.end.y + dy },
             };
             break;
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
             translated.geometry = {
                 center: { x: circle.center.x + dx, y: circle.center.y + dy },
                 radius: circle.radius,
             };
             break;
-        case 'arc':
+        case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
             translated.geometry = {
                 center: { x: arc.center.x + dx, y: arc.center.y + dy },
@@ -75,7 +76,7 @@ function translateShape(shape: Shape, dx: number, dy: number): Shape {
                 clockwise: arc.clockwise,
             };
             break;
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             // Translate shapes instead of points/vertices (new polyline structure)
             const translatedShapes: Shape[] = polyline.shapes.map(
@@ -120,7 +121,7 @@ function translateShape(shape: Shape, dx: number, dy: number): Shape {
                 shapes: translatedShapes,
             };
             break;
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
             translated.geometry = {
                 center: { x: ellipse.center.x + dx, y: ellipse.center.y + dy },
@@ -130,7 +131,7 @@ function translateShape(shape: Shape, dx: number, dy: number): Shape {
                 endParam: ellipse.endParam,
             };
             break;
-        case 'spline':
+        case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;
             translated.geometry = {
                 ...spline,

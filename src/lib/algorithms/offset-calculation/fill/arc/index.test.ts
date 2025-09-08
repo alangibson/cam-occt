@@ -1,8 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import { fillArcToIntersection } from './index';
-import type { Shape, Arc } from '../../../../../lib/types/geometry';
-import type { FillOptions } from '../types';
+import { describe, expect, it } from 'vitest';
+import {
+    GeometryType,
+    type Arc,
+    type Shape,
+} from '../../../../../lib/types/geometry';
 import { TOLERANCE } from '../../../../constants';
+import type { FillOptions } from '../types';
+import { fillArcToIntersection } from './index';
 
 describe('fillArcToIntersection', () => {
     const createArcShape = (
@@ -14,7 +18,7 @@ describe('fillArcToIntersection', () => {
         clockwise: boolean = false
     ): Shape => ({
         id: 'test-arc',
-        type: 'arc',
+        type: GeometryType.ARC,
         geometry: {
             center: { x: centerX, y: centerY },
             radius,
@@ -237,7 +241,7 @@ describe('fillArcToIntersection', () => {
         it('should reject non-arc shapes', () => {
             const notAnArc: Shape = {
                 id: 'test-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
             };
 

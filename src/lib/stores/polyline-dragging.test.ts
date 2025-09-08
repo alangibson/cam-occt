@@ -5,7 +5,13 @@ import {
     polylineToPoints,
     polylineToVertices,
 } from '../geometry/polyline';
-import type { Shape, Point2D, Drawing, Polyline } from '../../lib/types';
+import {
+    type Shape,
+    type Point2D,
+    type Drawing,
+    type Polyline,
+    Unit,
+} from '../../lib/types';
 
 describe('Polyline Dragging Bug Fixes', () => {
     describe('moveShape function', () => {
@@ -30,7 +36,7 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing({
                 shapes: [polylineShape],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
-                units: 'mm',
+                units: Unit.MM,
             });
 
             // Move the polyline
@@ -96,7 +102,7 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing({
                 shapes: [simplePolyline],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 50, y: 50 } },
-                units: 'mm',
+                units: Unit.MM,
             });
 
             drawingStore.moveShapes([simplePolyline.id], delta);
@@ -152,7 +158,7 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing({
                 shapes: [polylineShape],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
-                units: 'mm',
+                units: Unit.MM,
             });
 
             drawingStore.scaleShapes([polylineShape.id], scaleFactor, origin);
@@ -209,7 +215,7 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing({
                 shapes: [polylineShape],
                 bounds: { min: { x: 100, y: 0 }, max: { x: 200, y: 0 } },
-                units: 'mm',
+                units: Unit.MM,
             });
 
             drawingStore.rotateShapes([polylineShape.id], angle, origin);
@@ -268,7 +274,7 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing({
                 shapes: [complexPolyline],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
-                units: 'mm',
+                units: Unit.MM,
             });
 
             // Test 1: Move the polyline

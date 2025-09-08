@@ -1,10 +1,11 @@
-export type GeometryType =
-    | 'line'
-    | 'arc'
-    | 'circle'
-    | 'polyline'
-    | 'spline'
-    | 'ellipse';
+export enum GeometryType {
+    LINE = 'line',
+    ARC = 'arc',
+    CIRCLE = 'circle',
+    POLYLINE = 'polyline',
+    SPLINE = 'spline',
+    ELLIPSE = 'ellipse',
+}
 
 export type Geometry = Arc | Line | Circle | Ellipse | Polyline | Spline;
 
@@ -83,9 +84,11 @@ export interface Layer {
     color?: string;
 }
 
+import { Unit } from '../utils/units';
+
 export interface Drawing {
     shapes: Shape[];
     bounds: BoundingBox;
-    units: 'mm' | 'inch';
+    units: Unit;
     layers?: Record<string, Layer>; // Optional layer-based shape organization
 }

@@ -1,6 +1,11 @@
-import { describe, test, expect } from 'vitest';
+import { describe, expect, test } from 'vitest';
+import {
+    GeometryType,
+    type Arc,
+    type Shape,
+    type Spline,
+} from '../../../../types/geometry';
 import { findSplineArcIntersectionsVerb } from './index';
-import type { Shape, Spline, Arc } from '../../../../types/geometry';
 
 describe('Spline-Arc Extension Intersections', () => {
     test('should find intersection with extended spline', () => {
@@ -19,7 +24,7 @@ describe('Spline-Arc Extension Intersections', () => {
 
         const splineShape: Shape = {
             id: 'test-spline-1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
 
@@ -34,7 +39,7 @@ describe('Spline-Arc Extension Intersections', () => {
 
         const arcShape: Shape = {
             id: 'test-arc-1',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: arc,
         };
 
@@ -78,7 +83,7 @@ describe('Spline-Arc Extension Intersections', () => {
 
         const splineShape: Shape = {
             id: 'test-spline-2',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
 
@@ -93,7 +98,7 @@ describe('Spline-Arc Extension Intersections', () => {
 
         const arcShape: Shape = {
             id: 'test-arc-2',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: arc,
         };
 
@@ -137,7 +142,7 @@ describe('Spline-Arc Extension Intersections', () => {
 
         const splineShape: Shape = {
             id: 'test-spline-3',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
 
@@ -152,7 +157,7 @@ describe('Spline-Arc Extension Intersections', () => {
 
         const arcShape: Shape = {
             id: 'test-arc-3',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: arc,
         };
 
@@ -196,7 +201,7 @@ describe('Spline-Arc Extension Intersections', () => {
 
         const splineShape: Shape = {
             id: 'test-spline-4',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
 
@@ -211,7 +216,7 @@ describe('Spline-Arc Extension Intersections', () => {
 
         const arcShape: Shape = {
             id: 'test-arc-4',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: arc,
         };
 

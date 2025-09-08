@@ -1,16 +1,16 @@
-import { describe, it, expect } from 'vitest';
-import { offsetChain } from '../chain/offset';
+import { describe, expect, it } from 'vitest';
+import { createPolylineFromVertices } from '../../../geometry/polyline';
+import { GeometryType, type Shape } from '../../../types/geometry';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import type { Shape } from '../../../types/geometry';
-import { createPolylineFromVertices } from '../../../geometry/polyline';
+import { offsetChain } from '../chain/offset';
 
 describe('Gap Filling Integration Tests', () => {
     // Helper to create shapes
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
         return {
             id: `line-${Math.random()}`,
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x1, y: y1 },
                 end: { x: x2, y: y2 },
@@ -28,7 +28,7 @@ describe('Gap Filling Integration Tests', () => {
     ): Shape {
         return {
             id: `arc-${Math.random()}`,
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: cx, y: cy },
                 radius,
@@ -167,7 +167,7 @@ describe('Gap Filling Integration Tests', () => {
                 createArc(50, 10, 15, -Math.PI / 2, 0, false), // Arc
                 {
                     id: 'polyline-1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 65, y: 10, bulge: 0 },

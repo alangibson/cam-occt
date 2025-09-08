@@ -7,7 +7,9 @@ import {
 import { CutDirection, LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
+import { PartType } from './part-detection';
 import type { Shape } from '../../lib/types/geometry';
+import { GeometryType } from '../../lib/types/geometry';
 
 describe('calculateLeads', () => {
     // Helper to create a simple line chain
@@ -17,7 +19,7 @@ describe('calculateLeads', () => {
     ): Chain {
         const shape: Shape = {
             id: 'shape1',
-            type: LeadType.LINE,
+            type: GeometryType.LINE,
             geometry: { start, end },
             layer: 'layer1',
         };
@@ -35,7 +37,7 @@ describe('calculateLeads', () => {
     ): Chain {
         const shape: Shape = {
             id: 'shape1',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: { center, radius },
             layer: 'layer1',
         };
@@ -146,7 +148,7 @@ describe('calculateLeads', () => {
                 shell: {
                     id: 'shell1',
                     chain: shellChain,
-                    type: 'shell',
+                    type: PartType.SHELL,
                     boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
                     holes: [],
                 },
@@ -154,7 +156,7 @@ describe('calculateLeads', () => {
                     {
                         id: 'hole1',
                         chain: holeChain,
-                        type: 'hole',
+                        type: PartType.HOLE,
                         boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
                         holes: [],
                     },
@@ -197,7 +199,7 @@ describe('calculateLeads', () => {
                 shell: {
                     id: 'shell1',
                     chain: shellChain,
-                    type: 'shell',
+                    type: PartType.SHELL,
                     boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
                     holes: [],
                 },

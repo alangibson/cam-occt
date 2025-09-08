@@ -1,3 +1,4 @@
+import { GeometryType } from '../../../types/geometry';
 import type {
     Point2D,
     Circle,
@@ -349,6 +350,34 @@ export function calculateEllipseAngle(
 }
 
 /**
+ * Helper function to create extension result
+ */
+function createExtensionResult(
+    success: boolean,
+    angularExtension = 0,
+    direction: 'start' | 'end' = 'end',
+    originalStartAngle = 0,
+    error?: string
+): ExtensionResult {
+    if (success) {
+        return {
+            success: true,
+            angularExtension,
+            direction,
+            originalStartAngle,
+        };
+    } else {
+        return {
+            success: false,
+            angularExtension: 0,
+            direction: 'end',
+            originalStartAngle: 0,
+            error: error || 'Extension calculation failed',
+        };
+    }
+}
+
+/**
  * Determine how to extend the ellipse
  */
 export function determineEllipseExtension(
@@ -384,20 +413,15 @@ export function determineEllipseExtension(
             angularExtension = Math.min(maxAngularExtension, Math.PI / 3); // Extend 60 degrees total
         }
 
-        return {
-            success: true,
+        return createExtensionResult(
+            true,
             angularExtension,
             direction,
-            originalStartAngle,
-        };
+            originalStartAngle
+        );
     } catch (error) {
-        return {
-            success: false,
-            angularExtension: 0,
-            direction: 'end',
-            originalStartAngle: 0,
-            error: `Extension calculation failed: ${error instanceof Error ? (error as Error).message : String(error)}`,
-        };
+        const errorMsg = `Extension calculation failed: ${error instanceof Error ? (error as Error).message : String(error)}`;
+        return createExtensionResult(false, 0, 'end', 0, errorMsg);
     }
 }
 
@@ -712,20 +736,15 @@ export function determineCircleExtension(
             angularExtension = Math.min(maxAngularExtension, Math.PI / 2); // Extend 90 degrees total
         }
 
-        return {
-            success: true,
+        return createExtensionResult(
+            true,
             angularExtension,
             direction,
-            originalStartAngle,
-        };
+            originalStartAngle
+        );
     } catch (error) {
-        return {
-            success: false,
-            angularExtension: 0,
-            direction: 'end',
-            originalStartAngle: 0,
-            error: `Extension calculation failed: ${error instanceof Error ? (error as Error).message : String(error)}`,
-        };
+        const errorMsg = `Extension calculation failed: ${error instanceof Error ? (error as Error).message : String(error)}`;
+        return createExtensionResult(false, 0, 'end', 0, errorMsg);
     }
 }
 
@@ -850,7 +869,10 @@ export function processFillExtendResult(
         success: true,
         extendedShape: {
             ...shape,
-            type: shape.type === 'circle' ? 'arc' : 'ellipse',
+            type:
+                shape.type === GeometryType.CIRCLE
+                    ? GeometryType.ARC
+                    : GeometryType.ELLIPSE,
             geometry,
         },
         extension,

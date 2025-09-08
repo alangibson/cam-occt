@@ -9,6 +9,7 @@ import type {
     Spline,
     Shape,
 } from '../types/geometry';
+import { GeometryType } from '../types/geometry';
 import { polylineToPoints } from './polyline';
 import { sampleNURBS } from './nurbs';
 import { calculateArcPoint } from '../utils/arc-utils';
@@ -310,17 +311,17 @@ export function getBoundingBoxForSpline(spline: Spline): BoundingBox {
 
 export function getBoundingBoxForShape(shape: Shape): BoundingBox {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             return getBoundingBoxForLine(shape.geometry as Line);
-        case 'arc':
+        case GeometryType.ARC:
             return getBoundingBoxForArc(shape.geometry as Arc);
-        case 'circle':
+        case GeometryType.CIRCLE:
             return getBoundingBoxForCircle(shape.geometry as Circle);
-        case 'polyline':
+        case GeometryType.POLYLINE:
             return getBoundingBoxForPolyline(shape.geometry as Polyline);
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             return getBoundingBoxForEllipse(shape.geometry as Ellipse);
-        case 'spline':
+        case GeometryType.SPLINE:
             return getBoundingBoxForSpline(shape.geometry as Spline);
         default:
             throw new Error(`Unsupported shape type: ${shape.type}`);

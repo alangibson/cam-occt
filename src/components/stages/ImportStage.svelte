@@ -1,6 +1,6 @@
 <script lang="ts">
     import FileImport from '../FileImport.svelte';
-    import { workflowStore } from '../../lib/stores/workflow';
+    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
     import { clearChains } from '../../lib/stores/chains';
     import { clearParts } from '../../lib/stores/parts';
     import { overlayStore } from '../../lib/stores/overlay';
@@ -20,11 +20,11 @@
         tessellationStore.clearTessellation();
 
         // Mark import stage as complete
-        workflowStore.completeStage('import');
+        workflowStore.completeStage(WorkflowStage.IMPORT);
 
         // Auto-advance to edit stage after successful import
         setTimeout(() => {
-            workflowStore.setStage('edit');
+            workflowStore.setStage(WorkflowStage.EDIT);
         }, 500);
     }
 </script>

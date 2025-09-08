@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { detectParts } from './part-detection';
-import type { Chain as ShapeChain } from './chain-detection/chain-detection';
+import { GeometryType } from '$lib/types/geometry';
+import { describe, expect, it } from 'vitest';
 import { generateId } from '../utils/id';
-import { LeadType } from '../types/direction';
+import type { Chain as ShapeChain } from './chain-detection/chain-detection';
+import { detectParts } from './part-detection';
 
 describe('Part Detection Algorithm', () => {
     // Helper function to create test shapes
@@ -14,7 +14,7 @@ describe('Part Detection Algorithm', () => {
     ) {
         return {
             id: generateId(),
-            type: LeadType.LINE as const,
+            type: GeometryType.LINE as const,
             geometry: {
                 start: { x: startX, y: startY },
                 end: { x: endX, y: endY },
@@ -25,7 +25,7 @@ describe('Part Detection Algorithm', () => {
     function createCircle(centerX: number, centerY: number, radius: number) {
         return {
             id: generateId(),
-            type: 'circle' as const,
+            type: GeometryType.CIRCLE as const,
             geometry: {
                 center: { x: centerX, y: centerY },
                 radius,

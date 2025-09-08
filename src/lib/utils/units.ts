@@ -3,7 +3,10 @@
  * Handles conversion between different units and physical display scaling
  */
 
-export type Unit = 'mm' | 'inch';
+export enum Unit {
+    MM = 'mm',
+    INCH = 'inch',
+}
 
 // Physical constants for screen display
 const MM_PER_INCH: number = 25.4;
@@ -16,9 +19,9 @@ const PIXELS_PER_MM: number = PIXELS_PER_INCH / MM_PER_INCH; // ~3.78 pixels per
  */
 export function getPixelsPerUnit(unit: Unit): number {
     switch (unit) {
-        case 'mm':
+        case Unit.MM:
             return PIXELS_PER_MM; // ~3.78 pixels per mm
-        case 'inch':
+        case Unit.INCH:
             return PIXELS_PER_INCH; // 96 pixels per inch
         default:
             return PIXELS_PER_MM; // Default to mm
@@ -38,11 +41,11 @@ export function convertUnits(
         return value;
     }
 
-    if (fromUnit === 'mm' && toUnit === 'inch') {
+    if (fromUnit === Unit.MM && toUnit === Unit.INCH) {
         return value / MM_PER_INCH;
     }
 
-    if (fromUnit === 'inch' && toUnit === 'mm') {
+    if (fromUnit === Unit.INCH && toUnit === Unit.MM) {
         return value * MM_PER_INCH;
     }
 
@@ -66,7 +69,7 @@ export function getPhysicalScaleFactor(
  * Format a numeric value with appropriate precision for the given unit
  */
 export function formatValue(value: number, unit: Unit): string {
-    const precision: number = unit === 'inch' ? 3 : 1; // More precision for inches
+    const precision: number = unit === Unit.INCH ? 3 : 1; // More precision for inches
     return value.toFixed(precision);
 }
 
@@ -75,11 +78,18 @@ export function formatValue(value: number, unit: Unit): string {
  */
 export function getUnitSymbol(unit: Unit): string {
     switch (unit) {
-        case 'mm':
+        case Unit.MM:
             return 'mm';
-        case 'inch':
+        case Unit.INCH:
             return 'in';
         default:
             return '';
     }
+}
+
+/**
+ * Type guard for checking if a value is a valid Unit
+ */
+export function isUnit(value: unknown): value is Unit {
+    return Object.values(Unit).includes(value as Unit);
 }

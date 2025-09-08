@@ -1,15 +1,17 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import { writeFileSync, mkdirSync } from 'fs';
 import { offsetEllipse } from './ellipse';
-import type {
-    Shape,
-    Ellipse,
-    Spline,
-    Polyline,
-    Point2D,
+import {
+    GeometryType,
+    type Shape,
+    type Ellipse,
+    type Spline,
+    type Polyline,
+    type Point2D,
 } from '../../../../types/geometry';
 import { polylineToPoints } from '../../../../geometry/polyline';
 import verb from 'verb-nurbs';
+import { OffsetDirection } from '../types';
 
 /**
  * Visual validation test for ellipse offsets
@@ -94,7 +96,7 @@ describe('Ellipse Offset Visual Validation', () => {
                 rx: 80,
                 ry: 40,
                 offsetDistance: 25,
-                direction: 'outset' as const,
+                direction: OffsetDirection.OUTSET,
             },
             {
                 id: 2,
@@ -103,7 +105,7 @@ describe('Ellipse Offset Visual Validation', () => {
                 rx: 80,
                 ry: 40,
                 offsetDistance: 20,
-                direction: 'inset' as const,
+                direction: OffsetDirection.INSET,
             },
             {
                 id: 3,
@@ -112,7 +114,7 @@ describe('Ellipse Offset Visual Validation', () => {
                 rx: 100,
                 ry: 15,
                 offsetDistance: 15,
-                direction: 'outset' as const,
+                direction: OffsetDirection.OUTSET,
             },
             {
                 id: 4,
@@ -121,7 +123,7 @@ describe('Ellipse Offset Visual Validation', () => {
                 rx: 30,
                 ry: 20,
                 offsetDistance: 25,
-                direction: 'outset' as const,
+                direction: OffsetDirection.OUTSET,
             },
         ];
 
@@ -132,7 +134,7 @@ describe('Ellipse Offset Visual Validation', () => {
             // Create ellipse shape for our implementation
             const ellipseShape: Shape = {
                 id: `test-ellipse-${id}`,
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center,
                     majorAxisEndpoint: { x: rx, y: 0 },
@@ -174,7 +176,9 @@ describe('Ellipse Offset Visual Validation', () => {
 
                 // Apply offset direction
                 const actualOffset =
-                    direction === 'outset' ? offsetDistance : -offsetDistance;
+                    direction === OffsetDirection.OUTSET
+                        ? offsetDistance
+                        : -offsetDistance;
                 const offsetX = ellipseX + actualOffset * (normalX / magnitude);
                 const offsetY = ellipseY + actualOffset * (normalY / magnitude);
 
@@ -317,7 +321,7 @@ describe('Ellipse Offset Visual Validation', () => {
 
         const ellipseShape: Shape = {
             id: 'test-ellipse-1',
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center,
                 majorAxisEndpoint: { x: rx, y: 0 }, // Major axis along X direction
@@ -330,7 +334,7 @@ describe('Ellipse Offset Visual Validation', () => {
         const approximatedResult = offsetEllipse(
             ellipseShape.geometry as Ellipse,
             offsetDistance,
-            'outset'
+            OffsetDirection.OUTSET
         );
 
         expect(approximatedResult.success).toBe(true);
@@ -451,7 +455,7 @@ describe('Ellipse Offset Visual Validation', () => {
 
         const ellipseShape: Shape = {
             id: 'test-ellipse-2',
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center,
                 majorAxisEndpoint: { x: rx, y: 0 }, // Major axis along X direction
@@ -464,7 +468,7 @@ describe('Ellipse Offset Visual Validation', () => {
         const approximatedResult = offsetEllipse(
             ellipseShape.geometry as Ellipse,
             offsetDistance,
-            'inset'
+            OffsetDirection.INSET
         );
         expect(approximatedResult.success).toBe(true);
 
@@ -571,7 +575,7 @@ describe('Ellipse Offset Visual Validation', () => {
 
         const ellipseShape: Shape = {
             id: 'test-ellipse-3',
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center,
                 majorAxisEndpoint: { x: rx, y: 0 }, // Major axis along X direction
@@ -584,7 +588,7 @@ describe('Ellipse Offset Visual Validation', () => {
         const approximatedResult = offsetEllipse(
             ellipseShape.geometry as Ellipse,
             offsetDistance,
-            'outset'
+            OffsetDirection.OUTSET
         );
         expect(approximatedResult.success).toBe(true);
 
@@ -688,7 +692,7 @@ describe('Ellipse Offset Visual Validation', () => {
 
         const ellipseShape: Shape = {
             id: 'test-ellipse-4',
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center,
                 majorAxisEndpoint: { x: rx, y: 0 }, // Major axis along X direction
@@ -701,7 +705,7 @@ describe('Ellipse Offset Visual Validation', () => {
         const approximatedResult = offsetEllipse(
             ellipseShape.geometry as Ellipse,
             offsetDistance,
-            'outset'
+            OffsetDirection.OUTSET
         );
         expect(approximatedResult.success).toBe(true);
 

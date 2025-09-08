@@ -6,7 +6,7 @@
     import ShapeProperties from '../ShapeProperties.svelte';
     import Units from '../Units.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
-    import { workflowStore } from '../../lib/stores/workflow';
+    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
     import { drawingStore } from '../../lib/stores/drawing';
     import {
         overlayStore,
@@ -14,18 +14,18 @@
     } from '../../lib/stores/overlay';
 
     function handleNext() {
-        workflowStore.completeStage('edit');
-        workflowStore.setStage('prepare');
+        workflowStore.completeStage(WorkflowStage.EDIT);
+        workflowStore.setStage(WorkflowStage.PREPARE);
     }
 
     // Auto-complete edit stage when drawing exists (user can continue editing and move to next stage anytime)
     $: if ($drawingStore.drawing) {
-        workflowStore.completeStage('edit');
+        workflowStore.completeStage(WorkflowStage.EDIT);
     }
 
     // Update Edit stage overlay when selected shapes change (only when on edit stage)
     $: if (
-        $workflowStore.currentStage === 'edit' &&
+        $workflowStore.currentStage === WorkflowStage.EDIT &&
         $drawingStore.drawing &&
         $drawingStore.selectedShapes
     ) {
@@ -33,7 +33,7 @@
             $drawingStore.drawing.shapes,
             $drawingStore.selectedShapes
         );
-        overlayStore.setShapePoints('edit', shapePoints);
+        overlayStore.setShapePoints(WorkflowStage.EDIT, shapePoints);
     }
 </script>
 
@@ -68,7 +68,7 @@
             <div class="toolbar-container">
                 <ToolBar />
             </div>
-            <DrawingCanvasContainer currentStage="edit" />
+            <DrawingCanvasContainer currentStage={WorkflowStage.EDIT} />
         </svelte:fragment>
 
         <svelte:fragment slot="right">

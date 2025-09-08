@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { offsetShape } from '../offset/index';
-import { SVGBuilder } from '../../../test/svg-builder';
-import { findShapeIntersections } from '../intersect';
-import type { Shape } from '../../../types/geometry';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { createPolylineFromVertices } from '../../../geometry/polyline';
+import { SVGBuilder } from '../../../test/svg-builder';
+import { GeometryType, type Shape } from '../../../types/geometry';
+import { findShapeIntersections } from '../intersect';
+import { offsetShape } from '../offset/index';
+import { OffsetDirection } from '../offset/types';
 
 describe(
     'Intersection Gap Visual Validation Tests',
@@ -45,10 +46,26 @@ describe(
             svg.addShapeExtensions(shape2, 'gray', 1, extensionLength);
 
             // Generate offsets
-            const shape1Outset = offsetShape(shape1, offsetDistance, 'outset');
-            const shape1Inset = offsetShape(shape1, offsetDistance, 'inset');
-            const shape2Outset = offsetShape(shape2, offsetDistance, 'outset');
-            const shape2Inset = offsetShape(shape2, offsetDistance, 'inset');
+            const shape1Outset = offsetShape(
+                shape1,
+                offsetDistance,
+                OffsetDirection.OUTSET
+            );
+            const shape1Inset = offsetShape(
+                shape1,
+                offsetDistance,
+                OffsetDirection.INSET
+            );
+            const shape2Outset = offsetShape(
+                shape2,
+                offsetDistance,
+                OffsetDirection.OUTSET
+            );
+            const shape2Inset = offsetShape(
+                shape2,
+                offsetDistance,
+                OffsetDirection.INSET
+            );
 
             // Draw offset shapes
             if (shape1Outset.success && shape1Outset.shapes.length > 0) {
@@ -242,7 +259,7 @@ describe(
                 // Independent shape definitions for this test
                 const line1: Shape = {
                     id: 'line1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 200 },
                         end: { x: 180, y: 200 },
@@ -250,7 +267,7 @@ describe(
                 };
                 const line2: Shape = {
                     id: 'line2',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 220, y: 100 },
                         end: { x: 220, y: 180 },
@@ -272,7 +289,7 @@ describe(
                 // Independent shape definitions for this test
                 const line1: Shape = {
                     id: 'line1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 200 },
                         end: { x: 180, y: 200 },
@@ -281,7 +298,7 @@ describe(
 
                 const arc1: Shape = {
                     id: 'arc1',
-                    type: 'arc',
+                    type: GeometryType.ARC,
                     geometry: {
                         center: { x: 240, y: 170 },
                         radius: 60,
@@ -299,7 +316,7 @@ describe(
                 // Move line 2 lengths to the right (line1 length is 80, so move 160 units right)
                 const customLine: Shape = {
                     id: 'line1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 260, y: 200 },
                         end: { x: 340, y: 200 },
@@ -307,7 +324,7 @@ describe(
                 };
                 const circle1: Shape = {
                     id: 'circle1',
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: { center: { x: 150, y: 200 }, radius: 40 },
                 };
                 const count = visualizeIntersection(
@@ -322,7 +339,7 @@ describe(
                 // Move line up (decrease y coordinates)
                 const customLine: Shape = {
                     id: 'line1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 120 },
                         end: { x: 180, y: 120 },
@@ -330,7 +347,7 @@ describe(
                 };
                 const polyline1: Shape = {
                     id: 'polyline1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 260, y: 150, bulge: 0 },
@@ -352,7 +369,7 @@ describe(
                 // Move line 2 lengths to the right (line1 length is 80, so move 160 units right)
                 const customLine: Shape = {
                     id: 'line1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 200, y: 170 },
                         end: { x: 280, y: 170 },
@@ -360,7 +377,7 @@ describe(
                 };
                 const spline1: Shape = {
                     id: 'spline1',
-                    type: 'spline',
+                    type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [
                             { x: 200, y: 130 },
@@ -389,7 +406,7 @@ describe(
                 // Move line right 140 units (80 + 60)
                 const customLine: Shape = {
                     id: 'line1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 240, y: 200 },
                         end: { x: 320, y: 200 },
@@ -397,7 +414,7 @@ describe(
                 };
                 const ellipse1: Shape = {
                     id: 'ellipse1',
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: 150, y: 200 },
                         majorAxisEndpoint: { x: 45, y: 0 },
@@ -417,7 +434,7 @@ describe(
                 // that is failing to find intersections
                 const lineShape: Shape = {
                     id: 'line1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 50 },
                         end: { x: 200, y: 50 },
@@ -426,7 +443,7 @@ describe(
 
                 const arcShape: Shape = {
                     id: 'arc1',
-                    type: 'arc',
+                    type: GeometryType.ARC,
                     geometry: {
                         center: { x: 230, y: 50 },
                         radius: 30,
@@ -448,8 +465,16 @@ describe(
                 expect(count).toBeGreaterThan(0);
 
                 // Additional detailed test using specific offset shapes
-                const lineInsetResult = offsetShape(lineShape, 8, 'inset');
-                const arcInsetResult = offsetShape(arcShape, 8, 'inset');
+                const lineInsetResult = offsetShape(
+                    lineShape,
+                    8,
+                    OffsetDirection.INSET
+                );
+                const arcInsetResult = offsetShape(
+                    arcShape,
+                    8,
+                    OffsetDirection.INSET
+                );
 
                 if (
                     lineInsetResult.success &&
@@ -477,7 +502,7 @@ describe(
                 // Independent shape definitions for this test
                 const arc1: Shape = {
                     id: 'arc1',
-                    type: 'arc',
+                    type: GeometryType.ARC,
                     geometry: {
                         center: { x: 240, y: 170 },
                         radius: 60,
@@ -488,7 +513,7 @@ describe(
                 };
                 const arc2: Shape = {
                     id: 'arc2',
-                    type: 'arc',
+                    type: GeometryType.ARC,
                     geometry: {
                         center: { x: 200, y: 200 },
                         radius: 50,
@@ -505,7 +530,7 @@ describe(
             it('should test Arc-Circle gaps', () => {
                 const arc: Shape = {
                     id: 'arc1',
-                    type: 'arc',
+                    type: GeometryType.ARC,
                     geometry: {
                         center: { x: 220, y: 180 },
                         radius: 50,
@@ -516,7 +541,7 @@ describe(
                 };
                 const circle: Shape = {
                     id: 'circle1',
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: { center: { x: 210, y: 200 }, radius: 35 },
                 };
                 const count = visualizeIntersection(arc, circle, 'Arc-Circle');
@@ -526,7 +551,7 @@ describe(
             it('should test Arc-Polyline gaps', () => {
                 const arc: Shape = {
                     id: 'arc1',
-                    type: 'arc',
+                    type: GeometryType.ARC,
                     geometry: {
                         center: { x: 160, y: 200 },
                         radius: 40,
@@ -537,7 +562,7 @@ describe(
                 };
                 const polyline: Shape = {
                     id: 'polyline1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 240, y: 200, bulge: 0 }, // Made horizontal: all y coordinates are 200
@@ -559,7 +584,7 @@ describe(
                 // Independent shape definitions for this test - rotated 90 degrees CCW
                 const arc1: Shape = {
                     id: 'arc1',
-                    type: 'arc',
+                    type: GeometryType.ARC,
                     geometry: {
                         center: { x: 240, y: 170 },
                         radius: 60,
@@ -571,7 +596,7 @@ describe(
 
                 const spline1: Shape = {
                     id: 'spline1',
-                    type: 'spline',
+                    type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [
                             { x: 190, y: 170 }, // Moved left 10 and down 40 total (130+40)
@@ -597,7 +622,7 @@ describe(
             it('should test Arc-Ellipse gaps', () => {
                 const arc: Shape = {
                     id: 'arc1',
-                    type: 'arc',
+                    type: GeometryType.ARC,
                     geometry: {
                         center: { x: 160, y: 200 },
                         radius: 45,
@@ -608,7 +633,7 @@ describe(
                 };
                 const ellipse: Shape = {
                     id: 'ellipse1',
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: 220, y: 180 },
                         majorAxisEndpoint: { x: 45, y: 0 },
@@ -630,12 +655,12 @@ describe(
                 // Move circle down 40 units and right 30 units
                 const customCircle: Shape = {
                     id: 'circle1',
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: { center: { x: 180, y: 240 }, radius: 40 },
                 };
                 const polyline1: Shape = {
                     id: 'polyline1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 175, y: 120, bulge: 0 },
@@ -656,12 +681,12 @@ describe(
             it('should test Circle-Spline gaps', () => {
                 const circle1: Shape = {
                     id: 'circle1',
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: { center: { x: 150, y: 200 }, radius: 40 },
                 };
                 const spline1: Shape = {
                     id: 'spline1',
-                    type: 'spline',
+                    type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [
                             { x: 200, y: 130 },
@@ -689,7 +714,7 @@ describe(
             it('should test Polyline-Polyline gaps', () => {
                 const polyline1: Shape = {
                     id: 'polyline1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 260, y: 150, bulge: 0 },
@@ -701,7 +726,7 @@ describe(
                 };
                 const polyline2: Shape = {
                     id: 'polyline2',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 100, y: 280, bulge: 0 },
@@ -722,7 +747,7 @@ describe(
             it('should test Polyline-Spline gaps', () => {
                 const polyline1: Shape = {
                     id: 'polyline1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 260, y: 180, bulge: 0 },
@@ -734,7 +759,7 @@ describe(
                 };
                 const spline1: Shape = {
                     id: 'spline1',
-                    type: 'spline',
+                    type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [
                             { x: 200, y: 130 },
@@ -759,7 +784,7 @@ describe(
             it('should test Polyline-Ellipse gaps', () => {
                 const polyline: Shape = {
                     id: 'polyline1',
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(
                         [
                             { x: 120, y: 180, bulge: 0 },
@@ -771,7 +796,7 @@ describe(
                 };
                 const ellipse: Shape = {
                     id: 'ellipse1',
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: 240, y: 220 },
                         majorAxisEndpoint: { x: 40, y: 0 },
@@ -792,7 +817,7 @@ describe(
             it('should test Spline-Spline gaps', () => {
                 const spline1: Shape = {
                     id: 'spline1',
-                    type: 'spline',
+                    type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [
                             { x: 200, y: 130 },
@@ -808,7 +833,7 @@ describe(
                 };
                 const spline2: Shape = {
                     id: 'spline2',
-                    type: 'spline',
+                    type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [
                             { x: 240, y: 150 },
@@ -833,7 +858,7 @@ describe(
             it('should test Spline-Ellipse gaps', () => {
                 const spline1: Shape = {
                     id: 'spline1',
-                    type: 'spline',
+                    type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [
                             { x: 200, y: 130 },
@@ -849,7 +874,7 @@ describe(
                 };
                 const ellipse1: Shape = {
                     id: 'ellipse1',
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: 150, y: 200 },
                         majorAxisEndpoint: { x: 45, y: 0 },
@@ -871,7 +896,7 @@ describe(
                 // Create two ellipse arcs with gaps
                 const ellipseArc1: Shape = {
                     id: 'ellipseArc1',
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: 150, y: 200 },
                         majorAxisEndpoint: { x: 45, y: 0 },
@@ -883,7 +908,7 @@ describe(
 
                 const ellipseArc2: Shape = {
                     id: 'ellipseArc2',
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: 270, y: 200 },
                         majorAxisEndpoint: { x: 0, y: 40 }, // Rotated 90 degrees
@@ -904,7 +929,7 @@ describe(
             it('should test Ellipse-EllipseArc gaps', () => {
                 const ellipse1: Shape = {
                     id: 'ellipse1',
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: 150, y: 200 },
                         majorAxisEndpoint: { x: 45, y: 0 },
@@ -913,7 +938,7 @@ describe(
                 };
                 const ellipseArc: Shape = {
                     id: 'ellipseArc',
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: 200, y: 200 },
                         majorAxisEndpoint: { x: 50, y: 0 },
@@ -936,7 +961,7 @@ describe(
                 // Line from (0,18) to (50,50) - positioned to create gap with ellipse arc
                 const ellipseArc: Shape = {
                     id: 'ellipseArc1',
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: 200, y: 200 },
                         majorAxisEndpoint: { x: 30, y: 0 },
@@ -947,7 +972,7 @@ describe(
                 };
                 const line: Shape = {
                     id: 'line1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 200, y: 218 },
                         end: { x: 250, y: 250 },

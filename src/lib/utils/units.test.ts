@@ -5,66 +5,73 @@ import {
     getPhysicalScaleFactor,
     formatValue,
     getUnitSymbol,
+    Unit,
 } from './units';
 
 describe('Units utilities', () => {
     describe('getPixelsPerUnit', () => {
         it('should return correct pixels per mm', () => {
-            const pixelsPerMm = getPixelsPerUnit('mm');
+            const pixelsPerMm = getPixelsPerUnit(Unit.MM);
             expect(pixelsPerMm).toBeCloseTo(3.78, 2); // ~96/25.4
         });
 
         it('should return correct pixels per inch', () => {
-            const pixelsPerInch = getPixelsPerUnit('inch');
+            const pixelsPerInch = getPixelsPerUnit(Unit.INCH);
             expect(pixelsPerInch).toBe(96);
         });
     });
 
     describe('convertUnits', () => {
         it('should convert mm to inches correctly', () => {
-            const result = convertUnits(25.4, 'mm', 'inch');
+            const result = convertUnits(25.4, Unit.MM, Unit.INCH);
             expect(result).toBeCloseTo(1.0, 5);
         });
 
         it('should convert inches to mm correctly', () => {
-            const result = convertUnits(1.0, 'inch', 'mm');
+            const result = convertUnits(1.0, Unit.INCH, Unit.MM);
             expect(result).toBeCloseTo(25.4, 5);
         });
 
         it('should return same value for same units', () => {
-            expect(convertUnits(10, 'mm', 'mm')).toBe(10);
-            expect(convertUnits(5, 'inch', 'inch')).toBe(5);
+            expect(convertUnits(10, Unit.MM, Unit.MM)).toBe(10);
+            expect(convertUnits(5, Unit.INCH, Unit.INCH)).toBe(5);
         });
     });
 
     describe('getPhysicalScaleFactor', () => {
         it('should return display unit pixels per unit', () => {
             // When displaying as mm, use mm scale regardless of geometry units
-            expect(getPhysicalScaleFactor('mm', 'mm')).toBeCloseTo(3.78, 2);
-            expect(getPhysicalScaleFactor('inch', 'mm')).toBeCloseTo(3.78, 2);
+            expect(getPhysicalScaleFactor(Unit.MM, Unit.MM)).toBeCloseTo(
+                3.78,
+                2
+            );
+            expect(getPhysicalScaleFactor(Unit.INCH, Unit.MM)).toBeCloseTo(
+                3.78,
+                2
+            );
 
             // When displaying as inches, use inch scale regardless of geometry units
-            expect(getPhysicalScaleFactor('mm', 'inch')).toBe(96);
-            expect(getPhysicalScaleFactor('inch', 'inch')).toBe(96);
+            expect(getPhysicalScaleFactor(Unit.MM, Unit.INCH)).toBe(96);
+            expect(getPhysicalScaleFactor(Unit.INCH, Unit.INCH)).toBe(96);
         });
     });
 
     describe('formatValue', () => {
         it('should format mm values with 1 decimal place', () => {
-            expect(formatValue(12.3456, 'mm')).toBe('12.3');
-            expect(formatValue(10, 'mm')).toBe('10.0');
+            expect(formatValue(12.3456, Unit.MM)).toBe('12.3');
+            expect(formatValue(10, Unit.MM)).toBe('10.0');
         });
 
         it('should format inch values with 3 decimal places', () => {
-            expect(formatValue(1.2345678, 'inch')).toBe('1.235');
-            expect(formatValue(2, 'inch')).toBe('2.000');
+            expect(formatValue(1.2345678, Unit.INCH)).toBe('1.235');
+            expect(formatValue(2, Unit.INCH)).toBe('2.000');
         });
     });
 
     describe('getUnitSymbol', () => {
         it('should return correct symbols', () => {
-            expect(getUnitSymbol('mm')).toBe('mm');
-            expect(getUnitSymbol('inch')).toBe('in');
+            expect(getUnitSymbol(Unit.MM)).toBe(Unit.MM);
+            expect(getUnitSymbol(Unit.INCH)).toBe('in');
         });
     });
 
@@ -73,13 +80,13 @@ describe('Units utilities', () => {
             // 186.2mm geometry displayed as mm should be 186.2mm on screen
             const geometryValue = 186.2;
             const mmDisplayPixels =
-                geometryValue * getPhysicalScaleFactor('mm', 'mm');
+                geometryValue * getPhysicalScaleFactor(Unit.MM, Unit.MM);
             const mmOnScreen = mmDisplayPixels / (96 / 25.4);
             expect(mmOnScreen).toBeCloseTo(186.2, 1);
 
             // 186.2mm geometry displayed as inches should be 186.2" on screen
             const inchDisplayPixels =
-                geometryValue * getPhysicalScaleFactor('mm', 'inch');
+                geometryValue * getPhysicalScaleFactor(Unit.MM, Unit.INCH);
             const inchesOnScreen = inchDisplayPixels / 96;
             expect(inchesOnScreen).toBeCloseTo(186.2, 1);
         });
@@ -89,13 +96,14 @@ describe('Units utilities', () => {
             const geometryValue = 100; // Could be 100mm or 100 inches from DXF
 
             // When displayed as mm: 100 units → 100mm on screen
-            const mmPixels = geometryValue * getPhysicalScaleFactor('mm', 'mm');
+            const mmPixels =
+                geometryValue * getPhysicalScaleFactor(Unit.MM, Unit.MM);
             const mmOnScreen = mmPixels / (96 / 25.4);
             expect(mmOnScreen).toBeCloseTo(100, 1);
 
             // When displayed as inches: 100 units → 100" on screen
             const inchPixels =
-                geometryValue * getPhysicalScaleFactor('mm', 'inch');
+                geometryValue * getPhysicalScaleFactor(Unit.MM, Unit.INCH);
             const inchesOnScreen = inchPixels / 96;
             expect(inchesOnScreen).toBeCloseTo(100, 1);
 

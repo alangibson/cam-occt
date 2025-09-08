@@ -18,7 +18,7 @@ export function joinColinearLines(
  * Check if three points are collinear within tolerance
  * Uses cross product to measure deviation from collinearity
  */
-function arePointsCollinear(
+export function arePointsCollinear(
     p1: Point2D,
     p2: Point2D,
     p3: Point2D,
@@ -90,6 +90,59 @@ function createJoinedLine(lines: Line[]): Line {
 }
 
 /**
+ * Collect consecutive collinear lines starting from a given position
+ * @param shapes - Array of shapes to search through
+ * @param startIndex - Index to start collecting from
+ * @param tolerance - Collinearity tolerance
+ * @returns Object with collected lines and next index to process
+ */
+function collectCollinearLines(
+    shapes: Shape[],
+    startIndex: number,
+    tolerance: number
+): {
+    collinearLines: Line[];
+    nextIndex: number;
+} {
+    if (startIndex >= shapes.length || shapes[startIndex].type !== 'line') {
+        return {
+            collinearLines: [],
+            nextIndex: startIndex + 1,
+        };
+    }
+
+    // Collect consecutive collinear lines, checking against the original start line
+    const startLine = shapes[startIndex].geometry as Line;
+    const collinearLines: Line[] = [startLine];
+    let j = startIndex + 1;
+
+    while (j < shapes.length) {
+        const nextShape = shapes[j];
+
+        // Stop if not a line
+        if (nextShape.type !== 'line') {
+            break;
+        }
+
+        const nextLine = nextShape.geometry as Line;
+
+        // CRITICAL: Check if this line is collinear with the ORIGINAL start line, not just the previous line
+        // This ensures total deviation from perfect collinearity is not more than tolerance
+        if (!canJoinLines(startLine, nextLine, tolerance)) {
+            break;
+        }
+
+        collinearLines.push(nextLine);
+        j++;
+    }
+
+    return {
+        collinearLines,
+        nextIndex: j,
+    };
+}
+
+/**
  * Join consecutive collinear line segments within a polyline
  */
 export function joinColinearLinesInPolyline(
@@ -113,30 +166,12 @@ export function joinColinearLinesInPolyline(
             continue;
         }
 
-        // Collect consecutive collinear lines, checking against the original start line
-        const startLine = currentShape.geometry as Line;
-        const collinearLines: Line[] = [startLine];
-        let j = i + 1;
-
-        while (j < polyline.shapes.length) {
-            const nextShape = polyline.shapes[j];
-
-            // Stop if not a line
-            if (nextShape.type !== 'line') {
-                break;
-            }
-
-            const nextLine = nextShape.geometry as Line;
-
-            // CRITICAL: Check if this line is collinear with the ORIGINAL start line, not just the previous line
-            // This ensures total deviation from perfect collinearity is not more than tolerance
-            if (!canJoinLines(startLine, nextLine, tolerance)) {
-                break;
-            }
-
-            collinearLines.push(nextLine);
-            j++;
-        }
+        // Use shared function to collect collinear lines
+        const { collinearLines, nextIndex } = collectCollinearLines(
+            polyline.shapes,
+            i,
+            tolerance
+        );
 
         // If we found multiple collinear lines, join them
         if (collinearLines.length > 1) {
@@ -151,7 +186,7 @@ export function joinColinearLinesInPolyline(
         }
 
         // Move to next unprocessed shape
-        i = j;
+        i = nextIndex;
     }
 
     return {
@@ -231,30 +266,12 @@ function processConsecutiveLines(
         };
     }
 
-    // Collect consecutive collinear lines, checking against the original start line
-    const startLine = currentShape.geometry as Line;
-    const collinearLines: Line[] = [startLine];
-    let j = startIndex + 1;
-
-    while (j < shapes.length) {
-        const nextShape = shapes[j];
-
-        // Stop if not a line
-        if (nextShape.type !== 'line') {
-            break;
-        }
-
-        const nextLine = nextShape.geometry as Line;
-
-        // CRITICAL: Check if this line is collinear with the ORIGINAL start line, not just the previous line
-        // This ensures total deviation from perfect collinearity is not more than tolerance
-        if (!canJoinLines(startLine, nextLine, tolerance)) {
-            break;
-        }
-
-        collinearLines.push(nextLine);
-        j++;
-    }
+    // Use shared function to collect collinear lines
+    const { collinearLines, nextIndex } = collectCollinearLines(
+        shapes,
+        startIndex,
+        tolerance
+    );
 
     // If we found multiple collinear lines, join them
     if (collinearLines.length > 1) {
@@ -266,13 +283,13 @@ function processConsecutiveLines(
                     geometry: joinedLine,
                 },
             ],
-            nextIndex: j,
+            nextIndex,
         };
     } else {
         // Single line, just add it
         return {
             shapes: [currentShape],
-            nextIndex: j,
+            nextIndex,
         };
     }
 }

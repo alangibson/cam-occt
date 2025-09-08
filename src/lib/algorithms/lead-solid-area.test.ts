@@ -6,7 +6,8 @@ import {
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
-import type { DetectedPart } from './part-detection';
+import { PartType, type DetectedPart } from './part-detection';
+import { GeometryType } from '../../lib/types/geometry';
 import type { Shape, Point2D } from '../../lib/types/geometry';
 
 describe('Lead Solid Area Avoidance', () => {
@@ -21,7 +22,7 @@ describe('Lead Solid Area Avoidance', () => {
         const shapes: Shape[] = [
             {
                 id: `${id}_bottom`,
-                type: LeadType.LINE,
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: minX, y: minY },
                     end: { x: maxX, y: minY },
@@ -30,7 +31,7 @@ describe('Lead Solid Area Avoidance', () => {
             },
             {
                 id: `${id}_right`,
-                type: LeadType.LINE,
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: maxX, y: minY },
                     end: { x: maxX, y: maxY },
@@ -39,7 +40,7 @@ describe('Lead Solid Area Avoidance', () => {
             },
             {
                 id: `${id}_top`,
-                type: LeadType.LINE,
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: maxX, y: maxY },
                     end: { x: minX, y: maxY },
@@ -48,7 +49,7 @@ describe('Lead Solid Area Avoidance', () => {
             },
             {
                 id: `${id}_left`,
-                type: LeadType.LINE,
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: minX, y: maxY },
                     end: { x: minX, y: minY },
@@ -116,15 +117,27 @@ describe('Lead Solid Area Avoidance', () => {
     describe('solid area avoidance tests', () => {
         it('should detect when shell lead extends into solid area', () => {
             // Create a large shell with a hole, where the shell lead could go into the solid area
-            const shellChain = createRectangleChain('shell', 0, 0, 100, 100);
-            const holeChain = createRectangleChain('hole', 70, 70, 90, 90);
+            const shellChain = createRectangleChain(
+                PartType.SHELL,
+                0,
+                0,
+                100,
+                100
+            );
+            const holeChain = createRectangleChain(
+                PartType.HOLE,
+                70,
+                70,
+                90,
+                90
+            );
 
             const part: DetectedPart = {
                 id: 'part1',
                 shell: {
                     id: 'shell1',
                     chain: shellChain,
-                    type: 'shell',
+                    type: PartType.SHELL,
                     boundingBox: { minX: 0, maxX: 100, minY: 0, maxY: 100 },
                     holes: [],
                 },
@@ -132,7 +145,7 @@ describe('Lead Solid Area Avoidance', () => {
                     {
                         id: 'hole1',
                         chain: holeChain,
-                        type: 'hole',
+                        type: PartType.HOLE,
                         boundingBox: { minX: 70, maxX: 90, minY: 70, maxY: 90 },
                         holes: [],
                     },
@@ -177,15 +190,27 @@ describe('Lead Solid Area Avoidance', () => {
 
         it('should create hole lead that avoids solid area when possible', () => {
             // Create a larger hole in the center where leads have more room to avoid solid areas
-            const shellChain = createRectangleChain('shell', 0, 0, 100, 100);
-            const holeChain = createRectangleChain('hole', 30, 30, 70, 70);
+            const shellChain = createRectangleChain(
+                PartType.SHELL,
+                0,
+                0,
+                100,
+                100
+            );
+            const holeChain = createRectangleChain(
+                PartType.HOLE,
+                30,
+                30,
+                70,
+                70
+            );
 
             const part: DetectedPart = {
                 id: 'part1',
                 shell: {
                     id: 'shell1',
                     chain: shellChain,
-                    type: 'shell',
+                    type: PartType.SHELL,
                     boundingBox: { minX: 0, maxX: 100, minY: 0, maxY: 100 },
                     holes: [],
                 },
@@ -193,7 +218,7 @@ describe('Lead Solid Area Avoidance', () => {
                     {
                         id: 'hole1',
                         chain: holeChain,
-                        type: 'hole',
+                        type: PartType.HOLE,
                         boundingBox: { minX: 30, maxX: 70, minY: 30, maxY: 70 },
                         holes: [],
                     },
@@ -240,7 +265,13 @@ describe('Lead Solid Area Avoidance', () => {
 
         it('should handle complex part with multiple well-spaced holes', () => {
             // Create a part with multiple holes with sufficient space for leads
-            const shellChain = createRectangleChain('shell', 0, 0, 200, 100);
+            const shellChain = createRectangleChain(
+                PartType.SHELL,
+                0,
+                0,
+                200,
+                100
+            );
             const hole1Chain = createRectangleChain('hole1', 40, 30, 80, 70);
             const hole2Chain = createRectangleChain('hole2', 120, 30, 160, 70);
 
@@ -249,7 +280,7 @@ describe('Lead Solid Area Avoidance', () => {
                 shell: {
                     id: 'shell1',
                     chain: shellChain,
-                    type: 'shell',
+                    type: PartType.SHELL,
                     boundingBox: { minX: 0, maxX: 200, minY: 0, maxY: 100 },
                     holes: [],
                 },
@@ -257,14 +288,14 @@ describe('Lead Solid Area Avoidance', () => {
                     {
                         id: 'hole1',
                         chain: hole1Chain,
-                        type: 'hole',
+                        type: PartType.HOLE,
                         boundingBox: { minX: 40, maxX: 80, minY: 30, maxY: 70 },
                         holes: [],
                     },
                     {
                         id: 'hole2',
                         chain: hole2Chain,
-                        type: 'hole',
+                        type: PartType.HOLE,
                         boundingBox: {
                             minX: 120,
                             maxX: 160,
@@ -343,7 +374,13 @@ describe('Lead Solid Area Avoidance', () => {
     describe('lead rotation functionality', () => {
         it('should provide mechanism to rotate lead direction', () => {
             // This test verifies that we can rotate the curve direction for leads
-            const shellChain = createRectangleChain('shell', 0, 0, 50, 50);
+            const shellChain = createRectangleChain(
+                PartType.SHELL,
+                0,
+                0,
+                50,
+                50
+            );
             const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 };
 
             // Generate leads with default direction

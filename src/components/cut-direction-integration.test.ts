@@ -8,6 +8,7 @@ import type { Shape } from '../lib/types';
 import { CutDirection, LeadType } from '../lib/types/direction';
 import { KerfCompensation } from '../lib/types/kerf-compensation';
 import { samplePathAtDistanceIntervals } from '../lib/geometry';
+import { GeometryType } from '$lib/types/geometry';
 
 // Helper to wait for async path generation
 async function waitForPaths(expectedCount: number, timeout = 200) {
@@ -71,22 +72,22 @@ describe('Cut Direction End-to-End Integration', () => {
         const clockwiseSquare: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 10, y: 10 } },
             }, // right
             {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 10, y: 0 } },
             }, // down
             {
                 id: 'line3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 0, y: 0 } },
             }, // left
             {
                 id: 'line4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 0, y: 10 } },
             }, // up
         ];
@@ -160,22 +161,22 @@ describe('Cut Direction End-to-End Integration', () => {
         const counterclockwiseSquare: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
             }, // right
             {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 10, y: 10 } },
             }, // up
             {
                 id: 'line3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 0, y: 10 } },
             }, // left
             {
                 id: 'line4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 0, y: 0 } },
             }, // down
         ];
@@ -237,22 +238,22 @@ describe('Cut Direction End-to-End Integration', () => {
         const clockwiseSquare: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 10, y: 10 } },
             },
             {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 10, y: 0 } },
             },
             {
                 id: 'line3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 0, y: 0 } },
             },
             {
                 id: 'line4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 0, y: 10 } },
             },
         ];

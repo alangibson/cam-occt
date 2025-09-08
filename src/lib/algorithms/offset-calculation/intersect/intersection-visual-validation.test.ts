@@ -1,11 +1,12 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { offsetShape } from '../offset/index';
-import { SVGBuilder } from '../../../test/svg-builder';
-import { findShapeIntersections } from '../intersect';
-import type { Shape } from '../../../types/geometry';
+import { beforeAll, describe, expect, it } from 'vitest';
 import { createPolylineFromVertices } from '../../../geometry/polyline';
+import { SVGBuilder } from '../../../test/svg-builder';
+import { GeometryType, type Shape } from '../../../types/geometry';
+import { findShapeIntersections } from '../intersect';
+import { offsetShape } from '../offset/index';
+import { OffsetDirection } from '../offset/types';
 
 describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
     const outputDir = 'tests/output/visual/intersections/overlap';
@@ -37,10 +38,26 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         svg.addShape(shape2, 'black', 2, 'Original ' + shape2.type);
 
         // Generate offsets
-        const shape1Outset = offsetShape(shape1, offsetDistance, 'outset');
-        const shape1Inset = offsetShape(shape1, offsetDistance, 'inset');
-        const shape2Outset = offsetShape(shape2, offsetDistance, 'outset');
-        const shape2Inset = offsetShape(shape2, offsetDistance, 'inset');
+        const shape1Outset = offsetShape(
+            shape1,
+            offsetDistance,
+            OffsetDirection.OUTSET
+        );
+        const shape1Inset = offsetShape(
+            shape1,
+            offsetDistance,
+            OffsetDirection.INSET
+        );
+        const shape2Outset = offsetShape(
+            shape2,
+            offsetDistance,
+            OffsetDirection.OUTSET
+        );
+        const shape2Inset = offsetShape(
+            shape2,
+            offsetDistance,
+            OffsetDirection.INSET
+        );
 
         // Draw offset shapes
         if (shape1Outset.success && shape1Outset.shapes.length > 0) {
@@ -200,7 +217,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Line-Line intersections', () => {
             const line1: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 100, y: 200 },
                     end: { x: 300, y: 200 },
@@ -208,7 +225,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const line2: Shape = {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 200, y: 100 },
                     end: { x: 200, y: 300 },
@@ -221,7 +238,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Line-Arc intersections', () => {
             const line1: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 100, y: 200 },
                     end: { x: 300, y: 200 },
@@ -229,7 +246,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const arc1: Shape = {
                 id: 'arc1',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 200, y: 200 },
                     radius: 60,
@@ -245,7 +262,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Line-Circle intersections', () => {
             const line1: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 100, y: 200 },
                     end: { x: 300, y: 200 },
@@ -253,7 +270,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const circle1: Shape = {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: { center: { x: 180, y: 200 }, radius: 50 },
             };
             const count = visualizeIntersection(line1, circle1, 'Line-Circle');
@@ -263,7 +280,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Line-Polyline intersections', () => {
             const line1: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 100, y: 200 },
                     end: { x: 300, y: 200 },
@@ -271,7 +288,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const polyline1: Shape = {
                 id: 'polyline1',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: createPolylineFromVertices(
                     [
                         { x: 120, y: 120, bulge: 0 },
@@ -293,7 +310,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Line-Spline intersections', () => {
             const line1: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 100, y: 200 },
                     end: { x: 300, y: 200 },
@@ -301,7 +318,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const spline1: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 100, y: 200 },
@@ -323,7 +340,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Line-Ellipse intersections', () => {
             const line1: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 100, y: 200 },
                     end: { x: 300, y: 200 },
@@ -331,7 +348,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const ellipse1: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 180, y: 200 },
                     majorAxisEndpoint: { x: 60, y: 0 },
@@ -352,7 +369,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Arc-Arc intersections', () => {
             const arc1: Shape = {
                 id: 'arc1',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 200, y: 200 },
                     radius: 60,
@@ -363,7 +380,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const arc2: Shape = {
                 id: 'arc2',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 240, y: 200 },
                     radius: 50,
@@ -379,7 +396,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Arc-Circle intersections', () => {
             const arc: Shape = {
                 id: 'arc1',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 200, y: 200 },
                     radius: 60,
@@ -390,7 +407,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const circle: Shape = {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: { center: { x: 230, y: 200 }, radius: 40 },
             };
             const count = visualizeIntersection(arc, circle, 'Arc-Circle');
@@ -400,7 +417,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Arc-Polyline intersections', () => {
             const arc: Shape = {
                 id: 'arc1',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 200, y: 200 },
                     radius: 50,
@@ -411,7 +428,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const polyline: Shape = {
                 id: 'polyline1',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: createPolylineFromVertices(
                     [
                         { x: 150, y: 150, bulge: 0 },
@@ -429,7 +446,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Arc-Spline intersections', () => {
             const arc1: Shape = {
                 id: 'arc1',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 200, y: 200 },
                     radius: 60,
@@ -440,7 +457,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const spline1: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 100, y: 200 },
@@ -462,7 +479,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Arc-Ellipse intersections', () => {
             const arc: Shape = {
                 id: 'arc1',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 210, y: 200 }, // Slightly offset to ensure overlap
                     radius: 60,
@@ -473,7 +490,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const ellipse: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 180, y: 200 },
                     majorAxisEndpoint: { x: 60, y: 0 },
@@ -490,12 +507,12 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Circle-Circle intersections', () => {
             const circle1: Shape = {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: { center: { x: 180, y: 200 }, radius: 50 },
             };
             const circle2: Shape = {
                 id: 'circle2',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: { center: { x: 220, y: 200 }, radius: 50 },
             };
             const count = visualizeIntersection(
@@ -509,12 +526,12 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Circle-Polyline intersections', () => {
             const circle1: Shape = {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: { center: { x: 180, y: 200 }, radius: 50 },
             };
             const polyline1: Shape = {
                 id: 'polyline1',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: createPolylineFromVertices(
                     [
                         { x: 120, y: 120, bulge: 0 },
@@ -536,12 +553,12 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Circle-Spline intersections', () => {
             const circle1: Shape = {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: { center: { x: 180, y: 200 }, radius: 50 },
             };
             const spline1: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 100, y: 200 },
@@ -567,12 +584,12 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Circle-Ellipse intersections', () => {
             const circle1: Shape = {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: { center: { x: 180, y: 200 }, radius: 50 },
             };
             const ellipse1: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 180, y: 200 },
                     majorAxisEndpoint: { x: 60, y: 0 },
@@ -593,7 +610,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Polyline-Polyline intersections', () => {
             const polyline1: Shape = {
                 id: 'polyline1',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: createPolylineFromVertices(
                     [
                         { x: 120, y: 120, bulge: 0 },
@@ -606,7 +623,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const polyline2: Shape = {
                 id: 'polyline2',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: createPolylineFromVertices(
                     [
                         { x: 120, y: 280, bulge: 0 },
@@ -628,7 +645,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Polyline-Spline intersections', () => {
             const polyline1: Shape = {
                 id: 'polyline1',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: createPolylineFromVertices(
                     [
                         { x: 120, y: 120, bulge: 0 },
@@ -641,7 +658,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const spline1: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 100, y: 200 },
@@ -667,7 +684,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Polyline-Ellipse intersections', () => {
             const polyline: Shape = {
                 id: 'polyline1',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: createPolylineFromVertices(
                     [
                         { x: 120, y: 200, bulge: 0 },
@@ -680,7 +697,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const ellipse: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 200, y: 200 },
                     majorAxisEndpoint: { x: 50, y: 0 },
@@ -701,7 +718,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Spline-Spline intersections', () => {
             const spline1: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 100, y: 200 },
@@ -718,7 +735,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const spline2: Shape = {
                 id: 'spline2',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 200, y: 120 },
@@ -744,7 +761,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Spline-Ellipse intersections', () => {
             const spline1: Shape = {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 100, y: 200 },
@@ -761,7 +778,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const ellipse1: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 180, y: 200 },
                     majorAxisEndpoint: { x: 60, y: 0 },
@@ -782,7 +799,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Ellipse-Ellipse intersections', () => {
             const ellipse1: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 180, y: 200 },
                     majorAxisEndpoint: { x: 60, y: 0 },
@@ -791,7 +808,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const ellipse2: Shape = {
                 id: 'ellipse2',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 220, y: 200 },
                     majorAxisEndpoint: { x: 0, y: 50 }, // Rotated 90 degrees
@@ -809,7 +826,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
         it('should test Ellipse-EllipseArc intersections', () => {
             const ellipse1: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 180, y: 200 },
                     majorAxisEndpoint: { x: 60, y: 0 },
@@ -818,7 +835,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const ellipseArc: Shape = {
                 id: 'ellipseArc',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 200, y: 200 },
                     majorAxisEndpoint: { x: 70, y: 0 },
@@ -841,7 +858,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             // Line positioned to overlap with ellipse arc offsets (doubled length)
             const ellipseArc: Shape = {
                 id: 'ellipseArc1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 200, y: 200 },
                     majorAxisEndpoint: { x: 60, y: 0 },
@@ -852,7 +869,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             };
             const line: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 210, y: 190 },
                     end: { x: 270, y: 230 },
@@ -891,7 +908,7 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             const innerOffset = offsetShape(
                 rectanglePolyline,
                 offsetDistance,
-                'inset'
+                OffsetDirection.INSET
             );
 
             if (innerOffset.success && innerOffset.shapes.length > 0) {
@@ -934,7 +951,11 @@ describe('Intersection Visual Validation Tests', { timeout: 180000 }, () => {
             writeFileSync(join(outputDir, fileName), svg.toString());
 
             // Verify offsets were generated successfully
-            const innerOffsetTest = offsetShape(rectanglePolyline, 8, 'inset');
+            const innerOffsetTest = offsetShape(
+                rectanglePolyline,
+                8,
+                OffsetDirection.INSET
+            );
             expect(innerOffsetTest.success).toBe(true);
             expect(innerOffsetTest.shapes.length).toBeGreaterThan(0);
         });

@@ -1,9 +1,10 @@
-import type {
-    Shape,
-    Polyline,
-    Line,
-    Arc,
-    Circle,
+import {
+    type Shape,
+    type Polyline,
+    type Line,
+    type Arc,
+    type Circle,
+    GeometryType,
 } from '../../../../../lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import type { SegmentPosition } from '../line-arc/index';
@@ -73,7 +74,7 @@ export function findPolylineIntersections(
 
         // Use segment-aware intersection functions
         let segmentIntersections: IntersectionResult[];
-        if (isLine(segment) && otherShape.type === 'line') {
+        if (isLine(segment) && otherShape.type === GeometryType.LINE) {
             segmentIntersections = findLineLineIntersectionsSegmentAware(
                 segment,
                 otherShape.geometry as Line,
@@ -81,7 +82,7 @@ export function findPolylineIntersections(
                 'only',
                 intersectionType
             );
-        } else if (isLine(segment) && otherShape.type === 'arc') {
+        } else if (isLine(segment) && otherShape.type === GeometryType.ARC) {
             segmentIntersections = findLineArcIntersectionsSegmentAware(
                 segment,
                 otherShape.geometry as Arc,
@@ -98,7 +99,7 @@ export function findPolylineIntersections(
             // Create a shape wrapper for the segment
             const segmentShape: Shape = {
                 id: `segment-${segmentIndex}`,
-                type: isLine(segment) ? 'line' : 'arc',
+                type: isLine(segment) ? GeometryType.LINE : GeometryType.ARC,
                 geometry: segment,
             };
             segmentIntersections = findIntersectionsByType(

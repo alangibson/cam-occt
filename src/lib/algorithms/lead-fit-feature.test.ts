@@ -14,6 +14,8 @@ import {
 import { LeadType, CutDirection } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
+import { PartType } from './part-detection';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('Lead Fit Feature', () => {
     // Create a simple test chain (square)
@@ -22,7 +24,7 @@ describe('Lead Fit Feature', () => {
         shapes: [
             {
                 id: 'line-1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -30,7 +32,7 @@ describe('Lead Fit Feature', () => {
             },
             {
                 id: 'line-2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 },
@@ -38,7 +40,7 @@ describe('Lead Fit Feature', () => {
             },
             {
                 id: 'line-3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 10 },
                     end: { x: 0, y: 10 },
@@ -46,7 +48,7 @@ describe('Lead Fit Feature', () => {
             },
             {
                 id: 'line-4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 10 },
                     end: { x: 0, y: 0 },
@@ -60,7 +62,7 @@ describe('Lead Fit Feature', () => {
         id: 'test-part-1',
         shell: {
             id: 'shell-1',
-            type: 'shell',
+            type: PartType.SHELL,
             chain: testChain,
             boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
             holes: [],

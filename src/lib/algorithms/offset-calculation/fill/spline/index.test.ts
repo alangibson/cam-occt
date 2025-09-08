@@ -1,5 +1,10 @@
-import { describe, it, expect, vi } from 'vitest';
-import type { Shape, Point2D, Spline } from '../../../../types/geometry';
+import { describe, expect, it, vi } from 'vitest';
+import {
+    GeometryType,
+    type Point2D,
+    type Shape,
+    type Spline,
+} from '../../../../types/geometry';
 import type { FillOptions, FillResult } from '../types';
 import { fillSplineToIntersection } from './index';
 
@@ -22,7 +27,7 @@ describe('Spline Fill Operations', () => {
     });
 
     const createSplineShape = (spline: Spline): Shape => ({
-        type: 'spline',
+        type: GeometryType.SPLINE,
         geometry: spline,
         id: 'test-spline',
         layer: 'default',
@@ -142,7 +147,7 @@ describe('Spline Fill Operations', () => {
 
         it('should return failure when shape is not a spline', () => {
             const lineShape: Shape = {
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
                 id: 'test-line',
                 layer: 'default',
@@ -505,7 +510,7 @@ describe('Spline Fill Operations', () => {
                 { x: 20, y: 0 },
             ]);
             const shape: Shape = {
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: spline,
                 id: 'test-spline-123',
                 layer: 'layer-1',

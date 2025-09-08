@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { generateGCode } from './gcode-generator';
-import type { ToolPath, Drawing } from '../types';
+import { CutterCompensation } from '../types/cam';
+import { type ToolPath, type Drawing, Unit } from '../types';
 
 describe('GCode Generator - Temporary Materials', () => {
     const mockDrawing: Drawing = {
-        units: 'mm',
+        units: Unit.MM,
         shapes: [],
         bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
     };
@@ -38,11 +39,11 @@ describe('GCode Generator - Temporary Materials', () => {
         };
 
         const gcode = generateGCode([mockPath], mockDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         // Check for magic comment - using o=0 format
@@ -104,7 +105,7 @@ describe('GCode Generator - Temporary Materials', () => {
         ];
 
         const gcode = generateGCode(mockPaths, mockDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
@@ -140,11 +141,11 @@ describe('GCode Generator - Temporary Materials', () => {
         };
 
         const gcode = generateGCode([mockPath], mockDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         // Should not contain any material magic comments
@@ -173,11 +174,11 @@ describe('GCode Generator - Temporary Materials', () => {
         };
 
         const gcode = generateGCode([mockPath], mockDrawing, {
-            units: 'mm',
+            units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: 'off',
+            cutterCompensation: CutterCompensation.OFF,
         });
 
         // Check for default values

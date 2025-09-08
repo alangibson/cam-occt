@@ -1,8 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type {
-    Shape,
-    Polyline,
-    PolylineVertex,
+import {
+    GeometryType,
+    type Shape,
+    type Polyline,
+    type PolylineVertex,
 } from '../../../../types/geometry';
 import { trimPolyline } from './index';
 import { type KeepSide } from '../types';
@@ -29,7 +30,7 @@ describe('Polyline Trimming Functions', () => {
     });
 
     const createPolylineShape = (polyline: Polyline): Shape => ({
-        type: 'polyline',
+        type: GeometryType.POLYLINE,
         geometry: polyline,
         id: 'test-polyline',
         layer: 'default',

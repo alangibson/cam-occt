@@ -8,9 +8,10 @@ import {
     type ChainEndpoint,
     type TessellationPoint,
 } from './overlay';
-import type { WorkflowStage } from './workflow';
+import { WorkflowStage } from './workflow';
 import type { Shape, Point2D } from '../types';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('overlayStore', () => {
     beforeEach(() => {
@@ -20,21 +21,21 @@ describe('overlayStore', () => {
 
     describe('setCurrentStage', () => {
         it('should update current stage', () => {
-            overlayStore.setCurrentStage('prepare');
+            overlayStore.setCurrentStage(WorkflowStage.PREPARE);
 
             const state = get(overlayStore);
-            expect(state.currentStage).toBe('prepare');
+            expect(state.currentStage).toBe(WorkflowStage.PREPARE);
         });
     });
 
     describe('getCurrentOverlay', () => {
         it('should return overlay for current stage', () => {
-            overlayStore.setCurrentStage('edit');
+            overlayStore.setCurrentStage(WorkflowStage.EDIT);
 
             const overlay = overlayStore.getCurrentOverlay();
 
             expect(overlay).toBeDefined();
-            expect(overlay?.stage).toBe('edit');
+            expect(overlay?.stage).toBe(WorkflowStage.EDIT);
         });
     });
 
@@ -46,7 +47,7 @@ describe('overlayStore', () => {
                 { x: 10, y: 10, type: 'end', shapeId: 'shape-1' },
             ];
 
-            overlayStore.setShapePoints('edit', points);
+            overlayStore.setShapePoints(WorkflowStage.EDIT, points);
 
             const state = get(overlayStore);
             expect(state.overlays.edit.shapePoints).toEqual(points);
@@ -57,8 +58,8 @@ describe('overlayStore', () => {
                 { x: 0, y: 0, type: 'origin', shapeId: 'shape-1' },
             ];
 
-            overlayStore.setShapePoints('edit', points);
-            overlayStore.clearShapePoints('edit');
+            overlayStore.setShapePoints(WorkflowStage.EDIT, points);
+            overlayStore.clearShapePoints(WorkflowStage.EDIT);
 
             const state = get(overlayStore);
             expect(state.overlays.edit.shapePoints).toHaveLength(0);
@@ -72,7 +73,7 @@ describe('overlayStore', () => {
                 { x: 100, y: 100, type: 'end', chainId: 'chain-1' },
             ];
 
-            overlayStore.setChainEndpoints('prepare', endpoints);
+            overlayStore.setChainEndpoints(WorkflowStage.PREPARE, endpoints);
 
             const state = get(overlayStore);
             expect(state.overlays.prepare.chainEndpoints).toEqual(endpoints);
@@ -83,8 +84,8 @@ describe('overlayStore', () => {
                 { x: 0, y: 0, type: 'start', chainId: 'chain-1' },
             ];
 
-            overlayStore.setChainEndpoints('prepare', endpoints);
-            overlayStore.clearChainEndpoints('prepare');
+            overlayStore.setChainEndpoints(WorkflowStage.PREPARE, endpoints);
+            overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
 
             const state = get(overlayStore);
             expect(state.overlays.prepare.chainEndpoints).toHaveLength(0);
@@ -98,7 +99,7 @@ describe('overlayStore', () => {
                 { x: 15, y: 15, shapeId: 'shape-2', chainId: 'chain-1' },
             ];
 
-            overlayStore.setTessellationPoints('program', points);
+            overlayStore.setTessellationPoints(WorkflowStage.PROGRAM, points);
 
             const state = get(overlayStore);
             expect(state.overlays.program.tessellationPoints).toEqual(points);
@@ -109,8 +110,8 @@ describe('overlayStore', () => {
                 { x: 5, y: 5, shapeId: 'shape-1', chainId: 'chain-1' },
             ];
 
-            overlayStore.setTessellationPoints('program', points);
-            overlayStore.clearTessellationPoints('program');
+            overlayStore.setTessellationPoints(WorkflowStage.PROGRAM, points);
+            overlayStore.clearTessellationPoints(WorkflowStage.PROGRAM);
 
             const state = get(overlayStore);
             expect(state.overlays.program.tessellationPoints).toHaveLength(0);
@@ -121,7 +122,7 @@ describe('overlayStore', () => {
         it('should set tool head position', () => {
             const position: Point2D = { x: 50, y: 75 };
 
-            overlayStore.setToolHead('simulate', position);
+            overlayStore.setToolHead(WorkflowStage.SIMULATE, position);
 
             const state = get(overlayStore);
             expect(state.overlays.simulate.toolHead).toEqual({
@@ -134,8 +135,8 @@ describe('overlayStore', () => {
         it('should clear tool head', () => {
             const position: Point2D = { x: 50, y: 75 };
 
-            overlayStore.setToolHead('simulate', position);
-            overlayStore.clearToolHead('simulate');
+            overlayStore.setToolHead(WorkflowStage.SIMULATE, position);
+            overlayStore.clearToolHead(WorkflowStage.SIMULATE);
 
             const state = get(overlayStore);
             expect(state.overlays.simulate.toolHead).toBeUndefined();
@@ -154,11 +155,11 @@ describe('overlayStore', () => {
                 { x: 5, y: 5, shapeId: 'shape-1', chainId: 'chain-1' },
             ];
 
-            overlayStore.setShapePoints('edit', points);
-            overlayStore.setChainEndpoints('edit', endpoints);
-            overlayStore.setTessellationPoints('edit', tessPoints);
+            overlayStore.setShapePoints(WorkflowStage.EDIT, points);
+            overlayStore.setChainEndpoints(WorkflowStage.EDIT, endpoints);
+            overlayStore.setTessellationPoints(WorkflowStage.EDIT, tessPoints);
 
-            overlayStore.clearStageOverlay('edit');
+            overlayStore.clearStageOverlay(WorkflowStage.EDIT);
 
             const state = get(overlayStore);
             expect(state.overlays.edit.shapePoints).toHaveLength(0);
@@ -173,9 +174,9 @@ describe('overlayStore', () => {
                 { x: 0, y: 0, type: 'origin', shapeId: 'shape-1' },
             ];
 
-            overlayStore.setShapePoints('edit', points);
-            overlayStore.setShapePoints('prepare', points);
-            overlayStore.setShapePoints('program', points);
+            overlayStore.setShapePoints(WorkflowStage.EDIT, points);
+            overlayStore.setShapePoints(WorkflowStage.PREPARE, points);
+            overlayStore.setShapePoints(WorkflowStage.PROGRAM, points);
 
             overlayStore.clearAllOverlays();
 
@@ -204,7 +205,7 @@ describe('generateShapePoints', () => {
         y2: number
     ): Shape => ({
         id,
-        type: 'line',
+        type: GeometryType.LINE,
         geometry: {
             start: { x: x1, y: y1 },
             end: { x: x2, y: y2 },
@@ -218,7 +219,7 @@ describe('generateShapePoints', () => {
         r: number
     ): Shape => ({
         id,
-        type: 'circle',
+        type: GeometryType.CIRCLE,
         geometry: {
             center: { x: cx, y: cy },
             radius: r,
@@ -234,7 +235,7 @@ describe('generateShapePoints', () => {
         endAngle: number
     ): Shape => ({
         id,
-        type: 'arc',
+        type: GeometryType.ARC,
         geometry: {
             center: { x: cx, y: cy },
             radius: r,
@@ -335,7 +336,7 @@ describe('generateChainEndpoints', () => {
         y2: number
     ): Shape => ({
         id,
-        type: 'line',
+        type: GeometryType.LINE,
         geometry: {
             start: { x: x1, y: y1 },
             end: { x: x2, y: y2 },

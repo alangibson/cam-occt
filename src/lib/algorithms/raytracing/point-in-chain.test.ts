@@ -6,6 +6,7 @@ import {
     countPointsInsideChainExact,
 } from './point-in-chain';
 import type { Shape, Point2D } from '../../types/geometry';
+import { GeometryType } from '../../types/geometry';
 import type { Chain } from '../chain-detection/chain-detection';
 import { generateId } from '../../utils/id';
 
@@ -20,12 +21,12 @@ describe('Point-in-Chain Exact Testing', () => {
         const shapes: Shape[] = [
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x, y }, end: { x: x + width, y } },
             },
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: x + width, y },
                     end: { x: x + width, y: y + height },
@@ -33,7 +34,7 @@ describe('Point-in-Chain Exact Testing', () => {
             },
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: x + width, y: y + height },
                     end: { x, y: y + height },
@@ -41,7 +42,7 @@ describe('Point-in-Chain Exact Testing', () => {
             },
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x, y: y + height }, end: { x, y } },
             },
         ];
@@ -62,7 +63,7 @@ describe('Point-in-Chain Exact Testing', () => {
             shapes: [
                 {
                     id: generateId(),
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: { center: { x: centerX, y: centerY }, radius },
                 },
             ],
@@ -80,7 +81,7 @@ describe('Point-in-Chain Exact Testing', () => {
             // Bottom line
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: x + cornerRadius, y },
                     end: { x: x + width - cornerRadius, y },
@@ -89,7 +90,7 @@ describe('Point-in-Chain Exact Testing', () => {
             // Bottom-right corner
             {
                 id: generateId(),
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: {
                         x: x + width - cornerRadius,
@@ -104,7 +105,7 @@ describe('Point-in-Chain Exact Testing', () => {
             // Right line
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: x + width, y: y + cornerRadius },
                     end: { x: x + width, y: y + height - cornerRadius },
@@ -113,7 +114,7 @@ describe('Point-in-Chain Exact Testing', () => {
             // Top-right corner
             {
                 id: generateId(),
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: {
                         x: x + width - cornerRadius,
@@ -128,7 +129,7 @@ describe('Point-in-Chain Exact Testing', () => {
             // Top line
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: x + width - cornerRadius, y: y + height },
                     end: { x: x + cornerRadius, y: y + height },
@@ -137,7 +138,7 @@ describe('Point-in-Chain Exact Testing', () => {
             // Top-left corner
             {
                 id: generateId(),
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: {
                         x: x + cornerRadius,
@@ -152,7 +153,7 @@ describe('Point-in-Chain Exact Testing', () => {
             // Left line
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x, y: y + height - cornerRadius },
                     end: { x, y: y + cornerRadius },
@@ -161,7 +162,7 @@ describe('Point-in-Chain Exact Testing', () => {
             // Bottom-left corner
             {
                 id: generateId(),
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: x + cornerRadius, y: y + cornerRadius },
                     radius: cornerRadius,
@@ -238,7 +239,7 @@ describe('Point-in-Chain Exact Testing', () => {
                 shapes: [
                     {
                         id: generateId(),
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 0, y: 0 },
                             end: { x: 10, y: 0 },
@@ -246,7 +247,7 @@ describe('Point-in-Chain Exact Testing', () => {
                     },
                     {
                         id: generateId(),
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 10, y: 0 },
                             end: { x: 10, y: 10 },
@@ -351,37 +352,37 @@ describe('Point-in-Chain Exact Testing', () => {
             const shapes: Shape[] = [
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: -10 }, end: { x: 2, y: -2 } },
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 2, y: -2 }, end: { x: 10, y: 0 } },
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 10, y: 0 }, end: { x: 2, y: 2 } },
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 2, y: 2 }, end: { x: 0, y: 10 } },
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 10 }, end: { x: -2, y: 2 } },
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: -2, y: 2 }, end: { x: -10, y: 0 } },
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: -10, y: 0 },
                         end: { x: -2, y: -2 },
@@ -389,7 +390,7 @@ describe('Point-in-Chain Exact Testing', () => {
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: -2, y: -2 },
                         end: { x: 0, y: -10 },
@@ -434,7 +435,7 @@ describe('Point-in-Chain Exact Testing', () => {
 
                 shapes.push({
                     id: generateId(),
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: {
                         center: { x: centerX, y: centerY },
                         radius: petalRadius,

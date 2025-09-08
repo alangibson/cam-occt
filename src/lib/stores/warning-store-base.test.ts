@@ -8,6 +8,7 @@ import {
     type Warning,
     type WarningStore,
 } from './warning-store-base';
+import { MessageSeverity } from '../types/ui';
 
 // Mock crypto.randomUUID
 const mockUUID = vi.fn(() => 'mock-warning-uuid-123');
@@ -17,7 +18,7 @@ Object.defineProperty(global, 'crypto', {
 
 // Test warning interface extending the base Warning
 interface TestWarning extends Warning {
-    severity: 'info' | 'warning' | 'error';
+    severity: MessageSeverity;
     details?: string;
 }
 
@@ -35,7 +36,7 @@ describe('createWarningStore', () => {
         chainId: 'chain-1',
         message: 'Test warning message',
         type: 'test-warning',
-        severity: 'warning',
+        severity: MessageSeverity.WARNING,
     });
 
     describe('addWarning', () => {
@@ -74,7 +75,7 @@ describe('createWarningStore', () => {
                 chainId: 'chain-2',
                 message: 'Critical error',
                 type: 'critical',
-                severity: 'error',
+                severity: MessageSeverity.ERROR,
                 details: 'Additional error details',
             };
 
@@ -262,7 +263,7 @@ describe('helper functions', () => {
         chainId: 'chain-1',
         message: 'Test warning message',
         type: 'test-warning',
-        severity: 'warning',
+        severity: MessageSeverity.WARNING,
     });
 
     describe('clearWarnings', () => {

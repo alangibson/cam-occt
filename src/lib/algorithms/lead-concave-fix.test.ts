@@ -7,6 +7,8 @@ import {
 import { CutDirection, LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
+import { PartType } from './part-detection';
+import { GeometryType } from '../../lib/types/geometry';
 import type { Shape, Point2D } from '../../lib/types/geometry';
 
 describe('Lead Concave Area Fix', () => {
@@ -59,7 +61,7 @@ describe('Lead Concave Area Fix', () => {
         for (let i: number = 0; i < points.length - 1; i++) {
             shapes.push({
                 id: `line${i}`,
-                type: LeadType.LINE,
+                type: GeometryType.LINE,
                 geometry: { start: points[i], end: points[i + 1] },
                 layer: 'layer1',
             });
@@ -80,7 +82,7 @@ describe('Lead Concave Area Fix', () => {
             shell: {
                 id: 'shell1',
                 chain,
-                type: 'shell',
+                type: PartType.SHELL,
                 boundingBox: { minX: 0, maxX: 20, minY: 0, maxY: 20 },
                 holes: [],
             },
@@ -157,7 +159,7 @@ describe('Lead Concave Area Fix', () => {
         for (let i: number = 0; i < points.length - 1; i++) {
             shapes.push({
                 id: `line${i}`,
-                type: LeadType.LINE,
+                type: GeometryType.LINE,
                 geometry: { start: points[i], end: points[i + 1] },
                 layer: 'layer1',
             });
@@ -166,7 +168,7 @@ describe('Lead Concave Area Fix', () => {
         // Close the shape
         shapes.push({
             id: 'line_close',
-            type: LeadType.LINE,
+            type: GeometryType.LINE,
             geometry: { start: points[points.length - 1], end: points[0] },
             layer: 'layer1',
         });
@@ -178,7 +180,7 @@ describe('Lead Concave Area Fix', () => {
             shell: {
                 id: 'shell1',
                 chain,
-                type: 'shell',
+                type: PartType.SHELL,
                 boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
                 holes: [],
             },

@@ -139,6 +139,21 @@ export function getShapePointAt(shape: Shape, t: number): Point2D {
 }
 
 /**
+ * Calculate total length of a polyline from its points
+ * @param points - Array of 2D points
+ * @returns Total length of the polyline
+ */
+function calculatePolylineLength(points: Point2D[]): number {
+    let length = 0;
+    for (let i = 1; i < points.length; i++) {
+        const dx = points[i].x - points[i - 1].x;
+        const dy = points[i].y - points[i - 1].y;
+        length += Math.sqrt(dx * dx + dy * dy);
+    }
+    return length;
+}
+
+/**
  * Calculate the total length of a shape
  */
 export function getShapeLength(shape: Shape): number {
@@ -173,14 +188,7 @@ export function getShapeLength(shape: Shape): number {
             try {
                 const points = sampleNURBS(spline, 50);
                 if (points.length < 2) return 0;
-
-                let length = 0;
-                for (let i = 1; i < points.length; i++) {
-                    const dx = points[i].x - points[i - 1].x;
-                    const dy = points[i].y - points[i - 1].y;
-                    length += Math.sqrt(dx * dx + dy * dy);
-                }
-                return length;
+                return calculatePolylineLength(points);
             } catch {
                 return 0;
             }
@@ -205,14 +213,7 @@ export function getShapeLength(shape: Shape): number {
                     const t = i / numSamples;
                     points.push(getEllipsePointAt(ellipse, t));
                 }
-
-                let length = 0;
-                for (let i = 1; i < points.length; i++) {
-                    const dx = points[i].x - points[i - 1].x;
-                    const dy = points[i].y - points[i - 1].y;
-                    length += Math.sqrt(dx * dx + dy * dy);
-                }
-                return length;
+                return calculatePolylineLength(points);
             } else {
                 // Full ellipse - use Ramanujan's approximation
                 const h = Math.pow((a - b) / (a + b), 2);

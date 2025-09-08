@@ -13,6 +13,7 @@ import type {
     Ellipse,
     Spline,
 } from '../../lib/types';
+import { GeometryType } from '../../lib/types/geometry';
 import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { sampleNURBS } from '../geometry/nurbs';
 import { polylineToVertices, polylineToPoints } from '../geometry/polyline';
@@ -25,12 +26,12 @@ export function tessellateShape(
     const points: Point2D[] = [];
 
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             points.push(line.start, line.end);
             break;
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
             const numPoints: number = params.circleTessellationPoints;
             for (let i: number = 0; i < numPoints; i++) {
@@ -42,7 +43,7 @@ export function tessellateShape(
             }
             break;
 
-        case 'arc':
+        case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
 
             // Calculate the angular difference (sweep)
@@ -79,7 +80,7 @@ export function tessellateShape(
             }
             break;
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             const vertices: { x: number; y: number }[] | null =
                 polylineToVertices(polyline);
@@ -93,7 +94,7 @@ export function tessellateShape(
             }
             break;
 
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
             const majorAxisLength: number = Math.sqrt(
                 ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
@@ -162,7 +163,7 @@ export function tessellateShape(
             }
             break;
 
-        case 'spline':
+        case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;
             try {
                 // Use NURBS sampling for accurate tessellation

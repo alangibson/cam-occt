@@ -6,6 +6,7 @@ import {
 } from './lead-calculation';
 import { LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('Lead Rotation Angle', () => {
     // Simple horizontal line for testing lead angles
@@ -14,7 +15,7 @@ describe('Lead Rotation Angle', () => {
         shapes: [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },

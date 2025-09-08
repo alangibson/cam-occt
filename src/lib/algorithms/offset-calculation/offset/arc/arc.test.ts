@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { offsetArc } from './arc';
 import type { Arc } from '../../../../types/geometry';
+import { OffsetDirection } from '../types';
 
 describe('offsetArc', () => {
     const testArc: Arc = {
@@ -12,13 +13,13 @@ describe('offsetArc', () => {
     };
 
     it('should return no shapes when direction is none', () => {
-        const result = offsetArc(testArc, 5, 'none');
+        const result = offsetArc(testArc, 5, OffsetDirection.NONE);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
     it('should offset arc outward by increasing radius', () => {
-        const result = offsetArc(testArc, 3, 'outset');
+        const result = offsetArc(testArc, 3, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(1);
 
@@ -32,7 +33,7 @@ describe('offsetArc', () => {
     });
 
     it('should offset arc inward by decreasing radius', () => {
-        const result = offsetArc(testArc, 3, 'inset');
+        const result = offsetArc(testArc, 3, OffsetDirection.INSET);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(1);
 
@@ -41,7 +42,7 @@ describe('offsetArc', () => {
     });
 
     it('should fail when inset would create negative radius', () => {
-        const result = offsetArc(testArc, 15, 'inset'); // 15 > 10 (original radius)
+        const result = offsetArc(testArc, 15, OffsetDirection.INSET); // 15 > 10 (original radius)
         expect(result.success).toBe(false);
         expect(result.errors[0]).toContain('negative radius');
     });
@@ -98,7 +99,7 @@ describe('offsetArc', () => {
             const outsetResult = offsetArc(
                 config.arc,
                 offsetDistance,
-                'outset'
+                OffsetDirection.OUTSET
             );
             expect(outsetResult.success).toBe(true);
             const outsetArc = outsetResult.shapes[0].geometry as Arc;
@@ -109,7 +110,11 @@ describe('offsetArc', () => {
             expect(outsetArc.clockwise).toBe(config.arc.clockwise);
 
             // Test inset
-            const insetResult = offsetArc(config.arc, offsetDistance, 'inset');
+            const insetResult = offsetArc(
+                config.arc,
+                offsetDistance,
+                OffsetDirection.INSET
+            );
             expect(insetResult.success).toBe(true);
             const insetArc = insetResult.shapes[0].geometry as Arc;
             expect(insetArc.radius).toBe(config.arc.radius - offsetDistance);
@@ -173,7 +178,11 @@ describe('offsetArc', () => {
         const offsetDistance = 10;
 
         // Test outset
-        const outsetResult = offsetArc(largeArc, offsetDistance, 'outset');
+        const outsetResult = offsetArc(
+            largeArc,
+            offsetDistance,
+            OffsetDirection.OUTSET
+        );
         expect(outsetResult.success).toBe(true);
 
         const outsetArc = outsetResult.shapes[0].geometry as Arc;
@@ -200,8 +209,16 @@ describe('offsetArc', () => {
         const offsetDistance = 25;
 
         // Test both directions
-        const outsetResult = offsetArc(semicircle, offsetDistance, 'outset');
-        const insetResult = offsetArc(semicircle, offsetDistance, 'inset');
+        const outsetResult = offsetArc(
+            semicircle,
+            offsetDistance,
+            OffsetDirection.OUTSET
+        );
+        const insetResult = offsetArc(
+            semicircle,
+            offsetDistance,
+            OffsetDirection.INSET
+        );
 
         expect(outsetResult.success).toBe(true);
         expect(insetResult.success).toBe(true);
@@ -229,7 +246,7 @@ describe('offsetArc', () => {
             clockwise: false,
         };
 
-        const result = offsetArc(zeroArc, 1, 'outset');
+        const result = offsetArc(zeroArc, 1, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         // Zero radius arc becomes a 1-unit radius arc
         const offsetGeometry = result.shapes[0].geometry as Arc;
@@ -246,7 +263,11 @@ describe('offsetArc', () => {
         };
 
         const offsetDistance = 3;
-        const result = offsetArc(originalArc, offsetDistance, 'outset');
+        const result = offsetArc(
+            originalArc,
+            offsetDistance,
+            OffsetDirection.OUTSET
+        );
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Arc;

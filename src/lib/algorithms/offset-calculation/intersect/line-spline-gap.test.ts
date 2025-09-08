@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { GeometryType, type Shape } from '../../../types/geometry';
 import { findSplineLineIntersectionsVerb } from './line-spline/index';
-import type { Shape } from '../../../types/geometry';
 
 describe('Line-Spline Gap Intersection Tests', () => {
     // Create test spline - a cubic spline that we know works for gap intersection
     const testSpline: Shape = {
         id: 'spline1',
-        type: 'spline',
+        type: GeometryType.SPLINE,
         geometry: {
             controlPoints: [
                 { x: 100, y: 200 },
@@ -25,7 +25,7 @@ describe('Line-Spline Gap Intersection Tests', () => {
     // Create test line positioned with a gap from the spline that intersects when extended
     const testLine: Shape = {
         id: 'line1',
-        type: 'line',
+        type: GeometryType.LINE,
         geometry: {
             start: { x: 220, y: 160 },
             end: { x: 280, y: 120 },
@@ -65,7 +65,7 @@ describe('Line-Spline Gap Intersection Tests', () => {
         // Create a line that actually intersects the spline
         const intersectingLine: Shape = {
             id: 'line2',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: 120, y: 100 },
                 end: { x: 160, y: 180 },
@@ -105,7 +105,7 @@ describe('Line-Spline Gap Intersection Tests', () => {
         // Test with different spline types
         const cubicSpline: Shape = {
             id: 'spline2',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: {
                 controlPoints: [
                     { x: 100, y: 200 },
@@ -124,7 +124,7 @@ describe('Line-Spline Gap Intersection Tests', () => {
         // Line positioned to test gap intersection with cubic spline
         const testLineForCubic: Shape = {
             id: 'line3',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: 220, y: 160 },
                 end: { x: 280, y: 120 },
@@ -168,7 +168,7 @@ describe('Line-Spline Gap Intersection Tests', () => {
         // Test with very small spline
         const smallSpline: Shape = {
             id: 'small-spline',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: {
                 controlPoints: [
                     { x: 100, y: 100 },

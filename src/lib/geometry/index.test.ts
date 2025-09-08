@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { samplePathAtDistanceIntervals } from './index';
 import type { Shape, Line } from '../types';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('samplePathAtDistanceIntervals', () => {
     describe('Cut Direction Handling', () => {
@@ -8,7 +9,7 @@ describe('samplePathAtDistanceIntervals', () => {
             // Create a simple horizontal line from (0,0) to (10,0)
             const line: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -37,7 +38,7 @@ describe('samplePathAtDistanceIntervals', () => {
             // Create a simple horizontal line from (0,0) to (10,0)
             const line: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -66,7 +67,7 @@ describe('samplePathAtDistanceIntervals', () => {
             // Create a vertical line and its reverse
             const originalLine: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 0, y: 10 },
@@ -76,7 +77,7 @@ describe('samplePathAtDistanceIntervals', () => {
             // For counterclockwise behavior, reverse the line's start/end
             const reversedLine: Shape = {
                 id: 'line1-reversed',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 10 },
                     end: { x: 0, y: 0 },
@@ -107,7 +108,7 @@ describe('samplePathAtDistanceIntervals', () => {
             // Create an L-shaped path: horizontal line then vertical line
             const horizontalLine: Shape = {
                 id: 'horizontalLine',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -116,7 +117,7 @@ describe('samplePathAtDistanceIntervals', () => {
 
             const verticalLine: Shape = {
                 id: 'verticalLine',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 },
@@ -150,7 +151,7 @@ describe('samplePathAtDistanceIntervals', () => {
             // Create a 20-unit long line
             const line: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 20, y: 0 },
@@ -184,7 +185,7 @@ describe('samplePathAtDistanceIntervals', () => {
             // Zero interval distance
             const line: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -205,7 +206,7 @@ describe('Cut Direction Regression Tests', () => {
 
         const line: Shape = {
             id: 'line1',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },
                 end: { x: 10, y: 0 }, // Horizontal line pointing right

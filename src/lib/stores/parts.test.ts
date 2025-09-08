@@ -13,10 +13,11 @@ import {
     getPartChainIds,
     getChainPartType,
 } from './parts';
-import type {
-    DetectedPart,
-    PartDetectionWarning,
-    PartHole,
+import {
+    PartType,
+    type DetectedPart,
+    type PartDetectionWarning,
+    type PartHole,
 } from '../algorithms/part-detection';
 
 describe('Parts Store', () => {
@@ -36,7 +37,7 @@ describe('Parts Store', () => {
                 id: chainId,
                 shapes: [],
             },
-            type: 'hole' as const,
+            type: PartType.HOLE as const,
             boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
             holes: [],
         }));
@@ -49,7 +50,7 @@ describe('Parts Store', () => {
                     id: shellChainId,
                     shapes: [],
                 },
-                type: 'shell' as const,
+                type: PartType.SHELL as const,
                 boundingBox: { minX: 0, maxX: 20, minY: 0, maxY: 20 },
                 holes: holes,
             },
@@ -169,12 +170,12 @@ describe('Parts Store', () => {
         describe('getChainPartType', () => {
             it('should identify shell chains', () => {
                 const partType = getChainPartType('shell-chain-1', parts);
-                expect(partType).toBe('shell');
+                expect(partType).toBe(PartType.SHELL);
             });
 
             it('should identify hole chains', () => {
                 const partType = getChainPartType('hole-chain-1', parts);
-                expect(partType).toBe('hole');
+                expect(partType).toBe(PartType.HOLE);
             });
 
             it('should return null for non-part chains', () => {
@@ -192,13 +193,13 @@ describe('Parts Store', () => {
                 shell: {
                     id: 'shell-1',
                     chain: { id: 'shell-chain', shapes: [] },
-                    type: 'shell',
+                    type: PartType.SHELL,
                     boundingBox: { minX: 0, maxX: 30, minY: 0, maxY: 30 },
                     holes: [
                         {
                             id: 'hole-1',
                             chain: { id: 'hole-chain', shapes: [] },
-                            type: 'hole',
+                            type: PartType.HOLE,
                             boundingBox: {
                                 minX: 5,
                                 maxX: 25,
@@ -209,7 +210,7 @@ describe('Parts Store', () => {
                                 {
                                     id: 'nested-hole',
                                     chain: { id: 'nested-chain', shapes: [] },
-                                    type: 'hole',
+                                    type: PartType.HOLE,
                                     boundingBox: {
                                         minX: 10,
                                         maxX: 20,
@@ -226,13 +227,13 @@ describe('Parts Store', () => {
                     {
                         id: 'hole-1',
                         chain: { id: 'hole-chain', shapes: [] },
-                        type: 'hole',
+                        type: PartType.HOLE,
                         boundingBox: { minX: 5, maxX: 25, minY: 5, maxY: 25 },
                         holes: [
                             {
                                 id: 'nested-hole',
                                 chain: { id: 'nested-chain', shapes: [] },
-                                type: 'hole',
+                                type: PartType.HOLE,
                                 boundingBox: {
                                     minX: 10,
                                     maxX: 20,
@@ -254,9 +255,9 @@ describe('Parts Store', () => {
                 'hole-chain',
                 'nested-chain',
             ]);
-            expect(getChainPartType('shell-chain', parts)).toBe('shell');
-            expect(getChainPartType('hole-chain', parts)).toBe('hole');
-            expect(getChainPartType('nested-chain', parts)).toBe('hole');
+            expect(getChainPartType('shell-chain', parts)).toBe(PartType.SHELL);
+            expect(getChainPartType('hole-chain', parts)).toBe(PartType.HOLE);
+            expect(getChainPartType('nested-chain', parts)).toBe(PartType.HOLE);
         });
     });
 

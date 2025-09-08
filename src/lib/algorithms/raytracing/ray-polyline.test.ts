@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import type { Polyline, Shape, Point2D } from '../../types/geometry';
+import { GeometryType } from '../../types/geometry';
 import type { Ray } from './types';
 import {
     countRayPolylineCrossings,
@@ -12,7 +13,7 @@ describe('Ray-Polyline Intersection', () => {
     function createLineShape(id: string, start: Point2D, end: Point2D): Shape {
         return {
             id,
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: { start, end },
         };
     }
@@ -28,7 +29,7 @@ describe('Ray-Polyline Intersection', () => {
     ): Shape {
         return {
             id,
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: { center, radius, startAngle, endAngle, clockwise },
         };
     }
@@ -273,7 +274,7 @@ describe('Ray-Polyline Intersection', () => {
                 shapes: [
                     {
                         id: 'unsupported',
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: { center: { x: 0, y: 0 }, radius: 1 },
                     },
                 ],

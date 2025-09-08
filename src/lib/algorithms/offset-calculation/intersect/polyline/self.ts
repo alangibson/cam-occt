@@ -1,9 +1,10 @@
-import type {
-    Shape,
-    Polyline,
-    Line,
-    Arc,
-    Point2D,
+import {
+    type Shape,
+    type Polyline,
+    type Line,
+    type Arc,
+    type Point2D,
+    GeometryType,
 } from '../../../../../lib/types/geometry';
 import type {
     IntersectionResult,
@@ -302,13 +303,13 @@ function findSegmentSegmentIntersections(
     // Create shape wrappers for the segments
     const shape1: Shape = {
         id: `segment-${index1}`,
-        type: isLine(segment1) ? 'line' : 'arc',
+        type: isLine(segment1) ? GeometryType.LINE : GeometryType.ARC,
         geometry: segment1,
     };
 
     const shape2: Shape = {
         id: `segment-${index2}`,
-        type: isLine(segment2) ? 'line' : 'arc',
+        type: isLine(segment2) ? GeometryType.LINE : GeometryType.ARC,
         geometry: segment2,
     };
 

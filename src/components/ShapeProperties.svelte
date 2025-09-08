@@ -1,14 +1,15 @@
 <script lang="ts">
     import { drawingStore } from '../lib/stores/drawing';
-    import type {
-        Shape,
-        Point2D,
-        Line,
-        Arc,
-        Circle,
-        Polyline,
-        Ellipse,
-        Spline,
+    import {
+        type Shape,
+        type Point2D,
+        type Line,
+        type Arc,
+        type Circle,
+        type Polyline,
+        type Ellipse,
+        type Spline,
+        GeometryType,
     } from '../lib/types';
     import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
     import { polylineToPoints } from '$lib/geometry/polyline';
@@ -38,21 +39,21 @@
 
     function getShapeOrigin(shape: Shape): Point2D {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 const line = shape.geometry as Line;
                 return line.start; // Origin is the start point
 
-            case 'circle':
-            case 'arc':
+            case GeometryType.CIRCLE:
+            case GeometryType.ARC:
                 const circle = shape.geometry as Circle;
                 return circle.center; // Origin is the center
 
-            case 'polyline':
+            case GeometryType.POLYLINE:
                 const polyline = shape.geometry as Polyline;
                 const points = polylineToPoints(polyline);
                 return points.length > 0 ? points[0] : { x: 0, y: 0 }; // Origin is the first point
 
-            case 'ellipse':
+            case GeometryType.ELLIPSE:
                 const ellipse = shape.geometry as Ellipse;
                 return ellipse.center; // Origin is the center
 
@@ -161,7 +162,7 @@
                 >
             </div>
 
-            {#if displayShape.type === 'circle' || displayShape.type === 'arc'}
+            {#if displayShape.type === GeometryType.CIRCLE || displayShape.type === GeometryType.ARC}
                 {@const geometry = displayShape.geometry as Circle | Arc}
                 <div class="property-row">
                     <span class="property-label">Radius:</span>
@@ -170,7 +171,7 @@
                     >
                 </div>
 
-                {#if displayShape.type === 'arc'}
+                {#if displayShape.type === GeometryType.ARC}
                     {@const arcGeometry = displayShape.geometry as Arc}
                     <div class="property-row">
                         <span class="property-label">Start Angle:</span>
@@ -200,7 +201,7 @@
                 {/if}
             {/if}
 
-            {#if displayShape.type === 'ellipse'}
+            {#if displayShape.type === GeometryType.ELLIPSE}
                 {@const ellipseGeometry = displayShape.geometry as Ellipse}
                 <div class="property-row">
                     <span class="property-label">Center:</span>
@@ -241,7 +242,7 @@
                 {/if}
             {/if}
 
-            {#if displayShape.type === 'spline'}
+            {#if displayShape.type === GeometryType.SPLINE}
                 {@const splineGeometry = displayShape.geometry as Spline}
                 <div class="property-row">
                     <span class="property-label">Degree:</span>

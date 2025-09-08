@@ -1,13 +1,13 @@
-import { describe, it, beforeAll } from 'vitest';
-import { generateChainOffsetSVG } from './visual-tests';
-import type { Shape } from '../../../../lib/types/geometry';
-import type { OffsetChain } from './types';
-import { detectShapeChains } from '../../chain-detection/chain-detection';
-import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import { offsetChain } from './offset';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
+import { beforeAll, describe, it } from 'vitest';
+import { GeometryType, type Shape } from '../../../../lib/types/geometry';
+import { detectShapeChains } from '../../chain-detection/chain-detection';
+import { normalizeChain } from '../../chain-normalization/chain-normalization';
+import { offsetChain } from './offset';
+import type { OffsetChain } from './types';
+import { generateChainOffsetSVG } from './visual-tests';
 
 describe('visual-tests', () => {
     // Ensure output directory exists
@@ -26,7 +26,7 @@ describe('visual-tests', () => {
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
         return {
             id: `line-${Math.random()}`,
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x1, y: y1 },
                 end: { x: x2, y: y2 },
@@ -44,7 +44,7 @@ describe('visual-tests', () => {
     ): Shape {
         return {
             id: `arc-${Math.random()}`,
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: cx, y: cy },
                 radius,
@@ -218,7 +218,7 @@ describe('visual-tests', () => {
             ),
             {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 300, y: 320 },
@@ -235,7 +235,7 @@ describe('visual-tests', () => {
             },
             {
                 id: 'ellipse-arc1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 445, y: 320 },
                     majorAxisEndpoint: { x: 25, y: 0 },
@@ -294,7 +294,7 @@ describe('visual-tests', () => {
             ),
             {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 160, y: 180 },
@@ -351,7 +351,7 @@ describe('visual-tests', () => {
             {
                 // bottom-right arc (flipped sweep - curves outward)
                 id: `arc-${Math.random()}`,
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 230, y: 50 }, // Different center to create outward curve
                     radius: 30,
@@ -374,7 +374,7 @@ describe('visual-tests', () => {
             ),
             {
                 id: 'spline1',
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints: [
                         { x: 160, y: 180 },

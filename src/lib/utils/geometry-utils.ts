@@ -1,11 +1,43 @@
-import type { Point2D } from '../../lib/types/geometry';
+import type { Point2D, Line } from '../../lib/types/geometry';
 import { calculatePerimeter } from './math-utils';
 import { calculatePolygonArea as calculatePolygonAreaShared } from './polygon-geometry-shared';
+import { EPSILON } from '../constants';
 
 export enum WindingDirection {
     CW = 'CW',
     CCW = 'CCW',
     degenerate = 'degenerate',
+}
+
+/**
+ * Calculate normalized direction vector and length of a line
+ * @param line Line to process
+ * @returns Object with direction vector, unit vector, and length, or null if degenerate
+ */
+export function calculateLineDirectionAndLength(line: Line): {
+    direction: Point2D;
+    unitDirection: Point2D;
+    length: number;
+} | null {
+    const direction: Point2D = {
+        x: line.end.x - line.start.x,
+        y: line.end.y - line.start.y,
+    };
+
+    const length: number = Math.sqrt(
+        direction.x * direction.x + direction.y * direction.y
+    );
+
+    if (length < EPSILON) {
+        return null; // Degenerate line
+    }
+
+    const unitDirection: Point2D = {
+        x: direction.x / length,
+        y: direction.y / length,
+    };
+
+    return { direction, unitDirection, length };
 }
 
 /**

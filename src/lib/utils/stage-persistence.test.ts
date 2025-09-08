@@ -8,9 +8,9 @@ import {
     restoreApplicationState,
 } from '../stores/persistence';
 import {
+    WorkflowStage,
     workflowStore,
     type WorkflowState,
-    type WorkflowStage,
 } from '../stores/workflow';
 
 // Mock localStorage
@@ -45,15 +45,15 @@ describe('Workflow Stage Persistence', () => {
             workflowState = state;
         });
         unsubscribe1();
-        expect(workflowState!.currentStage).toBe('import'); // Initial stage
+        expect(workflowState!.currentStage).toBe(WorkflowStage.IMPORT); // Initial stage
 
         // Progress through stages properly: complete current, then advance
-        workflowStore.completeStage('import');
-        workflowStore.setStage('edit');
-        workflowStore.completeStage('edit');
-        workflowStore.setStage('prepare');
-        workflowStore.completeStage('prepare');
-        workflowStore.setStage('program');
+        workflowStore.completeStage(WorkflowStage.IMPORT);
+        workflowStore.setStage(WorkflowStage.EDIT);
+        workflowStore.completeStage(WorkflowStage.EDIT);
+        workflowStore.setStage(WorkflowStage.PREPARE);
+        workflowStore.completeStage(WorkflowStage.PREPARE);
+        workflowStore.setStage(WorkflowStage.PROGRAM);
 
         // Verify current state before saving
         const unsubscribe2 = workflowStore.subscribe((state) => {
@@ -61,10 +61,16 @@ describe('Workflow Stage Persistence', () => {
         });
         unsubscribe2();
 
-        expect(workflowState!.currentStage).toBe('program');
-        expect(workflowState!.completedStages.has('import')).toBe(true);
-        expect(workflowState!.completedStages.has('edit')).toBe(true);
-        expect(workflowState!.completedStages.has('prepare')).toBe(true);
+        expect(workflowState!.currentStage).toBe(WorkflowStage.PROGRAM);
+        expect(workflowState!.completedStages.has(WorkflowStage.IMPORT)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.EDIT)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.PREPARE)).toBe(
+            true
+        );
 
         // Save application state
         await saveApplicationState();
@@ -77,7 +83,7 @@ describe('Workflow Stage Persistence', () => {
             workflowState = state;
         });
         unsubscribe3();
-        expect(workflowState!.currentStage).toBe('import'); // Back to initial
+        expect(workflowState!.currentStage).toBe(WorkflowStage.IMPORT); // Back to initial
 
         // Restore application state
         await restoreApplicationState();
@@ -87,26 +93,53 @@ describe('Workflow Stage Persistence', () => {
             workflowState = state;
         });
         unsubscribe4();
-        expect(workflowState!.currentStage).toBe('program'); // Should be restored
-        expect(workflowState!.completedStages.has('import')).toBe(true);
-        expect(workflowState!.completedStages.has('edit')).toBe(true);
-        expect(workflowState!.completedStages.has('prepare')).toBe(true);
+        expect(workflowState!.currentStage).toBe(WorkflowStage.PROGRAM); // Should be restored
+        expect(workflowState!.completedStages.has(WorkflowStage.IMPORT)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.EDIT)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.PREPARE)).toBe(
+            true
+        );
     });
 
     it('should handle different workflow stages correctly', async () => {
         // Test each stage with proper progression
         const testCases = [
-            { stage: 'import', completed: [] },
-            { stage: 'edit', completed: ['import'] },
-            { stage: 'prepare', completed: ['import', 'edit'] },
-            { stage: 'program', completed: ['import', 'edit', 'prepare'] },
+            { stage: WorkflowStage.IMPORT, completed: [] },
+            { stage: WorkflowStage.EDIT, completed: [WorkflowStage.IMPORT] },
             {
-                stage: 'simulate',
-                completed: ['import', 'edit', 'prepare', 'program'],
+                stage: WorkflowStage.PREPARE,
+                completed: [WorkflowStage.IMPORT, WorkflowStage.EDIT],
             },
             {
-                stage: 'export',
-                completed: ['import', 'edit', 'prepare', 'program', 'simulate'],
+                stage: WorkflowStage.PROGRAM,
+                completed: [
+                    WorkflowStage.IMPORT,
+                    WorkflowStage.EDIT,
+                    WorkflowStage.PREPARE,
+                ],
+            },
+            {
+                stage: WorkflowStage.SIMULATE,
+                completed: [
+                    WorkflowStage.IMPORT,
+                    WorkflowStage.EDIT,
+                    WorkflowStage.PREPARE,
+                    WorkflowStage.PROGRAM,
+                ],
+            },
+            {
+                stage: WorkflowStage.EXPORT,
+                completed: [
+                    WorkflowStage.IMPORT,
+                    WorkflowStage.EDIT,
+                    WorkflowStage.PREPARE,
+                    WorkflowStage.PROGRAM,
+                    WorkflowStage.SIMULATE,
+                ],
             },
         ];
 
@@ -143,14 +176,14 @@ describe('Workflow Stage Persistence', () => {
 
     it('should persist completed stages correctly', async () => {
         // Complete several stages in order
-        workflowStore.completeStage('import');
-        workflowStore.setStage('edit');
-        workflowStore.completeStage('edit');
-        workflowStore.setStage('prepare');
-        workflowStore.completeStage('prepare');
-        workflowStore.setStage('program');
-        workflowStore.completeStage('program');
-        workflowStore.setStage('simulate');
+        workflowStore.completeStage(WorkflowStage.IMPORT);
+        workflowStore.setStage(WorkflowStage.EDIT);
+        workflowStore.completeStage(WorkflowStage.EDIT);
+        workflowStore.setStage(WorkflowStage.PREPARE);
+        workflowStore.completeStage(WorkflowStage.PREPARE);
+        workflowStore.setStage(WorkflowStage.PROGRAM);
+        workflowStore.completeStage(WorkflowStage.PROGRAM);
+        workflowStore.setStage(WorkflowStage.SIMULATE);
 
         // Save and restore
         await saveApplicationState();
@@ -164,11 +197,21 @@ describe('Workflow Stage Persistence', () => {
         });
         unsubscribe();
 
-        expect(workflowState!.currentStage).toBe('simulate');
-        expect(workflowState!.completedStages.has('import')).toBe(true);
-        expect(workflowState!.completedStages.has('edit')).toBe(true);
-        expect(workflowState!.completedStages.has('prepare')).toBe(true);
-        expect(workflowState!.completedStages.has('program')).toBe(true);
-        expect(workflowState!.completedStages.has('simulate')).toBe(false); // Current stage, not completed
+        expect(workflowState!.currentStage).toBe(WorkflowStage.SIMULATE);
+        expect(workflowState!.completedStages.has(WorkflowStage.IMPORT)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.EDIT)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.PREPARE)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.PROGRAM)).toBe(
+            true
+        );
+        expect(workflowState!.completedStages.has(WorkflowStage.SIMULATE)).toBe(
+            false
+        ); // Current stage, not completed
     });
 });

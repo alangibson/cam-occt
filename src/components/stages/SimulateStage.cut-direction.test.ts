@@ -8,6 +8,7 @@ import {
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import type { Shape } from '../../lib/types';
 import { CutDirection } from '$lib/types/direction';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('SimulateStage Cut Direction', () => {
     beforeEach(() => {
@@ -21,7 +22,7 @@ describe('SimulateStage Cut Direction', () => {
         // Create a circle shape
         const circleShape: Shape = {
             id: 'circle-1',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: 100, y: 100 },
                 radius: 50,
@@ -88,7 +89,7 @@ describe('SimulateStage Cut Direction', () => {
         // Create an ellipse shape
         const ellipseShape: Shape = {
             id: 'ellipse-1',
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center: { x: 200, y: 200 },
                 majorAxisEndpoint: { x: 100, y: 0 }, // 100 units along x-axis
@@ -136,7 +137,7 @@ describe('SimulateStage Cut Direction', () => {
         // Create a line shape (open chain)
         const lineShape: Shape = {
             id: 'line-1',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },
                 end: { x: 100, y: 100 },

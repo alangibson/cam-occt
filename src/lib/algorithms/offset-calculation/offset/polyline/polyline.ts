@@ -1,12 +1,16 @@
-import type { Polyline, Shape } from '../../../../types/geometry';
-import type { OffsetDirection, OffsetResult } from '../types';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import { generateId } from '$lib/utils/id';
+import {
+    GeometryType,
+    type Polyline,
+    type Shape,
+} from '../../../../types/geometry';
 import { offsetChain } from '../../chain/offset';
 import type {
     ChainOffsetParameters,
     ChainOffsetResult,
 } from '../../chain/types';
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import { OffsetDirection, type OffsetResult } from '../types';
 
 /**
  * Offset a polyline using the chain offset system
@@ -83,7 +87,7 @@ export function offsetPolyline(
         if (targetChain && targetChain.shapes.length > 0) {
             const offsetPolyline: Shape = {
                 id: generateId(),
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     closed: polyline.closed,
                     shapes: targetChain.shapes,

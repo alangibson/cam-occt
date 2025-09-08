@@ -1,5 +1,5 @@
-import type { Arc, Shape } from '../../../../types/geometry';
-import type { OffsetDirection, OffsetResult } from '../types';
+import { GeometryType, type Arc, type Shape } from '../../../../types/geometry';
+import { OffsetDirection, type OffsetResult } from '../types';
 
 /**
  * Offset an arc by the specified distance
@@ -45,7 +45,7 @@ export function offsetArc(
         // Only the radius changes, which automatically updates the start/end points
         const offsetShape: Shape = {
             id: `offset_${Math.random().toString(36).substr(2, 9)}`,
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { ...arc.center },
                 radius: newRadius,

@@ -1,6 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { calculateDrawingSize } from './drawing-size';
 import type { Drawing } from '../../types';
+import { Unit } from '../../utils/units';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('calculateDrawingSize', () => {
     it('returns null for empty drawing', () => {
@@ -11,7 +13,7 @@ describe('calculateDrawingSize', () => {
         const drawing: Drawing = {
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         expect(calculateDrawingSize(drawing)).toBeNull();
@@ -22,19 +24,19 @@ describe('calculateDrawingSize', () => {
             shapes: [
                 {
                     id: 'test',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
                 },
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 50 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         const result = calculateDrawingSize(drawing);
         expect(result).toEqual({
             width: 100,
             height: 50,
-            units: 'mm',
+            units: Unit.MM,
             source: 'calculated',
         });
     });
@@ -44,19 +46,19 @@ describe('calculateDrawingSize', () => {
             shapes: [
                 {
                     id: 'test',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 5, y: 10 }, end: { x: 15, y: 20 } },
                 },
             ],
             bounds: { min: { x: NaN, y: 0 }, max: { x: 100, y: 50 } },
-            units: 'inch',
+            units: Unit.INCH,
         };
 
         const result = calculateDrawingSize(drawing);
         expect(result).toEqual({
             width: 10,
             height: 10,
-            units: 'inch',
+            units: Unit.INCH,
             source: 'calculated',
         });
     });

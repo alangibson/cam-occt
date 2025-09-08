@@ -1,14 +1,15 @@
-import type {
-    Point2D,
-    Ellipse,
-    Spline,
-    Shape,
-} from '../../../../types/geometry';
-import type { OffsetDirection, OffsetResult } from '../types';
 import verb from 'verb-nurbs';
 import { EPSILON } from '../../../../constants';
-import { generateUniformKnotVector } from '../../../../utils/nurbs-utils';
+import {
+    GeometryType,
+    type Ellipse,
+    type Point2D,
+    type Shape,
+    type Spline,
+} from '../../../../types/geometry';
 import { getEllipseParameters } from '../../../../utils/ellipse-utils';
+import { generateUniformKnotVector } from '../../../../utils/nurbs-utils';
+import { OffsetDirection, type OffsetResult } from '../types';
 
 /**
  * Offset an ellipse using true mathematical ellipse offset calculation
@@ -218,7 +219,7 @@ export function offsetEllipse(
         // Create the offset shape as a spline
         const offsetShape: Shape = {
             id: `offset_${Math.random().toString(36).substr(2, 9)}`,
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: splineGeometry,
         };
 

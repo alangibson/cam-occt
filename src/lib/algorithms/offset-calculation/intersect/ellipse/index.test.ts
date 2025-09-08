@@ -1,24 +1,25 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    findEllipseIntersections,
-    findEllipseGenericIntersections,
-    approximateEllipseAsPolyline,
-} from './index';
-import type {
-    Shape,
-    Ellipse,
-    Line,
-    Arc,
-    Circle,
-    Polyline,
+    GeometryType,
+    type Arc,
+    type Circle,
+    type Ellipse,
+    type Line,
+    type Polyline,
+    type Shape,
 } from '../../../../types/geometry';
+import {
+    approximateEllipseAsPolyline,
+    findEllipseGenericIntersections,
+    findEllipseIntersections,
+} from './index';
 
 describe('Ellipse Intersections', () => {
     describe('findEllipseIntersections', () => {
         it('should find intersections between ellipse and line', () => {
             const ellipseShape: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     majorAxisEndpoint: { x: 50, y: 0 },
@@ -28,7 +29,7 @@ describe('Ellipse Intersections', () => {
 
             const lineShape: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: -60, y: 0 },
                     end: { x: 60, y: 0 },
@@ -54,7 +55,7 @@ describe('Ellipse Intersections', () => {
         it('should find intersections between ellipse and arc', () => {
             const ellipseShape: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     majorAxisEndpoint: { x: 40, y: 0 },
@@ -64,7 +65,7 @@ describe('Ellipse Intersections', () => {
 
             const arcShape: Shape = {
                 id: 'arc1',
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 30, y: 0 },
                     radius: 25,
@@ -82,7 +83,7 @@ describe('Ellipse Intersections', () => {
         it('should find intersections between ellipse and circle', () => {
             const ellipseShape: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     majorAxisEndpoint: { x: 60, y: 0 },
@@ -92,7 +93,7 @@ describe('Ellipse Intersections', () => {
 
             const circleShape: Shape = {
                 id: 'circle1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: {
                     center: { x: 40, y: 0 },
                     radius: 35,
@@ -107,7 +108,7 @@ describe('Ellipse Intersections', () => {
         it('should find intersections between ellipse and polyline', () => {
             const ellipseShape: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     majorAxisEndpoint: { x: 50, y: 0 },
@@ -118,7 +119,7 @@ describe('Ellipse Intersections', () => {
             // Create a simple polyline that crosses the ellipse
             const polylineShape: Shape = {
                 id: 'polyline1',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     closed: false,
                     shapes: [],
@@ -137,7 +138,7 @@ describe('Ellipse Intersections', () => {
         it('should handle case when ellipse is first parameter', () => {
             const ellipseShape: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     majorAxisEndpoint: { x: 30, y: 0 },
@@ -147,7 +148,7 @@ describe('Ellipse Intersections', () => {
 
             const lineShape: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: -40, y: 10 },
                     end: { x: 40, y: 10 },
@@ -162,7 +163,7 @@ describe('Ellipse Intersections', () => {
         it('should handle case when ellipse is second parameter', () => {
             const lineShape: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: -40, y: 15 },
                     end: { x: 40, y: 15 },
@@ -171,7 +172,7 @@ describe('Ellipse Intersections', () => {
 
             const ellipseShape: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     majorAxisEndpoint: { x: 50, y: 0 },
@@ -189,7 +190,7 @@ describe('Ellipse Intersections', () => {
         it('should handle generic ellipse-line intersections', () => {
             const ellipseShape: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     majorAxisEndpoint: { x: 40, y: 0 },
@@ -199,7 +200,7 @@ describe('Ellipse Intersections', () => {
 
             const lineShape: Shape = {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: -50, y: 0 },
                     end: { x: 50, y: 0 },
@@ -218,7 +219,7 @@ describe('Ellipse Intersections', () => {
         it('should handle unknown shape types with fallback', () => {
             const ellipseShape: Shape = {
                 id: 'ellipse1',
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     majorAxisEndpoint: { x: 30, y: 0 },
@@ -229,7 +230,7 @@ describe('Ellipse Intersections', () => {
             // Create a mock unknown shape type
             const unknownShape: Shape = {
                 id: 'unknown1',
-                type: 'line', // Use line but treat as unknown in the context
+                type: GeometryType.LINE, // Use line but treat as unknown in the context
                 geometry: {
                     start: { x: -40, y: 0 },
                     end: { x: 40, y: 0 },

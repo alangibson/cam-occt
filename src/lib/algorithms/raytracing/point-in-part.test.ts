@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isPointInsidePart } from './point-in-chain';
 import type { Point2D } from '../../types';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('Part Selection - Point-in-Part Detection', () => {
     it('should detect point inside shell but outside holes', () => {
@@ -11,7 +12,7 @@ describe('Part Selection - Point-in-Part Detection', () => {
                 shapes: [
                     {
                         id: 'line-1',
-                        type: 'line' as const,
+                        type: GeometryType.LINE as const,
                         geometry: {
                             start: { x: 0, y: 0 },
                             end: { x: 100, y: 0 },
@@ -19,7 +20,7 @@ describe('Part Selection - Point-in-Part Detection', () => {
                     },
                     {
                         id: 'line-2',
-                        type: 'line' as const,
+                        type: GeometryType.LINE as const,
                         geometry: {
                             start: { x: 100, y: 0 },
                             end: { x: 100, y: 100 },
@@ -27,7 +28,7 @@ describe('Part Selection - Point-in-Part Detection', () => {
                     },
                     {
                         id: 'line-3',
-                        type: 'line' as const,
+                        type: GeometryType.LINE as const,
                         geometry: {
                             start: { x: 100, y: 100 },
                             end: { x: 0, y: 100 },
@@ -35,7 +36,7 @@ describe('Part Selection - Point-in-Part Detection', () => {
                     },
                     {
                         id: 'line-4',
-                        type: 'line' as const,
+                        type: GeometryType.LINE as const,
                         geometry: {
                             start: { x: 0, y: 100 },
                             end: { x: 0, y: 0 },
@@ -52,7 +53,7 @@ describe('Part Selection - Point-in-Part Detection', () => {
                     shapes: [
                         {
                             id: 'circle-1',
-                            type: 'circle' as const,
+                            type: GeometryType.CIRCLE as const,
                             geometry: { center: { x: 50, y: 50 }, radius: 20 },
                         },
                     ],

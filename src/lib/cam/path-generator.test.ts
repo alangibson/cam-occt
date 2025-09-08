@@ -1,12 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { generateToolPaths } from './path-generator';
-import type {
-    Drawing,
-    CuttingParameters,
-    Shape,
-    Point2D,
-    Line,
-    Circle,
+import {
+    type Drawing,
+    type CuttingParameters,
+    type Shape,
+    type Point2D,
+    type Line,
+    type Circle,
+    Unit,
 } from '../../lib/types';
 
 // Mock getShapePoints function
@@ -15,6 +16,7 @@ vi.mock('../geometry/shape-utils', () => ({
 }));
 
 import { getShapePoints } from '../geometry/shape-utils';
+import { GeometryType } from '$lib/types/geometry';
 const mockGetShapePoints = vi.mocked(getShapePoints);
 
 describe('generateToolPaths', () => {
@@ -34,7 +36,7 @@ describe('generateToolPaths', () => {
         end: Point2D
     ): Shape => ({
         id,
-        type: 'line',
+        type: GeometryType.LINE,
         layer: 'test',
         geometry: { start, end } as Line,
     });
@@ -45,7 +47,7 @@ describe('generateToolPaths', () => {
         radius: number
     ): Shape => ({
         id,
-        type: 'circle',
+        type: GeometryType.CIRCLE,
         layer: 'test',
         geometry: { center, radius } as Circle,
     });
@@ -64,7 +66,7 @@ describe('generateToolPaths', () => {
                 min: { x: 0, y: 0 },
                 max: { x: 100, y: 75 },
             },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         mockGetShapePoints
@@ -92,7 +94,7 @@ describe('generateToolPaths', () => {
                 createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         // Use a 3-point path to avoid edge cases in the kerf compensation algorithm
@@ -116,7 +118,7 @@ describe('generateToolPaths', () => {
                 createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         mockGetShapePoints.mockReturnValueOnce([
@@ -146,7 +148,7 @@ describe('generateToolPaths', () => {
                     createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
                 ],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             mockGetShapePoints.mockReturnValueOnce([
@@ -172,7 +174,7 @@ describe('generateToolPaths', () => {
                     createMockLine('shape3', { x: 15, y: 0 }, { x: 25, y: 0 }),
                 ],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 110, y: 100 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             mockGetShapePoints
@@ -202,7 +204,7 @@ describe('generateToolPaths', () => {
             const drawing: Drawing = {
                 shapes: [],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             const paths = generateToolPaths(drawing, mockParameters);
@@ -217,7 +219,7 @@ describe('generateToolPaths', () => {
                     createMockLine('shape2', { x: 20, y: 0 }, { x: 30, y: 0 }),
                 ],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 30, y: 0 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             mockGetShapePoints
@@ -241,7 +243,7 @@ describe('generateToolPaths', () => {
                     createMockLine('near', { x: 15, y: 5 }, { x: 25, y: 5 }),
                 ],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 60, y: 50 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             mockGetShapePoints
@@ -272,7 +274,7 @@ describe('generateToolPaths', () => {
                     createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
                 ],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             mockGetShapePoints.mockReturnValueOnce([
@@ -295,7 +297,7 @@ describe('generateToolPaths', () => {
                     createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
                 ],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             mockGetShapePoints.mockReturnValueOnce([
@@ -315,7 +317,7 @@ describe('generateToolPaths', () => {
             const drawing: Drawing = {
                 shapes: [createMockCircle('circle1', { x: 50, y: 50 }, 25)],
                 bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             // Mock a closed square path
@@ -346,7 +348,7 @@ describe('generateToolPaths', () => {
                     createMockLine('point', { x: 50, y: 50 }, { x: 50, y: 50 }),
                 ],
                 bounds: { min: { x: 50, y: 50 }, max: { x: 50, y: 50 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             mockGetShapePoints.mockReturnValueOnce([{ x: 50, y: 50 }]);
@@ -369,7 +371,7 @@ describe('generateToolPaths', () => {
                     ),
                 ],
                 bounds: { min: { x: 50, y: 50 }, max: { x: 100, y: 50 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             mockGetShapePoints.mockReturnValueOnce([
@@ -399,7 +401,7 @@ describe('generateToolPaths', () => {
                     createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
                 ],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
-                units: 'mm',
+                units: Unit.MM,
             };
 
             mockGetShapePoints.mockReturnValueOnce([

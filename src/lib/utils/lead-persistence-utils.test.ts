@@ -14,9 +14,10 @@ import type { Operation } from '../stores/operations';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import { LeadType, CutDirection } from '../types/direction';
 import { KerfCompensation } from '../types/kerf-compensation';
-import type { GeometryType } from '../types/geometry';
+import { GeometryType } from '../types/geometry';
 import { chainStore } from '../stores/chains';
 import { partStore } from '../stores/parts';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 // Mock the stores
 vi.mock('../stores/paths', () => ({
@@ -114,7 +115,7 @@ describe('Lead Persistence Utils', () => {
         shapes: [
             {
                 id: 'shape-1',
-                type: 'line' as GeometryType,
+                type: GeometryType.LINE as GeometryType,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
             },
         ],
@@ -320,7 +321,7 @@ describe('Lead Persistence Utils', () => {
                     offsetShapes: [
                         {
                             id: 'offset-shape-1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: -2 },
                                 end: { x: 10, y: -2 },
@@ -330,14 +331,14 @@ describe('Lead Persistence Utils', () => {
                     originalShapes: [
                         {
                             id: 'shape-1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
                             },
                         },
                     ],
-                    direction: 'inset',
+                    direction: OffsetDirection.INSET,
                     kerfWidth: 4,
                     generatedAt: '2023-01-01T12:00:00.000Z',
                     version: '1.0.0',
@@ -379,14 +380,14 @@ describe('Lead Persistence Utils', () => {
                     originalShapes: [
                         {
                             id: 'shape-1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
                             },
                         },
                     ],
-                    direction: 'inset',
+                    direction: OffsetDirection.INSET,
                     kerfWidth: 4,
                     generatedAt: '2023-01-01T12:00:00.000Z',
                     version: '1.0.0',

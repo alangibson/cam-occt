@@ -7,6 +7,7 @@ import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Shape } from '../types';
 import { CutDirection, LeadType } from '../types/direction';
 import { KerfCompensation } from '../types/kerf-compensation';
+import { GeometryType } from '$lib/types/geometry';
 
 // Helper to wait for async path generation
 async function waitForPaths(expectedCount: number, timeout = 200) {
@@ -72,22 +73,22 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         const clockwiseSquare: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 10, y: 10 } },
             }, // right
             {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 10, y: 0 } },
             }, // down
             {
                 id: 'line3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 0, y: 0 } },
             }, // left
             {
                 id: 'line4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 0, y: 10 } },
             }, // up
         ];
@@ -190,22 +191,22 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         const counterclockwiseSquare: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
             }, // right
             {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 10, y: 10 } },
             }, // up
             {
                 id: 'line3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 0, y: 10 } },
             }, // left
             {
                 id: 'line4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 0, y: 0 } },
             }, // down
         ];
@@ -285,22 +286,22 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         const clockwiseSquare: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 10, y: 10 } },
             },
             {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 10, y: 0 } },
             },
             {
                 id: 'line3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 0, y: 0 } },
             },
             {
                 id: 'line4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 0, y: 10 } },
             },
         ];

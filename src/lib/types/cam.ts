@@ -1,5 +1,22 @@
 import type { Point2D, Shape } from './geometry';
 
+/**
+ * Cutter compensation modes for G-code generation
+ */
+export enum CutterCompensation {
+    LEFT_OUTER = 'left_outer',
+    RIGHT_INNER = 'right_inner',
+    OFF = 'off',
+}
+
+/**
+ * Target type for operations (parts or chains)
+ */
+export enum TargetType {
+    PARTS = 'parts',
+    CHAINS = 'chains',
+}
+
 export interface CuttingParameters {
     feedRate: number; // mm/min or inch/min
     pierceHeight: number; // mm or inch
@@ -53,4 +70,22 @@ export interface GCodeCommand {
     parameters: Record<string, number | string>;
     comment?: string;
     rawValue?: number | string; // For special commands like F that need raw value
+}
+
+/**
+ * Type guard for checking if a value is a valid CutterCompensation
+ */
+export function isCutterCompensation(
+    value: unknown
+): value is CutterCompensation {
+    return Object.values(CutterCompensation).includes(
+        value as CutterCompensation
+    );
+}
+
+/**
+ * Type guard for checking if a value is a valid TargetType
+ */
+export function isTargetType(value: unknown): value is TargetType {
+    return Object.values(TargetType).includes(value as TargetType);
 }

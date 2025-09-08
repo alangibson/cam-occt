@@ -6,6 +6,7 @@ import {
     calculatePolygonCentroid,
     calculatePolygonBounds,
 } from './geometric-operations';
+import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type {
     Shape,
@@ -35,7 +36,7 @@ function createRectangle(
     return [
         {
             id: '1',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x, y },
                 end: { x: x + width, y },
@@ -43,7 +44,7 @@ function createRectangle(
         },
         {
             id: '2',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x + width, y },
                 end: { x: x + width, y: y + height },
@@ -51,7 +52,7 @@ function createRectangle(
         },
         {
             id: '3',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x + width, y: y + height },
                 end: { x, y: y + height },
@@ -59,7 +60,7 @@ function createRectangle(
         },
         {
             id: '4',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x, y: y + height },
                 end: { x, y },
@@ -72,7 +73,7 @@ function createRectangle(
 function createCircle(id: string, x: number, y: number, radius: number): Shape {
     return {
         id,
-        type: 'circle',
+        type: GeometryType.CIRCLE,
         geometry: {
             center: { x, y },
             radius,
@@ -91,7 +92,7 @@ function createArc(
 ): Shape {
     return {
         id,
-        type: 'arc',
+        type: GeometryType.ARC,
         geometry: {
             center,
             radius,
@@ -113,7 +114,7 @@ function createEllipse(
 ): Shape {
     return {
         id,
-        type: 'ellipse',
+        type: GeometryType.ELLIPSE,
         geometry: {
             center,
             majorAxisEndpoint,
@@ -132,7 +133,7 @@ function createSpline(
 ): Shape {
     return {
         id,
-        type: 'spline',
+        type: GeometryType.SPLINE,
         geometry: {
             controlPoints,
             knots: [],
@@ -277,7 +278,7 @@ describe('isChainGeometricallyContained', () => {
         const outerRect = createRectangle(0, 0, 20, 20);
         const splineWithBadNURBS: Shape = {
             id: 'bad-spline',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: {
                 controlPoints: [], // Empty control points to force NURBS failure
                 knots: [],
@@ -304,7 +305,7 @@ describe('isChainGeometricallyContained', () => {
         const outerRect = createRectangle(0, 0, 20, 20);
         const splineWithNoFitPoints: Shape = {
             id: 'no-fit-points-spline',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: {
                 controlPoints: [
                     { x: 5, y: 5 },
@@ -331,7 +332,7 @@ describe('isChainGeometricallyContained', () => {
         const outerRect = createRectangle(0, 0, 20, 20);
         const polyline: Shape = {
             id: 'polyline',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: {
                 closed: false,
                 shapes: createRectangle(5, 5, 10, 10), // Inner rectangle as polyline shapes
@@ -361,7 +362,7 @@ describe('isChainGeometricallyContained', () => {
         const singleLineShapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },

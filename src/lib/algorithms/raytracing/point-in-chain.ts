@@ -14,6 +14,7 @@ import type {
     Arc,
     Circle,
 } from '../../types/geometry';
+import { GeometryType } from '../../types/geometry';
 import type { Chain } from '../chain-detection/chain-detection';
 import type { RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
@@ -82,7 +83,7 @@ function countRayShapeCrossings(
     const isHorizontalRay: boolean = Math.abs(ray.direction.y) < config.epsilon;
 
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             if (isHorizontalRay) {
                 return countHorizontalRayLineCrossings(
                     ray.origin,
@@ -92,7 +93,7 @@ function countRayShapeCrossings(
             }
             return countRayLineCrossings(ray, shape.geometry as Line, config);
 
-        case 'arc':
+        case GeometryType.ARC:
             if (isHorizontalRay) {
                 return countHorizontalRayArcCrossings(
                     ray.origin,
@@ -102,25 +103,25 @@ function countRayShapeCrossings(
             }
             return countRayArcCrossings(ray, shape.geometry as Arc, config);
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             return countRayCircleCrossings(
                 ray,
                 shape.geometry as Circle,
                 config
             );
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             return countRayPolylineCrossings(
                 ray,
                 shape.geometry as Polyline,
                 config
             );
 
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             // TODO: Implement exact ellipse intersection
             return 0;
 
-        case 'spline':
+        case GeometryType.SPLINE:
             if (isHorizontalRay) {
                 return countHorizontalRaySplineCrossings(
                     ray.origin,

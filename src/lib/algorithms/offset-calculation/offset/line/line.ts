@@ -1,5 +1,10 @@
-import type { Point2D, Line, Shape } from '../../../../types/geometry';
-import type { OffsetDirection, OffsetResult } from '../types';
+import {
+    GeometryType,
+    type Line,
+    type Point2D,
+    type Shape,
+} from '../../../../types/geometry';
+import { OffsetDirection, type OffsetResult } from '../types';
 
 /**
  * Offset a line by the specified distance
@@ -56,7 +61,7 @@ export function offsetLine(
 
         const offsetShape: Shape = {
             id: `offset_${Math.random().toString(36).substr(2, 9)}`,
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: offsetStart,
                 end: offsetEnd,

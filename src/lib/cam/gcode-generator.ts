@@ -10,13 +10,15 @@ import type {
     Spline,
     ToolPath,
 } from '../../lib/types';
+import { CutterCompensation } from '../../lib/types';
+import { GeometryType } from '$lib/types/geometry';
 
 export interface GCodeOptions {
     units: Unit;
     safeZ: number;
     rapidFeedRate: number;
     includeComments: boolean;
-    cutterCompensation: 'left_outer' | 'right_inner' | 'off' | null;
+    cutterCompensation: CutterCompensation | null;
     materialNumber?: number;
     adaptiveFeedControl?: boolean | null; // M52 commands for adaptive feed control
     enableTHC?: boolean | null; // M65/M64 P2 commands for THC enable/disable
@@ -93,15 +95,15 @@ function generateHeader(options: GCodeOptions): GCodeCommand[] {
     // be used; an error message will be displayed.
     if (options.cutterCompensation !== null) {
         const compensationCode =
-            options.cutterCompensation === 'left_outer'
+            options.cutterCompensation === CutterCompensation.LEFT_OUTER
                 ? 'G41'
-                : options.cutterCompensation === 'right_inner'
+                : options.cutterCompensation === CutterCompensation.RIGHT_INNER
                   ? 'G42'
                   : 'G40';
         const compensationComment =
-            options.cutterCompensation === 'left_outer'
+            options.cutterCompensation === CutterCompensation.LEFT_OUTER
                 ? 'Cutter compensation left (outer)'
-                : options.cutterCompensation === 'right_inner'
+                : options.cutterCompensation === CutterCompensation.RIGHT_INNER
                   ? 'Cutter compensation right (inner)'
                   : 'Cutter compensation off';
         commands.push({
@@ -568,7 +570,7 @@ function generateNativeSplineCommands(
     const commands: GCodeCommand[] = [];
 
     switch (shape.type) {
-        case 'spline':
+        case GeometryType.SPLINE:
             const spline: import('$lib/types/geometry').Spline =
                 shape.geometry as Spline;
 
@@ -636,7 +638,7 @@ function generateNativeSplineCommands(
             }
             break;
 
-        case 'arc':
+        case GeometryType.ARC:
             // Use native arc commands (G2/G3) for arcs
             const arc: import('$lib/types/geometry').Arc =
                 shape.geometry as Arc;
@@ -677,7 +679,7 @@ function generateNativeSplineCommands(
             });
             break;
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             // Convert full circles to arc commands
             const circle: import('$lib/types/geometry').Circle =
                 shape.geometry as Circle;

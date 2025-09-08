@@ -17,7 +17,8 @@ import type {
     Spline,
     Ellipse,
 } from '../../../types/geometry';
-import type { OffsetDirection, OffsetResult } from './types';
+import { GeometryType } from '../../../types/geometry';
+import { OffsetDirection, type OffsetResult } from './types';
 import { offsetLine } from './line/line';
 import { offsetArc } from './arc/arc';
 import { offsetCircle } from './circle/circle';
@@ -34,21 +35,21 @@ export function offsetShape(
     direction: OffsetDirection
 ): OffsetResult {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             return offsetLine(shape.geometry as Line, distance, direction);
-        case 'arc':
+        case GeometryType.ARC:
             return offsetArc(shape.geometry as Arc, distance, direction);
-        case 'circle':
+        case GeometryType.CIRCLE:
             return offsetCircle(shape.geometry as Circle, distance, direction);
-        case 'polyline':
+        case GeometryType.POLYLINE:
             return offsetPolyline(
                 shape.geometry as Polyline,
                 distance,
                 direction
             );
-        case 'spline':
+        case GeometryType.SPLINE:
             return offsetSpline(shape.geometry as Spline, distance, direction);
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             return offsetEllipse(
                 shape.geometry as Ellipse,
                 distance,

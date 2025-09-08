@@ -1,12 +1,17 @@
-import { describe, it, expect } from 'vitest';
-import { fillPolylineToIntersection } from './index';
-import type { FillOptions, FillResult } from '../types';
-import type { Shape, Polyline, Point2D } from '$lib/types/geometry';
-import { generateId } from '$lib/utils/id';
 import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
+import {
+    GeometryType,
+    type Point2D,
+    type Polyline,
+    type Shape,
+} from '$lib/types/geometry';
+import { generateId } from '$lib/utils/id';
+import { describe, expect, it } from 'vitest';
+import { type FillOptions, type FillResult } from '../types';
+import { fillPolylineToIntersection } from './index';
 
 describe('fillPolylineToIntersection', () => {
     // Helper function to create test polylines
@@ -21,7 +26,7 @@ describe('fillPolylineToIntersection', () => {
         }));
         return {
             id: generateId(),
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: createPolylineFromVertices(polylineVertices, closed)
                 .geometry as Polyline,
         };
@@ -221,7 +226,7 @@ describe('fillPolylineToIntersection', () => {
         it('should reject non-polyline shapes', () => {
             const line: Shape = {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },

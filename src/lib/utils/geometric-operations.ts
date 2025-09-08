@@ -16,6 +16,7 @@ import type {
     Ellipse,
     Spline,
 } from '../../lib/types';
+import { GeometryType } from '../../lib/types/geometry';
 import { sampleNURBS } from '../geometry/nurbs';
 import { polylineToPoints } from '../geometry/polyline';
 import { generateEllipsePoints } from './ellipse-utils';
@@ -96,12 +97,12 @@ function extractPolygonFromChain(chain: Chain): Point2D[] | null {
  */
 function getShapePoints(shape: Shape): Point2D[] {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: import('$lib/types/geometry').Line =
                 shape.geometry as Line;
             return [line.start, line.end];
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle: import('$lib/types/geometry').Circle =
                 shape.geometry as Circle;
             // Create polygon approximation of circle with 32 points
@@ -116,7 +117,7 @@ function getShapePoints(shape: Shape): Point2D[] {
             }
             return points;
 
-        case 'arc':
+        case GeometryType.ARC:
             const arc: import('$lib/types/geometry').Arc =
                 shape.geometry as Arc;
             // Create polygon approximation of arc
@@ -147,12 +148,12 @@ function getShapePoints(shape: Shape): Point2D[] {
             }
             return arcPoints;
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: import('$lib/types/geometry').Polyline =
                 shape.geometry as Polyline;
             return polylineToPoints(polyline);
 
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             const ellipse: import('$lib/types/geometry').Ellipse =
                 shape.geometry as Ellipse;
             // Create polygon approximation of ellipse
@@ -198,7 +199,7 @@ function getShapePoints(shape: Shape): Point2D[] {
 
             return ellipsePoints;
 
-        case 'spline':
+        case GeometryType.SPLINE:
             const spline: import('$lib/types/geometry').Spline =
                 shape.geometry as Spline;
             try {

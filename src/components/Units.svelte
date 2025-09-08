@@ -1,7 +1,6 @@
 <script lang="ts">
     import { drawingStore } from '../lib/stores/drawing';
-
-    type Unit = 'mm' | 'inch';
+    import { Unit } from '../lib/utils/units';
 
     // Get current display unit from store
     $: displayUnit = $drawingStore.displayUnit;

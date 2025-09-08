@@ -1,8 +1,13 @@
 import type { Path } from '../stores/paths';
 import type { Chain } from './chain-detection/chain-detection';
 import type { Shape, Point2D, Line, Arc } from '../../lib/types';
+import { GeometryType } from '../../lib/types/geometry';
 import type { DetectedPart } from './part-detection';
-import { calculateLeads } from './lead-calculation';
+import {
+    calculateLeads,
+    type LeadInConfig,
+    type LeadOutConfig,
+} from './lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
@@ -56,13 +61,43 @@ export function calculateDistance(p1: Point2D, p2: Point2D): number {
  * Extracted from optimize-start-points.ts to eliminate duplication
  */
 export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
-    if (shape.type === 'line') {
+    if (shape.type === GeometryType.LINE) {
         return splitLineAtMidpoint(shape);
-    } else if (shape.type === 'arc') {
+    } else if (shape.type === GeometryType.ARC) {
         return splitArcAtMidpoint(shape);
     }
 
     return null;
+}
+
+/**
+ * Helper function to prepare lead calculation chain and configs
+ */
+export function prepareChainsAndLeadConfigs(
+    path: Path,
+    chain: Chain
+): {
+    leadCalculationChain: Chain;
+    leadInConfig: LeadInConfig;
+    leadOutConfig: LeadOutConfig;
+} {
+    // Use offset geometry for lead calculation if available
+    let leadCalculationChain: Chain = chain;
+    if (
+        path.calculatedOffset &&
+        path.calculatedOffset.offsetShapes.length > 0
+    ) {
+        // Create a temporary chain from offset shapes
+        leadCalculationChain = {
+            id: chain.id + '_offset_temp',
+            shapes: path.calculatedOffset.offsetShapes,
+        };
+    }
+
+    const leadInConfig = createLeadInConfig(path);
+    const leadOutConfig = createLeadOutConfig(path);
+
+    return { leadCalculationChain, leadInConfig, leadOutConfig };
 }
 
 /**
@@ -82,21 +117,8 @@ export function getPathStartPoint(
         path.leadInLength > 0
     ) {
         try {
-            const leadInConfig = createLeadInConfig(path);
-            const leadOutConfig = createLeadOutConfig(path);
-
-            // Use offset geometry for lead calculation if available
-            let leadCalculationChain: Chain = chain;
-            if (
-                path.calculatedOffset &&
-                path.calculatedOffset.offsetShapes.length > 0
-            ) {
-                // Create a temporary chain from offset shapes
-                leadCalculationChain = {
-                    id: chain.id + '_offset_temp',
-                    shapes: path.calculatedOffset.offsetShapes,
-                };
-            }
+            const { leadCalculationChain, leadInConfig, leadOutConfig } =
+                prepareChainsAndLeadConfigs(path, chain);
 
             const leadResult = calculateLeads(
                 leadCalculationChain,
@@ -185,7 +207,7 @@ export function getPathChainEndPoint(path: Path, chain: Chain): Point2D {
 /**
  * Get the end point of a shape chain
  */
-function getChainEndPoint(chain: Chain): Point2D {
+export function getChainEndPoint(chain: Chain): Point2D {
     if (chain.shapes.length === 0) {
         throw new Error('Chain has no shapes');
     }
@@ -215,8 +237,8 @@ function splitLineAtMidpoint(shape: Shape): [Shape, Shape] | null {
     };
 
     return [
-        createSplitShape(shape, '1', 'line', firstGeometry),
-        createSplitShape(shape, '2', 'line', secondGeometry),
+        createSplitShape(shape, '1', GeometryType.LINE, firstGeometry),
+        createSplitShape(shape, '2', GeometryType.LINE, secondGeometry),
     ];
 }
 
@@ -224,7 +246,7 @@ function splitLineAtMidpoint(shape: Shape): [Shape, Shape] | null {
  * Splits an arc shape at its midpoint angle, creating two arc shapes
  */
 function splitArcAtMidpoint(shape: Shape): [Shape, Shape] | null {
-    if (shape.type !== 'arc') return null;
+    if (shape.type !== GeometryType.ARC) return null;
 
     const geom = shape.geometry as Arc;
     const midAngle = calculateArcMidpointAngle(geom.startAngle, geom.endAngle);
@@ -245,8 +267,8 @@ function splitArcAtMidpoint(shape: Shape): [Shape, Shape] | null {
     };
 
     return [
-        createSplitShape(shape, '1', 'arc', firstGeometry),
-        createSplitShape(shape, '2', 'arc', secondGeometry),
+        createSplitShape(shape, '1', GeometryType.ARC, firstGeometry),
+        createSplitShape(shape, '2', GeometryType.ARC, secondGeometry),
     ];
 }
 

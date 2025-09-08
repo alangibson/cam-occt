@@ -1,7 +1,11 @@
-import { describe, test, expect } from 'vitest';
-import { findSplinePolylineIntersectionsVerb } from './index';
-import type { Shape, Spline } from '../../../../types/geometry';
+import { describe, expect, test } from 'vitest';
 import { createPolylineFromVertices } from '../../../../geometry/polyline';
+import {
+    GeometryType,
+    type Shape,
+    type Spline,
+} from '../../../../types/geometry';
+import { findSplinePolylineIntersectionsVerb } from './index';
 
 describe('Spline-Polyline Extension Intersections', () => {
     test('should find intersection with extended polyline', () => {
@@ -32,13 +36,13 @@ describe('Spline-Polyline Extension Intersections', () => {
 
         const splineShape: Shape = {
             id: 'spline1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
 
         const polylineShape: Shape = {
             id: 'polyline1',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: polyline.geometry,
         };
 
@@ -91,13 +95,13 @@ describe('Spline-Polyline Extension Intersections', () => {
 
         const splineShape: Shape = {
             id: 'spline1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
 
         const polylineShape: Shape = {
             id: 'polyline1',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: polyline.geometry,
         };
 
@@ -172,13 +176,13 @@ describe('Spline-Polyline Extension Intersections', () => {
 
         const splineShape: Shape = {
             id: 'spline1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
 
         const polylineShape: Shape = {
             id: 'polyline1',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: polyline.geometry,
         };
 
@@ -256,13 +260,13 @@ describe('Spline-Polyline Extension Intersections', () => {
 
         const splineShape: Shape = {
             id: 'spline1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
 
         const polylineShape: Shape = {
             id: 'polyline1',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: polyline.geometry,
         };
 
@@ -310,13 +314,13 @@ describe('Spline-Polyline Extension Intersections', () => {
 
         const splineShape: Shape = {
             id: 'spline1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: spline,
         };
 
         const polylineShape: Shape = {
             id: 'polyline1',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: polyline.geometry,
         };
 

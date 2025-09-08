@@ -1,4 +1,10 @@
-import type { Shape, Point2D, Circle, Arc } from '$lib/types/geometry';
+import {
+    GeometryType,
+    type Arc,
+    type Circle,
+    type Point2D,
+    type Shape,
+} from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
 import { pointDistance } from '..';
 import { type KeepSide, type TrimResult } from '../types';
@@ -72,7 +78,7 @@ export function trimCircle(
     result.shape = {
         ...shape,
         id: generateId(),
-        type: 'arc',
+        type: GeometryType.ARC,
         geometry: trimmedArc,
     };
     result.success = true;

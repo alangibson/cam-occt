@@ -1,17 +1,14 @@
 import type { Path } from '../stores/paths';
 import type { Chain } from './chain-detection/chain-detection';
-import type { Shape, Point2D } from '../../lib/types';
+import type { Point2D } from '../../lib/types';
 import type { DetectedPart } from './part-detection';
 import { calculateLeads } from './lead-calculation';
-import { getShapeEndPoint } from '$lib/geometry';
-import {
-    createLeadInConfig,
-    createLeadOutConfig,
-} from '../utils/lead-config-utils';
 import {
     calculateDistance,
     findNearestPath,
     getPathStartPoint,
+    prepareChainsAndLeadConfigs,
+    getChainEndPoint,
 } from './path-optimization-utils';
 
 /**
@@ -84,21 +81,8 @@ function getPathEndPoint(
         path.leadOutLength > 0
     ) {
         try {
-            const leadInConfig = createLeadInConfig(path);
-            const leadOutConfig = createLeadOutConfig(path);
-
-            // Use offset geometry for lead calculation if available
-            let leadCalculationChain: Chain = chain;
-            if (
-                path.calculatedOffset &&
-                path.calculatedOffset.offsetShapes.length > 0
-            ) {
-                // Create a temporary chain from offset shapes
-                leadCalculationChain = {
-                    id: chain.id + '_offset_temp',
-                    shapes: path.calculatedOffset.offsetShapes,
-                };
-            }
+            const { leadCalculationChain, leadInConfig, leadOutConfig } =
+                prepareChainsAndLeadConfigs(path, chain);
 
             const leadResult = calculateLeads(
                 leadCalculationChain,
@@ -136,18 +120,6 @@ function getPathEndPoint(
     }
 
     return getChainEndPoint(chain);
-}
-
-/**
- * Get the end point of a shape chain
- */
-function getChainEndPoint(chain: Chain): Point2D {
-    if (chain.shapes.length === 0) {
-        throw new Error('Chain has no shapes');
-    }
-
-    const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
-    return getShapeEndPoint(lastShape);
 }
 
 /**

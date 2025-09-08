@@ -4,7 +4,7 @@ import {
     isPointInsideChain,
     determineChainOrientation,
 } from './side-detection';
-import type { Shape } from '../../../../lib/types/geometry';
+import { GeometryType, type Shape } from '../../../../lib/types/geometry';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '../../../utils/id';
@@ -15,7 +15,7 @@ describe('side-detection', () => {
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
         return {
             id: generateId(),
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x1, y: y1 },
                 end: { x: x2, y: y2 },
@@ -33,7 +33,7 @@ describe('side-detection', () => {
     ): Shape {
         return {
             id: generateId(),
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: cx, y: cy },
                 radius,

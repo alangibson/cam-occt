@@ -1,15 +1,21 @@
-import { describe, it, expect } from 'vitest';
-import type { Shape, Spline, Line } from '../../../types/geometry';
-import { offsetShape } from '../offset/index';
-import { findShapeIntersections } from '../intersect';
-import { detectChainSide } from './side-detection';
+import { describe, expect, it } from 'vitest';
 import { createPolylineFromVertices } from '../../../geometry/polyline';
+import {
+    GeometryType,
+    type Line,
+    type Shape,
+    type Spline,
+} from '../../../types/geometry';
+import { findShapeIntersections } from '../intersect';
+import { offsetShape } from '../offset/index';
+import { OffsetDirection } from '../offset/types';
+import { detectChainSide } from './side-detection';
 
 describe('Spline-Line Offset Intersection Instability', () => {
     // Exact geometries from the chain-closed test case
     const createTestSpline = (): Shape => ({
         id: 'spline1',
-        type: 'spline',
+        type: GeometryType.SPLINE,
         geometry: {
             controlPoints: [
                 { x: 160, y: 180 },
@@ -28,7 +34,7 @@ describe('Spline-Line Offset Intersection Instability', () => {
 
     const createTestLine = (): Shape => ({
         id: 'line-closing',
-        type: 'line',
+        type: GeometryType.LINE,
         geometry: {
             start: { x: 80, y: 80 },
             end: { x: 100, y: 50 },
@@ -38,7 +44,7 @@ describe('Spline-Line Offset Intersection Instability', () => {
     const createFullChain = (): Shape[] => [
         {
             id: 'line1',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: 100, y: 50 },
                 end: { x: 200, y: 50 },
@@ -46,7 +52,7 @@ describe('Spline-Line Offset Intersection Instability', () => {
         },
         {
             id: 'arc1',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: 200, y: 80 },
                 radius: 30,
@@ -57,7 +63,7 @@ describe('Spline-Line Offset Intersection Instability', () => {
         },
         {
             id: 'line2',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: 230, y: 80 },
                 end: { x: 230, y: 150 },
@@ -65,7 +71,7 @@ describe('Spline-Line Offset Intersection Instability', () => {
         },
         {
             id: 'polyline1',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: createPolylineFromVertices(
                 [
                     { x: 230, y: 150, bulge: 0 },
@@ -109,17 +115,25 @@ describe('Spline-Line Offset Intersection Instability', () => {
             const splineInset = offsetShape(
                 splineShape,
                 offsetDistance,
-                'inset'
+                OffsetDirection.INSET
             );
             const splineOutset = offsetShape(
                 splineShape,
                 offsetDistance,
-                'outset'
+                OffsetDirection.OUTSET
             );
 
             // Generate line offsets
-            const lineInset = offsetShape(lineShape, offsetDistance, 'inset');
-            const lineOutset = offsetShape(lineShape, offsetDistance, 'outset');
+            const lineInset = offsetShape(
+                lineShape,
+                offsetDistance,
+                OffsetDirection.INSET
+            );
+            const lineOutset = offsetShape(
+                lineShape,
+                offsetDistance,
+                OffsetDirection.OUTSET
+            );
 
             splineOffsetResults.push({
                 insetSuccess: splineInset.success,
@@ -293,8 +307,16 @@ describe('Spline-Line Offset Intersection Instability', () => {
         console.log('Debugging splineInset_lineOutset intersection...');
 
         // Generate the problematic offset pair once
-        const splineInset = offsetShape(splineShape, offsetDistance, 'inset');
-        const lineOutset = offsetShape(lineShape, offsetDistance, 'outset');
+        const splineInset = offsetShape(
+            splineShape,
+            offsetDistance,
+            OffsetDirection.INSET
+        );
+        const lineOutset = offsetShape(
+            lineShape,
+            offsetDistance,
+            OffsetDirection.OUTSET
+        );
 
         if (
             !splineInset.success ||
@@ -410,22 +432,22 @@ describe('Spline-Line Offset Intersection Instability', () => {
                 const splineInset = offsetShape(
                     splineShape,
                     offsetDistance,
-                    'inset'
+                    OffsetDirection.INSET
                 );
                 const splineOutset = offsetShape(
                     splineShape,
                     offsetDistance,
-                    'outset'
+                    OffsetDirection.OUTSET
                 );
                 const lineInset = offsetShape(
                     lineShape,
                     offsetDistance,
-                    'inset'
+                    OffsetDirection.INSET
                 );
                 const lineOutset = offsetShape(
                     lineShape,
                     offsetDistance,
-                    'outset'
+                    OffsetDirection.OUTSET
                 );
 
                 const results: SideDetectionTestResult = { run: run + 1 };
@@ -513,8 +535,16 @@ describe('Spline-Line Offset Intersection Instability', () => {
         console.log('Testing individual intersection detection...');
 
         // Generate offset shapes once
-        const splineInset = offsetShape(splineShape, offsetDistance, 'inset');
-        const lineInset = offsetShape(lineShape, offsetDistance, 'inset');
+        const splineInset = offsetShape(
+            splineShape,
+            offsetDistance,
+            OffsetDirection.INSET
+        );
+        const lineInset = offsetShape(
+            lineShape,
+            offsetDistance,
+            OffsetDirection.INSET
+        );
 
         if (
             !splineInset.success ||

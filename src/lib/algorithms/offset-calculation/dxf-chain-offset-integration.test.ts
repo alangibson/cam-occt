@@ -1,17 +1,17 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { scaleShape } from '../../geometry';
+import { calculateDynamicTolerance } from '../../geometry/bounding-box';
 import { parseDXF } from '../../parsers/dxf-parser';
+import { SVGBuilder } from '../../test/svg-builder';
+import { GeometryType, type Circle, type Shape } from '../../types/geometry';
+import { Unit, getPhysicalScaleFactor } from '../../utils/units';
+import type { Chain } from '../chain-detection/chain-detection';
 import { detectShapeChains } from '../chain-detection/chain-detection';
 import { normalizeChain } from '../chain-normalization/chain-normalization';
 import { offsetChain } from './chain/offset';
-import { SVGBuilder } from '../../test/svg-builder';
-import { calculateDynamicTolerance } from '../../geometry/bounding-box';
-import type { Shape, Circle } from '../../types/geometry';
-import { getPhysicalScaleFactor } from '../../utils/units';
-import type { Chain } from '../chain-detection/chain-detection';
 import type { ChainOffsetResult } from './chain/types';
-import { scaleShape } from '../../geometry';
 
 // Shared function for DXF processing and offset visualization
 async function processDxfFile(filename: string, outputDir: string) {
@@ -25,7 +25,7 @@ async function processDxfFile(filename: string, outputDir: string) {
     console.log(`Loaded ${shapes.length} shapes from ${filename}`);
 
     // Calculate physical scale factor for proper visual display (using mm as display unit)
-    const physicalScale = getPhysicalScaleFactor(drawing.units, 'mm');
+    const physicalScale = getPhysicalScaleFactor(drawing.units, Unit.MM);
 
     // Scale shapes first, then calculate tolerance and detect chains on scaled coordinates
     shapes = shapes.map((shape) =>
@@ -110,7 +110,7 @@ async function processDxfFile(filename: string, outputDir: string) {
                         };
                         const intersectionShape: Shape = {
                             id: `inner-intersection-${chainIndex}-${idx}`,
-                            type: 'circle',
+                            type: GeometryType.CIRCLE,
                             geometry: intersectionCircle,
                         };
                         innerSvg.addShape(intersectionShape, 'yellow', 1);
@@ -135,7 +135,7 @@ async function processDxfFile(filename: string, outputDir: string) {
                         };
                         const intersectionShape: Shape = {
                             id: `outer-intersection-${chainIndex}-${idx}`,
-                            type: 'circle',
+                            type: GeometryType.CIRCLE,
                             geometry: intersectionCircle,
                         };
                         outerSvg.addShape(intersectionShape, 'yellow', 1);

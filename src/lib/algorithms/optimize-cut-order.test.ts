@@ -10,8 +10,8 @@ import type {
     Line,
     Arc,
     Polyline,
-    GeometryType,
 } from '../../lib/types';
+import { GeometryType } from '../../lib/types/geometry';
 import { CutDirection } from '../types/direction';
 import { createPolylineFromVertices } from '../geometry/polyline';
 
@@ -20,7 +20,7 @@ describe('Optimize Cut Order', () => {
         // Create an ellipse shape
         const ellipseShape: Shape = {
             id: 'shape-1',
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center: { x: 50, y: 50 },
                 majorAxisEndpoint: { x: 30, y: 0 }, // Major axis is 30 units along X
@@ -69,7 +69,7 @@ describe('Optimize Cut Order', () => {
         // Create a spline shape
         const splineShape: Shape = {
             id: 'shape-1',
-            type: 'spline',
+            type: GeometryType.SPLINE,
             geometry: {
                 controlPoints: [
                     { x: 10, y: 10 },

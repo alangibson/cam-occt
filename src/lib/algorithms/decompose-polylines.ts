@@ -1,4 +1,5 @@
 import type { Shape, Polyline, Line, Arc } from '../../lib/types';
+import { GeometryType } from '../../lib/types';
 import { generateId } from '../utils/id';
 
 /**
@@ -11,7 +12,7 @@ export function decomposePolylines(shapes: Shape[]): Shape[] {
     const decomposedShapes: Shape[] = [];
 
     shapes.forEach((shape) => {
-        if (shape.type === 'polyline') {
+        if (shape.type === GeometryType.POLYLINE) {
             const polyline: Polyline = shape.geometry as Polyline;
 
             // Polylines now only have shapes - extract each shape's geometry as an individual shape
@@ -24,7 +25,7 @@ export function decomposePolylines(shapes: Shape[]): Shape[] {
                         // Line segment
                         decomposedShapes.push({
                             id: generateId(),
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: segment,
                             layer: shape.layer,
                         });
@@ -32,7 +33,7 @@ export function decomposePolylines(shapes: Shape[]): Shape[] {
                         // Arc segment
                         decomposedShapes.push({
                             id: generateId(),
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: segment,
                             layer: shape.layer,
                         });

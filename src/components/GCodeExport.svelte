@@ -7,12 +7,14 @@
     import { partStore } from '../lib/stores/parts';
     import { toolStore } from '../lib/stores/tools';
     import type { CuttingParameters } from '../lib/types';
+    import { Unit } from '../lib/utils/units';
+    import { CutterCompensation } from '../lib/types/cam';
     import { onMount, createEventDispatcher } from 'svelte';
 
     // Props from parent component
     export let includeComments: boolean = true;
-    export let cutterCompensation: 'left_outer' | 'right_inner' | 'off' | null =
-        'off';
+    export let cutterCompensation: CutterCompensation | null =
+        CutterCompensation.OFF;
     export let adaptiveFeedControl: boolean | null = true;
     export let enableTHC: boolean | null = true;
 

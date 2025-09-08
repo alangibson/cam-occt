@@ -6,6 +6,7 @@ import type {
     Circle,
     Shape,
 } from '../types/geometry';
+import { GeometryType } from '../types/geometry';
 import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
 import { LeadType, CutDirection } from '../types/direction';
@@ -802,7 +803,7 @@ function getChainTangent(
         : chain.shapes[chain.shapes.length - 1];
 
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             // Line tangent is just the line direction
             const line: import('$lib/types/geometry').Line =
                 shape.geometry as Line;
@@ -811,7 +812,7 @@ function getChainTangent(
             const len: number = Math.sqrt(dx * dx + dy * dy);
             return len > 0 ? { x: dx / len, y: dy / len } : { x: 1, y: 0 };
 
-        case 'arc':
+        case GeometryType.ARC:
             // Arc tangent is perpendicular to radius at the point
             const arc: import('$lib/types/geometry').Arc =
                 shape.geometry as Arc;
@@ -827,7 +828,7 @@ function getChainTangent(
                 y: Math.sin(tangentAngle),
             };
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             // Circle tangent at any point is perpendicular to radius
             const circle: import('$lib/types/geometry').Circle =
                 shape.geometry as Circle;
@@ -840,7 +841,7 @@ function getChainTangent(
             }
             return { x: 1, y: 0 };
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             // Polyline tangent at start/end
             const points: Point2D[] = polylineToPoints(
                 shape.geometry as Polyline
@@ -1297,19 +1298,19 @@ function getAdjacentPoints(
 
 function getShapePointAfterStart(shape: Shape): Point2D | null {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             return (shape.geometry as Line).end;
-        case 'arc':
+        case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
             const midAngle: number = (arc.startAngle + arc.endAngle) / 2;
             return {
                 x: arc.center.x + arc.radius * Math.cos(midAngle),
                 y: arc.center.y + arc.radius * Math.sin(midAngle),
             };
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
             return { x: circle.center.x, y: circle.center.y + circle.radius };
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const points: Point2D[] = polylineToPoints(
                 shape.geometry as Polyline
             );
@@ -1321,19 +1322,19 @@ function getShapePointAfterStart(shape: Shape): Point2D | null {
 
 function getShapePointBeforeEnd(shape: Shape): Point2D | null {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             return (shape.geometry as Line).start;
-        case 'arc':
+        case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
             const midAngle: number = (arc.startAngle + arc.endAngle) / 2;
             return {
                 x: arc.center.x + arc.radius * Math.cos(midAngle),
                 y: arc.center.y + arc.radius * Math.sin(midAngle),
             };
-        case 'circle':
+        case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
             return { x: circle.center.x - circle.radius, y: circle.center.y };
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const points: Point2D[] = polylineToPoints(
                 shape.geometry as Polyline
             );
@@ -1372,10 +1373,10 @@ function calculateChainCentroid(chain: Chain): Point2D {
  */
 function getShapePoints(shape: Shape): Point2D[] {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             return [line.start, line.end];
-        case 'arc':
+        case GeometryType.ARC:
             // Sample a few points along the arc
             const arc: Arc = shape.geometry as Arc;
             const points: Point2D[] = [];
@@ -1390,7 +1391,7 @@ function getShapePoints(shape: Shape): Point2D[] {
                 });
             }
             return points;
-        case 'circle':
+        case GeometryType.CIRCLE:
             // Sample points around circle
             const circle: Circle = shape.geometry as Circle;
             return [
@@ -1399,7 +1400,7 @@ function getShapePoints(shape: Shape): Point2D[] {
                 { x: circle.center.x - circle.radius, y: circle.center.y },
                 { x: circle.center.x, y: circle.center.y - circle.radius },
             ];
-        case 'polyline':
+        case GeometryType.POLYLINE:
             return polylineToPoints(shape.geometry as Polyline);
         default:
             return [];
@@ -1478,12 +1479,12 @@ function getPolygonFromChain(chain: Chain): Point2D[] {
 
     for (const shape of chain.shapes) {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 const line: Line = shape.geometry as Line;
                 points.push(line.start);
                 break;
 
-            case 'arc':
+            case GeometryType.ARC:
                 // Sample points along the arc
                 const arc: Arc = shape.geometry as Arc;
                 const segments: number = Math.max(
@@ -1504,7 +1505,7 @@ function getPolygonFromChain(chain: Chain): Point2D[] {
                 }
                 break;
 
-            case 'circle':
+            case GeometryType.CIRCLE:
                 // Sample points around the circle
                 const circle: Circle = shape.geometry as Circle;
                 const circleSegments: number = Math.max(
@@ -1520,7 +1521,7 @@ function getPolygonFromChain(chain: Chain): Point2D[] {
                 }
                 break;
 
-            case 'polyline':
+            case GeometryType.POLYLINE:
                 const polyline: Polyline = shape.geometry as Polyline;
                 points.push(...polylineToPoints(polyline));
                 break;

@@ -1,5 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import type { Shape, Polyline, Arc } from '../../../../../lib/types/geometry';
+import { describe, expect, it } from 'vitest';
+import {
+    GeometryType,
+    type Arc,
+    type Polyline,
+    type Shape,
+} from '../../../../../lib/types/geometry';
 import {
     findPolylineSelfIntersections,
     hasPolylineSelfIntersections,
@@ -10,12 +15,12 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should return empty array for polylines with less than 3 segments', () => {
             const singleSegmentPolyline: Shape = {
                 id: 'single',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
@@ -28,12 +33,12 @@ describe('Polyline Self-Intersection Detection', () => {
 
             const twoSegmentPolyline: Shape = {
                 id: 'two',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
@@ -41,7 +46,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 0 },
                                 end: { x: 10, y: 10 },
@@ -65,12 +70,12 @@ describe('Polyline Self-Intersection Detection', () => {
             // Segment 0: (0,0) -> (20,20)  and  Segment 2: (0,20) -> (20,0) should intersect at (10,10)
             const figure8Polyline: Shape = {
                 id: 'figure8',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 20, y: 20 },
@@ -78,7 +83,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 20, y: 20 },
                                 end: { x: 0, y: 20 },
@@ -86,7 +91,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg3',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 20 },
                                 end: { x: 20, y: 0 },
@@ -94,7 +99,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg4',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 20, y: 0 },
                                 end: { x: 0, y: 0 },
@@ -123,12 +128,12 @@ describe('Polyline Self-Intersection Detection', () => {
             // Create a more complex pattern with multiple intersections
             const complexPolyline: Shape = {
                 id: 'complex',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 30, y: 0 },
@@ -136,7 +141,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 30, y: 0 },
                                 end: { x: 30, y: 20 },
@@ -144,7 +149,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg3',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 30, y: 20 },
                                 end: { x: 0, y: 20 },
@@ -152,7 +157,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg4',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 20 },
                                 end: { x: 0, y: 10 },
@@ -161,7 +166,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         // Add crossing segments
                         {
                             id: 'seg5',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 10 },
                                 end: { x: 20, y: 10 },
@@ -169,7 +174,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg6',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 20, y: 10 },
                                 end: { x: 10, y: 5 },
@@ -189,12 +194,12 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should not detect intersections in simple non-intersecting polyline', () => {
             const simplePolyline: Shape = {
                 id: 'simple',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
@@ -202,7 +207,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 0 },
                                 end: { x: 10, y: 10 },
@@ -210,7 +215,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg3',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 10 },
                                 end: { x: 0, y: 10 },
@@ -228,12 +233,12 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should handle polylines with arc segments', () => {
             const arcPolyline: Shape = {
                 id: 'arc',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 10 },
                                 end: { x: 30, y: 10 },
@@ -241,7 +246,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: {
                                 center: { x: 15, y: 15 },
                                 radius: 5,
@@ -253,7 +258,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         // Add a line that should intersect the arc
                         {
                             id: 'seg3',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 25, y: 10 },
                                 end: { x: 15, y: 20 },
@@ -261,7 +266,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg4',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 15, y: 20 },
                                 end: { x: 0, y: 10 },
@@ -281,12 +286,12 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should return proper parameter values for intersections', () => {
             const figure8Polyline: Shape = {
                 id: 'figure8',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 10 },
@@ -294,7 +299,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 10 },
                                 end: { x: 20, y: 0 },
@@ -302,7 +307,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg3',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 20, y: 0 },
                                 end: { x: 10, y: -10 },
@@ -310,7 +315,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg4',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: -10 },
                                 end: { x: 0, y: 0 },
@@ -348,7 +353,7 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should throw error for non-polyline shapes', () => {
             const lineShape: Shape = {
                 id: 'line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
             };
 
@@ -362,12 +367,12 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should return true for self-intersecting polyline', () => {
             const figure8Polyline: Shape = {
                 id: 'figure8',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 20, y: 20 },
@@ -375,7 +380,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 20, y: 20 },
                                 end: { x: 0, y: 20 },
@@ -383,7 +388,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg3',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 20 },
                                 end: { x: 20, y: 0 },
@@ -391,7 +396,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg4',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 20, y: 0 },
                                 end: { x: 0, y: 0 },
@@ -408,12 +413,12 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should return false for non-intersecting polyline', () => {
             const simplePolyline: Shape = {
                 id: 'simple',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
@@ -421,7 +426,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 0 },
                                 end: { x: 10, y: 10 },
@@ -429,7 +434,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg3',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 10 },
                                 end: { x: 0, y: 10 },
@@ -446,12 +451,12 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should return false for polylines with less than 3 segments', () => {
             const twoSegmentPolyline: Shape = {
                 id: 'two',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
@@ -459,7 +464,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 0 },
                                 end: { x: 10, y: 10 },
@@ -478,7 +483,7 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should return false for non-polyline shapes', () => {
             const lineShape: Shape = {
                 id: 'line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
             };
 
@@ -490,12 +495,12 @@ describe('Polyline Self-Intersection Detection', () => {
         it('should handle nearly coincident segments', () => {
             const nearlyCoincidentPolyline: Shape = {
                 id: 'nearly-coincident',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: [
                         {
                             id: 'seg1',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
@@ -503,7 +508,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg2',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 0 },
                                 end: { x: 10, y: 10 },
@@ -511,7 +516,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         },
                         {
                             id: 'seg3',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 10, y: 10 },
                                 end: { x: 5, y: 5 },
@@ -520,7 +525,7 @@ describe('Polyline Self-Intersection Detection', () => {
                         // Nearly coincident with seg1 but slightly offset
                         {
                             id: 'seg4',
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 5, y: 5 },
                                 end: { x: 8, y: 0.001 },
@@ -550,7 +555,7 @@ describe('Polyline Self-Intersection Detection', () => {
 
                 segments.push({
                     id: `seg${i}`,
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: x1, y: y1 },
                         end: { x: x2, y: y2 },
@@ -560,7 +565,7 @@ describe('Polyline Self-Intersection Detection', () => {
 
             const largePolyline: Shape = {
                 id: 'large',
-                type: 'polyline',
+                type: GeometryType.POLYLINE,
                 geometry: {
                     shapes: segments,
                     closed: false,

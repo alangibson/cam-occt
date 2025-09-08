@@ -7,12 +7,13 @@ import {
     findShapeIntersections,
     clusterIntersections,
 } from '../intersect/index';
-import type {
-    Shape,
-    Line,
-    Arc,
-    Circle,
-    Point2D,
+import {
+    GeometryType,
+    type Shape,
+    type Line,
+    type Arc,
+    type Circle,
+    type Point2D,
 } from '../../../../lib/types/geometry';
 import type { IntersectionResult } from './types';
 import { generateId } from '../../../utils/id';
@@ -23,7 +24,7 @@ describe('intersections', () => {
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
         return {
             id: generateId(),
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x1, y: y1 },
                 end: { x: x2, y: y2 },
@@ -41,7 +42,7 @@ describe('intersections', () => {
     ): Shape {
         return {
             id: generateId(),
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: cx, y: cy },
                 radius,
@@ -55,7 +56,7 @@ describe('intersections', () => {
     function createCircle(cx: number, cy: number, radius: number): Shape {
         return {
             id: generateId(),
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: cx, y: cy },
                 radius,
@@ -579,7 +580,7 @@ describe('intersections', () => {
         ): Shape {
             return {
                 id: generateId(),
-                type: 'ellipse',
+                type: GeometryType.ELLIPSE,
                 geometry: {
                     center: { x: cx, y: cy },
                     majorAxisEndpoint: { x: majorX, y: majorY },
@@ -596,7 +597,7 @@ describe('intersections', () => {
         ): Shape {
             return {
                 id: generateId(),
-                type: 'spline',
+                type: GeometryType.SPLINE,
                 geometry: {
                     controlPoints,
                     knots: [], // Simplified

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { offsetSpline } from './spline';
+import { OffsetDirection } from '../types';
 import type { Spline } from '../../../../types/geometry';
 
 describe('Spline Offset Diagnostic Tests', () => {
@@ -35,7 +36,13 @@ describe('Spline Offset Diagnostic Tests', () => {
     };
 
     it('should handle simple spline without hanging', { timeout: 5000 }, () => {
-        const result = offsetSpline(simpleSpline, 10, 'outset', 1.0, 1);
+        const result = offsetSpline(
+            simpleSpline,
+            10,
+            OffsetDirection.OUTSET,
+            1.0,
+            1
+        );
         expect(result.success).toBe(true);
     });
 
@@ -46,7 +53,7 @@ describe('Spline Offset Diagnostic Tests', () => {
             const result = offsetSpline(
                 problematicSpline,
                 10,
-                'outset',
+                OffsetDirection.OUTSET,
                 1.0,
                 1
             );
@@ -69,7 +76,13 @@ describe('Spline Offset Diagnostic Tests', () => {
             closed: false,
         };
 
-        const result = offsetSpline(reducedSpline, 1, 'outset', 0.1, 3); // Use more conservative parameters
+        const result = offsetSpline(
+            reducedSpline,
+            1,
+            OffsetDirection.OUTSET,
+            0.1,
+            3
+        ); // Use more conservative parameters
         expect(result.success).toBe(true);
     });
 
@@ -93,7 +106,7 @@ describe('Spline Offset Diagnostic Tests', () => {
             const result = offsetSpline(
                 fewerPointsSpline,
                 10,
-                'outset',
+                OffsetDirection.OUTSET,
                 1.0,
                 1
             );

@@ -1,4 +1,10 @@
-import type { Shape, Polyline, Line, Arc } from '../../../../types/geometry';
+import {
+    type Shape,
+    type Polyline,
+    type Line,
+    type Arc,
+    GeometryType,
+} from '../../../../types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import type { IntersectionType } from '../index';
 // Import intersection functions from line-line module
@@ -65,12 +71,16 @@ export function findPolylinePolylineIntersections(
                 // Create shape wrappers for the segments
                 const shape1: Shape = {
                     id: `segment1-${index1}`,
-                    type: isLine(segment1) ? 'line' : 'arc',
+                    type: isLine(segment1)
+                        ? GeometryType.LINE
+                        : GeometryType.ARC,
                     geometry: segment1,
                 };
                 const shape2: Shape = {
                     id: `segment2-${index2}`,
-                    type: isLine(segment2) ? 'line' : 'arc',
+                    type: isLine(segment2)
+                        ? GeometryType.LINE
+                        : GeometryType.ARC,
                     geometry: segment2,
                 };
                 segmentIntersections = findIntersectionsByType(

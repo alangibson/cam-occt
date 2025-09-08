@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { samplePathAtDistanceIntervals } from '../lib/geometry/index';
 import type { Shape, Line } from '../lib/types';
 import { CutDirection } from '../lib/types/direction';
+import { GeometryType } from '$lib/types/geometry';
 
 /**
  * Integration tests for chevron arrow rendering
@@ -16,7 +17,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
             const horizontalLine: Shape = {
                 id: 'horizontal-line-ccw',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 }, // Points right
@@ -25,7 +26,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
             const verticalLine: Shape = {
                 id: 'vertical-line-ccw',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 }, // Points up
@@ -68,7 +69,7 @@ describe('Chevron Arrow Integration Tests', () => {
         it('should handle clockwise cut direction correctly without shape reversal', () => {
             const horizontalLine: Shape = {
                 id: 'horizontal-line-cw',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 }, // Points right
@@ -77,7 +78,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
             const verticalLine: Shape = {
                 id: 'vertical-line-cw',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 }, // Points up
@@ -90,9 +91,8 @@ describe('Chevron Arrow Integration Tests', () => {
             const cutDirection = CutDirection.CLOCKWISE;
             // This comparison is intentional - showing that clockwise does NOT reverse shapes
             // We're testing that CLOCKWISE !== COUNTERCLOCKWISE, so the false branch is expected
-            // @ts-expect-error - Intentional comparison to test that clockwise doesn't reverse shapes
             const shapesToSample =
-                cutDirection === CutDirection.COUNTERCLOCKWISE
+                (cutDirection as string) === CutDirection.COUNTERCLOCKWISE
                     ? [...originalShapes].reverse()
                     : originalShapes;
 
@@ -123,7 +123,7 @@ describe('Chevron Arrow Integration Tests', () => {
             // Create a simple square path that could be cut either direction
             const bottom: Shape = {
                 id: 'bottom-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -132,7 +132,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
             const right: Shape = {
                 id: 'right-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 },
@@ -141,7 +141,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
             const top: Shape = {
                 id: 'top-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 10 },
                     end: { x: 0, y: 10 },
@@ -150,7 +150,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
             const left: Shape = {
                 id: 'left-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 10 },
                     end: { x: 0, y: 0 },
@@ -202,7 +202,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
             const straightLine: Shape = {
                 id: 'straight-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 5 },
                     end: { x: 20, y: 5 }, // Long horizontal line
@@ -226,7 +226,7 @@ describe('Chevron Arrow Integration Tests', () => {
             // If we were to simulate that reversal here, we'd reverse the line's start/end
             const reversedLine: Shape = {
                 id: 'reversed-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 20, y: 5 }, // Reversed: was end
                     end: { x: 0, y: 5 }, // Reversed: was start
@@ -256,7 +256,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
             const testLine: Shape = {
                 id: 'test-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },

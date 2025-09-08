@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { workflowStore } from '../../lib/stores/workflow';
+import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
 import { pathStore } from '../../lib/stores/paths';
 import { rapidStore } from '../../lib/stores/rapids';
 import { chainStore } from '../../lib/stores/chains';
@@ -25,11 +25,11 @@ describe('SimulateStage store subscription cleanup', () => {
 
     it('should properly manage store subscriptions without memory leaks', () => {
         // Set up workflow to allow simulate stage
-        workflowStore.completeStage('import');
-        workflowStore.completeStage('edit');
-        workflowStore.completeStage('prepare');
-        workflowStore.completeStage('program');
-        workflowStore.setStage('simulate');
+        workflowStore.completeStage(WorkflowStage.IMPORT);
+        workflowStore.completeStage(WorkflowStage.EDIT);
+        workflowStore.completeStage(WorkflowStage.PREPARE);
+        workflowStore.completeStage(WorkflowStage.PROGRAM);
+        workflowStore.setStage(WorkflowStage.SIMULATE);
 
         // Track subscription cleanup
         const unsubscribers: Array<() => void> = [];
@@ -65,19 +65,19 @@ describe('SimulateStage store subscription cleanup', () => {
 
         // Verify we can still navigate without errors
         expect(() => {
-            workflowStore.setStage('program');
+            workflowStore.setStage(WorkflowStage.PROGRAM);
         }).not.toThrow();
 
         // Verify workflow state is correct
-        expect(get(workflowStore).currentStage).toBe('program');
+        expect(get(workflowStore).currentStage).toBe(WorkflowStage.PROGRAM);
     });
 
     it('should handle navigation after adding paths and rapids', () => {
         // Complete required stages
-        workflowStore.completeStage('import');
-        workflowStore.completeStage('edit');
-        workflowStore.completeStage('prepare');
-        workflowStore.completeStage('program');
+        workflowStore.completeStage(WorkflowStage.IMPORT);
+        workflowStore.completeStage(WorkflowStage.EDIT);
+        workflowStore.completeStage(WorkflowStage.PREPARE);
+        workflowStore.completeStage(WorkflowStage.PROGRAM);
 
         // Add test data
         pathStore.addPath({
@@ -101,8 +101,8 @@ describe('SimulateStage store subscription cleanup', () => {
         ]);
 
         // Navigate to simulate
-        workflowStore.setStage('simulate');
-        expect(get(workflowStore).currentStage).toBe('simulate');
+        workflowStore.setStage(WorkflowStage.SIMULATE);
+        expect(get(workflowStore).currentStage).toBe(WorkflowStage.SIMULATE);
 
         // Create subscriptions
         const unsubscribers: Array<() => void> = [];
@@ -118,24 +118,26 @@ describe('SimulateStage store subscription cleanup', () => {
 
         // Navigate back to program
         expect(() => {
-            workflowStore.setStage('program');
+            workflowStore.setStage(WorkflowStage.PROGRAM);
         }).not.toThrow();
 
-        expect(get(workflowStore).currentStage).toBe('program');
+        expect(get(workflowStore).currentStage).toBe(WorkflowStage.PROGRAM);
     });
 
     it('should allow multiple navigation cycles without errors', () => {
         // Complete all stages
-        workflowStore.completeStage('import');
-        workflowStore.completeStage('edit');
-        workflowStore.completeStage('prepare');
-        workflowStore.completeStage('program');
+        workflowStore.completeStage(WorkflowStage.IMPORT);
+        workflowStore.completeStage(WorkflowStage.EDIT);
+        workflowStore.completeStage(WorkflowStage.PREPARE);
+        workflowStore.completeStage(WorkflowStage.PROGRAM);
 
         // Navigate through stages multiple times
         for (let i = 0; i < 3; i++) {
             // Go to simulate
-            workflowStore.setStage('simulate');
-            expect(get(workflowStore).currentStage).toBe('simulate');
+            workflowStore.setStage(WorkflowStage.SIMULATE);
+            expect(get(workflowStore).currentStage).toBe(
+                WorkflowStage.SIMULATE
+            );
 
             // Create and clean up subscriptions
             const unsubscribers: Array<() => void> = [];
@@ -144,12 +146,12 @@ describe('SimulateStage store subscription cleanup', () => {
             unsubscribers.forEach((fn) => fn());
 
             // Go back to program
-            workflowStore.setStage('program');
-            expect(get(workflowStore).currentStage).toBe('program');
+            workflowStore.setStage(WorkflowStage.PROGRAM);
+            expect(get(workflowStore).currentStage).toBe(WorkflowStage.PROGRAM);
 
             // Go to edit
-            workflowStore.setStage('edit');
-            expect(get(workflowStore).currentStage).toBe('edit');
+            workflowStore.setStage(WorkflowStage.EDIT);
+            expect(get(workflowStore).currentStage).toBe(WorkflowStage.EDIT);
         }
     });
 });

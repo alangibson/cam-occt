@@ -4,6 +4,7 @@ import {
     pointDistance,
     calculateLineParameter,
 } from '../shared/trim-extend-utils';
+import { calculateLineDirectionAndLength } from '../../../utils/geometry-utils';
 
 /**
  * Line Extension Module
@@ -96,23 +97,13 @@ export function extendLineToPoint(
     const opts: LineExtensionOptions = { ...defaultOptions, ...options };
 
     try {
-        // Calculate line parameters
-        const lineDir: Point2D = {
-            x: line.end.x - line.start.x,
-            y: line.end.y - line.start.y,
-        };
-
-        const lineLength: number = Math.sqrt(
-            lineDir.x * lineDir.x + lineDir.y * lineDir.y
-        );
-        if (lineLength < EPSILON) {
+        // Calculate line parameters using shared utility
+        const lineProps = calculateLineDirectionAndLength(line);
+        if (!lineProps) {
             return null; // Degenerate line
         }
 
-        const unitDir: Point2D = {
-            x: lineDir.x / lineLength,
-            y: lineDir.y / lineLength,
-        };
+        const { unitDirection: unitDir } = lineProps;
 
         // Determine extension direction
         const extendDirection: 'start' | 'end' | null =

@@ -1,33 +1,34 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    trimShapeAtPoint,
+    createPolylineFromVertices,
+    polylineToPoints,
+} from '../../../geometry/polyline';
+import {
+    GeometryType,
+    type Arc,
+    type Circle,
+    type Ellipse,
+    type Line,
+    type Point2D,
+    type Polyline,
+    type Shape,
+    type Spline,
+} from '../../../types/geometry';
+import { generateId } from '../../../utils/id';
+import type { IntersectionResult } from '../chain/types';
+import {
     selectTrimPoint,
     trimConsecutiveShapes,
+    trimShapeAtPoint,
 } from './index';
 import { type KeepSide, type TrimResult } from './types';
-import type {
-    Shape,
-    Line,
-    Arc,
-    Circle,
-    Point2D,
-    Polyline,
-    Spline,
-    Ellipse,
-} from '../../../types/geometry';
-import type { IntersectionResult } from '../chain/types';
-import { generateId } from '../../../utils/id';
-import {
-    polylineToPoints,
-    createPolylineFromVertices,
-} from '../../../geometry/polyline';
 
 describe('trimming', () => {
     // Helper functions to create test shapes
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
         return {
             id: generateId(),
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x1, y: y1 },
                 end: { x: x2, y: y2 },
@@ -45,7 +46,7 @@ describe('trimming', () => {
     ): Shape {
         return {
             id: generateId(),
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: cx, y: cy },
                 radius,
@@ -59,7 +60,7 @@ describe('trimming', () => {
     function createCircle(cx: number, cy: number, radius: number): Shape {
         return {
             id: generateId(),
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: cx, y: cy },
                 radius,
@@ -306,7 +307,7 @@ describe('trimming', () => {
             ): Shape {
                 return {
                     id: generateId(),
-                    type: 'ellipse',
+                    type: GeometryType.ELLIPSE,
                     geometry: {
                         center: { x: cx, y: cy },
                         majorAxisEndpoint: { x: majorAxisX, y: majorAxisY },
@@ -542,7 +543,7 @@ describe('trimming', () => {
                 ];
                 const polyline: Shape = {
                     id: generateId(),
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(vertices, false)
                         .geometry as Polyline,
                 };
@@ -575,7 +576,7 @@ describe('trimming', () => {
                 ];
                 const polyline: Shape = {
                     id: generateId(),
-                    type: 'polyline',
+                    type: GeometryType.POLYLINE,
                     geometry: createPolylineFromVertices(vertices, false)
                         .geometry as Polyline,
                 };
@@ -596,7 +597,7 @@ describe('trimming', () => {
             it('should handle splines gracefully', () => {
                 const spline: Shape = {
                     id: generateId(),
-                    type: 'spline',
+                    type: GeometryType.SPLINE,
                     geometry: {
                         controlPoints: [
                             { x: 0, y: 0 },

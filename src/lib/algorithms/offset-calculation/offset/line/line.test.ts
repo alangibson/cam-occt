@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { offsetLine } from './line';
 import type { Line } from '../../../../types/geometry';
 import { EPSILON } from '../../../../constants';
+import { OffsetDirection } from '../types';
 
 describe('offsetLine', () => {
     const testLine: Line = {
@@ -10,19 +11,19 @@ describe('offsetLine', () => {
     };
 
     it('should return no shapes when direction is none', () => {
-        const result = offsetLine(testLine, 5, 'none');
+        const result = offsetLine(testLine, 5, OffsetDirection.NONE);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
     it('should return no shapes when distance is zero', () => {
-        const result = offsetLine(testLine, 0, 'outset');
+        const result = offsetLine(testLine, 0, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
     it('should offset line outward correctly', () => {
-        const result = offsetLine(testLine, 5, 'outset');
+        const result = offsetLine(testLine, 5, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(1);
 
@@ -34,7 +35,7 @@ describe('offsetLine', () => {
     });
 
     it('should offset line inward correctly', () => {
-        const result = offsetLine(testLine, 5, 'inset');
+        const result = offsetLine(testLine, 5, OffsetDirection.INSET);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(1);
 
@@ -51,7 +52,7 @@ describe('offsetLine', () => {
             end: { x: 0, y: 10 },
         };
 
-        const result = offsetLine(verticalLine, 3, 'outset');
+        const result = offsetLine(verticalLine, 3, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Line;
@@ -67,7 +68,7 @@ describe('offsetLine', () => {
             end: { x: 5, y: 5 },
         };
 
-        const result = offsetLine(zeroLine, 2, 'outset');
+        const result = offsetLine(zeroLine, 2, OffsetDirection.OUTSET);
         expect(result.success).toBe(false);
         expect(result.errors).toContain('Cannot offset zero-length line');
     });
@@ -78,7 +79,7 @@ describe('offsetLine', () => {
             end: { x: 10, y: 0 },
         };
 
-        const result = offsetLine(horizontalLine, 3, 'outset');
+        const result = offsetLine(horizontalLine, 3, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Line;
@@ -109,7 +110,11 @@ describe('offsetLine', () => {
         };
 
         const offsetDistance = 2;
-        const result = offsetLine(diagonalLine, offsetDistance, 'outset');
+        const result = offsetLine(
+            diagonalLine,
+            offsetDistance,
+            OffsetDirection.OUTSET
+        );
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Line;
@@ -137,7 +142,7 @@ describe('offsetLine', () => {
             end: { x: 5, y: 5 },
         };
 
-        const result = offsetLine(zeroLine, 2, 'outset');
+        const result = offsetLine(zeroLine, 2, OffsetDirection.OUTSET);
         expect(result.success).toBe(false);
         expect(result.errors).toContain('Cannot offset zero-length line');
     });
@@ -149,7 +154,7 @@ describe('offsetLine', () => {
         };
 
         const microOffset = 0.00001;
-        const result = offsetLine(line, microOffset, 'outset');
+        const result = offsetLine(line, microOffset, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Line;
@@ -164,7 +169,7 @@ describe('offsetLine', () => {
         };
 
         const macroOffset = 50;
-        const result = offsetLine(line, macroOffset, 'outset');
+        const result = offsetLine(line, macroOffset, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Line;
@@ -178,7 +183,7 @@ describe('offsetLine', () => {
             end: { x: 10, y: 0 },
         };
 
-        const result = offsetLine(line, 0.00001, 'outset');
+        const result = offsetLine(line, 0.00001, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBe(1);
 

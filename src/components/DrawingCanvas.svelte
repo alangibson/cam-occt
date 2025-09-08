@@ -31,12 +31,6 @@
         getShapeEndPoint,
         samplePathAtDistanceIntervals,
     } from '$lib/geometry';
-    import {
-        polylineToPoints,
-        polylineToVertices,
-    } from '$lib/geometry/polyline';
-    import { calculateLeads } from '../lib/algorithms/lead-calculation';
-    import { leadWarningsStore } from '../lib/stores/lead-warnings';
     import { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
     import {
         EPSILON,
@@ -66,21 +60,19 @@
         cullShapesToViewport,
     } from '../lib/rendering/viewport-culling';
     import LeadVisualization from './LeadVisualization.svelte';
-    import type {
-        Shape,
-        Point2D,
-        Line,
-        Arc,
-        Circle,
-        Polyline,
-        Ellipse,
-        Spline,
+    import {
+        type Shape,
+        type Point2D,
+        type Line,
+        type Arc,
+        type Circle,
+        type Polyline,
+        type Ellipse,
+        type Spline,
+        GeometryType,
     } from '../lib/types';
     import type { WorkflowStage } from '../lib/stores/workflow';
-    import {
-        getPhysicalScaleFactor,
-        getPixelsPerUnit,
-    } from '../lib/utils/units';
+    import { getPhysicalScaleFactor, type Unit } from '../lib/utils/units';
     import { normalizeAngle } from '../lib/utils/polygon-geometry-shared';
     import { isPointInsidePart } from '../lib/algorithms/raytracing/point-in-chain';
 
@@ -876,10 +868,10 @@
         // Draw each shape in the polyline using drawLine or drawArc
         for (const shape of polyline.shapes) {
             switch (shape.type) {
-                case 'line':
+                case GeometryType.LINE:
                     drawLine(shape.geometry as Line);
                     break;
-                case 'arc':
+                case GeometryType.ARC:
                     drawArc(shape.geometry as Arc);
                     break;
             }
@@ -975,32 +967,32 @@
 
     function drawShape(shape: Shape) {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 const line = shape.geometry as Line;
                 drawLine(line);
                 break;
 
-            case 'circle':
+            case GeometryType.CIRCLE:
                 const circle = shape.geometry as Circle;
                 drawCircle(circle);
                 break;
 
-            case 'arc':
+            case GeometryType.ARC:
                 const arc = shape.geometry as Arc;
                 drawArc(arc);
                 break;
 
-            case 'polyline':
+            case GeometryType.POLYLINE:
                 const polyline = shape.geometry as Polyline;
                 drawPolyline(polyline);
                 break;
 
-            case 'ellipse':
+            case GeometryType.ELLIPSE:
                 const ellipse = shape.geometry as Ellipse;
                 drawEllipse(ellipse, shape);
                 break;
 
-            case 'spline':
+            case GeometryType.SPLINE:
                 const spline = shape.geometry as Spline;
                 drawSpline(spline, shape);
                 break;
@@ -1328,16 +1320,16 @@
         tolerance: number
     ): boolean {
         switch (shape.type) {
-            case 'line':
+            case GeometryType.LINE:
                 const line = shape.geometry as Line;
                 return distanceToLine(point, line.start, line.end) < tolerance;
 
-            case 'circle':
+            case GeometryType.CIRCLE:
                 const circle = shape.geometry as Circle;
                 const distToCenter = distance(point, circle.center);
                 return Math.abs(distToCenter - circle.radius) < tolerance;
 
-            case 'arc':
+            case GeometryType.ARC:
                 const arc = shape.geometry as Arc;
                 const distToCenterArc = distance(point, arc.center);
                 // Check if point is near the arc circumference
@@ -1356,7 +1348,7 @@
                     arc.clockwise
                 );
 
-            case 'polyline':
+            case GeometryType.POLYLINE:
                 const polyline = shape.geometry as Polyline;
 
                 if (!polyline.shapes || polyline.shapes.length === 0)
@@ -1371,7 +1363,7 @@
 
                 return false;
 
-            case 'ellipse':
+            case GeometryType.ELLIPSE:
                 const ellipse = shape.geometry as Ellipse;
 
                 // Calculate distance from point to ellipse perimeter
@@ -1431,7 +1423,7 @@
                     return normPoint >= normStart || normPoint <= normEnd;
                 }
 
-            case 'spline':
+            case GeometryType.SPLINE:
                 const spline = shape.geometry as Spline;
                 // For hit testing, use properly evaluated NURBS points
                 const evaluatedPoints = sampleNURBS(spline, 50); // Use fewer points for hit testing performance

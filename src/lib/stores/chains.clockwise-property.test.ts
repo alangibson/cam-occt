@@ -3,6 +3,7 @@ import { get } from 'svelte/store';
 import { chainStore, setChains, clearChains } from './chains';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Shape } from '../types';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('Chain Store - Clockwise Property Setting', () => {
     beforeEach(() => {
@@ -14,22 +15,22 @@ describe('Chain Store - Clockwise Property Setting', () => {
         const clockwiseSquare: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 10, y: 10 } },
             }, // right
             {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 10, y: 0 } },
             }, // down
             {
                 id: 'line3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 0, y: 0 } },
             }, // left
             {
                 id: 'line4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 0, y: 10 } },
             }, // up
         ];
@@ -54,22 +55,22 @@ describe('Chain Store - Clockwise Property Setting', () => {
         const counterclockwiseSquare: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
             }, // right
             {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 10, y: 10 } },
             }, // up
             {
                 id: 'line3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 0, y: 10 } },
             }, // left
             {
                 id: 'line4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 0, y: 0 } },
             }, // down
         ];
@@ -94,7 +95,7 @@ describe('Chain Store - Clockwise Property Setting', () => {
         const openLine: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
             },
         ];
@@ -118,22 +119,22 @@ describe('Chain Store - Clockwise Property Setting', () => {
         const clockwiseSquare: Shape[] = [
             {
                 id: 'line1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 10, y: 10 } },
             }, // right
             {
                 id: 'line2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 10, y: 0 } },
             }, // down
             {
                 id: 'line3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 0, y: 0 } },
             }, // left
             {
                 id: 'line4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 0, y: 10 } },
             }, // up
         ];
@@ -141,22 +142,22 @@ describe('Chain Store - Clockwise Property Setting', () => {
         const counterclockwiseSquare: Shape[] = [
             {
                 id: 'line5',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 20, y: 0 }, end: { x: 30, y: 0 } },
             }, // right
             {
                 id: 'line6',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 30, y: 0 }, end: { x: 30, y: 10 } },
             }, // up
             {
                 id: 'line7',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 30, y: 10 }, end: { x: 20, y: 10 } },
             }, // left
             {
                 id: 'line8',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 20, y: 10 }, end: { x: 20, y: 0 } },
             }, // down
         ];
@@ -164,7 +165,7 @@ describe('Chain Store - Clockwise Property Setting', () => {
         const openLine: Shape[] = [
             {
                 id: 'line9',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 20 }, end: { x: 10, y: 20 } },
             },
         ];
@@ -211,7 +212,7 @@ describe('Chain Store - Clockwise Property Setting', () => {
                 shapes: [
                     {
                         id: 'line1',
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 0, y: 0 },
                             end: { x: 10, y: 0 },

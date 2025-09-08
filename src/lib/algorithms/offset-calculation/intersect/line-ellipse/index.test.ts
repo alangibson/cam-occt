@@ -1,18 +1,24 @@
-import { describe, it, expect } from 'vitest';
+import {
+    GeometryType,
+    type Ellipse,
+    type Line,
+    type Point2D,
+    type Shape,
+} from '$lib/types/geometry';
+import { generateId } from '$lib/utils/id';
+import { describe, expect, it } from 'vitest';
+import type { IntersectionResult } from '../../chain/types';
 import {
     findEllipseLineIntersections,
     findEllipseLineIntersectionsVerb,
 } from './index';
-import type { IntersectionResult } from '../../chain/types';
-import type { Shape, Point2D, Line, Ellipse } from '$lib/types/geometry';
-import { generateId } from '$lib/utils/id';
 
 describe('Line-Ellipse Intersections', () => {
     // Helper functions to create test shapes
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
         return {
             id: generateId(),
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x1, y: y1 },
                 end: { x: x2, y: y2 },
@@ -31,7 +37,7 @@ describe('Line-Ellipse Intersections', () => {
     ): Shape {
         return {
             id: generateId(),
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center: { x: cx, y: cy },
                 majorAxisEndpoint: { x: majorAxisX, y: majorAxisY },

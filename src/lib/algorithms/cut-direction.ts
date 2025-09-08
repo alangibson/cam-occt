@@ -9,6 +9,7 @@ import type {
     Spline,
     Ellipse,
 } from '../types/geometry';
+import { GeometryType } from '../types/geometry';
 import { CutDirection } from '../types/direction';
 import { getShapeEndPoint } from '$lib/geometry';
 import { getShapeStartPoint } from '$lib/geometry';
@@ -126,11 +127,11 @@ function getChainPoints(chain: Chain): Point2D[] {
  */
 function getShapePoints(shape: Shape): Point2D[] {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             return [line.start, line.end];
 
-        case 'circle':
+        case GeometryType.CIRCLE:
             // For circles, we don't need to sample points to calculate direction
             // Circles are inherently counterclockwise in CAD coordinate systems
             // Return a simple set of points that will give us the correct orientation
@@ -143,7 +144,7 @@ function getShapePoints(shape: Shape): Point2D[] {
                 { x: circle.center.x, y: circle.center.y - circle.radius }, // bottom
             ];
 
-        case 'arc':
+        case GeometryType.ARC:
             // Sample arc with points based on angle span, respecting clockwise property
             const arc: Arc = shape.geometry as Arc;
             const arcPoints: Point2D[] = [];
@@ -174,11 +175,11 @@ function getShapePoints(shape: Shape): Point2D[] {
             }
             return arcPoints;
 
-        case 'polyline':
+        case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             return [...polylineToPoints(polyline)]; // Copy to avoid mutation
 
-        case 'spline':
+        case GeometryType.SPLINE:
             // Sample spline with multiple points for accurate area calculation
             const spline: Spline = shape.geometry as Spline;
             const splinePoints: Point2D[] = [];
@@ -207,7 +208,7 @@ function getShapePoints(shape: Shape): Point2D[] {
             }
             return splinePoints;
 
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             // Sample ellipse with multiple points for accurate area calculation
             const ellipse: Ellipse = shape.geometry as Ellipse;
             const ellipsePoints: Point2D[] = [];

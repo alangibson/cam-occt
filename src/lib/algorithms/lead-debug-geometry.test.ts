@@ -3,6 +3,8 @@ import { calculateLeads, type LeadInConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
 import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
+import { PartType } from './part-detection';
+import { GeometryType } from '../../lib/types/geometry';
 import type { Shape, Point2D } from '../../lib/types/geometry';
 
 describe('Lead Geometry Debug', () => {
@@ -13,7 +15,7 @@ describe('Lead Geometry Debug', () => {
     ): Chain {
         const shape: Shape = {
             id: 'shape1',
-            type: LeadType.LINE,
+            type: GeometryType.LINE,
             geometry: { start, end },
             layer: 'layer1',
         };
@@ -74,7 +76,7 @@ describe('Lead Geometry Debug', () => {
             shell: {
                 id: 'shell1',
                 chain: shellChain,
-                type: 'shell',
+                type: PartType.SHELL,
                 boundingBox: { minX: 0, maxX: 100, minY: 0, maxY: 100 },
                 holes: [],
             },
@@ -82,7 +84,7 @@ describe('Lead Geometry Debug', () => {
                 {
                     id: 'hole1',
                     chain: createLineChain({ x: 70, y: 70 }, { x: 90, y: 70 }), // Some hole
-                    type: 'hole',
+                    type: PartType.HOLE,
                     boundingBox: { minX: 70, maxX: 90, minY: 70, maxY: 90 },
                     holes: [],
                 },

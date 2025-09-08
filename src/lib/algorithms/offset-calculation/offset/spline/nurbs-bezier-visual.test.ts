@@ -2,6 +2,7 @@ import { describe, it } from 'vitest';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline, splitVerbCurve, tessellateVerbCurve } from './spline';
+import { OffsetDirection } from '../types';
 import type { Spline, Point2D } from '../../../../types/geometry';
 import verb from 'verb-nurbs';
 
@@ -11,8 +12,20 @@ describe('NURBS Bezier Visual Tests', () => {
         const complexNurbs: Spline = createComplexNurbs();
 
         // Offset the curve in both directions
-        const outsetResult = offsetSpline(complexNurbs, 15, 'outset', 0.1, 5);
-        const insetResult = offsetSpline(complexNurbs, 15, 'inset', 0.1, 5);
+        const outsetResult = offsetSpline(
+            complexNurbs,
+            15,
+            OffsetDirection.OUTSET,
+            0.1,
+            5
+        );
+        const insetResult = offsetSpline(
+            complexNurbs,
+            15,
+            OffsetDirection.INSET,
+            0.1,
+            5
+        );
 
         if (!outsetResult.success || !insetResult.success) {
             throw new Error(

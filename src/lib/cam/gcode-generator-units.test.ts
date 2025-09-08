@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { generateGCode } from './gcode-generator';
-import type { ToolPath, Drawing } from '../types';
+import { CutterCompensation } from '../types/cam';
+import { type ToolPath, type Drawing, Unit } from '../types';
 
 describe('GCode Generator - Units', () => {
     const mockPath: ToolPath = {
@@ -29,21 +30,21 @@ describe('GCode Generator - Units', () => {
         safeZ: 10,
         rapidFeedRate: 5000,
         includeComments: true,
-        cutterCompensation: 'off' as const,
+        cutterCompensation: CutterCompensation.OFF,
         adaptiveFeedControl: true as boolean | null,
         enableTHC: true as boolean | null,
     };
 
     it('should generate G21 for millimeter units', () => {
         const mockDrawing: Drawing = {
-            units: 'mm',
+            units: Unit.MM,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
         const gcode = generateGCode([mockPath], mockDrawing, {
             ...baseOptions,
-            units: 'mm', // Use display unit, not drawing.units
+            units: Unit.MM, // Use display unit, not drawing.units
         });
 
         expect(gcode).toContain('G21');
@@ -52,14 +53,14 @@ describe('GCode Generator - Units', () => {
 
     it('should generate G20 for inch units', () => {
         const mockDrawing: Drawing = {
-            units: 'inch',
+            units: Unit.INCH,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
         const gcode = generateGCode([mockPath], mockDrawing, {
             ...baseOptions,
-            units: 'inch', // Use display unit, not drawing.units
+            units: Unit.INCH, // Use display unit, not drawing.units
         });
 
         expect(gcode).toContain('G20');
@@ -68,25 +69,25 @@ describe('GCode Generator - Units', () => {
 
     it('should use different tolerance values for different units', () => {
         const mockDrawingMM: Drawing = {
-            units: 'mm',
+            units: Unit.MM,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
         const mockDrawingInch: Drawing = {
-            units: 'inch',
+            units: Unit.INCH,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
         const gcodeMetric = generateGCode([mockPath], mockDrawingMM, {
             ...baseOptions,
-            units: 'mm', // Use display unit
+            units: Unit.MM, // Use display unit
         });
 
         const gcodeImperial = generateGCode([mockPath], mockDrawingInch, {
             ...baseOptions,
-            units: 'inch', // Use display unit
+            units: Unit.INCH, // Use display unit
         });
 
         // MM should use 0.1 tolerance
@@ -98,14 +99,14 @@ describe('GCode Generator - Units', () => {
 
     it('should maintain unit consistency throughout the G-code', () => {
         const mockDrawing: Drawing = {
-            units: 'mm',
+            units: Unit.MM,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
         const gcode = generateGCode([mockPath], mockDrawing, {
             ...baseOptions,
-            units: 'mm', // Use display unit
+            units: Unit.MM, // Use display unit
         });
 
         // Should have G21 (mm) but not G20 (inch)
@@ -120,25 +121,25 @@ describe('GCode Generator - Units', () => {
     it('should handle unit changes properly', () => {
         // Simulate first generation with mm
         const mockDrawingMM: Drawing = {
-            units: 'mm',
+            units: Unit.MM,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
         const gcodeMetric = generateGCode([mockPath], mockDrawingMM, {
             ...baseOptions,
-            units: 'mm', // Display unit set to mm
+            units: Unit.MM, // Display unit set to mm
         });
 
         // Simulate unit change to inches
         const mockDrawingInch: Drawing = {
             ...mockDrawingMM,
-            units: 'inch',
+            units: Unit.INCH,
         };
 
         const gcodeImperial = generateGCode([mockPath], mockDrawingInch, {
             ...baseOptions,
-            units: 'inch', // Display unit changed to inch
+            units: Unit.INCH, // Display unit changed to inch
         });
 
         // Verify they generate different unit codes

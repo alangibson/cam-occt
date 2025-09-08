@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '../parsers/dxf-parser';
-import { getPhysicalScaleFactor } from './units';
+import { getPhysicalScaleFactor, Unit } from './units';
 
 describe('Physical Size Display', () => {
     describe('Real-world DXF physical sizing', () => {
@@ -39,10 +39,13 @@ EOF`;
             const drawing = await parseDXF(mockADLERDxf);
 
             // Verify units are detected as mm
-            expect(drawing.units).toBe('mm');
+            expect(drawing.units).toBe(Unit.MM);
 
             // Test with display units set to mm
-            const physicalScaleMm = getPhysicalScaleFactor(drawing.units, 'mm');
+            const physicalScaleMm = getPhysicalScaleFactor(
+                drawing.units,
+                Unit.MM
+            );
             const zoomScale = 1.0; // 100% zoom
             const totalScaleMm = zoomScale * physicalScaleMm;
 
@@ -59,7 +62,7 @@ EOF`;
             // Test with display units set to inches
             const physicalScaleInch = getPhysicalScaleFactor(
                 drawing.units,
-                'inch'
+                Unit.INCH
             );
             const totalScaleInch = zoomScale * physicalScaleInch;
 
@@ -100,13 +103,16 @@ ENDSEC
 EOF`;
 
             const drawing = await parseDXF(mockDxf);
-            expect(drawing.units).toBe('mm');
+            expect(drawing.units).toBe(Unit.MM);
 
             const circleDiameterMm = 20;
             const zoomScale = 1.0;
 
             // When displayed as mm: 20 units → 20mm on screen
-            const physicalScaleMm = getPhysicalScaleFactor(drawing.units, 'mm');
+            const physicalScaleMm = getPhysicalScaleFactor(
+                drawing.units,
+                Unit.MM
+            );
             const totalScaleMm = zoomScale * physicalScaleMm;
             const mmPixels = circleDiameterMm * totalScaleMm;
             const mmOnScreen = mmPixels / (96 / 25.4);
@@ -115,7 +121,7 @@ EOF`;
             // When displayed as inches: 20 units → 20" on screen
             const physicalScaleInch = getPhysicalScaleFactor(
                 drawing.units,
-                'inch'
+                Unit.INCH
             );
             const totalScaleInch = zoomScale * physicalScaleInch;
             const inchPixels = circleDiameterMm * totalScaleInch;
@@ -158,7 +164,7 @@ ENDSEC
 EOF`;
 
             const drawing = await parseDXF(mockInchDxf);
-            expect(drawing.units).toBe('inch');
+            expect(drawing.units).toBe(Unit.INCH);
 
             const drawingWidthInches = 2.5;
             const zoomScale = 1.0;
@@ -166,7 +172,7 @@ EOF`;
             // When displayed as inches: 2.5 units → 2.5" on screen
             const physicalScaleInch = getPhysicalScaleFactor(
                 drawing.units,
-                'inch'
+                Unit.INCH
             );
             const totalScaleInch = zoomScale * physicalScaleInch;
             const inchPixels = drawingWidthInches * totalScaleInch;
@@ -174,7 +180,10 @@ EOF`;
             expect(inchesOnScreen).toBeCloseTo(2.5, 2);
 
             // When displayed as mm: 2.5 units → 2.5mm on screen
-            const physicalScaleMm = getPhysicalScaleFactor(drawing.units, 'mm');
+            const physicalScaleMm = getPhysicalScaleFactor(
+                drawing.units,
+                Unit.MM
+            );
             const totalScaleMm = zoomScale * physicalScaleMm;
             const mmPixels = drawingWidthInches * totalScaleMm;
             const mmOnScreen = mmPixels / (96 / 25.4);
@@ -222,7 +231,7 @@ EOF`;
             zoomLevels.forEach((zoom) => {
                 const physicalScale = getPhysicalScaleFactor(
                     drawing.units,
-                    'mm'
+                    Unit.MM
                 );
                 const totalScale = zoom * physicalScale;
                 const pixelsOnScreen = drawingWidthMm * totalScale;
@@ -236,7 +245,7 @@ EOF`;
             const zoom100 = 1.0;
             const physicalScaleInch = getPhysicalScaleFactor(
                 drawing.units,
-                'inch'
+                Unit.INCH
             );
             const totalScaleInch = zoom100 * physicalScaleInch;
             const pixelsOnScreenInch = drawingWidthMm * totalScaleInch;
@@ -288,7 +297,10 @@ EOF`;
             expect(drawingHeight).toBeCloseTo(50, 1);
 
             // Test with mm display: 100 units → 100mm on screen at 100% zoom
-            const physicalScaleMm = getPhysicalScaleFactor(drawing.units, 'mm');
+            const physicalScaleMm = getPhysicalScaleFactor(
+                drawing.units,
+                Unit.MM
+            );
             const zoomScale = 1.0;
             const totalScaleMm = zoomScale * physicalScaleMm;
 
@@ -304,7 +316,7 @@ EOF`;
             // Test with inch display: 100 units → 100" on screen at 100% zoom
             const physicalScaleInch = getPhysicalScaleFactor(
                 drawing.units,
-                'inch'
+                Unit.INCH
             );
             const totalScaleInch = zoomScale * physicalScaleInch;
 

@@ -3,8 +3,10 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/svelte';
 import Footer from './Footer.svelte';
 import { drawingStore } from '../lib/stores/drawing';
+import { Unit } from '../lib/utils/units';
 import type { Drawing } from '../lib/types';
 import type { DrawingSize } from '../lib/algorithms/drawing-size/drawing-size';
+import { GeometryType } from '$lib/types/geometry';
 
 // Mock the drawing size calculation
 vi.mock('../lib/algorithms/drawing-size/drawing-size', () => ({
@@ -13,7 +15,7 @@ vi.mock('../lib/algorithms/drawing-size/drawing-size', () => ({
 
 describe('Footer Component', () => {
     beforeEach(() => {
-        drawingStore.setDisplayUnit('mm');
+        drawingStore.setDisplayUnit(Unit.MM);
     });
 
     it('should render without errors', () => {
@@ -52,13 +54,13 @@ describe('Footer Component', () => {
             shapes: [
                 {
                     id: '1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
                     layer: '0',
                 },
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         // Mock a delayed calculation
@@ -68,7 +70,7 @@ describe('Footer Component', () => {
         vi.mocked(calculateDrawingSize).mockImplementation(() => ({
             width: 10,
             height: 10,
-            units: 'mm',
+            units: Unit.MM,
             source: 'calculated',
         }));
 
@@ -84,13 +86,13 @@ describe('Footer Component', () => {
             shapes: [
                 {
                     id: '1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 50, y: 30 } },
                     layer: '0',
                 },
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 50, y: 30 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         // Mock successful calculation
@@ -100,7 +102,7 @@ describe('Footer Component', () => {
         vi.mocked(calculateDrawingSize).mockResolvedValue({
             width: 50,
             height: 30,
-            units: 'mm',
+            units: Unit.MM,
             source: 'calculated',
         } as DrawingSize);
 
@@ -118,7 +120,7 @@ describe('Footer Component', () => {
         const mockDrawing: Drawing = {
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-            units: 'mm',
+            units: Unit.MM,
         };
 
         // Mock failed calculation

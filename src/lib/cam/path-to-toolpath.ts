@@ -1,17 +1,12 @@
-import type { ToolPath, Point2D, Shape } from '../types';
+import { type ToolPath, type Point2D, type Shape, LeadType } from '../types';
 import type { Path } from '../stores/paths';
 import type { Tool } from '../stores/tools';
 import { getShapePoints } from '../geometry/shape-utils';
 import {
     hasValidCachedLeads,
     getCachedLeadGeometry,
+    calculateLeadPoints,
 } from '../utils/lead-persistence-utils';
-import {
-    calculateLeads,
-    type LeadInConfig,
-    type LeadOutConfig,
-} from '../algorithms/lead-calculation';
-import { LeadType } from '../types/direction';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { DetectedPart } from '../algorithms/part-detection';
 
@@ -132,55 +127,8 @@ export function pathToToolPath(
         }
 
         // Fallback to calculating if no valid cache (simulation's approach)
-        if (!leadIn && chainMap && partMap) {
-            try {
-                const chain = chainMap.get(path.chainId);
-                if (chain) {
-                    const part = partMap.get(path.chainId); // Part lookup for lead fitting
-
-                    // Use offset shapes for lead calculation if available (simulation's approach)
-                    const chainForLeads = path.calculatedOffset
-                        ? {
-                              ...chain,
-                              shapes: path.calculatedOffset.offsetShapes,
-                          }
-                        : chain;
-
-                    const leadInConfig: LeadInConfig = {
-                        type: path.leadInType,
-                        length: path.leadInLength,
-                        flipSide: path.leadInFlipSide || false,
-                        angle: path.leadInAngle,
-                    };
-                    const leadOutConfig: LeadOutConfig = {
-                        type: path.leadOutType || LeadType.NONE,
-                        length: path.leadOutLength || 0,
-                        flipSide: path.leadOutFlipSide || false,
-                        angle: path.leadOutAngle,
-                    };
-
-                    const leadResult = calculateLeads(
-                        chainForLeads,
-                        leadInConfig,
-                        leadOutConfig,
-                        path.cutDirection,
-                        part
-                    );
-
-                    if (
-                        leadResult.leadIn &&
-                        leadResult.leadIn.points.length > 0
-                    ) {
-                        leadIn = leadResult.leadIn.points;
-                    }
-                }
-            } catch (error) {
-                console.warn(
-                    'Failed to calculate lead-in for G-code generation:',
-                    path.name,
-                    error
-                );
-            }
+        if (!leadIn) {
+            leadIn = calculateLeadPoints(path, chainMap, partMap, 'leadIn');
         }
     }
 
@@ -244,55 +192,8 @@ export function pathToToolPath(
         }
 
         // Fallback to calculating if no valid cache (simulation's approach)
-        if (!leadOut && chainMap && partMap) {
-            try {
-                const chain = chainMap.get(path.chainId);
-                if (chain) {
-                    const part = partMap.get(path.chainId); // Part lookup for lead fitting
-
-                    // Use offset shapes for lead calculation if available (simulation's approach)
-                    const chainForLeads = path.calculatedOffset
-                        ? {
-                              ...chain,
-                              shapes: path.calculatedOffset.offsetShapes,
-                          }
-                        : chain;
-
-                    const leadInConfig: LeadInConfig = {
-                        type: path.leadInType || LeadType.NONE,
-                        length: path.leadInLength || 0,
-                        flipSide: path.leadInFlipSide || false,
-                        angle: path.leadInAngle,
-                    };
-                    const leadOutConfig: LeadOutConfig = {
-                        type: path.leadOutType,
-                        length: path.leadOutLength,
-                        flipSide: path.leadOutFlipSide || false,
-                        angle: path.leadOutAngle,
-                    };
-
-                    const leadResult = calculateLeads(
-                        chainForLeads,
-                        leadInConfig,
-                        leadOutConfig,
-                        path.cutDirection,
-                        part
-                    );
-
-                    if (
-                        leadResult.leadOut &&
-                        leadResult.leadOut.points.length > 0
-                    ) {
-                        leadOut = leadResult.leadOut.points;
-                    }
-                }
-            } catch (error) {
-                console.warn(
-                    'Failed to calculate lead-out for G-code generation:',
-                    path.name,
-                    error
-                );
-            }
+        if (!leadOut) {
+            leadOut = calculateLeadPoints(path, chainMap, partMap, 'leadOut');
         }
     }
 

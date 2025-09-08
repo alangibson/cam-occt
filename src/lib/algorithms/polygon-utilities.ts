@@ -2,13 +2,14 @@ import type { Point2D } from '../types/geometry.ts';
 import {
     calculateSignedArea,
     getWindingDirection,
-    type WindingDirection,
+    WindingDirection,
 } from '../utils/geometry-utils';
 import { calculatePerimeter } from '../utils/math-utils';
 import {
     calculateDistanceBetweenPoints,
     isPointInPolygon,
 } from '../utils/polygon-geometry-shared';
+import { arePointsCollinear } from './join-colinear-lines';
 
 /**
  * Advanced polygon analysis and manipulation utilities
@@ -355,11 +356,11 @@ function checkSimplePolygon(points: Point2D[], tolerance: number): boolean {
  */
 export function normalizePolygonWinding(
     points: Point2D[],
-    targetWinding: 'CW' | 'CCW'
+    targetWinding: WindingDirection
 ): Point2D[] {
     const currentWinding: WindingDirection = getWindingDirection(points);
 
-    if (currentWinding === 'degenerate') {
+    if (currentWinding === WindingDirection.degenerate) {
         return points; // Cannot normalize degenerate polygon
     }
 
@@ -442,7 +443,10 @@ export function simplifyPolygon(
 
         // Skip if too close to previous point
         if (simplified.length > 0) {
-            const distance = calculateDistanceBetweenPoints(current, prev);
+            const distance: number = calculateDistanceBetweenPoints(
+                current,
+                prev
+            );
             if (distance < config.minDistance) {
                 continue;
             }
@@ -471,29 +475,6 @@ export function simplifyPolygon(
     }
 
     return simplified;
-}
-
-/**
- * Check if three points are collinear within tolerance
- *
- * @param p1 First point
- * @param p2 Second point
- * @param p3 Third point
- * @param tolerance Collinearity tolerance
- * @returns True if points are collinear
- */
-function arePointsCollinear(
-    p1: Point2D,
-    p2: Point2D,
-    p3: Point2D,
-    tolerance: number
-): boolean {
-    // Calculate cross product to measure deviation from collinearity
-    const crossProduct: number = Math.abs(
-        (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x)
-    );
-
-    return crossProduct < tolerance;
 }
 
 /**

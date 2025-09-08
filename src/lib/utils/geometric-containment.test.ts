@@ -13,6 +13,7 @@ import {
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Point2D, Shape, Line, Circle } from '../../lib/types';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
+import { GeometryType } from '$lib/types/geometry';
 
 // Helper function to create test chains
 function createTestChain(id: string, shapes: Shape[]): Chain {
@@ -32,7 +33,7 @@ function createRectangle(
     return [
         {
             id: '1',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x, y },
                 end: { x: x + width, y },
@@ -40,7 +41,7 @@ function createRectangle(
         },
         {
             id: '2',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x + width, y },
                 end: { x: x + width, y: y + height },
@@ -48,7 +49,7 @@ function createRectangle(
         },
         {
             id: '3',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x + width, y: y + height },
                 end: { x, y: y + height },
@@ -56,7 +57,7 @@ function createRectangle(
         },
         {
             id: '4',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x, y: y + height },
                 end: { x, y },
@@ -69,7 +70,7 @@ function createRectangle(
 function createCircle(x: number, y: number, radius: number): Shape {
     return {
         id: '1',
-        type: 'circle',
+        type: GeometryType.CIRCLE,
         geometry: {
             center: { x, y },
             radius,
@@ -89,7 +90,7 @@ describe('isChainClosed', () => {
         const shapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -97,7 +98,7 @@ describe('isChainClosed', () => {
             },
             {
                 id: '2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 },
@@ -119,7 +120,7 @@ describe('isChainClosed', () => {
         const shapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -127,7 +128,7 @@ describe('isChainClosed', () => {
             },
             {
                 id: '2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 },
@@ -135,7 +136,7 @@ describe('isChainClosed', () => {
             },
             {
                 id: '3',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 10 },
                     end: { x: 0, y: 10 },
@@ -143,7 +144,7 @@ describe('isChainClosed', () => {
             },
             {
                 id: '4',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 10 },
                     end: { x: 0.2, y: 0 },
@@ -170,7 +171,7 @@ describe('calculateChainArea', () => {
         const shapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -178,7 +179,7 @@ describe('calculateChainArea', () => {
             },
             {
                 id: '2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 },
@@ -194,7 +195,7 @@ describe('calculateChainArea', () => {
         const shapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -277,7 +278,7 @@ describe('isShapeContainedInShape', () => {
     it('should handle open shapes (lines)', () => {
         const line: Shape = {
             id: '1',
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: 2, y: 2 },
                 end: { x: 8, y: 8 },
@@ -291,7 +292,7 @@ describe('isShapeContainedInShape', () => {
     it('should return false for insufficient tessellation points', () => {
         const mockShape: Shape = {
             id: '1',
-            type: 'circle',
+            type: GeometryType.CIRCLE,
             geometry: {
                 center: { x: 0, y: 0 },
                 radius: 1,
@@ -321,7 +322,7 @@ describe('isChainContainedInChain', () => {
         const outerShapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -329,7 +330,7 @@ describe('isChainContainedInChain', () => {
             },
             {
                 id: '2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 0 },
                     end: { x: 10, y: 10 },
@@ -348,7 +349,7 @@ describe('isChainContainedInChain', () => {
         const innerShapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 2, y: 2 },
                     end: { x: 8, y: 2 },
@@ -356,7 +357,7 @@ describe('isChainContainedInChain', () => {
             },
             {
                 id: '2',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 8, y: 2 },
                     end: { x: 8, y: 8 },
@@ -375,7 +376,7 @@ describe('isChainContainedInChain', () => {
         const problematicShapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 0, y: 0 },
@@ -493,7 +494,7 @@ describe('buildContainmentHierarchy', () => {
         const openShapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -589,7 +590,7 @@ describe('identifyShells', () => {
         const openShapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },
@@ -614,7 +615,7 @@ describe('identifyShells', () => {
         const openShapes: Shape[] = [
             {
                 id: '1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 0 },

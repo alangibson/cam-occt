@@ -4,11 +4,12 @@ import { render, fireEvent } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Units from './Units.svelte';
 import { drawingStore } from '../lib/stores/drawing';
+import { Unit } from '../lib/utils/units';
 
 describe('Units Component', () => {
     beforeEach(() => {
         // Initialize store with default state
-        drawingStore.setDisplayUnit('mm');
+        drawingStore.setDisplayUnit(Unit.MM);
     });
 
     it('should render without errors', () => {
@@ -18,7 +19,7 @@ describe('Units Component', () => {
 
     it('should display current unit from drawing store', () => {
         // Set initial unit
-        drawingStore.setDisplayUnit('mm');
+        drawingStore.setDisplayUnit(Unit.MM);
 
         const { getByRole } = render(Units);
         const dropdown = getByRole('combobox') as HTMLSelectElement;
@@ -26,7 +27,7 @@ describe('Units Component', () => {
     });
 
     it('should update drawing store when unit is changed', async () => {
-        drawingStore.setDisplayUnit('mm');
+        drawingStore.setDisplayUnit(Unit.MM);
 
         const { getByRole } = render(Units);
         const dropdown = getByRole('combobox') as HTMLSelectElement;
@@ -54,7 +55,7 @@ describe('Units Component', () => {
         expect(dropdown.value).toBe('mm'); // Default unit
 
         // Change store externally
-        drawingStore.setDisplayUnit('inch');
+        drawingStore.setDisplayUnit(Unit.INCH);
 
         // Re-render to get updated store value
         await rerender({});
@@ -68,8 +69,8 @@ describe('Units Component', () => {
 
         const note = getByText(/Units are for display only/);
         expect(note).toBeDefined();
-        expect(note.textContent).toContain(
-            'will not modify the underlying geometry'
+        expect(note.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+            'Units are for display only. Changing units will scale the visual size to match physical dimensions but will not modify the underlying geometry.'
         );
     });
 });

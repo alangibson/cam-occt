@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { offsetEllipse } from './ellipse';
 import type { Ellipse, Spline } from '../../../../types/geometry';
+import { OffsetDirection } from '../types';
 
 // Mock verb-nurbs for error testing
 vi.mock('verb-nurbs', () => ({
@@ -43,7 +44,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             });
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(false);
             expect(result.errors.length).toBeGreaterThan(0);
@@ -61,7 +62,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             });
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(false);
             expect(result.errors.length).toBeGreaterThan(0);
@@ -79,7 +80,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             });
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(false);
             expect(result.errors.length).toBeGreaterThan(0);
@@ -99,7 +100,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             });
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(false);
             expect(result.errors.length).toBeGreaterThan(0);
@@ -121,7 +122,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
                 endParam: Math.PI, // Same start and end - no range
             });
 
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(false);
             expect(result.errors.length).toBeGreaterThan(0);
@@ -211,7 +212,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
                 endParam: 0, // Reversed range
             });
 
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             // Should still work but with negative parameter range
             expect(result.success).toBe(true);
@@ -294,7 +295,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             vi.mocked(verb.geom.NurbsCurve.byPoints).mockReturnValue(mockCurve);
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1e6, 'outset'); // Very large offset
+            const result = offsetEllipse(ellipse, 1e6, OffsetDirection.OUTSET); // Very large offset
 
             expect(result.success).toBe(true);
             expect(result.shapes).toHaveLength(1);
@@ -382,7 +383,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             vi.mocked(verb.geom.NurbsCurve.byPoints).mockReturnValue(mockCurve);
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             expect(result.shapes).toHaveLength(1);
@@ -467,7 +468,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             vi.mocked(verb.geom.NurbsCurve.byPoints).mockReturnValue(mockCurve);
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, -5, 'outset'); // Negative distance
+            const result = offsetEllipse(ellipse, -5, OffsetDirection.OUTSET); // Negative distance
 
             expect(result.success).toBe(true);
             expect(result.shapes).toHaveLength(1);
@@ -492,7 +493,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             });
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(false);
             expect(result.errors).toContain(
@@ -517,7 +518,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             });
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(false);
             expect(result.errors).toContain(
@@ -535,7 +536,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             });
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(false);
             expect(result.errors).toContain(
@@ -553,7 +554,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             });
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(false);
             expect(result.errors).toContain(
@@ -648,7 +649,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             vi.mocked(verb.geom.NurbsCurve.byPoints).mockReturnValue(mockCurve);
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             expect(generateUniformKnotVector).toHaveBeenCalledWith(4, 3);
@@ -744,7 +745,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             vi.mocked(verb.geom.NurbsCurve.byPoints).mockReturnValue(mockCurve);
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             expect(generateUniformKnotVector).toHaveBeenCalledWith(4, 3);
@@ -838,7 +839,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             vi.mocked(verb.geom.NurbsCurve.byPoints).mockReturnValue(mockCurve);
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             // Note: generateUniformKnotVector may be called even with valid knots
@@ -931,7 +932,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
 
         it('should return empty result for none direction', () => {
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 5, 'none');
+            const result = offsetEllipse(ellipse, 5, OffsetDirection.NONE);
 
             expect(result.success).toBe(true);
             expect(result.shapes).toHaveLength(0);
@@ -941,7 +942,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
 
         it('should return empty result for zero distance', () => {
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 0, 'outset');
+            const result = offsetEllipse(ellipse, 0, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             expect(result.shapes).toHaveLength(0);
@@ -951,7 +952,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
 
         it('should handle inset direction correctly', () => {
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 2, 'inset');
+            const result = offsetEllipse(ellipse, 2, OffsetDirection.INSET);
 
             expect(result.success).toBe(true);
             expect(result.shapes).toHaveLength(1);
@@ -962,7 +963,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
 
         it('should handle outset direction correctly', () => {
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 2, 'outset');
+            const result = offsetEllipse(ellipse, 2, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             expect(result.shapes).toHaveLength(1);
@@ -1055,7 +1056,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             vi.mocked(verb.geom.NurbsCurve.byPoints).mockReturnValue(mockCurve);
 
             const ellipse = createTestEllipse(); // Full ellipse (no startParam/endParam)
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             const splineGeometry = result.shapes[0].geometry as Spline;
@@ -1135,7 +1136,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
                 startParam: 0,
                 endParam: Math.PI, // Half ellipse
             });
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             const splineGeometry = result.shapes[0].geometry as Spline;
@@ -1210,7 +1211,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             vi.mocked(verb.geom.NurbsCurve.byPoints).mockReturnValue(mockCurve);
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             const splineGeometry = result.shapes[0].geometry as Spline;
@@ -1292,7 +1293,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             vi.mocked(verb.geom.NurbsCurve.byPoints).mockReturnValue(mockCurve);
 
             const ellipse = createTestEllipse();
-            const result = offsetEllipse(ellipse, 1, 'outset');
+            const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
 
             expect(result.success).toBe(true);
             expect(result.shapes[0].id).toMatch(/^offset_[a-z0-9]{9}$/);

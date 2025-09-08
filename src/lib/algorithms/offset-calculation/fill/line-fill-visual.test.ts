@@ -1,13 +1,18 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
-import { offsetChain } from '../chain/offset';
+import { beforeAll, describe, expect, it } from 'vitest';
+import {
+    GeometryType,
+    type Ellipse,
+    type Line,
+    type Shape,
+} from '../../../../lib/types/geometry';
+import { SVGBuilder } from '../../../test/svg-builder';
+import type { Chain } from '../../chain-detection/chain-detection';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import type { Shape, Line, Ellipse } from '../../../../lib/types/geometry';
+import { offsetChain } from '../chain/offset';
 import type { OffsetChain } from '../chain/types';
-import type { Chain } from '../../chain-detection/chain-detection';
-import { SVGBuilder } from '../../../test/svg-builder';
 
 describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
     const outputDir = 'tests/output/visual/fill';
@@ -76,7 +81,7 @@ describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
         return [
             {
                 id: 'line1',
-                type: 'line' as const,
+                type: GeometryType.LINE as const,
                 geometry: {
                     start: { x: 100, y: 200 },
                     end: { x: 180, y: 200 },
@@ -84,7 +89,7 @@ describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
             },
             {
                 id: 'line2',
-                type: 'line' as const,
+                type: GeometryType.LINE as const,
                 geometry: {
                     start: { x: 180, y: 200 },
                     end: { x: 220, y: 160 },
@@ -92,7 +97,7 @@ describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
             },
             {
                 id: 'line3',
-                type: 'line' as const,
+                type: GeometryType.LINE as const,
                 geometry: {
                     start: { x: 220, y: 160 },
                     end: { x: 220, y: 100 },
@@ -100,7 +105,7 @@ describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
             },
             {
                 id: 'line4',
-                type: 'line' as const,
+                type: GeometryType.LINE as const,
                 geometry: {
                     start: { x: 220, y: 100 },
                     end: { x: 100, y: 100 },
@@ -108,7 +113,7 @@ describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
             },
             {
                 id: 'line5',
-                type: 'line' as const,
+                type: GeometryType.LINE as const,
                 geometry: {
                     start: { x: 100, y: 100 },
                     end: { x: 100, y: 200 },
@@ -200,7 +205,7 @@ describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
             // Line from (0,18) to (50,50) - positioned to create gap with ellipse arc
             const ellipseArc = {
                 id: 'ellipseArc1',
-                type: 'ellipse' as const,
+                type: GeometryType.ELLIPSE as const,
                 geometry: {
                     center: { x: 200, y: 200 },
                     majorAxisEndpoint: { x: 30, y: 0 },
@@ -211,7 +216,7 @@ describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
             };
             const line = {
                 id: 'line1',
-                type: 'line' as const,
+                type: GeometryType.LINE as const,
                 geometry: {
                     start: { x: 200, y: 218 },
                     end: { x: 250, y: 250 },

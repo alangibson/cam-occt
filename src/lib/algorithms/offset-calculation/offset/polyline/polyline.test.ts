@@ -16,6 +16,7 @@ import {
 } from '../../../../geometry/polyline';
 import { parseDXF } from '../../../../parsers/dxf-parser';
 import { offsetShape } from '..';
+import { OffsetDirection } from '../types';
 
 describe('offsetPolyline', () => {
     const openPolyline: Polyline = createPolylineFromVertices(
@@ -38,13 +39,13 @@ describe('offsetPolyline', () => {
     ).geometry as Polyline;
 
     it('should return empty shapes when direction is none', () => {
-        const result = offsetPolyline(openPolyline, 2, 'none');
+        const result = offsetPolyline(openPolyline, 2, OffsetDirection.NONE);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
     it('should offset open polyline', () => {
-        const result = offsetPolyline(openPolyline, 2, 'outset');
+        const result = offsetPolyline(openPolyline, 2, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBeGreaterThan(0);
 
@@ -64,7 +65,11 @@ describe('offsetPolyline', () => {
     });
 
     it('should offset closed polyline', () => {
-        const result = offsetPolyline(closedPolyline, 1, 'outset');
+        const result = offsetPolyline(
+            closedPolyline,
+            1,
+            OffsetDirection.OUTSET
+        );
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBeGreaterThan(0);
 
@@ -84,7 +89,7 @@ describe('offsetPolyline', () => {
     });
 
     it('should handle inset offset', () => {
-        const result = offsetPolyline(closedPolyline, 1, 'inset');
+        const result = offsetPolyline(closedPolyline, 1, OffsetDirection.INSET);
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBeGreaterThan(0);
     });
@@ -103,7 +108,7 @@ describe('offsetPolyline', () => {
                 true
             ).geometry as Polyline;
 
-            const result = offsetPolyline(figure8, 1, 'outset');
+            const result = offsetPolyline(figure8, 1, OffsetDirection.OUTSET);
             expect(result.success).toBe(true);
             // Clipper2 should handle self-intersections automatically
             expect(result.shapes.length).toBeGreaterThan(0);
@@ -122,10 +127,18 @@ describe('offsetPolyline', () => {
                 true
             ).geometry as Polyline;
 
-            const outsetResult = offsetPolyline(bowTie, 1, 'outset');
+            const outsetResult = offsetPolyline(
+                bowTie,
+                1,
+                OffsetDirection.OUTSET
+            );
             expect(outsetResult.success).toBe(true);
 
-            const insetResult = offsetPolyline(bowTie, 0.5, 'inset');
+            const insetResult = offsetPolyline(
+                bowTie,
+                0.5,
+                OffsetDirection.INSET
+            );
             expect(insetResult.success).toBe(true);
         });
 
@@ -143,7 +156,7 @@ describe('offsetPolyline', () => {
                 false
             ).geometry as Polyline;
 
-            const result = offsetPolyline(spiral, 1, 'outset');
+            const result = offsetPolyline(spiral, 1, OffsetDirection.OUTSET);
             expect(result.success).toBe(true);
             expect(result.shapes.length).toBeGreaterThan(0);
         });
@@ -161,7 +174,7 @@ describe('offsetPolyline', () => {
                 false
             ).geometry as Polyline;
 
-            const result = offsetPolyline(sharpV, 2, 'outset');
+            const result = offsetPolyline(sharpV, 2, OffsetDirection.OUTSET);
             expect(result.success).toBe(true);
             // Should handle the sharp corner with proper join
             expect(result.shapes.length).toBeGreaterThan(0);
@@ -178,7 +191,7 @@ describe('offsetPolyline', () => {
                 false
             ).geometry as Polyline;
 
-            const result = offsetPolyline(lShape, 1, 'outset');
+            const result = offsetPolyline(lShape, 1, OffsetDirection.OUTSET);
             expect(result.success).toBe(true);
             expect(result.shapes.length).toBeGreaterThan(0);
         });
@@ -197,7 +210,7 @@ describe('offsetPolyline', () => {
                 false
             ).geometry as Polyline;
 
-            const result = offsetPolyline(zigzag, 0.5, 'outset');
+            const result = offsetPolyline(zigzag, 0.5, OffsetDirection.OUTSET);
             expect(result.success).toBe(true);
             expect(result.shapes.length).toBeGreaterThan(0);
         });
@@ -220,7 +233,11 @@ describe('offsetPolyline', () => {
                 true
             ).geometry as Polyline;
 
-            const result = offsetPolyline(starPoints, 0.5, 'outset');
+            const result = offsetPolyline(
+                starPoints,
+                0.5,
+                OffsetDirection.OUTSET
+            );
             expect(result.success).toBe(true);
             expect(result.shapes.length).toBeGreaterThan(0);
         });
@@ -240,7 +257,11 @@ describe('offsetPolyline', () => {
                 true
             ).geometry as Polyline;
 
-            const result = offsetPolyline(duplicatePoints, 1, 'outset');
+            const result = offsetPolyline(
+                duplicatePoints,
+                1,
+                OffsetDirection.OUTSET
+            );
             // Should succeed - Clipper2 can handle duplicate points
             expect(result.success).toBe(true);
         });
@@ -258,7 +279,11 @@ describe('offsetPolyline', () => {
                 true
             ).geometry as Polyline;
 
-            const result = offsetPolyline(tinySegments, 0.1, 'outset');
+            const result = offsetPolyline(
+                tinySegments,
+                0.1,
+                OffsetDirection.OUTSET
+            );
             expect(result.success).toBe(true);
         });
     });
@@ -275,7 +300,11 @@ describe('offsetPolyline', () => {
                 true
             ).geometry as Polyline;
 
-            const result = offsetPolyline(smallSquare, 100, 'outset');
+            const result = offsetPolyline(
+                smallSquare,
+                100,
+                OffsetDirection.OUTSET
+            );
             expect(result.success).toBe(true);
             expect(result.shapes.length).toBeGreaterThan(0);
         });
@@ -296,10 +325,18 @@ describe('offsetPolyline', () => {
                 true
             ).geometry as Polyline;
 
-            const smallInset = offsetPolyline(lPolygon, 1, 'inset');
+            const smallInset = offsetPolyline(
+                lPolygon,
+                1,
+                OffsetDirection.INSET
+            );
             expect(smallInset.success).toBe(true);
 
-            const largeInset = offsetPolyline(lPolygon, 5, 'inset');
+            const largeInset = offsetPolyline(
+                lPolygon,
+                5,
+                OffsetDirection.INSET
+            );
             // Might succeed with reduced geometry or fail entirely
             if (largeInset.success) {
                 expect(largeInset.shapes.length).toBeGreaterThanOrEqual(0);
@@ -321,7 +358,11 @@ describe('offsetPolyline', () => {
                 true
             ).geometry as Polyline;
 
-            const result = offsetPolyline(nearCollinear, 1, 'outset');
+            const result = offsetPolyline(
+                nearCollinear,
+                1,
+                OffsetDirection.OUTSET
+            );
             expect(result.success).toBe(true);
         });
 
@@ -341,7 +382,7 @@ describe('offsetPolyline', () => {
                 true
             ).geometry as Polyline;
 
-            const result = offsetPolyline(indented, 2, 'inset');
+            const result = offsetPolyline(indented, 2, OffsetDirection.INSET);
             expect(result.success).toBe(true);
             // May result in multiple disconnected shapes
             expect(result.shapes.length).toBeGreaterThan(0);
@@ -361,7 +402,11 @@ describe('offsetPolyline', () => {
             ).geometry as Polyline;
 
             const offsetDistance = 1.5;
-            const result = offsetPolyline(rectangle, offsetDistance, 'outset');
+            const result = offsetPolyline(
+                rectangle,
+                offsetDistance,
+                OffsetDirection.OUTSET
+            );
             expect(result.success).toBe(true);
 
             // Extract points from the offset shapes (could be individual lines/arcs or polyline)
@@ -394,11 +439,15 @@ describe('offsetPolyline', () => {
             const offsetDistance = 1;
 
             // Test both inset and outset
-            const insetResult = offsetPolyline(square, offsetDistance, 'inset');
+            const insetResult = offsetPolyline(
+                square,
+                offsetDistance,
+                OffsetDirection.INSET
+            );
             const outsetResult = offsetPolyline(
                 square,
                 offsetDistance,
-                'outset'
+                OffsetDirection.OUTSET
             );
 
             expect(insetResult.success).toBe(true);
@@ -453,7 +502,11 @@ describe('offsetPolyline', () => {
                 expect(polyline.closed).toBe(true);
 
                 // Test outset (outer) offset
-                const outsetResult = offsetShape(polylineShape, 5, 'outset');
+                const outsetResult = offsetShape(
+                    polylineShape,
+                    5,
+                    OffsetDirection.OUTSET
+                );
                 expect(
                     outsetResult.success,
                     `Outset offset should succeed for polyline ${i}. Errors: ${outsetResult.errors.join(', ')}`
@@ -464,7 +517,11 @@ describe('offsetPolyline', () => {
                 ).toBeGreaterThan(0);
 
                 // Test inset (inner) offset
-                const insetResult = offsetShape(polylineShape, 5, 'inset');
+                const insetResult = offsetShape(
+                    polylineShape,
+                    5,
+                    OffsetDirection.INSET
+                );
                 expect(
                     insetResult.success,
                     `Inset offset should succeed for polyline ${i}. Errors: ${insetResult.errors.join(', ')}`

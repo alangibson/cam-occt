@@ -5,6 +5,7 @@ import {
     polylineToPoints,
 } from '$lib/geometry/polyline';
 import type { Shape } from '../../lib/types';
+import { GeometryType } from '../../lib/types/geometry';
 import type { Polyline, Line, Arc } from '../../lib/types/geometry';
 import type { Chain } from './chain-detection/chain-detection';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
@@ -86,7 +87,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
             ),
             {
                 id: 'closing-line',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 10, y: 10 },
                     end: { x: 0, y: 0 },
@@ -195,13 +196,13 @@ describe('optimizeStartPoints - polyline splitting', () => {
         // Create a polyline with both line and arc segments (like from DXF bulge data)
         const polylineWithArcs: Shape = {
             id: 'polyline-with-arcs',
-            type: 'polyline',
+            type: GeometryType.POLYLINE,
             geometry: {
                 closed: true, // Make it closed so it can be optimized
                 shapes: [
                     {
                         id: 'line1',
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 0, y: 0 },
                             end: { x: 10, y: 0 },
@@ -209,7 +210,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
                     },
                     {
                         id: 'arc1',
-                        type: 'arc',
+                        type: GeometryType.ARC,
                         geometry: {
                             center: { x: 10, y: 5 },
                             radius: 5,
@@ -220,7 +221,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
                     },
                     {
                         id: 'line2',
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: {
                             start: { x: 10, y: 10 },
                             end: { x: 0, y: 0 }, // Connect back to start to form closed shape

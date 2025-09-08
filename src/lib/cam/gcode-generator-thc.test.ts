@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { generateGCode } from './gcode-generator';
-import type { ToolPath, Drawing } from '../types';
+import { CutterCompensation } from '../types/cam';
+import { type ToolPath, type Drawing, Unit } from '../types';
 
 describe('GCode Generator - THC and Paused Motion', () => {
     const mockDrawing: Drawing = {
-        units: 'mm',
+        units: Unit.MM,
         shapes: [],
         bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
     };
@@ -34,11 +35,11 @@ describe('GCode Generator - THC and Paused Motion', () => {
     describe('Adaptive Feed Control (M52)', () => {
         it('should generate M52 P1 when adaptiveFeedControl is true', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: true,
                 enableTHC: null,
             });
@@ -51,11 +52,11 @@ describe('GCode Generator - THC and Paused Motion', () => {
 
         it('should generate M52 P0 when adaptiveFeedControl is false', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: false,
                 enableTHC: null,
             });
@@ -66,11 +67,11 @@ describe('GCode Generator - THC and Paused Motion', () => {
 
         it('should not generate M52 when adaptiveFeedControl is null', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: null,
                 enableTHC: null,
             });
@@ -82,11 +83,11 @@ describe('GCode Generator - THC and Paused Motion', () => {
     describe('THC Control (M65/M64 P2)', () => {
         it('should generate M65 P2 when enableTHC is true', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: null,
                 enableTHC: true,
             });
@@ -98,11 +99,11 @@ describe('GCode Generator - THC and Paused Motion', () => {
 
         it('should generate M64 P2 when enableTHC is false', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: null,
                 enableTHC: false,
             });
@@ -114,11 +115,11 @@ describe('GCode Generator - THC and Paused Motion', () => {
 
         it('should not generate M65/M64 when enableTHC is null', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: null,
                 enableTHC: null,
             });
@@ -133,11 +134,11 @@ describe('GCode Generator - THC and Paused Motion', () => {
     describe('Combined Settings', () => {
         it('should generate both M52 and M65 when both are enabled', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: true,
                 enableTHC: true,
             });
@@ -152,11 +153,11 @@ describe('GCode Generator - THC and Paused Motion', () => {
 
         it('should generate M52 P0 and M64 P2 when both are disabled', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: false,
                 enableTHC: false,
             });
@@ -169,11 +170,11 @@ describe('GCode Generator - THC and Paused Motion', () => {
 
         it('should only generate necessary commands when some settings are null', () => {
             const gcode = generateGCode([mockPath], mockDrawing, {
-                units: 'mm',
+                units: Unit.MM,
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: 'off',
+                cutterCompensation: CutterCompensation.OFF,
                 adaptiveFeedControl: true,
                 enableTHC: null,
             });

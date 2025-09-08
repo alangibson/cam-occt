@@ -8,8 +8,8 @@ import type {
     Spline,
     Polyline,
     Ellipse,
-    GeometryType,
 } from '../../../../lib/types/geometry';
+import { GeometryType } from '../../../../lib/types/geometry';
 import { findSplineLineIntersectionsVerb } from '../intersect/line-spline/index';
 import { findSplineSplineIntersectionsVerb } from '../intersect/spline-spline/index';
 import { findSplinePolylineIntersectionsVerb } from '../intersect/polyline-spline/index';
@@ -79,8 +79,8 @@ describe('intersections-spline-verb', () => {
             };
 
             const result = findSplineLineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(line, 'line')
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(line, GeometryType.LINE)
             );
 
             // Should intersect at (1, 1)
@@ -110,8 +110,8 @@ describe('intersections-spline-verb', () => {
             };
 
             const result = findSplineLineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(line, 'line')
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(line, GeometryType.LINE)
             );
 
             expect(result).toHaveLength(0);
@@ -137,8 +137,8 @@ describe('intersections-spline-verb', () => {
             // Should not throw and should attempt to find intersections
             expect(() => {
                 findSplineLineIntersectionsVerb(
-                    createTestShape(spline, 'spline'),
-                    createTestShape(line, 'line')
+                    createTestShape(spline, GeometryType.SPLINE),
+                    createTestShape(line, GeometryType.LINE)
                 );
                 // Result might be empty or contain intersections, both are valid
             }).not.toThrow();
@@ -161,14 +161,14 @@ describe('intersections-spline-verb', () => {
             };
 
             const normalResult = findSplineLineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(line, 'line'),
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(line, GeometryType.LINE),
                 false
             );
 
             const swappedResult = findSplineLineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(line, 'line'),
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(line, GeometryType.LINE),
                 true
             );
 
@@ -213,8 +213,8 @@ describe('intersections-spline-verb', () => {
             // Function should accept the correct parameters without throwing
             expect(() => {
                 const result = findSplineArcIntersectionsVerb(
-                    createTestShape(spline, 'spline'),
-                    createTestShape(arc, 'arc')
+                    createTestShape(spline, GeometryType.SPLINE),
+                    createTestShape(arc, GeometryType.ARC)
                 );
                 // Should return a valid intersection result array
                 expect(Array.isArray(result)).toBe(true);
@@ -243,8 +243,8 @@ describe('intersections-spline-verb', () => {
             // Function should accept the correct parameters without throwing
             expect(() => {
                 const result = findSplineCircleIntersectionsVerb(
-                    createTestShape(spline, 'spline'),
-                    createTestShape(circle, 'circle')
+                    createTestShape(spline, GeometryType.SPLINE),
+                    createTestShape(circle, GeometryType.CIRCLE)
                 );
                 // Should return a valid intersection result array
                 expect(Array.isArray(result)).toBe(true);
@@ -275,8 +275,8 @@ describe('intersections-spline-verb', () => {
             );
 
             const result = findSplineSplineIntersectionsVerb(
-                createTestShape(spline1, 'spline'),
-                createTestShape(spline2, 'spline')
+                createTestShape(spline1, GeometryType.SPLINE),
+                createTestShape(spline2, GeometryType.SPLINE)
             );
 
             // Should intersect at (1, 1)
@@ -308,8 +308,8 @@ describe('intersections-spline-verb', () => {
             );
 
             const result = findSplineSplineIntersectionsVerb(
-                createTestShape(spline1, 'spline'),
-                createTestShape(spline2, 'spline')
+                createTestShape(spline1, GeometryType.SPLINE),
+                createTestShape(spline2, GeometryType.SPLINE)
             );
 
             expect(result).toHaveLength(0);
@@ -339,8 +339,8 @@ describe('intersections-spline-verb', () => {
             // Should not throw, may or may not find intersections depending on verb-nurbs
             expect(() => {
                 findSplineSplineIntersectionsVerb(
-                    createTestShape(spline1, 'spline'),
-                    createTestShape(spline2, 'spline')
+                    createTestShape(spline1, GeometryType.SPLINE),
+                    createTestShape(spline2, GeometryType.SPLINE)
                 );
             }).not.toThrow();
         });
@@ -373,8 +373,8 @@ describe('intersections-spline-verb', () => {
                 polylineShape.geometry as Polyline;
 
             const result = findSplinePolylineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(polyline, 'polyline')
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(polyline, GeometryType.POLYLINE)
             );
 
             // Should find intersections with the polyline segments
@@ -415,7 +415,7 @@ describe('intersections-spline-verb', () => {
             );
 
             const result = findSplinePolylineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
+                createTestShape(spline, GeometryType.SPLINE),
                 polylineShape
             );
 
@@ -453,14 +453,14 @@ describe('intersections-spline-verb', () => {
                 polylineShape.geometry as Polyline;
 
             const normalResult = findSplinePolylineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(polyline, 'polyline'),
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(polyline, GeometryType.POLYLINE),
                 false
             );
 
             const swappedResult = findSplinePolylineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(polyline, 'polyline'),
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(polyline, GeometryType.POLYLINE),
                 true
             );
 
@@ -503,8 +503,8 @@ describe('intersections-spline-verb', () => {
                 polylineShape.geometry as Polyline;
 
             const result = findSplinePolylineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(polyline, 'polyline')
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(polyline, GeometryType.POLYLINE)
             );
 
             expect(result).toHaveLength(0);
@@ -530,8 +530,8 @@ describe('intersections-spline-verb', () => {
 
             expect(() => {
                 findSplineLineIntersectionsVerb(
-                    createTestShape(splineWithWeights, 'spline'),
-                    createTestShape(line, 'line')
+                    createTestShape(splineWithWeights, GeometryType.SPLINE),
+                    createTestShape(line, GeometryType.LINE)
                 );
             }).not.toThrow();
 
@@ -540,8 +540,8 @@ describe('intersections-spline-verb', () => {
 
             expect(() => {
                 findSplineLineIntersectionsVerb(
-                    createTestShape(splineWithoutWeights, 'spline'),
-                    createTestShape(line, 'line')
+                    createTestShape(splineWithoutWeights, GeometryType.SPLINE),
+                    createTestShape(line, GeometryType.LINE)
                 );
             }).not.toThrow();
         });
@@ -566,8 +566,8 @@ describe('intersections-spline-verb', () => {
 
                 expect(() => {
                     findSplineLineIntersectionsVerb(
-                        createTestShape(spline, 'spline'),
-                        createTestShape(line, 'line')
+                        createTestShape(spline, GeometryType.SPLINE),
+                        createTestShape(line, GeometryType.LINE)
                     );
                 }).not.toThrow();
             });
@@ -587,8 +587,8 @@ describe('intersections-spline-verb', () => {
 
             expect(() => {
                 findSplineLineIntersectionsVerb(
-                    createTestShape(minimalSpline, 'spline'),
-                    createTestShape(line, 'line')
+                    createTestShape(minimalSpline, GeometryType.SPLINE),
+                    createTestShape(line, GeometryType.LINE)
                 );
             }).not.toThrow();
         });
@@ -608,13 +608,13 @@ describe('intersections-spline-verb', () => {
             const line: Line = { start: { x: 0, y: 1 }, end: { x: 2, y: 1 } };
 
             const result1 = findSplineLineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(line, 'line')
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(line, GeometryType.LINE)
             );
 
             const result2 = findSplineLineIntersectionsVerb(
-                createTestShape(spline, 'spline'),
-                createTestShape(line, 'line')
+                createTestShape(spline, GeometryType.SPLINE),
+                createTestShape(line, GeometryType.LINE)
             );
 
             // Results should be identical (within reasonable numerical tolerance)

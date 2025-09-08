@@ -3,7 +3,7 @@ import { pathToToolPath, pathsToToolPaths } from './path-to-toolpath';
 import type { Path } from '../stores/paths';
 import type { Tool } from '../stores/tools';
 import type { Shape, Point2D, Line } from '../types';
-import type { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import { LeadType, CutDirection } from '../types/direction';
 
 // Mock getShapePoints function
@@ -12,6 +12,7 @@ vi.mock('../geometry/shape-utils', () => ({
 }));
 
 import { getShapePoints } from '../geometry/shape-utils';
+import { GeometryType } from '$lib/types/geometry';
 const mockGetShapePoints = vi.mocked(getShapePoints);
 
 describe('pathToToolPath', () => {
@@ -39,7 +40,7 @@ describe('pathToToolPath', () => {
         end: Point2D
     ): Shape => ({
         id,
-        type: 'line',
+        type: GeometryType.LINE,
         geometry: { start, end } as Line,
         layer: 'test',
     });
@@ -123,7 +124,7 @@ describe('pathToToolPath', () => {
                             { x: 10, y: 0 }
                         ),
                     ],
-                    direction: 'outset' as OffsetDirection,
+                    direction: OffsetDirection.OUTSET,
                     kerfWidth: 1.0,
                     generatedAt: '2023-01-01T00:00:00Z',
                     version: '1.0',
@@ -341,7 +342,7 @@ describe('pathToToolPath', () => {
                             { x: 10, y: 0 }
                         ),
                     ],
-                    direction: 'outset' as OffsetDirection,
+                    direction: OffsetDirection.OUTSET,
                     kerfWidth: 1.0,
                     generatedAt: '2023-01-01T00:00:00Z',
                     version: '1.0',
@@ -391,7 +392,7 @@ describe('pathToToolPath', () => {
                             { x: 10, y: 0 }
                         ),
                     ],
-                    direction: 'outset' as OffsetDirection,
+                    direction: OffsetDirection.OUTSET,
                     kerfWidth: 1.0,
                     generatedAt: '2023-01-01T00:00:00Z',
                     version: '1.0',
@@ -497,7 +498,7 @@ describe('pathToToolPath', () => {
                             { x: 10, y: 0 }
                         ),
                     ],
-                    direction: 'outset' as OffsetDirection,
+                    direction: OffsetDirection.OUTSET,
                     kerfWidth: 1.0,
                     generatedAt: '2023-01-01T00:00:00Z',
                     version: '1.0',
@@ -547,7 +548,7 @@ describe('pathToToolPath', () => {
                             { x: 10, y: 0 }
                         ),
                     ],
-                    direction: 'outset' as OffsetDirection,
+                    direction: OffsetDirection.OUTSET,
                     kerfWidth: 1.0,
                     generatedAt: '2023-01-01T00:00:00Z',
                     version: '1.0',
@@ -631,7 +632,7 @@ describe('pathsToToolPaths', () => {
         end: Point2D
     ): Shape => ({
         id,
-        type: 'line',
+        type: GeometryType.LINE,
         geometry: { start, end } as Line,
         layer: 'test',
     });

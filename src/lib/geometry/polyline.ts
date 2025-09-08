@@ -9,6 +9,7 @@ import type {
     Ellipse,
     Spline,
 } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
 import { calculateArcPoint, convertBulgeToArc } from '../utils/arc-utils';
 
@@ -22,7 +23,7 @@ function createBulgeOrLineShape(
         if (arc) {
             return {
                 id: generateId(),
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: arc,
             };
         }
@@ -31,7 +32,7 @@ function createBulgeOrLineShape(
     // Fallback to line if no bulge or arc conversion fails
     return {
         id: generateId(),
-        type: 'line',
+        type: GeometryType.LINE,
         geometry: {
             start: { x: start.x, y: start.y },
             end: { x: end.x, y: end.y },
@@ -100,7 +101,7 @@ export function createPolylineFromVertices(
 
     return {
         id: options.id || generateId(),
-        type: 'polyline',
+        type: GeometryType.POLYLINE,
         geometry,
         ...(options.layer && { layer: options.layer }),
         ...(options.originalType && { originalType: options.originalType }),

@@ -4,9 +4,14 @@ import { parseDXF } from '../../../parsers/dxf-parser';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { offsetChain } from './offset';
 import { scaleShape } from '../../../geometry';
-import { getPhysicalScaleFactor } from '../../../utils/units';
+import { getPhysicalScaleFactor, Unit } from '../../../utils/units';
 import { calculateDynamicTolerance } from '../../../geometry/bounding-box';
-import type { Polyline, Shape, Drawing } from '../../../types/geometry';
+import {
+    GeometryType,
+    type Polyline,
+    type Shape,
+    type Drawing,
+} from '../../../types/geometry';
 import type { Chain } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '../../../utils/id';
@@ -20,12 +25,12 @@ describe('offsetChain Polyline Support', () => {
             shapes: [
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 0 },
                         end: { x: 100, y: 100 },
@@ -33,7 +38,7 @@ describe('offsetChain Polyline Support', () => {
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 100 },
                         end: { x: 0, y: 100 },
@@ -41,7 +46,7 @@ describe('offsetChain Polyline Support', () => {
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
                 },
             ],
@@ -83,12 +88,12 @@ describe('offsetChain Polyline Support', () => {
             shapes: [
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 0 },
                         end: { x: 100, y: 100 },
@@ -130,12 +135,12 @@ describe('offsetChain Polyline Support', () => {
             shapes: [
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 0 },
                         end: { x: 100, y: 100 },
@@ -143,7 +148,7 @@ describe('offsetChain Polyline Support', () => {
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 100, y: 100 },
                         end: { x: 0, y: 100 },
@@ -151,7 +156,7 @@ describe('offsetChain Polyline Support', () => {
                 },
                 {
                     id: generateId(),
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
                 },
             ],
@@ -182,22 +187,22 @@ describe('offsetChain Polyline Support', () => {
         const shapes: Shape[] = [
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
             },
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 100, y: 0 }, end: { x: 100, y: 100 } },
             },
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 100, y: 100 }, end: { x: 0, y: 100 } },
             },
             {
                 id: generateId(),
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 100 }, end: { x: 0, y: 0 } },
             },
         ];
@@ -262,7 +267,10 @@ describe('offsetChain Polyline Support', () => {
             });
 
             // Scale shapes for proper processing
-            const physicalScale = getPhysicalScaleFactor(drawing.units, 'mm');
+            const physicalScale = getPhysicalScaleFactor(
+                drawing.units,
+                Unit.MM
+            );
             const shapes = drawing.shapes.map((shape) =>
                 scaleShape(shape, physicalScale, { x: 0, y: 0 })
             );
@@ -364,7 +372,10 @@ describe('offsetChain Polyline Support', () => {
                 squashLayers: true,
             });
 
-            const physicalScale = getPhysicalScaleFactor(drawing.units, 'mm');
+            const physicalScale = getPhysicalScaleFactor(
+                drawing.units,
+                Unit.MM
+            );
             const shapes = drawing.shapes.map((shape) =>
                 scaleShape(shape, physicalScale, { x: 0, y: 0 })
             );

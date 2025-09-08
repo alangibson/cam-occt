@@ -3,6 +3,7 @@ import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detecti
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import { offsetChain } from './offset';
 import type { Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type { OffsetChain } from './types';
 import { generateChainOffsetSVG } from './visual-tests';
 
@@ -10,7 +11,7 @@ describe('Flipped Arc Gap Filling Debug', () => {
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
         return {
             id: `line-${Math.random()}`,
-            type: 'line',
+            type: GeometryType.LINE,
             geometry: {
                 start: { x: x1, y: y1 },
                 end: { x: x2, y: y2 },
@@ -26,7 +27,7 @@ describe('Flipped Arc Gap Filling Debug', () => {
             {
                 // Flipped arc (curves outward)
                 id: `arc-${Math.random()}`,
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: {
                     center: { x: 230, y: 50 }, // Different center to create outward curve
                     radius: 30,

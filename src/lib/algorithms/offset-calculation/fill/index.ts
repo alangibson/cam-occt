@@ -1,4 +1,5 @@
 import type { Shape, Point2D } from '../../../../lib/types/geometry';
+import { GeometryType } from '../../../../lib/types/geometry';
 import type {
     FillOptions,
     FillResult,
@@ -165,21 +166,21 @@ function extendShapeToPoint(
     options: FillOptions
 ): FillResult {
     switch (shape.type) {
-        case 'line':
+        case GeometryType.LINE:
             return fillLineToIntersection(shape, intersectionPoint, options);
-        case 'arc':
+        case GeometryType.ARC:
             return fillArcToIntersection(shape, intersectionPoint, options);
-        case 'circle':
+        case GeometryType.CIRCLE:
             return fillCircleToIntersection(shape, intersectionPoint, options);
-        case 'polyline':
+        case GeometryType.POLYLINE:
             return fillPolylineToIntersection(
                 shape,
                 intersectionPoint,
                 options
             );
-        case 'spline':
+        case GeometryType.SPLINE:
             return fillSplineToIntersection(shape, intersectionPoint, options);
-        case 'ellipse':
+        case GeometryType.ELLIPSE:
             return fillEllipseToIntersection(shape, intersectionPoint, options);
         default:
             return createFailureResult(

@@ -8,9 +8,11 @@ import {
     type Path,
     type PathsState,
 } from './paths';
-import { workflowStore } from './workflow';
+import { workflowStore, WorkflowStage } from './workflow';
 import { CutDirection, LeadType } from '../types/direction';
+import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import type { Point2D, Shape } from '../types';
+import { GeometryType } from '$lib/types/geometry';
 
 // Mock workflow store
 vi.mock('./workflow');
@@ -55,7 +57,7 @@ describe('pathStore', () => {
         leadOutLength: 5,
         leadOutFlipSide: false,
         leadOutAngle: 0,
-        kerfCompensation: 'none',
+        kerfCompensation: OffsetDirection.NONE,
     });
 
     describe('addPath', () => {
@@ -79,7 +81,7 @@ describe('pathStore', () => {
             vi.runAllTimers();
 
             expect(mockWorkflowStore.completeStage).toHaveBeenCalledWith(
-                'program'
+                WorkflowStage.PROGRAM
             );
             vi.useRealTimers();
         });
@@ -149,7 +151,7 @@ describe('pathStore', () => {
 
             expect(
                 mockWorkflowStore.invalidateDownstreamStages
-            ).toHaveBeenCalledWith('prepare');
+            ).toHaveBeenCalledWith(WorkflowStage.PREPARE);
             vi.useRealTimers();
         });
     });
@@ -402,14 +404,14 @@ describe('pathStore', () => {
             const originalShapes: Shape[] = [
                 {
                     id: 'line-1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
                 },
             ];
             const offsetShapes: Shape[] = [
                 {
                     id: 'line-1-offset',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: { start: { x: 0, y: 1 }, end: { x: 10, y: 1 } },
                 },
             ];
@@ -417,7 +419,7 @@ describe('pathStore', () => {
             pathStore.updatePathOffsetGeometry('mock-path-uuid-123', {
                 offsetShapes,
                 originalShapes,
-                direction: 'outset',
+                direction: OffsetDirection.OUTSET,
                 kerfWidth: 2,
             });
 
@@ -428,7 +430,9 @@ describe('pathStore', () => {
             expect(state.paths[0].calculatedOffset?.originalShapes).toEqual(
                 originalShapes
             );
-            expect(state.paths[0].calculatedOffset?.direction).toBe('outset');
+            expect(state.paths[0].calculatedOffset?.direction).toBe(
+                OffsetDirection.OUTSET
+            );
             expect(state.paths[0].calculatedOffset?.kerfWidth).toBe(2);
             expect(state.paths[0].calculatedOffset?.generatedAt).toBeDefined();
             expect(state.paths[0].calculatedOffset?.version).toBe('1.0.0');
@@ -444,7 +448,7 @@ describe('pathStore', () => {
             pathStore.updatePathOffsetGeometry('mock-path-uuid-123', {
                 offsetShapes: [],
                 originalShapes: [],
-                direction: 'outset',
+                direction: OffsetDirection.OUTSET,
                 kerfWidth: 2,
             });
 
@@ -473,7 +477,7 @@ describe('pathStore', () => {
             expect(state.highlightedPathId).toBeNull();
             expect(
                 mockWorkflowStore.invalidateDownstreamStages
-            ).toHaveBeenCalledWith('prepare');
+            ).toHaveBeenCalledWith(WorkflowStage.PREPARE);
             vi.useRealTimers();
         });
     });
@@ -504,7 +508,7 @@ describe('pathStore', () => {
             const state = get(pathStore);
             expect(state).toEqual(pathsState);
             expect(mockWorkflowStore.completeStage).toHaveBeenCalledWith(
-                'program'
+                WorkflowStage.PROGRAM
             );
             vi.useRealTimers();
         });

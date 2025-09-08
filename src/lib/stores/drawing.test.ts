@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { drawingStore } from './drawing';
 import type { Drawing, Shape, Point2D, Line } from '../types';
+import { Unit } from '../utils/units';
+import { GeometryType } from '$lib/types/geometry';
 
 // Mock dependent modules
 vi.mock('./chains', () => ({
@@ -42,59 +44,49 @@ vi.mock('$lib/geometry', () => ({
     })),
 }));
 
-// Mock overlay store
-const mockOverlayStore = {
-    clearStageOverlay: vi.fn(),
-};
-
-// Mock tessellation store
-const mockTessellationStore = {
-    clearTessellation: vi.fn(),
-};
-
-// Mock path store
-const mockPathStore = {
-    reset: vi.fn(),
-};
-
-// Mock operations store
-const mockOperationsStore = {
-    reset: vi.fn(),
-};
-
-// Mock rapid store
-const mockRapidStore = {
-    reset: vi.fn(),
-};
-
-// Mock workflow store
-const mockWorkflowStore = {
-    invalidateDownstreamStages: vi.fn(),
-};
-
 // Mock the dynamic imports
 vi.mock('./overlay', () => ({
-    overlayStore: mockOverlayStore,
+    overlayStore: {
+        clearStageOverlay: vi.fn(),
+    },
 }));
 
 vi.mock('./tessellation', () => ({
-    tessellationStore: mockTessellationStore,
+    tessellationStore: {
+        clearTessellation: vi.fn(),
+    },
 }));
 
 vi.mock('./paths', () => ({
-    pathStore: mockPathStore,
+    pathStore: {
+        reset: vi.fn(),
+    },
 }));
 
 vi.mock('./operations', () => ({
-    operationsStore: mockOperationsStore,
+    operationsStore: {
+        reset: vi.fn(),
+    },
 }));
 
 vi.mock('./rapids', () => ({
-    rapidStore: mockRapidStore,
+    rapidStore: {
+        reset: vi.fn(),
+    },
 }));
 
 vi.mock('./workflow', () => ({
-    workflowStore: mockWorkflowStore,
+    workflowStore: {
+        invalidateDownstreamStages: vi.fn(),
+    },
+    WorkflowStage: {
+        IMPORT: 'import',
+        EDIT: 'edit',
+        PREPARE: 'prepare',
+        PROGRAM: 'program',
+        SIMULATE: 'simulate',
+        EXPORT: 'export',
+    },
 }));
 
 describe('drawingStore', () => {
@@ -107,7 +99,7 @@ describe('drawingStore', () => {
         shapes: [
             {
                 id: 'line-1',
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: {
                     start: { x: 0, y: 0 },
                     end: { x: 10, y: 10 },
@@ -115,7 +107,7 @@ describe('drawingStore', () => {
             },
             {
                 id: 'circle-1',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: {
                     center: { x: 5, y: 5 },
                     radius: 3,
@@ -130,7 +122,7 @@ describe('drawingStore', () => {
             Layer1: { shapes: [] },
             Layer2: { shapes: [] },
         },
-        units: 'mm',
+        units: Unit.MM,
     });
 
     describe('setDrawing', () => {
@@ -142,7 +134,7 @@ describe('drawingStore', () => {
             const state = get(drawingStore);
             expect(state.drawing).toEqual(drawing);
             expect(state.fileName).toBe('test.dxf');
-            expect(state.displayUnit).toBe('mm');
+            expect(state.displayUnit).toBe(Unit.MM);
             expect(state.scale).toBe(1);
             expect(state.offset).toEqual({ x: 0, y: 0 });
             expect(state.selectedShapes.size).toBe(0);
@@ -157,17 +149,23 @@ describe('drawingStore', () => {
             // Wait for async operations to complete
             await new Promise((resolve) => setTimeout(resolve, 10));
 
-            expect(mockOverlayStore.clearStageOverlay).toHaveBeenCalledWith(
-                'prepare'
+            // Use mocked stores
+            const { overlayStore } = await import('./overlay');
+            const { pathStore } = await import('./paths');
+            const { operationsStore } = await import('./operations');
+            const { workflowStore, WorkflowStage } = await import('./workflow');
+
+            expect(overlayStore.clearStageOverlay).toHaveBeenCalledWith(
+                WorkflowStage.PREPARE
             );
-            expect(mockOverlayStore.clearStageOverlay).toHaveBeenCalledWith(
-                'program'
+            expect(overlayStore.clearStageOverlay).toHaveBeenCalledWith(
+                WorkflowStage.PROGRAM
             );
-            expect(mockPathStore.reset).toHaveBeenCalled();
-            expect(mockOperationsStore.reset).toHaveBeenCalled();
+            expect(pathStore.reset).toHaveBeenCalled();
+            expect(operationsStore.reset).toHaveBeenCalled();
             expect(
-                mockWorkflowStore.invalidateDownstreamStages
-            ).toHaveBeenCalledWith('edit');
+                workflowStore.invalidateDownstreamStages
+            ).toHaveBeenCalledWith(WorkflowStage.EDIT);
         });
 
         it('should handle drawing without filename', async () => {
@@ -274,9 +272,10 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
+            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
-                mockWorkflowStore.invalidateDownstreamStages
-            ).toHaveBeenCalledWith('edit');
+                workflowStore.invalidateDownstreamStages
+            ).toHaveBeenCalledWith(WorkflowStage.EDIT);
         });
 
         it('should handle no drawing state', async () => {
@@ -290,7 +289,7 @@ describe('drawingStore', () => {
                 null,
                 1,
                 { x: 0, y: 0 },
-                'mm',
+                Unit.MM,
                 new Set(),
                 null
             );
@@ -323,9 +322,10 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
+            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
-                mockWorkflowStore.invalidateDownstreamStages
-            ).toHaveBeenCalledWith('edit');
+                workflowStore.invalidateDownstreamStages
+            ).toHaveBeenCalledWith(WorkflowStage.EDIT);
         });
 
         it('should handle no drawing state', async () => {
@@ -334,7 +334,7 @@ describe('drawingStore', () => {
                 null,
                 1,
                 { x: 0, y: 0 },
-                'mm',
+                Unit.MM,
                 new Set(),
                 null
             );
@@ -369,9 +369,10 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
+            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
-                mockWorkflowStore.invalidateDownstreamStages
-            ).toHaveBeenCalledWith('edit');
+                workflowStore.invalidateDownstreamStages
+            ).toHaveBeenCalledWith(WorkflowStage.EDIT);
         });
     });
 
@@ -402,9 +403,10 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
+            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
-                mockWorkflowStore.invalidateDownstreamStages
-            ).toHaveBeenCalledWith('edit');
+                workflowStore.invalidateDownstreamStages
+            ).toHaveBeenCalledWith(WorkflowStage.EDIT);
         });
     });
 
@@ -465,18 +467,18 @@ describe('drawingStore', () => {
 
     describe('setDisplayUnit', () => {
         it('should update display unit', () => {
-            drawingStore.setDisplayUnit('inch');
+            drawingStore.setDisplayUnit(Unit.INCH);
 
             const state = get(drawingStore);
-            expect(state.displayUnit).toBe('inch');
+            expect(state.displayUnit).toBe(Unit.INCH);
         });
 
         it('should switch between units', () => {
-            drawingStore.setDisplayUnit('inch');
-            drawingStore.setDisplayUnit('mm');
+            drawingStore.setDisplayUnit(Unit.INCH);
+            drawingStore.setDisplayUnit(Unit.MM);
 
             const state = get(drawingStore);
-            expect(state.displayUnit).toBe('mm');
+            expect(state.displayUnit).toBe(Unit.MM);
         });
     });
 
@@ -490,7 +492,7 @@ describe('drawingStore', () => {
             const newShapes: Shape[] = [
                 {
                     id: 'new-shape-1',
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 0, y: 0 },
                         end: { x: 20, y: 20 },
@@ -513,9 +515,10 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
+            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
-                mockWorkflowStore.invalidateDownstreamStages
-            ).toHaveBeenCalledWith('prepare');
+                workflowStore.invalidateDownstreamStages
+            ).toHaveBeenCalledWith(WorkflowStage.PREPARE);
         });
 
         it('should handle no drawing state', async () => {
@@ -524,7 +527,7 @@ describe('drawingStore', () => {
                 null,
                 1,
                 { x: 0, y: 0 },
-                'mm',
+                Unit.MM,
                 new Set(),
                 null
             );
@@ -537,7 +540,7 @@ describe('drawingStore', () => {
     });
 
     describe('restoreDrawing', () => {
-        it('should restore complete drawing state without resetting downstream stages', () => {
+        it('should restore complete drawing state without resetting downstream stages', async () => {
             const drawing = createTestDrawing();
             const selectedShapes = new Set(['line-1']);
             const scale = 2;
@@ -548,7 +551,7 @@ describe('drawingStore', () => {
                 'restored.dxf',
                 scale,
                 offset,
-                'inch',
+                Unit.INCH,
                 selectedShapes,
                 'circle-1'
             );
@@ -558,15 +561,16 @@ describe('drawingStore', () => {
             expect(state.fileName).toBe('restored.dxf');
             expect(state.scale).toBe(scale);
             expect(state.offset).toEqual(offset);
-            expect(state.displayUnit).toBe('inch');
+            expect(state.displayUnit).toBe(Unit.INCH);
             expect(state.selectedShapes).toEqual(selectedShapes);
             expect(state.hoveredShape).toBe('circle-1');
             expect(state.isDragging).toBe(false);
             expect(state.dragStart).toBeNull();
 
             // Should NOT have called workflow reset functions
+            const { workflowStore } = await import('./workflow');
             expect(
-                mockWorkflowStore.invalidateDownstreamStages
+                workflowStore.invalidateDownstreamStages
             ).not.toHaveBeenCalled();
         });
     });

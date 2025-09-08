@@ -2,8 +2,9 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import type { Path } from '../../lib/stores/paths';
 import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
 import type { Shape, Line } from '../../lib/types';
-import type { OffsetDirection } from '../../lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '../../lib/algorithms/offset-calculation/offset/types';
 import { LeadType, CutDirection } from '../../lib/types/direction';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('SimulateStage offset path detection', () => {
     let mockPath: Path;
@@ -16,7 +17,7 @@ describe('SimulateStage offset path detection', () => {
         mockShapes = [
             {
                 id: 'shape1',
-                type: 'line',
+                type: GeometryType.LINE,
                 layer: 'layer1',
                 geometry: {
                     start: { x: 0, y: 0 },
@@ -25,7 +26,7 @@ describe('SimulateStage offset path detection', () => {
             },
             {
                 id: 'shape2',
-                type: 'line',
+                type: GeometryType.LINE,
                 layer: 'layer1',
                 geometry: {
                     start: { x: 100, y: 0 },
@@ -38,7 +39,7 @@ describe('SimulateStage offset path detection', () => {
         mockOffsetShapes = [
             {
                 id: 'offset-shape1',
-                type: 'line',
+                type: GeometryType.LINE,
                 layer: 'layer1',
                 geometry: {
                     start: { x: -5, y: -5 },
@@ -47,7 +48,7 @@ describe('SimulateStage offset path detection', () => {
             },
             {
                 id: 'offset-shape2',
-                type: 'line',
+                type: GeometryType.LINE,
                 layer: 'layer1',
                 geometry: {
                     start: { x: 105, y: -5 },
@@ -71,7 +72,7 @@ describe('SimulateStage offset path detection', () => {
             order: 0,
             cutDirection: CutDirection.COUNTERCLOCKWISE,
             feedRate: 1000,
-            kerfCompensation: 'outset' as OffsetDirection,
+            kerfCompensation: OffsetDirection.OUTSET,
             calculatedOffset: undefined,
         };
     });
@@ -81,7 +82,7 @@ describe('SimulateStage offset path detection', () => {
             mockPath.calculatedOffset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
-                direction: 'outset' as OffsetDirection,
+                direction: OffsetDirection.OUTSET,
                 kerfWidth: 5,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
@@ -102,7 +103,7 @@ describe('SimulateStage offset path detection', () => {
             mockPath.calculatedOffset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
-                direction: 'outset' as OffsetDirection,
+                direction: OffsetDirection.OUTSET,
                 kerfWidth: 5,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
@@ -137,7 +138,7 @@ describe('SimulateStage offset path detection', () => {
             mockPath.calculatedOffset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
-                direction: 'outset' as OffsetDirection,
+                direction: OffsetDirection.OUTSET,
                 kerfWidth: 5,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
@@ -182,7 +183,7 @@ describe('SimulateStage offset path detection', () => {
             mockPath.calculatedOffset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
-                direction: 'outset' as OffsetDirection,
+                direction: OffsetDirection.OUTSET,
                 kerfWidth: 5,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
@@ -209,7 +210,7 @@ describe('SimulateStage offset path detection', () => {
             mockPath.calculatedOffset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
-                direction: 'outset' as OffsetDirection,
+                direction: OffsetDirection.OUTSET,
                 kerfWidth: 5,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
@@ -242,7 +243,7 @@ describe('SimulateStage offset path detection', () => {
                 calculatedOffset: {
                     offsetShapes: mockOffsetShapes,
                     originalShapes: mockShapes,
-                    direction: 'outset' as OffsetDirection,
+                    direction: OffsetDirection.OUTSET,
                     kerfWidth: 5,
                     generatedAt: new Date().toISOString(),
                     version: '1.0.0',

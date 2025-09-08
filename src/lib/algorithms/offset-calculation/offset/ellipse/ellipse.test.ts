@@ -1,15 +1,21 @@
-import { describe, it, expect } from 'vitest';
-import { offsetEllipse } from './ellipse';
-import type { Ellipse, Spline, Point2D } from '../../../../types/geometry';
-import { findEllipseEllipseIntersectionsVerb } from '../../intersect/ellipse-ellipse';
+import { describe, expect, it } from 'vitest';
+import {
+    GeometryType,
+    type Ellipse,
+    type Point2D,
+    type Spline,
+} from '../../../../types/geometry';
 import { findEllipseArcIntersectionsVerb } from '../../intersect/arc-ellipse';
+import { findEllipseEllipseIntersectionsVerb } from '../../intersect/ellipse-ellipse';
+import { OffsetDirection } from '../types';
+import { offsetEllipse } from './ellipse';
 
 describe('Quick Ellipse Intersection Test', () => {
     it('should find intersections between overlapping ellipses', () => {
         // Create two clearly overlapping ellipses
         const ellipse1 = {
             id: 'e1',
-            type: 'ellipse' as const,
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center: { x: 0, y: 0 },
                 majorAxisEndpoint: { x: 10, y: 0 }, // 20x10 ellipse
@@ -19,7 +25,7 @@ describe('Quick Ellipse Intersection Test', () => {
 
         const ellipse2 = {
             id: 'e2',
-            type: 'ellipse' as const,
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center: { x: 8, y: 0 }, // Overlapping by significant amount
                 majorAxisEndpoint: { x: 10, y: 0 }, // Same size ellipse
@@ -37,7 +43,7 @@ describe('Quick Ellipse Intersection Test', () => {
         // Create an arc and ellipse that should intersect
         const arcShape: import('$lib/types/geometry').Shape = {
             id: 'arc1',
-            type: 'arc',
+            type: GeometryType.ARC,
             geometry: {
                 center: { x: 0, y: 0 },
                 radius: 8,
@@ -49,7 +55,7 @@ describe('Quick Ellipse Intersection Test', () => {
 
         const ellipseShape: import('$lib/types/geometry').Shape = {
             id: 'ellipse1',
-            type: 'ellipse',
+            type: GeometryType.ELLIPSE,
             geometry: {
                 center: { x: 5, y: 0 },
                 majorAxisEndpoint: { x: 10, y: 0 }, // 20x10 ellipse
@@ -72,19 +78,19 @@ describe('offsetEllipse', () => {
     };
 
     it('should return no shapes when direction is none', () => {
-        const result = offsetEllipse(testEllipse, 2, 'none');
+        const result = offsetEllipse(testEllipse, 2, OffsetDirection.NONE);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
     it('should return no shapes when distance is zero', () => {
-        const result = offsetEllipse(testEllipse, 0, 'outset');
+        const result = offsetEllipse(testEllipse, 0, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes).toHaveLength(0);
     });
 
     it('should offset ellipse outward', () => {
-        const result = offsetEllipse(testEllipse, 1, 'outset');
+        const result = offsetEllipse(testEllipse, 1, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBeGreaterThan(0);
         expect(result.warnings).toContain(
@@ -98,7 +104,7 @@ describe('offsetEllipse', () => {
     });
 
     it('should offset ellipse inward', () => {
-        const result = offsetEllipse(testEllipse, 1, 'inset');
+        const result = offsetEllipse(testEllipse, 1, OffsetDirection.INSET);
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBeGreaterThan(0);
     });
@@ -110,7 +116,7 @@ describe('offsetEllipse', () => {
             endParam: Math.PI, // Half ellipse
         };
 
-        const result = offsetEllipse(ellipseArc, 0.5, 'outset');
+        const result = offsetEllipse(ellipseArc, 0.5, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
 
         if (result.shapes.length > 0) {
@@ -126,7 +132,7 @@ describe('offsetEllipse', () => {
             minorToMajorRatio: 0.6,
         };
 
-        const result = offsetEllipse(rotatedEllipse, 1, 'outset');
+        const result = offsetEllipse(rotatedEllipse, 1, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBeGreaterThan(0);
     });
@@ -138,7 +144,7 @@ describe('offsetEllipse', () => {
             minorToMajorRatio: 0.75, // 6-unit minor axis
         };
 
-        const result = offsetEllipse(ellipse, 1, 'outset');
+        const result = offsetEllipse(ellipse, 1, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Spline;
@@ -165,7 +171,7 @@ describe('offsetEllipse', () => {
             minorToMajorRatio: 0.5, // 2-unit minor axis
         };
 
-        const result = offsetEllipse(ellipse, 0.5, 'outset');
+        const result = offsetEllipse(ellipse, 0.5, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Spline;
@@ -184,7 +190,7 @@ describe('offsetEllipse', () => {
     });
 
     it('should generate spline with reasonable control points count', () => {
-        const result = offsetEllipse(testEllipse, 1, 'outset');
+        const result = offsetEllipse(testEllipse, 1, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
 
         const offsetGeometry = result.shapes[0].geometry as Spline;
@@ -202,7 +208,7 @@ describe('offsetEllipse', () => {
             minorToMajorRatio: 0.1, // Very thin ellipse
         };
 
-        const result = offsetEllipse(thinEllipse, 0.5, 'outset');
+        const result = offsetEllipse(thinEllipse, 0.5, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBeGreaterThan(0);
     });
@@ -214,7 +220,7 @@ describe('offsetEllipse', () => {
             minorToMajorRatio: 0.99, // Almost circular
         };
 
-        const result = offsetEllipse(nearCircle, 2, 'outset');
+        const result = offsetEllipse(nearCircle, 2, OffsetDirection.OUTSET);
         expect(result.success).toBe(true);
         expect(result.shapes.length).toBeGreaterThan(0);
     });

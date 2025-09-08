@@ -12,8 +12,9 @@ import { pathStore } from '../stores/paths';
 import { operationsStore, type Operation } from '../stores/operations';
 import { setChains } from '../stores/chains';
 import { LeadType, CutDirection } from '../types/direction';
-import type { GeometryType } from '../types/geometry';
+import { GeometryType } from '../types/geometry';
 import type { PathsState } from '../stores/paths';
+import { Unit } from './units';
 
 // Mock localStorage
 const localStorageMock = {
@@ -71,7 +72,7 @@ describe('Persistence Integration - Lead Geometry', () => {
             shapes: [
                 {
                     id: 'shape-1',
-                    type: 'circle' as GeometryType,
+                    type: GeometryType.CIRCLE as GeometryType,
                     geometry: { center: { x: 50, y: 50 }, radius: 25 },
                     layer: 'default',
                 },
@@ -84,7 +85,7 @@ describe('Persistence Integration - Lead Geometry', () => {
                     color: '#000000',
                 },
             },
-            units: 'mm' as 'mm' | 'inch',
+            units: Unit.MM,
             bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
         };
 
@@ -93,7 +94,7 @@ describe('Persistence Integration - Lead Geometry', () => {
             shapes: [
                 {
                     id: 'shape-1',
-                    type: 'circle' as GeometryType,
+                    type: GeometryType.CIRCLE as GeometryType,
                     geometry: { center: { x: 50, y: 50 }, radius: 25 },
                 },
             ],

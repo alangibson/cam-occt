@@ -1,35 +1,36 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import verb from 'verb-nurbs';
-import { offsetLine } from './line/line';
-import { offsetArc } from './arc/arc';
-import { offsetCircle } from './circle/circle';
-import { offsetPolyline } from './polyline/polyline';
-import { offsetSpline, tessellateVerbCurve } from './spline/spline';
-import { offsetEllipse } from './ellipse/ellipse';
-import type {
-    Line,
-    Arc,
-    Circle,
-    Polyline,
-    Spline,
-    Ellipse,
-    Point2D,
-    Shape,
-} from '../../../types/geometry';
-import {
-    polylineToPoints,
-    createPolylineFromVertices,
-} from '../../../geometry/polyline';
-import { calculateSignedArea } from '../../../utils/geometry-utils';
-import { getBoundingBoxForShapes as _getBoundingBoxForShapes } from '../../../geometry/bounding-box';
-import { SVGBuilder } from '../../../test/svg-builder';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';
+import {
+    createPolylineFromVertices,
+    polylineToPoints,
+} from '../../../geometry/polyline';
+import { SVGBuilder } from '../../../test/svg-builder';
+import {
+    GeometryType,
+    type Arc,
+    type Circle,
+    type Ellipse,
+    type Line,
+    type Point2D,
+    type Polyline,
+    type Shape,
+    type Spline,
+} from '../../../types/geometry';
+import { calculateSignedArea } from '../../../utils/geometry-utils';
+import type { Chain } from '../../chain-detection/chain-detection';
+import { offsetChain } from '../chain/offset';
 import type { ChainOffsetResult } from '../chain/types';
 import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from '../chain/types';
-import { offsetChain } from '../chain/offset';
-import type { Chain } from '../../chain-detection/chain-detection';
+import { offsetArc } from './arc/arc';
+import { offsetCircle } from './circle/circle';
+import { offsetEllipse } from './ellipse/ellipse';
+import { offsetLine } from './line/line';
+import { offsetPolyline } from './polyline/polyline';
+import { offsetSpline, tessellateVerbCurve } from './spline/spline';
+import { OffsetDirection } from './types';
 
 // Type guard function to check if a shape has polyline geometry
 function isPolylineShape(
@@ -60,16 +61,16 @@ describe('Minimal Visual Validation Test', { timeout: 60000 }, () => {
         testLines.forEach((line, index) => {
             const lineShape: Shape = {
                 id: `test-line-${index}`,
-                type: 'line',
+                type: GeometryType.LINE,
                 geometry: line,
             };
             svg1.addShape(lineShape, 'black', 1);
-            const result = offsetLine(line, 20, 'outset');
+            const result = offsetLine(line, 20, OffsetDirection.OUTSET);
             if (result.success) {
                 const geom = result.shapes[0].geometry as Line;
                 const offsetShape: Shape = {
                     id: `offset-line-${index}`,
-                    type: 'line',
+                    type: GeometryType.LINE,
                     geometry: geom,
                 };
                 svg1.addShape(offsetShape, 'red', 1);
@@ -87,16 +88,16 @@ describe('Minimal Visual Validation Test', { timeout: 60000 }, () => {
         testCircles.forEach((circle, index) => {
             const circleShape: Shape = {
                 id: `test-circle-${index}`,
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: circle,
             };
             svg2.addShape(circleShape, 'black', 1);
-            const result = offsetCircle(circle, 10, 'outset');
+            const result = offsetCircle(circle, 10, OffsetDirection.OUTSET);
             if (result.success) {
                 const geom = result.shapes[0].geometry as Circle;
                 const offsetShape: Shape = {
                     id: `offset-circle-${index}`,
-                    type: 'circle',
+                    type: GeometryType.CIRCLE,
                     geometry: geom,
                 };
                 svg2.addShape(offsetShape, 'red', 1);
@@ -119,16 +120,16 @@ describe('Minimal Visual Validation Test', { timeout: 60000 }, () => {
         testArcs.forEach((arc, index) => {
             const arcShape: Shape = {
                 id: `test-arc-${index}`,
-                type: 'arc',
+                type: GeometryType.ARC,
                 geometry: arc,
             };
             svg3.addShape(arcShape, 'black', 2);
-            const result = offsetArc(arc, 15, 'outset');
+            const result = offsetArc(arc, 15, OffsetDirection.OUTSET);
             if (result.success) {
                 const geom = result.shapes[0].geometry as Arc;
                 const offsetShape: Shape = {
                     id: `offset-arc-${index}`,
-                    type: 'arc',
+                    type: GeometryType.ARC,
                     geometry: geom,
                 };
                 svg3.addShape(offsetShape, 'red', 1);
@@ -183,21 +184,29 @@ describe(
                     // Original line in black
                     const originalShape: Shape = {
                         id: `line-${index}`,
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: line,
                     };
                     svg.addShape(originalShape, 'black', 1);
 
                     // Offset lines in red (outset) and blue (inset)
-                    const outsetResult = offsetLine(line, 20, 'outset');
-                    const insetResult = offsetLine(line, 20, 'inset');
+                    const outsetResult = offsetLine(
+                        line,
+                        20,
+                        OffsetDirection.OUTSET
+                    );
+                    const insetResult = offsetLine(
+                        line,
+                        20,
+                        OffsetDirection.INSET
+                    );
 
                     if (outsetResult.success) {
                         const outsetGeometry = outsetResult.shapes[0]
                             .geometry as Line;
                         const outsetShape: Shape = {
                             id: `line-outset-${index}`,
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: outsetGeometry,
                         };
                         svg.addShape(outsetShape, 'red', 1);
@@ -208,7 +217,7 @@ describe(
                             .geometry as Line;
                         const insetShape: Shape = {
                             id: `line-inset-${index}`,
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: insetGeometry,
                         };
                         svg.addShape(insetShape, 'blue', 1);
@@ -243,21 +252,29 @@ describe(
                     // Original circle in black
                     const originalShape: Shape = {
                         id: `circle-${index}`,
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: circle,
                     };
                     svg.addShape(originalShape, 'black', 1);
 
                     // Offset circles
-                    const outsetResult = offsetCircle(circle, 3, 'outset');
-                    const insetResult = offsetCircle(circle, 3, 'inset');
+                    const outsetResult = offsetCircle(
+                        circle,
+                        3,
+                        OffsetDirection.OUTSET
+                    );
+                    const insetResult = offsetCircle(
+                        circle,
+                        3,
+                        OffsetDirection.INSET
+                    );
 
                     if (outsetResult.success) {
                         const outsetGeometry = outsetResult.shapes[0]
                             .geometry as Circle;
                         const outsetShape: Shape = {
                             id: `circle-outset-${index}`,
-                            type: 'circle',
+                            type: GeometryType.CIRCLE,
                             geometry: outsetGeometry,
                         };
                         svg.addShape(outsetShape, 'red', 1);
@@ -268,7 +285,7 @@ describe(
                             .geometry as Circle;
                         const insetShape: Shape = {
                             id: `circle-inset-${index}`,
-                            type: 'circle',
+                            type: GeometryType.CIRCLE,
                             geometry: insetGeometry,
                         };
                         svg.addShape(insetShape, 'blue', 1);
@@ -350,7 +367,7 @@ describe(
                     };
                     const centerShape: Shape = {
                         id: `arc-center-${index}`,
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: centerCircle,
                     };
                     svg.addShape(centerShape, '#888', 1);
@@ -358,33 +375,41 @@ describe(
                     // Original arc in black (consistent with other tests)
                     const arcShape: Shape = {
                         id: `arc-${index}`,
-                        type: 'arc',
+                        type: GeometryType.ARC,
                         geometry: arc,
                     };
                     svg.addShape(arcShape, 'black', 2);
                     svg.addText(labelPos.x, labelPos.y, name, 'black', '10px');
 
                     // Outset arc (+16, consistent offset distance with other tests)
-                    const outsetResult = offsetArc(arc, 16, 'outset');
+                    const outsetResult = offsetArc(
+                        arc,
+                        16,
+                        OffsetDirection.OUTSET
+                    );
                     if (outsetResult.success) {
                         const outsetGeometry = outsetResult.shapes[0]
                             .geometry as Arc;
                         const outsetShape: Shape = {
                             id: `arc-outset-${index}`,
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: outsetGeometry,
                         };
                         svg.addShape(outsetShape, 'red', 1);
                     }
 
                     // Inset arc (-16, consistent offset distance with other tests)
-                    const insetResult = offsetArc(arc, 16, 'inset');
+                    const insetResult = offsetArc(
+                        arc,
+                        16,
+                        OffsetDirection.INSET
+                    );
                     if (insetResult.success) {
                         const insetGeometry = insetResult.shapes[0]
                             .geometry as Arc;
                         const insetShape: Shape = {
                             id: `arc-inset-${index}`,
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: insetGeometry,
                         };
                         svg.addShape(insetShape, 'blue', 1);
@@ -465,7 +490,7 @@ describe(
                     };
                     const centerShape: Shape = {
                         id: `arc-center-${index}`,
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: centerCircle,
                     };
                     svg.addShape(centerShape, '#888', 1);
@@ -473,33 +498,41 @@ describe(
                     // Original arc in black (consistent with other tests)
                     const arcShape: Shape = {
                         id: `arc-${index}`,
-                        type: 'arc',
+                        type: GeometryType.ARC,
                         geometry: arc,
                     };
                     svg.addShape(arcShape, 'black', 2);
                     svg.addText(labelPos.x, labelPos.y, name, 'black', '10px');
 
                     // Outset arc (+16, consistent offset distance with other tests)
-                    const outsetResult = offsetArc(arc, 16, 'outset');
+                    const outsetResult = offsetArc(
+                        arc,
+                        16,
+                        OffsetDirection.OUTSET
+                    );
                     if (outsetResult.success) {
                         const outsetGeometry = outsetResult.shapes[0]
                             .geometry as Arc;
                         const outsetShape: Shape = {
                             id: `arc-outset-${index}`,
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: outsetGeometry,
                         };
                         svg.addShape(outsetShape, 'red', 1);
                     }
 
                     // Inset arc (-16, consistent offset distance with other tests)
-                    const insetResult = offsetArc(arc, 16, 'inset');
+                    const insetResult = offsetArc(
+                        arc,
+                        16,
+                        OffsetDirection.INSET
+                    );
                     if (insetResult.success) {
                         const insetGeometry = insetResult.shapes[0]
                             .geometry as Arc;
                         const insetShape: Shape = {
                             id: `arc-inset-${index}`,
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: insetGeometry,
                         };
                         svg.addShape(insetShape, 'blue', 1);
@@ -580,7 +613,7 @@ describe(
                     };
                     const centerShape: Shape = {
                         id: `arc-center-${index}`,
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: centerCircle,
                     };
                     svg.addShape(centerShape, '#888', 1);
@@ -588,33 +621,41 @@ describe(
                     // Original arc in black (consistent with other tests)
                     const arcShape: Shape = {
                         id: `arc-${index}`,
-                        type: 'arc',
+                        type: GeometryType.ARC,
                         geometry: arc,
                     };
                     svg.addShape(arcShape, 'black', 2);
                     svg.addText(labelPos.x, labelPos.y, name, 'black', '10px');
 
                     // Outset arc (+16, consistent offset distance with other tests)
-                    const outsetResult = offsetArc(arc, 16, 'outset');
+                    const outsetResult = offsetArc(
+                        arc,
+                        16,
+                        OffsetDirection.OUTSET
+                    );
                     if (outsetResult.success) {
                         const outsetGeometry = outsetResult.shapes[0]
                             .geometry as Arc;
                         const outsetShape: Shape = {
                             id: `arc-outset-${index}`,
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: outsetGeometry,
                         };
                         svg.addShape(outsetShape, 'red', 1);
                     }
 
                     // Inset arc (-16, consistent offset distance with other tests)
-                    const insetResult = offsetArc(arc, 16, 'inset');
+                    const insetResult = offsetArc(
+                        arc,
+                        16,
+                        OffsetDirection.INSET
+                    );
                     if (insetResult.success) {
                         const insetGeometry = insetResult.shapes[0]
                             .geometry as Arc;
                         const insetShape: Shape = {
                             id: `arc-inset-${index}`,
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: insetGeometry,
                         };
                         svg.addShape(insetShape, 'blue', 1);
@@ -695,7 +736,7 @@ describe(
                     };
                     const centerShape: Shape = {
                         id: `arc-center-${index}`,
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: centerCircle,
                     };
                     svg.addShape(centerShape, '#888', 1);
@@ -703,33 +744,41 @@ describe(
                     // Original arc in black (consistent with other tests)
                     const arcShape: Shape = {
                         id: `arc-${index}`,
-                        type: 'arc',
+                        type: GeometryType.ARC,
                         geometry: arc,
                     };
                     svg.addShape(arcShape, 'black', 2);
                     svg.addText(labelPos.x, labelPos.y, name, 'black', '10px');
 
                     // Outset arc (+16, consistent offset distance with other tests)
-                    const outsetResult = offsetArc(arc, 16, 'outset');
+                    const outsetResult = offsetArc(
+                        arc,
+                        16,
+                        OffsetDirection.OUTSET
+                    );
                     if (outsetResult.success) {
                         const outsetGeometry = outsetResult.shapes[0]
                             .geometry as Arc;
                         const outsetShape: Shape = {
                             id: `arc-outset-${index}`,
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: outsetGeometry,
                         };
                         svg.addShape(outsetShape, 'red', 1);
                     }
 
                     // Inset arc (-16, consistent offset distance with other tests)
-                    const insetResult = offsetArc(arc, 16, 'inset');
+                    const insetResult = offsetArc(
+                        arc,
+                        16,
+                        OffsetDirection.INSET
+                    );
                     if (insetResult.success) {
                         const insetGeometry = insetResult.shapes[0]
                             .geometry as Arc;
                         const insetShape: Shape = {
                             id: `arc-inset-${index}`,
-                            type: 'arc',
+                            type: GeometryType.ARC,
                             geometry: insetGeometry,
                         };
                         svg.addShape(insetShape, 'blue', 1);
@@ -830,14 +879,22 @@ describe(
                     // Original polyline in black
                     const originalShape: Shape = {
                         id: `polyline-${label}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: polyline,
                     };
                     svg.addShape(originalShape, 'black', 2);
 
                     // Offset polylines
-                    const outsetResult = offsetPolyline(polyline, 8, 'outset');
-                    const insetResult = offsetPolyline(polyline, 8, 'inset');
+                    const outsetResult = offsetPolyline(
+                        polyline,
+                        8,
+                        OffsetDirection.OUTSET
+                    );
+                    const insetResult = offsetPolyline(
+                        polyline,
+                        8,
+                        OffsetDirection.INSET
+                    );
 
                     if (
                         outsetResult.success &&
@@ -847,7 +904,7 @@ describe(
                             const polylineGeometry = shape.geometry as Polyline;
                             const outsetShape: Shape = {
                                 id: `polyline-outset-${label}`,
-                                type: 'polyline',
+                                type: GeometryType.POLYLINE,
                                 geometry: polylineGeometry,
                             };
                             svg.addShape(outsetShape, 'red', 1);
@@ -859,7 +916,7 @@ describe(
                             const polylineGeometry = shape.geometry as Polyline;
                             const insetShape: Shape = {
                                 id: `polyline-inset-${label}`,
-                                type: 'polyline',
+                                type: GeometryType.POLYLINE,
                                 geometry: polylineGeometry,
                             };
                             svg.addShape(insetShape, 'blue', 1);
@@ -961,7 +1018,7 @@ describe(
                         shapes: [
                             {
                                 id: '',
-                                type: 'polyline' as const,
+                                type: GeometryType.POLYLINE as const,
                                 geometry: polyline,
                             },
                         ],
@@ -970,7 +1027,7 @@ describe(
                     // Original polyline in black
                     const originalShape: Shape = {
                         id: `polyline-${label}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: polyline,
                     };
                     svg.addShape(originalShape, 'black', 2);
@@ -1000,7 +1057,7 @@ describe(
                                         shape.geometry as Polyline;
                                     const outsetShape: Shape = {
                                         id: `polyline-outset-${label}`,
-                                        type: 'polyline',
+                                        type: GeometryType.POLYLINE,
                                         geometry: polylineGeometry,
                                     };
                                     svg.addShape(outsetShape, 'red', 1);
@@ -1018,7 +1075,7 @@ describe(
                                         shape.geometry as Polyline;
                                     const insetShape: Shape = {
                                         id: `polyline-inset-${label}`,
-                                        type: 'polyline',
+                                        type: GeometryType.POLYLINE,
                                         geometry: polylineGeometry,
                                     };
                                     svg.addShape(insetShape, 'blue', 1);
@@ -1079,7 +1136,7 @@ describe(
 
                                     newShapes.push({
                                         id: `${shape.id}-seg-${i}`,
-                                        type: 'line' as const,
+                                        type: GeometryType.LINE as const,
                                         geometry: { start, end },
                                     });
                                 }
@@ -1191,7 +1248,7 @@ describe(
                         shapes: [
                             {
                                 id: '',
-                                type: 'polyline' as const,
+                                type: GeometryType.POLYLINE as const,
                                 geometry: polyline,
                             },
                         ],
@@ -1200,7 +1257,7 @@ describe(
                     // Original polyline in black
                     const originalShape: Shape = {
                         id: `polyline-${label}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: polyline,
                     };
                     svg.addShape(originalShape, 'black', 2);
@@ -1235,7 +1292,7 @@ describe(
                                         shape.geometry as Polyline;
                                     const outsetShape: Shape = {
                                         id: `polyline-outset-${label}`,
-                                        type: 'polyline',
+                                        type: GeometryType.POLYLINE,
                                         geometry: polylineGeometry,
                                     };
                                     svg.addShape(outsetShape, 'red', 1);
@@ -1272,7 +1329,7 @@ describe(
                                         shape.geometry as Polyline;
                                     const insetShape: Shape = {
                                         id: `polyline-inset-${label}`,
-                                        type: 'polyline',
+                                        type: GeometryType.POLYLINE,
                                         geometry: polylineGeometry,
                                     };
                                     svg.addShape(insetShape, 'blue', 1);
@@ -1384,7 +1441,7 @@ describe(
                     // Original CCW shape in black
                     const ccwShapeObj: Shape = {
                         id: `ccw-shape-${shapeIndex}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: ccwShape.geometry,
                     };
                     svg.addShape(ccwShapeObj, 'black', 2);
@@ -1398,12 +1455,12 @@ describe(
                     const ccwOutsetResult = offsetPolyline(
                         ccwShape.geometry,
                         8,
-                        'outset'
+                        OffsetDirection.OUTSET
                     );
                     const ccwInsetResult = offsetPolyline(
                         ccwShape.geometry,
                         8,
-                        'inset'
+                        OffsetDirection.INSET
                     );
 
                     if (
@@ -1416,7 +1473,7 @@ describe(
                                     offsetShape.geometry as Polyline;
                                 const outsetShape: Shape = {
                                     id: `ccw-outset-${shapeIndex}-${offsetIdx}`,
-                                    type: 'polyline',
+                                    type: GeometryType.POLYLINE,
                                     geometry: polylineGeometry,
                                 };
                                 svg.addShape(outsetShape, 'red', 1);
@@ -1434,7 +1491,7 @@ describe(
                                     offsetShape.geometry as Polyline;
                                 const insetShape: Shape = {
                                     id: `ccw-inset-${shapeIndex}-${offsetIdx}`,
-                                    type: 'polyline',
+                                    type: GeometryType.POLYLINE,
                                     geometry: polylineGeometry,
                                 };
                                 svg.addShape(insetShape, 'blue', 1);
@@ -1461,7 +1518,7 @@ describe(
                     // Original CW shape in black
                     const cwShapeObj: Shape = {
                         id: `cw-shape-${shapeIndex}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: cwShape.geometry,
                     };
                     svg.addShape(cwShapeObj, 'black', 2);
@@ -1475,12 +1532,12 @@ describe(
                     const cwOutsetResult = offsetPolyline(
                         cwShape.geometry,
                         8,
-                        'outset'
+                        OffsetDirection.OUTSET
                     );
                     const cwInsetResult = offsetPolyline(
                         cwShape.geometry,
                         8,
-                        'inset'
+                        OffsetDirection.INSET
                     );
 
                     if (
@@ -1493,7 +1550,7 @@ describe(
                                     offsetShape.geometry as Polyline;
                                 const outsetShape: Shape = {
                                     id: `cw-outset-${shapeIndex}-${offsetIdx}`,
-                                    type: 'polyline',
+                                    type: GeometryType.POLYLINE,
                                     geometry: polylineGeometry,
                                 };
                                 svg.addShape(outsetShape, 'red', 1);
@@ -1511,7 +1568,7 @@ describe(
                                     offsetShape.geometry as Polyline;
                                 const insetShape: Shape = {
                                     id: `cw-inset-${shapeIndex}-${offsetIdx}`,
-                                    type: 'polyline',
+                                    type: GeometryType.POLYLINE,
                                     geometry: polylineGeometry,
                                 };
                                 svg.addShape(insetShape, 'blue', 1);
@@ -1601,7 +1658,7 @@ describe(
                     const originalResult = offsetSpline(
                         originalSpline,
                         0.1,
-                        'outset',
+                        OffsetDirection.OUTSET,
                         1.0,
                         3
                     );
@@ -1629,7 +1686,7 @@ describe(
                         const originalPolyline: Polyline = {
                             shapes: points.slice(0, -1).map((p, i) => ({
                                 id: `original-spline-seg-${index}-${i}`,
-                                type: 'line' as const,
+                                type: GeometryType.LINE as const,
                                 geometry: {
                                     start: p,
                                     end: points[i + 1],
@@ -1639,7 +1696,7 @@ describe(
                         };
                         const originalShape: Shape = {
                             id: `original-spline-${index}`,
-                            type: 'polyline',
+                            type: GeometryType.POLYLINE,
                             geometry: originalPolyline,
                         };
                         svg.addShape(originalShape, '#0077be', 3);
@@ -1659,7 +1716,7 @@ describe(
                     const outsetResult = offsetSpline(
                         translatedSpline,
                         offsetDistance,
-                        'outset',
+                        OffsetDirection.OUTSET,
                         0.1,
                         5
                     );
@@ -1687,7 +1744,7 @@ describe(
                         const outsetPolyline: Polyline = {
                             shapes: points.slice(0, -1).map((p, i) => ({
                                 id: `outset-spline-seg-${index}-${i}`,
-                                type: 'line' as const,
+                                type: GeometryType.LINE as const,
                                 geometry: {
                                     start: p,
                                     end: points[i + 1],
@@ -1697,7 +1754,7 @@ describe(
                         };
                         const outsetShape: Shape = {
                             id: `outset-spline-${index}`,
-                            type: 'polyline',
+                            type: GeometryType.POLYLINE,
                             geometry: outsetPolyline,
                         };
                         svg.addShape(outsetShape, '#2ca02c', 1.5);
@@ -1708,7 +1765,7 @@ describe(
                     const insetResult = offsetSpline(
                         translatedSpline,
                         offsetDistance,
-                        'inset',
+                        OffsetDirection.INSET,
                         0.1,
                         5
                     );
@@ -1733,7 +1790,7 @@ describe(
                         const insetPolyline: Polyline = {
                             shapes: points.slice(0, -1).map((p, i) => ({
                                 id: `inset-spline-seg-${index}-${i}`,
-                                type: 'line' as const,
+                                type: GeometryType.LINE as const,
                                 geometry: {
                                     start: p,
                                     end: points[i + 1],
@@ -1743,7 +1800,7 @@ describe(
                         };
                         const insetShape: Shape = {
                             id: `inset-spline-${index}`,
-                            type: 'polyline',
+                            type: GeometryType.POLYLINE,
                             geometry: insetPolyline,
                         };
                         svg.addShape(insetShape, '#d62728', 1.5);
@@ -1808,21 +1865,29 @@ describe(
                     const ellipsePolyline: Polyline = {
                         shapes: points.slice(0, -1).map((p, i) => ({
                             id: `ellipse-seg-${ellipseIdx}-${i}`,
-                            type: 'line' as const,
+                            type: GeometryType.LINE as const,
                             geometry: { start: p, end: points[i + 1] } as Line,
                         })),
                         closed: true,
                     };
                     const ellipseShape: Shape = {
                         id: `ellipse-${ellipseIdx}`,
-                        type: 'polyline',
+                        type: GeometryType.POLYLINE,
                         geometry: ellipsePolyline,
                     };
                     svg.addShape(ellipseShape, 'black', 2);
 
                     // Offset ellipses
-                    const outsetResult = offsetEllipse(ellipse, 12, 'outset');
-                    const insetResult = offsetEllipse(ellipse, 8, 'inset');
+                    const outsetResult = offsetEllipse(
+                        ellipse,
+                        12,
+                        OffsetDirection.OUTSET
+                    );
+                    const insetResult = offsetEllipse(
+                        ellipse,
+                        8,
+                        OffsetDirection.INSET
+                    );
 
                     if (
                         outsetResult.success &&
@@ -1836,7 +1901,7 @@ describe(
                                 .slice(0, -1)
                                 .map((p, i) => ({
                                     id: `ellipse-outset-seg-${ellipseIdx}-${i}`,
-                                    type: 'line' as const,
+                                    type: GeometryType.LINE as const,
                                     geometry: {
                                         start: p,
                                         end: splineGeometry.controlPoints[
@@ -1848,7 +1913,7 @@ describe(
                         };
                         const outsetPolyShape: Shape = {
                             id: `ellipse-outset-${ellipseIdx}`,
-                            type: 'polyline',
+                            type: GeometryType.POLYLINE,
                             geometry: outsetPolyline,
                         };
                         svg.addShape(outsetPolyShape, 'red', 1);
@@ -1863,7 +1928,7 @@ describe(
                                 .slice(0, -1)
                                 .map((p, i) => ({
                                     id: `ellipse-inset-seg-${ellipseIdx}-${i}`,
-                                    type: 'line' as const,
+                                    type: GeometryType.LINE as const,
                                     geometry: {
                                         start: p,
                                         end: splineGeometry.controlPoints[
@@ -1875,7 +1940,7 @@ describe(
                         };
                         const insetPolyShape: Shape = {
                             id: `ellipse-inset-${ellipseIdx}`,
-                            type: 'polyline',
+                            type: GeometryType.POLYLINE,
                             geometry: insetPolyline,
                         };
                         svg.addShape(insetPolyShape, 'blue', 1);
@@ -1957,7 +2022,7 @@ describe(
                     };
                     const centerShape: Shape = {
                         id: `ellipse-center-${index}`,
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: centerCircle,
                     };
                     svg.addShape(centerShape, '#888', 1);
@@ -1965,33 +2030,41 @@ describe(
                     // Original ellipse arc in black (consistent with other tests)
                     const ellipseShape: Shape = {
                         id: `ellipse-arc-${index}`,
-                        type: 'ellipse',
+                        type: GeometryType.ELLIPSE,
                         geometry: ellipse,
                     };
                     svg.addShape(ellipseShape, 'black', 2);
                     svg.addText(labelPos.x, labelPos.y, name, 'black', '10px');
 
                     // Outset ellipse arc (+16, consistent offset distance with other tests)
-                    const outsetResult = offsetEllipse(ellipse, 16, 'outset');
+                    const outsetResult = offsetEllipse(
+                        ellipse,
+                        16,
+                        OffsetDirection.OUTSET
+                    );
                     if (outsetResult.success) {
                         const outsetGeometry = outsetResult.shapes[0]
                             .geometry as Spline;
                         const outsetShape: Shape = {
                             id: `ellipse-outset-spline-${index}`,
-                            type: 'spline',
+                            type: GeometryType.SPLINE,
                             geometry: outsetGeometry,
                         };
                         svg.addShape(outsetShape, 'red', 1);
                     }
 
                     // Inset ellipse arc (-16, consistent offset distance with other tests)
-                    const insetResult = offsetEllipse(ellipse, 16, 'inset');
+                    const insetResult = offsetEllipse(
+                        ellipse,
+                        16,
+                        OffsetDirection.INSET
+                    );
                     if (insetResult.success) {
                         const insetGeometry = insetResult.shapes[0]
                             .geometry as Spline;
                         const insetShape: Shape = {
                             id: `ellipse-inset-spline-${index}`,
-                            type: 'spline',
+                            type: GeometryType.SPLINE,
                             geometry: insetGeometry,
                         };
                         svg.addShape(insetShape, 'blue', 1);
@@ -2072,7 +2145,7 @@ describe(
                     };
                     const centerShape: Shape = {
                         id: `ellipse-center-${index}`,
-                        type: 'circle',
+                        type: GeometryType.CIRCLE,
                         geometry: centerCircle,
                     };
                     svg.addShape(centerShape, '#888', 1);
@@ -2080,33 +2153,41 @@ describe(
                     // Original ellipse arc in black (consistent with other tests)
                     const ellipseShape: Shape = {
                         id: `ellipse-arc-${index}`,
-                        type: 'ellipse',
+                        type: GeometryType.ELLIPSE,
                         geometry: ellipse,
                     };
                     svg.addShape(ellipseShape, 'black', 2);
                     svg.addText(labelPos.x, labelPos.y, name, 'black', '10px');
 
                     // Outset ellipse arc (+16, consistent offset distance with other tests)
-                    const outsetResult = offsetEllipse(ellipse, 16, 'outset');
+                    const outsetResult = offsetEllipse(
+                        ellipse,
+                        16,
+                        OffsetDirection.OUTSET
+                    );
                     if (outsetResult.success) {
                         const outsetGeometry = outsetResult.shapes[0]
                             .geometry as Spline;
                         const outsetShape: Shape = {
                             id: `ellipse-outset-spline-${index}`,
-                            type: 'spline',
+                            type: GeometryType.SPLINE,
                             geometry: outsetGeometry,
                         };
                         svg.addShape(outsetShape, 'red', 1);
                     }
 
                     // Inset ellipse arc (-16, consistent offset distance with other tests)
-                    const insetResult = offsetEllipse(ellipse, 16, 'inset');
+                    const insetResult = offsetEllipse(
+                        ellipse,
+                        16,
+                        OffsetDirection.INSET
+                    );
                     if (insetResult.success) {
                         const insetGeometry = insetResult.shapes[0]
                             .geometry as Spline;
                         const insetShape: Shape = {
                             id: `ellipse-inset-spline-${index}`,
-                            type: 'spline',
+                            type: GeometryType.SPLINE,
                             geometry: insetGeometry,
                         };
                         svg.addShape(insetShape, 'blue', 1);
@@ -2224,19 +2305,23 @@ describe(
                     // Original line
                     const originalShape: Shape = {
                         id: `precision-line-${testIdx}`,
-                        type: 'line',
+                        type: GeometryType.LINE,
                         geometry: test.line,
                     };
                     svg.addShape(originalShape, 'black', 1);
 
                     // Offset lines with measurements
-                    const result = offsetLine(test.line, test.offset, 'outset');
+                    const result = offsetLine(
+                        test.line,
+                        test.offset,
+                        OffsetDirection.OUTSET
+                    );
                     if (result.success) {
                         const offsetGeometry = result.shapes[0]
                             .geometry as Line;
                         const offsetShape: Shape = {
                             id: `precision-offset-${testIdx}`,
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: offsetGeometry,
                         };
                         svg.addShape(offsetShape, 'red', 1);
@@ -2263,7 +2348,7 @@ describe(
                         };
                         const measurementShape: Shape = {
                             id: `precision-measurement-${testIdx}`,
-                            type: 'line',
+                            type: GeometryType.LINE,
                             geometry: measurementLine,
                         };
                         svg.addShape(measurementShape, 'blue', 0.5);

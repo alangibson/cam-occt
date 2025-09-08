@@ -45,29 +45,34 @@ describe('Workflow Components', () => {
 
     describe('Stage helper functions', () => {
         it('should import and use workflow utilities', async () => {
-            const { getStageDisplayName, getStageDescription } = await import(
-                '../lib/stores/workflow'
+            const { getStageDisplayName, getStageDescription, WorkflowStage } =
+                await import('../lib/stores/workflow');
+
+            expect(getStageDisplayName(WorkflowStage.IMPORT)).toBe('Import');
+            expect(getStageDisplayName(WorkflowStage.EDIT)).toBe('Edit');
+            expect(getStageDisplayName(WorkflowStage.PREPARE)).toBe('Prepare');
+            expect(getStageDisplayName(WorkflowStage.PROGRAM)).toBe('Program');
+            expect(getStageDisplayName(WorkflowStage.SIMULATE)).toBe(
+                'Simulate'
             );
+            expect(getStageDisplayName(WorkflowStage.EXPORT)).toBe('Export');
 
-            expect(getStageDisplayName('import')).toBe('Import');
-            expect(getStageDisplayName('edit')).toBe('Edit');
-            expect(getStageDisplayName('prepare')).toBe('Prepare');
-            expect(getStageDisplayName('program')).toBe('Program');
-            expect(getStageDisplayName('simulate')).toBe('Simulate');
-            expect(getStageDisplayName('export')).toBe('Export');
-
-            expect(getStageDescription('import')).toContain(
+            expect(getStageDescription(WorkflowStage.IMPORT)).toContain(
                 'Import DXF or SVG'
             );
-            expect(getStageDescription('edit')).toContain('Edit drawing');
-            expect(getStageDescription('prepare')).toContain('Analyze chains');
-            expect(getStageDescription('program')).toContain(
+            expect(getStageDescription(WorkflowStage.EDIT)).toContain(
+                'Edit drawing'
+            );
+            expect(getStageDescription(WorkflowStage.PREPARE)).toContain(
+                'Analyze chains'
+            );
+            expect(getStageDescription(WorkflowStage.PROGRAM)).toContain(
                 'Build tool paths'
             );
-            expect(getStageDescription('simulate')).toContain(
+            expect(getStageDescription(WorkflowStage.SIMULATE)).toContain(
                 'Simulate cutting'
             );
-            expect(getStageDescription('export')).toContain(
+            expect(getStageDescription(WorkflowStage.EXPORT)).toContain(
                 'Generate and download'
             );
         });
@@ -75,29 +80,31 @@ describe('Workflow Components', () => {
 
     describe('Workflow stage progression logic', () => {
         it('should define correct stage order', async () => {
-            const { workflowStore } = await import('../lib/stores/workflow');
+            const { workflowStore, WorkflowStage } = await import(
+                '../lib/stores/workflow'
+            );
 
             // Test the expected progression through store methods
-            expect(workflowStore.getNextStage()).toBe('edit');
+            expect(workflowStore.getNextStage()).toBe(WorkflowStage.EDIT);
 
-            workflowStore.completeStage('import');
-            workflowStore.setStage('edit');
-            expect(workflowStore.getNextStage()).toBe('prepare');
+            workflowStore.completeStage(WorkflowStage.IMPORT);
+            workflowStore.setStage(WorkflowStage.EDIT);
+            expect(workflowStore.getNextStage()).toBe(WorkflowStage.PREPARE);
 
-            workflowStore.completeStage('edit');
-            workflowStore.setStage('prepare');
-            expect(workflowStore.getNextStage()).toBe('program');
+            workflowStore.completeStage(WorkflowStage.EDIT);
+            workflowStore.setStage(WorkflowStage.PREPARE);
+            expect(workflowStore.getNextStage()).toBe(WorkflowStage.PROGRAM);
 
-            workflowStore.completeStage('prepare');
-            workflowStore.setStage('program');
-            expect(workflowStore.getNextStage()).toBe('simulate');
+            workflowStore.completeStage(WorkflowStage.PREPARE);
+            workflowStore.setStage(WorkflowStage.PROGRAM);
+            expect(workflowStore.getNextStage()).toBe(WorkflowStage.SIMULATE);
 
-            workflowStore.completeStage('program');
-            workflowStore.setStage('simulate');
-            expect(workflowStore.getNextStage()).toBe('export');
+            workflowStore.completeStage(WorkflowStage.PROGRAM);
+            workflowStore.setStage(WorkflowStage.SIMULATE);
+            expect(workflowStore.getNextStage()).toBe(WorkflowStage.EXPORT);
 
-            workflowStore.completeStage('simulate');
-            workflowStore.setStage('export');
+            workflowStore.completeStage(WorkflowStage.SIMULATE);
+            workflowStore.setStage(WorkflowStage.EXPORT);
             expect(workflowStore.getNextStage()).toBe(null); // Last stage
         });
     });

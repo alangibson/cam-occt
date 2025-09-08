@@ -1,9 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { findPartContainingChain } from './chain-part-interactions';
-import type {
-    DetectedPart,
-    PartHole,
-    PartShell,
+import {
+    PartType,
+    type DetectedPart,
+    type PartHole,
+    type PartShell,
 } from '../algorithms/part-detection';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 
@@ -21,7 +22,7 @@ describe('findPartContainingChain', () => {
         return {
             id: `shell-${chainId}`,
             chain: createMockChain(chainId),
-            type: 'shell',
+            type: PartType.SHELL,
             boundingBox: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
             holes: [],
         };
@@ -32,7 +33,7 @@ describe('findPartContainingChain', () => {
         return {
             id: `hole-${chainId}`,
             chain: createMockChain(chainId),
-            type: 'hole',
+            type: PartType.HOLE,
             boundingBox: { minX: 10, minY: 10, maxX: 20, maxY: 20 },
             holes: [],
         };

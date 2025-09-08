@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { isChainGeometricallyContained } from './geometric-operations';
-import type { Shape, Ellipse, GeometryType } from '../types/geometry';
+import { describe, expect, it } from 'vitest';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import { LeadType } from '../types/direction';
+import type { Ellipse, Shape } from '../types/geometry';
+import { GeometryType } from '../types/geometry';
+import { isChainGeometricallyContained } from './geometric-operations';
 
 // Helper function to create ellipse shapes for testing
 function createEllipseShape(
@@ -22,7 +22,7 @@ function createEllipseShape(
 
     return {
         id: 'test-ellipse-' + Math.random(),
-        type: 'ellipse' as GeometryType,
+        type: GeometryType.ELLIPSE as GeometryType,
         geometry,
     };
 }
@@ -172,7 +172,7 @@ describe('Geometric Operations - Ellipse support', () => {
             // Create a small circle that should be contained
             const circle: Shape = {
                 id: 'test-circle',
-                type: 'circle',
+                type: GeometryType.CIRCLE,
                 geometry: {
                     center: { x: 0, y: 0 },
                     radius: 20,
@@ -194,7 +194,7 @@ describe('Geometric Operations - Ellipse support', () => {
             const rectLines: Shape[] = [
                 {
                     id: 'line1',
-                    type: LeadType.LINE,
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: -60, y: -40 },
                         end: { x: 60, y: -40 },
@@ -202,7 +202,7 @@ describe('Geometric Operations - Ellipse support', () => {
                 },
                 {
                     id: 'line2',
-                    type: LeadType.LINE,
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 60, y: -40 },
                         end: { x: 60, y: 40 },
@@ -210,7 +210,7 @@ describe('Geometric Operations - Ellipse support', () => {
                 },
                 {
                     id: 'line3',
-                    type: LeadType.LINE,
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: 60, y: 40 },
                         end: { x: -60, y: 40 },
@@ -218,7 +218,7 @@ describe('Geometric Operations - Ellipse support', () => {
                 },
                 {
                     id: 'line4',
-                    type: LeadType.LINE,
+                    type: GeometryType.LINE,
                     geometry: {
                         start: { x: -60, y: 40 },
                         end: { x: -60, y: -40 },

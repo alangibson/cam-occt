@@ -1,5 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Shape, Spline } from '../../../../types/geometry';
+import {
+    GeometryType,
+    type Shape,
+    type Spline,
+} from '../../../../types/geometry';
 import { trimSpline } from './index';
 import { type KeepSide } from '../types';
 
@@ -33,7 +37,7 @@ describe('Spline Trimming Functions', () => {
     });
 
     const createSplineShape = (spline: Spline): Shape => ({
-        type: 'spline',
+        type: GeometryType.SPLINE,
         geometry: spline,
         id: 'test-spline',
         layer: 'default',
