@@ -1,5 +1,5 @@
 {
-  "threshold": 0.4,
+  "threshold": 0,
   "minLines": 5,
   "minTokens": 70,
   "ignore": ["**/*.d.ts", "**/node_modules/**", "**/*.test.ts"],
