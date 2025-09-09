@@ -10,6 +10,11 @@ import {
 } from './path-optimization-utils';
 import type { Point2D } from '$lib/types';
 import type { StartPointOptimizationParameters } from '../types/algorithm-parameters';
+import {
+    DEFAULT_ARRAY_NOT_FOUND_INDEX,
+    MIN_VERTICES_FOR_POLYLINE,
+    POLYGON_POINTS_MIN,
+} from '../geometry/constants';
 
 /**
  * Result of optimizing a single chain's start point
@@ -79,7 +84,7 @@ function splitPolylineAtMidpoint(polyline: Shape): [Shape, Shape] | null {
     // Find the best shape to split using the same logic as chains
     const shapeIndexToSplit: number = findBestShapeToSplit(tempChain.shapes);
 
-    if (shapeIndexToSplit === -1) return null;
+    if (shapeIndexToSplit === DEFAULT_ARRAY_NOT_FOUND_INDEX) return null;
 
     const shapeToSplit: Shape = tempChain.shapes[shapeIndexToSplit];
     let splitShapes: [Shape, Shape] | null = null;
@@ -101,16 +106,19 @@ function splitPolylineAtMidpoint(polyline: Shape): [Shape, Shape] | null {
     );
 
     // Find the midpoint to split the rearranged shapes into two polylines
+
     const halfIndex: number = Math.floor(newShapes.length / 2);
 
     // Create geometries for the two polylines
     const firstGeometry = {
         closed: false,
+
         shapes: newShapes.slice(0, halfIndex + 1),
     };
 
     const secondGeometry = {
         closed: false,
+
         shapes: newShapes.slice(halfIndex + 1),
     };
 
@@ -149,7 +157,7 @@ function findBestShapeToSplit(shapes: Shape[]): number {
         if (shapes[i].type === GeometryType.POLYLINE) {
             const geom: Polyline = shapes[i].geometry as Polyline;
             const points: Point2D[] | null = polylineToPoints(geom);
-            if (points && points.length === 2) {
+            if (points && points.length === MIN_VERTICES_FOR_POLYLINE) {
                 return i;
             }
         }
@@ -170,7 +178,7 @@ function findBestShapeToSplit(shapes: Shape[]): number {
     }
 
     // No splittable shapes found
-    return -1;
+    return DEFAULT_ARRAY_NOT_FOUND_INDEX;
 }
 
 /**
@@ -210,7 +218,7 @@ function optimizeChainStartPoint(
 
             // Check if polyline has enough points
             const points: Point2D[] | null = polylineToPoints(polylineGeom);
-            if (points && points.length > 3) {
+            if (points && points.length > POLYGON_POINTS_MIN) {
                 // Check if it's closed (either explicit flag or geometric closure)
                 const hasClosedFlag: boolean = polylineGeom.closed === true;
                 const isGeometricallyClosed: boolean = isChainClosed(
@@ -251,7 +259,7 @@ function optimizeChainStartPoint(
     // Find the best shape to split (prefer lines and arcs over complex shapes)
     const shapeIndexToSplit: number = findBestShapeToSplit(chain.shapes);
 
-    if (shapeIndexToSplit === -1) {
+    if (shapeIndexToSplit === DEFAULT_ARRAY_NOT_FOUND_INDEX) {
         return {
             originalChain: chain,
             optimizedChain: null,

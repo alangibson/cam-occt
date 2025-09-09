@@ -3,6 +3,11 @@
  * Handles conversion between different units and physical display scaling
  */
 
+/**
+ * Unit display precision for inches (3 decimal places vs 1 for mm)
+ */
+const INCH_DISPLAY_PRECISION = 3;
+
 export enum Unit {
     MM = 'mm',
     INCH = 'inch',
@@ -69,7 +74,7 @@ export function getPhysicalScaleFactor(
  * Format a numeric value with appropriate precision for the given unit
  */
 export function formatValue(value: number, unit: Unit): string {
-    const precision: number = unit === Unit.INCH ? 3 : 1; // More precision for inches
+    const precision: number = unit === Unit.INCH ? INCH_DISPLAY_PRECISION : 1; // 3 decimal places for inches, 1 for mm
     return value.toFixed(precision);
 }
 

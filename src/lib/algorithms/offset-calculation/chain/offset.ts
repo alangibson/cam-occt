@@ -45,6 +45,16 @@ import {
 } from './types';
 
 /**
+ * Offset gap tolerance for gap filling calculations
+ */
+const OFFSET_GAP_TOLERANCE = 5.0;
+
+/**
+ * Polyline point scoring weight for optimization
+ */
+const POLYLINE_POINT_SCORING_WEIGHT = 10;
+
+/**
  * Main entry point for chain offsetting
  *
  * @param chain - The original chain to offset
@@ -887,12 +897,12 @@ function calculateTrimAmount(
                 const pointCountDiff: number = Math.abs(
                     originalPoints.length - trimmedPoints.length
                 );
-                return pointCountDiff * 10; // Arbitrary units
+                return pointCountDiff * POLYLINE_POINT_SCORING_WEIGHT; // Arbitrary units
             }
 
             default:
                 // For other shape types (spline, ellipse, circle), return a conservative estimate
-                return 5.0;
+                return OFFSET_GAP_TOLERANCE;
         }
     } catch {
         // If calculation fails, return a default value

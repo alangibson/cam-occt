@@ -16,6 +16,11 @@ import { calculateSquaredDistance } from '../../utils/math-utils';
 import { isEllipseClosed } from '../../utils/ellipse-utils';
 import { detectCutDirection } from '../cut-direction';
 import { CutDirection } from '../../types/direction';
+import {
+    GEOMETRIC_PRECISION_TOLERANCE,
+    CHAIN_CLOSURE_TOLERANCE,
+} from '../../constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
 
 export interface ChainDetectionOptions {
     tolerance: number;
@@ -288,7 +293,7 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
         case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             const points: Point2D[] = polylineToPoints(polyline);
-            if (!points || points.length < 3) return false;
+            if (!points || points.length < POLYGON_POINTS_MIN) return false;
 
             // CRITICAL FIX: For polylines, first check the explicit closed flag from DXF parsing
             // This is especially important for polylines with bulges where the geometric
@@ -322,7 +327,7 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
         case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
             // Use the centralized ellipse closed detection logic
-            return isEllipseClosed(ellipse, 0.001);
+            return isEllipseClosed(ellipse, GEOMETRIC_PRECISION_TOLERANCE);
 
         case GeometryType.SPLINE:
             const splineGeom: Spline = shape.geometry as Spline;
@@ -418,7 +423,7 @@ class UnionFind {
  */
 export function setChainDirection(
     chain: Chain,
-    tolerance: number = 0.1
+    tolerance: number = CHAIN_CLOSURE_TOLERANCE
 ): Chain {
     const direction = detectCutDirection(chain, tolerance);
 
@@ -442,7 +447,7 @@ export function setChainDirection(
  */
 export function setChainsDirection(
     chains: Chain[],
-    tolerance: number = 0.1
+    tolerance: number = CHAIN_CLOSURE_TOLERANCE
 ): Chain[] {
     return chains.map((chain) => setChainDirection(chain, tolerance));
 }

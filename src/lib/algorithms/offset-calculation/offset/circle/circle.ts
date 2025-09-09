@@ -41,6 +41,7 @@ export function offsetCircle(
         }
 
         const offsetShape: Shape = {
+            // eslint-disable-next-line no-magic-numbers
             id: `offset_${Math.random().toString(36).substr(2, 9)}`,
             type: GeometryType.CIRCLE,
             geometry: {

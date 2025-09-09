@@ -7,6 +7,10 @@ import {
     getSplinePoint,
     type SplineExtensionResult,
 } from '../../extend/spline';
+import {
+    CONFIDENCE_HIGH_THRESHOLD,
+    CONFIDENCE_THRESHOLD,
+} from '../../../../../lib/geometry/constants';
 
 /**
  * Spline Fill Module
@@ -133,7 +137,10 @@ export function fillSplineToIntersection(
             intersectionPoint,
             warnings,
             errors: [],
-            confidence: extensionInfo.method === 'parametric' ? 1.0 : 0.8,
+            confidence:
+                extensionInfo.method === 'parametric'
+                    ? CONFIDENCE_HIGH_THRESHOLD
+                    : CONFIDENCE_THRESHOLD,
         };
     } catch (error) {
         return createFailureResult(

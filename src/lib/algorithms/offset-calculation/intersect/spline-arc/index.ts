@@ -4,8 +4,9 @@ import {
     createVerbCurveFromArc,
     createVerbCurveFromSpline,
     processVerbIntersectionResults,
-    INTERSECTION_TOLERANCE,
 } from '../../../../utils/verb-integration-utils';
+import { INTERSECTION_TOLERANCE } from '../../../../constants';
+import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 import { createExtendedSplineVerb } from '../../extend/spline';
 import { createExtendedArc } from '../../extend/arc';
 import { processSplineWithCurveIntersection } from '../../shared/spline-intersection-utils';
@@ -21,7 +22,7 @@ export function findSplineArcIntersectionsVerb(
     arcShape: Shape,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     const spline: import('$lib/types/geometry').Spline =
         splineShape.geometry as Spline;

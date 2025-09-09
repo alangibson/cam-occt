@@ -5,6 +5,19 @@ import type { LeadInConfig, LeadOutConfig } from './lead-calculation';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import type { Shape } from '$lib/types';
 import { getShapeBoundingBox } from '../utils/shape-bounds-utils';
+import {
+    MAX_ITERATIONS,
+    HALF_PERCENT,
+    STANDARD_GRID_SPACING,
+    GEOMETRIC_PRECISION_TOLERANCE,
+} from '../constants';
+import { FULL_CIRCLE_DEG, POLYGON_POINTS_MIN } from '../geometry/constants';
+
+/**
+ * Lead validation constants for lead distance validation
+ */
+const LEAD_PROXIMITY_THRESHOLD = 50;
+const MINIMUM_SHELL_DISTANCE = 1.0;
 
 export interface LeadValidationResult {
     isValid: boolean;
@@ -145,7 +158,7 @@ function validateBasicConfiguration(config: LeadConfig): LeadValidationResult {
     // Check for valid angle ranges if specified
     if (
         config.leadIn.angle !== undefined &&
-        (config.leadIn.angle < 0 || config.leadIn.angle >= 360)
+        (config.leadIn.angle < 0 || config.leadIn.angle >= FULL_CIRCLE_DEG)
     ) {
         warnings.push('Lead-in angle must be between 0 and 359 degrees');
         suggestions.push(
@@ -157,7 +170,7 @@ function validateBasicConfiguration(config: LeadConfig): LeadValidationResult {
 
     if (
         config.leadOut.angle !== undefined &&
-        (config.leadOut.angle < 0 || config.leadOut.angle >= 360)
+        (config.leadOut.angle < 0 || config.leadOut.angle >= FULL_CIRCLE_DEG)
     ) {
         warnings.push('Lead-out angle must be between 0 and 359 degrees');
         suggestions.push(
@@ -228,8 +241,9 @@ function validateChainGeometry(
 
     // Check for very small chains with long leads
     if (
-        chainSize < 3 &&
-        (config.leadIn.length > 10 || config.leadOut.length > 10)
+        chainSize < POLYGON_POINTS_MIN &&
+        (config.leadIn.length > STANDARD_GRID_SPACING ||
+            config.leadOut.length > STANDARD_GRID_SPACING)
     ) {
         warnings.push(
             'Chain is very small but leads are long - may cause intersection issues'
@@ -294,7 +308,10 @@ function validatePartContext(
             // Let actual solid area detection handle most cases
             const minDistanceToShell: number =
                 calculateMinDistanceBetweenBounds(shellBounds, holeBounds);
-            if (minDistanceToShell < 1.0 && maxLeadLength > 50) {
+            if (
+                minDistanceToShell < MINIMUM_SHELL_DISTANCE &&
+                maxLeadLength > LEAD_PROXIMITY_THRESHOLD
+            ) {
                 // Only warn for very close holes and very long leads
                 warnings.push(
                     `Lead may intersect with nearby hole (${hole.id})`
@@ -326,9 +343,8 @@ function validateLeadLengths(config: LeadConfig): LeadValidationResult {
     const suggestions: string[] = [];
     let severity: 'info' | 'warning' | 'error' = 'info';
 
-    // TODO remove this magic number
     // Check for very long leads
-    const maxRecommendedLength: number = 50; // Arbitrary but reasonable limit
+    const maxRecommendedLength: number = MAX_ITERATIONS; // Reasonable limit for lead lengths
 
     if (config.leadIn.length > maxRecommendedLength) {
         warnings.push(`Lead-in length (${config.leadIn.length}) is very long`);
@@ -349,7 +365,7 @@ function validateLeadLengths(config: LeadConfig): LeadValidationResult {
     }
 
     // Check for very short but non-zero leads
-    const minRecommendedLength: number = 0.5;
+    const minRecommendedLength: number = HALF_PERCENT;
 
     if (
         config.leadIn.type !== LeadType.NONE &&
@@ -521,7 +537,8 @@ function isChainClosed(chain: Chain): boolean {
     const startPoint: { x: number; y: number } = getShapeStartPoint(firstShape);
     const endPoint: { x: number; y: number } = getShapeEndPoint(lastShape);
 
-    const tolerance: number = 0.1; // Small tolerance for floating point comparison
+    // eslint-disable-next-line no-magic-numbers
+    const tolerance: number = GEOMETRIC_PRECISION_TOLERANCE * 100; // Small tolerance for floating point comparison (scaled up from precision tolerance)
     const distance: number = Math.sqrt(
         Math.pow(startPoint.x - endPoint.x, 2) +
             Math.pow(startPoint.y - endPoint.y, 2)

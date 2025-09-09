@@ -10,6 +10,7 @@ import {
     isNearlyEqual,
 } from '../../utils/math-utils';
 import { normalizeAngle } from '../../utils/polygon-geometry-shared';
+import { EPSILON } from '../../constants';
 
 // Re-export normalizeAngle from shared library for backward compatibility
 export { normalizeAngle };
@@ -20,7 +21,7 @@ export { normalizeAngle };
 export function approxEqual(
     a: number,
     b: number,
-    epsilon: number = 1e-10
+    epsilon: number = EPSILON
 ): boolean {
     return isNearlyEqual(a, b, epsilon);
 }
@@ -32,7 +33,7 @@ export function isBetween(
     value: number,
     min: number,
     max: number,
-    epsilon: number = 1e-10
+    epsilon: number = EPSILON
 ): boolean {
     return value >= min - epsilon && value <= max + epsilon;
 }
@@ -42,7 +43,7 @@ export function isBetween(
  */
 export function normalizeVector2D(vector: Point2D): Point2D {
     const length: number = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-    if (length < 1e-10) {
+    if (length < EPSILON) {
         return { x: 0, y: 0 };
     }
     return {
@@ -114,7 +115,7 @@ export function solveQuadratic(
     a: number,
     b: number,
     c: number,
-    epsilon: number = 1e-10
+    epsilon: number = EPSILON
 ): number[] {
     return mathSolveQuadratic(a, b, c, epsilon);
 }

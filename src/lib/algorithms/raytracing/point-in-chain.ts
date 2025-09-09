@@ -20,6 +20,7 @@ import type { RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { isChainClosed } from '../part-detection';
 import { createHorizontalRay } from './utils';
+import { CHAIN_CLOSURE_TOLERANCE } from '../../geometry/constants';
 import {
     countRayLineCrossings,
     countHorizontalRayLineCrossings,
@@ -47,7 +48,7 @@ export function isPointInsideChainExact(
     chain: Chain,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
-    if (!isChainClosed(chain, 0.1)) {
+    if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
         throw new Error('Cannot check point containment for open chain');
     }
 
@@ -63,6 +64,7 @@ export function isPointInsideChainExact(
     }
 
     // Apply odd-even rule: odd number of crossings means inside
+
     return totalCrossings % 2 === 1;
 }
 
@@ -183,7 +185,7 @@ export function arePointsInsideChainExact(
     chain: Chain,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean[] {
-    if (!isChainClosed(chain, 0.1)) {
+    if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
         throw new Error('Cannot check point containment for open chain');
     }
 
@@ -204,7 +206,7 @@ export function anyPointInsideChainExact(
     chain: Chain,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
-    if (!isChainClosed(chain, 0.1)) {
+    if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
         throw new Error('Cannot check point containment for open chain');
     }
 
@@ -230,7 +232,7 @@ export function countPointsInsideChainExact(
     chain: Chain,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): number {
-    if (!isChainClosed(chain, 0.1)) {
+    if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
         throw new Error('Cannot check point containment for open chain');
     }
 

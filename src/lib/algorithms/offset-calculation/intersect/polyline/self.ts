@@ -15,7 +15,14 @@ import {
     type IntersectionType,
     DEFAULT_INTERSECTION_TYPE,
 } from '../index';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
 import { calculatePolylineParameter } from '../polyline-spline/helpers';
+import { EPSILON } from '$lib/constants';
+
+/**
+ * Algorithm selection threshold based on segment count
+ */
+const POLYLINE_ALGORITHM_SWITCH_THRESHOLD = 20;
 
 /**
  * Self-Intersection Detection for Polylines
@@ -96,13 +103,13 @@ export function findPolylineSelfIntersections(
         (shape) => shape.geometry as Line | Arc
     );
 
-    if (segments.length < 3) {
+    if (segments.length < POLYGON_POINTS_MIN) {
         // Need at least 3 segments to have non-adjacent intersections
         return [];
     }
 
     // Use brute force approach for small polylines (more efficient than sweep line overhead)
-    if (segments.length < 20) {
+    if (segments.length < POLYLINE_ALGORITHM_SWITCH_THRESHOLD) {
         return findSelfIntersectionsBruteForce(segments, intersectionType);
     }
 
@@ -201,7 +208,7 @@ function findSelfIntersectionsSweepLine(
     // Sort events by x-coordinate, then by y-coordinate
     events.sort((a, b) => {
         const dx = a.x - b.x;
-        if (Math.abs(dx) > 1e-10) return dx;
+        if (Math.abs(dx) > EPSILON) return dx;
         return a.y - b.y;
     });
 
@@ -334,7 +341,7 @@ export function hasPolylineSelfIntersections(polylineShape: Shape): boolean {
         (shape) => shape.geometry as Line | Arc
     );
 
-    if (segments.length < 3) {
+    if (segments.length < POLYGON_POINTS_MIN) {
         return false;
     }
 

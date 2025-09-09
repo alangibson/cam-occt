@@ -13,6 +13,12 @@ import { GeometryType } from '../types/geometry';
 import { polylineToPoints } from './polyline';
 import { sampleNURBS } from './nurbs';
 import { calculateArcPoint } from '../utils/arc-utils';
+import { VALIDATION_SAMPLE_COUNT } from './constants';
+import { THREE_HALVES_PI } from './constants';
+import {
+    GEOMETRIC_PRECISION_TOLERANCE,
+    SPLINE_TESSELLATION_TOLERANCE,
+} from '../constants';
 
 export function getBoundingBoxForLine(line: Line): BoundingBox {
     if (
@@ -127,12 +133,7 @@ export function getBoundingBoxForArc(arc: Arc): BoundingBox {
         }
     };
 
-    const extremeAngles: number[] = [
-        0,
-        Math.PI / 2,
-        Math.PI,
-        (3 * Math.PI) / 2,
-    ];
+    const extremeAngles: number[] = [0, Math.PI / 2, Math.PI, THREE_HALVES_PI];
 
     for (const angle of extremeAngles) {
         if (isAngleInArc(angle)) {
@@ -265,7 +266,7 @@ export function getBoundingBoxForSpline(spline: Spline): BoundingBox {
     let points: Point2D[];
 
     try {
-        points = sampleNURBS(spline, 50);
+        points = sampleNURBS(spline, VALIDATION_SAMPLE_COUNT);
     } catch {
         if (spline.fitPoints && spline.fitPoints.length > 0) {
             points = spline.fitPoints;
@@ -380,7 +381,7 @@ export function getBoundingBoxForShapes(shapes: Shape[]): BoundingBox {
 
 export function calculateDynamicTolerance(
     shapes: Shape[],
-    fallbackTolerance: number = 0.1
+    fallbackTolerance: number = SPLINE_TESSELLATION_TOLERANCE
 ): number {
     if (shapes.length === 0) return fallbackTolerance;
 
@@ -392,8 +393,8 @@ export function calculateDynamicTolerance(
 
         // Use 0.1% of diagonal as tolerance, with reasonable min/max bounds
         const dynamicTolerance: number = Math.max(
-            0.001,
-            Math.min(1.0, diagonal * 0.001)
+            GEOMETRIC_PRECISION_TOLERANCE,
+            Math.min(1.0, diagonal * GEOMETRIC_PRECISION_TOLERANCE)
         );
         return dynamicTolerance;
     } catch {

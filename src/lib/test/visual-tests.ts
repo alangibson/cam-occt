@@ -1,3 +1,4 @@
+/* eslint-disable no-magic-numbers */
 import type {
     Shape,
     Line,
@@ -6,13 +7,13 @@ import type {
     Polyline,
     Spline,
     Ellipse,
-} from '../../../../lib/types/geometry';
-import type { Chain } from '../../chain-detection/chain-detection';
-import type { OffsetChain } from './types';
-import { tessellateSpline } from '../../../geometry/spline-tessellation';
-import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';
+} from '../types/geometry';
+import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { OffsetChain } from '../algorithms/offset-calculation/chain/types';
+import { tessellateSpline } from '../geometry/spline-tessellation';
+import { tessellateEllipse } from '../geometry/ellipse-tessellation';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { getShapeBoundingBox } from '../../../utils/shape-bounds-utils';
+import { getShapeBoundingBox } from '../utils/shape-bounds-utils';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 

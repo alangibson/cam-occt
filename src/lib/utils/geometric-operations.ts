@@ -25,6 +25,13 @@ import {
     calculateDistanceBetweenPoints,
     isPointInPolygon as isPointInPolygonShared,
 } from './polygon-geometry-shared';
+import {
+    GEOMETRIC_PRECISION_TOLERANCE,
+    ELLIPSE_TESSELLATION_POINTS,
+} from '../constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
+
+export const LEAD_SEGMENT_COUNT = 8;
 
 /**
  * Checks if one closed chain is completely contained within another closed chain
@@ -41,8 +48,8 @@ export function isChainGeometricallyContained(
     if (
         !innerPolygon ||
         !outerPolygon ||
-        innerPolygon.length < 3 ||
-        outerPolygon.length < 3
+        innerPolygon.length < POLYGON_POINTS_MIN ||
+        outerPolygon.length < POLYGON_POINTS_MIN
     ) {
         throw new Error(
             `Failed to extract polygons for containment check: inner chain ${innerChain.id}=${!!innerPolygon}, outer chain ${outerChain.id}=${!!outerPolygon}. Chains may have gaps preventing polygon creation.`
@@ -78,7 +85,7 @@ function extractPolygonFromChain(chain: Chain): Point2D[] | null {
                     firstNewPoint
                 );
 
-                if (distance > 0.001) {
+                if (distance > GEOMETRIC_PRECISION_TOLERANCE) {
                     points.push(...shapePoints);
                 } else {
                     points.push(...shapePoints.slice(1));
@@ -89,7 +96,7 @@ function extractPolygonFromChain(chain: Chain): Point2D[] | null {
 
     // Remove duplicate points and ensure we have enough for a polygon
     const cleanedPoints: Point2D[] = removeDuplicatePoints(points);
-    return cleanedPoints.length >= 3 ? cleanedPoints : null;
+    return cleanedPoints.length >= POLYGON_POINTS_MIN ? cleanedPoints : null;
 }
 
 /**
@@ -135,8 +142,8 @@ function getShapePoints(shape: Shape): Point2D[] {
             if (span <= 0) span += 2 * Math.PI;
 
             const arcSegments: number = Math.max(
-                8,
-                Math.ceil(span / (Math.PI / 8))
+                LEAD_SEGMENT_COUNT,
+                Math.ceil(span / (Math.PI / LEAD_SEGMENT_COUNT))
             ); // At least 8 segments
 
             for (let i: number = 0; i <= arcSegments; i++) {
@@ -175,7 +182,7 @@ function getShapePoints(shape: Shape): Point2D[] {
                 if (paramSpan <= 0) paramSpan += 2 * Math.PI;
 
                 const numSegments: number = Math.max(
-                    8,
+                    LEAD_SEGMENT_COUNT,
                     Math.ceil((ellipseSegments * paramSpan) / (2 * Math.PI))
                 );
 
@@ -204,7 +211,7 @@ function getShapePoints(shape: Shape): Point2D[] {
                 shape.geometry as Spline;
             try {
                 // Use NURBS sampling for accurate polygon representation
-                return sampleNURBS(spline, 64); // Use more points for geometric accuracy
+                return sampleNURBS(spline, ELLIPSE_TESSELLATION_POINTS); // Use more points for geometric accuracy
             } catch {
                 // Fallback to fit points or control points if NURBS evaluation fails
                 if (spline.fitPoints && spline.fitPoints.length > 0) {
@@ -228,7 +235,7 @@ function getShapePoints(shape: Shape): Point2D[] {
  */
 function removeDuplicatePoints(
     points: Point2D[],
-    tolerance: number = 0.001
+    tolerance: number = GEOMETRIC_PRECISION_TOLERANCE
 ): Point2D[] {
     if (points.length <= 1) return points;
 
@@ -356,7 +363,7 @@ export function calculatePolygonArea(polygon: Point2D[]): number {
  * Calculates the centroid of a polygon
  */
 export function calculatePolygonCentroid(polygon: Point2D[]): Point2D | null {
-    if (polygon.length < 3) return null;
+    if (polygon.length < POLYGON_POINTS_MIN) return null;
 
     const area = calculatePolygonArea(polygon);
     if (area === 0) return null;
@@ -372,8 +379,11 @@ export function calculatePolygonCentroid(polygon: Point2D[]): Point2D | null {
         cy += (polygon[i].y + polygon[j].y) * factor;
     }
 
+    // eslint-disable-next-line no-magic-numbers
     const signedArea = area * (polygon[0].x < polygon[1].x ? 1 : -1);
+    // eslint-disable-next-line no-magic-numbers
     cx /= 6 * signedArea;
+    // eslint-disable-next-line no-magic-numbers
     cy /= 6 * signedArea;
 
     return { x: cx, y: cy };

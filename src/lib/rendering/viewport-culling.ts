@@ -7,6 +7,11 @@
 
 import type { Point2D, Shape, BoundingBox } from '../types/geometry';
 import { getBoundingBoxForShape } from '../geometry/bounding-box';
+import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '../constants';
+/**
+ * Default margin for viewport culling in world units
+ */
+const VIEWPORT_CULLING_MARGIN = 50;
 
 export interface ViewportBounds {
     minX: number;
@@ -79,8 +84,8 @@ export function calculateViewportBounds(
     const totalScale = scale * physicalScale;
 
     // Calculate origin position
-    const originX = canvasWidth * 0.25 + offset.x;
-    const originY = canvasHeight * 0.75 + offset.y;
+    const originX = canvasWidth * QUARTER_PERCENT + offset.x;
+    const originY = canvasHeight * THREE_QUARTERS_PERCENT + offset.y;
 
     // Convert canvas corners to world coordinates
     const topLeft = {
@@ -107,7 +112,7 @@ export function calculateViewportBounds(
 export function cullShapesToViewport(
     shapes: Shape[],
     viewport: ViewportBounds,
-    margin: number = 50 // Extra margin in world units
+    margin: number = VIEWPORT_CULLING_MARGIN // Extra margin in world units
 ): { visibleShapes: Shape[]; culledCount: number } {
     const visibleShapes: Shape[] = [];
     let culledCount = 0;

@@ -16,6 +16,11 @@ import { findEllipseCircleIntersectionsVerb } from '../circle-ellipse/index';
 import { findEllipseArcIntersectionsVerb } from '../arc-ellipse/index';
 
 /**
+ * Bezier curve tessellation segments for ellipse intersection calculations
+ */
+const CUBIC_BEZIER_SEGMENTS = 32;
+
+/**
  * Find intersections involving ellipses
  */
 export function findEllipseIntersections(
@@ -115,7 +120,7 @@ export function findEllipseGenericIntersections(
  */
 export function approximateEllipseAsPolyline(
     ellipse: Ellipse,
-    segments: number = 32
+    segments: number = CUBIC_BEZIER_SEGMENTS
 ): Polyline {
     const {
         center,

@@ -14,6 +14,11 @@ import {
     polylineToVertices,
 } from '$lib/geometry/polyline';
 import { calculateLineParameter } from '../../shared/trim-extend-utils';
+import {
+    MIN_VERTICES_FOR_POLYLINE,
+    TOLERANCE_RELAXATION_MULTIPLIER,
+    DEFAULT_ARRAY_NOT_FOUND_INDEX,
+} from '../../../../geometry/constants';
 
 /**
  * Create a line segment from polyline points at given index
@@ -42,7 +47,7 @@ function findClosestPointOnPolylineSegments(
     closestParam: number;
 } {
     let minDistance: number = Infinity;
-    let closestIndex: number = -1;
+    let closestIndex: number = DEFAULT_ARRAY_NOT_FOUND_INDEX;
     let closestParam: number = 0;
 
     for (let i: number = 0; i < points.length - 1; i++) {
@@ -63,6 +68,7 @@ function findClosestPointOnPolylineSegments(
         };
 
         // Calculate distance to this point
+
         const distance: number = Math.sqrt(
             Math.pow(point.x - pointOnSegment.x, 2) +
                 Math.pow(point.y - pointOnSegment.y, 2)
@@ -97,13 +103,13 @@ export function trimPolyline(
     };
 
     const points: Point2D[] = polylineToPoints(polyline);
-    if (points.length < 2) {
+    if (points.length < MIN_VERTICES_FOR_POLYLINE) {
         result.errors.push('Cannot trim polyline with less than 2 points');
         return result;
     }
 
     // Find which segment the intersection point lies on
-    let segmentIndex: number = -1;
+    let segmentIndex: number = DEFAULT_ARRAY_NOT_FOUND_INDEX;
     let segmentParam: number = 0;
 
     for (let i: number = 0; i < points.length - 1; i++) {
@@ -142,14 +148,18 @@ export function trimPolyline(
         }
     }
 
-    if (segmentIndex === -1) {
+    if (segmentIndex === DEFAULT_ARRAY_NOT_FOUND_INDEX) {
         // Fallback: find the closest segment if exact match fails
         const { minDistance, closestIndex, closestParam } =
             findClosestPointOnPolylineSegments(point, points);
 
         // Use relaxed tolerance (10x normal tolerance for polylines)
-        const relaxedTolerance: number = tolerance * 10;
-        if (closestIndex !== -1 && minDistance <= relaxedTolerance) {
+        const relaxedTolerance: number =
+            tolerance * TOLERANCE_RELAXATION_MULTIPLIER;
+        if (
+            closestIndex !== DEFAULT_ARRAY_NOT_FOUND_INDEX &&
+            minDistance <= relaxedTolerance
+        ) {
             segmentIndex = closestIndex;
             segmentParam = closestParam;
             result.warnings.push(
@@ -201,7 +211,7 @@ export function trimPolyline(
     }
 
     // Ensure we have at least 2 points
-    if (newPoints.length < 2) {
+    if (newPoints.length < MIN_VERTICES_FOR_POLYLINE) {
         result.errors.push('Trimmed polyline would have less than 2 points');
         return result;
     }

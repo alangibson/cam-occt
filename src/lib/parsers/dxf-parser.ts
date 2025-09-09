@@ -19,6 +19,23 @@ import { generateSegments } from '../geometry/polyline';
 import { normalizeSplineWeights } from '../geometry/spline';
 import { getShapePointsForBounds } from '../utils/shape-bounds-utils';
 import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
+import {
+    DEFAULT_SPLINE_DEGREE,
+    FULL_CIRCLE_RADIANS,
+    HALF_CIRCLE_DEG,
+    MIN_CONTROL_POINTS_FOR_SPLINE,
+    MIN_VERTICES_FOR_LINE,
+    MIN_VERTICES_FOR_POLYLINE,
+} from '$lib/geometry/constants';
+
+// DXF INSUNITS constants
+const DXF_INSUNITS_INCHES = 1;
+const DXF_INSUNITS_MILLIMETERS = 4;
+const DXF_INSUNITS_CENTIMETERS = 5;
+const DXF_INSUNITS_METERS = 6;
+
+const DEFAULT_ELLIPSE_START_PARAM = 0;
+const SCALING_AVERAGE_DIVISOR = 2;
 
 interface DXFOptions {
     squashLayers?: boolean;
@@ -84,16 +101,16 @@ export async function parseDXF(
             parsed.header.$INSUNITS || parsed.header.insUnits;
         // Convert DXF $INSUNITS values to our unit system
         switch (insunits) {
-            case 1: // Inches
+            case DXF_INSUNITS_INCHES: // Inches
                 drawingUnits = Unit.INCH;
                 break;
-            case 4: // Millimeters
+            case DXF_INSUNITS_MILLIMETERS: // Millimeters
                 drawingUnits = Unit.MM;
                 break;
-            case 5: // Centimeters - treat as mm for now
+            case DXF_INSUNITS_CENTIMETERS: // Centimeters - treat as mm for now
                 drawingUnits = Unit.MM;
                 break;
-            case 6: // Meters - treat as mm for now
+            case DXF_INSUNITS_METERS: // Meters - treat as mm for now
                 drawingUnits = Unit.MM;
                 break;
             default:
@@ -198,7 +215,8 @@ function convertDXFEntity(
                     const scaleX: number = entity.scaleX || 1;
                     const scaleY: number = entity.scaleY || 1;
                     const rotation: number = entity.rotation || 0; // In degrees
-                    const rotationRad: number = (rotation * Math.PI) / 180; // Convert to radians
+                    const rotationRad: number =
+                        (rotation * Math.PI) / HALF_CIRCLE_DEG; // Convert to radians
 
                     // Get block base point for proper INSERT positioning
                     const basePoint: { x: number; y: number } =
@@ -247,7 +265,10 @@ function convertDXFEntity(
 
             case 'LINE':
                 // Handle LINE entities - can have vertices array or direct start/end points
-                if (entity.vertices && entity.vertices.length >= 2) {
+                if (
+                    entity.vertices &&
+                    entity.vertices.length >= MIN_VERTICES_FOR_LINE
+                ) {
                     return {
                         id: generateId(),
                         type: GeometryType.LINE,
@@ -325,7 +346,7 @@ function convertDXFEntity(
                 if (
                     entity.controlPoints &&
                     Array.isArray(entity.controlPoints) &&
-                    entity.controlPoints.length >= 2
+                    entity.controlPoints.length >= MIN_CONTROL_POINTS_FOR_SPLINE
                 ) {
                     const splineGeometry: Spline = {
                         controlPoints: entity.controlPoints.map(
@@ -336,7 +357,7 @@ function convertDXFEntity(
                         ),
                         knots: entity.knots || [],
                         weights: entity.weights || [],
-                        degree: entity.degree || 3,
+                        degree: entity.degree || DEFAULT_SPLINE_DEGREE,
                         fitPoints: entity.fitPoints
                             ? entity.fitPoints.map(
                                   (p: { x: number; y: number }) => ({
@@ -387,7 +408,7 @@ function convertDXFEntity(
                         }));
 
                     // Need at least 2 vertices to create a valid polyline
-                    if (vertices.length >= 2) {
+                    if (vertices.length >= MIN_VERTICES_FOR_POLYLINE) {
                         const isClosed: boolean =
                             entity.shape || entity.closed || false;
 
@@ -436,8 +457,8 @@ function convertDXFEntity(
                             y: entity.majorY,
                         },
                         minorToMajorRatio: entity.axisRatio,
-                        startParam: 0,
-                        endParam: 2 * Math.PI,
+                        startParam: DEFAULT_ELLIPSE_START_PARAM,
+                        endParam: FULL_CIRCLE_RADIANS,
                     };
 
                     // Add start and end parameters if they exist (ellipse arcs)
@@ -552,7 +573,7 @@ function transformShape(
                 | Arc;
             circleOrArc.center = transformPoint(circleOrArc.center);
             // Scale radius (use average of scaleX and scaleY for uniform scaling)
-            circleOrArc.radius *= (scaleX + scaleY) / 2;
+            circleOrArc.radius *= (scaleX + scaleY) / SCALING_AVERAGE_DIVISOR;
             // Adjust arc angles for rotation
             if (clonedShape.type === GeometryType.ARC && rotationRad !== 0) {
                 const arc: Arc = circleOrArc as Arc;
@@ -580,7 +601,7 @@ function transformShape(
                     const arc: Arc = { ...segment } as Arc;
                     arc.center = transformPoint(arc.center);
                     // Scale radius (use average of scaleX and scaleY for uniform scaling)
-                    arc.radius *= (scaleX + scaleY) / 2;
+                    arc.radius *= (scaleX + scaleY) / SCALING_AVERAGE_DIVISOR;
                     // Adjust arc angles for rotation
                     if (rotationRad !== 0) {
                         arc.startAngle += rotationRad;

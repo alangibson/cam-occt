@@ -21,6 +21,8 @@ import { GeometryType } from '../types/geometry';
 import { polylineToPoints } from '../geometry/polyline';
 import { sampleNURBS } from '../geometry/nurbs';
 import { getBoundingBoxForArc } from '../geometry/bounding-box';
+import { HIGH_TESSELLATION_SEGMENTS } from '../geometry/constants';
+import { STANDARD_TESSELLATION_COUNT } from '$lib/constants';
 
 export interface BoundingBox {
     minX: number;
@@ -106,7 +108,7 @@ export function calculateSplineBoundingBox(spline: Spline): BoundingBox {
     // Try to use NURBS sampling for accurate bounds
     let points: Point2D[];
     try {
-        points = sampleNURBS(spline, 32); // Sample enough points for good bounds
+        points = sampleNURBS(spline, HIGH_TESSELLATION_SEGMENTS); // Sample enough points for good bounds
     } catch {
         // Fallback to fit points or control points
         points = spline.fitPoints || spline.controlPoints || [];
@@ -233,7 +235,7 @@ export function getShapePointsForBounds(shape: Shape): Point2D[] {
             const spline: Spline = shape.geometry as Spline;
             try {
                 // Sample points along the NURBS curve for accurate bounds
-                return sampleNURBS(spline, 20); // Use fewer points for bounds calculation
+                return sampleNURBS(spline, STANDARD_TESSELLATION_COUNT); // Use fewer points for bounds calculation
             } catch {
                 // Fallback to fit points or control points if NURBS evaluation fails
                 if (spline.fitPoints && spline.fitPoints.length > 0) {

@@ -19,6 +19,12 @@ import {
     getShapeEndPoint,
     reverseShape,
 } from '$lib/geometry';
+import { CHAIN_CLOSURE_TOLERANCE } from '../../constants';
+import {
+    DEFAULT_ARRAY_NOT_FOUND_INDEX,
+    PRECISION_DECIMAL_PLACES,
+    TOLERANCE_RELAXATION_MULTIPLIER,
+} from '$lib/geometry/constants';
 
 export interface ChainTraversalIssue {
     type:
@@ -171,7 +177,7 @@ function attemptTraversalFromStart(
         const currentEndPoint: Point2D = getShapeEndPoint(currentShape);
 
         // Find next shape whose start point connects to current end point
-        let nextShapeIndex: number = -1;
+        let nextShapeIndex: number = DEFAULT_ARRAY_NOT_FOUND_INDEX;
         for (let i: number = 0; i < chain.shapes.length; i++) {
             if (usedShapes.has(i)) continue;
 
@@ -187,7 +193,7 @@ function attemptTraversalFromStart(
             }
         }
 
-        if (nextShapeIndex === -1) {
+        if (nextShapeIndex === DEFAULT_ARRAY_NOT_FOUND_INDEX) {
             // No connecting shape found, traversal fails
             return { canTraverse: false, path };
         }
@@ -205,7 +211,7 @@ function attemptTraversalFromStart(
  */
 function detectSpecificTraversalIssues(chain: Chain): ChainTraversalIssue[] {
     const issues: ChainTraversalIssue[] = [];
-    const tolerance: number = 0.01;
+    const tolerance: number = CHAIN_CLOSURE_TOLERANCE;
 
     for (let i: number = 0; i < chain.shapes.length; i++) {
         for (let j: number = i + 1; j < chain.shapes.length; j++) {
@@ -226,7 +232,7 @@ function detectSpecificTraversalIssues(chain: Chain): ChainTraversalIssue[] {
                     shapeIndex2: j,
                     point1: shape1End,
                     point2: shape2End,
-                    description: `Shapes ${i + 1} and ${j + 1} both end at the same point (${shape1End.x.toFixed(3)}, ${shape1End.y.toFixed(3)}). One should connect end-to-start with the other.`,
+                    description: `Shapes ${i + 1} and ${j + 1} both end at the same point (${shape1End.x.toFixed(PRECISION_DECIMAL_PLACES)}, ${shape1End.y.toFixed(PRECISION_DECIMAL_PLACES)}). One should connect end-to-start with the other.`,
                 });
             }
 
@@ -239,7 +245,7 @@ function detectSpecificTraversalIssues(chain: Chain): ChainTraversalIssue[] {
                     shapeIndex2: j,
                     point1: shape1Start,
                     point2: shape2Start,
-                    description: `Shapes ${i + 1} and ${j + 1} both start at the same point (${shape1Start.x.toFixed(3)}, ${shape1Start.y.toFixed(3)}). One should connect end-to-start with the other.`,
+                    description: `Shapes ${i + 1} and ${j + 1} both start at the same point (${shape1Start.x.toFixed(PRECISION_DECIMAL_PLACES)}, ${shape1Start.y.toFixed(PRECISION_DECIMAL_PLACES)}). One should connect end-to-start with the other.`,
                 });
             }
         }
@@ -253,7 +259,7 @@ function detectSpecificTraversalIssues(chain: Chain): ChainTraversalIssue[] {
  */
 function detectCoincidentPointIssues(chain: Chain): ChainTraversalIssue[] {
     const issues: ChainTraversalIssue[] = [];
-    const tolerance: number = 0.01;
+    const tolerance: number = CHAIN_CLOSURE_TOLERANCE;
 
     // Look for shapes that have coincident points but are not in proper traversal order
     for (let i: number = 0; i < chain.shapes.length; i++) {
@@ -295,7 +301,7 @@ function detectCoincidentPointIssues(chain: Chain): ChainTraversalIssue[] {
                             shapeIndex2: j,
                             point1,
                             point2,
-                            description: `Non-sequent shapes ${i + 1} and ${j + 1} have coincident points at (${point1.x.toFixed(3)}, ${point1.y.toFixed(3)}). This may indicate improper chain ordering.`,
+                            description: `Non-sequent shapes ${i + 1} and ${j + 1} have coincident points at (${point1.x.toFixed(PRECISION_DECIMAL_PLACES)}, ${point1.y.toFixed(PRECISION_DECIMAL_PLACES)}). This may indicate improper chain ordering.`,
                         });
                     }
                 }
@@ -411,7 +417,10 @@ function buildOptimalTraversalOrder(
 
     // If no perfect traversal found, try with larger tolerance for loose connections
     if (bestScore < shapes.length && tolerance < 1.0) {
-        const relaxedTolerance: number = Math.min(tolerance * 3, 1.0);
+        const relaxedTolerance: number = Math.min(
+            tolerance * TOLERANCE_RELAXATION_MULTIPLIER,
+            1.0
+        );
         console.log(
             `Trying relaxed tolerance ${relaxedTolerance} for chain normalization`
         );

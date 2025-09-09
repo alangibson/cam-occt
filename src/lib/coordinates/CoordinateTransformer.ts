@@ -1,4 +1,5 @@
 import type { Point2D } from '../../lib/types/geometry';
+import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '../constants';
 
 /**
  * Manages coordinate transformations between different coordinate systems:
@@ -48,8 +49,8 @@ export class CoordinateTransformer {
     getScreenOrigin(): Point2D {
         if (!this.cachedScreenOrigin) {
             this.cachedScreenOrigin = {
-                x: this.canvas.width * 0.25 + this.offset.x,
-                y: this.canvas.height * 0.75 + this.offset.y,
+                x: this.canvas.width * QUARTER_PERCENT + this.offset.x,
+                y: this.canvas.height * THREE_QUARTERS_PERCENT + this.offset.y,
             };
         }
         return this.cachedScreenOrigin;

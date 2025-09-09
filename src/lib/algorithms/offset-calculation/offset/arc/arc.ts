@@ -44,6 +44,7 @@ export function offsetArc(
         // The center point and angular span remain identical
         // Only the radius changes, which automatically updates the start/end points
         const offsetShape: Shape = {
+            // eslint-disable-next-line no-magic-numbers
             id: `offset_${Math.random().toString(36).substr(2, 9)}`,
             type: GeometryType.ARC,
             geometry: {

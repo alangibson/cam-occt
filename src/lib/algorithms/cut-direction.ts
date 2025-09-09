@@ -13,8 +13,16 @@ import { GeometryType } from '../types/geometry';
 import { CutDirection } from '../types/direction';
 import { getShapeEndPoint } from '$lib/geometry';
 import { getShapeStartPoint } from '$lib/geometry';
+import { CHAIN_CLOSURE_TOLERANCE, STANDARD_GRID_SPACING } from '../constants';
 import { polylineToPoints } from '../geometry/polyline';
 import { calculateSquaredDistance } from '../utils/math-utils';
+import {
+    POLYGON_POINTS_MIN,
+    DEFAULT_TESSELLATION_SEGMENTS,
+    QUARTER_CIRCLE_QUADRANTS,
+    OCTAGON_SIDES,
+    TESSELLATION_SAMPLE_MULTIPLIER,
+} from '$lib/geometry/constants';
 
 /**
  * Detects the cut direction of a chain using the shoelace formula (signed area calculation).
@@ -28,7 +36,7 @@ import { calculateSquaredDistance } from '../utils/math-utils';
  */
 export function detectCutDirection(
     chain: Chain,
-    tolerance: number = 0.1
+    tolerance: number = CHAIN_CLOSURE_TOLERANCE
 ): CutDirection {
     if (!chain || !chain.shapes || chain.shapes.length === 0) {
         return CutDirection.NONE;
@@ -47,7 +55,7 @@ export function detectCutDirection(
     // Get all points from the chain
     const points: Point2D[] = getChainPoints(chain);
 
-    if (points.length < 3) {
+    if (points.length < POLYGON_POINTS_MIN) {
         return CutDirection.NONE; // Need at least 3 points to determine direction
     }
 
@@ -150,7 +158,8 @@ function getShapePoints(shape: Shape): Point2D[] {
             const arcPoints: Point2D[] = [];
             const angleSpan: number = Math.abs(arc.endAngle - arc.startAngle);
             const numArcSamples: number = Math.max(
-                4,
+                QUARTER_CIRCLE_QUADRANTS,
+                // eslint-disable-next-line no-magic-numbers
                 Math.ceil(angleSpan / (Math.PI / 8))
             ); // At least 4 points
 
@@ -184,8 +193,8 @@ function getShapePoints(shape: Shape): Point2D[] {
             const spline: Spline = shape.geometry as Spline;
             const splinePoints: Point2D[] = [];
             const numSplineSamples: number = Math.max(
-                10,
-                spline.controlPoints.length * 3
+                STANDARD_GRID_SPACING,
+                spline.controlPoints.length * TESSELLATION_SAMPLE_MULTIPLIER
             );
 
             for (let i: number = 0; i <= numSplineSamples; i++) {
@@ -221,7 +230,8 @@ function getShapePoints(shape: Shape): Point2D[] {
                 // It's an elliptical arc
                 const paramSpan: number = ellipse.endParam - ellipse.startParam;
                 const numEllipseSamples: number = Math.max(
-                    8,
+                    OCTAGON_SIDES,
+                    // eslint-disable-next-line no-magic-numbers
                     Math.ceil(Math.abs(paramSpan) / (Math.PI / 8))
                 );
 
@@ -234,7 +244,7 @@ function getShapePoints(shape: Shape): Point2D[] {
                 }
             } else {
                 // It's a full ellipse - sample points around the complete ellipse
-                const numEllipseSamples: number = 16;
+                const numEllipseSamples: number = DEFAULT_TESSELLATION_SEGMENTS;
                 for (let i: number = 0; i < numEllipseSamples; i++) {
                     const param: number = (i / numEllipseSamples) * 2 * Math.PI;
                     ellipsePoints.push(calculateEllipsePoint(ellipse, param));
@@ -254,7 +264,7 @@ function getShapePoints(shape: Shape): Point2D[] {
  * Negative area indicates clockwise orientation
  */
 function calculateSignedArea(points: Point2D[]): number {
-    if (points.length < 3) return 0;
+    if (points.length < POLYGON_POINTS_MIN) return 0;
 
     let area: number = 0;
     const n: number = points.length;

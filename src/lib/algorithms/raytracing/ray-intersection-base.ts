@@ -9,6 +9,8 @@ import type { Point2D } from '../../types/geometry';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { solveQuadratic } from './utils';
+import { FULL_CIRCLE_RADIANS } from '../../geometry/constants';
+import { EPSILON } from '$lib/constants';
 
 /**
  * Quadratic setup result for ray-circle intersection
@@ -48,6 +50,7 @@ export function setupQuadraticIntersection(
 
     // Expand quadratic equation: at² + bt + c = 0
     const a = direction.x * direction.x + direction.y * direction.y;
+
     const b = 2 * (rayStart.x * direction.x + rayStart.y * direction.y);
     const c =
         rayStart.x * rayStart.x + rayStart.y * rayStart.y - radius * radius;
@@ -63,7 +66,7 @@ export function solveQuadraticIntersection(
     a: number,
     b: number,
     c: number,
-    epsilon: number = 1e-10
+    epsilon: number = EPSILON
 ): number[] {
     return solveQuadratic(a, b, c, epsilon);
 }
@@ -109,8 +112,9 @@ export function createRayIntersectionPoints(
             const dx = intersectionPoint.x - circleCenter.x;
             const dy = intersectionPoint.y - circleCenter.y;
             const angle = Math.atan2(dy, dx);
-            const normalizedAngle = angle < 0 ? angle + 2 * Math.PI : angle;
-            const shapeParameter = normalizedAngle / (2 * Math.PI);
+            const normalizedAngle =
+                angle < 0 ? angle + FULL_CIRCLE_RADIANS : angle;
+            const shapeParameter = normalizedAngle / FULL_CIRCLE_RADIANS;
 
             intersections.push({
                 point: intersectionPoint,

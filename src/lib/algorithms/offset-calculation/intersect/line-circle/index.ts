@@ -5,6 +5,7 @@ import {
     findLineArcIntersectionsSegmentAware,
     type SegmentPosition,
 } from '../line-arc/index';
+import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 
 /**
  * Find intersections between a line and a circle
@@ -14,7 +15,7 @@ export function findLineCircleIntersections(
     circle: Circle,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     // Convert circle to full arc and use line-arc intersection
     const arc: Arc = {

@@ -5,6 +5,7 @@ import { pointDistance } from '..';
 import { isAngleInArcRange } from '../../../intersection-arc-utils';
 import { type KeepSide, type TrimResult } from '../types';
 import { extendArcToPoint } from '../../extend/arc';
+import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/constants';
 
 /**
  * Adjust arc angles based on the trim point and which side to keep
@@ -49,16 +50,16 @@ function validateArcAngleRange(arc: Arc, tolerance: number): boolean {
         angleRange =
             arc.startAngle > arc.endAngle
                 ? arc.startAngle - arc.endAngle
-                : arc.startAngle - arc.endAngle + 2 * Math.PI;
+                : arc.startAngle - arc.endAngle + FULL_CIRCLE_RADIANS;
     } else {
         angleRange =
             arc.endAngle > arc.startAngle
                 ? arc.endAngle - arc.startAngle
-                : arc.endAngle - arc.startAngle + 2 * Math.PI;
+                : arc.endAngle - arc.startAngle + FULL_CIRCLE_RADIANS;
     }
 
     // Use the standard tolerance for minimum angular range (in radians)
-    return angleRange >= (tolerance * Math.PI) / 180;
+    return angleRange >= (tolerance * Math.PI) / HALF_CIRCLE_DEG;
 }
 
 /**

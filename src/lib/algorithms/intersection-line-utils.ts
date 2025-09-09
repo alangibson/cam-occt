@@ -1,6 +1,7 @@
 import type { Point2D, Line } from '../types/geometry';
 import type { IntersectionResult } from './offset-calculation/chain/types';
 import { EPSILON } from '../constants';
+import { TOLERANCE_RELAXATION_MULTIPLIER } from '../geometry/constants';
 
 export type SegmentPosition = 'first' | 'intermediate' | 'last' | 'only';
 
@@ -31,7 +32,7 @@ export function isParameterValidForSegment(
     param: number,
     position: SegmentPosition
 ): boolean {
-    const tolerance: number = EPSILON * 10; // Small tolerance for floating point precision
+    const tolerance: number = EPSILON * TOLERANCE_RELAXATION_MULTIPLIER; // Small tolerance for floating point precision
 
     switch (position) {
         case 'only':

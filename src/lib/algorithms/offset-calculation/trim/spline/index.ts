@@ -4,6 +4,16 @@ import { generateId } from '$lib/utils/id';
 import { pointDistance } from '..';
 import { calculateLineParameter } from '../../shared/trim-extend-utils';
 import { type KeepSide, type TrimResult } from '../types';
+import {
+    MIN_CONTROL_POINTS_FOR_SPLINE,
+    TOLERANCE_RELAXATION_MULTIPLIER,
+    DEFAULT_ARRAY_NOT_FOUND_INDEX,
+} from '../../../../geometry/constants';
+
+/**
+ * Default spline weight assignment
+ */
+const DEFAULT_SPLINE_WEIGHT = 1.0;
 
 /**
  * Trim a spline at a specific point
@@ -23,7 +33,7 @@ export function trimSpline(
         errors: [],
     };
 
-    if (spline.controlPoints.length < 2) {
+    if (spline.controlPoints.length < MIN_CONTROL_POINTS_FOR_SPLINE) {
         result.errors.push(
             'Cannot trim spline with less than 2 control points'
         );
@@ -34,7 +44,7 @@ export function trimSpline(
     // 1. Find the parameter t where the intersection occurs
     // 2. Adjust the control points and fit points accordingly
     // First, try to find the parameter by checking against fit points if available
-    let trimParam: number = -1;
+    let trimParam: number = DEFAULT_ARRAY_NOT_FOUND_INDEX;
 
     if (spline.fitPoints && spline.fitPoints.length > 0) {
         // Use fit points to estimate the parameter
@@ -49,7 +59,7 @@ export function trimSpline(
         }
 
         // If not found on exact fit points, interpolate between closest ones
-        if (trimParam === -1) {
+        if (trimParam === DEFAULT_ARRAY_NOT_FOUND_INDEX) {
             for (let i: number = 0; i < spline.fitPoints.length - 1; i++) {
                 const segStart: Point2D = spline.fitPoints[i];
                 const segEnd: Point2D = spline.fitPoints[i + 1];
@@ -100,11 +110,11 @@ export function trimSpline(
         }
     }
 
-    if (trimParam === -1) {
+    if (trimParam === DEFAULT_ARRAY_NOT_FOUND_INDEX) {
         // If we can't find the point on the spline exactly, use a more relaxed approach
         // Find the closest point on the spline's bounding box or control points
         let minDistance: number = Infinity;
-        let bestIndex: number = -1;
+        let bestIndex: number = DEFAULT_ARRAY_NOT_FOUND_INDEX;
 
         // Check against all control points with relaxed tolerance
         for (let i: number = 0; i < spline.controlPoints.length; i++) {
@@ -117,8 +127,12 @@ export function trimSpline(
         }
 
         // Use a much more relaxed tolerance for splines (10x the normal tolerance)
-        const relaxedTolerance: number = tolerance * 10;
-        if (bestIndex !== -1 && minDistance <= relaxedTolerance) {
+        const relaxedTolerance: number =
+            tolerance * TOLERANCE_RELAXATION_MULTIPLIER;
+        if (
+            bestIndex !== DEFAULT_ARRAY_NOT_FOUND_INDEX &&
+            minDistance <= relaxedTolerance
+        ) {
             trimParam = bestIndex / (spline.controlPoints.length - 1);
             result.warnings.push(
                 'Spline trim point found via relaxed control point matching'
@@ -185,7 +199,7 @@ export function trimSpline(
     }
 
     // Ensure minimum points for a valid spline
-    if (newControlPoints.length < 2) {
+    if (newControlPoints.length < MIN_CONTROL_POINTS_FOR_SPLINE) {
         result.errors.push(
             'Trimmed spline would have less than 2 control points'
         );
@@ -197,7 +211,7 @@ export function trimSpline(
     if (newWeights.length < newControlPoints.length) {
         // Pad with unit weights if needed
         while (newWeights.length < newControlPoints.length) {
-            newWeights.push(1.0);
+            newWeights.push(DEFAULT_SPLINE_WEIGHT);
         }
     }
 

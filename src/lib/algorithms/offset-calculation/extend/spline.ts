@@ -14,6 +14,10 @@ import { createVerbCurveFromSpline } from '../../../utils/verb-integration-utils
 import { generateUniformKnots } from './common';
 import { isLine } from '$lib/geometry/line';
 import { isCircle } from '$lib/geometry/circle';
+import {
+    MICRO_TOLERANCE,
+    DEFAULT_SPLINE_DEGREE,
+} from '$lib/geometry/constants';
 
 /**
  * Calculate tangent vector at start of spline
@@ -33,7 +37,7 @@ export function calculateSplineStartTangent(spline: Spline): Point2D {
             tangent[0] * tangent[0] + tangent[1] * tangent[1]
         );
 
-        if (magnitude < 1e-10) {
+        if (magnitude < EPSILON) {
             // Fallback to simple linear approximation if derivatives are degenerate
             return {
                 x: spline.controlPoints[1].x - spline.controlPoints[0].x,
@@ -72,7 +76,7 @@ export function calculateSplineEndTangent(spline: Spline): Point2D {
             tangent[0] * tangent[0] + tangent[1] * tangent[1]
         );
 
-        if (magnitude < 1e-10) {
+        if (magnitude < EPSILON) {
             // Fallback to simple linear approximation if derivatives are degenerate
             const lastIdx: number = spline.controlPoints.length - 1;
             return {
@@ -145,7 +149,9 @@ export function calculateSplineExtensionLength(
     );
 
     // Use a fraction of the diagonal as extension length (typically 50-100%)
-    return Math.max(diagonal * 0.75, 50); // Minimum 50 units extension
+    // Minimum 50 units extension
+    // eslint-disable-next-line no-magic-numbers
+    return Math.max(diagonal * 0.75, 50);
 }
 
 /**
@@ -395,7 +401,7 @@ export function extendSplineToPoint(
 ): Spline | null {
     const defaultOptions: SplineExtensionOptions = {
         maxExtension: MAX_EXTENSION,
-        tolerance: 1e-6,
+        tolerance: MICRO_TOLERANCE,
         direction: 'auto' as SplineExtensionDirection,
         method: 'linear' as SplineExtensionMethod,
     };
@@ -557,7 +563,7 @@ function createLinearExtendedSplineToPoint(
     }
 
     // Update knot vector for new control points
-    const degree: number = originalSpline.degree || 3;
+    const degree: number = originalSpline.degree || DEFAULT_SPLINE_DEGREE;
     const newKnots: number[] = generateKnotVector(controlPoints.length, degree);
 
     return {
@@ -599,7 +605,9 @@ function calculateTangentExtensionPoint(
     };
 
     // Create intermediate point along tangent direction
-    const extensionLength: number = pointDistance(endPoint, targetPoint) * 0.3; // 30% of extension
+    // 30% of extension
+    // eslint-disable-next-line no-magic-numbers
+    const extensionLength: number = pointDistance(endPoint, targetPoint) * 0.3;
 
     return {
         x: endPoint.x + unitTangent.x * extensionLength,

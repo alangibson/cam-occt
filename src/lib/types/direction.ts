@@ -5,6 +5,12 @@
  * type safety, code clarity, and reduce errors in geometric calculations.
  */
 
+import {
+    FULL_CIRCLE_DEG,
+    HALF_CIRCLE_DEG,
+    THREE_HALVES_PI,
+} from '$lib/geometry/constants';
+
 /**
  * Cut Direction - Specifies the direction for cutting operations
  */
@@ -114,14 +120,14 @@ export class DirectionUtils {
      * Convert angle degrees to radians
      */
     static degreesToRadians(degrees: number): number {
-        return (degrees * Math.PI) / 180;
+        return (degrees * Math.PI) / HALF_CIRCLE_DEG;
     }
 
     /**
      * Convert angle radians to degrees
      */
     static radiansToDegrees(radians: number): number {
-        return (radians * 180) / Math.PI;
+        return (radians * HALF_CIRCLE_DEG) / Math.PI;
     }
 
     /**
@@ -137,8 +143,8 @@ export class DirectionUtils {
      * Normalize angle to be within 0 to 360 degrees range
      */
     static normalizeDegrees(angle: number): number {
-        while (angle >= 360) angle -= 360;
-        while (angle < 0) angle += 360;
+        while (angle >= FULL_CIRCLE_DEG) angle -= FULL_CIRCLE_DEG;
+        while (angle < 0) angle += FULL_CIRCLE_DEG;
         return angle;
     }
 
@@ -212,7 +218,7 @@ export class DirectionUtils {
             case CardinalDirection.WEST:
                 return Math.PI;
             case CardinalDirection.SOUTH:
-                return (3 * Math.PI) / 2;
+                return THREE_HALVES_PI;
             default:
                 return 0;
         }

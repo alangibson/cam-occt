@@ -1,4 +1,8 @@
 import type { Circle, Point2D, Geometry } from '$lib/types/geometry';
+import {
+    HIGH_TESSELLATION_SEGMENTS,
+    SMALL_ANGLE_INCREMENT_DEG,
+} from './constants';
 
 export function getCircleStartPoint(circle: Circle): Point2D {
     return { x: circle.center.x + circle.radius, y: circle.center.y };
@@ -33,7 +37,10 @@ export function generateCirclePoints(
     radius: number
 ): Point2D[] {
     const points: Point2D[] = [];
-    const segments = Math.max(32, Math.ceil((radius * 2 * Math.PI) / 5)); // ~5mm segments
+    const segments = Math.max(
+        HIGH_TESSELLATION_SEGMENTS,
+        Math.ceil((radius * 2 * Math.PI) / SMALL_ANGLE_INCREMENT_DEG)
+    ); // ~5mm segments
 
     for (let i: number = 0; i <= segments; i++) {
         const angle: number = (i / segments) * 2 * Math.PI;

@@ -10,8 +10,12 @@ import {
     createVerbCurveFromLine,
     createVerbCurveFromSpline,
     processVerbIntersectionResults,
-    INTERSECTION_TOLERANCE,
 } from '../../../../utils/verb-integration-utils';
+import { INTERSECTION_TOLERANCE } from '../../../../constants';
+import {
+    DEFAULT_EXTENSION_LENGTH,
+    DEFAULT_RETRY_COUNT,
+} from '../../../../geometry/constants';
 import {
     validateSplineForIntersection,
     selectBestIntersectionResult,
@@ -28,7 +32,7 @@ export function findSplineLineIntersectionsVerb(
     lineShape: Shape,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     const spline: Spline = splineShape.geometry as Spline;
     const line: Line = lineShape.geometry as Line;
@@ -160,7 +164,11 @@ export function findSplineLineIntersectionsVerb(
 
                 // Retry each method multiple times and use the most common result
                 const results: CurveCurveIntersection[][] = [];
-                for (let retry: number = 0; retry < 3; retry++) {
+                for (
+                    let retry: number = 0;
+                    retry < DEFAULT_RETRY_COUNT;
+                    retry++
+                ) {
                     try {
                         const intersections: CurveCurveIntersection[] =
                             method();

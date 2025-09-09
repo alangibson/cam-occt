@@ -12,6 +12,10 @@ import {
     createArcExtensionConfig,
     createArcExtensionOptions,
 } from '../../../arc-operations-utils';
+import {
+    HIGH_PRECISION_TOLERANCE,
+    CONFIDENCE_HIGH_THRESHOLD,
+} from '../../../../../lib/geometry/constants';
 
 /**
  * Arc Fill Module
@@ -144,7 +148,7 @@ export function fillArcToIntersection(
             intersectionPoint,
             warnings: [],
             errors: [],
-            confidence: 1.0,
+            confidence: CONFIDENCE_HIGH_THRESHOLD,
         };
     } catch (error) {
         return createFailureResult(
@@ -168,7 +172,10 @@ function validateArcAndIntersection(
 
     // Check if intersection point is on the arc's circle
     const distanceFromCenter = pointDistance(intersectionPoint, arc.center);
-    const radiusTolerance = Math.max(tolerance, arc.radius * 1e-6);
+    const radiusTolerance = Math.max(
+        tolerance,
+        arc.radius * HIGH_PRECISION_TOLERANCE
+    );
 
     if (Math.abs(distanceFromCenter - arc.radius) > radiusTolerance) {
         return {

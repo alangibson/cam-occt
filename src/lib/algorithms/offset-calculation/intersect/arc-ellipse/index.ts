@@ -5,8 +5,8 @@ import {
     createVerbCurveFromEllipse,
     createVerbCurveFromArc,
     processVerbIntersectionResults,
-    INTERSECTION_TOLERANCE,
 } from '../../../../utils/verb-integration-utils';
+import { INTERSECTION_TOLERANCE } from '../../../../constants';
 
 /**
  * Verb-NURBS Ellipse-Arc Intersection Module

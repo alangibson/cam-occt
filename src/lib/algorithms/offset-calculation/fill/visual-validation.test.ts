@@ -6,7 +6,7 @@ import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { offsetChain } from '../chain/offset';
 import type { OffsetChain } from '../chain/types';
-import { generateChainOffsetSVG } from '../chain/visual-tests';
+import { generateChainOffsetSVG } from '../../../test/visual-tests';
 
 describe('Gap Filling Visual Validation', () => {
     // Ensure output directory exists

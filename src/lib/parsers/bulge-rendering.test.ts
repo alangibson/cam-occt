@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { HALF_CIRCLE_DEG } from '../geometry/constants';
 import { parseDXF } from './dxf-parser';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
 import { polylineToVertices } from '../geometry/polyline';
@@ -98,7 +99,8 @@ describe('Bulge Rendering Fixes', () => {
                 // According to AutoCAD DXF specification: bulge = tan(θ/4)
                 // Where θ is the included angle of the arc
                 const includedAngle = 4 * Math.atan(Math.abs(bulge));
-                const angleDegrees = (includedAngle * 180) / Math.PI;
+                const angleDegrees =
+                    (includedAngle * HALF_CIRCLE_DEG) / Math.PI;
 
                 // Validate mathematical properties
                 expect(typeof bulge).toBe('number');
@@ -107,13 +109,13 @@ describe('Bulge Rendering Fixes', () => {
 
                 // Special cases based on DXF specification
                 if (Math.abs(bulge) === 1.0) {
-                    expect(angleDegrees).toBeCloseTo(180, 1); // Semicircle
+                    expect(angleDegrees).toBeCloseTo(HALF_CIRCLE_DEG, 1); // Semicircle
                 }
                 if (Math.abs(bulge) === 0.0) {
                     expect(angleDegrees).toBeCloseTo(0, 1); // Straight line
                 }
                 if (Math.abs(bulge) > 1.0) {
-                    expect(angleDegrees).toBeGreaterThan(180); // Greater than semicircle
+                    expect(angleDegrees).toBeGreaterThan(HALF_CIRCLE_DEG); // Greater than semicircle
                 }
             });
         });

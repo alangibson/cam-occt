@@ -1,6 +1,7 @@
 import type { Shape, Spline } from '../../../../types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import { processSplineIntersection } from '../../shared/spline-intersection-utils';
+import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 
 /**
  * Find intersections between two splines using verb-nurbs
@@ -12,7 +13,7 @@ export function findSplineSplineIntersectionsVerb(
     shape2: Shape,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     const spline1: Spline = shape1.geometry as Spline;
     const spline2: Spline = shape2.geometry as Spline;

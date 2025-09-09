@@ -1,4 +1,19 @@
 import type { Arc, Geometry, Point2D } from '$lib/types/geometry';
+import {
+    FULL_CIRCLE_RADIANS,
+    DEFAULT_TESSELLATION_SEGMENTS,
+    MIN_VERTICES_FOR_LINE,
+} from './constants';
+
+/**
+ * Adaptive arc tessellation chord length for precise rendering
+ */
+const ARC_TESSELLATION_CHORD_LENGTH = 5;
+
+/**
+ * Default arc tessellation points for standard rendering
+ */
+const DEFAULT_ARC_TESSELLATION_POINTS = 10;
 
 export function getArcStartPoint(arc: Arc): Point2D {
     return {
@@ -32,7 +47,7 @@ export function getArcPointAt(arc: Arc, t: number): Point2D {
 
         // Normalize the angular span to be positive
         if (angularSpan <= 0) {
-            angularSpan += 2 * Math.PI;
+            angularSpan += FULL_CIRCLE_RADIANS;
         }
 
         // Interpolate in the clockwise direction (decreasing angle)
@@ -43,7 +58,7 @@ export function getArcPointAt(arc: Arc, t: number): Point2D {
 
         // Normalize the angular span to be positive
         if (angularSpan <= 0) {
-            angularSpan += 2 * Math.PI;
+            angularSpan += FULL_CIRCLE_RADIANS;
         }
 
         // Interpolate in the counter-clockwise direction (increasing angle)
@@ -63,8 +78,11 @@ export function getArcPointAt(arc: Arc, t: number): Point2D {
  * @param numPoints - Number of points to generate (minimum 2)
  * @returns Array of points along the arc from start to end
  */
-export function tessellateArc(arc: Arc, numPoints: number = 10): Point2D[] {
-    if (numPoints < 2) {
+export function tessellateArc(
+    arc: Arc,
+    numPoints: number = DEFAULT_ARC_TESSELLATION_POINTS
+): Point2D[] {
+    if (numPoints < MIN_VERTICES_FOR_LINE) {
         throw new Error('Arc tessellation requires at least 2 points');
     }
 
@@ -90,8 +108,10 @@ export function generateArcPoints(arc: Arc): Point2D[] {
     const points: Point2D[] = [];
     const totalAngle = arc.endAngle - arc.startAngle;
     const segments = Math.max(
-        16,
-        Math.ceil((Math.abs(totalAngle) * arc.radius) / 5)
+        DEFAULT_TESSELLATION_SEGMENTS,
+        Math.ceil(
+            (Math.abs(totalAngle) * arc.radius) / ARC_TESSELLATION_CHORD_LENGTH
+        )
     );
 
     for (let i: number = 0; i <= segments; i++) {

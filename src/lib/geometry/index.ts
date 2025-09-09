@@ -45,6 +45,11 @@ import {
     getEllipsePointAt,
 } from './ellipse';
 import { sampleNURBS } from './nurbs';
+import { MAX_ITERATIONS } from '../constants';
+/**
+ * Parametric t value for midpoint (0.5)
+ */
+const MIDPOINT_T = 0.5;
 
 /**
  * Get the starting point of a shape
@@ -186,7 +191,7 @@ export function getShapeLength(shape: Shape): number {
             // For splines, approximate length by sampling points
             const spline = shape.geometry as Spline;
             try {
-                const points = sampleNURBS(spline, 50);
+                const points = sampleNURBS(spline, MAX_ITERATIONS);
                 if (points.length < 2) return 0;
                 return calculatePolylineLength(points);
             } catch {
@@ -220,6 +225,7 @@ export function getShapeLength(shape: Shape): number {
                 return (
                     Math.PI *
                     (a + b) *
+                    // eslint-disable-next-line no-magic-numbers
                     (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)))
                 );
             }
@@ -322,7 +328,10 @@ export function getShapeNormal(shape: Shape, t: number): Point2D {
  * @param t - Parameter value (0-1), defaults to 0.5
  * @returns Point at the given parameter
  */
-export function getShapeMidpoint(shape: Shape, t: number = 0.5): Point2D {
+export function getShapeMidpoint(
+    shape: Shape,
+    t: number = MIDPOINT_T
+): Point2D {
     return getShapePointAt(shape, t);
 }
 /**

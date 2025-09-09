@@ -2,6 +2,7 @@ import type { Point2D, Line } from '../types/geometry';
 import type { IntersectionResult } from './offset-calculation/chain/types';
 import type { CurveCurveIntersection } from 'verb-nurbs';
 import { EPSILON } from '../constants';
+import { TOLERANCE_RELAXATION_MULTIPLIER } from '../geometry/constants';
 import { processVerbIntersectionResults } from '../utils/verb-integration-utils';
 import { handleClosedPolylineIntersection } from './intersection-polyline-utils';
 
@@ -93,7 +94,7 @@ export const handleClosedPolylineIntersections: typeof handleClosedPolylineInter
  */
 export function removeDuplicateIntersections(
     intersections: IntersectionResult[],
-    tolerance: number = EPSILON * 10
+    tolerance: number = EPSILON * TOLERANCE_RELAXATION_MULTIPLIER
 ): IntersectionResult[] {
     if (intersections.length <= 1) return intersections;
 

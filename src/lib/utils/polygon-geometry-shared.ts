@@ -6,13 +6,14 @@
  */
 
 import type { Point2D } from '../types/geometry';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
 
 /**
  * Calculate the area of a polygon using the shoelace formula
  * Consolidated from multiple implementations
  */
 export function calculatePolygonArea(polygon: Point2D[]): number {
-    if (polygon.length < 3) return 0;
+    if (polygon.length < POLYGON_POINTS_MIN) return 0;
 
     let area: number = 0;
     for (let i: number = 0; i < polygon.length; i++) {
@@ -29,7 +30,7 @@ export function calculatePolygonArea(polygon: Point2D[]): number {
  * Consolidated from geometric-containment.ts, geometric-operations.ts, and polygon-utilities.ts
  */
 export function isPointInPolygon(point: Point2D, polygon: Point2D[]): boolean {
-    if (polygon.length < 3) return false;
+    if (polygon.length < POLYGON_POINTS_MIN) return false;
 
     let inside: boolean = false;
     const x: number = point.x;

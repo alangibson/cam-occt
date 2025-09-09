@@ -7,6 +7,10 @@ import {
     type Shape,
     type Spline,
 } from '../../../../types/geometry';
+import {
+    POLYGON_POINTS_MIN,
+    DEFAULT_SPLINE_DEGREE,
+} from '../../../../geometry/constants';
 import { getEllipseParameters } from '../../../../utils/ellipse-utils';
 import { generateUniformKnotVector } from '../../../../utils/nurbs-utils';
 import { OffsetDirection, type OffsetResult } from '../types';
@@ -98,7 +102,7 @@ export function offsetEllipse(
             });
         }
 
-        if (points.length < 3) {
+        if (points.length < POLYGON_POINTS_MIN) {
             return {
                 success: false,
                 shapes: [],
@@ -115,7 +119,10 @@ export function offsetEllipse(
         ]);
 
         // Fit NURBS curve through the offset points
-        const degree: number = Math.min(3, offsetPoints3D.length - 1); // Use cubic or lower based on point count
+        const degree: number = Math.min(
+            DEFAULT_SPLINE_DEGREE,
+            offsetPoints3D.length - 1
+        ); // Use cubic or lower based on point count
         let offsetCurve: verb.geom.NurbsCurve;
 
         try {
@@ -218,6 +225,7 @@ export function offsetEllipse(
 
         // Create the offset shape as a spline
         const offsetShape: Shape = {
+            // eslint-disable-next-line no-magic-numbers
             id: `offset_${Math.random().toString(36).substr(2, 9)}`,
             type: GeometryType.SPLINE,
             geometry: splineGeometry,

@@ -11,6 +11,11 @@ import type {
 } from '../../../types/geometry';
 import type { FillResult } from '../fill/types';
 import { EPSILON } from '../../../constants';
+import {
+    MICRO_TOLERANCE,
+    DECIMAL_PRECISION,
+    QUARTER_CIRCLE_QUADRANTS,
+} from '../../../geometry/constants';
 import { pointDistance } from '../trim';
 import {
     getEllipseRadiusX,
@@ -217,7 +222,7 @@ export function validateEllipseIntersectionPoint(
             distance,
             error:
                 distance > tolerance
-                    ? `Intersection point is not on ellipse (distance: ${distance.toFixed(6)})`
+                    ? `Intersection point is not on ellipse (distance: ${distance.toFixed(DECIMAL_PRECISION)})`
                     : undefined,
         };
     } catch (error) {
@@ -409,8 +414,12 @@ export function determineEllipseExtension(
         } else {
             // Auto mode: create a reasonable elliptical arc extension
             direction = 'end';
-            originalStartAngle = intersectionAngle - Math.PI / 6; // Start 30 degrees before intersection
-            angularExtension = Math.min(maxAngularExtension, Math.PI / 3); // Extend 60 degrees total
+            // Start 30 degrees before intersection
+            // eslint-disable-next-line no-magic-numbers
+            originalStartAngle = intersectionAngle - Math.PI / 6;
+            // Extend 60 degrees total
+            // eslint-disable-next-line no-magic-numbers
+            angularExtension = Math.min(maxAngularExtension, Math.PI / 3);
         }
 
         return createExtensionResult(
@@ -564,7 +573,10 @@ export function validateCircleIntersectionPoint(
 ): ValidationResult {
     try {
         const distanceFromCenter = pointDistance(point, circle.center);
-        const radiusTolerance = Math.max(tolerance, circle.radius * 1e-6);
+        const radiusTolerance = Math.max(
+            tolerance,
+            circle.radius * MICRO_TOLERANCE
+        );
         const distance = Math.abs(distanceFromCenter - circle.radius);
 
         return {
@@ -572,7 +584,7 @@ export function validateCircleIntersectionPoint(
             distance,
             error:
                 distance > radiusTolerance
-                    ? `Intersection point is not on circle (distance: ${distanceFromCenter.toFixed(6)}, radius: ${circle.radius.toFixed(6)})`
+                    ? `Intersection point is not on circle (distance: ${distanceFromCenter.toFixed(DECIMAL_PRECISION)}, radius: ${circle.radius.toFixed(DECIMAL_PRECISION)})`
                     : undefined,
         };
     } catch (error) {
@@ -732,7 +744,8 @@ export function determineCircleExtension(
         } else {
             // Auto mode: create a reasonable arc extension
             direction = 'end';
-            originalStartAngle = intersectionAngle - Math.PI / 4; // Start 45 degrees before intersection
+            originalStartAngle =
+                intersectionAngle - Math.PI / QUARTER_CIRCLE_QUADRANTS; // Start 45 degrees before intersection
             angularExtension = Math.min(maxAngularExtension, Math.PI / 2); // Extend 90 degrees total
         }
 

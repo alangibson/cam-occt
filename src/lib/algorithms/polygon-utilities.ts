@@ -1,3 +1,7 @@
+import {
+    POLYGON_POINTS_MIN,
+    TOLERANCE_SNAP_MULTIPLIER,
+} from '$lib/geometry/constants.js';
 import type { Point2D } from '../types/geometry.ts';
 import {
     calculateSignedArea,
@@ -60,7 +64,7 @@ export function analyzePolygon(
     points: Point2D[],
     config: PolygonAnalysisConfig
 ): PolygonAnalysisResult {
-    if (points.length < 3) {
+    if (points.length < POLYGON_POINTS_MIN) {
         throw new Error('Polygon must have at least 3 points');
     }
 
@@ -74,7 +78,7 @@ export function analyzePolygon(
     const isClosed =
         distanceToFirst < config.tolerance ||
         (config.treatNearlyClosedAsClosed === true &&
-            distanceToFirst < config.tolerance * 10);
+            distanceToFirst < config.tolerance * TOLERANCE_SNAP_MULTIPLIER);
 
     // Calculate area and winding
     const signedArea: number = calculateSignedArea(points);
@@ -321,7 +325,7 @@ export function doLineSegmentsIntersect(
  * @returns True if polygon appears to be simple (non-self-intersecting)
  */
 function checkSimplePolygon(points: Point2D[], tolerance: number): boolean {
-    if (points.length < 4) {
+    if (points.length <= POLYGON_POINTS_MIN) {
         return true; // Triangle cannot self-intersect
     }
 
@@ -387,7 +391,7 @@ export function createRegularPolygon(
     sides: number,
     rotation: number = 0
 ): Point2D[] {
-    if (sides < 3) {
+    if (sides < POLYGON_POINTS_MIN) {
         throw new Error('Regular polygon must have at least 3 sides');
     }
 
@@ -429,7 +433,7 @@ export function simplifyPolygon(
     points: Point2D[],
     config: PolygonSimplificationConfig
 ): Point2D[] {
-    if (points.length < 3) {
+    if (points.length < POLYGON_POINTS_MIN) {
         return points;
     }
 
@@ -470,7 +474,7 @@ export function simplifyPolygon(
     }
 
     // Ensure minimum polygon size
-    if (simplified.length < 3) {
+    if (simplified.length < POLYGON_POINTS_MIN) {
         return points; // Cannot simplify further
     }
 
@@ -484,7 +488,7 @@ export function simplifyPolygon(
  * @returns Convex hull vertices in counter-clockwise order
  */
 export function calculateConvexHull(points: Point2D[]): Point2D[] {
-    if (points.length < 3) {
+    if (points.length < POLYGON_POINTS_MIN) {
         return [...points];
     }
 

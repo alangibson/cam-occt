@@ -7,6 +7,18 @@
 
 import type { Point2D } from '../types/geometry';
 
+/**
+ * 60fps frame limiting interval in milliseconds
+ */
+const RENDER_FRAME_INTERVAL_MS = 16;
+
+/**
+ * Pan animation physics constants
+ */
+const PAN_ANIMATION_FRICTION_FACTOR = 0.85;
+const MIN_PAN_VELOCITY_THRESHOLD = 0.1;
+const PAN_INTERPOLATION_FACTOR = 0.2;
+
 export interface RenderFlags {
     geometry: boolean; // Shapes, paths, overlays changed
     transforms: boolean; // Pan, zoom, or coordinate changes
@@ -26,7 +38,7 @@ export class RenderStateManager {
 
     private pendingRender = false;
     private lastRenderTime = 0;
-    private minFrameInterval = 16; // ~60fps max
+    private minFrameInterval = RENDER_FRAME_INTERVAL_MS; // ~60fps max
 
     /**
      * Mark specific aspects as needing re-render
@@ -119,7 +131,7 @@ export class PanStateManager {
     private targetOffset: Point2D | null = null;
     private currentOffset: Point2D = { x: 0, y: 0 };
     private panVelocity: Point2D = { x: 0, y: 0 };
-    private friction = 0.85; // Deceleration factor
+    private friction = PAN_ANIMATION_FRICTION_FACTOR; // Deceleration factor
 
     /**
      * Start smooth pan animation to target offset
@@ -161,8 +173,8 @@ export class PanStateManager {
 
             // Apply velocity (for momentum)
             if (
-                Math.abs(this.panVelocity.x) > 0.1 ||
-                Math.abs(this.panVelocity.y) > 0.1
+                Math.abs(this.panVelocity.x) > MIN_PAN_VELOCITY_THRESHOLD ||
+                Math.abs(this.panVelocity.y) > MIN_PAN_VELOCITY_THRESHOLD
             ) {
                 this.currentOffset.x += this.panVelocity.x;
                 this.currentOffset.y += this.panVelocity.y;
@@ -181,9 +193,9 @@ export class PanStateManager {
                 const distance = Math.sqrt(dx * dx + dy * dy);
 
                 if (distance > 1) {
-                    // Move 20% towards target each frame
-                    this.currentOffset.x += dx * 0.2;
-                    this.currentOffset.y += dy * 0.2;
+                    // Move towards target each frame
+                    this.currentOffset.x += dx * PAN_INTERPOLATION_FACTOR;
+                    this.currentOffset.y += dy * PAN_INTERPOLATION_FACTOR;
                     needsUpdate = true;
                 } else {
                     // Snap to target

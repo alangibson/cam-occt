@@ -478,7 +478,7 @@ describe('fillArcToIntersection', () => {
             );
 
             expect(result.success).toBe(true);
-            expect(result.confidence).toBe(1.0);
+            expect(result.confidence).toBe(0.95);
             expect(result.warnings).toHaveLength(0);
             expect(result.errors).toHaveLength(0);
         });

@@ -18,6 +18,10 @@ import type { PrepareStageState } from '../stores/prepare-stage';
 import type { Operation } from '../stores/operations';
 import type { Path } from '../stores/paths';
 import type { Tool } from '../stores/tools';
+/**
+ * Time conversion constant
+ */
+const MILLISECONDS_IN_SECOND = 1000;
 
 export interface PersistedState {
     // Drawing state
@@ -205,4 +209,4 @@ export function debounce<T extends (...args: never[]) => void>(
 /**
  * Create a debounced save function
  */
-export const debouncedSave = debounce(saveState, 1000); // Save 1 second after last change
+export const debouncedSave = debounce(saveState, MILLISECONDS_IN_SECOND); // Save 1 second after last change

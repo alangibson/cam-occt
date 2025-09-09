@@ -4,8 +4,8 @@ import { polylineToPoints } from '../geometry/polyline';
 import {
     createVerbCurveFromLine,
     processVerbIntersectionResults,
-    INTERSECTION_TOLERANCE,
 } from '../utils/verb-integration-utils';
+import { INTERSECTION_TOLERANCE } from '../constants';
 import { createSegmentLine } from './intersection-base';
 import verb from 'verb-nurbs';
 

@@ -17,6 +17,23 @@ import {
 import { isPointInPolygon } from '../utils/geometric-operations';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { polylineToPoints } from '../geometry/polyline';
+import {
+    GEOMETRIC_PRECISION_TOLERANCE,
+    HALF_PERCENT,
+    THREE_QUARTERS_PERCENT,
+    QUARTER_PERCENT,
+    MAX_ITERATIONS,
+} from '../constants';
+import {
+    HALF_CIRCLE_DEG,
+    FULL_CIRCLE_DEG,
+    OCTAGON_SIDES,
+    SMALL_ANGLE_INCREMENT_DEG,
+    DEFAULT_TESSELLATION_SEGMENTS,
+    QUARTER_CIRCLE_QUADRANTS,
+    MIN_VERTICES_FOR_LINE,
+    LEAD_REACHABLE_DISTANCE_MULTIPLIER,
+} from '../geometry/constants';
 
 export interface LeadInConfig {
     type: LeadType;
@@ -244,7 +261,8 @@ function calculateArcLead(
     if (manualAngle !== undefined) {
         // Use manual angle as absolute direction (unit circle: 0° = right, 90° = up, etc.)
         // Work in world coordinates (Y+ up), canvas rendering will handle coordinate conversion
-        const manualAngleRad: number = (manualAngle * Math.PI) / 180;
+        const manualAngleRad: number =
+            (manualAngle * Math.PI) / HALF_CIRCLE_DEG;
         const absoluteDirection: Point2D = {
             x: Math.cos(manualAngleRad),
             y: Math.sin(manualAngleRad), // Use standard unit circle (Y+ up for world coordinates)
@@ -252,8 +270,10 @@ function calculateArcLead(
         curveDirectionsToTry = [absoluteDirection];
     } else {
         // Try different curve directions up to 360 degrees to avoid solid areas
-        const rotationStep: number = (5 * Math.PI) / 180; // 5 degrees in radians
-        const maxRotations: number = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
+        const rotationStep: number =
+            (SMALL_ANGLE_INCREMENT_DEG * Math.PI) / HALF_CIRCLE_DEG; // 5 degrees in radians
+        const maxRotations: number =
+            FULL_CIRCLE_DEG / SMALL_ANGLE_INCREMENT_DEG; // Try up to 360 degrees of rotation (72 * 5 = 360)
         curveDirectionsToTry = Array.from({ length: maxRotations }, (_, i) => {
             const rotationAngle: number = i * rotationStep;
             return rotateCurveDirection(baseCurveDirection, rotationAngle);
@@ -261,7 +281,9 @@ function calculateArcLead(
     }
 
     // Try full length first, then shorter lengths if needed (only if fit is enabled)
-    const lengthAttempts: number[] = fit ? [1.0, 0.75, 0.5, 0.25] : [1.0]; // Try 100%, 75%, 50%, 25% of original length if fit enabled, otherwise only full length
+    const lengthAttempts: number[] = fit
+        ? [1.0, THREE_QUARTERS_PERCENT, HALF_PERCENT, QUARTER_PERCENT]
+        : [1.0]; // Try 100%, 75%, 50%, 25% of original length if fit enabled, otherwise only full length
 
     for (const lengthFactor of lengthAttempts) {
         const adjustedArcLength: number = arcLength * lengthFactor;
@@ -413,7 +435,8 @@ function calculateLineLead(
     if (manualAngle !== undefined) {
         // Use manual angle as absolute direction (unit circle: 0° = right, 90° = up, etc.)
         // Work in world coordinates (Y+ up), canvas rendering will handle coordinate conversion
-        const manualAngleRad: number = (manualAngle * Math.PI) / 180;
+        const manualAngleRad: number =
+            (manualAngle * Math.PI) / HALF_CIRCLE_DEG;
         const absoluteDirection: Point2D = {
             x: Math.cos(manualAngleRad),
             y: Math.sin(manualAngleRad), // Use standard unit circle (Y+ up for world coordinates)
@@ -421,8 +444,10 @@ function calculateLineLead(
         leadDirectionsToTry = [absoluteDirection];
     } else {
         // Try different lead directions up to 360 degrees to avoid solid areas
-        const rotationStep: number = (5 * Math.PI) / 180; // 5 degrees in radians
-        const maxRotations: number = 72; // Try up to 360 degrees of rotation (72 * 5 = 360)
+        const rotationStep: number =
+            (SMALL_ANGLE_INCREMENT_DEG * Math.PI) / HALF_CIRCLE_DEG; // 5 degrees in radians
+        const maxRotations: number =
+            FULL_CIRCLE_DEG / SMALL_ANGLE_INCREMENT_DEG; // Try up to 360 degrees of rotation (72 * 5 = 360)
         leadDirectionsToTry = Array.from({ length: maxRotations }, (_, i) => {
             const rotationAngle: number = i * rotationStep;
             return rotateCurveDirection(baseLeadDirection, rotationAngle);
@@ -430,7 +455,9 @@ function calculateLineLead(
     }
 
     // Try full length first, then shorter lengths if needed (only if fit is enabled)
-    const lengthAttempts: number[] = fit ? [1.0, 0.75, 0.5, 0.25] : [1.0]; // Try 100%, 75%, 50%, 25% of original length if fit enabled, otherwise only full length
+    const lengthAttempts: number[] = fit
+        ? [1.0, THREE_QUARTERS_PERCENT, HALF_PERCENT, QUARTER_PERCENT]
+        : [1.0]; // Try 100%, 75%, 50%, 25% of original length if fit enabled, otherwise only full length
 
     for (const lengthFactor of lengthAttempts) {
         const adjustedLineLength: number = lineLength * lengthFactor;
@@ -507,7 +534,10 @@ function generateSimpleArcPoints(
     _direction: Point2D
 ): Point2D[] {
     const points: Point2D[] = [];
-    const segments: number = Math.max(8, Math.ceil((sweepAngle * radius) / 2)); // Approximate 2mm segments
+    const segments: number = Math.max(
+        OCTAGON_SIDES,
+        Math.ceil((sweepAngle * radius) / 2)
+    ); // Approximate 2mm segments
 
     // Calculate the angle of the connection point relative to the arc center
     const connectionAngle: number = Math.atan2(
@@ -568,7 +598,10 @@ function generateTangentArcPoints(
     curveDirection: Point2D
 ): Point2D[] {
     const points: Point2D[] = [];
-    const segments: number = Math.max(8, Math.ceil((sweepAngle * radius) / 2)); // Approximate 2mm segments
+    const segments: number = Math.max(
+        OCTAGON_SIDES,
+        Math.ceil((sweepAngle * radius) / 2)
+    ); // Approximate 2mm segments
 
     // For a truly tangent arc, we need to ensure the tangent direction at the connection point
     // matches the chain tangent. The tangent to a circle at any point is perpendicular to the
@@ -707,7 +740,10 @@ function generateTangentLinePoints(
         };
 
         // Generate points along the line (start to connection)
-        const segments: number = Math.max(2, Math.ceil(lineLength / 2)); // Approximate 2mm segments, minimum 2 points
+        const segments: number = Math.max(
+            MIN_VERTICES_FOR_LINE,
+            Math.ceil(lineLength / 2)
+        ); // Approximate 2mm segments, minimum 2 points
         for (let i: number = 0; i <= segments; i++) {
             const t: number = i / segments;
             if (i === segments) {
@@ -729,7 +765,10 @@ function generateTangentLinePoints(
         };
 
         // Generate points along the line (connection to end)
-        const segments: number = Math.max(2, Math.ceil(lineLength / 2)); // Approximate 2mm segments, minimum 2 points
+        const segments: number = Math.max(
+            MIN_VERTICES_FOR_LINE,
+            Math.ceil(lineLength / 2)
+        ); // Approximate 2mm segments, minimum 2 points
         for (let i: number = 0; i <= segments; i++) {
             const t: number = i / segments;
             if (i === 0) {
@@ -914,6 +953,7 @@ function getLeadCurveDirection(
                     selectedDirection.x * nearbyHoleDirection.x +
                     selectedDirection.y * nearbyHoleDirection.y;
                 // Only use hole direction if it's reasonably aligned (dot product > 0.3)
+                // eslint-disable-next-line no-magic-numbers
                 if (dotProduct > 0.3) {
                     selectedDirection = nearbyHoleDirection;
                 }
@@ -1037,7 +1077,9 @@ function getNearbyHoleDirection(
 
     // Only consider holes that are reachable by the lead length
     // Use a reasonable multiplier (e.g., 3x lead length) to account for arc curvature
-    const maxReachableDistance: number = leadLength ? leadLength * 3 : 50;
+    const maxReachableDistance: number = leadLength
+        ? leadLength * LEAD_REACHABLE_DISTANCE_MULTIPLIER
+        : MAX_ITERATIONS;
 
     // Base normal directions (perpendicular to tangent)
     const leftNormal: Point2D = { x: -tangent.y, y: tangent.x }; // 90° counterclockwise
@@ -1164,7 +1206,7 @@ function calculateLocalOutwardNormal(
 
     // For convex curves (cross < 0), use the normal that points away from the bisector
     // For concave curves (cross > 0), use the normal that points with the bisector
-    if (Math.abs(cross) < 0.001) {
+    if (Math.abs(cross) < GEOMETRIC_PRECISION_TOLERANCE) {
         // Nearly straight - use default left normal
         return leftNormal;
     }
@@ -1191,7 +1233,7 @@ function findPointInChain(
     chain: Chain,
     targetPoint: Point2D
 ): { shapeIndex: number; isStart: boolean } | null {
-    const tolerance: number = 0.001;
+    const tolerance: number = GEOMETRIC_PRECISION_TOLERANCE;
 
     for (let i: number = 0; i < chain.shapes.length; i++) {
         const shape: Shape = chain.shapes[i];
@@ -1380,7 +1422,7 @@ function getShapePoints(shape: Shape): Point2D[] {
             // Sample a few points along the arc
             const arc: Arc = shape.geometry as Arc;
             const points: Point2D[] = [];
-            const segments: number = 4;
+            const segments: number = QUARTER_CIRCLE_QUADRANTS;
             for (let i: number = 0; i <= segments; i++) {
                 const angle: number =
                     arc.startAngle +
@@ -1435,8 +1477,10 @@ function countSolidAreaPoints(
         // Skip the connection point as it's expected to be on the boundary
         if (
             connectionPoint &&
-            Math.abs(leadPoint.x - connectionPoint.x) < 0.001 &&
-            Math.abs(leadPoint.y - connectionPoint.y) < 0.001
+            Math.abs(leadPoint.x - connectionPoint.x) <
+                GEOMETRIC_PRECISION_TOLERANCE &&
+            Math.abs(leadPoint.y - connectionPoint.y) <
+                GEOMETRIC_PRECISION_TOLERANCE
         ) {
             continue;
         }
@@ -1488,7 +1532,7 @@ function getPolygonFromChain(chain: Chain): Point2D[] {
                 // Sample points along the arc
                 const arc: Arc = shape.geometry as Arc;
                 const segments: number = Math.max(
-                    8,
+                    OCTAGON_SIDES,
                     Math.ceil(
                         (Math.abs(arc.endAngle - arc.startAngle) * arc.radius) /
                             2
@@ -1509,7 +1553,7 @@ function getPolygonFromChain(chain: Chain): Point2D[] {
                 // Sample points around the circle
                 const circle: Circle = shape.geometry as Circle;
                 const circleSegments: number = Math.max(
-                    16,
+                    DEFAULT_TESSELLATION_SEGMENTS,
                     Math.ceil((2 * Math.PI * circle.radius) / 2)
                 );
                 for (let i: number = 0; i < circleSegments; i++) {

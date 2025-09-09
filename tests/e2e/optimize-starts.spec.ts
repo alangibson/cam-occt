@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
+import { STANDARD_TIMEOUT_MS } from '../../src/lib/constants/index.js';
 
 test.describe('Optimize Starts Feature', () => {
     test('should show Optimize Starts button and optimize chain start points', async ({
@@ -16,7 +17,7 @@ test.describe('Optimize Starts Feature', () => {
         await page.setInputFiles('input[type="file"]', dxfFile);
 
         // Wait for file to be processed
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
 
         // Navigate to prepare stage
         await page.click('button:has-text("Prepare")');
@@ -64,7 +65,7 @@ test.describe('Optimize Starts Feature', () => {
         await page.setInputFiles('input[type="file"]', dxfFile);
 
         // Wait for file to be processed
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
 
         // Navigate to prepare stage
         await page.click('button:has-text("Prepare")');

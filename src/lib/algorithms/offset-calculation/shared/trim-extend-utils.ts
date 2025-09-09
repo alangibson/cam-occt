@@ -78,6 +78,7 @@ export function snapParameterToEndpoints(
     if (Math.abs(param) < tolerance) {
         return 0;
     }
+
     if (Math.abs(param - 1) < tolerance) {
         return 1;
     }
@@ -162,6 +163,7 @@ export function validateTrimExtendParameters(
             );
         }
 
+        // eslint-disable-next-line no-magic-numbers
         if (params.maxExtension > 1000) {
             result.warnings.push(
                 'Large maxExtension value may lead to unexpected results'

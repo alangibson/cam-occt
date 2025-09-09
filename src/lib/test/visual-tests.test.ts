@@ -2,12 +2,15 @@ import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, it } from 'vitest';
-import { GeometryType, type Shape } from '../../../../lib/types/geometry';
-import { detectShapeChains } from '../../chain-detection/chain-detection';
-import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import { offsetChain } from './offset';
-import type { OffsetChain } from './types';
+import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
+import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import type {
+    OffsetChain,
+    Shape,
+} from '$lib/algorithms/offset-calculation/chain/types';
 import { generateChainOffsetSVG } from './visual-tests';
+import { GeometryType } from '$lib/types';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 
 describe('visual-tests', () => {
     // Ensure output directory exists

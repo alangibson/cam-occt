@@ -12,6 +12,7 @@ import {
     processPolylineSegments,
     handleClosedPolylineIntersection,
 } from '../../../intersection-polyline-utils';
+import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 
 /**
  * Find intersections between a spline and a polyline using verb-nurbs
@@ -23,7 +24,7 @@ export function findSplinePolylineIntersectionsVerb(
     polylineShape: Shape,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     const spline: Spline = splineShape.geometry as Spline;
     const polyline: Polyline = polylineShape.geometry as Polyline;

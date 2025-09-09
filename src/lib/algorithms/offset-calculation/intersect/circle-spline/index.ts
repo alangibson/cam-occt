@@ -2,6 +2,7 @@ import { createVerbCurveFromCircle } from '$lib/utils/verb-integration-utils';
 import type { Shape, Circle, Spline } from '../../../../../lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import { processSplineWithCurveIntersection } from '../../shared/spline-intersection-utils';
+import { MAX_ITERATIONS } from '../../../../geometry/constants';
 
 /**
  * Find intersections between a spline and a circle using verb-nurbs
@@ -13,7 +14,7 @@ export function findSplineCircleIntersectionsVerb(
     circleShape: Shape,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = MAX_ITERATIONS
 ): IntersectionResult[] {
     const spline: import('$lib/types/geometry').Spline =
         splineShape.geometry as Spline;

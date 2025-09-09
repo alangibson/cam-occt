@@ -103,7 +103,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             type: GeometryType.LINE,
             geometry: startExtensionLine,
         };
-        svg.addShape(startExtensionShape, 'green', 2, undefined, '5,5');
+        svg.addShape(startExtensionShape, 'green', 2, '5,5');
 
         const endExtensionLine: Line = {
             start: testLine.end,
@@ -114,7 +114,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
             type: GeometryType.LINE,
             geometry: endExtensionLine,
         };
-        svg.addShape(endExtensionShape, 'green', 2, undefined, '5,5');
+        svg.addShape(endExtensionShape, 'green', 2, '5,5');
 
         svg.addLegend([
             { color: 'black', label: 'Original Line' },
@@ -641,7 +641,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         type: GeometryType.LINE,
                         geometry: startExtLine,
                     };
-                    svg.addShape(startExtShape, 'green', 1, undefined, '3,3');
+                    svg.addShape(startExtShape, 'green', 1, '3,3');
 
                     // Draw end extension
                     const originalEnd =
@@ -657,7 +657,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         type: GeometryType.LINE,
                         geometry: endExtLine,
                     };
-                    svg.addShape(endExtShape, 'green', 1, undefined, '3,3');
+                    svg.addShape(endExtShape, 'green', 1, '3,3');
                 }
             }
 
@@ -768,7 +768,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                 type: GeometryType.LINE,
                 geometry: majorAxisLine,
             };
-            svg.addShape(majorAxisShape, 'purple', 1, undefined, '2,2');
+            svg.addShape(majorAxisShape, 'purple', 1, '2,2');
 
             // Mark start and end points
             if (arcPoints.length > 0) {
@@ -846,7 +846,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         type: GeometryType.LINE,
                         geometry: startExtLine,
                     };
-                    svg.addShape(startExtShape, 'gray', 1, undefined, '5,5');
+                    svg.addShape(startExtShape, 'gray', 1, '5,5');
 
                     const endExtLine: Line = {
                         start: arcPoints[arcPoints.length - 1],
@@ -857,7 +857,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         type: GeometryType.LINE,
                         geometry: endExtLine,
                     };
-                    svg.addShape(endExtShape, 'gray', 1, undefined, '5,5');
+                    svg.addShape(endExtShape, 'gray', 1, '5,5');
 
                     // Show extended arc using elliptical arc extension
                     try {

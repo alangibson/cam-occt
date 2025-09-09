@@ -4,8 +4,13 @@ import verb, { type VerbCurve, type CurveCurveIntersection } from 'verb-nurbs';
 import {
     createVerbCurveFromSpline,
     processVerbIntersectionResults,
-    INTERSECTION_TOLERANCE,
 } from '../../../utils/verb-integration-utils';
+import { INTERSECTION_TOLERANCE } from '../../../constants';
+import {
+    DEFAULT_EXTENSION_LENGTH,
+    DEFAULT_SPLINE_DEGREE,
+    DEFAULT_RETRY_COUNT,
+} from '../../../geometry/constants';
 import { createExtendedSplineVerb } from '../extend/spline';
 
 /**
@@ -27,7 +32,7 @@ export function validateSplineForIntersection(spline: Spline): {
         };
     }
 
-    const degree = spline.degree || 3;
+    const degree = spline.degree || DEFAULT_SPLINE_DEGREE;
     if (degree < 1 || degree >= spline.controlPoints.length) {
         return {
             isValid: false,
@@ -74,7 +79,7 @@ export function processSplineIntersection(
     spline2: Spline,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     try {
         // First, try intersection with original splines
@@ -228,7 +233,7 @@ export function processSplineWithCurveIntersection(
     otherCurve: VerbCurve,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     try {
         // First, try intersection with original shapes
@@ -289,7 +294,7 @@ export function processSplineIntersectionWithRetry(
     otherCurve: VerbCurve,
     swapParams: boolean,
     isExtended: boolean,
-    retryCount: number = 3
+    retryCount: number = DEFAULT_RETRY_COUNT
 ): IntersectionResult[] {
     // Try intersection multiple times and use the most consistent result
     const results: CurveCurveIntersection[][] = [];

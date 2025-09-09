@@ -27,7 +27,7 @@ import { generateUniformKnotVector } from './nurbs-utils';
  * - Various other intersection modules
  */
 
-export const INTERSECTION_TOLERANCE = 1e-6;
+// INTERSECTION_TOLERANCE is now imported from constants
 
 // Type definitions for alternative intersection structures used in tests
 type AlternativeIntersectionWithPoints = {

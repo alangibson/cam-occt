@@ -12,6 +12,25 @@ import type {
 } from '../../lib/types';
 import { CutterCompensation } from '../../lib/types';
 import { GeometryType } from '$lib/types/geometry';
+import { DEFAULT_SPLINE_DEGREE } from '../geometry/constants';
+import {
+    DEFAULT_PIERCE_HEIGHT,
+    DEFAULT_PIERCE_DELAY,
+    DEFAULT_CUT_HEIGHT,
+    IMPERIAL_FEED_RATE,
+    GCODE_COORDINATE_PRECISION,
+    GCODE_PARAMETER_PRECISION,
+} from './constants';
+
+/**
+ * G-code path blending tolerance for metric units (mm)
+ */
+const GCODE_TOLERANCE_MM = 0.1;
+
+/**
+ * G-code path blending tolerance for imperial units (inches)
+ */
+const GCODE_TOLERANCE_INCHES = 0.004;
 
 export interface GCodeOptions {
     units: Unit;
@@ -125,7 +144,8 @@ function generateHeader(options: GCodeOptions): GCodeCommand[] {
     // Path blending with tolerance
     //
     // TODO There are many additional settings possible
-    const toleranceValue: number = options.units === 'mm' ? 0.1 : 0.004;
+    const toleranceValue: number =
+        options.units === 'mm' ? GCODE_TOLERANCE_MM : GCODE_TOLERANCE_INCHES;
     commands.push({
         code: 'G64',
         parameters: { P: toleranceValue },
@@ -263,10 +283,10 @@ function generateTemporaryMaterial(
     // }
 
     // Mandatory parameters
-    magicComment += `, ph=${parameters.pierceHeight || 3.8}`; // Pierce height
-    magicComment += `, pd=${parameters.pierceDelay || 0.5}`; // Pierce delay
-    magicComment += `, ch=${parameters.cutHeight || 1.5}`; // Cut height
-    magicComment += `, fr=${parameters.feedRate || 2540}`; // Feed rate
+    magicComment += `, ph=${parameters.pierceHeight || DEFAULT_PIERCE_HEIGHT}`; // Pierce height
+    magicComment += `, pd=${parameters.pierceDelay || DEFAULT_PIERCE_DELAY}`; // Pierce delay
+    magicComment += `, ch=${parameters.cutHeight || DEFAULT_CUT_HEIGHT}`; // Cut height
+    magicComment += `, fr=${parameters.feedRate || IMPERIAL_FEED_RATE}`; // Feed rate
 
     // Optional parameters
     if (parameters.kerfWidth !== undefined) {
@@ -413,6 +433,7 @@ function generatePathCommands(
         isHole &&
         options.adaptiveFeedControl === true &&
         underspeedPercent !== undefined &&
+        // eslint-disable-next-line no-magic-numbers
         underspeedPercent < 100
     ) {
         commands.push({
@@ -449,6 +470,7 @@ function generatePathCommands(
         isHole &&
         options.adaptiveFeedControl === true &&
         underspeedPercent !== undefined &&
+        // eslint-disable-next-line no-magic-numbers
         underspeedPercent < 100
     ) {
         commands.push({
@@ -585,7 +607,7 @@ function generateNativeSplineCommands(
                 }
 
                 // G5.2 - Open NURBS data block
-                const order: number = spline.degree || 3;
+                const order: number = spline.degree || DEFAULT_SPLINE_DEGREE;
                 commands.push({
                     code: 'G5.2',
                     parameters: {
@@ -746,7 +768,9 @@ function commandsToString(
                                 'J',
                                 'K',
                             ].includes(key);
-                            const precision: number = isCoordinate ? 4 : 3;
+                            const precision: number = isCoordinate
+                                ? GCODE_COORDINATE_PRECISION
+                                : GCODE_PARAMETER_PRECISION;
                             formattedValue = Number(value.toFixed(precision));
                         }
                         // Standard parameter syntax

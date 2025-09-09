@@ -18,6 +18,11 @@ import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { sampleNURBS } from '../geometry/nurbs';
 import { polylineToVertices, polylineToPoints } from '../geometry/polyline';
 import { calculateEllipsePoint } from './ellipse-utils';
+import {
+    OCTAGON_SIDES,
+    DEFAULT_TESSELLATION_SEGMENTS,
+    HIGH_TESSELLATION_SEGMENTS,
+} from '$lib/geometry/constants';
 
 export function tessellateShape(
     shape: Shape,
@@ -126,8 +131,10 @@ export function tessellateShape(
 
                 const paramSpan: number = Math.abs(deltaParam);
                 const numEllipsePoints: number = Math.max(
-                    8,
-                    Math.round(paramSpan / (Math.PI / 16))
+                    OCTAGON_SIDES,
+                    Math.round(
+                        paramSpan / (Math.PI / DEFAULT_TESSELLATION_SEGMENTS)
+                    )
                 );
 
                 for (let i: number = 0; i <= numEllipsePoints; i++) {
@@ -168,7 +175,10 @@ export function tessellateShape(
             try {
                 // Use NURBS sampling for accurate tessellation
                 // Use more points for better accuracy in part detection
-                const sampledPoints: Point2D[] = sampleNURBS(spline, 32);
+                const sampledPoints: Point2D[] = sampleNURBS(
+                    spline,
+                    HIGH_TESSELLATION_SEGMENTS
+                );
                 points.push(...sampledPoints);
             } catch {
                 // Fallback to fit points or control points if NURBS evaluation fails

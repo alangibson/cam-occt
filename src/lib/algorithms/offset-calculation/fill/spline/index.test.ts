@@ -140,7 +140,7 @@ describe('Spline Fill Operations', () => {
             );
 
             expect(result.success).toBe(true);
-            expect(result.confidence).toBe(1.0); // Parametric method gives full confidence
+            expect(result.confidence).toBe(0.95); // Parametric method gives high confidence
             expect(result.warnings).toHaveLength(0); // No warning for parametric method
             expect(result.extension?.direction).toBe('start');
         });

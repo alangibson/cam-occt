@@ -12,6 +12,8 @@ import type {
 import { GeometryType } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
 import { calculateArcPoint, convertBulgeToArc } from '../utils/arc-utils';
+import { EPSILON } from '../constants';
+import { DIRECTION_CLOCKWISE, DIRECTION_COUNTERCLOCKWISE } from './constants';
 
 function createBulgeOrLineShape(
     start: PolylineVertex,
@@ -154,7 +156,7 @@ export function generateSegments(
         const end: PolylineVertex = sourcePoints[0];
 
         // Check if closing segment would be degenerate (last point = first point)
-        const EPSILON: number = 1e-10;
+        // Use global EPSILON for floating point comparison
         const isAlreadyClosed: boolean =
             Math.abs(start.x - end.x) < EPSILON &&
             Math.abs(start.y - end.y) < EPSILON;
@@ -219,7 +221,11 @@ export function polylineToVertices(polyline: Polyline): PolylineVertex[] {
 
                 // Convert angle to bulge: bulge = tan(θ/4)
                 const bulge: number =
-                    Math.tan(includedAngle / 4) * (arc.clockwise ? -1 : 1);
+                    // eslint-disable-next-line no-magic-numbers
+                    Math.tan(includedAngle / 4) *
+                    (arc.clockwise
+                        ? DIRECTION_CLOCKWISE
+                        : DIRECTION_COUNTERCLOCKWISE);
 
                 vertices.push({
                     x: startPoint.x,

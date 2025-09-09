@@ -1,4 +1,5 @@
 import type { Point2D } from '../types/geometry';
+import { EPSILON } from '../constants';
 
 /**
  * Solves a quadratic equation ax² + bx + c = 0
@@ -12,7 +13,7 @@ export function solveQuadratic(
     a: number,
     b: number,
     c: number,
-    epsilon: number = 1e-10
+    epsilon: number = EPSILON
 ): number[] {
     if (Math.abs(a) < epsilon) {
         // Linear equation bx + c = 0
@@ -22,6 +23,7 @@ export function solveQuadratic(
         return [-c / b];
     }
 
+    // eslint-disable-next-line no-magic-numbers
     const discriminant = b * b - 4 * a * c;
 
     if (discriminant < -epsilon) {
@@ -29,10 +31,12 @@ export function solveQuadratic(
         return [];
     } else if (Math.abs(discriminant) < epsilon) {
         // One repeated root
+
         return [-b / (2 * a)];
     } else {
         // Two distinct roots
         const sqrtDisc = Math.sqrt(discriminant);
+
         return [(-b - sqrtDisc) / (2 * a), (-b + sqrtDisc) / (2 * a)];
     }
 }
@@ -79,7 +83,7 @@ export function calculateSquaredDistance(p1: Point2D, p2: Point2D): number {
 export function isNearlyEqual(
     a: number,
     b: number,
-    epsilon: number = 1e-10
+    epsilon: number = EPSILON
 ): boolean {
     return Math.abs(a - b) < epsilon;
 }

@@ -188,6 +188,7 @@ function solveRayEllipseIntersection(
     // (dx²/a² + dy²/b²)t² + 2(ox*dx/a² + oy*dy/b²)t + (ox²/a² + oy²/b² - 1) = 0
 
     const A: number = (dx * dx) / (a * a) + (dy * dy) / (b * b);
+
     const B: number = 2 * ((ox * dx) / (a * a) + (oy * dy) / (b * b));
     const C: number = (ox * ox) / (a * a) + (oy * oy) / (b * b) - 1;
 
@@ -199,7 +200,9 @@ function solveRayEllipseIntersection(
                 ? [
                       {
                           point: origin,
+
                           t: 0,
+
                           shapeParameter: 0,
                           type: 'tangent' as const,
                       },
@@ -219,6 +222,7 @@ function solveRayEllipseIntersection(
                 {
                     point: intersectionPoint,
                     t,
+
                     shapeParameter: 0,
                     type: 'crossing' as const,
                 },
@@ -229,6 +233,7 @@ function solveRayEllipseIntersection(
     }
 
     // Quadratic case: solve At² + Bt + C = 0
+    // eslint-disable-next-line no-magic-numbers
     const discriminant: number = B * B - 4 * A * C;
 
     if (discriminant < -epsilon) {
@@ -237,6 +242,7 @@ function solveRayEllipseIntersection(
 
     if (Math.abs(discriminant) < epsilon) {
         // One solution (tangent)
+
         const t: number = -B / (2 * A);
         if (t >= -epsilon) {
             const intersectionPoint: Point2D = {
@@ -248,6 +254,7 @@ function solveRayEllipseIntersection(
                 {
                     point: intersectionPoint,
                     t,
+
                     shapeParameter: 0,
                     type: 'tangent' as const,
                 },
@@ -259,7 +266,9 @@ function solveRayEllipseIntersection(
 
     // Two solutions
     const sqrtDiscriminant: number = Math.sqrt(discriminant);
+
     const t1: number = (-B - sqrtDiscriminant) / (2 * A);
+
     const t2: number = (-B + sqrtDiscriminant) / (2 * A);
 
     const intersections: RayIntersection[] = [];
@@ -275,6 +284,7 @@ function solveRayEllipseIntersection(
             intersections.push({
                 point: intersectionPoint,
                 t,
+
                 shapeParameter: 0,
                 type: 'crossing' as const,
             });
@@ -350,6 +360,7 @@ export function countHorizontalRayEllipseCrossings(
     // Create horizontal ray for compatibility
     const ray: Ray = {
         origin: rayOrigin,
+
         direction: { x: 1, y: 0 },
     };
 

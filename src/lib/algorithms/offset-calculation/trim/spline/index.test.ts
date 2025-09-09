@@ -6,6 +6,7 @@ import {
 } from '../../../../types/geometry';
 import { trimSpline } from './index';
 import { type KeepSide } from '../types';
+import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 
 // Mock dependencies
 vi.mock('$lib/utils/id', () => ({
@@ -217,7 +218,7 @@ describe('Spline Trimming Functions', () => {
                         if (line.start.x === 0 && line.end.x === 10) {
                             return 0.5; // Point is at middle of first segment
                         }
-                        return -1; // Not on other segments
+                        return DEFAULT_ARRAY_NOT_FOUND_INDEX; // Not on other segments
                     }
                 );
 
@@ -259,7 +260,7 @@ describe('Spline Trimming Functions', () => {
                         if (line.start.x === 0 && line.end.x === 10) {
                             return 0.5; // Point projects to middle of segment
                         }
-                        return -1; // Not on other segments
+                        return DEFAULT_ARRAY_NOT_FOUND_INDEX; // Not on other segments
                     }
                 );
 
@@ -279,7 +280,7 @@ describe('Spline Trimming Functions', () => {
                 const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 10 && p2.y === 10) {
-                        return 0.7; // Close to control point but not exact
+                        return 0.25; // Close to control point but not exact (within relaxed tolerance of 0.3)
                     }
                     return 100; // Large distance for other points
                 });
@@ -574,7 +575,7 @@ describe('Spline Trimming Functions', () => {
                         ) {
                             return 0.5; // Point is on second segment
                         }
-                        return -1; // Not on other segments
+                        return DEFAULT_ARRAY_NOT_FOUND_INDEX; // Not on other segments
                     }
                 );
 
@@ -660,7 +661,7 @@ describe('Spline Trimming Functions', () => {
                         if (line.start.x === 10 && line.end.x === 15) {
                             return 0.5; // Point is on segment between fit points
                         }
-                        return -1; // Not on other segments
+                        return DEFAULT_ARRAY_NOT_FOUND_INDEX; // Not on other segments
                     }
                 );
 

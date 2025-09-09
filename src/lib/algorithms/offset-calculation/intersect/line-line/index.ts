@@ -2,6 +2,7 @@ import type { Point2D, Line } from '../../../../../lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import type { IntersectionType } from '../index';
 import { EPSILON } from '../../../../constants';
+import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 // Import shared line intersection utilities
 import {
     calculateLineParameterForPoint,
@@ -34,7 +35,7 @@ export function findLineLineIntersections(
     line2: Line,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH,
     intersectionType: IntersectionType = 'infinite'
 ): IntersectionResult[] {
     // First try intersection with original shapes
@@ -319,7 +320,7 @@ export function findLineLineIntersectionsSegmentAware(
             line2,
             false,
             false,
-            1000,
+            DEFAULT_EXTENSION_LENGTH,
             intersectionType
         );
     }

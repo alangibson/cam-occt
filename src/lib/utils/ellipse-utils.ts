@@ -9,6 +9,7 @@
  */
 
 import type { Point2D, Ellipse } from '../types/geometry';
+import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '../constants';
 
 /**
  * Calculate a point on an ellipse at a given parameter value
@@ -241,7 +242,7 @@ export function isFullEllipse(ellipse: Ellipse): boolean {
 
     // Consider it a full ellipse if span is approximately 2π (within small tolerance)
     const fullCircle = 2 * Math.PI;
-    const tolerance = 1e-10;
+    const tolerance = EPSILON;
     return Math.abs(paramSpan - fullCircle) < tolerance;
 }
 
@@ -259,7 +260,7 @@ export function isFullEllipse(ellipse: Ellipse): boolean {
  */
 export function isEllipseClosed(
     ellipse: Ellipse,
-    tolerance: number = 0.001
+    tolerance: number = GEOMETRIC_PRECISION_TOLERANCE
 ): boolean {
     // If no start/end parameters, assume it's a full closed ellipse
     if (

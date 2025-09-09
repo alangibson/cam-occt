@@ -10,6 +10,7 @@ import {
     prepareChainsAndLeadConfigs,
     getChainEndPoint,
 } from './path-optimization-utils';
+import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '../geometry/constants';
 
 /**
  * Rapids are the non-cutting paths that connect cut paths.
@@ -95,7 +96,8 @@ function getPathEndPoint(
             if (leadResult.leadOut && leadResult.leadOut.points.length > 0) {
                 // Return the last point of the lead-out (end of lead-out)
                 return leadResult.leadOut.points[
-                    leadResult.leadOut.points.length - 1
+                    leadResult.leadOut.points.length +
+                        DEFAULT_ARRAY_NOT_FOUND_INDEX
                 ];
             }
         } catch (error) {
@@ -226,7 +228,7 @@ function nearestNeighborTSP(
 
         // Remove from unprocessed list
         const index = pathsWithoutPart.indexOf(nearestResult.path);
-        if (index > -1) {
+        if (index > DEFAULT_ARRAY_NOT_FOUND_INDEX) {
             pathsWithoutPart.splice(index, 1);
         }
     }
@@ -282,7 +284,7 @@ function nearestNeighborTSP(
 
             // Remove from holes list
             const index = holePaths.indexOf(nearestResult.path);
-            if (index > -1) {
+            if (index > DEFAULT_ARRAY_NOT_FOUND_INDEX) {
                 holePaths.splice(index, 1);
             }
         }

@@ -3,9 +3,9 @@ import type { IntersectionResult } from '../../chain/types';
 import {
     createVerbCurveFromEllipse,
     processVerbIntersectionResults,
-    INTERSECTION_TOLERANCE,
     createVerbCurveFromCircle,
 } from '../../../../utils/verb-integration-utils';
+import { INTERSECTION_TOLERANCE } from '../../../../constants';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 
 /**

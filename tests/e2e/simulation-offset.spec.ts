@@ -1,4 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
+import { STANDARD_TIMEOUT_MS } from '../../src/lib/constants/index.js';
 
 test.describe('Simulation with offset paths', () => {
     test.beforeEach(async ({ page }) => {
@@ -164,7 +165,7 @@ test.describe('Simulation with offset paths', () => {
         const progressBar = page.locator('.progress-fill');
         const initialWidth = await progressBar.evaluate((el) => el.style.width);
 
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
 
         const laterWidth = await progressBar.evaluate((el) => el.style.width);
         expect(parseFloat(laterWidth)).toBeGreaterThan(
@@ -188,7 +189,7 @@ test.describe('Simulation with offset paths', () => {
         await playButton.click();
 
         // Wait and check that time updates
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
 
         // Get current time from display
         const timeText = await timeDisplay.textContent();
@@ -236,7 +237,7 @@ test.describe('Simulation with offset paths', () => {
         await playButton.click();
 
         // Let it run
-        await page.waitForTimeout(1000);
+        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
 
         // Reset simulation
         const resetButton = page.locator('button:has-text("Reset")');

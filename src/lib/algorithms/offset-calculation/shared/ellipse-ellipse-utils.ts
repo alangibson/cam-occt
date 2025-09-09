@@ -4,8 +4,11 @@ import verb from 'verb-nurbs';
 import {
     createVerbCurveFromEllipse,
     processVerbIntersectionResults,
-    INTERSECTION_TOLERANCE,
 } from '../../../utils/verb-integration-utils';
+import {
+    INTERSECTION_TOLERANCE,
+    DUPLICATE_FILTERING_TOLERANCE,
+} from '../../../constants';
 
 /**
  * Ellipse-Ellipse Intersection Utilities
@@ -141,7 +144,7 @@ export function calculateIntersectionScore(
  */
 function filterDuplicateIntersections(
     intersections: IntersectionResult[],
-    tolerance: number = INTERSECTION_TOLERANCE
+    tolerance: number = DUPLICATE_FILTERING_TOLERANCE
 ): IntersectionResult[] {
     const filtered: IntersectionResult[] = [];
 

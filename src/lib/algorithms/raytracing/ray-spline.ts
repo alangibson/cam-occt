@@ -8,7 +8,13 @@
 
 import type { Spline, Point2D } from '../../types/geometry';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
+import { DEFAULT_SPLINE_DEGREE } from '../../geometry/constants';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
+
+/**
+ * Default sample count for ray-spline intersection approximation
+ */
+const DEFAULT_SPLINE_SAMPLE_COUNT = 50;
 
 /**
  * Counts how many times a ray crosses a spline
@@ -57,7 +63,7 @@ function countRaySplineCrossingsApproximate(
 ): number {
     const samples: Point2D[] = sampleSplinePoints(
         spline,
-        config.splineSampleCount || 50
+        config.splineSampleCount || DEFAULT_SPLINE_SAMPLE_COUNT
     );
 
     if (samples.length < 2) {
@@ -93,7 +99,7 @@ function findRaySplineIntersectionsApproximate(
 ): RayIntersection[] {
     const samples: Point2D[] = sampleSplinePoints(
         spline,
-        config.splineSampleCount || 50
+        config.splineSampleCount || DEFAULT_SPLINE_SAMPLE_COUNT
     );
     const intersections: RayIntersection[] = [];
 
@@ -192,7 +198,8 @@ function evaluateSplineAtParameter(spline: Spline, t: number): Point2D | null {
     }
 
     // For now, implement simple Bézier-like evaluation for cubic cases
-    if (degree === 3 && controlPoints.length === 4) {
+    // eslint-disable-next-line no-magic-numbers
+    if (degree === DEFAULT_SPLINE_DEGREE && controlPoints.length === 4) {
         return evaluateCubicBezier(controlPoints, t);
     }
 
@@ -237,7 +244,9 @@ function evaluateCubicBezier(controlPoints: Point2D[], t: number): Point2D {
     const ttt: number = tt * t;
 
     return {
+        // eslint-disable-next-line no-magic-numbers
         x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
+        // eslint-disable-next-line no-magic-numbers
         y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y,
     };
 }

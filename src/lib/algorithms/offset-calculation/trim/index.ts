@@ -7,6 +7,23 @@ import type {
     Polyline,
 } from '../../../types/geometry';
 import type { IntersectionResult } from '../chain/types';
+import { MICRO_TOLERANCE } from '../../../geometry/constants';
+
+/**
+ * Intersection scoring constants for comprehensive intersection scoring system
+ */
+const INTERSECTION_CONFIDENCE_THRESHOLD = 0.5;
+const INTERSECTION_HIGH_CONFIDENCE_THRESHOLD = 0.9;
+const INTERSECTION_TOLERANCE_MULTIPLIER = 10;
+const INTERSECTION_SCORE_DISTANCE_WEIGHT = 40;
+const INTERSECTION_SCORE_CONFIDENCE_WEIGHT = 30;
+const INTERSECTION_SCORE_EXACT = 20;
+const INTERSECTION_SCORE_TANGENT = 15;
+const INTERSECTION_SCORE_APPROXIMATE = 10;
+const INTERSECTION_SCORE_COINCIDENT = 5;
+const INTERSECTION_SCORE_PARAMETER_WEIGHT = 5;
+const INTERSECTION_SCORE_MAX_DISTANCE = 100;
+
 import { trimArc } from './arc';
 import { trimCircle } from './circle';
 import { trimLine } from './line';
@@ -17,6 +34,7 @@ import type { KeepSide, TrimResult } from './types';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { isNearlyEqual } from '../../../utils/math-utils';
 import { pointDistance } from '../shared/trim-extend-utils';
+import { INTERSECTION_TOLERANCE } from '../../../constants';
 
 // Re-export shared utilities for backward compatibility
 export { pointDistance } from '../shared/trim-extend-utils';
@@ -34,7 +52,7 @@ export { pointDistance } from '../shared/trim-extend-utils';
  * - Creates sharp corners with minimal geometry deviation
  * - Handles edge cases and degenerate geometries robustly
  */
-const DEFAULT_TOLERANCE: number = 1e-6;
+const DEFAULT_TOLERANCE: number = INTERSECTION_TOLERANCE;
 
 /**
  * Main entry point for trimming a shape at a specific point
@@ -108,7 +126,7 @@ export function selectTrimPoint(
     // Filter out obviously bad intersections (very low confidence)
     let filteredIntersections: IntersectionResult[] = intersections.filter(
         (intersection) =>
-            intersection.confidence > 0.5 &&
+            intersection.confidence > INTERSECTION_CONFIDENCE_THRESHOLD &&
             intersection.param1 >= -tolerance &&
             intersection.param1 <= 1 + tolerance &&
             intersection.param2 >= -tolerance &&
@@ -120,16 +138,16 @@ export function selectTrimPoint(
     filteredIntersections = filteredIntersections.filter((intersection) => {
         // Only validate parameters that are very close to endpoints
         if (
-            isNearlyEqual(intersection.param1, 0, 1e-6) ||
-            isNearlyEqual(intersection.param1, 1, 1e-6) ||
-            isNearlyEqual(intersection.param2, 0, 1e-6) ||
-            isNearlyEqual(intersection.param2, 1, 1e-6)
+            isNearlyEqual(intersection.param1, 0, INTERSECTION_TOLERANCE) ||
+            isNearlyEqual(intersection.param1, 1, INTERSECTION_TOLERANCE) ||
+            isNearlyEqual(intersection.param2, 0, INTERSECTION_TOLERANCE) ||
+            isNearlyEqual(intersection.param2, 1, INTERSECTION_TOLERANCE)
         ) {
             // For now, just be more conservative with endpoint intersections
             // This is a temporary fix - a full implementation would validate against actual geometry
             return (
                 intersection.distance < tolerance &&
-                intersection.confidence > 0.9
+                intersection.confidence > INTERSECTION_HIGH_CONFIDENCE_THRESHOLD
             );
         }
         return true; // Keep non-endpoint intersections
@@ -218,7 +236,10 @@ export function trimConsecutiveShapes(
     }
 
     // Use a more relaxed tolerance for trimming to handle approximation errors
-    const trimmingTolerance: number = Math.max(tolerance * 10, 1e-3);
+    const trimmingTolerance: number = Math.max(
+        tolerance * INTERSECTION_TOLERANCE_MULTIPLIER,
+        MICRO_TOLERANCE
+    );
 
     // Trim both shapes at the selected intersection
     // Shape1 should be trimmed to end at the intersection (keep start portion)
@@ -250,25 +271,27 @@ function calculateIntersectionScore(
 
     // Distance factor (closer to joint point is better)
     const distance: number = pointDistance(intersection.point, jointPoint);
-    const maxDistance: number = 100; // Arbitrary maximum for normalization
-    score += Math.max(0, (maxDistance - distance) / maxDistance) * 40;
+    const maxDistance: number = INTERSECTION_SCORE_MAX_DISTANCE; // Arbitrary maximum for normalization
+    score +=
+        Math.max(0, (maxDistance - distance) / maxDistance) *
+        INTERSECTION_SCORE_DISTANCE_WEIGHT;
 
     // Confidence factor
-    score += intersection.confidence * 30;
+    score += intersection.confidence * INTERSECTION_SCORE_CONFIDENCE_WEIGHT;
 
     // Intersection type factor (exact > tangent > approximate)
     switch (intersection.type) {
         case 'exact':
-            score += 20;
+            score += INTERSECTION_SCORE_EXACT;
             break;
         case 'tangent':
-            score += 15;
+            score += INTERSECTION_SCORE_TANGENT;
             break;
         case 'approximate':
-            score += 10;
+            score += INTERSECTION_SCORE_APPROXIMATE;
             break;
         case 'coincident':
-            score += 5;
+            score += INTERSECTION_SCORE_COINCIDENT;
             break;
     }
 
@@ -281,7 +304,8 @@ function calculateIntersectionScore(
         intersection.param2,
         1 - intersection.param2
     );
-    score += (param1Factor + param2Factor) * 5;
+    score +=
+        (param1Factor + param2Factor) * INTERSECTION_SCORE_PARAMETER_WEIGHT;
 
     return score;
 }

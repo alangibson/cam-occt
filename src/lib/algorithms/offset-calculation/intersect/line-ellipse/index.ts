@@ -5,9 +5,9 @@ import { snapParameter } from '../line-arc/index';
 import {
     createVerbCurveFromEllipse,
     createVerbCurveFromLine,
-    INTERSECTION_TOLERANCE,
     processVerbIntersectionResults,
 } from '../../../../utils/verb-integration-utils';
+import { INTERSECTION_TOLERANCE } from '../../../../constants';
 import { getEllipseParameters } from '../../../../utils/ellipse-utils';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 
@@ -141,6 +141,7 @@ export function findEllipseLineIntersections(
     const B: number = 2 * ((p1.x * dx) / a ** 2 + (p1.y * dy) / b ** 2);
     const C: number = (p1.x / a) ** 2 + (p1.y / b) ** 2 - 1;
 
+    // eslint-disable-next-line no-magic-numbers
     const discriminant: number = B ** 2 - 4 * A * C;
 
     if (discriminant < -EPSILON) {

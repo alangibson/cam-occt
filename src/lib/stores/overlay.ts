@@ -17,6 +17,7 @@ import type {
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { polylineToPoints } from '../geometry/polyline';
+import { CHAIN_CLOSURE_TOLERANCE } from '../constants';
 
 export interface TessellationPoint {
     x: number;
@@ -342,8 +343,8 @@ export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {
         endpoints.push({ ...start, type: 'start', chainId: chain.id });
 
         if (
-            Math.abs(end.x - start.x) > 0.01 ||
-            Math.abs(end.y - start.y) > 0.01
+            Math.abs(end.x - start.x) > CHAIN_CLOSURE_TOLERANCE ||
+            Math.abs(end.y - start.y) > CHAIN_CLOSURE_TOLERANCE
         ) {
             endpoints.push({ ...end, type: 'end', chainId: chain.id });
         }

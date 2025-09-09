@@ -5,7 +5,7 @@ import { offsetChain } from './offset';
 import type { Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import type { OffsetChain } from './types';
-import { generateChainOffsetSVG } from './visual-tests';
+import { generateChainOffsetSVG } from '../../../test/visual-tests';
 
 describe('Flipped Arc Gap Filling Debug', () => {
     function createLine(x1: number, y1: number, x2: number, y2: number): Shape {

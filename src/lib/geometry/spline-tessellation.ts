@@ -1,6 +1,32 @@
 import verb, { type VerbCurve } from 'verb-nurbs';
 import type { Point2D, Spline } from '../types/geometry';
-import { EPSILON } from '../constants/index';
+import {
+    EPSILON,
+    CHAIN_CLOSURE_TOLERANCE,
+    INTERSECTION_TOLERANCE,
+    GEOMETRIC_PRECISION_TOLERANCE,
+    STANDARD_TESSELLATION_COUNT,
+    STANDARD_GRID_SPACING,
+    MAX_ITERATIONS,
+} from '../constants/index';
+import {
+    SPLINE_COMPLEXITY_WEIGHT_MULTIPLIER,
+    CLOSED_SPLINE_COMPLEXITY_MULTIPLIER,
+    MAX_SPLINE_TESSELLATION_SAMPLES,
+    MAX_ADAPTIVE_TESSELLATION_SAMPLES,
+    STANDARD_TESSELLATION_TIMEOUT_MS,
+    HIGH_COMPLEXITY_TIMEOUT_MS,
+    TESSELLATION_SAMPLE_MULTIPLIER,
+} from './spline/constants';
+import {
+    DEFAULT_ARRAY_NOT_FOUND_INDEX,
+    SPLINE_SAMPLE_COUNT,
+} from './constants';
+
+/**
+ * Maximum iterations for intensive algorithms (tessellation, sampling)
+ */
+const MAX_INTENSIVE_ITERATIONS: number = 1000;
 
 /**
  * Create verb curve for sampling and return it with domain
@@ -73,10 +99,10 @@ export interface SplineTessellationResult {
 const DEFAULT_CONFIG: Required<SplineTessellationConfig> = {
     method: 'verb-nurbs',
     numSamples: 50,
-    tolerance: 0.01,
-    maxSamples: 200,
-    minSamples: 10,
-    timeoutMs: 5000,
+    tolerance: CHAIN_CLOSURE_TOLERANCE,
+    maxSamples: MAX_SPLINE_TESSELLATION_SAMPLES,
+    minSamples: STANDARD_GRID_SPACING,
+    timeoutMs: STANDARD_TESSELLATION_TIMEOUT_MS,
 };
 
 /**
@@ -321,7 +347,7 @@ function tessellateWithVerbNurbs(
                     Math.pow(lastPoint.y - firstPoint.y, 2)
             );
 
-            if (distance > 0.001) {
+            if (distance > GEOMETRIC_PRECISION_TOLERANCE) {
                 points2D[points2D.length - 1] = { ...firstPoint };
                 warnings.push('Adjusted last point to ensure spline closure');
             }
@@ -364,7 +390,7 @@ function tessellateWithAdaptiveSampling(
         ];
 
         let iterations: number = 0;
-        const maxIterations: number = 1000; // Prevent infinite loops
+        const maxIterations: number = MAX_INTENSIVE_ITERATIONS; // Prevent infinite loops
 
         while (sampleQueue.length > 0 && iterations < maxIterations) {
             if (Date.now() - startTime > config.timeoutMs) {
@@ -378,7 +404,7 @@ function tessellateWithAdaptiveSampling(
 
             // Find the largest gap
             let maxGap: number = 0;
-            let maxGapIndex: number = -1;
+            let maxGapIndex: number = DEFAULT_ARRAY_NOT_FOUND_INDEX;
 
             for (let i: number = 0; i < sampleQueue.length - 1; i++) {
                 const gap: number = sampleQueue[i + 1].t - sampleQueue[i].t;
@@ -388,7 +414,11 @@ function tessellateWithAdaptiveSampling(
                 }
             }
 
-            if (maxGapIndex === -1 || maxGap < 1e-6) break;
+            if (
+                maxGapIndex === DEFAULT_ARRAY_NOT_FOUND_INDEX ||
+                maxGap < INTERSECTION_TOLERANCE
+            )
+                break;
 
             const t1: number = sampleQueue[maxGapIndex].t;
             const t2: number = sampleQueue[maxGapIndex + 1].t;
@@ -527,7 +557,7 @@ function tessellateWithFallback(
                 Math.pow(lastPoint.y - firstPoint.y, 2)
         );
 
-        if (distance > 0.001) {
+        if (distance > GEOMETRIC_PRECISION_TOLERANCE) {
             points.push({ ...firstPoint });
             warnings.push('Added closure point for closed spline');
         }
@@ -635,27 +665,31 @@ export function validateSplineGeometry(spline: Spline): string[] {
  */
 export function createAdaptiveTessellationConfig(
     spline: Spline,
-    targetTolerance: number = 0.01
+    targetTolerance: number = CHAIN_CLOSURE_TOLERANCE
 ): SplineTessellationConfig {
     // Estimate complexity based on spline properties
     const numControlPoints: number = spline.controlPoints.length;
     const degree: number = spline.degree;
     const hasWeights: boolean =
-        spline.weights && spline.weights.some((w) => Math.abs(w - 1) > 1e-6);
+        spline.weights &&
+        spline.weights.some((w) => Math.abs(w - 1) > INTERSECTION_TOLERANCE);
 
     // Calculate spline "complexity score"
     let complexityScore: number = numControlPoints * degree;
-    if (hasWeights) complexityScore *= 1.5;
-    if (spline.closed) complexityScore *= 1.2;
+    if (hasWeights) complexityScore *= SPLINE_COMPLEXITY_WEIGHT_MULTIPLIER;
+    if (spline.closed) complexityScore *= CLOSED_SPLINE_COMPLEXITY_MULTIPLIER;
 
     // Choose method based on complexity
     let method: SplineTessellationConfig['method'] = 'verb-nurbs';
-    let numSamples: number = Math.min(200, Math.max(20, complexityScore * 2));
+    let numSamples: number = Math.min(
+        MAX_SPLINE_TESSELLATION_SAMPLES,
+        Math.max(STANDARD_TESSELLATION_COUNT, complexityScore * 2)
+    );
 
-    if (complexityScore < 10) {
+    if (complexityScore < STANDARD_GRID_SPACING) {
         method = 'uniform-sampling';
-        numSamples = 20;
-    } else if (complexityScore > 100) {
+        numSamples = STANDARD_TESSELLATION_COUNT;
+    } else if (complexityScore > SPLINE_SAMPLE_COUNT) {
         method = 'adaptive-sampling';
     }
 
@@ -663,9 +697,18 @@ export function createAdaptiveTessellationConfig(
         method,
         numSamples,
         tolerance: targetTolerance,
-        maxSamples: Math.min(500, numSamples * 3),
-        minSamples: Math.max(10, Math.floor(numSamples / 3)),
-        timeoutMs: complexityScore > 50 ? 10000 : 5000,
+        maxSamples: Math.min(
+            MAX_ADAPTIVE_TESSELLATION_SAMPLES,
+            numSamples * TESSELLATION_SAMPLE_MULTIPLIER
+        ),
+        minSamples: Math.max(
+            STANDARD_GRID_SPACING,
+            Math.floor(numSamples / TESSELLATION_SAMPLE_MULTIPLIER)
+        ),
+        timeoutMs:
+            complexityScore > MAX_ITERATIONS
+                ? HIGH_COMPLEXITY_TIMEOUT_MS
+                : STANDARD_TESSELLATION_TIMEOUT_MS,
     };
 }
 
@@ -683,7 +726,7 @@ export function estimateSplineArcLength(
     const result: SplineTessellationResult = tessellateSpline(spline, {
         ...config,
         method: 'uniform-sampling',
-        numSamples: 100,
+        numSamples: SPLINE_SAMPLE_COUNT,
     });
 
     if (!result.success || result.points.length < 2) {
@@ -711,7 +754,7 @@ export function estimateSplineArcLength(
  */
 export function simplifyTessellatedSpline(
     points: Point2D[],
-    tolerance: number = 0.01
+    tolerance: number = CHAIN_CLOSURE_TOLERANCE
 ): Point2D[] {
     if (points.length <= 2) {
         return [...points];

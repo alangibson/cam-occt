@@ -13,6 +13,7 @@ import { GeometryType } from '../types/geometry';
 import { tessellateEllipse } from '../geometry/ellipse-tessellation';
 import type { Shape } from '../algorithms/offset-calculation/chain/types';
 import { tessellateVerbCurve } from '../algorithms/offset-calculation/offset/spline/spline';
+import { EPSILON } from '../constants';
 import { getShapeEndPoint } from '$lib/geometry';
 import { getShapeStartPoint } from '$lib/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
@@ -23,6 +24,51 @@ import {
 } from '$lib/algorithms/offset-calculation/extend/spline';
 import { isLine } from '$lib/geometry/line';
 import { isArc } from '$lib/geometry/arc';
+
+// SVG Builder Constants
+const DEFAULT_PADDING = 50;
+const DEFAULT_SVG_SIZE = 400;
+const DEFAULT_EXTENSION_LENGTH = 100;
+const MIN_SVG_SIZE = 100;
+const LEGEND_CHAR_WIDTH = 8;
+const LEGEND_ITEM_HEIGHT = 20;
+const LEGEND_MIN_WIDTH = 140;
+const LEGEND_MARGIN = 10;
+const LEGEND_PADDING_BASE = 20;
+const LEGEND_TEXT_OFFSET_Y = 15;
+const LEGEND_COLOR_INDICATOR_X = 15;
+const LEGEND_LINE_START_X = 5;
+const LEGEND_LINE_END_X = 25;
+const LEGEND_TEXT_START_X = 30;
+const LEGEND_TEXT_OFFSET_BASELINE = 4;
+const TEXT_FONT_SIZE_BASE = 12;
+const TEXT_CHAR_WIDTH_RATIO = 0.6;
+const CIRCLE_MARKER_RADIUS = 3;
+const CIRCLE_MARKER_STROKE_WIDTH = 1;
+const LINE_INDICATOR_STROKE_WIDTH = 2;
+const ELLIPSE_TESSELLATION_POINTS = 64;
+const SPLINE_VISUAL_TOLERANCE = 0.1;
+const CIRCLE_INDICATOR_STROKE_WIDTH = 0.5;
+const POLYLINE_STYLE_PARTS_COUNT = 5;
+const POLYLINE_COLOR_INDEX = 1;
+const POLYLINE_STROKE_WIDTH_INDEX = 2;
+const POLYLINE_FILL_INDEX = 3;
+const POLYLINE_DASH_INDEX = 4;
+// eslint-disable-next-line no-magic-numbers
+const MAX_ANGLE_EXTENSION = 4 * Math.PI;
+const BEZIER_MID_START = 4;
+const DASH_PATTERN_SHORT = '5,5';
+const BEZIER_CONTROL_POINTS = 4;
+const BEZIER_DEGREE = 3;
+const BEZIER_KNOTS_LENGTH = 8;
+const BEZIER_KNOT_START = 0;
+const BEZIER_KNOT_END = 1;
+const BEZIER_KNOT_END_INDEX = 7;
+const TITLE_OFFSET_BOTTOM = 20;
+const TITLE_FONT_SIZE = '16px';
+const SVG_RECT_STROKE_WIDTH = 0.5;
+const LEGEND_PADDING_MULTIPLIER = 3;
+const ANGLE_FULL_ROTATION = Math.PI * 2;
 
 export class SVGBuilder {
     private elements: string[] = [];
@@ -37,7 +83,7 @@ export class SVGBuilder {
         maxY: number;
     } | null = null;
     private autoSize: boolean;
-    private readonly padding = 50;
+    private readonly padding = DEFAULT_PADDING;
     private flipY: boolean;
     private legendItems: Array<{ color: string; label: string }> | null = null;
 
@@ -180,8 +226,18 @@ export class SVGBuilder {
         };
         const startPoint: Point2D = getShapeStartPoint(arcShape);
         const endPoint: Point2D = getShapeEndPoint(arcShape);
-        this.addCircle({ center: startPoint, radius: 3 }, 'green', 1, 'green');
-        this.addCircle({ center: endPoint, radius: 3 }, 'red', 1, 'red');
+        this.addCircle(
+            { center: startPoint, radius: CIRCLE_MARKER_RADIUS },
+            'green',
+            CIRCLE_MARKER_STROKE_WIDTH,
+            'green'
+        );
+        this.addCircle(
+            { center: endPoint, radius: CIRCLE_MARKER_RADIUS },
+            'red',
+            CIRCLE_MARKER_STROKE_WIDTH,
+            'red'
+        );
     }
 
     private addPolyline(
@@ -256,7 +312,7 @@ export class SVGBuilder {
     ) {
         // Update bounds for auto-sizing - approximate text bounds based on character width
         const fontSizeNum: number = parseFloat(fontSize.replace('px', ''));
-        const approxCharWidth: number = fontSizeNum * 0.6; // Rough approximation for Arial
+        const approxCharWidth: number = fontSizeNum * TEXT_CHAR_WIDTH_RATIO; // Rough approximation for Arial
         const textWidth: number = text.length * approxCharWidth;
         const textHeight: number = fontSizeNum;
 
@@ -285,24 +341,29 @@ export class SVGBuilder {
         const maxLabelLength: number = Math.max(
             ...items.map((item) => item.label.length)
         );
-        const legendWidth: number = Math.max(140, maxLabelLength * 8 + 50);
+        const legendWidth: number = Math.max(
+            LEGEND_MIN_WIDTH,
+            maxLabelLength * LEGEND_CHAR_WIDTH + DEFAULT_PADDING
+        );
 
         // Calculate legend height based on number of items
-        const legendHeight: number = items.length * 20 + 20;
+        const legendHeight: number =
+            items.length * LEGEND_ITEM_HEIGHT + LEGEND_PADDING_BASE;
 
         // Position in upper right corner with margin - use raw SVG coordinates (ignore flipY)
-        const margin: number = 10;
+        const margin: number = LEGEND_MARGIN;
         const x: number = this.width - legendWidth - margin;
         const y: number = margin;
 
         // Background box - positioned in upper right using raw SVG coordinates
         elements.push(
-            `<rect x="${x}" y="${y}" width="${legendWidth}" height="${legendHeight}" fill="white" stroke="black" stroke-width="1" opacity="0.9" />`
+            `<rect x="${x}" y="${y}" width="${legendWidth}" height="${legendHeight}" fill="white" stroke="black" stroke-width="${CIRCLE_MARKER_STROKE_WIDTH}" opacity="0.9" />`
         );
 
         // Legend items - all use raw SVG coordinates (no coordinate transformation)
         items.forEach((item, index) => {
-            const itemY: number = y + 15 + index * 20;
+            const itemY: number =
+                y + LEGEND_TEXT_OFFSET_Y + index * LEGEND_ITEM_HEIGHT;
 
             // Color indicator line or circle
             if (
@@ -313,18 +374,18 @@ export class SVGBuilder {
             ) {
                 // Use circles for intersection points
                 elements.push(
-                    `<circle cx="${x + 15}" cy="${itemY}" r="3" fill="${item.color}" stroke="black" stroke-width="0.5" />`
+                    `<circle cx="${x + LEGEND_COLOR_INDICATOR_X}" cy="${itemY}" r="${CIRCLE_MARKER_RADIUS}" fill="${item.color}" stroke="black" stroke-width="${CIRCLE_INDICATOR_STROKE_WIDTH}" />`
                 );
             } else {
                 // Use lines for shapes
                 elements.push(
-                    `<line x1="${x + 5}" y1="${itemY}" x2="${x + 25}" y2="${itemY}" stroke="${item.color}" stroke-width="2" />`
+                    `<line x1="${x + LEGEND_LINE_START_X}" y1="${itemY}" x2="${x + LEGEND_LINE_END_X}" y2="${itemY}" stroke="${item.color}" stroke-width="${LINE_INDICATOR_STROKE_WIDTH}" />`
                 );
             }
 
             // Label text
             elements.push(
-                `<text x="${x + 30}" y="${itemY + 4}" fill="black" font-size="12px" font-family="Arial">${this.escapeXml(item.label)}</text>`
+                `<text x="${x + LEGEND_TEXT_START_X}" y="${itemY + LEGEND_TEXT_OFFSET_BASELINE}" fill="black" font-size="${TEXT_FONT_SIZE_BASE}px" font-family="Arial">${this.escapeXml(item.label)}</text>`
             );
         });
 
@@ -336,7 +397,6 @@ export class SVGBuilder {
         shape: Shape,
         color: string,
         strokeWidth: number,
-        label?: string,
         dashArray?: string
     ) {
         switch (shape.type) {
@@ -419,18 +479,34 @@ export class SVGBuilder {
         let normalizedKnots: number[] = [...spline.knots];
 
         // For simple Bezier curves (degree 3, 4 control points), ensure clamped format
-        if (spline.degree === 3 && spline.controlPoints.length === 4) {
+        if (
+            spline.degree === BEZIER_DEGREE &&
+            spline.controlPoints.length === BEZIER_CONTROL_POINTS
+        ) {
             if (
-                spline.knots.length === 8 &&
-                spline.knots[0] === 0 &&
-                spline.knots[7] === 1 &&
-                spline.knots.slice(0, 4).every((k) => k === 0) &&
-                spline.knots.slice(4, 8).every((k) => k === 1)
+                spline.knots.length === BEZIER_KNOTS_LENGTH &&
+                spline.knots[0] === BEZIER_KNOT_START &&
+                spline.knots[BEZIER_KNOT_END_INDEX] === BEZIER_KNOT_END &&
+                spline.knots
+                    .slice(0, BEZIER_MID_START)
+                    .every((k) => k === BEZIER_KNOT_START) &&
+                spline.knots
+                    .slice(BEZIER_MID_START, BEZIER_KNOTS_LENGTH)
+                    .every((k) => k === BEZIER_KNOT_END)
             ) {
                 // This is already a proper clamped knot vector for a Bezier curve
                 // But verb-nurbs might expect a specific format
                 // Let's try: [0, 0, 0, 0, 1, 1, 1, 1] - which is correct for clamped NURBS
-                normalizedKnots = [0, 0, 0, 0, 1, 1, 1, 1];
+                normalizedKnots = [
+                    BEZIER_KNOT_START,
+                    BEZIER_KNOT_START,
+                    BEZIER_KNOT_START,
+                    BEZIER_KNOT_START,
+                    BEZIER_KNOT_END,
+                    BEZIER_KNOT_END,
+                    BEZIER_KNOT_END,
+                    BEZIER_KNOT_END,
+                ];
             }
         }
 
@@ -459,7 +535,7 @@ export class SVGBuilder {
 
         // Use fine tolerance for visual output - ensures smooth curves
         // Use 0.1 pixel tolerance for crisp visual representation
-        const visualTolerance: number = 0.1;
+        const visualTolerance: number = SPLINE_VISUAL_TOLERANCE;
         const points: Point2D[] = tessellateVerbCurve(
             verbCurve,
             visualTolerance
@@ -491,7 +567,9 @@ export class SVGBuilder {
         strokeWidth: number,
         dashArray?: string
     ) {
-        const points: Point2D[] = tessellateEllipse(ellipse, { numPoints: 64 });
+        const points: Point2D[] = tessellateEllipse(ellipse, {
+            numPoints: ELLIPSE_TESSELLATION_POINTS,
+        });
         const isArc: boolean =
             typeof ellipse.startParam === 'number' &&
             typeof ellipse.endParam === 'number';
@@ -514,12 +592,17 @@ export class SVGBuilder {
             const startPoint: Point2D = getShapeStartPoint(ellipseShape);
             const endPoint: Point2D = getShapeEndPoint(ellipseShape);
             this.addCircle(
-                { center: startPoint, radius: 3 },
+                { center: startPoint, radius: CIRCLE_MARKER_RADIUS },
                 'green',
-                1,
+                CIRCLE_MARKER_STROKE_WIDTH,
                 'green'
             );
-            this.addCircle({ center: endPoint, radius: 3 }, 'red', 1, 'red');
+            this.addCircle(
+                { center: endPoint, radius: CIRCLE_MARKER_RADIUS },
+                'red',
+                CIRCLE_MARKER_STROKE_WIDTH,
+                'red'
+            );
         }
     }
 
@@ -534,7 +617,7 @@ export class SVGBuilder {
         line: Line,
         color: string,
         strokeWidth: number,
-        extensionLength: number = 100
+        extensionLength: number = DEFAULT_EXTENSION_LENGTH
     ) {
         // Calculate line direction
         const lineDir: { x: number; y: number } = {
@@ -558,7 +641,7 @@ export class SVGBuilder {
             { start: startExtension, end: line.start },
             color,
             strokeWidth,
-            '5,5'
+            DASH_PATTERN_SHORT
         );
 
         // End extension (after line end)
@@ -570,7 +653,7 @@ export class SVGBuilder {
             { start: line.end, end: endExtension },
             color,
             strokeWidth,
-            '5,5'
+            DASH_PATTERN_SHORT
         );
     }
 
@@ -581,7 +664,7 @@ export class SVGBuilder {
         spline: Spline,
         color: string,
         strokeWidth: number,
-        extensionLength: number = 100
+        extensionLength: number = DEFAULT_EXTENSION_LENGTH
     ) {
         try {
             // Get start and end points of spline
@@ -620,7 +703,7 @@ export class SVGBuilder {
                 { start: startExtension, end: startPoint },
                 color,
                 strokeWidth,
-                '5,5'
+                DASH_PATTERN_SHORT
             );
 
             // End extension (tangent after spline end)
@@ -632,7 +715,7 @@ export class SVGBuilder {
                 { start: endPoint, end: endExtension },
                 color,
                 strokeWidth,
-                '5,5'
+                DASH_PATTERN_SHORT
             );
         } catch {
             // Fallback: simple linear extensions using control points
@@ -663,7 +746,7 @@ export class SVGBuilder {
                     { start: startExtension, end: startPoint },
                     color,
                     strokeWidth,
-                    '5,5'
+                    DASH_PATTERN_SHORT
                 );
             }
 
@@ -694,7 +777,7 @@ export class SVGBuilder {
                     { start: endPoint, end: endExtension },
                     color,
                     strokeWidth,
-                    '5,5'
+                    DASH_PATTERN_SHORT
                 );
             }
         }
@@ -707,14 +790,14 @@ export class SVGBuilder {
         arc: Arc,
         color: string,
         strokeWidth: number,
-        extensionLength: number = 100
+        extensionLength: number = DEFAULT_EXTENSION_LENGTH
     ) {
         // Calculate angular extension based on extension length and radius
         // extensionAngle = extensionLength / radius (in radians)
         // Clamp to a reasonable maximum (e.g., 4π radians = 720°)
         const extensionAngle: number = Math.min(
             extensionLength / arc.radius,
-            4 * Math.PI
+            MAX_ANGLE_EXTENSION
         );
 
         let extendedStartAngle: number;
@@ -738,7 +821,12 @@ export class SVGBuilder {
             endAngle: arc.startAngle,
             clockwise: arc.clockwise,
         };
-        this.addArcWithDash(startExtensionArc, color, strokeWidth, '5,5');
+        this.addArcWithDash(
+            startExtensionArc,
+            color,
+            strokeWidth,
+            DASH_PATTERN_SHORT
+        );
 
         // Draw end extension (from original end to extended end)
         const endExtensionArc: Arc = {
@@ -748,7 +836,12 @@ export class SVGBuilder {
             endAngle: extendedEndAngle,
             clockwise: arc.clockwise,
         };
-        this.addArcWithDash(endExtensionArc, color, strokeWidth, '5,5');
+        this.addArcWithDash(
+            endExtensionArc,
+            color,
+            strokeWidth,
+            DASH_PATTERN_SHORT
+        );
     }
 
     /**
@@ -803,7 +896,7 @@ export class SVGBuilder {
         polyline: Polyline,
         color: string,
         strokeWidth: number,
-        extensionLength: number = 100
+        extensionLength: number = DEFAULT_EXTENSION_LENGTH
     ) {
         const points: Point2D[] = polylineToPoints(polyline);
         if (points.length < 2) {
@@ -842,7 +935,7 @@ export class SVGBuilder {
                 { start: startExtension, end: firstPoint },
                 color,
                 strokeWidth,
-                '5,5'
+                DASH_PATTERN_SHORT
             );
         }
 
@@ -873,7 +966,7 @@ export class SVGBuilder {
                 { start: lastPoint, end: endExtension },
                 color,
                 strokeWidth,
-                '5,5'
+                DASH_PATTERN_SHORT
             );
         }
     }
@@ -885,7 +978,7 @@ export class SVGBuilder {
         shape: Shape,
         color: string,
         strokeWidth: number,
-        extensionLength: number = 100
+        extensionLength: number = DEFAULT_EXTENSION_LENGTH
     ) {
         switch (shape.type) {
             case GeometryType.LINE:
@@ -928,7 +1021,13 @@ export class SVGBuilder {
     }
 
     addTitle(title: string) {
-        this.addText(this.width / 2, this.height - 20, title, 'black', '16px');
+        this.addText(
+            this.width / 2,
+            this.height - TITLE_OFFSET_BOTTOM,
+            title,
+            'black',
+            TITLE_FONT_SIZE
+        );
     }
 
     // Transform a stored CNC element template to final SVG element
@@ -1019,12 +1118,14 @@ export class SVGBuilder {
                     let normalizedStart: number = startAngle;
                     let normalizedEnd: number = endAngle;
 
-                    while (normalizedStart < 0) normalizedStart += 2 * Math.PI;
-                    while (normalizedStart >= 2 * Math.PI)
-                        normalizedStart -= 2 * Math.PI;
-                    while (normalizedEnd < 0) normalizedEnd += 2 * Math.PI;
-                    while (normalizedEnd >= 2 * Math.PI)
-                        normalizedEnd -= 2 * Math.PI;
+                    while (normalizedStart < 0)
+                        normalizedStart += ANGLE_FULL_ROTATION;
+                    while (normalizedStart >= ANGLE_FULL_ROTATION)
+                        normalizedStart -= ANGLE_FULL_ROTATION;
+                    while (normalizedEnd < 0)
+                        normalizedEnd += ANGLE_FULL_ROTATION;
+                    while (normalizedEnd >= ANGLE_FULL_ROTATION)
+                        normalizedEnd -= ANGLE_FULL_ROTATION;
 
                     if (normalizedStart >= normalizedEnd) {
                         // Normal case: startAngle > endAngle (e.g., from 90° to 45°)
@@ -1032,7 +1133,9 @@ export class SVGBuilder {
                     } else {
                         // Cross 0°: from small angle to large angle clockwise (e.g., from 10° to 350°)
                         sweepAngle =
-                            2 * Math.PI - normalizedEnd + normalizedStart;
+                            ANGLE_FULL_ROTATION -
+                            normalizedEnd +
+                            normalizedStart;
                     }
                 } else {
                     // For counter-clockwise arcs: measure from startAngle to endAngle going counter-clockwise
@@ -1041,13 +1144,14 @@ export class SVGBuilder {
                         sweepAngle = endAngle - startAngle;
                     } else {
                         // Cross 0°: from large angle to small angle counter-clockwise (e.g., from 350° to 10°)
-                        sweepAngle = 2 * Math.PI - startAngle + endAngle;
+                        sweepAngle =
+                            ANGLE_FULL_ROTATION - startAngle + endAngle;
                     }
                 }
 
                 // SVG large-arc-flag: 1 if the arc span is greater than 180° (π radians), 0 otherwise
                 // Use a small tolerance to handle floating-point precision issues around exactly 180°
-                const tolerance: number = 1e-10;
+                const tolerance: number = EPSILON;
                 const largeArcFlag: number =
                     sweepAngle > Math.PI + tolerance ? 1 : 0;
 
@@ -1065,17 +1169,22 @@ export class SVGBuilder {
 
             case 'POLYLINE': {
                 // Format: POLYLINE|x1,y1|x2,y2|...|closed|color|strokeWidth|fill|dashArray
-                const stylePartsStart: number = parts.length - 5; // last 5 are: closed, color, strokeWidth, fill, dashArray
+                const stylePartsStart: number =
+                    parts.length - POLYLINE_STYLE_PARTS_COUNT; // last 5 are: closed, color, strokeWidth, fill, dashArray
                 const pointParts: string[] = parts.slice(1, stylePartsStart);
                 const points: Point2D[] = pointParts.map((part) => {
                     const [x, y]: number[] = part.split(',').map(Number);
                     return { x, y };
                 });
                 const closed: boolean = parts[stylePartsStart] === 'true';
-                const color: string = parts[stylePartsStart + 1];
-                const strokeWidth: string = parts[stylePartsStart + 2];
-                const fill: string = parts[stylePartsStart + 3];
-                const dashArray: string = parts[stylePartsStart + 4];
+                const color: string =
+                    parts[stylePartsStart + POLYLINE_COLOR_INDEX];
+                const strokeWidth: string =
+                    parts[stylePartsStart + POLYLINE_STROKE_WIDTH_INDEX];
+                const fill: string =
+                    parts[stylePartsStart + POLYLINE_FILL_INDEX];
+                const dashArray: string =
+                    parts[stylePartsStart + POLYLINE_DASH_INDEX];
 
                 const pointsStr: string = points
                     .map(
@@ -1111,8 +1220,13 @@ export class SVGBuilder {
             const maxLabelLength: number = Math.max(
                 ...this.legendItems.map((item) => item.label.length)
             );
-            legendWidth = Math.max(140, maxLabelLength * 8 + 50);
-            legendHeight = this.legendItems.length * 20 + 20;
+            legendWidth = Math.max(
+                LEGEND_MIN_WIDTH,
+                maxLabelLength * LEGEND_CHAR_WIDTH + DEFAULT_PADDING
+            );
+            legendHeight =
+                this.legendItems.length * LEGEND_ITEM_HEIGHT +
+                LEGEND_PADDING_BASE;
         }
 
         // Step 2: Finalize dimensions for auto-sizing based on CNC coordinate bounds
@@ -1125,8 +1239,8 @@ export class SVGBuilder {
                 this.bounds.maxY === -Infinity
             ) {
                 // Default dimensions if no bounds were established
-                this.width = 400;
-                this.height = 400;
+                this.width = DEFAULT_SVG_SIZE;
+                this.height = DEFAULT_SVG_SIZE;
                 this.offsetX = 0;
                 this.offsetY = 0;
             } else {
@@ -1139,14 +1253,20 @@ export class SVGBuilder {
                 const totalPadding: number = this.padding;
 
                 // Calculate SVG viewport size
-                this.width = Math.max(boundsWidth + 2 * totalPadding, 100);
-                this.height = Math.max(boundsHeight + 2 * totalPadding, 100);
+                this.width = Math.max(
+                    boundsWidth + 2 * totalPadding,
+                    MIN_SVG_SIZE
+                );
+                this.height = Math.max(
+                    boundsHeight + 2 * totalPadding,
+                    MIN_SVG_SIZE
+                );
 
                 // Add extra space for legend if it exists
                 if (legendWidth > 0) {
                     this.width = Math.max(
                         this.width,
-                        legendWidth + 3 * this.padding
+                        legendWidth + LEGEND_PADDING_MULTIPLIER * this.padding
                     );
                     this.height = Math.max(
                         this.height,
@@ -1162,8 +1282,8 @@ export class SVGBuilder {
             }
         } else if (!this.autoSize) {
             // For fixed-size mode, ensure we have valid dimensions
-            if (this.width <= 0) this.width = 400;
-            if (this.height <= 0) this.height = 400;
+            if (this.width <= 0) this.width = DEFAULT_SVG_SIZE;
+            if (this.height <= 0) this.height = DEFAULT_SVG_SIZE;
         }
 
         // Step 3: Transform stored CNC elements to SVG elements
@@ -1180,7 +1300,7 @@ export class SVGBuilder {
 
         return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${this.width}" height="${this.height}" viewBox="0 0 ${this.width} ${this.height}" xmlns="http://www.w3.org/2000/svg">
-  <rect width="100%" height="100%" fill="white" stroke="lightgray" stroke-width="0.5"/>
+  <rect width="100%" height="100%" fill="white" stroke="lightgray" stroke-width="${SVG_RECT_STROKE_WIDTH}"/>
   ${allElements.join('\n  ')}
 </svg>`;
     }

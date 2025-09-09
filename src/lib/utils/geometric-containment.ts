@@ -13,6 +13,7 @@ import { GeometryFactory, Coordinate } from 'jsts/org/locationtech/jts/geom';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Point2D, Shape } from '../../lib/types';
+import { CHAIN_CLOSURE_TOLERANCE, AREA_RATIO_THRESHOLD } from '../constants';
 import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
@@ -22,11 +23,37 @@ import {
     calculatePolygonArea,
     isPointInPolygon as isPointInPolygonShared,
 } from './polygon-geometry-shared';
+import {
+    POLYGON_POINTS_MIN,
+    PRECISION_DECIMAL_PLACES,
+    DEFAULT_ARRAY_NOT_FOUND_INDEX,
+} from '$lib/geometry/constants';
+
+/**
+ * Geometric containment constants
+ */
+const GEOMETRIC_CONTAINMENT_AREA_RATIO_THRESHOLD = 0.2;
+const MAX_CONTAINMENT_NESTING_LEVEL = 100;
+const BOUNDING_BOX_CONTAINMENT_MARGIN = 10;
+
+/**
+ * JSTS library coordinate validation - minimum required coordinates
+ */
+const JSTS_MIN_LINEAR_RING_COORDINATES = 4;
+
+/**
+ * Rounded rectangle shape count (4 shapes: line, arc, line, arc)
+ */
+const ROUNDED_RECTANGLE_SHAPE_COUNT = 4;
 
 /**
  * Round number to specified decimal places to avoid floating point errors
  */
-function roundToDecimalPlaces(value: number, places: number): number {
+function roundToDecimalPlaces(
+    value: number,
+    places: number = PRECISION_DECIMAL_PLACES
+): number {
+    // eslint-disable-next-line no-magic-numbers
     const factor = Math.pow(10, places);
     return Math.round(value * factor) / factor;
 }
@@ -86,13 +113,13 @@ export function isChainClosed(chain: Chain, tolerance: number): boolean {
  */
 export function calculateChainArea(
     chain: Chain,
-    tolerance: number = 0.01,
+    tolerance: number = CHAIN_CLOSURE_TOLERANCE,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): number {
     if (!isChainClosed(chain, tolerance)) return 0; // Only closed chains have area
 
     const points = tessellateChain(chain, params);
-    if (points.length < 3) return 0;
+    if (points.length < POLYGON_POINTS_MIN) return 0;
 
     const geometryFactory = new GeometryFactory();
 
@@ -138,7 +165,7 @@ export const isPointInPolygon = isPointInPolygonShared;
 export function isShapeContainedInShape(
     inner: Shape,
     outer: Shape,
-    tolerance: number = 0.01,
+    tolerance: number = CHAIN_CLOSURE_TOLERANCE,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): boolean {
     try {
@@ -148,7 +175,7 @@ export function isShapeContainedInShape(
         const outerPoints = tessellateShape(outer, params);
         const innerPoints = tessellateShape(inner, params);
 
-        if (outerPoints.length < 3 || innerPoints.length < 1) {
+        if (outerPoints.length < POLYGON_POINTS_MIN || innerPoints.length < 1) {
             return false;
         }
 
@@ -181,7 +208,7 @@ export function isShapeContainedInShape(
             cleanOuterCoords.push(cleanOuterCoords[0]);
         }
 
-        if (cleanOuterCoords.length < 4) {
+        if (cleanOuterCoords.length < JSTS_MIN_LINEAR_RING_COORDINATES) {
             return false;
         }
 
@@ -230,7 +257,7 @@ export function isShapeContainedInShape(
                 cleanInnerCoords.push(cleanInnerCoords[0]);
             }
 
-            if (cleanInnerCoords.length < 4) {
+            if (cleanInnerCoords.length < JSTS_MIN_LINEAR_RING_COORDINATES) {
                 return false;
             }
 
@@ -301,7 +328,7 @@ export function isChainContainedInChain(
         }
 
         // Check minimum coordinate count like MetalHeadCAM
-        if (cleanOuterCoords.length < 4) {
+        if (cleanOuterCoords.length < JSTS_MIN_LINEAR_RING_COORDINATES) {
             return false;
         }
 
@@ -344,7 +371,7 @@ export function isChainContainedInChain(
             }
 
             // Check minimum coordinate count like MetalHeadCAM
-            if (cleanInnerCoords.length < 4) {
+            if (cleanInnerCoords.length < JSTS_MIN_LINEAR_RING_COORDINATES) {
                 return false;
             }
 
@@ -363,7 +390,7 @@ export function isChainContainedInChain(
 
                 // If inner area is much smaller (< 5% of outer area), try bounding box check
                 // This handles cases where JSTS fails due to complex tessellation but logical containment exists
-                if (areaRatio < 0.05) {
+                if (areaRatio < AREA_RATIO_THRESHOLD) {
                     // Calculate bounding boxes for fallback check
                     const innerBounds = calculateChainBoundingBox(innerChain);
                     const outerBounds = calculateChainBoundingBox(outerChain);
@@ -428,7 +455,7 @@ export function detectPolygonContainment(
     // For each polygon, find its smallest containing parent
     for (let i = 1; i < polygonsWithArea.length; i++) {
         const current = polygonsWithArea[i];
-        let bestParentIndex = -1;
+        let bestParentIndex = DEFAULT_ARRAY_NOT_FOUND_INDEX;
         let smallestArea = Infinity;
 
         // Only check larger polygons as potential parents
@@ -530,18 +557,22 @@ export function buildContainmentHierarchy(
                 if (problemChains.includes(current.chain.id)) {
                     if (
                         shapePattern === 'line,arc,line,arc' &&
-                        current.chain.shapes.length === 4
+                        current.chain.shapes.length ===
+                            ROUNDED_RECTANGLE_SHAPE_COUNT
                     ) {
                         // Check if this small rounded rectangle is positioned within a larger chain's bounds
                         const areaRatio = current.area / potential.area;
 
-                        if (areaRatio < 0.2) {
+                        if (
+                            areaRatio <
+                            GEOMETRIC_CONTAINMENT_AREA_RATIO_THRESHOLD
+                        ) {
                             // Increased threshold to be more permissive
                             // Use loose bounding box containment for these specific rounded rectangles
                             const innerBounds = current.boundingBox;
                             const outerBounds = potential.boundingBox;
 
-                            const margin = 10; // Even more generous margin
+                            const margin = BOUNDING_BOX_CONTAINMENT_MARGIN; // Even more generous margin
                             const contained =
                                 innerBounds.minX >= outerBounds.minX - margin &&
                                 innerBounds.maxX <= outerBounds.maxX + margin &&
@@ -588,7 +619,7 @@ export function calculateNestingLevel(
         currentId = containmentMap.get(currentId)!;
 
         // Prevent infinite loops
-        if (level > 100) {
+        if (level > MAX_CONTAINMENT_NESTING_LEVEL) {
             console.warn('Potential infinite loop in containment hierarchy');
             break;
         }

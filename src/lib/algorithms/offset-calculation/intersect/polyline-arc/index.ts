@@ -4,7 +4,8 @@ import { createExtendedPolyline } from '../../extend/polyline';
 import { createExtendedArc } from '../../extend/arc';
 import { findLineArcIntersections } from '../line-arc/index';
 import { isPointOnArc } from '../../../intersection-arc-utils';
-import { EPSILON } from '../../../../constants';
+import { EPSILON, INTERSECTION_TOLERANCE } from '../../../../constants';
+import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 
 /**
  * Type guard to check if a segment is a Line
@@ -29,7 +30,7 @@ export function findPolylineArcIntersections(
     arc: Arc,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     // First try intersection with original shapes
     const originalResults: IntersectionResult[] =
@@ -118,7 +119,7 @@ function findPolylineArcIntersectionsCore(
     arc: Arc,
     swapParams: boolean = false,
     checkExtensions: boolean = false,
-    extensionLength: number = 1000,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH,
     originalPolyline?: Polyline,
     originalArc?: Arc
 ): IntersectionResult[] {
@@ -253,7 +254,7 @@ function isIntersectionOnExtension(
     currentArc?: Arc,
     intersectionPoint?: { x: number; y: number }
 ): boolean {
-    const tolerance: number = 1e-6;
+    const tolerance: number = INTERSECTION_TOLERANCE;
     let onExtension: boolean = false;
 
     // Check if on polyline extension

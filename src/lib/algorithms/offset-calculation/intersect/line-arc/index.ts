@@ -1,6 +1,10 @@
 import type { Line, Arc, Point2D } from '../../../../types/geometry';
 import type { IntersectionResult } from '../../chain/types';
-import { EPSILON } from '../../../../constants';
+import { EPSILON, INTERSECTION_TOLERANCE } from '../../../../constants';
+import {
+    DEFAULT_EXTENSION_LENGTH,
+    PRECISION_TOLERANCE_MULTIPLIER,
+} from '../../../../geometry/constants';
 import { createExtendedLine } from '../../extend/line';
 import { createExtendedArc } from '../../extend/arc';
 import {
@@ -49,6 +53,7 @@ function calculateLineArcIntersection(
     const b = 2 * (p1.x * dx + p1.y * dy);
     const c = p1.x * p1.x + p1.y * p1.y - radius * radius;
 
+    // eslint-disable-next-line no-magic-numbers
     const discriminant = b * b - 4 * a * c;
     const sqrtDisc = Math.sqrt(Math.max(0, discriminant));
 
@@ -157,7 +162,7 @@ function processArcIntersectionResults(
     checkExtensions: boolean = false,
     originalLine?: Line,
     originalArc?: Arc,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     const results: IntersectionResult[] = [];
     const { start, end } = line;
@@ -215,7 +220,7 @@ export function findLineArcIntersections(
     arc: Arc,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
     // First try intersection with original shapes
     const originalResults: IntersectionResult[] = findLineArcIntersectionsCore(
@@ -297,7 +302,7 @@ function findLineArcIntersectionsCore(
     arc: Arc,
     swapParams: boolean = false,
     checkExtensions: boolean = false,
-    extensionLength: number = 1000,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH,
     originalLine?: Line,
     originalArc?: Arc
 ): IntersectionResult[] {
@@ -330,12 +335,12 @@ function isIntersectionOnExtension(
     arcParam: number,
     originalLine?: Line,
     originalArc?: Arc,
-    extensionLength: number = 1000,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH,
     currentLine?: Line,
     currentArc?: Arc,
     intersectionPoint?: { x: number; y: number }
 ): boolean {
-    const tolerance: number = 1e-6;
+    const tolerance: number = INTERSECTION_TOLERANCE;
     let onExtension: boolean = false;
 
     // Check if on line extension
@@ -380,7 +385,7 @@ function isParameterValidForSegment(
     t: number,
     position: SegmentPosition
 ): boolean {
-    const tolerance: number = EPSILON * 10; // Small tolerance for floating point precision
+    const tolerance: number = EPSILON * PRECISION_TOLERANCE_MULTIPLIER; // Small tolerance for floating point precision
 
     switch (position) {
         case 'only':

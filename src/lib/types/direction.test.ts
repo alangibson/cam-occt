@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { HALF_CIRCLE_DEG, FULL_CIRCLE_DEG } from '../geometry/constants';
 import {
     CutDirection,
     LeadType,
@@ -86,15 +87,15 @@ describe('DirectionUtils', () => {
             });
 
             it('should convert 180 degrees to π radians', () => {
-                expect(DirectionUtils.degreesToRadians(180)).toBeCloseTo(
-                    Math.PI
-                );
+                expect(
+                    DirectionUtils.degreesToRadians(HALF_CIRCLE_DEG)
+                ).toBeCloseTo(Math.PI);
             });
 
             it('should convert 360 degrees to 2π radians', () => {
-                expect(DirectionUtils.degreesToRadians(360)).toBeCloseTo(
-                    2 * Math.PI
-                );
+                expect(
+                    DirectionUtils.degreesToRadians(FULL_CIRCLE_DEG)
+                ).toBeCloseTo(2 * Math.PI);
             });
 
             it('should handle negative angles', () => {
@@ -117,14 +118,14 @@ describe('DirectionUtils', () => {
 
             it('should convert π radians to 180 degrees', () => {
                 expect(DirectionUtils.radiansToDegrees(Math.PI)).toBeCloseTo(
-                    180
+                    HALF_CIRCLE_DEG
                 );
             });
 
             it('should convert 2π radians to 360 degrees', () => {
                 expect(
                     DirectionUtils.radiansToDegrees(2 * Math.PI)
-                ).toBeCloseTo(360);
+                ).toBeCloseTo(FULL_CIRCLE_DEG);
             });
 
             it('should handle negative angles', () => {
@@ -181,8 +182,12 @@ describe('DirectionUtils', () => {
         describe('normalizeDegrees', () => {
             it('should normalize angle within 0 to 360 range', () => {
                 expect(DirectionUtils.normalizeDegrees(0)).toBe(0);
-                expect(DirectionUtils.normalizeDegrees(180)).toBe(180);
-                expect(DirectionUtils.normalizeDegrees(360)).toBe(0);
+                expect(DirectionUtils.normalizeDegrees(HALF_CIRCLE_DEG)).toBe(
+                    HALF_CIRCLE_DEG
+                );
+                expect(DirectionUtils.normalizeDegrees(FULL_CIRCLE_DEG)).toBe(
+                    0
+                );
             });
 
             it('should wrap angles greater than 360', () => {

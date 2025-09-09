@@ -6,6 +6,30 @@ import {
 } from '../../../../types/geometry';
 import { generateUniformKnotVector } from '../../../../utils/nurbs-utils';
 import { OffsetDirection, type OffsetResult } from '../types';
+import {
+    CHAIN_CLOSURE_TOLERANCE,
+    EPSILON,
+    GEOMETRIC_PRECISION_TOLERANCE,
+} from '../../../../constants';
+import {
+    VALIDATION_SAMPLE_COUNT,
+    SPLINE_SAMPLE_COUNT,
+    DEFAULT_RETRY_COUNT,
+} from '../../../../geometry/constants';
+
+/**
+ * Default timeout for computationally intensive operations (10 seconds)
+ */
+const DEFAULT_OPERATION_TIMEOUT_MS = 10000;
+
+/**
+ * Spline operation constants for comprehensive spline offset calculations
+ */
+const MAX_SPLINE_SAMPLES = 500;
+const MIN_SPLINE_SAMPLES = 20;
+const SPLINE_CONTROL_POINT_MULTIPLIER = 10;
+const SPLINE_SAMPLE_INCREASE_MULTIPLIER = 1.5;
+const DEFAULT_SPLINE_MAX_RETRIES = 10;
 
 // Type definitions for verb-nurbs library
 type VerbPoint3D = [number, number, number];
@@ -88,7 +112,7 @@ function calculateNormalAtPoint(
             tangentVec[2] * tangentVec[2]
     );
 
-    if (tangentLength < 1e-12) {
+    if (tangentLength < EPSILON) {
         throw new Error(`Degenerate tangent vector at t=${t}`);
     }
 
@@ -280,7 +304,7 @@ function validateOffsetAccuracy(
 ): number {
     let maxError: number = 0;
     const domain: { min: number; max: number } = originalCurve.domain();
-    const validationSamples: number = 100;
+    const validationSamples: number = VALIDATION_SAMPLE_COUNT;
 
     for (let i: number = 0; i <= validationSamples; i++) {
         if (Date.now() - startTime > timeoutMs) {
@@ -326,7 +350,7 @@ function calculateAdaptiveTolerance(): number {
 
     // Use a fixed fine tolerance for visual quality
     // This avoids potential recursion issues with curve methods
-    return 0.01; // Fine enough for smooth visual output without excessive points
+    return CHAIN_CLOSURE_TOLERANCE; // Fine enough for smooth visual output without excessive points
 }
 
 /**
@@ -363,6 +387,7 @@ export function splitVerbCurve(curve: verb.geom.NurbsCurve): Spline[] {
     const degree: number = curve.degree();
 
     // Validate input
+    // eslint-disable-next-line no-magic-numbers
     if (degree < 1 || degree > 3) {
         throw new Error(
             `Unsupported degree ${degree}. Only degrees 1, 2, and 3 are supported.`
@@ -496,13 +521,16 @@ function refineOffset(
     timeoutMs: number
 ): { offsetCurve: verb.geom.NurbsCurve; warnings: string[] } {
     let numSamples: number = Math.min(
-        100,
-        Math.max(20, spline.controlPoints.length * 10)
+        SPLINE_SAMPLE_COUNT,
+        Math.max(
+            MIN_SPLINE_SAMPLES,
+            spline.controlPoints.length * SPLINE_CONTROL_POINT_MULTIPLIER
+        )
     );
     let retryCount: number = 0;
     let finalOffsetCurve: verb.geom.NurbsCurve | undefined;
     const warnings: string[] = [];
-    const actualMaxRetries: number = Math.min(maxRetries, 3);
+    const actualMaxRetries: number = Math.min(maxRetries, DEFAULT_RETRY_COUNT);
     const startTime: number = Date.now();
 
     while (retryCount < actualMaxRetries) {
@@ -553,6 +581,7 @@ function refineOffset(
         ) {
             if (retryCount > 0) {
                 warnings.push(
+                    // eslint-disable-next-line no-magic-numbers
                     `Spline offset refined with ${numSamples} samples after ${retryCount} iterations (max error: ${maxError.toFixed(6)})`
                 );
             }
@@ -563,11 +592,12 @@ function refineOffset(
 
         if (retryCount < actualMaxRetries) {
             const newSamples: number = Math.min(
-                Math.floor(numSamples * 1.5),
-                500
+                Math.floor(numSamples * SPLINE_SAMPLE_INCREASE_MULTIPLIER),
+                MAX_SPLINE_SAMPLES
             );
             if (newSamples === numSamples) {
                 warnings.push(
+                    // eslint-disable-next-line no-magic-numbers
                     `Maximum sample limit reached (${numSamples}), stopping refinement with error ${maxError.toFixed(6)}`
                 );
                 break;
@@ -575,6 +605,7 @@ function refineOffset(
             numSamples = newSamples;
         } else {
             warnings.push(
+                // eslint-disable-next-line no-magic-numbers
                 `Spline offset tolerance not achieved after ${actualMaxRetries} retries (max error: ${maxError.toFixed(6)} > ${tolerance})`
             );
             break;
@@ -647,8 +678,8 @@ export function offsetSpline(
     spline: Spline,
     distance: number,
     direction: OffsetDirection,
-    tolerance: number = 0.001,
-    maxRetries: number = 10
+    tolerance: number = GEOMETRIC_PRECISION_TOLERANCE,
+    maxRetries: number = DEFAULT_SPLINE_MAX_RETRIES
 ): OffsetResult {
     if (direction === 'none' || distance === 0) {
         return {
@@ -665,7 +696,7 @@ export function offsetSpline(
 
         const offsetDistance: number =
             direction === 'inset' ? -Math.abs(distance) : Math.abs(distance);
-        const timeoutMs: number = 10000;
+        const timeoutMs: number = DEFAULT_OPERATION_TIMEOUT_MS;
 
         const { offsetCurve, warnings } = refineOffset(
             spline,

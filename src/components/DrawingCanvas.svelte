@@ -22,9 +22,8 @@
         getPartChainIds,
         clearHighlight,
         selectPart,
-        getChainPartId,
     } from '../lib/stores/parts';
-    import { selectPath, clearPathHighlight } from '../lib/stores/paths';
+    import { clearPathHighlight } from '../lib/stores/paths';
     import { sampleNURBS, evaluateNURBS } from '../lib/geometry/nurbs';
     import {
         getShapeStartPoint,
@@ -33,12 +32,9 @@
     } from '$lib/geometry';
     import { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
     import {
-        EPSILON,
         SPLINE_TESSELLATION_TOLERANCE,
         ELLIPSE_TESSELLATION_POINTS,
-        CHEVRON_SPACING_UNITS,
     } from '../lib/constants';
-    import { CutDirection } from '../lib/types/direction';
     import { debounce } from '../lib/utils/state-persistence';
     import { tessellateEllipse } from '../lib/geometry/ellipse-tessellation';
     import { tessellateSpline } from '../lib/geometry/spline-tessellation';
@@ -83,6 +79,11 @@
     export let disableDragging = false; // Default to false, true to disable dragging
     export let currentStage: WorkflowStage; // Current workflow stage for overlay rendering
     export let interactionMode: 'shapes' | 'chains' | 'paths' = 'shapes'; // What type of objects can be selected
+
+    /**
+     * Physical spacing between cut direction chevrons in drawing units
+     */
+    const CHEVRON_SPACING_UNITS: number = 10;
 
     let canvas: HTMLCanvasElement;
     let ctx: CanvasRenderingContext2D;

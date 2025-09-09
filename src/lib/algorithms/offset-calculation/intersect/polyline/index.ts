@@ -9,6 +9,7 @@ import {
 import type { IntersectionResult } from '../../chain/types';
 import type { SegmentPosition } from '../line-arc/index';
 import type { IntersectionType } from '../index';
+import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 // Import intersection functions from intersect module
 import { findIntersectionsByType } from '../index';
 // Import line-line intersection from dedicated module
@@ -106,7 +107,7 @@ export function findPolylineIntersections(
                 segmentShape,
                 otherShape,
                 false,
-                1000,
+                DEFAULT_EXTENSION_LENGTH,
                 intersectionType
             );
         }

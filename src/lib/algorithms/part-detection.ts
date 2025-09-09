@@ -25,6 +25,10 @@ import {
     type BoundingBox,
 } from '../utils/shape-bounds-utils';
 import { isEllipseClosed } from '../utils/ellipse-utils';
+import {
+    CHAIN_CLOSURE_TOLERANCE,
+    CONTAINMENT_AREA_TOLERANCE,
+} from '../geometry/constants';
 
 /**
  * Part type enumeration
@@ -72,7 +76,7 @@ export interface PartDetectionResult {
  */
 export async function detectParts(
     chains: Chain[],
-    tolerance: number = 0.1,
+    tolerance: number = CHAIN_CLOSURE_TOLERANCE,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): Promise<PartDetectionResult> {
     const warnings: PartDetectionWarning[] = [];
@@ -249,7 +253,10 @@ function identifyPartChains(
 /**
  * Checks if a chain forms a closed loop
  */
-export function isChainClosed(chain: Chain, tolerance: number = 0.1): boolean {
+export function isChainClosed(
+    chain: Chain,
+    tolerance: number = CHAIN_CLOSURE_TOLERANCE
+): boolean {
     if (chain.shapes.length === 0) return false;
 
     // Special case: single-shape circles, ellipses, and closed polylines are inherently closed
@@ -261,7 +268,7 @@ export function isChainClosed(chain: Chain, tolerance: number = 0.1): boolean {
         if (shape.type === 'ellipse') {
             const ellipse: Ellipse = shape.geometry as Ellipse;
             // Use the centralized ellipse closed detection logic
-            return isEllipseClosed(ellipse, 0.001);
+            return isEllipseClosed(ellipse, CONTAINMENT_AREA_TOLERANCE);
         }
         if (shape.type === 'polyline') {
             // Check the explicit closed flag from DXF parsing

@@ -1,5 +1,11 @@
 import type { Point2D, Arc } from '../types/geometry';
-import { EPSILON } from '../constants';
+import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '../constants';
+import {
+    QUARTER_CIRCLE_QUADRANTS,
+    PRECISION_DECIMAL_PLACES,
+    DIRECTION_COUNTERCLOCKWISE,
+    DIRECTION_CLOCKWISE,
+} from '$lib/geometry/constants';
 
 /**
  * Calculate a point on a circle/arc given center, radius and angle
@@ -57,7 +63,8 @@ export function convertBulgeToArc(
         }
 
         // Calculate included angle from bulge: θ = 4 * arctan(|bulge|)
-        const includedAngle: number = 4 * Math.atan(Math.abs(bulge));
+        const includedAngle: number =
+            QUARTER_CIRCLE_QUADRANTS * Math.atan(Math.abs(bulge));
 
         // Calculate radius: R = chord / (2 * sin(θ/2))
         const radius: number = chordLength / (2 * Math.sin(includedAngle / 2));
@@ -80,7 +87,8 @@ export function convertBulgeToArc(
         // Determine center position based on bulge sign
         // Positive bulge = counterclockwise = center is on the left side of the chord
         // Negative bulge = clockwise = center is on the right side of the chord
-        const direction: number = bulge > 0 ? 1 : -1;
+        const direction: number =
+            bulge > 0 ? DIRECTION_COUNTERCLOCKWISE : DIRECTION_CLOCKWISE;
         const centerX: number = chordMidX + direction * centerDistance * perpX;
         const centerY: number = chordMidY + direction * centerDistance * perpY;
 
@@ -92,17 +100,20 @@ export function convertBulgeToArc(
             (end.x - centerX) ** 2 + (end.y - centerY) ** 2
         );
 
-        const tolerance: number = Math.max(0.001, radius * 0.001);
+        const tolerance: number = Math.max(
+            GEOMETRIC_PRECISION_TOLERANCE,
+            radius * GEOMETRIC_PRECISION_TOLERANCE
+        );
         if (
             Math.abs(distToStart - radius) > tolerance ||
             Math.abs(distToEnd - radius) > tolerance
         ) {
             // Validation failed - this indicates a mathematical error
             console.warn(
-                `Bulge conversion validation failed: bulge=${bulge}, chord=${chordLength.toFixed(3)}, radius=${radius.toFixed(3)}`
+                `Bulge conversion validation failed: bulge=${bulge}, chord=${chordLength.toFixed(PRECISION_DECIMAL_PLACES)}, radius=${radius.toFixed(PRECISION_DECIMAL_PLACES)}`
             );
             console.warn(
-                `Distance errors: start=${Math.abs(distToStart - radius).toFixed(6)}, end=${Math.abs(distToEnd - radius).toFixed(6)}, tolerance=${tolerance.toFixed(6)}`
+                `Distance errors: start=${Math.abs(distToStart - radius).toFixed(PRECISION_DECIMAL_PLACES)}, end=${Math.abs(distToEnd - radius).toFixed(PRECISION_DECIMAL_PLACES)}, tolerance=${tolerance.toFixed(PRECISION_DECIMAL_PLACES)}`
             );
             return null;
         }

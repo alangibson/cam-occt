@@ -9,6 +9,14 @@ import {
 } from '../utils/lead-persistence-utils';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { DetectedPart } from '../algorithms/part-detection';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '../constants';
+import {
+    DEFAULT_FEED_RATE,
+    DEFAULT_PIERCE_HEIGHT,
+    DEFAULT_PIERCE_DELAY,
+    DEFAULT_CUT_HEIGHT,
+    CAM_CALCULATION_TOLERANCE,
+} from './constants';
 
 /**
  * Convert a Path from the path store to a ToolPath for G-code generation.
@@ -48,7 +56,7 @@ export function pathToToolPath(
             // Check if the last point of previous shape matches first point of current shape
             const lastPoint: Point2D = points[points.length - 1];
             const firstPoint: Point2D = shapePoints[0];
-            const tolerance: number = 0.001;
+            const tolerance: number = GEOMETRIC_PRECISION_TOLERANCE;
 
             if (
                 Math.abs(lastPoint.x - firstPoint.x) > tolerance ||
@@ -200,10 +208,10 @@ export function pathToToolPath(
     // Build cutting parameters from tool settings
     const tool = path.toolId ? tools.find((t) => t.id === path.toolId) : null;
     const parameters: ToolPath['parameters'] = {
-        feedRate: tool?.feedRate || 1000,
-        pierceHeight: tool?.pierceHeight || 3.8,
-        pierceDelay: tool?.pierceDelay || 0.5,
-        cutHeight: 1.5, // Default cut height
+        feedRate: tool?.feedRate || DEFAULT_FEED_RATE,
+        pierceHeight: tool?.pierceHeight || DEFAULT_PIERCE_HEIGHT,
+        pierceDelay: tool?.pierceDelay || DEFAULT_PIERCE_DELAY,
+        cutHeight: DEFAULT_CUT_HEIGHT, // Default cut height
         kerf: tool?.kerfWidth || 0,
         leadInLength: path.leadInLength || 0,
         leadOutLength: path.leadOutLength || 0,
@@ -278,7 +286,7 @@ export function pathsToToolPaths(
                     Math.pow(nextStart.y - currentEnd.y, 2)
             );
 
-            if (distance > 0.001) {
+            if (distance > CAM_CALCULATION_TOLERANCE) {
                 toolPathsWithRapids.push({
                     id: `rapid-${i}`,
                     shapeId: '',

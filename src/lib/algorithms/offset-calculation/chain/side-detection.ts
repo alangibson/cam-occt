@@ -12,6 +12,7 @@ import {
     normalizeVector,
 } from '$lib/geometry';
 import { isPointInsideChainExact } from '../../raytracing/point-in-chain';
+import { CHAIN_CLOSURE_TOLERANCE } from '../../../constants';
 
 /**
  * Side Detection Module
@@ -205,7 +206,7 @@ export function isPointInsideChain(point: Point2D, chain: Chain): boolean {
  * @returns Normalized orientation vector
  */
 export function determineChainOrientation(chain: Chain): Point2D {
-    if (isChainClosed(chain, 0.1)) {
+    if (isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
         throw new Error('Chain orientation is only defined for open chains');
     }
 

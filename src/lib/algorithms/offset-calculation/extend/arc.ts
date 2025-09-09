@@ -1,5 +1,9 @@
 import type { Arc, Point2D } from '../../../types/geometry';
 import { MAX_EXTENSION } from '../../../constants';
+import {
+    HIGH_PRECISION_TOLERANCE,
+    DECIMAL_PRECISION,
+} from '../../../geometry/constants';
 import { pointDistance } from '../shared/trim-extend-utils';
 import {
     normalizeAngle,
@@ -127,7 +131,7 @@ export function extendArcToPoint(
         );
         const radiusTolerance: number = Math.max(
             opts.tolerance!,
-            arc.radius * 1e-6
+            arc.radius * HIGH_PRECISION_TOLERANCE
         );
 
         if (Math.abs(distanceFromCenter - arc.radius) > radiusTolerance) {
@@ -309,7 +313,7 @@ export function calculateArcExtension(
             success: false,
             angularExtension: 0,
             direction,
-            error: `Invalid angular extension: ${angularExtension.toFixed(6)} radians`,
+            error: `Invalid angular extension: ${angularExtension.toFixed(DECIMAL_PRECISION)} radians`,
         };
     }
 

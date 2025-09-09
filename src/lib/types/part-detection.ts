@@ -5,6 +5,8 @@
  * for part detection algorithms.
  */
 
+import { HIGH_TESSELLATION_SEGMENTS } from '$lib/geometry/constants';
+
 export interface PartDetectionParameters {
     /** Number of points to tessellate circles into. Higher values = better precision but slower performance. Range: 8-128 */
     circleTessellationPoints: number;
@@ -25,7 +27,7 @@ export interface PartDetectionParameters {
 export const DEFAULT_PART_DETECTION_PARAMETERS: PartDetectionParameters = {
     circleTessellationPoints: 64,
     minArcTessellationPoints: 16,
-    arcTessellationDensity: Math.PI / 32, // ~0.098
+    arcTessellationDensity: Math.PI / HIGH_TESSELLATION_SEGMENTS, // ~0.098
     decimalPrecision: 3,
     enableTessellation: false,
 };

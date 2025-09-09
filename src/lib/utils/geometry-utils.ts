@@ -2,6 +2,7 @@ import type { Point2D, Line } from '../../lib/types/geometry';
 import { calculatePerimeter } from './math-utils';
 import { calculatePolygonArea as calculatePolygonAreaShared } from './polygon-geometry-shared';
 import { EPSILON } from '../constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
 
 export enum WindingDirection {
     CW = 'CW',
@@ -52,7 +53,7 @@ export function calculateLineDirectionAndLength(line: Line): {
  * @returns Signed area of the polygon (positive for CW, negative for CCW)
  */
 export function calculateSignedArea(points: Point2D[]): number {
-    if (points.length < 3) {
+    if (points.length < POLYGON_POINTS_MIN) {
         return 0; // Need at least 3 points to form a polygon
     }
 
@@ -178,6 +179,7 @@ export function calculatePolygonCentroid(points: Point2D[]): Point2D {
     // The formula works correctly with signed area - don't use absolute value
     // If the polygon is CW (positive area), the centroid calculation is direct
     // If the polygon is CCW (negative area), both area and cross products are negative, so they cancel out
+    // eslint-disable-next-line no-magic-numbers
     const factor: number = 1 / (6 * area);
     return { x: cx * factor, y: cy * factor };
 }
@@ -192,7 +194,7 @@ export function calculatePolygonCentroid(points: Point2D[]): Point2D {
  * @returns True if the polygon appears to be simple
  */
 export function isSimplePolygon(points: Point2D[]): boolean {
-    if (points.length < 3) {
+    if (points.length < POLYGON_POINTS_MIN) {
         return false;
     }
 

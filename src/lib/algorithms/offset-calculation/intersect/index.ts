@@ -10,6 +10,11 @@ import type { IntersectionResult } from '../chain/types';
 import { EPSILON } from '../../../constants';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { pointDistance } from '../shared/trim-extend-utils';
+import {
+    MAX_ITERATIONS,
+    CONFIDENCE_THRESHOLD,
+    CONFIDENCE_HIGH_THRESHOLD,
+} from '../../../geometry/constants';
 
 // Re-export shared utility for backward compatibility
 export { pointDistance } from '../shared/trim-extend-utils';
@@ -89,7 +94,7 @@ export function findShapeIntersections(
     shape2: Shape,
     tolerance: number = DEFAULT_CLUSTERING_TOLERANCE,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000,
+    extensionLength: number = MAX_ITERATIONS,
     intersectionType: IntersectionType = DEFAULT_INTERSECTION_TYPE
 ): IntersectionResult[] {
     const intersections: IntersectionResult[] = findIntersectionsByType(
@@ -122,7 +127,7 @@ export function findIntersectionsByType(
     shape1: Shape,
     shape2: Shape,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000,
+    extensionLength: number = MAX_ITERATIONS,
     intersectionType: IntersectionType = DEFAULT_INTERSECTION_TYPE
 ): IntersectionResult[] {
     const type1: string = shape1.type;
@@ -416,8 +421,11 @@ export function clusterIntersections(
             point: centroid,
             type: allSameType ? bestIntersection.type : 'approximate',
             confidence: allSameType
-                ? Math.min(bestIntersection.confidence, 0.95) // High confidence for same-type clusters
-                : Math.min(bestIntersection.confidence, 0.8), // Lower confidence for mixed-type clusters
+                ? Math.min(
+                      bestIntersection.confidence,
+                      CONFIDENCE_HIGH_THRESHOLD
+                  ) // High confidence for same-type clusters
+                : Math.min(bestIntersection.confidence, CONFIDENCE_THRESHOLD), // Lower confidence for mixed-type clusters
         };
     });
 }

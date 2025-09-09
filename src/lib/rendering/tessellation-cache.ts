@@ -8,7 +8,11 @@
 import type { Point2D, Shape, Spline, Ellipse } from '../types/geometry';
 import { tessellateSpline } from '../geometry/spline-tessellation';
 import { tessellateEllipse } from '../geometry/ellipse-tessellation';
-import { ELLIPSE_TESSELLATION_POINTS } from '../constants';
+import {
+    ELLIPSE_TESSELLATION_POINTS,
+    STANDARD_TIMEOUT_MS,
+    EXTENDED_TIMEOUT_MS,
+} from '../constants';
 
 interface CachedTessellation {
     points: Point2D[];
@@ -39,8 +43,8 @@ function generateShapeHash(shape: Shape): string {
  */
 class TessellationCache {
     private cache = new Map<string, CachedTessellation>();
-    private maxSize = 1000; // Maximum cached shapes
-    private maxAge = 60000; // 1 minute max age
+    private maxSize = STANDARD_TIMEOUT_MS; // Maximum cached shapes
+    private maxAge = EXTENDED_TIMEOUT_MS; // 1 minute max age
 
     /**
      * Get cached tessellation points for a shape

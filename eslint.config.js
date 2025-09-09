@@ -68,6 +68,12 @@ export default [
       "@typescript-eslint/no-inferrable-types": 0,
       "import/no-relative-packages": "error",
       "prettier/prettier": ["error", {}, { "usePrettierrc": true }],
+      "no-magic-numbers": ["error", {
+        "ignore": [0, 1, 2],
+        "ignoreArrayIndexes": true,
+        // "ignoreDefaultValues": true,
+        // "detectObjects": false
+      }],
       // "@typescript-eslint/typedef": [
       //     "warn",
       //     {
@@ -75,6 +81,12 @@ export default [
       //     }
       // ],
       // "import/no-relative-parent-imports": "error",
+    },
+  },
+  {
+    files: ["**/*.test.ts", "**/*.test.js"],
+    rules: {
+      "no-magic-numbers": "off",
     },
   },
 ];

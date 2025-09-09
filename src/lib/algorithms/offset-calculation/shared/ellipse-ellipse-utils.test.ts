@@ -6,6 +6,7 @@ import {
     type Shape,
 } from '../../../types/geometry';
 import type { IntersectionResult } from '../chain/types';
+import { INTERSECTION_TOLERANCE } from '../../../constants';
 import {
     calculateEllipseEllipseIntersection,
     calculateIntersectionScore,
@@ -130,7 +131,7 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
             expect(verb.geom.Intersect.curves).toHaveBeenCalledWith(
                 mockCurve1,
                 mockCurve2,
-                0.01
+                INTERSECTION_TOLERANCE
             );
             expect(processVerbIntersectionResults).toHaveBeenCalledWith(
                 mockIntersections,

@@ -1,4 +1,13 @@
 import type { Point2D, Ellipse } from '../types/geometry';
+/**
+ * Minimum tessellation points for adaptive ellipse rendering
+ */
+const MIN_TESSELLATION_POINTS = 8;
+
+/**
+ * Maximum tessellation points for adaptive ellipse rendering
+ */
+const MAX_TESSELLATION_POINTS = 200;
 
 /**
  * Configuration options for ellipse tessellation
@@ -162,6 +171,7 @@ export function calculateEllipseArcLength(ellipse: Ellipse): number {
     // Ramanujan's approximation for ellipse circumference
     const h: number = Math.pow((a - b) / (a + b), 2);
     const fullCircumference: number =
+        // eslint-disable-next-line no-magic-numbers
         Math.PI * (a + b) * (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
 
     // If this is an arc, calculate the fraction of the full circumference
@@ -196,8 +206,8 @@ export function calculateEllipseArcLength(ellipse: Ellipse): number {
 export function createAdaptiveTessellationConfig(
     ellipse: Ellipse,
     chordTolerance: number,
-    minPoints: number = 8,
-    maxPoints: number = 200
+    minPoints: number = MIN_TESSELLATION_POINTS,
+    maxPoints: number = MAX_TESSELLATION_POINTS
 ): EllipseTessellationConfig {
     const majorAxisLength: number = Math.sqrt(
         ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
@@ -214,7 +224,9 @@ export function createAdaptiveTessellationConfig(
     // For small angles: error ≈ r * θ²/8
     // Solving for θ: θ ≈ sqrt(8 * error / r)
     const maxCurvatureRadius: number = minRadius; // Most curved part of ellipse
+
     const maxAnglePerSegment: number = Math.sqrt(
+        // eslint-disable-next-line no-magic-numbers
         (8 * chordTolerance) / maxCurvatureRadius
     );
 

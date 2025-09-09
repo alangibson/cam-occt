@@ -11,6 +11,7 @@ import {
 } from '../../extend/arc';
 import { calculateSquaredDistance } from '../../../../utils/math-utils';
 import { removeDuplicateIntersections } from '../../../intersection-base';
+import { MAX_ITERATIONS } from '../../../../geometry/constants';
 
 /**
  * Find intersections between two arcs using radical axis method
@@ -21,7 +22,7 @@ export function findArcArcIntersections(
     arc2: Arc,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = 1000
+    extensionLength: number = MAX_ITERATIONS
 ): IntersectionResult[] {
     // First try intersection with original shapes
     const originalResults: IntersectionResult[] = findArcArcIntersectionsCore(

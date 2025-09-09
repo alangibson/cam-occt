@@ -18,6 +18,7 @@ import type {
 } from '../../lib/types';
 import { GeometryType } from '../../lib/types';
 import { polylineToVertices, polylineToPoints } from '../geometry/polyline';
+import { DUPLICATE_FILTERING_TOLERANCE } from '../constants';
 
 export interface LayerSquashingOptions {
     preserveLayerInfo?: boolean; // Keep original layer info as metadata
@@ -31,7 +32,10 @@ export function squashLayers(
     drawing: Drawing,
     options: LayerSquashingOptions = {}
 ): Drawing {
-    const { preserveLayerInfo = false, tolerance = 0.1 } = options;
+    const {
+        preserveLayerInfo = false,
+        tolerance = DUPLICATE_FILTERING_TOLERANCE,
+    } = options;
 
     // Collect all shapes from all layers with layer information
     const allShapes: Array<Shape & { sourceLayer?: string }> = [];

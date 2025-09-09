@@ -1,6 +1,7 @@
 import type { Point2D, Spline } from '$lib/types/geometry';
 import { EPSILON } from '$lib/constants';
 import { generateValidKnotVector } from '$lib/utils/nurbs-utils';
+import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/constants';
 
 export interface SplineValidationResult {
     isValid: boolean;
@@ -19,7 +20,7 @@ export function validateSplineGeometry(spline: Spline): SplineValidationResult {
         return { isValid: false };
     }
 
-    const degree: number = spline.degree || 3;
+    const degree: number = spline.degree || DEFAULT_SPLINE_DEGREE;
     const controlPoints: Point2D[] = spline.controlPoints;
     const expectedKnots: number = controlPoints.length + degree + 1;
 
@@ -91,7 +92,7 @@ export function validateSplineGeometry(spline: Spline): SplineValidationResult {
  * Repairs a spline's knot vector by generating a valid uniform knot vector
  */
 export function repairSplineKnotVector(spline: Spline): Spline {
-    const degree: number = spline.degree || 3;
+    const degree: number = spline.degree || DEFAULT_SPLINE_DEGREE;
     const validKnots: number[] = generateValidKnotVector(
         spline.controlPoints.length,
         degree

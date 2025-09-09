@@ -6,6 +6,15 @@ import { chainStore } from './chains';
 import { toolStore } from './tools';
 import { get } from 'svelte/store';
 import { reverseChain } from '$lib/geometry/chain';
+import {
+    DIRECTION_CLOCKWISE,
+    DIRECTION_COUNTERCLOCKWISE,
+} from '$lib/geometry/constants';
+
+/**
+ * Path update timing delay in milliseconds
+ */
+const PATH_UPDATE_DELAY_MS = 100;
 // Removed detectCutDirection import - we now use stored chain.clockwise property
 
 /**
@@ -274,7 +283,9 @@ function calculateChainOffset(
         // Call offset calculation
         // For inset, use negative distance; for outset, use positive
         const direction: number =
-            kerfCompensation === OffsetDirection.INSET ? -1 : 1;
+            kerfCompensation === OffsetDirection.INSET
+                ? DIRECTION_CLOCKWISE
+                : DIRECTION_COUNTERCLOCKWISE;
         const offsetResult = offsetChain(chain, offsetDistance * direction, {
             tolerance: 0.1,
             maxExtension: 50,
@@ -751,7 +762,7 @@ function generatePathsForOperation(operation: Operation) {
         if (pathsState.paths.length > 0) {
             workflowStore.completeStage(WorkflowStage.PROGRAM);
         }
-    }, 100); // Small delay to ensure path store is updated
+    }, PATH_UPDATE_DELAY_MS); // Small delay to ensure path store is updated
 
     // Calculate and store lead geometry for all paths in this operation
     // Run immediately to prevent visual jumping when offset geometry exists

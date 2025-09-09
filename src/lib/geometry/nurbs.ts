@@ -1,5 +1,6 @@
 import type { Point2D, Spline } from '../../lib/types';
 import { generateUniformKnotVector } from '../utils/nurbs-utils';
+import { SPLINE_SAMPLE_COUNT } from './constants';
 
 /**
  * Evaluates a NURBS curve at a given parameter value
@@ -158,7 +159,7 @@ function generateUniformKnotVector_deprecated(n: number, p: number): number[] {
  */
 export function sampleNURBS(
     spline: Spline,
-    numSamples: number = 100
+    numSamples: number = SPLINE_SAMPLE_COUNT
 ): Point2D[] {
     const points: Point2D[] = [];
 

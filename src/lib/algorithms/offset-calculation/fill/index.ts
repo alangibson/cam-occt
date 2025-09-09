@@ -10,6 +10,11 @@ import type {
 import { MAX_EXTENSION } from '../../../constants';
 import { findShapeIntersections } from '../intersect';
 import { pointDistance } from '../trim';
+import {
+    HIGH_PRECISION_TOLERANCE,
+    CONFIDENCE_THRESHOLD,
+    TOLERANCE_SNAP_MULTIPLIER,
+} from '../../../geometry/constants';
 import { fillLineToIntersection } from './line';
 import { fillArcToIntersection } from './arc';
 import { fillCircleToIntersection } from './circle';
@@ -28,7 +33,7 @@ import type { IntersectionResult } from '../chain/types';
 
 const DEFAULT_FILL_OPTIONS: FillOptions = {
     maxExtension: MAX_EXTENSION,
-    tolerance: 1e-6,
+    tolerance: HIGH_PRECISION_TOLERANCE,
     extendDirection: 'auto',
 };
 
@@ -234,7 +239,7 @@ function findExtendedIntersection(
 
         // Use the first high-confidence intersection
         const highConfidenceIntersections: IntersectionResult[] =
-            intersections.filter((i) => i.confidence > 0.8);
+            intersections.filter((i) => i.confidence > CONFIDENCE_THRESHOLD);
         if (highConfidenceIntersections.length > 0) {
             return highConfidenceIntersections[0].point;
         }
@@ -256,7 +261,7 @@ function determineFillStrategy(
     const { gapSize } = context;
 
     // For very small gaps, snap endpoints
-    if (gapSize < options.tolerance * 10) {
+    if (gapSize < options.tolerance * TOLERANCE_SNAP_MULTIPLIER) {
         return 'snap-endpoints';
     }
 
