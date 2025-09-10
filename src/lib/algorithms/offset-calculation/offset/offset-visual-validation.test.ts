@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import verb from 'verb-nurbs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';
+import { tessellateEllipse } from '$lib/geometry/ellipse/index';
 import {
     createPolylineFromVertices,
     polylineToPoints,
@@ -1859,9 +1859,7 @@ describe(
                 testEllipses.forEach((ellipse, ellipseIdx) => {
                     // Original ellipse (approximated as polyline for visualization)
                     // For zero offset, we get no shapes, so generate the approximation manually
-                    const points = tessellateEllipse(ellipse, {
-                        numPoints: 32,
-                    });
+                    const points = tessellateEllipse(ellipse, 32);
                     const ellipsePolyline: Polyline = {
                         shapes: points.slice(0, -1).map((p, i) => ({
                             id: `ellipse-seg-${ellipseIdx}-${i}`,

@@ -1,14 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { EPSILON } from '../constants';
+import { EPSILON } from '../../constants';
 import {
-    tessellateEllipse,
+    tessellateEllipseWithConfig,
     evaluateEllipseAtParameter,
     calculateEllipseArcLength,
     createAdaptiveTessellationConfig,
     validateEllipseGeometry,
-    type EllipseTessellationConfig,
-} from './ellipse-tessellation';
-import type { Ellipse } from '../types/geometry';
+} from './functions';
+import type { EllipseTessellationConfig, Ellipse } from './interfaces';
 
 describe('Ellipse Tessellation', () => {
     // Test ellipse shapes with known properties
@@ -41,14 +40,14 @@ describe('Ellipse Tessellation', () => {
     describe('tessellateEllipse', () => {
         it('should generate correct number of points for full ellipse', () => {
             const config: EllipseTessellationConfig = { numPoints: 8 };
-            const points = tessellateEllipse(unitCircle, config);
+            const points = tessellateEllipseWithConfig(unitCircle, config);
 
             expect(points).toHaveLength(8);
         });
 
         it('should generate correct number of points for ellipse arc', () => {
             const config: EllipseTessellationConfig = { numPoints: 10 };
-            const points = tessellateEllipse(ellipseArc, config);
+            const points = tessellateEllipseWithConfig(ellipseArc, config);
 
             // Arc should have numPoints + 1 points (including both endpoints)
             expect(points).toHaveLength(11);
@@ -59,7 +58,7 @@ describe('Ellipse Tessellation', () => {
                 numPoints: 6,
                 closePath: true,
             };
-            const points = tessellateEllipse(unitCircle, config);
+            const points = tessellateEllipseWithConfig(unitCircle, config);
 
             // Should have original points + 1 duplicate of first point
             expect(points).toHaveLength(7);
@@ -69,7 +68,7 @@ describe('Ellipse Tessellation', () => {
 
         it('should generate points on unit circle correctly', () => {
             const config: EllipseTessellationConfig = { numPoints: 4 };
-            const points = tessellateEllipse(unitCircle, config);
+            const points = tessellateEllipseWithConfig(unitCircle, config);
 
             // Should generate points at 0°, 90°, 180°, 270°
             expect(points[0].x).toBeCloseTo(1, 10); // 0° -> (1, 0)
@@ -87,7 +86,10 @@ describe('Ellipse Tessellation', () => {
 
         it('should handle horizontal ellipse correctly', () => {
             const config: EllipseTessellationConfig = { numPoints: 4 };
-            const points = tessellateEllipse(horizontalEllipse, config);
+            const points = tessellateEllipseWithConfig(
+                horizontalEllipse,
+                config
+            );
 
             // Center at (10, 20), major axis = 5, minor axis = 3
             expect(points[0].x).toBeCloseTo(15, 10); // rightmost: center.x + majorAxis
@@ -105,7 +107,7 @@ describe('Ellipse Tessellation', () => {
 
         it('should handle rotated ellipse correctly', () => {
             const config: EllipseTessellationConfig = { numPoints: 8 };
-            const points = tessellateEllipse(rotatedEllipse, config);
+            const points = tessellateEllipseWithConfig(rotatedEllipse, config);
 
             // All points should be at correct distance from center
             points.forEach((point) => {
@@ -124,7 +126,7 @@ describe('Ellipse Tessellation', () => {
 
         it('should generate semicircle arc correctly', () => {
             const config: EllipseTessellationConfig = { numPoints: 4 };
-            const points = tessellateEllipse(ellipseArc, config);
+            const points = tessellateEllipseWithConfig(ellipseArc, config);
 
             // Should have 5 points for semicircle (4 + 1)
             expect(points).toHaveLength(5);
@@ -150,7 +152,7 @@ describe('Ellipse Tessellation', () => {
             };
 
             const config: EllipseTessellationConfig = { numPoints: 4 };
-            const points = tessellateEllipse(tinyEllipse, config);
+            const points = tessellateEllipseWithConfig(tinyEllipse, config);
 
             expect(points).toHaveLength(4);
             // All points should be very close to center
@@ -162,7 +164,7 @@ describe('Ellipse Tessellation', () => {
 
         it('should handle edge case with single point', () => {
             const config: EllipseTessellationConfig = { numPoints: 1 };
-            const points = tessellateEllipse(unitCircle, config);
+            const points = tessellateEllipseWithConfig(unitCircle, config);
 
             expect(points).toHaveLength(1);
             expect(points[0].x).toBeCloseTo(1, 10);
@@ -489,7 +491,7 @@ describe('Ellipse Tessellation', () => {
             };
 
             const config: EllipseTessellationConfig = { numPoints: 32 };
-            const points = tessellateEllipse(cadEllipse, config);
+            const points = tessellateEllipseWithConfig(cadEllipse, config);
 
             expect(points).toHaveLength(32);
 
@@ -516,7 +518,10 @@ describe('Ellipse Tessellation', () => {
                 precisionEllipse,
                 0.001
             );
-            const points = tessellateEllipse(precisionEllipse, config);
+            const points = tessellateEllipseWithConfig(
+                precisionEllipse,
+                config
+            );
 
             // Should generate enough points for the given tolerance
             expect(config.numPoints).toBeGreaterThan(30);
@@ -551,7 +556,10 @@ describe('Ellipse Tessellation', () => {
             };
 
             const config: EllipseTessellationConfig = { numPoints: 64 };
-            const points = tessellateEllipse(machiningEllipse, config);
+            const points = tessellateEllipseWithConfig(
+                machiningEllipse,
+                config
+            );
 
             // Verify rotation is preserved
             const firstPoint = points[0];
@@ -577,7 +585,7 @@ describe('Ellipse Tessellation', () => {
             };
 
             const config: EllipseTessellationConfig = { numPoints: 8 };
-            const points = tessellateEllipse(microEllipse, config);
+            const points = tessellateEllipseWithConfig(microEllipse, config);
 
             expect(points).toHaveLength(8);
             points.forEach((point) => {
@@ -596,7 +604,7 @@ describe('Ellipse Tessellation', () => {
             };
 
             const config: EllipseTessellationConfig = { numPoints: 4 };
-            const points = tessellateEllipse(giantEllipse, config);
+            const points = tessellateEllipseWithConfig(giantEllipse, config);
 
             expect(points).toHaveLength(4);
             points.forEach((point) => {
@@ -618,7 +626,7 @@ describe('Ellipse Tessellation', () => {
             };
 
             const config: EllipseTessellationConfig = { numPoints: 16 };
-            const points = tessellateEllipse(multiTurnArc, config);
+            const points = tessellateEllipseWithConfig(multiTurnArc, config);
 
             // Should still generate valid points
             expect(points).toHaveLength(17); // 16 + 1 for arc
@@ -630,7 +638,7 @@ describe('Ellipse Tessellation', () => {
 
         it('should handle zero number of points gracefully', () => {
             const config: EllipseTessellationConfig = { numPoints: 0 };
-            const points = tessellateEllipse(unitCircle, config);
+            const points = tessellateEllipseWithConfig(unitCircle, config);
 
             // Should return empty array for zero points
             expect(points).toHaveLength(0);
@@ -644,7 +652,10 @@ describe('Ellipse Tessellation', () => {
             };
 
             const config: EllipseTessellationConfig = { numPoints: 8 };
-            const points = tessellateEllipse(nearlyDegenerate, config);
+            const points = tessellateEllipseWithConfig(
+                nearlyDegenerate,
+                config
+            );
 
             expect(points).toHaveLength(8);
 

@@ -7,13 +7,8 @@ import {
     getEllipseRadiusX,
     getEllipseRadiusY,
     getEllipseRotation,
-} from './ellipse';
-import type { Ellipse } from '../types/geometry';
-
-// Mock the tessellateEllipse function to control the test environment
-vi.mock('./ellipse-tessellation', () => ({
-    tessellateEllipse: vi.fn(),
-}));
+} from './functions';
+import type { Ellipse } from './interfaces';
 
 describe('getEllipseStartPoint', () => {
     it('should return rightmost point for full ellipse', () => {
@@ -171,8 +166,7 @@ describe('reverseEllipse', () => {
 });
 
 describe('getEllipsePointAt', () => {
-    it('should return point from tessellation at t=0', async () => {
-        const { tessellateEllipse } = await import('./ellipse-tessellation');
+    it('should return point from tessellation at t=0', () => {
         const mockPoints = [
             { x: 10, y: 0 },
             { x: 7, y: 7 },
@@ -181,7 +175,9 @@ describe('getEllipsePointAt', () => {
             { x: -10, y: 0 },
         ];
 
-        vi.mocked(tessellateEllipse).mockReturnValue(mockPoints);
+        const mockTessellateEllipseWithConfig = vi
+            .fn()
+            .mockReturnValue(mockPoints);
 
         const ellipse: Ellipse = {
             center: { x: 0, y: 0 },
@@ -189,12 +185,15 @@ describe('getEllipsePointAt', () => {
             minorToMajorRatio: 0.5,
         };
 
-        const point = getEllipsePointAt(ellipse, 0);
+        const point = getEllipsePointAt(
+            ellipse,
+            0,
+            mockTessellateEllipseWithConfig
+        );
         expect(point).toEqual(mockPoints[0]);
     });
 
-    it('should return point from tessellation at t=1', async () => {
-        const { tessellateEllipse } = await import('./ellipse-tessellation');
+    it('should return point from tessellation at t=1', () => {
         const mockPoints = [
             { x: 10, y: 0 },
             { x: 7, y: 7 },
@@ -203,7 +202,9 @@ describe('getEllipsePointAt', () => {
             { x: -10, y: 0 },
         ];
 
-        vi.mocked(tessellateEllipse).mockReturnValue(mockPoints);
+        const mockTessellateEllipseWithConfig = vi
+            .fn()
+            .mockReturnValue(mockPoints);
 
         const ellipse: Ellipse = {
             center: { x: 0, y: 0 },
@@ -211,12 +212,15 @@ describe('getEllipsePointAt', () => {
             minorToMajorRatio: 0.5,
         };
 
-        const point = getEllipsePointAt(ellipse, 1);
+        const point = getEllipsePointAt(
+            ellipse,
+            1,
+            mockTessellateEllipseWithConfig
+        );
         expect(point).toEqual(mockPoints[mockPoints.length - 1]);
     });
 
-    it('should interpolate between points for intermediate t values', async () => {
-        const { tessellateEllipse } = await import('./ellipse-tessellation');
+    it('should interpolate between points for intermediate t values', () => {
         const mockPoints = [
             { x: 10, y: 0 },
             { x: 7, y: 7 },
@@ -225,7 +229,9 @@ describe('getEllipsePointAt', () => {
             { x: -10, y: 0 },
         ];
 
-        vi.mocked(tessellateEllipse).mockReturnValue(mockPoints);
+        const mockTessellateEllipseWithConfig = vi
+            .fn()
+            .mockReturnValue(mockPoints);
 
         const ellipse: Ellipse = {
             center: { x: 0, y: 0 },
@@ -233,16 +239,21 @@ describe('getEllipsePointAt', () => {
             minorToMajorRatio: 0.5,
         };
 
-        const point = getEllipsePointAt(ellipse, 0.5);
+        const point = getEllipsePointAt(
+            ellipse,
+            0.5,
+            mockTessellateEllipseWithConfig
+        );
         const expectedIndex = Math.floor(0.5 * (mockPoints.length - 1));
         expect(point).toEqual(mockPoints[expectedIndex]);
     });
 
-    it('should return fallback point when tessellation fails', async () => {
-        const { tessellateEllipse } = await import('./ellipse-tessellation');
-        vi.mocked(tessellateEllipse).mockImplementation(() => {
-            throw new Error('Tessellation failed');
-        });
+    it('should return fallback point when tessellation fails', () => {
+        const mockTessellateEllipseWithConfig = vi
+            .fn()
+            .mockImplementation(() => {
+                throw new Error('Tessellation failed');
+            });
 
         const ellipse: Ellipse = {
             center: { x: 0, y: 0 },
@@ -250,13 +261,16 @@ describe('getEllipsePointAt', () => {
             minorToMajorRatio: 0.5,
         };
 
-        const point = getEllipsePointAt(ellipse, 0.5);
+        const point = getEllipsePointAt(
+            ellipse,
+            0.5,
+            mockTessellateEllipseWithConfig
+        );
         expect(point).toEqual({ x: 0, y: 0 });
     });
 
-    it('should return fallback point when tessellation returns empty array', async () => {
-        const { tessellateEllipse } = await import('./ellipse-tessellation');
-        vi.mocked(tessellateEllipse).mockReturnValue([]);
+    it('should return fallback point when tessellation returns empty array', () => {
+        const mockTessellateEllipseWithConfig = vi.fn().mockReturnValue([]);
 
         const ellipse: Ellipse = {
             center: { x: 0, y: 0 },
@@ -264,19 +278,24 @@ describe('getEllipsePointAt', () => {
             minorToMajorRatio: 0.5,
         };
 
-        const point = getEllipsePointAt(ellipse, 0.5);
+        const point = getEllipsePointAt(
+            ellipse,
+            0.5,
+            mockTessellateEllipseWithConfig
+        );
         expect(point).toEqual({ x: 0, y: 0 });
     });
 
-    it('should clamp t values to valid range', async () => {
-        const { tessellateEllipse } = await import('./ellipse-tessellation');
+    it('should clamp t values to valid range', () => {
         const mockPoints = [
             { x: 10, y: 0 },
             { x: 0, y: 5 },
             { x: -10, y: 0 },
         ];
 
-        vi.mocked(tessellateEllipse).mockReturnValue(mockPoints);
+        const mockTessellateEllipseWithConfig = vi
+            .fn()
+            .mockReturnValue(mockPoints);
 
         const ellipse: Ellipse = {
             center: { x: 0, y: 0 },
@@ -285,7 +304,11 @@ describe('getEllipsePointAt', () => {
         };
 
         // t > 1 should return last point
-        const point1 = getEllipsePointAt(ellipse, 1.5);
+        const point1 = getEllipsePointAt(
+            ellipse,
+            1.5,
+            mockTessellateEllipseWithConfig
+        );
         expect(point1).toEqual(mockPoints[mockPoints.length - 1]);
     });
 });

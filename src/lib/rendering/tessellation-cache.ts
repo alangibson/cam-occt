@@ -7,12 +7,8 @@
 
 import type { Point2D, Shape, Spline, Ellipse } from '../types/geometry';
 import { tessellateSpline } from '../geometry/spline-tessellation';
-import { tessellateEllipse } from '../geometry/ellipse-tessellation';
-import {
-    ELLIPSE_TESSELLATION_POINTS,
-    STANDARD_TIMEOUT_MS,
-    EXTENDED_TIMEOUT_MS,
-} from '../constants';
+import { ELLIPSE_TESSELLATION_POINTS, tessellateEllipse } from '$lib/geometry/ellipse/index';
+import { STANDARD_TIMEOUT_MS, EXTENDED_TIMEOUT_MS } from '../constants';
 
 interface CachedTessellation {
     points: Point2D[];
@@ -153,9 +149,8 @@ export function getCachedTessellation(shape: Shape): Point2D[] | null {
             }
         } else if (shape.type === 'ellipse') {
             const ellipse = shape.geometry as Ellipse;
-            points = tessellateEllipse(ellipse, {
-                numPoints: ELLIPSE_TESSELLATION_POINTS,
-            });
+            // Use a reasonable number of points for caching
+            points = tessellateEllipse(ellipse, ELLIPSE_TESSELLATION_POINTS);
         }
 
         if (points.length > 0) {

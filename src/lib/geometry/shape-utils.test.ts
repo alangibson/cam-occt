@@ -17,15 +17,16 @@ vi.mock('./nurbs', () => ({
     sampleNURBS: vi.fn(),
 }));
 
-vi.mock('./ellipse-tessellation', () => ({
+vi.mock('$lib/geometry/ellipse', () => ({
     tessellateEllipse: vi.fn(),
+    ELLIPSE_TESSELLATION_POINTS: 64,
 }));
 
 vi.mock('./polyline', () => ({
     polylineToPoints: vi.fn(),
 }));
 
-vi.mock('./arc', () => ({
+vi.mock('$lib/geometry/arc', () => ({
     generateArcPoints: vi.fn(),
 }));
 
@@ -133,7 +134,7 @@ describe('getShapePoints', () => {
     });
 
     it('should call tessellateEllipse for ellipse shape with correct parameters', async () => {
-        const { tessellateEllipse } = await import('./ellipse-tessellation');
+        const { tessellateEllipse } = await import('$lib/geometry/ellipse');
         const mockPoints = [
             { x: 10, y: 0 },
             { x: 0, y: 5 },
@@ -155,9 +156,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(shape);
-        expect(tessellateEllipse).toHaveBeenCalledWith(ellipseGeometry, {
-            numPoints: 64,
-        });
+        expect(tessellateEllipse).toHaveBeenCalledWith(ellipseGeometry, 64);
         expect(points).toBe(mockPoints);
     });
 

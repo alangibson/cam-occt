@@ -10,7 +10,7 @@ import type {
 import type { Arc } from '$lib/geometry/arc';
 import type { VerbCurve } from 'verb-nurbs';
 import { GeometryType } from '../types/geometry';
-import { tessellateEllipse } from '../geometry/ellipse-tessellation';
+import { tessellateEllipse } from '$lib/geometry/ellipse/index';
 import type { Shape } from '../algorithms/offset-calculation/chain/types';
 import { tessellateVerbCurve } from '../algorithms/offset-calculation/offset/spline/spline';
 import { EPSILON } from '../constants';
@@ -566,9 +566,10 @@ export class SVGBuilder {
         strokeWidth: number,
         dashArray?: string
     ) {
-        const points: Point2D[] = tessellateEllipse(ellipse, {
-            numPoints: ELLIPSE_TESSELLATION_POINTS,
-        });
+        const points: Point2D[] = tessellateEllipse(
+            ellipse,
+            ELLIPSE_TESSELLATION_POINTS
+        );
         const isArc: boolean =
             typeof ellipse.startParam === 'number' &&
             typeof ellipse.endParam === 'number';

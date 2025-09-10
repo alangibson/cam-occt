@@ -17,6 +17,12 @@ import type { Line } from '$lib/geometry/line';
 // Re-export for backwards compatibility
 export type { Arc, Circle, Line };
 
+// Ellipse interface has been moved to geometry/ellipse module - import from $lib/geometry/ellipse
+import type { Ellipse } from '$lib/geometry/ellipse/index';
+
+// Re-export for backwards compatibility
+export type { Ellipse };
+
 export type Geometry = Arc | Line | Circle | Ellipse | Polyline | Spline;
 
 export interface Point2D {
@@ -40,15 +46,6 @@ export interface PolylineVertex extends Point2D {
 export interface Polyline {
     closed: boolean;
     shapes: Shape[]; // Primary structured representation using Shape objects containing Line and Arc geometries
-}
-
-export interface Ellipse {
-    center: Point2D;
-    majorAxisEndpoint: Point2D; // Vector from center to end of major axis
-    minorToMajorRatio: number; // Ratio of minor axis to major axis
-    startParam?: number; // Start parameter for ellipse arcs (optional)
-    endParam?: number; // End parameter for ellipse arcs (optional)
-    // NOTE: DXF ellipse arcs always curve counter-clockwise from startParam to endParam
 }
 
 export interface Spline {

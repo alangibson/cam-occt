@@ -19,16 +19,14 @@ import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../lib/types/geometry';
 import { sampleNURBS } from '../geometry/nurbs';
 import { polylineToPoints } from '../geometry/polyline';
-import { generateEllipsePoints } from './ellipse-utils';
+import { generateEllipsePoints } from '$lib/geometry/ellipse/index';
 import {
     calculatePolygonArea as calculatePolygonAreaShared,
     calculateDistanceBetweenPoints,
     isPointInPolygon as isPointInPolygonShared,
 } from './polygon-geometry-shared';
-import {
-    GEOMETRIC_PRECISION_TOLERANCE,
-    ELLIPSE_TESSELLATION_POINTS,
-} from '../constants';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '../constants';
+import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/index';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
 
 export const LEAD_SEGMENT_COUNT = 8;

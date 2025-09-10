@@ -1,12 +1,14 @@
-import type { Shape, Point2D, Line, Polyline, Ellipse, Spline } from '../types';
+import type { Shape, Point2D, Line, Polyline, Spline, Ellipse } from '../types';
 import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import { sampleNURBS } from './nurbs';
-import { tessellateEllipse } from './ellipse-tessellation';
+import {
+    tessellateEllipse,
+    ELLIPSE_TESSELLATION_POINTS,
+} from '$lib/geometry/ellipse/index';
 import { polylineToPoints } from './polyline';
 import { generateArcPoints } from '$lib/geometry/arc';
-import { ELLIPSE_TESSELLATION_POINTS } from '../constants';
 import { generateCirclePoints } from '$lib/geometry/circle';
 
 /**
@@ -58,9 +60,7 @@ export function getShapePoints(
 
         case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
-            return tessellateEllipse(ellipse, {
-                numPoints: ELLIPSE_TESSELLATION_POINTS,
-            });
+            return tessellateEllipse(ellipse, ELLIPSE_TESSELLATION_POINTS);
 
         case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;

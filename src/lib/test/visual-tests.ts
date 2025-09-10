@@ -11,7 +11,7 @@ import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { OffsetChain } from '../algorithms/offset-calculation/chain/types';
 import { tessellateSpline } from '../geometry/spline-tessellation';
-import { tessellateEllipse } from '../geometry/ellipse-tessellation';
+import { tessellateEllipse } from '$lib/geometry/ellipse/index';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { getShapeBoundingBox } from '../utils/shape-bounds-utils';
 import { writeFileSync } from 'fs';
@@ -340,9 +340,7 @@ function shapeToSVG(shape: Shape): string {
                 shape.geometry as Ellipse;
             const points: { x: number; y: number }[] = tessellateEllipse(
                 ellipse,
-                {
-                    numPoints: 32,
-                }
+                32
             );
             const pointsStr: string = points
                 .map((p) => `${p.x},${p.y}`)

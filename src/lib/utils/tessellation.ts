@@ -17,7 +17,7 @@ import { GeometryType } from '../../lib/types/geometry';
 import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { sampleNURBS } from '../geometry/nurbs';
 import { polylineToVertices, polylineToPoints } from '../geometry/polyline';
-import { calculateEllipsePoint } from './ellipse-utils';
+import { calculateEllipsePoint } from '$lib/geometry/ellipse/index';
 import {
     OCTAGON_SIDES,
     DEFAULT_TESSELLATION_SEGMENTS,

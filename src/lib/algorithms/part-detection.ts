@@ -24,7 +24,7 @@ import {
     calculateChainBoundingBox,
     type BoundingBox,
 } from '../utils/shape-bounds-utils';
-import { isEllipseClosed } from '../utils/ellipse-utils';
+import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import {
     CHAIN_CLOSURE_TOLERANCE,
     CONTAINMENT_AREA_TOLERANCE,

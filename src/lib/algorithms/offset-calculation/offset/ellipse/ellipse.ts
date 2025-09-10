@@ -11,7 +11,7 @@ import {
     POLYGON_POINTS_MIN,
     DEFAULT_SPLINE_DEGREE,
 } from '../../../../geometry/constants';
-import { getEllipseParameters } from '../../../../utils/ellipse-utils';
+import { getEllipseParameters } from '$lib/geometry/ellipse/index';
 import { generateUniformKnotVector } from '../../../../utils/nurbs-utils';
 import { OffsetDirection, type OffsetResult } from '../types';
 

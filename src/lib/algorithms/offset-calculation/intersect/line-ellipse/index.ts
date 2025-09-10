@@ -8,7 +8,7 @@ import {
     processVerbIntersectionResults,
 } from '../../../../utils/verb-integration-utils';
 import { INTERSECTION_TOLERANCE } from '../../../../constants';
-import { getEllipseParameters } from '../../../../utils/ellipse-utils';
+import { getEllipseParameters } from '$lib/geometry/ellipse/index';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 
 /**

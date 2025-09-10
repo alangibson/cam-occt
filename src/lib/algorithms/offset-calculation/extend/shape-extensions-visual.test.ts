@@ -2,7 +2,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import verb from 'verb-nurbs';
 import { beforeAll, describe, it } from 'vitest';
-import { tessellateEllipse } from '../../../geometry/ellipse-tessellation';
+import { tessellateEllipse } from '$lib/geometry/ellipse/index';
 import {
     createPolylineFromVertices,
     polylineToPoints,
@@ -727,7 +727,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
 
         testEllipseArcs.forEach((ellipseArc, index) => {
             // Generate points for the ellipse arc
-            const arcPoints = tessellateEllipse(ellipseArc, { numPoints: 32 });
+            const arcPoints = tessellateEllipse(ellipseArc, 32);
             const ellipsePolyline: Polyline = {
                 shapes: arcPoints.slice(0, -1).map((p, i) => ({
                     id: `ellipse-arc-seg-${index}-${i}`,
@@ -870,9 +870,7 @@ describe('Shape Extension Visual Tests', { timeout: 60000 }, () => {
                         };
                         const extendedPoints = tessellateEllipse(
                             extendedEllipse,
-                            {
-                                numPoints: 40,
-                            }
+                            40
                         );
 
                         // Draw extended portions in green dashed

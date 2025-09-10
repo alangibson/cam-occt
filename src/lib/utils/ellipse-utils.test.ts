@@ -9,7 +9,7 @@ import {
     isFullEllipse,
     isEllipseClosed,
     distanceFromEllipsePerimeter,
-} from './ellipse-utils.js';
+} from '$lib/geometry/ellipse';
 import type { Ellipse } from '../types/geometry';
 
 describe('ellipse-utils', () => {

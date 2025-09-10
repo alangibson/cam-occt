@@ -46,8 +46,8 @@ export const MAX_EXTENSION: number = 20;
 
 /**
  * High-resolution tessellation for ellipse rendering (points)
+ * MOVED: This constant has been moved to $lib/geometry/ellipse/constants
  */
-export const ELLIPSE_TESSELLATION_POINTS: number = 64;
 
 /**
  * Fine tessellation tolerance for spline rendering (pixels)

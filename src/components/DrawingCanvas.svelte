@@ -31,12 +31,12 @@
         samplePathAtDistanceIntervals,
     } from '$lib/geometry';
     import { CoordinateTransformer } from '../lib/rendering/coordinate-transformer';
-    import {
-        SPLINE_TESSELLATION_TOLERANCE,
-        ELLIPSE_TESSELLATION_POINTS,
-    } from '../lib/constants';
+    import { SPLINE_TESSELLATION_TOLERANCE } from '../lib/constants';
     import { debounce } from '../lib/utils/state-persistence';
-    import { tessellateEllipse } from '../lib/geometry/ellipse-tessellation';
+    import {
+        tessellateEllipse,
+        ELLIPSE_TESSELLATION_POINTS,
+    } from '$lib/geometry/ellipse/index';
     import { tessellateSpline } from '../lib/geometry/spline-tessellation';
     import {
         getCachedTessellation,
@@ -46,7 +46,7 @@
         getEllipseParameters,
         isFullEllipse,
         distanceFromEllipsePerimeter,
-    } from '../lib/utils/ellipse-utils';
+    } from '$lib/geometry/ellipse/index';
     import {
         RenderStateManager,
         PanStateManager,
@@ -908,9 +908,7 @@
         const cachedPoints = getCachedTessellation(shape);
         const tessellatedPoints =
             cachedPoints ||
-            tessellateEllipse(ellipse, {
-                numPoints: ELLIPSE_TESSELLATION_POINTS,
-            });
+            tessellateEllipse(ellipse, ELLIPSE_TESSELLATION_POINTS);
 
         if (tessellatedPoints.length < 2) return;
 

@@ -13,7 +13,7 @@ import { GeometryType } from '../../types';
 import { evaluateNURBS } from '../../geometry/nurbs';
 import { polylineToPoints } from '../../geometry/polyline';
 import { calculateSquaredDistance } from '../../utils/math-utils';
-import { isEllipseClosed } from '../../utils/ellipse-utils';
+import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { detectCutDirection } from '../cut-direction';
 import { CutDirection } from '../../types/direction';
 import {
