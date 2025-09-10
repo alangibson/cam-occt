@@ -6,8 +6,9 @@ import {
     polylineToPoints,
     polylineToVertices,
     reversePolyline,
-} from './polyline';
-import type { Point2D, Polyline, PolylineVertex } from '$lib/types/geometry';
+} from './functions';
+import type { Point2D } from '$lib/types/geometry';
+import type { Polyline, PolylineVertex } from './interfaces';
 import type { Arc } from '$lib/geometry/arc';
 
 describe('createPolylineFromVertices', () => {

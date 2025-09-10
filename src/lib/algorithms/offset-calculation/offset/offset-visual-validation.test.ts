@@ -6,7 +6,7 @@ import { tessellateEllipse } from '$lib/geometry/ellipse/index';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '../../../geometry/polyline';
+} from '$lib/geometry/polyline';
 import { SVGBuilder } from '../../../test/svg-builder';
 import {
     GeometryType,

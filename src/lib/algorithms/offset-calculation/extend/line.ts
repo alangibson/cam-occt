@@ -1,4 +1,5 @@
-import type { Line, Point2D } from '../../../types/geometry';
+import type { Point2D } from '../../../types/geometry';
+import type { Line } from '$lib/geometry/line';
 import { EPSILON, MAX_EXTENSION } from '../../../constants';
 import {
     pointDistance,

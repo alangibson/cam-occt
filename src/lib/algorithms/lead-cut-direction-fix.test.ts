@@ -13,7 +13,7 @@ import { CutDirection, LeadType } from '../types/direction';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '../geometry/polyline';
+} from '$lib/geometry/polyline';
 import type { Arc } from '../geometry/arc';
 import type { Shape } from '../types';
 

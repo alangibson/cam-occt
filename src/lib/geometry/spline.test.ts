@@ -7,6 +7,8 @@ import {
     normalizeSplineWeights,
 } from './spline';
 import type { Spline } from '../types/geometry';
+import { evaluateNURBS } from './nurbs';
+import { tessellateSpline } from './spline-tessellation';
 
 // Mock the dependencies
 vi.mock('./nurbs', () => ({
@@ -18,8 +20,7 @@ vi.mock('./spline-tessellation', () => ({
 }));
 
 describe('getSplineStartPoint', () => {
-    it('should return NURBS evaluated point at t=0', async () => {
-        const { evaluateNURBS } = await import('./nurbs');
+    it('should return NURBS evaluated point at t=0', () => {
         const expectedPoint = { x: 1, y: 2 };
         vi.mocked(evaluateNURBS).mockReturnValue(expectedPoint);
 
@@ -41,8 +42,7 @@ describe('getSplineStartPoint', () => {
         expect(startPoint).toBe(expectedPoint);
     });
 
-    it('should fallback to first fit point when NURBS evaluation fails', async () => {
-        const { evaluateNURBS } = await import('./nurbs');
+    it('should fallback to first fit point when NURBS evaluation fails', () => {
         vi.mocked(evaluateNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -68,8 +68,7 @@ describe('getSplineStartPoint', () => {
         expect(startPoint).toBe(fitPoints[0]);
     });
 
-    it('should fallback to first control point when NURBS fails and no fit points', async () => {
-        const { evaluateNURBS } = await import('./nurbs');
+    it('should fallback to first control point when NURBS fails and no fit points', () => {
         vi.mocked(evaluateNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -92,8 +91,7 @@ describe('getSplineStartPoint', () => {
         expect(startPoint).toBe(controlPoints[0]);
     });
 
-    it('should return origin when NURBS fails and no points available', async () => {
-        const { evaluateNURBS } = await import('./nurbs');
+    it('should return origin when NURBS fails and no points available', () => {
         vi.mocked(evaluateNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -111,8 +109,7 @@ describe('getSplineStartPoint', () => {
         expect(startPoint).toEqual({ x: 0, y: 0 });
     });
 
-    it('should handle empty fit points array', async () => {
-        const { evaluateNURBS } = await import('./nurbs');
+    it('should handle empty fit points array', () => {
         vi.mocked(evaluateNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -133,8 +130,7 @@ describe('getSplineStartPoint', () => {
 });
 
 describe('getSplineEndPoint', () => {
-    it('should return NURBS evaluated point at t=1', async () => {
-        const { evaluateNURBS } = await import('./nurbs');
+    it('should return NURBS evaluated point at t=1', () => {
         const expectedPoint = { x: 9, y: 8 };
         vi.mocked(evaluateNURBS).mockReturnValue(expectedPoint);
 
@@ -156,8 +152,7 @@ describe('getSplineEndPoint', () => {
         expect(endPoint).toBe(expectedPoint);
     });
 
-    it('should fallback to last fit point when NURBS evaluation fails', async () => {
-        const { evaluateNURBS } = await import('./nurbs');
+    it('should fallback to last fit point when NURBS evaluation fails', () => {
         vi.mocked(evaluateNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -183,8 +178,7 @@ describe('getSplineEndPoint', () => {
         expect(endPoint).toBe(fitPoints[fitPoints.length - 1]);
     });
 
-    it('should fallback to last control point when NURBS fails and no fit points', async () => {
-        const { evaluateNURBS } = await import('./nurbs');
+    it('should fallback to last control point when NURBS fails and no fit points', () => {
         vi.mocked(evaluateNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -207,8 +201,7 @@ describe('getSplineEndPoint', () => {
         expect(endPoint).toBe(controlPoints[controlPoints.length - 1]);
     });
 
-    it('should return origin when NURBS fails and no points available', async () => {
-        const { evaluateNURBS } = await import('./nurbs');
+    it('should return origin when NURBS fails and no points available', () => {
         vi.mocked(evaluateNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -388,8 +381,7 @@ describe('reverseSpline', () => {
 });
 
 describe('getSplinePointAt', () => {
-    it('should return point from tessellation with arc-length parameterization', async () => {
-        const { tessellateSpline } = await import('./spline-tessellation');
+    it('should return point from tessellation with arc-length parameterization', () => {
         const mockPoints = [
             { x: 0, y: 0 },
             { x: 5, y: 5 },
@@ -424,8 +416,7 @@ describe('getSplinePointAt', () => {
         expect(point).toEqual(mockPoints[0]);
     });
 
-    it('should handle t=1 to return last point', async () => {
-        const { tessellateSpline } = await import('./spline-tessellation');
+    it('should handle t=1 to return last point', () => {
         const mockPoints = [
             { x: 0, y: 0 },
             { x: 5, y: 5 },
@@ -456,8 +447,7 @@ describe('getSplinePointAt', () => {
         expect(point).toEqual(mockPoints[mockPoints.length - 1]);
     });
 
-    it('should interpolate between points for intermediate t values', async () => {
-        const { tessellateSpline } = await import('./spline-tessellation');
+    it('should interpolate between points for intermediate t values', () => {
         const mockPoints = [
             { x: 0, y: 0 }, // Arc length 0
             { x: 10, y: 0 }, // Arc length 10
@@ -489,8 +479,7 @@ describe('getSplinePointAt', () => {
         expect(point).toEqual({ x: 10, y: 0 });
     });
 
-    it('should return fallback point when tessellation fails', async () => {
-        const { tessellateSpline } = await import('./spline-tessellation');
+    it('should return fallback point when tessellation fails', () => {
         vi.mocked(tessellateSpline).mockReturnValue({
             success: false,
             points: [],
@@ -515,8 +504,7 @@ describe('getSplinePointAt', () => {
         expect(point).toEqual({ x: 0, y: 0 });
     });
 
-    it('should return fallback when tessellation throws error', async () => {
-        const { tessellateSpline } = await import('./spline-tessellation');
+    it('should return fallback when tessellation throws error', () => {
         vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('Tessellation failed');
         });
@@ -537,8 +525,7 @@ describe('getSplinePointAt', () => {
         expect(point).toEqual({ x: 0, y: 0 });
     });
 
-    it('should handle single point tessellation', async () => {
-        const { tessellateSpline } = await import('./spline-tessellation');
+    it('should handle single point tessellation', () => {
         const mockPoints = [{ x: 5, y: 5 }];
         vi.mocked(tessellateSpline).mockReturnValue({
             success: true,
@@ -563,8 +550,7 @@ describe('getSplinePointAt', () => {
         expect(point).toEqual({ x: 0, y: 0 });
     });
 
-    it('should handle empty tessellation', async () => {
-        const { tessellateSpline } = await import('./spline-tessellation');
+    it('should handle empty tessellation', () => {
         vi.mocked(tessellateSpline).mockReturnValue({
             success: true,
             points: [],

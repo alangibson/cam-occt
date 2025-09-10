@@ -1,4 +1,5 @@
-import type { Shape, Spline, Arc } from '../../../../types/geometry';
+import type { Shape, Spline } from '../../../../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from '../../chain/types';
 import {
     createVerbCurveFromArc,

@@ -1,17 +1,15 @@
 import type { Unit } from '$lib/utils/units';
 import type {
-    Circle,
     CuttingParameters,
     Drawing,
     GCodeCommand,
-    Point2D,
-    Shape,
-    Spline,
     ToolPath,
 } from '../../lib/types';
 import type { Arc } from '$lib/geometry/arc';
-import { CutterCompensation } from '../../lib/types';
+import type { Circle } from '$lib/geometry/circle';
+import type { Point2D, Shape, Spline } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
+import { CutterCompensation } from '../../lib/types';
 import { DEFAULT_SPLINE_DEGREE } from '../geometry/constants';
 import {
     DEFAULT_PIERCE_HEIGHT,
@@ -594,8 +592,7 @@ function generateNativeSplineCommands(
 
     switch (shape.type) {
         case GeometryType.SPLINE:
-            const spline: import('$lib/types/geometry').Spline =
-                shape.geometry as Spline;
+            const spline: Spline = shape.geometry as Spline;
 
             // Use G5.2/G5.3 NURBS commands for splines
             if (spline.controlPoints && spline.controlPoints.length >= 2) {
@@ -703,8 +700,7 @@ function generateNativeSplineCommands(
 
         case GeometryType.CIRCLE:
             // Convert full circles to arc commands
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle;
+            const circle: Circle = shape.geometry as Circle;
             if (options.includeComments) {
                 commands.push({
                     code: '',

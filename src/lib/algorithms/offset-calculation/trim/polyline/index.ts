@@ -1,21 +1,16 @@
 import { EPSILON } from '$lib/constants';
-import type {
-    Shape,
-    Point2D,
-    Polyline,
-    Line,
-    PolylineVertex,
-} from '$lib/types/geometry';
+import type { Shape, Point2D, Polyline, Line } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
 import { type KeepSide, type TrimResult } from '../types';
 import {
     polylineToPoints,
     createPolylineFromVertices,
     polylineToVertices,
+    MIN_VERTICES_FOR_POLYLINE,
+    type PolylineVertex,
 } from '$lib/geometry/polyline';
 import { calculateLineParameter } from '../../shared/trim-extend-utils';
 import {
-    MIN_VERTICES_FOR_POLYLINE,
     TOLERANCE_RELAXATION_MULTIPLIER,
     DEFAULT_ARRAY_NOT_FOUND_INDEX,
 } from '../../../../geometry/constants';

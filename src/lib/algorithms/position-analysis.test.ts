@@ -7,7 +7,7 @@ import {
     type Chain,
 } from './chain-detection/chain-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 
 describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {
     it('should analyze the position difference between chain-7 and chain-13 relative to boundary', async () => {

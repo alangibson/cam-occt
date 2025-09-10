@@ -2,12 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import { parseDXF } from './dxf-parser';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
-import { polylineToVertices } from '../geometry/polyline';
+import {
+    polylineToVertices,
+    type PolylineVertex,
+} from '$lib/geometry/polyline';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { EPSILON } from '../constants';
 import type { Arc } from '../geometry/arc';
-import type { Polyline, PolylineVertex } from '../../lib/types/geometry';
+import type { Polyline } from '../../lib/types/geometry';
 
 describe('Bulge Rendering Fixes', () => {
     describe('Polylinie.dxf', () => {

@@ -3,11 +3,11 @@ import {
     GeometryType,
     type Shape,
     type Polyline,
-    type PolylineVertex,
 } from '../../../../types/geometry';
 import { trimPolyline } from './index';
 import { type KeepSide } from '../types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
+import type { PolylineVertex } from '$lib/types';
 
 // Mock dependencies
 vi.mock('$lib/utils/id', () => ({
@@ -18,6 +18,7 @@ vi.mock('$lib/geometry/polyline', () => ({
     polylineToPoints: vi.fn(),
     createPolylineFromVertices: vi.fn(),
     polylineToVertices: vi.fn(),
+    MIN_VERTICES_FOR_POLYLINE: 2,
 }));
 
 vi.mock('../../shared/trim-extend-utils', () => ({

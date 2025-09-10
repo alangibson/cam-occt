@@ -1,9 +1,10 @@
-import { describe, it, expect } from 'vitest';
-import { generateGCode } from './gcode-generator';
-import type { ToolPath, Drawing, Shape, Circle, Spline } from '../../lib/types';
 import type { Arc } from '$lib/geometry/arc';
-import { Unit, CutterCompensation } from '../../lib/types';
 import { GeometryType } from '$lib/types/geometry';
+import { describe, expect, it } from 'vitest';
+import type { Drawing, Shape, Spline, ToolPath } from '../../lib/types';
+import { CutterCompensation, Unit } from '../../lib/types';
+import { generateGCode } from './gcode-generator';
+import type { Circle } from '$lib/geometry/circle';
 
 describe('generateGCode', () => {
     const mockDrawing: Drawing = {

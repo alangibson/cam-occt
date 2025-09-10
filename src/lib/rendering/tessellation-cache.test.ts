@@ -23,13 +23,14 @@ vi.mock('../geometry/spline-tessellation', () => ({
     })),
 }));
 
-vi.mock('../geometry/ellipse-tessellation', () => ({
+vi.mock('$lib/geometry/ellipse/index', () => ({
     tessellateEllipse: vi.fn(() => [
         { x: 10, y: 0 },
         { x: 0, y: 5 },
         { x: -10, y: 0 },
         { x: 0, y: -5 },
     ]),
+    ELLIPSE_TESSELLATION_POINTS: 32,
 }));
 
 vi.mock('../constants', () => ({

@@ -1,6 +1,7 @@
-import type { Line, Polyline } from '../types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { IntersectionResult } from './offset-calculation/chain/types';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import {
     createVerbCurveFromLine,
     processVerbIntersectionResults,

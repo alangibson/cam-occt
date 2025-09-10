@@ -16,7 +16,7 @@ import type {
 import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import { CHAIN_CLOSURE_TOLERANCE } from '../constants';
 
 export interface TessellationPoint {

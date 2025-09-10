@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '../../../geometry/polyline';
+} from '$lib/geometry/polyline';
 import {
     GeometryType,
     type Arc,

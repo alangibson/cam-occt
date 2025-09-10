@@ -14,11 +14,6 @@ export const MIN_CONTROL_POINTS_FOR_SPLINE = 2;
 export const DEFAULT_SPLINE_DEGREE = 3;
 
 /**
- * Minimum number of vertices required to define a polyline
- */
-export const MIN_VERTICES_FOR_POLYLINE = 2;
-
-/**
  * Angular measurement for 270 degrees in radians (3π/2) - bounding box calculations
  */
 // eslint-disable-next-line no-magic-numbers

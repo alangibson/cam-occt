@@ -1,4 +1,5 @@
-import type { Line, Arc } from '../../../../types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
 import type { IntersectionResult } from '../../chain/types';
 import {

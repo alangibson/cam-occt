@@ -10,7 +10,7 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Shape } from '../types';
 
 describe('ADLER.dxf Part 5 Lead Fix', () => {

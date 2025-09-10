@@ -4,7 +4,7 @@ import type { Shape } from '../../../types/geometry';
 import type { ChainOffsetResult, ChainOffsetParameters } from './types';
 import { offsetChain } from './offset';
 import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from './types';
-import { createPolylineFromVertices } from '../../../geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
 
 describe('Chain Self-Intersection Validation', () => {
     /**

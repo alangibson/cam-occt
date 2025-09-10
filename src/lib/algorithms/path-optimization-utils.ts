@@ -1,7 +1,9 @@
 import type { Path } from '../stores/paths';
 import type { Chain } from './chain-detection/chain-detection';
-import type { Point2D, Shape, Line, Arc } from '../types/geometry';
+import type { Point2D, Shape } from '../types/geometry';
 import { GeometryType } from '../types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Arc } from '$lib/geometry/arc';
 import type { DetectedPart } from './part-detection';
 import {
     calculateLeads,

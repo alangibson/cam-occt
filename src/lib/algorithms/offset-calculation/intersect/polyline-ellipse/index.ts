@@ -1,4 +1,6 @@
-import type { Shape, Polyline, Ellipse } from '../../../../types/geometry';
+import type { Shape } from '../../../../types/geometry';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Ellipse } from '$lib/geometry/ellipse';
 import type { IntersectionResult } from '../../chain/types.ts';
 import { createVerbCurveFromEllipse } from '../../../../utils/verb-integration-utils';
 import verb from 'verb-nurbs';

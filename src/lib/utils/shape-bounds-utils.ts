@@ -11,14 +11,14 @@ import type {
     Point2D,
     Shape,
     Line,
-    Circle,
     Polyline,
     Ellipse,
     Spline,
+    Circle,
 } from '../types';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import { sampleNURBS } from '../geometry/nurbs';
 import { HIGH_TESSELLATION_SEGMENTS } from '../geometry/constants';
 import { STANDARD_TESSELLATION_COUNT } from '$lib/constants';

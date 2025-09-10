@@ -1,7 +1,7 @@
 import { GeometryType } from '$lib/types/geometry';
 import { describe, expect, it } from 'vitest';
 import type { Shape } from '../../lib/types';
-import { createPolylineFromVertices } from '../geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
 import type { Chain } from './chain-detection/chain-detection';
 import { optimizeStartPoints } from './optimize-start-points';

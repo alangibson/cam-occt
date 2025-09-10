@@ -10,7 +10,7 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Arc } from '../geometry/arc';
 import type { Polyline, Shape } from '../types/geometry';
 

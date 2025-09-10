@@ -3,7 +3,7 @@ import { detectShapeChains, isShapeClosed } from './chain-detection';
 import { parseDXF } from '../../parsers/dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { polylineToPoints, polylineToVertices } from '../../geometry/polyline';
+import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
 import type { Polyline } from '../../types/geometry';
 
 describe('Comprehensive Closed Polyline with Bulges Test', () => {

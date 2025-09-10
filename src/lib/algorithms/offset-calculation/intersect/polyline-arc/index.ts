@@ -1,4 +1,5 @@
-import type { Polyline, Line } from '../../../../types/geometry';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from '../../chain/types';
 import { createExtendedPolyline } from '../../extend/polyline';

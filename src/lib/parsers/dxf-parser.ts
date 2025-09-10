@@ -15,7 +15,10 @@ import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import { Unit } from '../utils/units';
 import { generateId } from '../utils/id';
-import { generateSegments } from '../geometry/polyline';
+import {
+    generateSegments,
+    MIN_VERTICES_FOR_POLYLINE,
+} from '$lib/geometry/polyline';
 import { normalizeSplineWeights } from '../geometry/spline';
 import { getShapePointsForBounds } from '../utils/shape-bounds-utils';
 import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
@@ -23,7 +26,6 @@ import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
     DEFAULT_SPLINE_DEGREE,
     MIN_CONTROL_POINTS_FOR_SPLINE,
-    MIN_VERTICES_FOR_POLYLINE,
 } from '$lib/geometry/constants';
 import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
 

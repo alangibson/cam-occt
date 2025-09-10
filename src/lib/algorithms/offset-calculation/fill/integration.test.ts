@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createPolylineFromVertices } from '../../../geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { GeometryType, type Shape } from '../../../types/geometry';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';

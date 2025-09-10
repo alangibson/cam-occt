@@ -1,5 +1,7 @@
 import type { IntersectionResult } from '../../chain/types.ts';
-import type { Shape, Arc, Ellipse } from '$lib/types/geometry';
+import type { Shape } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
+import type { Ellipse } from '$lib/geometry/ellipse';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 import {
     createVerbCurveFromEllipse,

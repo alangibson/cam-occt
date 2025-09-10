@@ -7,7 +7,10 @@
 
 import type { Point2D, Shape, Spline, Ellipse } from '../types/geometry';
 import { tessellateSpline } from '../geometry/spline-tessellation';
-import { ELLIPSE_TESSELLATION_POINTS, tessellateEllipse } from '$lib/geometry/ellipse/index';
+import {
+    ELLIPSE_TESSELLATION_POINTS,
+    tessellateEllipse,
+} from '$lib/geometry/ellipse/index';
 import { STANDARD_TIMEOUT_MS, EXTENDED_TIMEOUT_MS } from '../constants';
 
 interface CachedTessellation {

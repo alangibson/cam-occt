@@ -3,8 +3,8 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
-} from './polyline';
-import type { PolylineVertex, Polyline } from '$lib/types/geometry';
+} from './functions';
+import type { PolylineVertex, Polyline } from './interfaces';
 
 describe('Polyline Segments Functionality', () => {
     it('should create segments for simple polyline without bulges', () => {

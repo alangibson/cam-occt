@@ -1,6 +1,9 @@
-import type { Shape, Point2D, Line, Polyline, Spline, Ellipse } from '../types';
+import type { Shape, Point2D, Spline } from '../types';
 import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Ellipse } from '$lib/geometry/ellipse';
 import { GeometryType } from '../types/geometry';
 import { sampleNURBS } from './nurbs';
 import {

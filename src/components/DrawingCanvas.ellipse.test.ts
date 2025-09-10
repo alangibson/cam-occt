@@ -4,7 +4,8 @@ import DrawingCanvas from './DrawingCanvas.svelte';
 import { drawingStore } from '../lib/stores/drawing';
 import { Unit } from '../lib/utils/units';
 import { WorkflowStage } from '../lib/stores/workflow';
-import type { Shape, Drawing, Ellipse } from '../lib/types';
+import type { Shape, Drawing } from '../lib/types';
+import type { Ellipse } from '$lib/geometry/ellipse';
 import { GeometryType } from '$lib/types/geometry';
 
 // Mock canvas context

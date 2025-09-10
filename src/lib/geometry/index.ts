@@ -2,10 +2,10 @@ import type {
     Shape,
     Point2D,
     Line,
-    Polyline,
     Spline,
     Ellipse,
 } from '$lib/types/geometry';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
 import {
@@ -31,7 +31,7 @@ import {
     getPolylineEndPoint,
     reversePolyline,
     getPolylinePointAt,
-} from './polyline';
+} from '$lib/geometry/polyline';
 import {
     getSplineStartPoint,
     getSplineEndPoint,

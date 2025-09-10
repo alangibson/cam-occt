@@ -13,7 +13,7 @@ import type {
 } from '../../lib/types';
 import { GeometryType } from '../../lib/types/geometry';
 import { CutDirection } from '../types/direction';
-import { createPolylineFromVertices } from '../geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
 
 describe('Optimize Cut Order', () => {
     it('should handle ellipse shapes in chains', () => {

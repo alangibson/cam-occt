@@ -17,7 +17,7 @@ import type {
 } from '../../lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../lib/types';
-import { polylineToVertices, polylineToPoints } from '../geometry/polyline';
+import { polylineToVertices, polylineToPoints } from '$lib/geometry/polyline';
 import { DUPLICATE_FILTERING_TOLERANCE } from '../constants';
 
 export interface LayerSquashingOptions {

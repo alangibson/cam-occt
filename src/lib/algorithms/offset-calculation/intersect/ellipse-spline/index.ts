@@ -1,4 +1,5 @@
-import type { Shape, Ellipse, Spline } from '../../../../types/geometry';
+import type { Shape, Spline } from '../../../../types/geometry';
+import type { Ellipse } from '$lib/geometry/ellipse';
 import type { IntersectionResult } from '../../chain/types';
 import { createVerbCurveFromEllipse } from '../../../../utils/verb-integration-utils';
 import { processSplineWithCurveIntersection } from '../../shared/spline-intersection-utils';

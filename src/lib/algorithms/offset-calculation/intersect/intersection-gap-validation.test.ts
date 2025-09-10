@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { createPolylineFromVertices } from '../../../geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { SVGBuilder } from '../../../test/svg-builder';
 import { GeometryType, type Shape } from '../../../types/geometry';
 import { findShapeIntersections } from '../intersect';

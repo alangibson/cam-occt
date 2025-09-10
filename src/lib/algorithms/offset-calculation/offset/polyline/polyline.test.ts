@@ -13,7 +13,7 @@ import type {
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '../../../../geometry/polyline';
+} from '$lib/geometry/polyline';
 import { parseDXF } from '../../../../parsers/dxf-parser';
 import { offsetShape } from '..';
 import { OffsetDirection } from '../types';

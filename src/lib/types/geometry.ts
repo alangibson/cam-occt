@@ -8,20 +8,22 @@ export enum GeometryType {
 }
 
 // Arc interface has been moved to geometry/arc module - import from $lib/geometry/arc
-import type { Arc } from '$lib/geometry/arc';
 // Circle interface has been moved to geometry/circle module - import from $lib/geometry/circle
-import type { Circle } from '$lib/geometry/circle';
 // Line interface has been moved to geometry/line module - import from $lib/geometry/line
-import type { Line } from '$lib/geometry/line';
-
-// Re-export for backwards compatibility
-export type { Arc, Circle, Line };
-
 // Ellipse interface has been moved to geometry/ellipse module - import from $lib/geometry/ellipse
-import type { Ellipse } from '$lib/geometry/ellipse/index';
 
-// Re-export for backwards compatibility
-export type { Ellipse };
+// Import the types for the Geometry union
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Polyline } from '$lib/geometry/polyline';
+
+export type { Arc } from '$lib/geometry/arc';
+export type { Circle } from '$lib/geometry/circle';
+export type { Line } from '$lib/geometry/line';
+export type { Ellipse } from '$lib/geometry/ellipse';
+export type { Polyline } from '$lib/geometry/polyline';
 
 export type Geometry = Arc | Line | Circle | Ellipse | Polyline | Spline;
 
@@ -39,14 +41,7 @@ export interface BoundingBox {
     max: Point2D;
 }
 
-export interface PolylineVertex extends Point2D {
-    bulge?: number;
-}
-
-export interface Polyline {
-    closed: boolean;
-    shapes: Shape[]; // Primary structured representation using Shape objects containing Line and Arc geometries
-}
+// Polyline interfaces have been moved to geometry/polyline module - import from $lib/geometry/polyline
 
 export interface Spline {
     controlPoints: Point2D[];
@@ -60,7 +55,7 @@ export interface Spline {
 export interface Shape {
     id: string;
     type: GeometryType;
-    geometry: Line | Arc | Circle | Polyline | Ellipse | Spline;
+    geometry: Geometry;
     layer?: string;
     originalType?: string; // Track original DXF entity type for converted shapes
     metadata?: Record<string, unknown>; // Metadata for additional shape information (e.g., originalLayer)

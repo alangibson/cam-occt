@@ -1,20 +1,16 @@
 import type { Chain } from './chain-detection/chain-detection';
-import type {
-    Shape,
-    Point2D,
-    Line,
-    Circle,
-    Polyline,
-    Spline,
-    Ellipse,
-} from '../types/geometry';
-import type { Arc } from '$lib/geometry/arc';
+import type { Shape, Point2D, Spline } from '../types/geometry';
 import { GeometryType } from '../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
+import type { Line } from '$lib/geometry/line';
+import type { Circle } from '$lib/geometry/circle';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Ellipse } from '$lib/geometry/ellipse';
 import { CutDirection } from '../types/direction';
 import { getShapeEndPoint } from '$lib/geometry';
 import { getShapeStartPoint } from '$lib/geometry';
 import { CHAIN_CLOSURE_TOLERANCE, STANDARD_GRID_SPACING } from '../constants';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import { calculateSquaredDistance } from '../utils/math-utils';
 import {
     POLYGON_POINTS_MIN,

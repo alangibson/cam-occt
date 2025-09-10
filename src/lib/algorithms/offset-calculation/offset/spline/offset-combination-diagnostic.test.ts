@@ -4,7 +4,7 @@ import { join } from 'path';
 import { offsetSpline } from './spline';
 import { OffsetDirection } from '../types';
 import type { Spline, Polyline } from '../../../../types/geometry';
-import { polylineToPoints } from '../../../../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 
 describe('Combination Operations Diagnostic', () => {
     const outputDir = 'test-output/combination-diagnostic';

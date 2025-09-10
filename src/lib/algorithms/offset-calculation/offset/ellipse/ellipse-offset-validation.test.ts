@@ -9,7 +9,7 @@ import {
     type Polyline,
     type Point2D,
 } from '../../../../types/geometry';
-import { polylineToPoints } from '../../../../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import verb from 'verb-nurbs';
 import { OffsetDirection } from '../types';
 

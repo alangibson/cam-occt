@@ -13,7 +13,7 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Polyline, Line } from '../types/geometry';
 
 describe('ADLER Part 5 Cut Direction Analysis', () => {

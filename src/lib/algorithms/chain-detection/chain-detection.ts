@@ -11,7 +11,7 @@ import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../types';
 // Unused imports removed to fix lint warnings
 import { evaluateNURBS } from '../../geometry/nurbs';
-import { polylineToPoints } from '../../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import { calculateSquaredDistance } from '../../utils/math-utils';
 import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { detectCutDirection } from '../cut-direction';

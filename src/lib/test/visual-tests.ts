@@ -1,21 +1,16 @@
 /* eslint-disable no-magic-numbers */
-import type {
-    Shape,
-    Line,
-    Circle,
-    Polyline,
-    Spline,
-    Ellipse,
-} from '../types/geometry';
 import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import type { OffsetChain } from '../algorithms/offset-calculation/chain/types';
 import { tessellateSpline } from '../geometry/spline-tessellation';
-import { tessellateEllipse } from '$lib/geometry/ellipse/index';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { tessellateEllipse, type Ellipse } from '$lib/geometry/ellipse/index';
+import { polylineToPoints, type Polyline } from '$lib/geometry/polyline';
 import { getShapeBoundingBox } from '../utils/shape-bounds-utils';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Shape, Spline } from '$lib/types';
+import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
 
 /**
  * Visual Test Module
@@ -298,8 +293,7 @@ function generateGrid(
 function shapeToSVG(shape: Shape): string {
     switch (shape.type) {
         case 'line': {
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
+            const line: Line = shape.geometry as Line;
             return `<line x1="${line.start.x}" y1="${line.start.y}" x2="${line.end.x}" y2="${line.end.y}" />`;
         }
 
@@ -307,14 +301,12 @@ function shapeToSVG(shape: Shape): string {
             return arcToSVG(shape);
 
         case 'circle': {
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle;
+            const circle: Circle = shape.geometry as Circle;
             return `<circle cx="${circle.center.x}" cy="${circle.center.y}" r="${circle.radius}" />`;
         }
 
         case 'polyline': {
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
+            const polyline: Polyline = shape.geometry as Polyline;
             const points: string = polylineToPoints(polyline)
                 .map((p: { x: number; y: number }) => `${p.x},${p.y}`)
                 .join(' ');
@@ -322,8 +314,7 @@ function shapeToSVG(shape: Shape): string {
         }
 
         case 'spline': {
-            const spline: import('$lib/types/geometry').Spline =
-                shape.geometry as Spline;
+            const spline: Spline = shape.geometry as Spline;
             const tessellationResult: { points: { x: number; y: number }[] } =
                 tessellateSpline(spline, {
                     method: 'verb-nurbs',
@@ -336,8 +327,7 @@ function shapeToSVG(shape: Shape): string {
         }
 
         case 'ellipse': {
-            const ellipse: import('$lib/types/geometry').Ellipse =
-                shape.geometry as Ellipse;
+            const ellipse: Ellipse = shape.geometry as Ellipse;
             const points: { x: number; y: number }[] = tessellateEllipse(
                 ellipse,
                 32

@@ -1,4 +1,6 @@
-import type { Point2D, Polyline, Line, Shape } from '../types/geometry';
+import type { Point2D, Shape } from '../types/geometry';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
 import { GeometryType } from '../types/geometry';
@@ -11,7 +13,7 @@ import {
 } from './lead-validation';
 import { isPointInPolygon } from '../utils/geometric-operations';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import {
     GEOMETRIC_PRECISION_TOLERANCE,
     HALF_PERCENT,

@@ -17,7 +17,7 @@ import {
 } from '../../../../lib/types/geometry';
 import type { IntersectionResult } from './types';
 import { generateId } from '../../../utils/id';
-import { createPolylineFromVertices } from '../../../geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
 
 describe('intersections', () => {
     // Helper functions to create test shapes

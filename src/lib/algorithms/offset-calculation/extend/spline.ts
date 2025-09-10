@@ -1,12 +1,9 @@
 import type { Arc } from '../../../geometry/arc';
-import type {
-    Point2D,
-    Spline,
-    Line,
-    Circle,
-    Ellipse,
-    Polyline,
-} from '../../../types/geometry';
+import type { Point2D, Spline } from '../../../types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Circle } from '$lib/geometry/circle';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Polyline } from '$lib/geometry/polyline';
 import { EPSILON, MAX_EXTENSION } from '../../../constants';
 import { pointDistance } from '../trim';
 import verb from 'verb-nurbs';

@@ -1,16 +1,15 @@
 import { describe, it, expect, vi } from 'vitest';
 import { getShapePoints } from './shape-utils';
 import { GeometryType } from '../types/geometry';
-import type {
-    Shape,
-    Line,
-    Polyline,
-    Ellipse,
-    Spline,
-    Geometry,
-} from '../types/geometry';
+import type { Shape, Line, Ellipse, Spline, Geometry } from '../types/geometry';
 import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
+import type { Polyline } from '$lib/geometry/polyline';
+import { generateCirclePoints } from '$lib/geometry/circle';
+import { generateArcPoints } from './arc';
+import { polylineToPoints } from '$lib/geometry/polyline';
+import { tessellateEllipse } from '$lib/geometry/ellipse';
+import { sampleNURBS } from './nurbs';
 
 // Mock the dependencies
 vi.mock('./nurbs', () => ({
@@ -54,8 +53,7 @@ describe('getShapePoints', () => {
         ]);
     });
 
-    it('should call generateCirclePoints for circle shape', async () => {
-        const { generateCirclePoints } = await import('$lib/geometry/circle');
+    it('should call generateCirclePoints for circle shape', () => {
         const mockPoints = [
             { x: 5, y: 0 },
             { x: 0, y: 5 },
@@ -80,8 +78,7 @@ describe('getShapePoints', () => {
         expect(points).toBe(mockPoints);
     });
 
-    it('should call generateArcPoints for arc shape', async () => {
-        const { generateArcPoints } = await import('./arc');
+    it('should call generateArcPoints for arc shape', () => {
         const mockPoints = [
             { x: 5, y: 0 },
             { x: 0, y: 5 },
@@ -108,8 +105,7 @@ describe('getShapePoints', () => {
         expect(points).toBe(mockPoints);
     });
 
-    it('should call polylineToPoints for polyline shape', async () => {
-        const { polylineToPoints } = await import('./polyline');
+    it('should call polylineToPoints for polyline shape', () => {
         const mockPoints = [
             { x: 0, y: 0 },
             { x: 5, y: 5 },
@@ -133,8 +129,7 @@ describe('getShapePoints', () => {
         expect(points).toBe(mockPoints);
     });
 
-    it('should call tessellateEllipse for ellipse shape with correct parameters', async () => {
-        const { tessellateEllipse } = await import('$lib/geometry/ellipse');
+    it('should call tessellateEllipse for ellipse shape with correct parameters', () => {
         const mockPoints = [
             { x: 10, y: 0 },
             { x: 0, y: 5 },
@@ -160,8 +155,7 @@ describe('getShapePoints', () => {
         expect(points).toBe(mockPoints);
     });
 
-    it('should call sampleNURBS for spline shape', async () => {
-        const { sampleNURBS } = await import('./nurbs');
+    it('should call sampleNURBS for spline shape', () => {
         const mockPoints = [
             { x: 0, y: 0 },
             { x: 3, y: 4 },
@@ -195,8 +189,7 @@ describe('getShapePoints', () => {
         expect(points).toBe(mockPoints);
     });
 
-    it('should fallback to fitPoints when NURBS evaluation fails', async () => {
-        const { sampleNURBS } = await import('./nurbs');
+    it('should fallback to fitPoints when NURBS evaluation fails', () => {
         vi.mocked(sampleNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -229,8 +222,7 @@ describe('getShapePoints', () => {
         expect(points).toBe(fitPoints);
     });
 
-    it('should fallback to controlPoints when NURBS fails and no fitPoints', async () => {
-        const { sampleNURBS } = await import('./nurbs');
+    it('should fallback to controlPoints when NURBS fails and no fitPoints', () => {
         vi.mocked(sampleNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -260,8 +252,7 @@ describe('getShapePoints', () => {
         expect(points).toBe(controlPoints);
     });
 
-    it('should return empty array when NURBS fails and no fallback points', async () => {
-        const { sampleNURBS } = await import('./nurbs');
+    it('should return empty array when NURBS fails and no fallback points', () => {
         vi.mocked(sampleNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -285,8 +276,7 @@ describe('getShapePoints', () => {
         expect(points).toEqual([]);
     });
 
-    it('should return empty array for empty fitPoints array', async () => {
-        const { sampleNURBS } = await import('./nurbs');
+    it('should return empty array for empty fitPoints array', () => {
         vi.mocked(sampleNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -359,8 +349,7 @@ describe('getShapePoints', () => {
         ]);
     });
 
-    it('should handle spline with only fitPoints', async () => {
-        const { sampleNURBS } = await import('./nurbs');
+    it('should handle spline with only fitPoints', () => {
         vi.mocked(sampleNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
@@ -391,8 +380,7 @@ describe('getShapePoints', () => {
         expect(points).toBe(fitPoints);
     });
 
-    it('should handle spline with only controlPoints', async () => {
-        const { sampleNURBS } = await import('./nurbs');
+    it('should handle spline with only controlPoints', () => {
         vi.mocked(sampleNURBS).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });

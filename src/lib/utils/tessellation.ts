@@ -3,26 +3,27 @@
  * Based on MetalHeadCAM reference implementation
  */
 
-import type {
-    Shape,
-    Point2D,
-    Line,
-    Circle,
-    Polyline,
-    Ellipse,
-    Spline,
-} from '../../lib/types';
+import type { Shape, Point2D, Spline } from '../../lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../lib/types/geometry';
 import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { sampleNURBS } from '../geometry/nurbs';
-import { polylineToVertices, polylineToPoints } from '../geometry/polyline';
-import { calculateEllipsePoint } from '$lib/geometry/ellipse/index';
+import {
+    polylineToVertices,
+    polylineToPoints,
+    type Polyline,
+} from '$lib/geometry/polyline';
+import {
+    calculateEllipsePoint,
+    type Ellipse,
+} from '$lib/geometry/ellipse/index';
 import {
     OCTAGON_SIDES,
     DEFAULT_TESSELLATION_SEGMENTS,
     HIGH_TESSELLATION_SEGMENTS,
 } from '$lib/geometry/constants';
+import type { Line } from '$lib/geometry/line';
+import type { Circle } from '$lib/geometry/circle';
 
 export function tessellateShape(
     shape: Shape,

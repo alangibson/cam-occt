@@ -4,7 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection/chain-detection';
 import { detectParts } from './part-detection';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Polyline, Shape } from '../types/geometry';
 
 describe('Lead Solid Area Verification - Catch the Error', () => {

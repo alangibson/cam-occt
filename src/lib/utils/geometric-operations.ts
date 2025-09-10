@@ -18,7 +18,7 @@ import type {
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../lib/types/geometry';
 import { sampleNURBS } from '../geometry/nurbs';
-import { polylineToPoints } from '../geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline';
 import { generateEllipsePoints } from '$lib/geometry/ellipse/index';
 import {
     calculatePolygonArea as calculatePolygonAreaShared,
@@ -103,13 +103,11 @@ function extractPolygonFromChain(chain: Chain): Point2D[] | null {
 function getShapePoints(shape: Shape): Point2D[] {
     switch (shape.type) {
         case GeometryType.LINE:
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
+            const line: Line = shape.geometry as Line;
             return [line.start, line.end];
 
         case GeometryType.CIRCLE:
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle;
+            const circle: Circle = shape.geometry as Circle;
             // Create polygon approximation of circle with 32 points
             const points: Point2D[] = [];
             const segments: number = 32;
@@ -153,13 +151,11 @@ function getShapePoints(shape: Shape): Point2D[] {
             return arcPoints;
 
         case GeometryType.POLYLINE:
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
+            const polyline: Polyline = shape.geometry as Polyline;
             return polylineToPoints(polyline);
 
         case GeometryType.ELLIPSE:
-            const ellipse: import('$lib/types/geometry').Ellipse =
-                shape.geometry as Ellipse;
+            const ellipse: Ellipse = shape.geometry as Ellipse;
             // Create polygon approximation of ellipse
             const ellipsePoints: Point2D[] = [];
             const ellipseSegments: number = 64; // More segments for ellipse to capture shape accurately
@@ -204,8 +200,7 @@ function getShapePoints(shape: Shape): Point2D[] {
             return ellipsePoints;
 
         case GeometryType.SPLINE:
-            const spline: import('$lib/types/geometry').Spline =
-                shape.geometry as Spline;
+            const spline: Spline = shape.geometry as Spline;
             try {
                 // Use NURBS sampling for accurate polygon representation
                 return sampleNURBS(spline, ELLIPSE_TESSELLATION_POINTS); // Use more points for geometric accuracy

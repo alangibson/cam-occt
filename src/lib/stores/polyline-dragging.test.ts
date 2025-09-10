@@ -4,7 +4,7 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
-} from '../geometry/polyline';
+} from '$lib/geometry/polyline';
 import {
     type Shape,
     type Point2D,

@@ -5,8 +5,10 @@ import type { Arc } from '../../geometry/arc';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '../../geometry/polyline';
-import type { Line, Polyline, Shape } from '../../types';
+} from '$lib/geometry/polyline';
+import type { Shape } from '../../types';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import { GeometryType } from '../../types/geometry';
 import type { Chain } from '../chain-detection/chain-detection';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';

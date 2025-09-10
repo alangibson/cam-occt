@@ -3,8 +3,11 @@ import { parseDXF } from './dxf-parser';
 import { readFileSync } from 'fs';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
-import { polylineToVertices } from '../geometry/polyline';
-import type { Polyline, Ellipse, PolylineVertex } from '$lib/types/geometry';
+import {
+    polylineToVertices,
+    type PolylineVertex,
+} from '$lib/geometry/polyline';
+import type { Polyline, Ellipse } from '$lib/types/geometry';
 
 describe('DXF Parser - Integration Tests', () => {
     describe('Whitespace handling', () => {

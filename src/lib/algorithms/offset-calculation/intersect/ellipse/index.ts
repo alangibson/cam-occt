@@ -4,7 +4,7 @@ import type {
     Polyline,
     Point2D,
 } from '../../../../types/geometry';
-import { createPolylineFromVertices } from '../../../../geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { IntersectionResult } from '../../chain/types';
 import { EPSILON } from '../../../../constants';
 import { findEllipseEllipseIntersections } from '../ellipse-ellipse/index';

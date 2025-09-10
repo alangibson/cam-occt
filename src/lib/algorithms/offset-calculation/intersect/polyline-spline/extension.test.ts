@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { createPolylineFromVertices } from '../../../../geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import {
     GeometryType,
     type Shape,

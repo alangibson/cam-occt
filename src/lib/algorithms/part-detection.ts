@@ -11,7 +11,9 @@
  */
 
 import type { Chain } from './chain-detection/chain-detection';
-import type { Point2D, Shape, Ellipse, Polyline } from '../../lib/types';
+import type { Point2D, Shape } from '../../lib/types';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Polyline } from '$lib/geometry/polyline';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,

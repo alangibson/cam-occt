@@ -15,7 +15,7 @@ import { findSplineSplineIntersectionsVerb } from '../intersect/spline-spline/in
 import { findSplinePolylineIntersectionsVerb } from '../intersect/polyline-spline/index';
 import { findSplineCircleIntersectionsVerb } from '../intersect/circle-spline';
 import { findSplineArcIntersectionsVerb } from '../intersect/spline-arc/index';
-import { createPolylineFromVertices } from '../../../geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
 
 describe('intersections-spline-verb', () => {
     // Helper function to create test spline

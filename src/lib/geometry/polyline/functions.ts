@@ -1,7 +1,5 @@
 import type {
-    Polyline,
     Point2D,
-    PolylineVertex,
     Shape,
     Line,
     Circle,
@@ -12,8 +10,12 @@ import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
 import { calculateArcPoint, convertBulgeToArc } from '$lib/geometry/arc';
-import { EPSILON } from '../constants';
-import { DIRECTION_CLOCKWISE, DIRECTION_COUNTERCLOCKWISE } from './constants';
+import { EPSILON } from '$lib/constants';
+import {
+    DIRECTION_CLOCKWISE,
+    DIRECTION_COUNTERCLOCKWISE,
+} from '$lib/geometry/constants';
+import type { Polyline, PolylineVertex } from './interfaces';
 
 function createBulgeOrLineShape(
     start: PolylineVertex,

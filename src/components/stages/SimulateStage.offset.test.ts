@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import type { Path } from '../../lib/stores/paths';
 import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
-import type { Shape, Line } from '../../lib/types';
+import type { Shape } from '../../lib/types';
+import type { Line } from '$lib/geometry/line';
 import { OffsetDirection } from '../../lib/algorithms/offset-calculation/offset/types';
 import { LeadType, CutDirection } from '../../lib/types/direction';
 import { GeometryType } from '$lib/types/geometry';
