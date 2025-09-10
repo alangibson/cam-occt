@@ -717,7 +717,7 @@ function generateNativeSplineCommands(
             // Use the executionClockwise from the toolPath if available
             let circleCode = 'G3'; // Default to counterclockwise
             let directionComment = 'counterclockwise (default)';
-            
+
             if (toolPath?.executionClockwise === true) {
                 circleCode = 'G2';
                 directionComment = 'clockwise';

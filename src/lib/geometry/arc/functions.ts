@@ -151,7 +151,7 @@ export function isArc(segment: Geometry): segment is Arc {
  */
 export function generateArcPoints(arc: Arc): Point2D[] {
     const points: Point2D[] = [];
-    
+
     // Use the same logic as getArcPointAt to respect the clockwise property
     let angularSpan: number;
     if (arc.clockwise) {
@@ -176,7 +176,7 @@ export function generateArcPoints(arc: Arc): Point2D[] {
     for (let i: number = 0; i <= segments; i++) {
         const t: number = i / segments;
         let angle: number;
-        
+
         if (arc.clockwise) {
             // Interpolate in clockwise direction (decreasing angle)
             angle = arc.startAngle - t * angularSpan;
@@ -184,7 +184,7 @@ export function generateArcPoints(arc: Arc): Point2D[] {
             // Interpolate in counter-clockwise direction (increasing angle)
             angle = arc.startAngle + t * angularSpan;
         }
-        
+
         points.push({
             x: arc.center.x + arc.radius * Math.cos(angle),
             y: arc.center.y + arc.radius * Math.sin(angle),
