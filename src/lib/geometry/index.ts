@@ -1,4 +1,5 @@
-import type { Shape, Point2D, Line, Ellipse } from '$lib/types/geometry';
+import type { Shape, Line, Ellipse } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import type { Spline } from '$lib/geometry/spline';
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Arc } from '$lib/geometry/arc';
@@ -640,3 +641,6 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
 
     return moved;
 }
+
+// Re-export types from geometry modules
+export type { Point2D, Point3D } from '$lib/geometry/point';

@@ -18,14 +18,8 @@ export type { Polyline } from '$lib/geometry/polyline';
 
 // Geometry type has been moved to geometry/shape module - import from $lib/geometry/shape
 
-export interface Point2D {
-    x: number;
-    y: number;
-}
-
-export interface Point3D extends Point2D {
-    z: number;
-}
+// Point interfaces have been moved to geometry/point module - import from $lib/geometry/point
+export type { Point2D, Point3D } from '$lib/geometry/point';
 
 // BoundingBox interface has been moved to geometry/bounding-box module - import from $lib/geometry/bounding-box
 
