@@ -5,8 +5,9 @@ import {
     reverseLine,
     getLinePointAt,
     isLine,
-} from './line';
-import type { Line, Geometry } from '../types/geometry';
+} from './functions';
+import type { Line } from './interfaces';
+import type { Geometry } from '../../types/geometry';
 import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
 

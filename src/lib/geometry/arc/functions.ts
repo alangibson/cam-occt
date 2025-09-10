@@ -4,9 +4,9 @@ import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '$lib/constants';
 import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle';
 import {
     DEFAULT_TESSELLATION_SEGMENTS,
-    MIN_VERTICES_FOR_LINE,
     PRECISION_DECIMAL_PLACES,
 } from '$lib/geometry/constants';
+import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
 import {
     ARC_TESSELLATION_CHORD_LENGTH,
     DEFAULT_ARC_TESSELLATION_POINTS,

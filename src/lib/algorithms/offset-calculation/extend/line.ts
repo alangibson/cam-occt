@@ -4,7 +4,7 @@ import {
     pointDistance,
     calculateLineParameter,
 } from '../shared/trim-extend-utils';
-import { calculateLineDirectionAndLength } from '../../../utils/geometry-utils';
+import { calculateLineDirectionAndLength } from '../../../geometry/line';
 
 /**
  * Line Extension Module

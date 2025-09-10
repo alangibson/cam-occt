@@ -25,9 +25,9 @@ import {
     SMALL_ANGLE_INCREMENT_DEG,
     DEFAULT_TESSELLATION_SEGMENTS,
     QUARTER_CIRCLE_QUADRANTS,
-    MIN_VERTICES_FOR_LINE,
     LEAD_REACHABLE_DISTANCE_MULTIPLIER,
 } from '../geometry/constants';
+import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
 
 export interface LeadInConfig {
     type: LeadType;

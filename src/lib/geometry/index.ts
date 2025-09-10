@@ -13,7 +13,7 @@ import {
     getLineEndPoint,
     reverseLine,
     getLinePointAt,
-} from './line';
+} from '$lib/geometry/line';
 import {
     getCircleStartPoint,
     getCircleEndPoint,

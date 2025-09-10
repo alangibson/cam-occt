@@ -4,11 +4,6 @@
 export const POLYGON_POINTS_MIN = 3;
 
 /**
- * Minimum number of vertices required to define a line segment
- */
-export const MIN_VERTICES_FOR_LINE = 2;
-
-/**
  * Minimum number of control points required to create a valid spline
  */
 export const MIN_CONTROL_POINTS_FOR_SPLINE = 2;

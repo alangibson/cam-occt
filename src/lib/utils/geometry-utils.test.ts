@@ -12,8 +12,8 @@ import {
     calculatePolygonCentroid,
     isSimplePolygon,
     calculatePolygonPerimeter,
-    calculateLineDirectionAndLength,
 } from './geometry-utils';
+import { calculateLineDirectionAndLength } from '$lib/geometry/line';
 import type { Point2D, Line } from '../../lib/types/geometry';
 
 describe('Geometry Utils', () => {

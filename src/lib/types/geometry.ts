@@ -11,9 +11,11 @@ export enum GeometryType {
 import type { Arc } from '$lib/geometry/arc';
 // Circle interface has been moved to geometry/circle module - import from $lib/geometry/circle
 import type { Circle } from '$lib/geometry/circle';
+// Line interface has been moved to geometry/line module - import from $lib/geometry/line
+import type { Line } from '$lib/geometry/line';
 
 // Re-export for backwards compatibility
-export type { Arc, Circle };
+export type { Arc, Circle, Line };
 
 export type Geometry = Arc | Line | Circle | Ellipse | Polyline | Spline;
 
@@ -29,11 +31,6 @@ export interface Point3D extends Point2D {
 export interface BoundingBox {
     min: Point2D;
     max: Point2D;
-}
-
-export interface Line {
-    start: Point2D;
-    end: Point2D;
 }
 
 export interface PolylineVertex extends Point2D {

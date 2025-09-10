@@ -7,7 +7,7 @@ import {
 } from '../../extend/line';
 import type { LineExtensionResult } from '../../extend/line';
 import { pointDistance } from '../../shared/trim-extend-utils';
-import { calculateLineDirectionAndLength } from '../../../../utils/geometry-utils';
+import { calculateLineDirectionAndLength } from '../../../../geometry/line';
 
 /**
  * Line Fill Module

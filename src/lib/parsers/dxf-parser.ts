@@ -23,9 +23,9 @@ import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
     DEFAULT_SPLINE_DEGREE,
     MIN_CONTROL_POINTS_FOR_SPLINE,
-    MIN_VERTICES_FOR_LINE,
     MIN_VERTICES_FOR_POLYLINE,
 } from '$lib/geometry/constants';
+import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
 
 // DXF INSUNITS constants
 const DXF_INSUNITS_INCHES = 1;
