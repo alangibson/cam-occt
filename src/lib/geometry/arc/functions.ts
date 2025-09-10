@@ -151,16 +151,40 @@ export function isArc(segment: Geometry): segment is Arc {
  */
 export function generateArcPoints(arc: Arc): Point2D[] {
     const points: Point2D[] = [];
-    const totalAngle = arc.endAngle - arc.startAngle;
+    
+    // Use the same logic as getArcPointAt to respect the clockwise property
+    let angularSpan: number;
+    if (arc.clockwise) {
+        // For clockwise arcs, calculate span from start to end in clockwise direction
+        angularSpan = arc.startAngle - arc.endAngle;
+        if (angularSpan <= 0) {
+            angularSpan += FULL_CIRCLE_RADIANS;
+        }
+    } else {
+        // For counter-clockwise arcs, calculate span from start to end in counter-clockwise direction
+        angularSpan = arc.endAngle - arc.startAngle;
+        if (angularSpan <= 0) {
+            angularSpan += FULL_CIRCLE_RADIANS;
+        }
+    }
+
     const segments = Math.max(
         DEFAULT_TESSELLATION_SEGMENTS,
-        Math.ceil(
-            (Math.abs(totalAngle) * arc.radius) / ARC_TESSELLATION_CHORD_LENGTH
-        )
+        Math.ceil((angularSpan * arc.radius) / ARC_TESSELLATION_CHORD_LENGTH)
     );
 
     for (let i: number = 0; i <= segments; i++) {
-        const angle: number = arc.startAngle + (i / segments) * totalAngle;
+        const t: number = i / segments;
+        let angle: number;
+        
+        if (arc.clockwise) {
+            // Interpolate in clockwise direction (decreasing angle)
+            angle = arc.startAngle - t * angularSpan;
+        } else {
+            // Interpolate in counter-clockwise direction (increasing angle)
+            angle = arc.startAngle + t * angularSpan;
+        }
+        
         points.push({
             x: arc.center.x + arc.radius * Math.cos(angle),
             y: arc.center.y + arc.radius * Math.sin(angle),

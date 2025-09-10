@@ -76,6 +76,7 @@
                 cutterCompensation,
                 adaptiveFeedControl,
                 enableTHC,
+                useNativeSplines: true, // Enable G2/G3 arc commands for circles and arcs
             });
 
             // Display the generated G-code

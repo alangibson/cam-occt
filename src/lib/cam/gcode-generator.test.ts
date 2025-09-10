@@ -393,6 +393,7 @@ describe('generateGCode', () => {
             const circleToolPath: ToolPath = {
                 ...mockPath,
                 originalShape: circleShape,
+                executionClockwise: false, // Counterclockwise execution
             };
 
             const gcode = generateGCode([circleToolPath], mockDrawing, {
@@ -404,8 +405,41 @@ describe('generateGCode', () => {
                 useNativeSplines: true,
             });
 
-            expect(gcode).toContain('G2'); // Clockwise full circle
+            expect(gcode).toContain('G3'); // Counterclockwise full circle
             expect(gcode).toContain('Native circle');
+            expect(gcode).toContain('counterclockwise');
+        });
+
+        it('should handle native circle hole commands with correct direction', () => {
+            const circleShape: Shape = {
+                id: 'circle1',
+                type: GeometryType.CIRCLE,
+                layer: 'test',
+                geometry: {
+                    center: { x: 10, y: 10 },
+                    radius: 5,
+                } as Circle,
+            };
+            const holeToolPath: ToolPath = {
+                ...mockPath,
+                originalShape: circleShape,
+                parameters: {
+                    ...mockPath.parameters!,
+                    isHole: true,
+                },
+                executionClockwise: true, // Clockwise execution for holes
+            };
+            const gcode = generateGCode([holeToolPath], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.OFF,
+                useNativeSplines: true,
+            });
+
+            expect(gcode).toContain('G2'); // Clockwise for holes
+            expect(gcode).toContain('clockwise');
         });
 
         it('should handle incomplete spline data with fallback', () => {

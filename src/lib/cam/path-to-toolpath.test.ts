@@ -146,7 +146,8 @@ describe('pathToToolPath', () => {
                 { x: 11, y: 1 },
             ]);
             expect(mockGetShapePoints).toHaveBeenCalledWith(
-                path.calculatedOffset!.offsetShapes[0]
+                path.calculatedOffset!.offsetShapes[0],
+                false
             );
         });
 

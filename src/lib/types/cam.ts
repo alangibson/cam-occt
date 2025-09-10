@@ -49,6 +49,7 @@ export interface ToolPath {
     isRapid: boolean;
     parameters?: CuttingParameters;
     originalShape?: Shape; // Preserve original shape for native G-code generation
+    executionClockwise?: boolean | null; // Execution direction from path (true=CW, false=CCW, null=no direction)
 }
 
 export interface CutSequence {

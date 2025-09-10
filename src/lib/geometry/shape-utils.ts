@@ -18,8 +18,13 @@ import { generateCirclePoints } from './circle';
 
 /**
  * Extract points from a shape for path generation
+ * @param shape - The shape to extract points from
+ * @param forNativeShapes - If true, avoid tessellation for shapes that support native G-code commands
  */
-export function getShapePoints(shape: Shape): Point2D[] {
+export function getShapePoints(
+    shape: Shape,
+    forNativeShapes: boolean = false
+): Point2D[] {
     switch (shape.type) {
         case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
@@ -27,10 +32,31 @@ export function getShapePoints(shape: Shape): Point2D[] {
 
         case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
+            if (forNativeShapes) {
+                // For native G-code generation, return just the start point
+                // The native command generation will handle the full circle
+                return [
+                    { x: circle.center.x + circle.radius, y: circle.center.y },
+                ];
+            }
             return generateCirclePoints(circle.center, circle.radius);
 
         case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
+            if (forNativeShapes) {
+                // For native G-code generation, return start and end points only
+                // The native command generation will handle the arc interpolation
+                const startX =
+                    arc.center.x + arc.radius * Math.cos(arc.startAngle);
+                const startY =
+                    arc.center.y + arc.radius * Math.sin(arc.startAngle);
+                const endX = arc.center.x + arc.radius * Math.cos(arc.endAngle);
+                const endY = arc.center.y + arc.radius * Math.sin(arc.endAngle);
+                return [
+                    { x: startX, y: startY },
+                    { x: endX, y: endY },
+                ];
+            }
             return generateArcPoints(arc);
 
         case GeometryType.POLYLINE:

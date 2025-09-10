@@ -1,4 +1,10 @@
-import { type ToolPath, type Point2D, type Shape, LeadType } from '../types';
+import {
+    type ToolPath,
+    type Point2D,
+    type Shape,
+    LeadType,
+    type Spline,
+} from '../types';
 import type { Path } from '../stores/paths';
 import type { Tool } from '../stores/tools';
 import { getShapePoints } from '../geometry/shape-utils';
@@ -10,6 +16,7 @@ import {
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { DetectedPart } from '../algorithms/part-detection';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '../constants';
+import { GeometryType } from '../types/geometry';
 import {
     DEFAULT_FEED_RATE,
     DEFAULT_PIERCE_HEIGHT,
@@ -44,10 +51,24 @@ export function pathToToolPath(
         shapesToUse = path.calculatedOffset?.offsetShapes || originalShapes;
     }
 
+    // Determine if we can use native shape commands early
+    // Only for single shapes (circles, arcs) that aren't part of complex offset chains
+    const canUseNativeShapes =
+        shapesToUse.length === 1 &&
+        (shapesToUse[0].type === GeometryType.CIRCLE ||
+            shapesToUse[0].type === GeometryType.ARC ||
+            (shapesToUse[0].type === GeometryType.SPLINE &&
+                (shapesToUse[0].geometry as Spline).controlPoints &&
+                (shapesToUse[0].geometry as Spline).controlPoints!.length >=
+                    2));
+
     // Combine all points from the shapes
     const points: Point2D[] = [];
     shapesToUse.forEach((shape) => {
-        const shapePoints: Point2D[] = getShapePoints(shape);
+        const shapePoints: Point2D[] = getShapePoints(
+            shape,
+            canUseNativeShapes
+        );
         // For the first shape, add all points
         // For subsequent shapes, skip the first point to avoid duplication at connection points
         if (points.length === 0) {
@@ -219,6 +240,11 @@ export function pathToToolPath(
         holeUnderspeedPercent: path.holeUnderspeedPercent,
     };
 
+    // Set originalShape for native command generation
+    const originalShape: Shape | undefined = canUseNativeShapes
+        ? shapesToUse[0]
+        : undefined;
+
     return {
         id: path.id,
         shapeId: path.chainId, // Use chainId as the shape reference
@@ -227,9 +253,8 @@ export function pathToToolPath(
         leadOut,
         isRapid: false,
         parameters,
-        // For native spline/arc commands, we'd need the actual shape
-        // This is more complex with offset chains, so omit for now
-        originalShape: undefined,
+        originalShape,
+        executionClockwise: path.executionClockwise,
     };
 }
 

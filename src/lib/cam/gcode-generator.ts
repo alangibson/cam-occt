@@ -446,7 +446,7 @@ function generatePathCommands(
     // Cut path - use native splines if enabled and available
     if (options.useNativeSplines && path.originalShape) {
         commands.push(
-            ...generateNativeSplineCommands(path.originalShape, options)
+            ...generateNativeSplineCommands(path.originalShape, options, path)
         );
     } else {
         // Fallback to linear interpolation
@@ -587,7 +587,8 @@ function generateFooter(options: GCodeOptions): GCodeCommand[] {
 
 function generateNativeSplineCommands(
     shape: Shape,
-    options: GCodeOptions
+    options: GCodeOptions,
+    toolPath?: ToolPath
 ): GCodeCommand[] {
     const commands: GCodeCommand[] = [];
 
@@ -685,8 +686,8 @@ function generateNativeSplineCommands(
             const I: number = arc.center.x - startX;
             const J: number = arc.center.y - startY;
 
-            // Determine direction (clockwise vs counterclockwise)
-            const isClockwise: boolean = arc.endAngle - arc.startAngle < 0;
+            // Use the arc's actual clockwise property from the geometry
+            const isClockwise: boolean = arc.clockwise;
 
             commands.push({
                 code: isClockwise ? 'G2' : 'G3',
@@ -712,16 +713,28 @@ function generateNativeSplineCommands(
                 });
             }
 
-            // Full circle as 360-degree arc
+            // Determine circle direction from the operation's execution direction
+            // Use the executionClockwise from the toolPath if available
+            let circleCode = 'G3'; // Default to counterclockwise
+            let directionComment = 'counterclockwise (default)';
+            
+            if (toolPath?.executionClockwise === true) {
+                circleCode = 'G2';
+                directionComment = 'clockwise';
+            } else if (toolPath?.executionClockwise === false) {
+                circleCode = 'G3';
+                directionComment = 'counterclockwise';
+            }
+
             commands.push({
-                code: 'G2', // Clockwise full circle
+                code: circleCode,
                 parameters: {
                     X: circle.center.x + circle.radius,
                     Y: circle.center.y,
                     I: -circle.radius,
                     J: 0,
                 },
-                comment: 'Full circle',
+                comment: `Full circle (${directionComment})`,
             });
             break;
 
@@ -733,6 +746,13 @@ function generateNativeSplineCommands(
     return commands;
 }
 
+/**
+ * Sanitize comment text by removing parentheses to prevent nested comments
+ */
+function sanitizeComment(comment: string): string {
+    return comment.replace(/[()]/g, '');
+}
+
 function commandsToString(
     commands: GCodeCommand[],
     options: GCodeOptions
@@ -740,7 +760,9 @@ function commandsToString(
     return commands
         .map((cmd) => {
             if (!cmd.code && cmd.comment) {
-                return options.includeComments ? `(${cmd.comment})` : '';
+                return options.includeComments
+                    ? `(${sanitizeComment(cmd.comment)})`
+                    : '';
             }
 
             let line: string = cmd.code;
@@ -780,7 +802,7 @@ function commandsToString(
 
             // Add comment
             if (options.includeComments && cmd.comment) {
-                line += ` (${cmd.comment})`;
+                line += ` (${sanitizeComment(cmd.comment)})`;
             }
 
             return line;
