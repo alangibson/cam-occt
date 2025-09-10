@@ -27,10 +27,8 @@ import {
     type BoundingBox,
 } from '../utils/shape-bounds-utils';
 import { isEllipseClosed } from '$lib/geometry/ellipse/index';
-import {
-    CHAIN_CLOSURE_TOLERANCE,
-    CONTAINMENT_AREA_TOLERANCE,
-} from '../geometry/constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { CONTAINMENT_AREA_TOLERANCE } from '../geometry/constants';
 
 /**
  * Part type enumeration

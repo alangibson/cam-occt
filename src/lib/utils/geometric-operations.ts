@@ -27,7 +27,7 @@ import {
 } from './polygon-geometry-shared';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '../constants';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/index';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 
 export const LEAD_SEGMENT_COUNT = 8;
 

@@ -1,13 +1,11 @@
-import {
-    POLYGON_POINTS_MIN,
-    TOLERANCE_SNAP_MULTIPLIER,
-} from '$lib/geometry/constants.js';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
+import { TOLERANCE_SNAP_MULTIPLIER } from '$lib/geometry/constants.js';
 import type { Point2D } from '../types/geometry.ts';
 import {
     calculateSignedArea,
     getWindingDirection,
     WindingDirection,
-} from '../utils/geometry-utils';
+} from '$lib/geometry/chain';
 import { calculatePerimeter } from '../utils/math-utils';
 import {
     calculateDistanceBetweenPoints,

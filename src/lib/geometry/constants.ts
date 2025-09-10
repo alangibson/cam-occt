@@ -1,7 +1,4 @@
-/**
- * Minimum number of points required to form a valid polygon
- */
-export const POLYGON_POINTS_MIN = 3;
+// POLYGON_POINTS_MIN moved to geometry/chain module
 
 // Spline constants have been moved to geometry/spline module
 // DEFAULT_RETRY_COUNT moved to geometry/spline module
@@ -75,10 +72,7 @@ export const DIRECTION_CLOCKWISE = -1;
  */
 export const STANDARD_GRID_SPACING = 10;
 
-/**
- * Default tolerance for determining if chain endpoints form a closed loop
- */
-export const CHAIN_CLOSURE_TOLERANCE = 0.1;
+// CHAIN_CLOSURE_TOLERANCE moved to geometry/chain module
 
 // Common numerical constants
 /**

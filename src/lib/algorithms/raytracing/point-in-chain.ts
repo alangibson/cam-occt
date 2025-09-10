@@ -20,7 +20,7 @@ import type { RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { isChainClosed } from '../part-detection';
 import { createHorizontalRay } from './utils';
-import { CHAIN_CLOSURE_TOLERANCE } from '../../geometry/constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import {
     countRayLineCrossings,
     countHorizontalRayLineCrossings,

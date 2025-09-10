@@ -7,7 +7,7 @@ import {
     type Shape,
 } from '../../../../types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import { POLYGON_POINTS_MIN } from '../../../../geometry/constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 import { getEllipseParameters } from '$lib/geometry/ellipse/index';
 import { generateUniformKnotVector } from '$lib/geometry/spline';

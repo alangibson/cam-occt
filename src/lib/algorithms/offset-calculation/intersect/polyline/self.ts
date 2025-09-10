@@ -15,7 +15,7 @@ import {
     type IntersectionType,
     DEFAULT_INTERSECTION_TYPE,
 } from '../index';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import { calculatePolylineParameter } from '../polyline-spline/helpers';
 import { EPSILON } from '$lib/constants';
 

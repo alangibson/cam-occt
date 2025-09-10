@@ -12,7 +12,7 @@ import {
     GEOMETRIC_PRECISION_TOLERANCE,
 } from '../constants';
 import { FULL_CIRCLE_DEG } from '$lib/geometry/circle';
-import { POLYGON_POINTS_MIN } from '../geometry/constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 
 /**
  * Lead validation constants for lead distance validation

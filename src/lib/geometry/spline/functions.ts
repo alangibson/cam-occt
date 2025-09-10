@@ -3,13 +3,13 @@ import type { Point2D } from '$lib/types/geometry';
 import type { Spline, ValidationResult } from './interfaces';
 import {
     EPSILON,
-    CHAIN_CLOSURE_TOLERANCE,
     INTERSECTION_TOLERANCE,
     GEOMETRIC_PRECISION_TOLERANCE,
     STANDARD_TESSELLATION_COUNT,
     STANDARD_GRID_SPACING,
     MAX_ITERATIONS,
 } from '$lib/constants/index';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import {
     SPLINE_COMPLEXITY_WEIGHT_MULTIPLIER,
     CLOSED_SPLINE_COMPLEXITY_MULTIPLIER,

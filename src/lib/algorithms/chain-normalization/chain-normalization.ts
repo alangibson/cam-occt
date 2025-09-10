@@ -23,7 +23,7 @@ import {
     getShapeEndPoint,
     reverseShape,
 } from '$lib/geometry';
-import { CHAIN_CLOSURE_TOLERANCE } from '../../constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import {
     DEFAULT_ARRAY_NOT_FOUND_INDEX,
     PRECISION_DECIMAL_PLACES,

@@ -12,7 +12,7 @@ import {
     normalizeVector,
 } from '$lib/geometry';
 import { isPointInsideChainExact } from '../../raytracing/point-in-chain';
-import { CHAIN_CLOSURE_TOLERANCE } from '../../../constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 
 /**
  * Side Detection Module

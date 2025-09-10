@@ -6,7 +6,7 @@
  */
 
 import type { Point2D } from '../types/geometry';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 
 /**
  * Calculate the area of a polygon using the shoelace formula

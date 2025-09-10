@@ -24,10 +24,7 @@ export const INTERSECTION_TOLERANCE: number = 1e-6;
  */
 export const GEOMETRIC_PRECISION_TOLERANCE: number = 0.001;
 
-/**
- * Chain closure tolerance for chain normalization and connectivity detection
- */
-export const CHAIN_CLOSURE_TOLERANCE: number = 0.01;
+// CHAIN_CLOSURE_TOLERANCE moved to geometry/chain module
 
 /**
  * Duplicate filtering tolerance for removing nearly identical intersection points

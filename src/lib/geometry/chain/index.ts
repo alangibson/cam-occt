@@ -1,20 +1,28 @@
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
-import { reverseShape } from '$lib/geometry';
-
 /**
- * Reverses a chain's direction by reversing both the order of shapes
- * and the internal geometry of each shape.
- * This is used when applying cut direction that differs from the chain's natural direction.
+ * Chain and polygon geometry module
  *
- * @param chain - The chain to reverse
- * @returns A new chain with reversed direction
+ * This module provides functionality for working with chains (connected sequences of shapes)
+ * and polygons, including winding direction calculations, area computations, and chain manipulation.
  */
-export function reverseChain(chain: Chain): Chain {
-    return {
-        ...chain,
-        shapes: chain.shapes
-            .slice()
-            .reverse()
-            .map((shape) => reverseShape(shape)),
-    };
-}
+
+// Re-export constants
+export { POLYGON_POINTS_MIN, CHAIN_CLOSURE_TOLERANCE } from './constants';
+
+// Re-export enums
+export { WindingDirection } from './enums';
+
+// Re-export functions
+export {
+    reverseChain,
+    calculateSignedArea,
+    calculatePolygonArea,
+    getWindingDirection,
+    isClockwise,
+    isCounterClockwise,
+    reverseWinding,
+    ensureClockwise,
+    ensureCounterClockwise,
+    calculatePolygonCentroid,
+    isSimplePolygon,
+    calculatePolygonPerimeter,
+} from './functions';

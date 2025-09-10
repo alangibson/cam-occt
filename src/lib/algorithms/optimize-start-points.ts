@@ -14,10 +14,8 @@ import {
 } from './path-optimization-utils';
 import type { Point2D } from '$lib/types';
 import type { StartPointOptimizationParameters } from '../types/algorithm-parameters';
-import {
-    DEFAULT_ARRAY_NOT_FOUND_INDEX,
-    POLYGON_POINTS_MIN,
-} from '../geometry/constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
+import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '../geometry/constants';
 
 /**
  * Result of optimizing a single chain's start point

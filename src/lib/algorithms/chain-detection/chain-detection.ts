@@ -16,11 +16,9 @@ import { calculateSquaredDistance } from '../../utils/math-utils';
 import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { detectCutDirection } from '../cut-direction';
 import { CutDirection } from '../../types/direction';
-import {
-    GEOMETRIC_PRECISION_TOLERANCE,
-    CHAIN_CLOSURE_TOLERANCE,
-} from '../../constants';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/constants';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '../../constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 
 export interface ChainDetectionOptions {
     tolerance: number;

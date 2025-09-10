@@ -10,11 +10,12 @@ import type { Ellipse } from '$lib/geometry/ellipse';
 import { CutDirection } from '../types/direction';
 import { getShapeEndPoint } from '$lib/geometry';
 import { getShapeStartPoint } from '$lib/geometry';
-import { CHAIN_CLOSURE_TOLERANCE, STANDARD_GRID_SPACING } from '../constants';
+import { STANDARD_GRID_SPACING } from '../constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { calculateSquaredDistance } from '../utils/math-utils';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import {
-    POLYGON_POINTS_MIN,
     DEFAULT_TESSELLATION_SEGMENTS,
     QUARTER_CIRCLE_QUADRANTS,
     OCTAGON_SIDES,
