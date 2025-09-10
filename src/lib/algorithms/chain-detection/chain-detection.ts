@@ -5,12 +5,12 @@ import type {
     Circle,
     Polyline,
     Ellipse,
-    Spline,
 } from '../../types';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../types';
 // Unused imports removed to fix lint warnings
-import { evaluateNURBS } from '../../geometry/nurbs';
+import { evaluateNURBS } from '$lib/geometry/spline';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { calculateSquaredDistance } from '../../utils/math-utils';
 import { isEllipseClosed } from '$lib/geometry/ellipse/index';

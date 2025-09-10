@@ -3,9 +3,9 @@ import { findSplineLineIntersectionsVerb } from './index';
 import {
     GeometryType,
     type Shape,
-    type Spline,
     type Line,
 } from '../../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('findSplineLineIntersectionsVerb - Deterministic Behavior', () => {
     // Helper to create a spline shape

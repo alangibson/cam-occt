@@ -3,8 +3,8 @@ import {
     GeometryType,
     type Point2D,
     type Shape,
-    type Spline,
 } from '../../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { FillOptions, FillResult } from '../types';
 import { fillSplineToIntersection } from './index';
 

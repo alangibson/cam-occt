@@ -1,4 +1,5 @@
-import type { Point2D, Spline } from '../types/geometry';
+import type { Point2D } from '../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { Line } from '$lib/geometry/line';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Circle } from '$lib/geometry/circle';
@@ -6,7 +7,7 @@ import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from '../algorithms/offset-calculation/chain/types';
 import verb from 'verb-nurbs';
 import type { CurveCurveIntersection } from 'verb-nurbs';
-import { generateUniformKnotVector } from './nurbs-utils';
+import { generateUniformKnotVector } from '$lib/geometry/spline';
 
 /**
  * Verb-NURBS Integration Utilities

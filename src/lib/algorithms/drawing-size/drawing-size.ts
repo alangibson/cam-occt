@@ -1,5 +1,6 @@
-import type { Drawing, BoundingBox } from '../../types';
-import { getBoundingBoxForShapes } from '../../geometry/bounding-box';
+import type { Drawing } from '../../types';
+import type { BoundingBox } from '$lib/geometry/bounding-box';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box';
 
 export interface DrawingSize {
     width: number;

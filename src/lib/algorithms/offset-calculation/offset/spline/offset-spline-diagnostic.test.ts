@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { offsetSpline } from './spline';
 import { OffsetDirection } from '../types';
-import type { Spline } from '../../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('Spline Offset Diagnostic Tests', () => {
     // Test individual verb-nurbs operations to find the hanging one

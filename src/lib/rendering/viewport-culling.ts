@@ -5,8 +5,9 @@
  * to dramatically improve performance with large drawings.
  */
 
-import type { Point2D, Shape, BoundingBox } from '../types/geometry';
-import { getBoundingBoxForShape } from '../geometry/bounding-box';
+import type { Point2D, Shape } from '../types/geometry';
+import type { BoundingBox } from '$lib/geometry/bounding-box';
+import { getBoundingBoxForShape } from '$lib/geometry/bounding-box';
 import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '../constants';
 /**
  * Default margin for viewport culling in world units

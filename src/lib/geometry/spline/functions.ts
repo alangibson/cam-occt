@@ -1,5 +1,6 @@
 import verb, { type VerbCurve } from 'verb-nurbs';
-import type { Point2D, Spline } from '../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
+import type { Spline, ValidationResult } from './interfaces';
 import {
     EPSILON,
     CHAIN_CLOSURE_TOLERANCE,
@@ -8,7 +9,7 @@ import {
     STANDARD_TESSELLATION_COUNT,
     STANDARD_GRID_SPACING,
     MAX_ITERATIONS,
-} from '../constants/index';
+} from '$lib/constants/index';
 import {
     SPLINE_COMPLEXITY_WEIGHT_MULTIPLIER,
     CLOSED_SPLINE_COMPLEXITY_MULTIPLIER,
@@ -17,9 +18,6 @@ import {
     STANDARD_TESSELLATION_TIMEOUT_MS,
     HIGH_COMPLEXITY_TIMEOUT_MS,
     TESSELLATION_SAMPLE_MULTIPLIER,
-} from './spline/constants';
-import {
-    DEFAULT_ARRAY_NOT_FOUND_INDEX,
     SPLINE_SAMPLE_COUNT,
 } from './constants';
 
@@ -29,25 +27,513 @@ import {
 const MAX_INTENSIVE_ITERATIONS: number = 1000;
 
 /**
- * Create verb curve for sampling and return it with domain
+ * Default index for array operations when not found
  */
-function createVerbCurveForSampling(spline: Spline): {
-    curve: VerbCurve;
-    domain: { min: number; max: number };
-} {
-    const controlPoints3D: number[][] = spline.controlPoints.map((p) => [
-        p.x,
-        p.y,
-        0,
-    ]);
-    const curve: VerbCurve = verb.geom.NurbsCurve.byControlPoints(
-        controlPoints3D,
-        spline.degree
-    );
-    const domain: { min: number; max: number } = curve.domain();
+const DEFAULT_ARRAY_NOT_FOUND_INDEX = -1;
 
-    return { curve, domain };
+// ===== SPLINE BASIC OPERATIONS =====
+
+export function getSplineStartPoint(spline: Spline): Point2D {
+    // Use proper NURBS evaluation at parameter t=0
+    try {
+        return evaluateNURBS(0, spline); // Get exact start point at t=0
+    } catch {
+        // Fallback to first control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+            return spline.fitPoints[0];
+        }
+        if (spline.controlPoints.length > 0) {
+            return spline.controlPoints[0];
+        }
+        // Final fallback to origin if no control points exist
+        return { x: 0, y: 0 };
+    }
 }
+
+export function getSplineEndPoint(spline: Spline): Point2D {
+    // Use proper NURBS evaluation at parameter t=1
+    try {
+        return evaluateNURBS(1, spline); // Get exact end point at t=1
+    } catch {
+        // Fallback to last control point if NURBS evaluation fails
+        if (spline.fitPoints && spline.fitPoints.length > 0) {
+            return spline.fitPoints[spline.fitPoints.length - 1];
+        }
+        if (spline.controlPoints.length > 0) {
+            return spline.controlPoints[spline.controlPoints.length - 1];
+        }
+        // Final fallback to origin if no control points exist
+        return { x: 0, y: 0 };
+    }
+}
+
+export function reverseSpline(spline: Spline): Spline {
+    // Reverse splines by reversing control points and fit points
+    const reversedControlPoints = [...spline.controlPoints].reverse();
+    const reversedFitPoints = spline.fitPoints
+        ? [...spline.fitPoints].reverse()
+        : [];
+
+    // For NURBS, we also need to reverse the knot vector if present
+    let reversedKnots = spline.knots || [];
+    if (reversedKnots.length > 0) {
+        // Reverse and remap knot vector to [0,1] domain
+        const maxKnotValue = reversedKnots[reversedKnots.length - 1];
+        reversedKnots = reversedKnots
+            .map((knot: number) => maxKnotValue - knot)
+            .reverse();
+    }
+
+    return {
+        ...spline,
+        controlPoints: reversedControlPoints,
+        fitPoints: reversedFitPoints,
+        knots: reversedKnots,
+        // Weights don't need reversal, but need to be reordered with control points
+        weights: spline.weights ? [...spline.weights].reverse() : [],
+    };
+}
+
+export function getSplinePointAt(spline: Spline, t: number): Point2D {
+    try {
+        const tessellationResult = tessellateSpline(spline, {
+            method: 'verb-nurbs',
+            numSamples: 200,
+        });
+        if (
+            tessellationResult.success &&
+            tessellationResult.points.length > 1
+        ) {
+            // Use arc-length parameterization for better accuracy
+            return getPointAtParameterWithArcLength(
+                tessellationResult.points,
+                t
+            );
+        }
+    } catch {
+        // Fallback to midpoint if tessellation fails
+    }
+    return { x: 0, y: 0 };
+}
+
+function getPointAtParameterWithArcLength(
+    points: Point2D[],
+    t: number
+): Point2D {
+    if (points.length === 0) return { x: 0, y: 0 };
+    if (points.length === 1) return points[0];
+    if (t <= 0) return points[0];
+    if (t >= 1) return points[points.length - 1];
+
+    // Calculate cumulative arc lengths
+    const arcLengths: number[] = [0];
+    let totalLength = 0;
+
+    for (let i: number = 1; i < points.length; i++) {
+        const dx: number = points[i].x - points[i - 1].x;
+        const dy: number = points[i].y - points[i - 1].y;
+        const segmentLength = Math.sqrt(dx * dx + dy * dy);
+        totalLength += segmentLength;
+        arcLengths.push(totalLength);
+    }
+
+    if (totalLength === 0) return points[0];
+
+    const targetLength = t * totalLength;
+
+    // Find the segment containing the target arc length
+    for (let i: number = 1; i < arcLengths.length; i++) {
+        if (arcLengths[i] >= targetLength) {
+            const segmentStart = arcLengths[i - 1];
+            const segmentEnd = arcLengths[i];
+            const segmentT =
+                (targetLength - segmentStart) / (segmentEnd - segmentStart);
+
+            // Interpolate between the two points
+            const p1 = points[i - 1];
+            const p2 = points[i];
+
+            return {
+                x: p1.x + segmentT * (p2.x - p1.x),
+                y: p1.y + segmentT * (p2.y - p1.y),
+            };
+        }
+    }
+
+    return points[points.length - 1];
+}
+
+export function normalizeSplineWeights(spline: Spline): Spline {
+    // Ensure spline has valid weights array matching control points length
+    const needsWeights =
+        !spline.weights ||
+        spline.weights.length === 0 ||
+        spline.weights.length !== spline.controlPoints.length;
+
+    if (needsWeights) {
+        return {
+            ...spline,
+            weights: spline.controlPoints.map(() => 1),
+        };
+    }
+
+    return spline;
+}
+
+// ===== NURBS EVALUATION FUNCTIONS =====
+
+/**
+ * Find the knot span index for a given parameter value
+ * @param n Number of control points - 1
+ * @param p Degree of the curve
+ * @param u Parameter value
+ * @param knots Knot vector
+ * @returns Knot span index
+ */
+function findKnotSpan(
+    n: number,
+    p: number,
+    u: number,
+    knots: number[]
+): number {
+    // Special case: if u equals the last knot value
+    if (u >= knots[n + 1]) {
+        return n;
+    }
+
+    // Binary search
+    let low: number = p;
+    let high: number = n + 1;
+    let mid: number = Math.floor((low + high) / 2);
+
+    while (u < knots[mid] || u >= knots[mid + 1]) {
+        if (u < knots[mid]) {
+            high = mid;
+        } else {
+            low = mid;
+        }
+        mid = Math.floor((low + high) / 2);
+    }
+
+    return mid;
+}
+
+/**
+ * Compute the non-vanishing basis functions
+ * @param i Knot span index
+ * @param u Parameter value
+ * @param p Degree
+ * @param knots Knot vector
+ * @returns Array of basis function values
+ */
+function basisFunctions(
+    i: number,
+    u: number,
+    p: number,
+    knots: number[]
+): number[] {
+    const N: number[] = new Array(p + 1);
+    const left: number[] = new Array(p + 1);
+    const right: number[] = new Array(p + 1);
+
+    N[0] = 1.0;
+
+    for (let j: number = 1; j <= p; j++) {
+        left[j] = u - knots[i + 1 - j];
+        right[j] = knots[i + j] - u;
+        let saved: number = 0.0;
+
+        for (let r: number = 0; r < j; r++) {
+            const temp: number = N[r] / (right[r + 1] + left[j - r]);
+            N[r] = saved + right[r + 1] * temp;
+            saved = left[j - r] * temp;
+        }
+
+        N[j] = saved;
+    }
+
+    return N;
+}
+
+/**
+ * Evaluate a point on a NURBS curve
+ * @param u Parameter value (0 to 1)
+ * @param spline Spline geometry
+ * @returns Point on the curve
+ */
+export function evaluateNURBS(u: number, spline: Spline): Point2D {
+    const n: number = spline.controlPoints.length - 1;
+    const p: number = spline.degree;
+
+    // Get or generate knot vector
+    let knots: number[] = spline.knots;
+    if (!knots || knots.length === 0) {
+        // Generate uniform knot vector if not provided
+        knots = generateUniformKnotVector_deprecated(n, p);
+    }
+
+    // Map u from [0,1] to knot range
+    const uMin: number = knots[p];
+    const uMax: number = knots[n + 1];
+    const mappedU: number = uMin + u * (uMax - uMin);
+
+    // Find knot span
+    const span: number = findKnotSpan(n, p, mappedU, knots);
+
+    // Compute basis functions
+    const N: number[] = basisFunctions(span, mappedU, p, knots);
+
+    // Get weights or use default
+    const weights: number[] =
+        spline.weights && spline.weights.length > 0
+            ? spline.weights
+            : new Array(spline.controlPoints.length).fill(1.0);
+
+    // Compute curve point
+    let x: number = 0;
+    let y: number = 0;
+    let w: number = 0;
+
+    for (let j: number = 0; j <= p; j++) {
+        const index: number = span - p + j;
+        const weight: number = weights[index];
+        const basis: number = N[j] * weight;
+
+        x += spline.controlPoints[index].x * basis;
+        y += spline.controlPoints[index].y * basis;
+        w += basis;
+    }
+
+    // Divide by weight sum for rational curves
+    if (w !== 0) {
+        x /= w;
+        y /= w;
+    }
+
+    return { x, y };
+}
+
+/**
+ * Generate a uniform knot vector
+ * @deprecated Use generateUniformKnotVector from nurbs-utils instead
+ * @param n Number of control points - 1
+ * @param p Degree
+ * @returns Knot vector
+ */
+function generateUniformKnotVector_deprecated(n: number, p: number): number[] {
+    // Note: This function has different parameter semantics than the new one
+    // n = numControlPoints - 1, whereas new function takes numControlPoints directly
+    return generateUniformKnotVector(n + 1, p);
+}
+
+/**
+ * Sample points along a NURBS curve
+ * @param spline Spline geometry
+ * @param numSamples Number of points to sample
+ * @returns Array of sampled points
+ */
+export function sampleNURBS(
+    spline: Spline,
+    numSamples: number = SPLINE_SAMPLE_COUNT
+): Point2D[] {
+    const points: Point2D[] = [];
+
+    // If we have fit points and they're dense enough, use them
+    if (spline.fitPoints && spline.fitPoints.length >= numSamples) {
+        return spline.fitPoints;
+    }
+
+    // Otherwise, evaluate the NURBS curve
+    for (let i: number = 0; i <= numSamples; i++) {
+        const u: number = i / numSamples;
+        points.push(evaluateNURBS(u, spline));
+    }
+
+    return points;
+}
+
+/**
+ * Evaluate NURBS curve derivative at a parameter value
+ * @param u Parameter value (0 to 1)
+ * @param spline Spline geometry
+ * @param order Derivative order (1 for first derivative, 2 for second, etc.)
+ * @returns Derivative vector
+ */
+export function evaluateNURBSDerivative(
+    u: number,
+    spline: Spline,
+    order: number = 1
+): Point2D {
+    // Simple finite difference approximation for now
+    const h: number = 0.0001;
+
+    if (order === 1) {
+        const p1: Point2D = evaluateNURBS(Math.max(0, u - h), spline);
+        const p2: Point2D = evaluateNURBS(Math.min(1, u + h), spline);
+
+        return {
+            x: (p2.x - p1.x) / (2 * h),
+            y: (p2.y - p1.y) / (2 * h),
+        };
+    }
+
+    // Higher order derivatives can be implemented if needed
+    throw new Error(`Derivative order ${order} not implemented`);
+}
+
+/**
+ * Get the parameter range for a NURBS curve
+ * @param spline Spline geometry
+ * @returns [start, end] parameter values
+ */
+export function getNURBSParameterRange(spline: Spline): [number, number] {
+    const n: number = spline.controlPoints.length - 1;
+    const p: number = spline.degree;
+
+    let knots: number[] = spline.knots;
+    if (!knots || knots.length === 0) {
+        knots = generateUniformKnotVector_deprecated(n, p);
+    }
+
+    return [knots[p], knots[n + 1]];
+}
+
+// ===== NURBS UTILITIES FUNCTIONS =====
+
+/**
+ * Generate a uniform knot vector for NURBS curve
+ * This is the standard implementation that consolidates all duplicates across the codebase
+ *
+ * @param numControlPoints Number of control points
+ * @param degree Degree of the curve
+ * @returns Array of knot values forming a uniform clamped knot vector
+ */
+export function generateUniformKnotVector(
+    numControlPoints: number,
+    degree: number
+): number[] {
+    const validKnots: number[] = [];
+
+    // Add degree + 1 zeros at the start (clamping)
+    for (let i = 0; i <= degree; i++) {
+        validKnots.push(0);
+    }
+
+    // Add internal knots uniformly spaced
+    const numInternalKnots = numControlPoints - degree - 1;
+    for (let i = 1; i <= numInternalKnots; i++) {
+        validKnots.push(i / (numInternalKnots + 1));
+    }
+
+    // Add degree + 1 ones at the end (clamping)
+    for (let i = 0; i <= degree; i++) {
+        validKnots.push(1);
+    }
+
+    return validKnots;
+}
+
+/**
+ * Generate a valid knot vector for NURBS curve - alias for backward compatibility
+ * @param controlPointsLength Number of control points
+ * @param degree Degree of the curve
+ * @returns Array of knot values
+ */
+export function generateValidKnotVector(
+    controlPointsLength: number,
+    degree: number
+): number[] {
+    return generateUniformKnotVector(controlPointsLength, degree);
+}
+
+/**
+ * Validate a knot vector for NURBS curve
+ * Checks if the knot vector has the correct length and is properly formed
+ *
+ * @param knots Knot vector to validate
+ * @param numControlPoints Number of control points
+ * @param degree Curve degree
+ * @returns Validation result
+ */
+export function validateKnotVector(
+    knots: number[],
+    numControlPoints: number,
+    degree: number
+): ValidationResult {
+    const expectedLength = numControlPoints + degree + 1;
+
+    if (!knots || !Array.isArray(knots)) {
+        return { isValid: false, error: 'Knot vector must be an array' };
+    }
+
+    if (knots.length !== expectedLength) {
+        return {
+            isValid: false,
+            error: `Knot vector length ${knots.length} does not match expected length ${expectedLength}`,
+        };
+    }
+
+    // Check if knots are non-decreasing
+    for (let i = 1; i < knots.length; i++) {
+        if (knots[i] < knots[i - 1]) {
+            return {
+                isValid: false,
+                error: 'Knot vector must be non-decreasing',
+            };
+        }
+    }
+
+    // Check for proper clamping (first and last knots should have multiplicity degree + 1)
+    const firstKnot = knots[0];
+    const lastKnot = knots[knots.length - 1];
+
+    let firstMultiplicity = 0;
+    let lastMultiplicity = 0;
+
+    for (let i = 0; i < knots.length && knots[i] === firstKnot; i++) {
+        firstMultiplicity++;
+    }
+
+    for (let i = knots.length - 1; i >= 0 && knots[i] === lastKnot; i--) {
+        lastMultiplicity++;
+    }
+
+    if (firstMultiplicity < degree + 1) {
+        return {
+            isValid: false,
+            error: `First knot multiplicity ${firstMultiplicity} is less than degree + 1 (${degree + 1})`,
+        };
+    }
+
+    if (lastMultiplicity < degree + 1) {
+        return {
+            isValid: false,
+            error: `Last knot multiplicity ${lastMultiplicity} is less than degree + 1 (${degree + 1})`,
+        };
+    }
+
+    return { isValid: true };
+}
+
+/**
+ * Repair an invalid knot vector by generating a new uniform knot vector
+ * This function should be used when validation fails
+ *
+ * @param knots Original knot vector (may be invalid)
+ * @param numControlPoints Number of control points
+ * @param degree Curve degree
+ * @returns New valid uniform knot vector
+ */
+export function repairKnotVector(
+    knots: number[],
+    numControlPoints: number,
+    degree: number
+): number[] {
+    // Always generate a fresh uniform knot vector for repairs
+    return generateUniformKnotVector(numControlPoints, degree);
+}
+
+// ===== TESSELLATION FUNCTIONS =====
 
 /**
  * Configuration for spline tessellation
@@ -104,6 +590,27 @@ const DEFAULT_CONFIG: Required<SplineTessellationConfig> = {
     minSamples: STANDARD_GRID_SPACING,
     timeoutMs: STANDARD_TESSELLATION_TIMEOUT_MS,
 };
+
+/**
+ * Create verb curve for sampling and return it with domain
+ */
+function createVerbCurveForSampling(spline: Spline): {
+    curve: VerbCurve;
+    domain: { min: number; max: number };
+} {
+    const controlPoints3D: number[][] = spline.controlPoints.map((p) => [
+        p.x,
+        p.y,
+        0,
+    ]);
+    const curve: VerbCurve = verb.geom.NurbsCurve.byControlPoints(
+        controlPoints3D,
+        spline.degree
+    );
+    const domain: { min: number; max: number } = curve.domain();
+
+    return { curve, domain };
+}
 
 /**
  * Tessellate a spline into a polyline approximation with multiple fallback strategies

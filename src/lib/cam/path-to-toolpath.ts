@@ -1,13 +1,8 @@
-import {
-    type ToolPath,
-    type Point2D,
-    type Shape,
-    LeadType,
-    type Spline,
-} from '../types';
+import { type ToolPath, type Point2D, type Shape, LeadType } from '../types';
+import type { Spline } from '$lib/geometry/spline';
 import type { Path } from '../stores/paths';
 import type { Tool } from '../stores/tools';
-import { getShapePoints } from '../geometry/shape-utils';
+import { getShapePoints } from '$lib/geometry/shape';
 import {
     hasValidCachedLeads,
     getCachedLeadGeometry,

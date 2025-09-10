@@ -1,5 +1,6 @@
 import type { Chain } from './chain-detection/chain-detection';
-import type { Shape, Point2D, Spline } from '../types/geometry';
+import type { Shape, Point2D } from '../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '../types/geometry';
 import type { Arc } from '$lib/geometry/arc';
 import type { Line } from '$lib/geometry/line';

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Spline, Point2D } from '../../../types/geometry';
+import type { Point2D } from '../../../types/geometry';
 import type { IntersectionResult } from '../chain/types';
 import verb from 'verb-nurbs';
 import {
@@ -9,6 +9,7 @@ import {
     processSplineIntersectionWithRetry,
     selectBestIntersectionResult,
 } from './spline-intersection-utils';
+import type { Spline } from '$lib/geometry/spline';
 
 // Mock verb-nurbs
 vi.mock('verb-nurbs', () => ({

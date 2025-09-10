@@ -10,21 +10,21 @@ import {
     combineBoundingBoxes,
     getBoundingBoxForShapes,
     calculateDynamicTolerance,
-} from './bounding-box';
-import { createPolylineFromVertices } from './polyline';
-import { GeometryType } from '../types/geometry';
+} from './functions';
+import { createPolylineFromVertices } from '$lib/geometry/polyline';
+import { GeometryType } from '$lib/types/geometry';
 import type {
     Line,
     Circle,
     Polyline,
     Ellipse,
-    Spline,
     Shape,
-    BoundingBox,
     Point2D,
     Geometry,
-} from '../types/geometry';
+} from '$lib/types/geometry';
+import type { BoundingBox } from './interfaces';
 import type { Arc } from '$lib/geometry/arc';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('getBoundingBoxForLine', () => {
     it('calculates bounding box for horizontal line', () => {

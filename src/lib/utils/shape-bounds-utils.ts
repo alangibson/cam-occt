@@ -7,22 +7,15 @@
  */
 
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import type {
-    Point2D,
-    Shape,
-    Line,
-    Polyline,
-    Ellipse,
-    Spline,
-    Circle,
-} from '../types';
+import type { Point2D, Shape, Line, Polyline, Ellipse, Circle } from '../types';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { sampleNURBS } from '../geometry/nurbs';
+import { sampleNURBS } from '$lib/geometry/spline';
 import { HIGH_TESSELLATION_SEGMENTS } from '../geometry/constants';
 import { STANDARD_TESSELLATION_COUNT } from '$lib/constants';
-import { getBoundingBoxForArc } from '../geometry/bounding-box';
+import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
 
 export interface BoundingBox {
     minX: number;

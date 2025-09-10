@@ -16,8 +16,8 @@ import {
     type Line,
     type Polyline,
     type Shape,
-    type Spline,
 } from '../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import { offsetArc } from '../offset/arc/arc';
 import { offsetEllipse } from '../offset/ellipse/ellipse';
 import { offsetLine } from '../offset/line/line';

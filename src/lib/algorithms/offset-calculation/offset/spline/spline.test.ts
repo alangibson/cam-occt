@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { offsetSpline, splitVerbCurve } from './spline';
 import { OffsetDirection } from '../types';
-import type { Spline } from '../../../../types/geometry';
 import verb from 'verb-nurbs';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('offsetSpline', () => {
     const testSpline: Spline = {

@@ -8,11 +8,12 @@ import {
     type ShapeBounds,
 } from './viewport-culling';
 import { GeometryType } from '../types/geometry';
-import type { Shape, Line, BoundingBox } from '../types/geometry';
+import type { Shape, Line } from '../types/geometry';
+import type { BoundingBox } from '$lib/geometry/bounding-box';
 import type { Circle } from '$lib/geometry/circle';
 
 // Mock the bounding box function
-vi.mock('../geometry/bounding-box', () => ({
+vi.mock('$lib/geometry/bounding-box', () => ({
     getBoundingBoxForShape: vi.fn(),
 }));
 

@@ -7,10 +7,11 @@ import type {
 } from '../../lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
-import type { Point2D, Shape, Spline } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/types/geometry';
 import { CutterCompensation } from '../../lib/types';
-import { DEFAULT_SPLINE_DEGREE } from '../geometry/constants';
+import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 import {
     DEFAULT_PIERCE_HEIGHT,
     DEFAULT_PIERCE_DELAY,

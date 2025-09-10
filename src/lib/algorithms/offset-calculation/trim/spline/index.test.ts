@@ -1,12 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-    GeometryType,
-    type Shape,
-    type Spline,
-} from '../../../../types/geometry';
+import { GeometryType, type Shape } from '../../../../types/geometry';
 import { trimSpline } from './index';
 import { type KeepSide } from '../types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
+import type { Spline } from '$lib/geometry/spline';
 
 // Mock dependencies
 vi.mock('$lib/utils/id', () => ({

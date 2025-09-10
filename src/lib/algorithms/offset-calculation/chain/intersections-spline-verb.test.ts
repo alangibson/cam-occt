@@ -5,10 +5,10 @@ import type {
     Point2D,
     Line,
     Circle,
-    Spline,
     Polyline,
     Ellipse,
 } from '../../../../lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '../../../../lib/types/geometry';
 import { findSplineLineIntersectionsVerb } from '../intersect/line-spline/index';
 import { findSplineSplineIntersectionsVerb } from '../intersect/spline-spline/index';
@@ -63,15 +63,14 @@ describe('intersections-spline-verb', () => {
     describe('findSplineLineIntersectionsVerb', () => {
         it('should find intersection between straight spline and horizontal line', () => {
             // Create a simple degree-1 spline (essentially a line from (0,0) to (2,2))
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 0 },
-                        { x: 2, y: 2 },
-                    ],
-                    1,
-                    [0, 0, 1, 1]
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 0 },
+                    { x: 2, y: 2 },
+                ],
+                1,
+                [0, 0, 1, 1]
+            );
 
             const line: Line = {
                 start: { x: 0, y: 1 },
@@ -93,15 +92,14 @@ describe('intersections-spline-verb', () => {
 
         it('should find no intersections for parallel spline and line', () => {
             // Create horizontal spline
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 1 },
-                        { x: 2, y: 1 },
-                    ],
-                    1,
-                    [0, 0, 1, 1]
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 1 },
+                    { x: 2, y: 1 },
+                ],
+                1,
+                [0, 0, 1, 1]
+            );
 
             // Parallel horizontal line
             const line: Line = {
@@ -119,15 +117,14 @@ describe('intersections-spline-verb', () => {
 
         it('should handle spline with missing knots', () => {
             // Quadratic spline without explicit knots
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 0 },
-                        { x: 1, y: 2 },
-                        { x: 2, y: 0 },
-                    ],
-                    2
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 0 },
+                    { x: 1, y: 2 },
+                    { x: 2, y: 0 },
+                ],
+                2
+            );
 
             const line: Line = {
                 start: { x: 0, y: 1 },
@@ -145,15 +142,14 @@ describe('intersections-spline-verb', () => {
         });
 
         it('should handle parameter swapping', () => {
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 0 },
-                        { x: 2, y: 2 },
-                    ],
-                    1,
-                    [0, 0, 1, 1]
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 0 },
+                    { x: 2, y: 2 },
+                ],
+                1,
+                [0, 0, 1, 1]
+            );
 
             const line: Line = {
                 start: { x: 0, y: 1 },
@@ -194,14 +190,13 @@ describe('intersections-spline-verb', () => {
             // The actual arc-spline intersections may have issues with verb-nurbs API
             // This is a known issue with the verb-nurbs Arc constructor
             // For now, we verify the function signature is correct
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 0 },
-                        { x: 1, y: 1 },
-                    ],
-                    1
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 0 },
+                    { x: 1, y: 1 },
+                ],
+                1
+            );
             const arc: Arc = {
                 center: { x: 0, y: 0 },
                 radius: 1,
@@ -230,14 +225,13 @@ describe('intersections-spline-verb', () => {
             // The actual circle-spline intersections may have issues with verb-nurbs API
             // This is a known issue with the verb-nurbs Circle constructor
             // For now, we verify the function signature is correct
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 0 },
-                        { x: 1, y: 1 },
-                    ],
-                    1
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 0 },
+                    { x: 1, y: 1 },
+                ],
+                1
+            );
             const circle: Circle = { center: { x: 0, y: 0 }, radius: 1 };
 
             // Function should accept the correct parameters without throwing
@@ -349,15 +343,14 @@ describe('intersections-spline-verb', () => {
     describe('findSplinePolylineIntersectionsVerb', () => {
         it('should find intersections between diagonal spline and rectangular polyline', () => {
             // Diagonal spline from bottom-left to top-right
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 0 },
-                        { x: 2, y: 2 },
-                    ],
-                    1,
-                    [0, 0, 1, 1]
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 0 },
+                    { x: 2, y: 2 },
+                ],
+                1,
+                [0, 0, 1, 1]
+            );
 
             // Square polyline
             const polylineShape = createPolylineFromVertices(
@@ -393,15 +386,14 @@ describe('intersections-spline-verb', () => {
 
         it('should handle closed polyline with closing segment', () => {
             // Horizontal spline
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: -1, y: 1 },
-                        { x: 3, y: 1 },
-                    ],
-                    1,
-                    [0, 0, 1, 1]
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: -1, y: 1 },
+                    { x: 3, y: 1 },
+                ],
+                1,
+                [0, 0, 1, 1]
+            );
 
             // Square closed polyline
             const polylineShape = createPolylineFromVertices(
@@ -432,15 +424,14 @@ describe('intersections-spline-verb', () => {
         });
 
         it('should handle parameter swapping', () => {
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 0 },
-                        { x: 1, y: 1 },
-                    ],
-                    1,
-                    [0, 0, 1, 1]
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 0 },
+                    { x: 1, y: 1 },
+                ],
+                1,
+                [0, 0, 1, 1]
+            );
 
             const polylineShape = createPolylineFromVertices(
                 [
@@ -479,15 +470,14 @@ describe('intersections-spline-verb', () => {
 
         it('should find no intersections when spline and polyline do not cross', () => {
             // Horizontal spline at y=3
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 3 },
-                        { x: 2, y: 3 },
-                    ],
-                    1,
-                    [0, 0, 1, 1]
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 3 },
+                    { x: 2, y: 3 },
+                ],
+                1,
+                [0, 0, 1, 1]
+            );
 
             // Square polyline from (0,0) to (2,2)
             const polylineShape = createPolylineFromVertices(
@@ -561,8 +551,10 @@ describe('intersections-spline-verb', () => {
 
             // Test different degrees
             [1, 2, 3].forEach((degree) => {
-                const spline: import('$lib/types/geometry').Spline =
-                    createTestSpline(baseControlPoints, degree);
+                const spline: Spline = createTestSpline(
+                    baseControlPoints,
+                    degree
+                );
 
                 expect(() => {
                     findSplineLineIntersectionsVerb(
@@ -595,15 +587,14 @@ describe('intersections-spline-verb', () => {
 
         it('should produce consistent intersection results', () => {
             // Test that same input produces same output
-            const spline: import('$lib/types/geometry').Spline =
-                createTestSpline(
-                    [
-                        { x: 0, y: 0 },
-                        { x: 2, y: 2 },
-                    ],
-                    1,
-                    [0, 0, 1, 1]
-                );
+            const spline: Spline = createTestSpline(
+                [
+                    { x: 0, y: 0 },
+                    { x: 2, y: 2 },
+                ],
+                1,
+                [0, 0, 1, 1]
+            );
 
             const line: Line = { start: { x: 0, y: 1 }, end: { x: 2, y: 1 } };
 

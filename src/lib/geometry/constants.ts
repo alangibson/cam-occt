@@ -3,21 +3,10 @@
  */
 export const POLYGON_POINTS_MIN = 3;
 
-/**
- * Minimum number of control points required to create a valid spline
- */
-export const MIN_CONTROL_POINTS_FOR_SPLINE = 2;
+// Spline constants have been moved to geometry/spline module
+// DEFAULT_RETRY_COUNT moved to geometry/spline module
 
-/**
- * Default degree for spline/NURBS curves (cubic splines)
- */
-export const DEFAULT_SPLINE_DEGREE = 3;
-
-/**
- * Angular measurement for 270 degrees in radians (3π/2) - bounding box calculations
- */
-// eslint-disable-next-line no-magic-numbers
-export const THREE_HALVES_PI = (3 * Math.PI) / 2;
+// THREE_HALVES_PI moved to geometry/bounding-box module
 
 /**
  * Number of quadrants in a quarter circle for arc/lead calculations
@@ -44,10 +33,7 @@ export const DEFAULT_TESSELLATION_SEGMENTS = 16;
  */
 export const HIGH_TESSELLATION_SEGMENTS = 32;
 
-/**
- * Number of sample points for spline tessellation and ray intersection
- */
-export const SPLINE_SAMPLE_COUNT = 100;
+// SPLINE_SAMPLE_COUNT moved to geometry/spline module
 
 /**
  * Standard return value for array search operations when element not found
@@ -111,10 +97,7 @@ export const CONFIDENCE_THRESHOLD = 0.8;
  * High confidence threshold for critical validations (95%)
  */
 export const CONFIDENCE_HIGH_THRESHOLD = 0.95;
-/**
- * Number of samples for validation testing
- */
-export const VALIDATION_SAMPLE_COUNT = 50;
+// VALIDATION_SAMPLE_COUNT moved to geometry/spline module
 /**
  * Decimal precision for coordinate rounding
  */
@@ -147,7 +130,4 @@ export const PRECISION_TOLERANCE_MULTIPLIER = 10;
  */
 export const DEFAULT_EXTENSION_LENGTH = 1000;
 
-/**
- * Default retry count for intersection operations
- */
-export const DEFAULT_RETRY_COUNT = 3;
+// DEFAULT_RETRY_COUNT moved to geometry/spline module

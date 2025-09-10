@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { Spline, Point2D } from '../../types/geometry';
+import type { Point2D } from '../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { Ray } from './types';
 import {
     countRaySplineCrossings,
@@ -83,8 +84,10 @@ describe('Ray-Spline Intersection', () => {
         });
 
         it('should count 0 crossings for ray missing spline', () => {
-            const spline: import('$lib/types/geometry').Spline =
-                createLinearSpline({ x: 5, y: 5 }, { x: 10, y: 10 });
+            const spline: Spline = createLinearSpline(
+                { x: 5, y: 5 },
+                { x: 10, y: 10 }
+            );
 
             const ray: Ray = {
                 origin: { x: 0, y: 0 },
@@ -190,8 +193,10 @@ describe('Ray-Spline Intersection', () => {
         });
 
         it('should return empty array for no intersections', () => {
-            const spline: import('$lib/types/geometry').Spline =
-                createLinearSpline({ x: 10, y: 10 }, { x: 15, y: 15 });
+            const spline: Spline = createLinearSpline(
+                { x: 10, y: 10 },
+                { x: 15, y: 15 }
+            );
 
             const ray: Ray = {
                 origin: { x: 0, y: 0 },
@@ -394,8 +399,10 @@ describe('Ray-Spline Intersection', () => {
         });
 
         it('should handle degenerate ray direction', () => {
-            const spline: import('$lib/types/geometry').Spline =
-                createLinearSpline({ x: 0, y: 0 }, { x: 1, y: 1 });
+            const spline: Spline = createLinearSpline(
+                { x: 0, y: 0 },
+                { x: 1, y: 1 }
+            );
 
             const degenerateRay: Ray = {
                 origin: { x: 0.5, y: 0.5 },

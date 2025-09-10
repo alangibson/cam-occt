@@ -6,8 +6,8 @@ import type {
     Circle,
     Polyline,
     Ellipse,
-    Spline,
 } from '../../lib/types';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { getShapePointsForBounds } from '../utils/shape-bounds-utils';
 

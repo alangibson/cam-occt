@@ -1,8 +1,5 @@
-import type {
-    Shape,
-    Polyline,
-    Spline,
-} from '../../../../../lib/types/geometry';
+import type { Shape, Polyline } from '../../../../../lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { IntersectionResult } from '../../chain/types';
 import verb from 'verb-nurbs';
 import { createVerbCurveFromSpline } from '../../../../utils/verb-integration-utils';

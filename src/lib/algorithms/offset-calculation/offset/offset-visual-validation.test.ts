@@ -17,7 +17,6 @@ import {
     type Point2D,
     type Polyline,
     type Shape,
-    type Spline,
 } from '../../../types/geometry';
 import { calculateSignedArea } from '../../../utils/geometry-utils';
 import type { Chain } from '../../chain-detection/chain-detection';
@@ -31,6 +30,7 @@ import { offsetLine } from './line/line';
 import { offsetPolyline } from './polyline/polyline';
 import { offsetSpline, tessellateVerbCurve } from './spline/spline';
 import { OffsetDirection } from './types';
+import type { Spline } from '$lib/geometry/spline';
 
 // Type guard function to check if a shape has polyline geometry
 function isPolylineShape(

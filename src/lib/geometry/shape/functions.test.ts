@@ -1,18 +1,21 @@
 import { describe, it, expect, vi } from 'vitest';
-import { getShapePoints } from './shape-utils';
-import { GeometryType } from '../types/geometry';
-import type { Shape, Line, Ellipse, Spline, Geometry } from '../types/geometry';
+import { getShapePoints } from './functions';
+import { GeometryType } from './enums';
+import type { Shape } from './interfaces';
+import type { Line } from '$lib/geometry/line';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Spline } from '$lib/geometry/spline';
 import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
 import type { Polyline } from '$lib/geometry/polyline';
 import { generateCirclePoints } from '$lib/geometry/circle';
-import { generateArcPoints } from './arc';
+import { generateArcPoints } from '$lib/geometry/arc';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { tessellateEllipse } from '$lib/geometry/ellipse';
-import { sampleNURBS } from './nurbs';
+import { sampleNURBS } from '$lib/geometry/spline';
 
 // Mock the dependencies
-vi.mock('./nurbs', () => ({
+vi.mock('$lib/geometry/spline', () => ({
     sampleNURBS: vi.fn(),
 }));
 
@@ -21,7 +24,7 @@ vi.mock('$lib/geometry/ellipse', () => ({
     ELLIPSE_TESSELLATION_POINTS: 64,
 }));
 
-vi.mock('./polyline', () => ({
+vi.mock('$lib/geometry/polyline', () => ({
     polylineToPoints: vi.fn(),
 }));
 
@@ -304,7 +307,7 @@ describe('getShapePoints', () => {
         const shape: Shape = {
             id: 'unknown1',
             type: 'unknown' as unknown as GeometryType,
-            geometry: {} as unknown as Geometry,
+            geometry: {} as unknown as Line,
         };
 
         const points = getShapePoints(shape);

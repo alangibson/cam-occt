@@ -1,6 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { offsetEllipse } from './ellipse';
-import type { Ellipse, Spline } from '../../../../types/geometry';
+import type { Ellipse } from '../../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
+import { generateUniformKnotVector } from '$lib/geometry/spline';
+import { getEllipseParameters } from '$lib/geometry/ellipse';
+import verb from 'verb-nurbs';
 import { OffsetDirection } from '../types';
 
 // Mock verb-nurbs for error testing
@@ -20,7 +24,7 @@ vi.mock('$lib/geometry/ellipse', () => ({
 }));
 
 // Mock NURBS utils
-vi.mock('../../../../utils/nurbs-utils', () => ({
+vi.mock('$lib/geometry/spline', () => ({
     generateUniformKnotVector: vi.fn(),
 }));
 
@@ -563,13 +567,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle invalid knot vector and repair it', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-            const { generateUniformKnotVector } = await import(
-                '../../../../utils/nurbs-utils'
-            );
-            const { default: verb } = await import('verb-nurbs');
+            // Static imports moved to top of file
 
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
@@ -659,13 +657,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle malformed knot vector structure and repair it', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-            const { generateUniformKnotVector } = await import(
-                '../../../../utils/nurbs-utils'
-            );
-            const { default: verb } = await import('verb-nurbs');
+            // Static imports moved to top of file
 
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
@@ -758,9 +750,7 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
             const { getEllipseParameters } = await import(
                 '$lib/geometry/ellipse'
             );
-            const { generateUniformKnotVector: _generateUniformKnotVector } =
-                await import('../../../../utils/nurbs-utils');
-            const { default: verb } = await import('verb-nurbs');
+            // Static imports moved to top of file
 
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,

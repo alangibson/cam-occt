@@ -39,14 +39,14 @@
         type Circle,
         type Polyline,
         type Ellipse,
-        type Spline,
         GeometryType,
     } from '../../lib/types';
+    import type { Spline } from '$lib/geometry/spline';
     import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
     import type { Path } from '../../lib/stores/paths';
     import type { Rapid } from '../../lib/algorithms/optimize-cut-order';
     import { getPhysicalScaleFactor } from '../../lib/utils/units';
-    import { evaluateNURBS, sampleNURBS } from '../../lib/geometry/nurbs';
+    import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
     import { polylineToPoints } from '$lib/geometry/polyline';
     import { getShapePointAt } from '$lib/geometry';
     import {

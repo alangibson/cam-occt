@@ -37,7 +37,7 @@
         tessellationStore,
         type TessellationPoint,
     } from '../../lib/stores/tessellation';
-    import { tessellateShape } from '../../lib/utils/tessellation';
+    import { tessellateShape } from '$lib/geometry/shape';
     import {
         overlayStore,
         generateChainEndpoints,
@@ -54,9 +54,9 @@
         type Circle,
         type Polyline,
         type Ellipse,
-        type Spline,
         GeometryType,
     } from '../../lib/types';
+    import type { Spline } from '$lib/geometry/spline';
     import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
     import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
     import {

@@ -1,4 +1,4 @@
-import type { Spline } from '../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { IntersectionResult } from '../chain/types';
 import verb, { type VerbCurve, type CurveCurveIntersection } from 'verb-nurbs';
 import {
@@ -6,11 +6,11 @@ import {
     processVerbIntersectionResults,
 } from '../../../utils/verb-integration-utils';
 import { INTERSECTION_TOLERANCE } from '../../../constants';
+import { DEFAULT_EXTENSION_LENGTH } from '../../../geometry/constants';
 import {
-    DEFAULT_EXTENSION_LENGTH,
     DEFAULT_SPLINE_DEGREE,
     DEFAULT_RETRY_COUNT,
-} from '../../../geometry/constants';
+} from '$lib/geometry/spline';
 import { createExtendedSplineVerb } from '../extend/spline';
 
 /**

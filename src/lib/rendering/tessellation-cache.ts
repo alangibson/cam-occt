@@ -5,8 +5,9 @@
  * expensive recalculation on every render frame.
  */
 
-import type { Point2D, Shape, Spline, Ellipse } from '../types/geometry';
-import { tessellateSpline } from '../geometry/spline-tessellation';
+import type { Point2D, Shape, Ellipse } from '../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
+import { tessellateSpline } from '$lib/geometry/spline';
 import {
     ELLIPSE_TESSELLATION_POINTS,
     tessellateEllipse,

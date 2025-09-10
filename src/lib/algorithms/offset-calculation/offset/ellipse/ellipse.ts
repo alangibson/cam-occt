@@ -5,14 +5,12 @@ import {
     type Ellipse,
     type Point2D,
     type Shape,
-    type Spline,
 } from '../../../../types/geometry';
-import {
-    POLYGON_POINTS_MIN,
-    DEFAULT_SPLINE_DEGREE,
-} from '../../../../geometry/constants';
+import type { Spline } from '$lib/geometry/spline';
+import { POLYGON_POINTS_MIN } from '../../../../geometry/constants';
+import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 import { getEllipseParameters } from '$lib/geometry/ellipse/index';
-import { generateUniformKnotVector } from '../../../../utils/nurbs-utils';
+import { generateUniformKnotVector } from '$lib/geometry/spline';
 import { OffsetDirection, type OffsetResult } from '../types';
 
 /**

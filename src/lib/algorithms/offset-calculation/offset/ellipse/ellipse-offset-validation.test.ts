@@ -5,13 +5,13 @@ import {
     GeometryType,
     type Shape,
     type Ellipse,
-    type Spline,
     type Polyline,
     type Point2D,
 } from '../../../../types/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import verb from 'verb-nurbs';
 import { OffsetDirection } from '../types';
+import type { Spline } from '$lib/geometry/spline';
 
 /**
  * Visual validation test for ellipse offsets

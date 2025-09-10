@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import _verb from 'verb-nurbs';
 import { offsetSpline } from './spline';
 import { OffsetDirection } from '../types';
-import type { Spline } from '../../../../types/geometry';
+import type { Point2D } from '../../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('Spline offset adaptive refinement', () => {
     // Create a test spline with high curvature that will require refinement
@@ -126,7 +127,7 @@ describe('Spline offset adaptive refinement', () => {
 
         // Check that all sampled points have approximately the same y coordinate (parallel)
         const firstY = sampledPoints[0].y;
-        sampledPoints.forEach((point) => {
+        sampledPoints.forEach((point: Point2D) => {
             expect(Math.abs(point.y - firstY)).toBeLessThan(1.0);
         });
     });

@@ -6,7 +6,7 @@
  */
 
 import { FULL_CIRCLE_DEG, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
-import { THREE_HALVES_PI } from '$lib/geometry/constants';
+import { THREE_HALVES_PI } from '$lib/geometry/bounding-box';
 
 /**
  * Cut Direction - Specifies the direction for cutting operations

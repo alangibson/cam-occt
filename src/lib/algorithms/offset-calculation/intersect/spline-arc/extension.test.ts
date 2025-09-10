@@ -1,10 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import {
-    GeometryType,
-    type Arc,
-    type Shape,
-    type Spline,
-} from '../../../../types/geometry';
+import { GeometryType, type Arc, type Shape } from '../../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import { findSplineArcIntersectionsVerb } from './index';
 
 describe('Spline-Arc Extension Intersections', () => {

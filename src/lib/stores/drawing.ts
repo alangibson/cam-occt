@@ -9,6 +9,12 @@ import { Unit } from '../utils/units';
 import { clearChains } from './chains';
 import { clearParts } from './parts';
 import { moveShape, rotateShape, scaleShape } from '$lib/geometry';
+import { overlayStore } from './overlay';
+import { tessellationStore } from './tessellation';
+import { pathStore } from './paths';
+import { operationsStore } from './operations';
+import { rapidStore } from './rapids';
+import { workflowStore } from './workflow';
 
 // Import workflow store for state management
 interface WorkflowStore {
@@ -17,30 +23,15 @@ interface WorkflowStore {
     ) => void;
 }
 
-let workflowStore: WorkflowStore | null = null;
-const getWorkflowStore = async (): Promise<WorkflowStore> => {
-    if (!workflowStore) {
-        const { workflowStore: ws } = await import('./workflow');
-        workflowStore = ws as WorkflowStore;
-    }
-    return workflowStore;
-};
-
 // Helper function to reset downstream stages when drawing is modified
-const resetDownstreamStages = async (
+const resetDownstreamStages = (
     fromStage: 'edit' | WorkflowStage.PREPARE = 'edit'
-): Promise<void> => {
+): void => {
     // Clear stage-specific data
     clearChains();
     clearParts();
 
-    // Import and clear other stores
-    const { overlayStore } = await import('./overlay');
-    const { tessellationStore } = await import('./tessellation');
-    const { pathStore } = await import('./paths');
-    const { operationsStore } = await import('./operations');
-    const { rapidStore } = await import('./rapids');
-
+    // Clear other stores
     overlayStore.clearStageOverlay(WorkflowStage.PREPARE);
     overlayStore.clearStageOverlay(WorkflowStage.PROGRAM);
     overlayStore.clearStageOverlay(WorkflowStage.SIMULATE);
@@ -53,8 +44,7 @@ const resetDownstreamStages = async (
     rapidStore.reset();
 
     // Reset workflow completion status for downstream stages
-    const ws = await getWorkflowStore();
-    ws.invalidateDownstreamStages(fromStage);
+    (workflowStore as WorkflowStore).invalidateDownstreamStages(fromStage);
 };
 
 export interface DrawingState {

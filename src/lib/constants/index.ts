@@ -51,8 +51,8 @@ export const MAX_EXTENSION: number = 20;
 
 /**
  * Fine tessellation tolerance for spline rendering (pixels)
+ * MOVED: This constant has been moved to $lib/geometry/spline/constants
  */
-export const SPLINE_TESSELLATION_TOLERANCE: number = 0.1;
 
 /**
  * Standard tessellation count for smooth curves

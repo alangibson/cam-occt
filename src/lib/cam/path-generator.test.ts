@@ -11,11 +11,19 @@ import {
 } from '../../lib/types';
 
 // Mock getShapePoints function
-vi.mock('../geometry/shape-utils', () => ({
+vi.mock('$lib/geometry/shape', () => ({
     getShapePoints: vi.fn(),
+    GeometryType: {
+        LINE: 'line',
+        ARC: 'arc',
+        CIRCLE: 'circle',
+        POLYLINE: 'polyline',
+        SPLINE: 'spline',
+        ELLIPSE: 'ellipse',
+    },
 }));
 
-import { getShapePoints } from '../geometry/shape-utils';
+import { getShapePoints } from '$lib/geometry/shape';
 import { GeometryType } from '$lib/types/geometry';
 const mockGetShapePoints = vi.mocked(getShapePoints);
 

@@ -9,8 +9,8 @@ import type {
     Line,
     Circle,
     Ellipse,
-    Spline,
 } from '../../lib/types';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import { Unit } from '../utils/units';
@@ -19,14 +19,14 @@ import {
     generateSegments,
     MIN_VERTICES_FOR_POLYLINE,
 } from '$lib/geometry/polyline';
-import { normalizeSplineWeights } from '../geometry/spline';
+import { normalizeSplineWeights } from '$lib/geometry/spline';
 import { getShapePointsForBounds } from '../utils/shape-bounds-utils';
 import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
 import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
     DEFAULT_SPLINE_DEGREE,
     MIN_CONTROL_POINTS_FOR_SPLINE,
-} from '$lib/geometry/constants';
+} from '$lib/geometry/spline';
 import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
 
 // DXF INSUNITS constants

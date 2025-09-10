@@ -3,8 +3,9 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline } from './spline';
 import { OffsetDirection } from '../types';
-import type { Spline, Polyline } from '../../../../types/geometry';
+import type { Polyline, Point2D } from '../../../../types/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('Combination Operations Diagnostic', () => {
     const outputDir = 'test-output/combination-diagnostic';
@@ -63,7 +64,7 @@ describe('Combination Operations Diagnostic', () => {
 
                 const originalSpline: Spline = {
                     ...spline,
-                    controlPoints: spline.controlPoints.map((p) => ({
+                    controlPoints: spline.controlPoints.map((p: Point2D) => ({
                         x: p.x,
                         y: p.y + yOffset,
                     })),

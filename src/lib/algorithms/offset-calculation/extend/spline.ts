@@ -1,5 +1,6 @@
 import type { Arc } from '../../../geometry/arc';
-import type { Point2D, Spline } from '../../../types/geometry';
+import type { Point2D } from '../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { Line } from '$lib/geometry/line';
 import type { Circle } from '$lib/geometry/circle';
 import type { Ellipse } from '$lib/geometry/ellipse';
@@ -11,10 +12,8 @@ import { createVerbCurveFromSpline } from '../../../utils/verb-integration-utils
 import { generateUniformKnots } from './common';
 import { isLine } from '$lib/geometry/line';
 import { isCircle } from '$lib/geometry/circle';
-import {
-    MICRO_TOLERANCE,
-    DEFAULT_SPLINE_DEGREE,
-} from '$lib/geometry/constants';
+import { MICRO_TOLERANCE } from '$lib/geometry/constants';
+import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 
 /**
  * Calculate tangent vector at start of spline

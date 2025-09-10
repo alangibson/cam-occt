@@ -4,8 +4,8 @@ import type {
     Line,
     Circle,
     Ellipse,
-    Spline,
 } from '$lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
@@ -245,8 +245,7 @@ export function polylineToVertices(polyline: Polyline): PolylineVertex[] {
                 | Circle
                 | Polyline
                 | Ellipse
-                | import('$lib/types/geometry').Spline =
-                polyline.shapes[polyline.shapes.length - 1].geometry;
+                | Spline = polyline.shapes[polyline.shapes.length - 1].geometry;
             if ('start' in lastSegment && 'end' in lastSegment) {
                 vertices.push({
                     x: lastSegment.end.x,
@@ -300,13 +299,7 @@ export function polylineToPoints(polyline: Polyline): Point2D[] {
         const points: Point2D[] = [];
 
         for (let i: number = 0; i < polyline.shapes.length; i++) {
-            const segment:
-                | Line
-                | Arc
-                | Circle
-                | Polyline
-                | Ellipse
-                | import('$lib/types/geometry').Spline =
+            const segment: Line | Arc | Circle | Polyline | Ellipse | Spline =
                 polyline.shapes[i].geometry;
 
             if ('start' in segment && 'end' in segment) {
@@ -332,8 +325,7 @@ export function polylineToPoints(polyline: Polyline): Point2D[] {
                 | Circle
                 | Polyline
                 | Ellipse
-                | import('$lib/types/geometry').Spline =
-                polyline.shapes[polyline.shapes.length - 1].geometry;
+                | Spline = polyline.shapes[polyline.shapes.length - 1].geometry;
             if ('start' in lastSegment && 'end' in lastSegment) {
                 points.push({ x: lastSegment.end.x, y: lastSegment.end.y });
             } else if ('center' in lastSegment && 'radius' in lastSegment) {

@@ -1,24 +1,22 @@
 import type {
-    BoundingBox,
     Point2D,
     Line,
     Circle,
     Polyline,
     Ellipse,
-    Spline,
     Shape,
-} from '../types/geometry';
+} from '$lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '../types/geometry';
-import { polylineToPoints } from './polyline';
-import { sampleNURBS } from './nurbs';
+import type { BoundingBox } from './interfaces';
+import { GeometryType } from '$lib/types/geometry';
+import { polylineToPoints } from '$lib/geometry/polyline';
+import { sampleNURBS } from '$lib/geometry/spline';
 import { calculateArcPoint } from '$lib/geometry/arc';
-import { VALIDATION_SAMPLE_COUNT } from './constants';
+import { VALIDATION_SAMPLE_COUNT } from '$lib/geometry/spline';
 import { THREE_HALVES_PI } from './constants';
-import {
-    GEOMETRIC_PRECISION_TOLERANCE,
-    SPLINE_TESSELLATION_TOLERANCE,
-} from '../constants';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/constants';
+import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline';
 
 export function getBoundingBoxForLine(line: Line): BoundingBox {
     if (

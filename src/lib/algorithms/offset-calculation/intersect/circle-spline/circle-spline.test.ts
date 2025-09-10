@@ -3,9 +3,9 @@ import { findSplineCircleIntersectionsVerb } from './index';
 import {
     type Shape,
     type Circle,
-    type Spline,
     GeometryType,
 } from '../../../../../lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('Circle-Spline Intersection with Extensions', () => {
     it('should find intersection when spline is extended', () => {

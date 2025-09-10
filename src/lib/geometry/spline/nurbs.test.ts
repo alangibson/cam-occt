@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { evaluateNURBS, sampleNURBS } from './nurbs';
-import type { Spline } from '../../lib/types';
+import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('NURBS Evaluation', () => {
     it('should evaluate a simple linear spline', () => {

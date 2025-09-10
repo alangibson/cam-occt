@@ -11,7 +11,8 @@
  */
 
 import type { Chain } from '../chain-detection/chain-detection';
-import type { Shape, Point2D, Spline } from '../../types';
+import type { Shape, Point2D } from '../../types';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
 import type { Ellipse } from '$lib/geometry/ellipse';

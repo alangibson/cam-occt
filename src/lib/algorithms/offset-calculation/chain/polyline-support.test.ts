@@ -5,7 +5,7 @@ import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { offsetChain } from './offset';
 import { scaleShape } from '../../../geometry';
 import { getPhysicalScaleFactor, Unit } from '../../../utils/units';
-import { calculateDynamicTolerance } from '../../../geometry/bounding-box';
+import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
 import {
     GeometryType,
     type Polyline,

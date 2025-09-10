@@ -5,12 +5,12 @@ import type { Chain } from './chain-detection/chain-detection';
 import type {
     Shape,
     Ellipse,
-    Spline,
     Circle,
     Line,
     Arc,
     Polyline,
 } from '../../lib/types';
+import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '../../lib/types/geometry';
 import { CutDirection } from '../types/direction';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';

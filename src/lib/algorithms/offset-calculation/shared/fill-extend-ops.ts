@@ -7,8 +7,8 @@ import type {
     Shape,
     Line,
     Polyline,
-    Spline,
 } from '../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { FillResult } from '../fill/types';
 import { EPSILON } from '../../../constants';
 import {

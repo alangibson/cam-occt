@@ -9,14 +9,8 @@ import {
 import { detectParts } from './part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
-import type {
-    BoundingBox,
-    Shape,
-    Line,
-    Circle,
-    Arc,
-    Polyline,
-} from '$lib/types/geometry';
+import type { Shape, Line, Circle, Arc, Polyline } from '$lib/types/geometry';
+import type { BoundingBox } from '$lib/geometry/bounding-box';
 
 describe('Tractor Seat Mount Part Detection', () => {
     it('should detect 1 part with multiple holes for Tractor Seat Mount - Left.dxf', async () => {

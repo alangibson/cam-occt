@@ -6,8 +6,9 @@ import {
     estimateSplineArcLength,
     simplifyTessellatedSpline,
     type SplineTessellationConfig,
-} from './spline-tessellation';
-import type { Point2D, Spline } from '../types/geometry';
+} from '$lib/geometry/spline';
+import type { Point2D } from '$lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('Spline Tessellation', () => {
     // Test splines with known properties

@@ -1,12 +1,6 @@
 import verb from 'verb-nurbs';
-import type {
-    Point2D,
-    Line,
-    Circle,
-    Spline,
-    Ellipse,
-    Polyline,
-} from '../types';
+import type { Point2D, Line, Circle, Ellipse, Polyline } from '../types';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import type { VerbCurve } from 'verb-nurbs';
 import { GeometryType } from '../types/geometry';

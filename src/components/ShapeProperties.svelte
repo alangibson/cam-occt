@@ -8,9 +8,9 @@
         type Circle,
         type Polyline,
         type Ellipse,
-        type Spline,
         GeometryType,
     } from '../lib/types';
+    import type { Spline } from '$lib/geometry/spline';
     import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
     import { polylineToPoints } from '$lib/geometry/polyline';
 

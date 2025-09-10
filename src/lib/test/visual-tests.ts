@@ -1,7 +1,7 @@
 /* eslint-disable no-magic-numbers */
 import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import { tessellateSpline } from '../geometry/spline-tessellation';
+import { tessellateSpline } from '$lib/geometry/spline';
 import { tessellateEllipse, type Ellipse } from '$lib/geometry/ellipse/index';
 import { polylineToPoints, type Polyline } from '$lib/geometry/polyline';
 import { getShapeBoundingBox } from '../utils/shape-bounds-utils';
@@ -9,7 +9,8 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 import type { Circle } from '$lib/geometry/circle';
 import type { Line } from '$lib/geometry/line';
-import type { Shape, Spline } from '$lib/types';
+import type { Shape } from '$lib/types';
+import type { Spline } from '$lib/geometry/spline';
 import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
 
 /**

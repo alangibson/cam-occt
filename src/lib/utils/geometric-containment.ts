@@ -18,7 +18,7 @@ import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { calculateChainBoundingBox } from './shape-bounds-utils';
-import { tessellateShape as tessellateShapeCorrect } from './tessellation';
+import { tessellateShape as tessellateShapeCorrect } from '$lib/geometry/shape';
 import {
     calculatePolygonArea,
     isPointInPolygon as isPointInPolygonShared,

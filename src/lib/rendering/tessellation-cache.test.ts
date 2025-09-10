@@ -6,10 +6,11 @@ import {
     getTessellationCacheStats,
 } from './tessellation-cache';
 import { GeometryType } from '../types/geometry';
-import type { Shape, Spline, Ellipse, Line } from '../types/geometry';
+import type { Shape, Ellipse, Line } from '../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 
 // Mock the tessellation functions
-vi.mock('../geometry/spline-tessellation', () => ({
+vi.mock('$lib/geometry/spline', () => ({
     tessellateSpline: vi.fn(() => ({
         success: true,
         points: [
@@ -129,9 +130,7 @@ describe('tessellation-cache', () => {
         });
 
         it('should handle tessellation failures gracefully', async () => {
-            const { tessellateSpline } = await import(
-                '../geometry/spline-tessellation'
-            );
+            const { tessellateSpline } = await import('$lib/geometry/spline');
             vi.mocked(tessellateSpline).mockReturnValueOnce({
                 success: false,
                 points: [],
@@ -160,9 +159,7 @@ describe('tessellation-cache', () => {
         });
 
         it('should handle tessellation exceptions', async () => {
-            const { tessellateSpline } = await import(
-                '../geometry/spline-tessellation'
-            );
+            const { tessellateSpline } = await import('$lib/geometry/spline');
             vi.mocked(tessellateSpline).mockImplementationOnce(() => {
                 throw new Error('Tessellation failed');
             });
@@ -198,9 +195,7 @@ describe('tessellation-cache', () => {
         });
 
         it('should not cache empty tessellations', async () => {
-            const { tessellateSpline } = await import(
-                '../geometry/spline-tessellation'
-            );
+            const { tessellateSpline } = await import('$lib/geometry/spline');
             vi.mocked(tessellateSpline).mockReturnValueOnce({
                 success: true,
                 points: [],

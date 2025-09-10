@@ -12,7 +12,6 @@ import {
     type Point2D,
     type Polyline,
     type Shape,
-    type Spline,
 } from '../../../types/geometry';
 import { generateId } from '../../../utils/id';
 import type { IntersectionResult } from '../chain/types';
@@ -22,6 +21,7 @@ import {
     trimShapeAtPoint,
 } from './index';
 import { type KeepSide, type TrimResult } from './types';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('trimming', () => {
     // Helper functions to create test shapes

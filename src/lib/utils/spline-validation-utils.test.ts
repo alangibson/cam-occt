@@ -4,7 +4,7 @@ import {
     repairSplineKnotVector,
     validateSplineKnots,
 } from './spline-validation-utils.js';
-import type { Spline } from '../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('spline-validation-utils', () => {
     const createValidSpline = (): Spline => ({

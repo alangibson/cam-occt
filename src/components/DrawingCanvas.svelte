@@ -24,20 +24,20 @@
         selectPart,
     } from '../lib/stores/parts';
     import { clearPathHighlight } from '../lib/stores/paths';
-    import { sampleNURBS, evaluateNURBS } from '../lib/geometry/nurbs';
+    import { sampleNURBS, evaluateNURBS } from '$lib/geometry/spline';
     import {
         getShapeStartPoint,
         getShapeEndPoint,
         samplePathAtDistanceIntervals,
     } from '$lib/geometry';
     import { CoordinateTransformer } from '../lib/rendering/coordinate-transformer';
-    import { SPLINE_TESSELLATION_TOLERANCE } from '../lib/constants';
+    import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline';
     import { debounce } from '../lib/utils/state-persistence';
     import {
         tessellateEllipse,
         ELLIPSE_TESSELLATION_POINTS,
     } from '$lib/geometry/ellipse/index';
-    import { tessellateSpline } from '../lib/geometry/spline-tessellation';
+    import { tessellateSpline } from '$lib/geometry/spline';
     import {
         getCachedTessellation,
         clearTessellationCache,
@@ -58,15 +58,15 @@
     import LeadVisualization from './LeadVisualization.svelte';
     import {
         type Shape,
-        type Point2D,
         type Line,
         type Arc,
         type Circle,
         type Polyline,
         type Ellipse,
-        type Spline,
         GeometryType,
+        type Point2D,
     } from '../lib/types';
+    import type { Spline } from '$lib/geometry/spline';
     import type { WorkflowStage } from '../lib/stores/workflow';
     import { getPhysicalScaleFactor, type Unit } from '../lib/utils/units';
     import { normalizeAngle } from '../lib/utils/polygon-geometry-shared';

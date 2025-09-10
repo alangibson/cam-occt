@@ -13,11 +13,11 @@ import type {
     Circle,
     Polyline,
     Ellipse,
-    Spline,
 } from '../../lib/types';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../lib/types/geometry';
-import { sampleNURBS } from '../geometry/nurbs';
+import { sampleNURBS } from '$lib/geometry/spline';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { generateEllipsePoints } from '$lib/geometry/ellipse/index';
 import {

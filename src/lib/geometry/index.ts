@@ -1,10 +1,5 @@
-import type {
-    Shape,
-    Point2D,
-    Line,
-    Spline,
-    Ellipse,
-} from '$lib/types/geometry';
+import type { Shape, Point2D, Line, Ellipse } from '$lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
@@ -37,14 +32,14 @@ import {
     getSplineEndPoint,
     reverseSpline,
     getSplinePointAt,
-} from './spline';
+} from '$lib/geometry/spline';
 import {
     getEllipseStartPoint,
     getEllipseEndPoint,
     reverseEllipse,
     getEllipsePointAt,
 } from './ellipse';
-import { sampleNURBS } from './nurbs';
+import { sampleNURBS } from '$lib/geometry/spline';
 import { MAX_ITERATIONS } from '../constants';
 /**
  * Parametric t value for midpoint (0.5)
@@ -435,8 +430,7 @@ export function scaleShape(
             break;
 
         case 'spline':
-            const spline: import('$lib/types/geometry').Spline =
-                shape.geometry as Spline;
+            const spline: Spline = shape.geometry as Spline;
             scaled.geometry = {
                 ...spline,
                 controlPoints: spline.controlPoints.map(scalePoint),

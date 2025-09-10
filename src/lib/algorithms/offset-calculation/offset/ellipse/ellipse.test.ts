@@ -3,12 +3,12 @@ import {
     GeometryType,
     type Ellipse,
     type Point2D,
-    type Spline,
 } from '../../../../types/geometry';
 import { findEllipseEllipseIntersectionsVerb } from '../../intersect/ellipse-ellipse';
 import { findEllipseArcIntersectionsVerb } from '../../intersect/arc-ellipse';
 import { OffsetDirection } from '../types';
 import { offsetEllipse } from './ellipse';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('Quick Ellipse Intersection Test', () => {
     it('should find intersections between overlapping ellipses', () => {

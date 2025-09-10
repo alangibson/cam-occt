@@ -3,7 +3,7 @@ import { parseDXF } from './dxf-parser';
 import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
-import { getBoundingBoxForArc } from '../geometry/bounding-box';
+import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
 import type {
     Shape,
     Point2D,

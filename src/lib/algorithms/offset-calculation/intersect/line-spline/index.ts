@@ -1,9 +1,5 @@
-import type {
-    Shape,
-    Line,
-    Spline,
-    Point2D,
-} from '../../../../../lib/types/geometry';
+import type { Shape, Line, Point2D } from '../../../../../lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { IntersectionResult } from '../../chain/types.ts';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 import {
@@ -12,10 +8,8 @@ import {
     processVerbIntersectionResults,
 } from '../../../../utils/verb-integration-utils';
 import { INTERSECTION_TOLERANCE } from '../../../../constants';
-import {
-    DEFAULT_EXTENSION_LENGTH,
-    DEFAULT_RETRY_COUNT,
-} from '../../../../geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
+import { DEFAULT_RETRY_COUNT } from '$lib/geometry/spline';
 import {
     validateSplineForIntersection,
     selectBestIntersectionResult,

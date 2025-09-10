@@ -1,4 +1,5 @@
-import type { Shape, Point2D, Spline } from '../../../../../lib/types/geometry';
+import type { Shape, Point2D } from '../../../../../lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { FillOptions, FillResult, ShapeExtension } from '../types';
 import {
     extendSplineToPoint,
@@ -39,8 +40,7 @@ export function fillSplineToIntersection(
         return createFailureResult('Shape must be a spline');
     }
 
-    const spline: import('$lib/types/geometry').Spline =
-        shape.geometry as Spline; // NURBS spline geometry
+    const spline: Spline = shape.geometry as Spline; // NURBS spline geometry
 
     try {
         // Use the extend module for all extension logic

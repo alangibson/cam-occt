@@ -3,8 +3,9 @@ import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline, splitVerbCurve, tessellateVerbCurve } from './spline';
 import { OffsetDirection } from '../types';
-import type { Spline, Point2D } from '../../../../types/geometry';
+import type { Point2D } from '../../../../types/geometry';
 import verb from 'verb-nurbs';
+import type { Spline } from '$lib/geometry/spline';
 
 describe('NURBS Bezier Visual Tests', () => {
     it('should create visual test showing NURBS offset and Bezier splitting', () => {

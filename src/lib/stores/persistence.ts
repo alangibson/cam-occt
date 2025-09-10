@@ -28,6 +28,8 @@ import { uiStore, type UIState } from './ui';
 import { tessellationStore, type TessellationState } from './tessellation';
 import { overlayStore, type OverlayState } from './overlay';
 import { leadWarningsStore, type LeadWarning } from './lead-warnings';
+import { setChains, setTolerance, selectChain } from './chains';
+import { setParts, highlightPart } from './parts';
 import { prepareStageStore, type PrepareStageState } from './prepare-stage';
 import { DEFAULT_ALGORITHM_PARAMETERS } from '../types/algorithm-parameters';
 import { operationsStore, type Operation } from './operations';
@@ -118,21 +120,18 @@ function collectCurrentState(): PersistedState {
  */
 function restoreStateToStores(state: PersistedState): void {
     try {
-        // Import store helper functions
-        import('./chains').then(({ setChains, setTolerance, selectChain }) => {
-            setChains(state.chains);
-            setTolerance(state.tolerance);
-            if (state.selectedChainId) {
-                selectChain(state.selectedChainId);
-            }
-        });
+        // Set chain store state
+        setChains(state.chains);
+        setTolerance(state.tolerance);
+        if (state.selectedChainId) {
+            selectChain(state.selectedChainId);
+        }
 
-        import('./parts').then(({ setParts, highlightPart }) => {
-            setParts(state.parts, state.partWarnings);
-            if (state.highlightedPartId) {
-                highlightPart(state.highlightedPartId);
-            }
-        });
+        // Set part store state
+        setParts(state.parts, state.partWarnings);
+        if (state.highlightedPartId) {
+            highlightPart(state.highlightedPartId);
+        }
 
         // Restore drawing state - use special restoration method to avoid resetting downstream stages
         if (state.drawing) {

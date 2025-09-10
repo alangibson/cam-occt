@@ -1,4 +1,5 @@
-import type { Shape, Spline } from '../../../../types/geometry';
+import type { Shape } from '../../../../types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { IntersectionResult } from '../../chain/types';
 import { processSplineIntersection } from '../../shared/spline-intersection-utils';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';

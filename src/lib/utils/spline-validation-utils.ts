@@ -1,7 +1,8 @@
-import type { Point2D, Spline } from '$lib/types/geometry';
+import type { Point2D } from '$lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import { EPSILON } from '$lib/constants';
-import { generateValidKnotVector } from '$lib/utils/nurbs-utils';
-import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/constants';
+import { generateValidKnotVector } from '$lib/geometry/spline';
+import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 
 export interface SplineValidationResult {
     isValid: boolean;

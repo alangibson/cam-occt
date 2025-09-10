@@ -1,14 +1,15 @@
 import { EPSILON } from '$lib/constants';
-import type { Shape, Point2D, Spline, Line } from '$lib/types/geometry';
+import type { Shape, Point2D, Line } from '$lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import { generateId } from '$lib/utils/id';
 import { pointDistance } from '..';
 import { calculateLineParameter } from '../../shared/trim-extend-utils';
 import { type KeepSide, type TrimResult } from '../types';
 import {
-    MIN_CONTROL_POINTS_FOR_SPLINE,
     TOLERANCE_RELAXATION_MULTIPLIER,
     DEFAULT_ARRAY_NOT_FOUND_INDEX,
 } from '../../../../geometry/constants';
+import { MIN_CONTROL_POINTS_FOR_SPLINE } from '$lib/geometry/spline';
 
 /**
  * Default spline weight assignment
@@ -24,8 +25,7 @@ export function trimSpline(
     keepSide: KeepSide,
     tolerance: number
 ): TrimResult {
-    const spline: import('$lib/types/geometry').Spline =
-        shape.geometry as Spline;
+    const spline: Spline = shape.geometry as Spline;
     const result: TrimResult = {
         success: false,
         shape: null,

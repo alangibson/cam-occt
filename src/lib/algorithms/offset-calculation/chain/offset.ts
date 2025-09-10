@@ -14,13 +14,8 @@ import {
     validateSplineGeometry,
     type SplineValidationResult,
 } from '$lib/utils/spline-validation-utils';
-import type {
-    Line,
-    Circle,
-    Polyline,
-    Spline,
-    Ellipse,
-} from '$lib/types/geometry';
+import type { Line, Circle, Polyline, Ellipse } from '$lib/types/geometry';
+import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types/geometry';
 import { OffsetDirection } from '../offset/types';
