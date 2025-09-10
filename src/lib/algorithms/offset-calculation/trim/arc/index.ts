@@ -5,7 +5,7 @@ import { pointDistance } from '..';
 import { type KeepSide, type TrimResult } from '../types';
 import { isAngleInArcRange } from '$lib/algorithms/intersection-arc-utils';
 import { extendArcToPoint } from '../../extend/arc';
-import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/constants';
+import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 
 /**
  * Adjust arc angles based on the trim point and which side to keep

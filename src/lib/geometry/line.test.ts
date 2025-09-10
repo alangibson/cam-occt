@@ -6,7 +6,8 @@ import {
     getLinePointAt,
     isLine,
 } from './line';
-import type { Line, Circle, Geometry } from '../types/geometry';
+import type { Line, Geometry } from '../types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
 
 describe('getLineStartPoint', () => {

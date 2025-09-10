@@ -12,7 +12,8 @@ import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Shape } from '../../lib/types';
-import type { Line, Circle, Polyline } from '../../lib/types/geometry';
+import type { Line, Polyline } from '../../lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
 import type { Chain as ShapeChain } from './chain-detection/chain-detection';
 

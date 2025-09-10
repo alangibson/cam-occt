@@ -8,7 +8,8 @@ import {
     createArcFromCircle,
     getCirclePoint,
 } from '../shared/fill-extend-ops';
-import type { Point2D, Circle } from '$lib/types/geometry';
+import type { Point2D } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
 
 /**

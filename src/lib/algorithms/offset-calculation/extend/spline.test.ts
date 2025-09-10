@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { Point2D, Spline, Line, Circle } from '../../../types/geometry';
+import type { Point2D, Spline, Line } from '../../../types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import {
     calculateSplineStartTangent,
     calculateSplineEndTangent,

@@ -1,8 +1,8 @@
 import type { Point2D, Geometry } from '$lib/types/geometry';
 import type { Arc } from './interfaces';
 import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '$lib/constants';
+import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle';
 import {
-    FULL_CIRCLE_RADIANS,
     DEFAULT_TESSELLATION_SEGMENTS,
     MIN_VERTICES_FOR_LINE,
     PRECISION_DECIMAL_PLACES,

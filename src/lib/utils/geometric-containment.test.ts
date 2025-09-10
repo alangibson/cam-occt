@@ -11,7 +11,8 @@ import {
     identifyShells,
 } from './geometric-containment';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import type { Point2D, Shape, Line, Circle } from '../../lib/types';
+import type { Point2D, Shape, Line } from '../../lib/types';
+import type { Circle } from '$lib/geometry/circle';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
 import { GeometryType } from '$lib/types/geometry';
 

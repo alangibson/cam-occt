@@ -19,10 +19,9 @@ import { generateSegments } from '../geometry/polyline';
 import { normalizeSplineWeights } from '../geometry/spline';
 import { getShapePointsForBounds } from '../utils/shape-bounds-utils';
 import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
+import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
     DEFAULT_SPLINE_DEGREE,
-    FULL_CIRCLE_RADIANS,
-    HALF_CIRCLE_DEG,
     MIN_CONTROL_POINTS_FOR_SPLINE,
     MIN_VERTICES_FOR_LINE,
     MIN_VERTICES_FOR_POLYLINE,

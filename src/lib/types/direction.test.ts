@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { HALF_CIRCLE_DEG, FULL_CIRCLE_DEG } from '../geometry/constants';
+import { HALF_CIRCLE_DEG, FULL_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
     CutDirection,
     LeadType,

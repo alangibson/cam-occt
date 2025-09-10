@@ -1,14 +1,4 @@
 /**
- * Angular measurement for 180 degrees - half circle arc calculations
- */
-export const HALF_CIRCLE_DEG = 180;
-
-/**
- * Angular measurement for 360 degrees - full circle and direction calculations
- */
-export const FULL_CIRCLE_DEG = 360;
-
-/**
  * Minimum number of points required to form a valid polygon
  */
 export const POLYGON_POINTS_MIN = 3;
@@ -32,11 +22,6 @@ export const DEFAULT_SPLINE_DEGREE = 3;
  * Minimum number of vertices required to define a polyline
  */
 export const MIN_VERTICES_FOR_POLYLINE = 2;
-
-/**
- * Angular measurement for full circle in radians (2π)
- */
-export const FULL_CIRCLE_RADIANS = 2 * Math.PI;
 
 /**
  * Angular measurement for 270 degrees in radians (3π/2) - bounding box calculations

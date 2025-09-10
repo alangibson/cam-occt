@@ -1,4 +1,5 @@
-import type { Line, Circle, Arc } from '../../../../types/geometry';
+import type { Line, Arc } from '../../../../types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import type { IntersectionResult } from '../../chain/types';
 import {
     findLineArcIntersections,

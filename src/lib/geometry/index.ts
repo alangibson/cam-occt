@@ -2,12 +2,12 @@ import type {
     Shape,
     Point2D,
     Line,
-    Circle,
     Polyline,
     Spline,
     Ellipse,
 } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
 import {
     getLineStartPoint,
     getLineEndPoint,
@@ -19,7 +19,7 @@ import {
     getCircleEndPoint,
     reverseCircle,
     getCirclePointAt,
-} from './circle';
+} from '$lib/geometry/circle';
 import {
     getArcStartPoint,
     getArcEndPoint,

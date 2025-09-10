@@ -1,12 +1,5 @@
-import type {
-    Shape,
-    Point2D,
-    Line,
-    Circle,
-    Polyline,
-    Ellipse,
-    Spline,
-} from '../types';
+import type { Shape, Point2D, Line, Polyline, Ellipse, Spline } from '../types';
+import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import { sampleNURBS } from './nurbs';
@@ -14,7 +7,7 @@ import { tessellateEllipse } from './ellipse-tessellation';
 import { polylineToPoints } from './polyline';
 import { generateArcPoints } from '$lib/geometry/arc';
 import { ELLIPSE_TESSELLATION_POINTS } from '../constants';
-import { generateCirclePoints } from './circle';
+import { generateCirclePoints } from '$lib/geometry/circle';
 
 /**
  * Extract points from a shape for path generation

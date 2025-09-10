@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { findCircleCircleIntersections } from './index';
-import type { Circle } from '../../../../../lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 
 describe('Circle-Circle Intersections', () => {
     it('should find two intersections when circles intersect at two points', () => {

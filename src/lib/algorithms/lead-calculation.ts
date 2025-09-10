@@ -1,5 +1,6 @@
-import type { Point2D, Polyline, Line, Circle, Shape } from '../types/geometry';
+import type { Point2D, Polyline, Line, Shape } from '../types/geometry';
 import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
 import { GeometryType } from '../types/geometry';
 import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
@@ -18,9 +19,8 @@ import {
     QUARTER_PERCENT,
     MAX_ITERATIONS,
 } from '../constants';
+import { HALF_CIRCLE_DEG, FULL_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
-    HALF_CIRCLE_DEG,
-    FULL_CIRCLE_DEG,
     OCTAGON_SIDES,
     SMALL_ANGLE_INCREMENT_DEG,
     DEFAULT_TESSELLATION_SEGMENTS,

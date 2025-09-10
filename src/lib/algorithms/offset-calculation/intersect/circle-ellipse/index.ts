@@ -1,4 +1,5 @@
-import type { Shape, Circle, Ellipse } from '../../../../types/geometry';
+import type { Shape, Ellipse } from '../../../../types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import type { IntersectionResult } from '../../chain/types';
 import {
     createVerbCurveFromEllipse,

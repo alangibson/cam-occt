@@ -1,5 +1,6 @@
 import { createVerbCurveFromCircle } from '$lib/utils/verb-integration-utils';
-import type { Shape, Circle, Spline } from '../../../../../lib/types/geometry';
+import type { Shape, Spline } from '../../../../../lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import type { IntersectionResult } from '../../chain/types';
 import { processSplineWithCurveIntersection } from '../../shared/spline-intersection-utils';
 import { MAX_ITERATIONS } from '../../../../geometry/constants';

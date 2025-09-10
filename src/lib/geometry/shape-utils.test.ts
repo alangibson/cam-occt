@@ -4,12 +4,12 @@ import { GeometryType } from '../types/geometry';
 import type {
     Shape,
     Line,
-    Circle,
     Polyline,
     Ellipse,
     Spline,
     Geometry,
 } from '../types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
 
 // Mock the dependencies
@@ -29,7 +29,7 @@ vi.mock('./arc', () => ({
     generateArcPoints: vi.fn(),
 }));
 
-vi.mock('./circle', () => ({
+vi.mock('$lib/geometry/circle', () => ({
     generateCirclePoints: vi.fn(),
 }));
 
@@ -54,7 +54,7 @@ describe('getShapePoints', () => {
     });
 
     it('should call generateCirclePoints for circle shape', async () => {
-        const { generateCirclePoints } = await import('./circle');
+        const { generateCirclePoints } = await import('$lib/geometry/circle');
         const mockPoints = [
             { x: 5, y: 0 },
             { x: 0, y: 5 },

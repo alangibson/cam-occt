@@ -11,7 +11,8 @@ import {
     STANDARD_GRID_SPACING,
     GEOMETRIC_PRECISION_TOLERANCE,
 } from '../constants';
-import { FULL_CIRCLE_DEG, POLYGON_POINTS_MIN } from '../geometry/constants';
+import { FULL_CIRCLE_DEG } from '$lib/geometry/circle';
+import { POLYGON_POINTS_MIN } from '../geometry/constants';
 
 /**
  * Lead validation constants for lead distance validation

@@ -1,8 +1,9 @@
-import type { Circle, Point2D, Geometry } from '$lib/types/geometry';
+import type { Circle } from './interfaces';
+import type { Point2D, Geometry } from '$lib/types/geometry';
 import {
     HIGH_TESSELLATION_SEGMENTS,
     SMALL_ANGLE_INCREMENT_DEG,
-} from './constants';
+} from '$lib/geometry/constants';
 
 export function getCircleStartPoint(circle: Circle): Point2D {
     return { x: circle.center.x + circle.radius, y: circle.center.y };
@@ -32,6 +33,7 @@ export function isCircle(geometry: Geometry): geometry is Circle {
         !('startAngle' in geometry)
     );
 }
+
 export function generateCirclePoints(
     center: Point2D,
     radius: number

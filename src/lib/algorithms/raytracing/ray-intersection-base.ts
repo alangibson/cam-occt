@@ -9,7 +9,7 @@ import type { Point2D } from '../../types/geometry';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { solveQuadratic } from './utils';
-import { FULL_CIRCLE_RADIANS } from '../../geometry/constants';
+import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle';
 import { EPSILON } from '$lib/constants';
 
 /**

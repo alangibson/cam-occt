@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { offsetCircle } from './circle';
-import type { Circle } from '../../../../types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import { OffsetDirection } from '../types';
 
 describe('offsetCircle', () => {
