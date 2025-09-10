@@ -1,13 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { generateGCode } from './gcode-generator';
-import type {
-    ToolPath,
-    Drawing,
-    Shape,
-    Arc,
-    Circle,
-    Spline,
-} from '../../lib/types';
+import type { ToolPath, Drawing, Shape, Circle, Spline } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 import { Unit, CutterCompensation } from '../../lib/types';
 import { GeometryType } from '$lib/types/geometry';
 

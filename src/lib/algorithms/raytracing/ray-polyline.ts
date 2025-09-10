@@ -5,7 +5,8 @@
  * iterating through constituent shapes and aggregating crossings
  */
 
-import type { Polyline, Point2D, Arc, Line } from '../../types/geometry';
+import type { Arc } from '../../geometry/arc';
+import type { Polyline, Point2D, Line } from '../../types/geometry';
 import { GeometryType } from '../../types/geometry';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';

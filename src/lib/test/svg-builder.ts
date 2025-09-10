@@ -1,13 +1,13 @@
 import verb from 'verb-nurbs';
 import type {
     Point2D,
-    Arc,
     Line,
     Circle,
     Spline,
     Ellipse,
     Polyline,
 } from '../types';
+import type { Arc } from '$lib/geometry/arc';
 import type { VerbCurve } from 'verb-nurbs';
 import { GeometryType } from '../types/geometry';
 import { tessellateEllipse } from '../geometry/ellipse-tessellation';
@@ -17,13 +17,12 @@ import { EPSILON } from '../constants';
 import { getShapeEndPoint } from '$lib/geometry';
 import { getShapeStartPoint } from '$lib/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { calculateArcPoint } from '../utils/arc-utils';
+import { calculateArcPoint, isArc } from '$lib/geometry/arc';
 import {
     calculateSplineEndTangent,
     calculateSplineStartTangent,
 } from '$lib/algorithms/offset-calculation/extend/spline';
 import { isLine } from '$lib/geometry/line';
-import { isArc } from '$lib/geometry/arc';
 
 // SVG Builder Constants
 const DEFAULT_PADDING = 50;

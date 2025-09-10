@@ -6,7 +6,8 @@
  * then filters results by arc's angular range
  */
 
-import type { Arc, Point2D } from '../../types/geometry';
+import type { Arc } from '../../geometry/arc';
+import type { Point2D } from '../../types/geometry';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { approxEqual, isAngleInArcRange } from './utils';

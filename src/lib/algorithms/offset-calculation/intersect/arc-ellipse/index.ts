@@ -1,5 +1,5 @@
-import type { Shape, Ellipse, Arc } from '../../../../types/geometry';
 import type { IntersectionResult } from '../../chain/types.ts';
+import type { Shape, Arc, Ellipse } from '$lib/types/geometry';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 import {
     createVerbCurveFromEllipse,
@@ -25,9 +25,8 @@ export function findEllipseArcIntersectionsVerb(
     arcShape: Shape,
     swapParams: boolean = false
 ): IntersectionResult[] {
-    const ellipse: import('$lib/types/geometry').Ellipse =
-        ellipseShape.geometry as Ellipse;
-    const arc: import('$lib/types/geometry').Arc = arcShape.geometry as Arc;
+    const ellipse = ellipseShape.geometry as Ellipse;
+    const arc = arcShape.geometry as Arc;
 
     // Convert both shapes to verb-nurbs curves
     const ellipseCurve: verb.geom.ICurve = createVerbCurveFromEllipse(ellipse);

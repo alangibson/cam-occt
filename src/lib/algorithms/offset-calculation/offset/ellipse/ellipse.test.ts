@@ -5,8 +5,8 @@ import {
     type Point2D,
     type Spline,
 } from '../../../../types/geometry';
-import { findEllipseArcIntersectionsVerb } from '../../intersect/arc-ellipse';
 import { findEllipseEllipseIntersectionsVerb } from '../../intersect/ellipse-ellipse';
+import { findEllipseArcIntersectionsVerb } from '../../intersect/arc-ellipse';
 import { OffsetDirection } from '../types';
 import { offsetEllipse } from './ellipse';
 

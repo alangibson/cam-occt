@@ -2,12 +2,12 @@ import type {
     Shape,
     Point2D,
     Line,
-    Arc,
     Circle,
     Polyline,
     Ellipse,
     Spline,
 } from '../../types';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../types';
 // Unused imports removed to fix lint warnings
 import { evaluateNURBS } from '../../geometry/nurbs';

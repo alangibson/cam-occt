@@ -2,17 +2,17 @@ import type {
     Shape,
     Point2D,
     Line,
-    Arc,
     Circle,
     Polyline,
     Ellipse,
     Spline,
 } from '../types';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import { sampleNURBS } from './nurbs';
 import { tessellateEllipse } from './ellipse-tessellation';
 import { polylineToPoints } from './polyline';
-import { generateArcPoints } from './arc';
+import { generateArcPoints } from '$lib/geometry/arc';
 import { ELLIPSE_TESSELLATION_POINTS } from '../constants';
 import { generateCirclePoints } from './circle';
 

@@ -1,4 +1,4 @@
-import type { Line, Arc, Circle } from '../../../../types/geometry';
+import type { Line, Circle, Arc } from '../../../../types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import {
     findLineArcIntersections,

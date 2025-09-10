@@ -1,8 +1,8 @@
+import type { Arc } from '../../../geometry/arc';
 import type {
     Point2D,
     Spline,
     Line,
-    Arc,
     Circle,
     Ellipse,
     Polyline,

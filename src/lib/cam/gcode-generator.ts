@@ -1,6 +1,5 @@
 import type { Unit } from '$lib/utils/units';
 import type {
-    Arc,
     Circle,
     CuttingParameters,
     Drawing,
@@ -10,6 +9,7 @@ import type {
     Spline,
     ToolPath,
 } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 import { CutterCompensation } from '../../lib/types';
 import { GeometryType } from '$lib/types/geometry';
 import { DEFAULT_SPLINE_DEGREE } from '../geometry/constants';
@@ -662,8 +662,7 @@ function generateNativeSplineCommands(
 
         case GeometryType.ARC:
             // Use native arc commands (G2/G3) for arcs
-            const arc: import('$lib/types/geometry').Arc =
-                shape.geometry as Arc;
+            const arc: Arc = shape.geometry as Arc;
             if (options.includeComments) {
                 commands.push({
                     code: '',

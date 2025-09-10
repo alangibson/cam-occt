@@ -1,11 +1,5 @@
-import type {
-    Point2D,
-    Line,
-    Arc,
-    Spline,
-    Ellipse,
-    Circle,
-} from '../types/geometry';
+import type { Point2D, Line, Spline, Ellipse, Circle } from '../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from '../algorithms/offset-calculation/chain/types';
 import verb from 'verb-nurbs';
 import type { CurveCurveIntersection } from 'verb-nurbs';

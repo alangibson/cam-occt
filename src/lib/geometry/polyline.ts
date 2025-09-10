@@ -4,14 +4,14 @@ import type {
     PolylineVertex,
     Shape,
     Line,
-    Arc,
     Circle,
     Ellipse,
     Spline,
 } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
-import { calculateArcPoint, convertBulgeToArc } from '../utils/arc-utils';
+import { calculateArcPoint, convertBulgeToArc } from '$lib/geometry/arc';
 import { EPSILON } from '../constants';
 import { DIRECTION_CLOCKWISE, DIRECTION_COUNTERCLOCKWISE } from './constants';
 
@@ -252,8 +252,7 @@ export function polylineToVertices(polyline: Polyline): PolylineVertex[] {
                     bulge: 0,
                 });
             } else if ('center' in lastSegment && 'radius' in lastSegment) {
-                const arc: import('$lib/types/geometry').Arc =
-                    lastSegment as Arc;
+                const arc: Arc = lastSegment as Arc;
                 const endPoint: Point2D = calculateArcPoint(
                     arc.center,
                     arc.radius,
@@ -336,8 +335,7 @@ export function polylineToPoints(polyline: Polyline): Point2D[] {
             if ('start' in lastSegment && 'end' in lastSegment) {
                 points.push({ x: lastSegment.end.x, y: lastSegment.end.y });
             } else if ('center' in lastSegment && 'radius' in lastSegment) {
-                const arc: import('$lib/types/geometry').Arc =
-                    lastSegment as Arc;
+                const arc: Arc = lastSegment as Arc;
                 const endPoint: Point2D = calculateArcPoint(
                     arc.center,
                     arc.radius,
@@ -403,7 +401,7 @@ export function reversePolyline(polyline: Polyline): Polyline {
                 };
             } else if ('center' in segment && 'radius' in segment) {
                 // Arc segment - swap start/end angles and flip clockwise direction
-                const arc: import('$lib/types/geometry').Arc = segment as Arc;
+                const arc: Arc = segment as Arc;
                 return {
                     ...shape,
                     geometry: {

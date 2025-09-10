@@ -1,9 +1,9 @@
+import type { Arc, Shape, Point2D } from '$lib/types/geometry';
 import { TOLERANCE } from '$lib/constants';
-import type { Shape, Point2D, Arc } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
 import { pointDistance } from '..';
-import { isAngleInArcRange } from '../../../intersection-arc-utils';
 import { type KeepSide, type TrimResult } from '../types';
+import { isAngleInArcRange } from '$lib/algorithms/intersection-arc-utils';
 import { extendArcToPoint } from '../../extend/arc';
 import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/constants';
 

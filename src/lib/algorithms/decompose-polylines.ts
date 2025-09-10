@@ -1,4 +1,5 @@
-import type { Shape, Polyline, Line, Arc } from '../../lib/types';
+import type { Shape, Polyline, Line } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../lib/types';
 import { generateId } from '../utils/id';
 

@@ -11,11 +11,11 @@ import type {
     Point2D,
     Line,
     Circle,
-    Arc,
     Polyline,
     Ellipse,
     Spline,
 } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../lib/types/geometry';
 import { sampleNURBS } from '../geometry/nurbs';
 import { polylineToPoints } from '../geometry/polyline';
@@ -125,8 +125,7 @@ function getShapePoints(shape: Shape): Point2D[] {
             return points;
 
         case GeometryType.ARC:
-            const arc: import('$lib/types/geometry').Arc =
-                shape.geometry as Arc;
+            const arc: Arc = shape.geometry as Arc;
             // Create polygon approximation of arc
             const arcPoints: Point2D[] = [];
             let startAngle: number = arc.startAngle;

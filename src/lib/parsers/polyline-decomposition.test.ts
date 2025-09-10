@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
+import type { Line, Arc } from '../types/geometry';
 import { readFileSync } from 'fs';
 import path from 'path';
-import type { Line, Arc } from '../types/geometry';
 
 describe('Polyline Decomposition', () => {
     it('should decompose polylines with bulges into lines and arcs', async () => {

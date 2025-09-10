@@ -12,7 +12,8 @@ import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Shape } from '../../lib/types';
-import type { Line, Circle, Arc, Polyline } from '../../lib/types/geometry';
+import type { Line, Circle, Polyline } from '../../lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import type { Chain as ShapeChain } from './chain-detection/chain-detection';
 
 const problematicChains = [
@@ -236,8 +237,7 @@ function getShapeBoundingBox(shape: Shape) {
             };
 
         case 'arc':
-            const arc: import('$lib/types/geometry').Arc =
-                shape.geometry as Arc;
+            const arc: Arc = shape.geometry as Arc;
             return {
                 minX: arc.center.x - arc.radius,
                 maxX: arc.center.x + arc.radius,

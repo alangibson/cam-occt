@@ -4,11 +4,11 @@ import type {
     Point2D,
     Line,
     Circle,
-    Arc,
     Polyline,
     Ellipse,
     Spline,
 } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 import { getShapePointsForBounds } from '../utils/shape-bounds-utils';
 
 /**

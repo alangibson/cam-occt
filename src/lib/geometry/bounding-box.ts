@@ -2,17 +2,17 @@ import type {
     BoundingBox,
     Point2D,
     Line,
-    Arc,
     Circle,
     Polyline,
     Ellipse,
     Spline,
     Shape,
 } from '../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import { polylineToPoints } from './polyline';
 import { sampleNURBS } from './nurbs';
-import { calculateArcPoint } from '../utils/arc-utils';
+import { calculateArcPoint } from '$lib/geometry/arc';
 import { VALIDATION_SAMPLE_COUNT } from './constants';
 import { THREE_HALVES_PI } from './constants';
 import {

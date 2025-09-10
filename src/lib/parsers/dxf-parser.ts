@@ -7,11 +7,11 @@ import type {
     PolylineVertex,
     Polyline,
     Line,
-    Arc,
     Circle,
     Ellipse,
     Spline,
 } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import { Unit } from '../utils/units';
 import { generateId } from '../utils/id';

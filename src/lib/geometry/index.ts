@@ -3,11 +3,11 @@ import type {
     Point2D,
     Line,
     Circle,
-    Arc,
     Polyline,
     Spline,
     Ellipse,
 } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import {
     getLineStartPoint,
     getLineEndPoint,
@@ -25,7 +25,7 @@ import {
     getArcEndPoint,
     reverseArc,
     getArcPointAt,
-} from './arc';
+} from '$lib/geometry/arc';
 import {
     getPolylineStartPoint,
     getPolylineEndPoint,
@@ -487,8 +487,7 @@ export function rotateShape(
             break;
 
         case 'arc':
-            const arc: import('$lib/types/geometry').Arc =
-                shape.geometry as Arc;
+            const arc: Arc = shape.geometry as Arc;
             rotated.geometry = {
                 ...arc,
                 center: rotatePoint(arc.center),

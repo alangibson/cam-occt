@@ -10,12 +10,12 @@ import type {
     Drawing,
     Shape,
     Line,
-    Arc,
     Circle,
     Polyline,
     Point2D,
     PolylineVertex,
 } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../lib/types';
 import { polylineToVertices, polylineToPoints } from '../geometry/polyline';
 import { DUPLICATE_FILTERING_TOLERANCE } from '../constants';

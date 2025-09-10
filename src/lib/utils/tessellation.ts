@@ -7,12 +7,12 @@ import type {
     Shape,
     Point2D,
     Line,
-    Arc,
     Circle,
     Polyline,
     Ellipse,
     Spline,
 } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../../lib/types/geometry';
 import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { sampleNURBS } from '../geometry/nurbs';

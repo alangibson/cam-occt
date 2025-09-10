@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { EPSILON } from '../../constants';
 import { getShapeEndPoint, getShapeStartPoint } from '../../geometry';
+import type { Arc } from '../../geometry/arc';
 import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '../../geometry/polyline';
-import type { Arc, Line, Polyline, Shape } from '../../types';
+import type { Line, Polyline, Shape } from '../../types';
 import { GeometryType } from '../../types/geometry';
 import type { Chain } from '../chain-detection/chain-detection';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';

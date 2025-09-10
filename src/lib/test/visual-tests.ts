@@ -2,12 +2,12 @@
 import type {
     Shape,
     Line,
-    Arc,
     Circle,
     Polyline,
     Spline,
     Ellipse,
 } from '../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { OffsetChain } from '../algorithms/offset-calculation/chain/types';
 import { tessellateSpline } from '../geometry/spline-tessellation';
@@ -360,7 +360,7 @@ function shapeToSVG(shape: Shape): string {
  * Convert arc to SVG path
  */
 function arcToSVG(shape: Shape): string {
-    const arc: import('$lib/types/geometry').Arc = shape.geometry as Arc;
+    const arc: Arc = shape.geometry as Arc;
     const start: { x: number; y: number } = {
         x: arc.center.x + arc.radius * Math.cos(arc.startAngle),
         y: arc.center.y + arc.radius * Math.sin(arc.startAngle),

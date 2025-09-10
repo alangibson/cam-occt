@@ -4,8 +4,8 @@ import {
     calculateArcStartPoint,
     calculateArcEndPoint,
     convertBulgeToArc,
-} from './arc-utils.js';
-import type { Arc } from '../types/geometry';
+} from '$lib/geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 
 describe('arc-utils', () => {
     describe('calculateArcPoint', () => {

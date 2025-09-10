@@ -7,6 +7,12 @@ export enum GeometryType {
     ELLIPSE = 'ellipse',
 }
 
+// Arc interface has been moved to geometry/arc module - import from $lib/geometry/arc
+import type { Arc } from '$lib/geometry/arc';
+
+// Re-export Arc for backwards compatibility
+export type { Arc };
+
 export type Geometry = Arc | Line | Circle | Ellipse | Polyline | Spline;
 
 export interface Point2D {
@@ -21,14 +27,6 @@ export interface Point3D extends Point2D {
 export interface BoundingBox {
     min: Point2D;
     max: Point2D;
-}
-
-export interface Arc {
-    center: Point2D;
-    radius: number;
-    startAngle: number;
-    endAngle: number;
-    clockwise: boolean;
 }
 
 export interface Line {

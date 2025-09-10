@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { findArcCircleIntersections } from './index';
-import type { Arc, Circle } from '../../../../../lib/types/geometry';
+import type { Circle, Arc } from '../../../../../lib/types/geometry';
 
 describe('Arc-Circle Intersections', () => {
     it('should find intersections when arc intersects circle at two points', () => {

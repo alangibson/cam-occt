@@ -1,4 +1,4 @@
-import type { Shape, Arc, Spline } from '../../../../types/geometry';
+import type { Shape, Spline, Arc } from '../../../../types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import {
     createVerbCurveFromArc,
@@ -7,8 +7,8 @@ import {
 } from '../../../../utils/verb-integration-utils';
 import { INTERSECTION_TOLERANCE } from '../../../../constants';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
-import { createExtendedSplineVerb } from '../../extend/spline';
 import { createExtendedArc } from '../../extend/arc';
+import { createExtendedSplineVerb } from '../../extend/spline';
 import { processSplineWithCurveIntersection } from '../../shared/spline-intersection-utils';
 import verb from 'verb-nurbs';
 
@@ -24,9 +24,8 @@ export function findSplineArcIntersectionsVerb(
     allowExtensions: boolean = false,
     extensionLength: number = DEFAULT_EXTENSION_LENGTH
 ): IntersectionResult[] {
-    const spline: import('$lib/types/geometry').Spline =
-        splineShape.geometry as Spline;
-    const arc: import('$lib/types/geometry').Arc = arcShape.geometry as Arc;
+    const spline = splineShape.geometry as Spline;
+    const arc = arcShape.geometry as Arc;
 
     // First try intersection with original shapes
     const originalResults: IntersectionResult[] =

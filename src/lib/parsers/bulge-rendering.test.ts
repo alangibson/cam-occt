@@ -6,7 +6,8 @@ import { polylineToVertices } from '../geometry/polyline';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { EPSILON } from '../constants';
-import type { Polyline, Arc, PolylineVertex } from '../../lib/types/geometry';
+import type { Arc } from '../geometry/arc';
+import type { Polyline, PolylineVertex } from '../../lib/types/geometry';
 
 describe('Bulge Rendering Fixes', () => {
     describe('Polylinie.dxf', () => {

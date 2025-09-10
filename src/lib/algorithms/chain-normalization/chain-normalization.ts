@@ -11,7 +11,8 @@
  */
 
 import type { Chain } from '../chain-detection/chain-detection';
-import type { Shape, Point2D, Arc, Circle, Ellipse, Spline } from '../../types';
+import type { Shape, Point2D, Circle, Ellipse, Spline } from '../../types';
+import type { Arc } from '$lib/geometry/arc';
 import type { ChainNormalizationParameters } from '../../types/algorithm-parameters';
 import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS } from '../../types/algorithm-parameters';
 import {

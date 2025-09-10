@@ -5,12 +5,12 @@ import type {
     Shape,
     Line,
     Circle,
-    Arc,
     Polyline,
     Ellipse,
     Spline,
     Geometry,
 } from '../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 
 // Mock the dependencies
 vi.mock('./nurbs', () => ({

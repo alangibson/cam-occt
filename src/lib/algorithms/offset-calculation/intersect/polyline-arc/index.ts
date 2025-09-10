@@ -1,8 +1,9 @@
-import type { Polyline, Arc, Line } from '../../../../types/geometry';
+import type { Polyline, Line } from '../../../../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from '../../chain/types';
 import { createExtendedPolyline } from '../../extend/polyline';
 import { createExtendedArc } from '../../extend/arc';
-import { findLineArcIntersections } from '../line-arc/index';
+import { findLineArcIntersections } from '../line-arc';
 import { isPointOnArc } from '../../../intersection-arc-utils';
 import { EPSILON, INTERSECTION_TOLERANCE } from '../../../../constants';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';

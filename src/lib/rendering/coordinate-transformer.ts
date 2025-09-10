@@ -1,4 +1,4 @@
-import type { Point2D } from '../../lib/types/geometry';
+import type { Point2D } from '../types/geometry';
 import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '../constants';
 
 /**

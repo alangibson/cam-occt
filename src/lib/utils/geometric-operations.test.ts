@@ -12,11 +12,11 @@ import type {
     Shape,
     Line,
     Circle,
-    Arc,
     Ellipse,
     Spline,
     Polyline,
 } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 
 // Helper function to create test chains
 function createTestChain(id: string, shapes: Shape[]): Chain {

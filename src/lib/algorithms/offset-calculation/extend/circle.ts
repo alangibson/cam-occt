@@ -1,4 +1,3 @@
-import type { Circle, Point2D, Arc } from '../../../types/geometry';
 import type { OperationParams } from '../shared/fill-extend-ops';
 import { MAX_EXTENSION } from '../../../constants';
 import {
@@ -9,6 +8,8 @@ import {
     createArcFromCircle,
     getCirclePoint,
 } from '../shared/fill-extend-ops';
+import type { Point2D, Circle } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 
 /**
  * Circle Extension Module

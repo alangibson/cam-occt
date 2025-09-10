@@ -16,7 +16,6 @@ import { GeometryType } from '../types/geometry';
 import type {
     Line,
     Circle,
-    Arc,
     Polyline,
     Ellipse,
     Spline,
@@ -25,6 +24,7 @@ import type {
     Point2D,
     Geometry,
 } from '../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 
 describe('getBoundingBoxForLine', () => {
     it('calculates bounding box for horizontal line', () => {

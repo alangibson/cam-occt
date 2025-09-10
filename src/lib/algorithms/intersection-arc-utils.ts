@@ -1,4 +1,5 @@
-import type { Arc, Point2D } from '../types/geometry';
+import type { Point2D } from '../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from './offset-calculation/chain/types';
 import { EPSILON } from '../constants';
 import { normalizeAngle } from '../utils/polygon-geometry-shared';

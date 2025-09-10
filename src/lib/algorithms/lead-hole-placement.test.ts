@@ -11,6 +11,7 @@ import {
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
 import { polylineToPoints } from '../geometry/polyline';
+import type { Arc } from '../geometry/arc';
 import type { Polyline, Shape } from '../types/geometry';
 
 describe('Lead Hole Placement Fix', () => {
@@ -59,7 +60,7 @@ describe('Lead Hole Placement Fix', () => {
                 points.push(...polylineToPoints(shape.geometry as Polyline));
             } else if (shape.type === 'arc') {
                 // Sample points along the arc
-                const arc = shape.geometry as import('$lib/types/geometry').Arc;
+                const arc = shape.geometry as Arc;
                 const segments = Math.max(
                     8,
                     Math.ceil(

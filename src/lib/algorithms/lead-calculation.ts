@@ -1,11 +1,5 @@
-import type {
-    Point2D,
-    Polyline,
-    Line,
-    Arc,
-    Circle,
-    Shape,
-} from '../types/geometry';
+import type { Point2D, Polyline, Line, Circle, Shape } from '../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
@@ -853,8 +847,7 @@ function getChainTangent(
 
         case GeometryType.ARC:
             // Arc tangent is perpendicular to radius at the point
-            const arc: import('$lib/types/geometry').Arc =
-                shape.geometry as Arc;
+            const arc: Arc = shape.geometry as Arc;
             const angle: number = isStart ? arc.startAngle : arc.endAngle;
             // Tangent is perpendicular to radius
             // If arc goes counterclockwise, tangent points in +90° direction

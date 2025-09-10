@@ -1,6 +1,6 @@
+import type { Arc } from '../../../../geometry/arc';
 import {
     GeometryType,
-    type Arc,
     type Circle,
     type Point2D,
     type Shape,

@@ -7,7 +7,8 @@ import {
     isCircle,
     generateCirclePoints,
 } from './circle';
-import type { Circle, Arc, Line, Geometry } from '../types/geometry';
+import type { Circle, Line, Geometry } from '../types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 
 describe('getCircleStartPoint', () => {
     it('should return point at rightmost position of circle', () => {

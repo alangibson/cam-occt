@@ -16,12 +16,12 @@ import {
 } from '$lib/utils/spline-validation-utils';
 import type {
     Line,
-    Arc,
     Circle,
     Polyline,
     Spline,
     Ellipse,
 } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types/geometry';
 import { OffsetDirection } from '../offset/types';
 import { findShapeIntersections } from '../intersect';

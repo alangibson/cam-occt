@@ -6,7 +6,8 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import type { Shape } from '../../lib/types';
 import { EPSILON } from '../constants';
-import type { Line, Arc, Polyline, PolylineVertex } from '../types/geometry';
+import type { Arc } from '../geometry/arc';
+import type { Line, Polyline, PolylineVertex } from '../types/geometry';
 
 // Mock canvas for screenshot comparison
 function createTestCanvas(width: number = 800, height: number = 600) {
@@ -51,14 +52,12 @@ function drawShapes(
 
         switch (shape.type) {
             case 'line':
-                const line: import('$lib/types/geometry').Line =
-                    shape.geometry as Line;
+                const line: Line = shape.geometry as Line;
                 ctx.moveTo(line.start.x * scale, line.start.y * scale);
                 ctx.lineTo(line.end.x * scale, line.end.y * scale);
                 break;
             case 'arc':
-                const arc: import('$lib/types/geometry').Arc =
-                    shape.geometry as Arc;
+                const arc: Arc = shape.geometry as Arc;
                 // Draw arc using center, radius, start/end angles
                 ctx.arc(
                     arc.center.x * scale,
@@ -70,8 +69,7 @@ function drawShapes(
                 );
                 break;
             case 'polyline':
-                const polyline: import('$lib/types/geometry').Polyline =
-                    shape.geometry as Polyline;
+                const polyline: Polyline = shape.geometry as Polyline;
                 const points = polylineToPoints(polyline);
                 if (points.length > 0) {
                     ctx.moveTo(points[0].x * scale, points[0].y * scale);
@@ -107,13 +105,11 @@ function calculateShapeBounds(shapes: Shape[]): {
 
         switch (shape.type) {
             case 'line':
-                const line: import('$lib/types/geometry').Line =
-                    shape.geometry as Line;
+                const line: Line = shape.geometry as Line;
                 points = [line.start, line.end];
                 break;
             case 'arc':
-                const arc: import('$lib/types/geometry').Arc =
-                    shape.geometry as Arc;
+                const arc: Arc = shape.geometry as Arc;
                 // Calculate actual arc bounds based on start/end angles
                 // Sample points along the arc for accurate bounds
                 const numSamples = 16;
@@ -153,8 +149,7 @@ function calculateShapeBounds(shapes: Shape[]): {
                 }
                 break;
             case 'polyline':
-                const polyline: import('$lib/types/geometry').Polyline =
-                    shape.geometry as Polyline;
+                const polyline: Polyline = shape.geometry as Polyline;
                 points = polylineToPoints(polyline);
                 break;
         }

@@ -14,6 +14,7 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '../geometry/polyline';
+import type { Arc } from '../geometry/arc';
 import type { Shape } from '../types';
 
 describe('Lead Cut Direction Fix', () => {
@@ -64,7 +65,7 @@ describe('Lead Cut Direction Fix', () => {
                 points.push(...polylineToPoints(polylineGeometry));
             } else if (shape.type === 'arc') {
                 // Sample points along the arc
-                const arc = shape.geometry as import('../types/geometry').Arc;
+                const arc = shape.geometry as Arc;
                 const segments = Math.max(
                     8,
                     Math.ceil(

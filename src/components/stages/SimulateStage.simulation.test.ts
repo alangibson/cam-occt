@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import type { Shape, Line, Arc, Point2D } from '../../lib/types';
+import type { Shape, Line, Point2D } from '../../lib/types';
 import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
 import { GeometryType } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
 
 // Import the simulation functions - we'll need to extract these from the component
 // For now, let's test the core logic by recreating the key functions

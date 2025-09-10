@@ -1,6 +1,6 @@
-import type { Arc, Circle } from '../../../../../lib/types/geometry';
+import type { Circle, Arc } from '../../../../../lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
-import { findArcArcIntersections } from '../arc-arc/index';
+import { findArcArcIntersections } from '../arc-arc';
 
 /**
  * Find intersections between an arc and a circle

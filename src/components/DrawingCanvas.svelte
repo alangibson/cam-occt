@@ -30,7 +30,7 @@
         getShapeEndPoint,
         samplePathAtDistanceIntervals,
     } from '$lib/geometry';
-    import { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
+    import { CoordinateTransformer } from '../lib/rendering/coordinate-transformer';
     import {
         SPLINE_TESSELLATION_TOLERANCE,
         ELLIPSE_TESSELLATION_POINTS,

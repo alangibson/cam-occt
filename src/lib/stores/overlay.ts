@@ -9,11 +9,11 @@ import type {
     Point2D,
     Shape,
     Line,
-    Arc,
     Circle,
     Polyline,
     Ellipse,
 } from '../../lib/types';
+import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
 import { polylineToPoints } from '../geometry/polyline';

@@ -7,7 +7,7 @@
         type LeadInConfig,
         type LeadOutConfig,
     } from '../lib/algorithms/lead-calculation';
-    import type { CoordinateTransformer } from '../lib/coordinates/CoordinateTransformer';
+    import type { CoordinateTransformer } from '../lib/rendering/coordinate-transformer';
     import type { Point2D } from '../lib/types';
     import { LeadType } from '../lib/types/direction';
     import {

@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
+import type { Arc } from '../../../geometry/arc';
 import type {
     Shape,
     Point2D,
     Line,
-    Arc,
     Circle,
     Spline,
     Polyline,

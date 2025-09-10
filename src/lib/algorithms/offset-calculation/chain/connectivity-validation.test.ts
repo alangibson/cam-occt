@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { Shape, Line, Arc, Circle } from '../../../../lib/types/geometry';
+import type { Shape, Line, Circle } from '../../../../lib/types/geometry';
+import type { Arc } from '../../../geometry/arc';
 import { GeometryType } from '../../../../lib/types/geometry';
 import type { OffsetChain } from './types';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
@@ -46,13 +47,11 @@ describe('offset chain connectivity validation', () => {
     ): { x: number; y: number } {
         switch (shape.type) {
             case 'line': {
-                const line: import('$lib/types/geometry').Line =
-                    shape.geometry as Line;
+                const line: Line = shape.geometry as Line;
                 return isStart ? line.start : line.end;
             }
             case 'arc': {
-                const arc: import('$lib/types/geometry').Arc =
-                    shape.geometry as Arc;
+                const arc: Arc = shape.geometry as Arc;
                 const angle: number = isStart ? arc.startAngle : arc.endAngle;
                 return {
                     x: arc.center.x + arc.radius * Math.cos(angle),
@@ -60,8 +59,7 @@ describe('offset chain connectivity validation', () => {
                 };
             }
             case 'circle': {
-                const circle: import('$lib/types/geometry').Circle =
-                    shape.geometry as Circle;
+                const circle: Circle = shape.geometry as Circle;
                 return circle.center;
             }
             default:

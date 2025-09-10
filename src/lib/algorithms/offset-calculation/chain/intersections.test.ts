@@ -7,11 +7,11 @@ import {
     findShapeIntersections,
     clusterIntersections,
 } from '../intersect/index';
+import type { Arc } from '../../../geometry/arc';
 import {
     GeometryType,
     type Shape,
     type Line,
-    type Arc,
     type Circle,
     type Point2D,
 } from '../../../../lib/types/geometry';

@@ -12,17 +12,17 @@ import type {
     Shape,
     Line,
     Circle,
-    Arc,
     Polyline,
     Ellipse,
     Spline,
 } from '../types';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';
 import { polylineToPoints } from '../geometry/polyline';
 import { sampleNURBS } from '../geometry/nurbs';
-import { getBoundingBoxForArc } from '../geometry/bounding-box';
 import { HIGH_TESSELLATION_SEGMENTS } from '../geometry/constants';
 import { STANDARD_TESSELLATION_COUNT } from '$lib/constants';
+import { getBoundingBoxForArc } from '../geometry/bounding-box';
 
 export interface BoundingBox {
     minX: number;

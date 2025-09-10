@@ -1,4 +1,4 @@
-import type { Line, Arc, Point2D } from '../../../../types/geometry';
+import type { Line, Point2D, Arc } from '../../../../types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import { EPSILON, INTERSECTION_TOLERANCE } from '../../../../constants';
 import {

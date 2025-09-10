@@ -4,9 +4,8 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import type { Shape } from '../../lib/types';
+import type { Shape, Line, Arc, Polyline } from '../../lib/types/geometry';
 import { GeometryType } from '../../lib/types/geometry';
-import type { Polyline, Line, Arc } from '../../lib/types/geometry';
 import type { Chain } from './chain-detection/chain-detection';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
 
