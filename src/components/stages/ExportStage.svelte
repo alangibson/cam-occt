@@ -1,9 +1,9 @@
 <script lang="ts">
     import GCodeExport from '../GCodeExport.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
-    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
-    import type { CuttingParameters } from '../../lib/types';
-    import { CutterCompensation } from '../../lib/types/cam';
+    import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
+    import type { CuttingParameters } from '$lib/types';
+    import { CutterCompensation } from '$lib/types/cam';
     import { onMount } from 'svelte';
 
     // Resizable columns state

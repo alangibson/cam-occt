@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { isPointInsidePart } from './point-in-chain';
 import type { Point2D } from '../../types';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('Part Selection - Point-in-Part Detection', () => {
     it('should detect point inside shell but outside holes', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { CoordinateTransformer } from '../lib/rendering/coordinate-transformer';
+import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 
 describe('Drawing Canvas Origin Positioning', () => {
     it('should calculate fixed origin position correctly', () => {

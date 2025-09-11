@@ -1,14 +1,14 @@
 <script lang="ts">
-    import { pathsToToolPaths } from '../lib/cam/path-to-toolpath';
-    import { generateGCode } from '../lib/cam/gcode-generator';
-    import { drawingStore } from '../lib/stores/drawing';
-    import { pathStore } from '../lib/stores/paths';
-    import { chainStore } from '../lib/stores/chains';
-    import { partStore } from '../lib/stores/parts';
-    import { toolStore } from '../lib/stores/tools';
-    import type { CuttingParameters } from '../lib/types';
-    import { Unit } from '../lib/utils/units';
-    import { CutterCompensation } from '../lib/types/cam';
+    import { pathsToToolPaths } from '$lib/cam/path-to-toolpath';
+    import { generateGCode } from '$lib/cam/gcode-generator';
+    import { drawingStore } from '$lib/stores/drawing';
+    import { pathStore } from '$lib/stores/paths';
+    import { chainStore } from '$lib/stores/chains';
+    import { partStore } from '$lib/stores/parts';
+    import { toolStore } from '$lib/stores/tools';
+    import type { CuttingParameters } from '$lib/types';
+    import { Unit } from '$lib/utils/units';
+    import { CutterCompensation } from '$lib/types/cam';
     import { onMount, createEventDispatcher } from 'svelte';
 
     // Props from parent component

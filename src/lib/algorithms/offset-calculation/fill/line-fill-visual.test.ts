@@ -6,7 +6,7 @@ import {
     type Ellipse,
     type Line,
     type Shape,
-} from '../../../../lib/types/geometry';
+} from '$lib/types/geometry';
 import { SVGBuilder } from '../../../test/svg-builder';
 import type { Chain } from '../../chain-detection/chain-detection';
 import { detectShapeChains } from '../../chain-detection/chain-detection';

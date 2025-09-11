@@ -8,7 +8,7 @@
  */
 
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
-import { isChainClosed } from '$lib/algorithms/part-detection';
+import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import { generateId } from '$lib/utils/id';
 import {
     validateSplineGeometry,
@@ -17,7 +17,7 @@ import {
 import type { Line, Circle, Polyline, Ellipse } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { OffsetDirection } from '../offset/types';
 import { findShapeIntersections } from '../intersect';
 import { findPolylineSelfIntersections } from '../intersect/polyline/self';

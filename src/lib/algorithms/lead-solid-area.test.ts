@@ -5,10 +5,13 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
-import { PartType, type DetectedPart } from './part-detection';
-import { GeometryType } from '../../lib/types/geometry';
-import type { Shape, Point2D } from '../../lib/types/geometry';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import {
+    PartType,
+    type DetectedPart,
+} from '$lib/algorithms/part-detection/part-detection';
+import { GeometryType } from '$lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 
 describe('Lead Solid Area Avoidance', () => {
     // Helper to create a rectangle chain
@@ -87,10 +90,10 @@ describe('Lead Solid Area Avoidance', () => {
         if (
             !isPointInRectangle(
                 point,
-                shell.boundingBox.minX,
-                shell.boundingBox.minY,
-                shell.boundingBox.maxX,
-                shell.boundingBox.maxY
+                shell.boundingBox.min.x,
+                shell.boundingBox.min.y,
+                shell.boundingBox.max.x,
+                shell.boundingBox.max.y
             )
         ) {
             return false;
@@ -101,10 +104,10 @@ describe('Lead Solid Area Avoidance', () => {
             if (
                 isPointInRectangle(
                     point,
-                    hole.boundingBox.minX,
-                    hole.boundingBox.minY,
-                    hole.boundingBox.maxX,
-                    hole.boundingBox.maxY
+                    hole.boundingBox.min.x,
+                    hole.boundingBox.min.y,
+                    hole.boundingBox.max.x,
+                    hole.boundingBox.max.y
                 )
             ) {
                 return false;
@@ -138,7 +141,10 @@ describe('Lead Solid Area Avoidance', () => {
                     id: 'shell1',
                     chain: shellChain,
                     type: PartType.SHELL,
-                    boundingBox: { minX: 0, maxX: 100, minY: 0, maxY: 100 },
+                    boundingBox: {
+                        min: { x: 0, y: 0 },
+                        max: { x: 100, y: 100 },
+                    },
                     holes: [],
                 },
                 holes: [
@@ -146,7 +152,10 @@ describe('Lead Solid Area Avoidance', () => {
                         id: 'hole1',
                         chain: holeChain,
                         type: PartType.HOLE,
-                        boundingBox: { minX: 70, maxX: 90, minY: 70, maxY: 90 },
+                        boundingBox: {
+                            min: { x: 70, y: 70 },
+                            max: { x: 90, y: 90 },
+                        },
                         holes: [],
                     },
                 ],
@@ -211,7 +220,10 @@ describe('Lead Solid Area Avoidance', () => {
                     id: 'shell1',
                     chain: shellChain,
                     type: PartType.SHELL,
-                    boundingBox: { minX: 0, maxX: 100, minY: 0, maxY: 100 },
+                    boundingBox: {
+                        min: { x: 0, y: 0 },
+                        max: { x: 100, y: 100 },
+                    },
                     holes: [],
                 },
                 holes: [
@@ -219,7 +231,10 @@ describe('Lead Solid Area Avoidance', () => {
                         id: 'hole1',
                         chain: holeChain,
                         type: PartType.HOLE,
-                        boundingBox: { minX: 30, maxX: 70, minY: 30, maxY: 70 },
+                        boundingBox: {
+                            min: { x: 30, y: 30 },
+                            max: { x: 70, y: 70 },
+                        },
                         holes: [],
                     },
                 ],
@@ -281,7 +296,10 @@ describe('Lead Solid Area Avoidance', () => {
                     id: 'shell1',
                     chain: shellChain,
                     type: PartType.SHELL,
-                    boundingBox: { minX: 0, maxX: 200, minY: 0, maxY: 100 },
+                    boundingBox: {
+                        min: { x: 0, y: 0 },
+                        max: { x: 200, y: 100 },
+                    },
                     holes: [],
                 },
                 holes: [
@@ -289,7 +307,10 @@ describe('Lead Solid Area Avoidance', () => {
                         id: 'hole1',
                         chain: hole1Chain,
                         type: PartType.HOLE,
-                        boundingBox: { minX: 40, maxX: 80, minY: 30, maxY: 70 },
+                        boundingBox: {
+                            min: { x: 40, y: 30 },
+                            max: { x: 80, y: 70 },
+                        },
                         holes: [],
                     },
                     {
@@ -297,10 +318,8 @@ describe('Lead Solid Area Avoidance', () => {
                         chain: hole2Chain,
                         type: PartType.HOLE,
                         boundingBox: {
-                            minX: 120,
-                            maxX: 160,
-                            minY: 30,
-                            maxY: 70,
+                            min: { x: 120, y: 30 },
+                            max: { x: 160, y: 70 },
                         },
                         holes: [],
                     },

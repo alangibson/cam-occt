@@ -5,10 +5,10 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { Shape } from '../types';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('Lead Direction and Cut Direction Tangency', () => {
     // Create a simple circular chain for testing

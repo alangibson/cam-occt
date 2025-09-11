@@ -5,11 +5,11 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
-import type { DetectedPart } from './part-detection';
-import { PartType } from './part-detection';
-import type { Shape } from '../../lib/types/geometry';
-import { GeometryType } from '../../lib/types/geometry';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import type { Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('calculateLeads', () => {
     // Helper to create a simple line chain
@@ -149,7 +149,7 @@ describe('calculateLeads', () => {
                     id: 'shell1',
                     chain: shellChain,
                     type: PartType.SHELL,
-                    boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
+                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
                     holes: [],
                 },
                 holes: [
@@ -157,7 +157,10 @@ describe('calculateLeads', () => {
                         id: 'hole1',
                         chain: holeChain,
                         type: PartType.HOLE,
-                        boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
+                        boundingBox: {
+                            min: { x: 2, y: 2 },
+                            max: { x: 8, y: 8 },
+                        },
                         holes: [],
                     },
                 ],
@@ -200,7 +203,7 @@ describe('calculateLeads', () => {
                     id: 'shell1',
                     chain: shellChain,
                     type: PartType.SHELL,
-                    boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
+                    boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
                     holes: [],
                 },
                 holes: [],

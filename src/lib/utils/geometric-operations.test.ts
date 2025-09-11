@@ -6,9 +6,9 @@ import {
     calculatePolygonCentroid,
     calculatePolygonBounds,
 } from './geometric-operations';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import type { Shape, Line, Circle, Ellipse, Polyline } from '../../lib/types';
+import type { Shape, Line, Circle, Ellipse, Polyline } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 

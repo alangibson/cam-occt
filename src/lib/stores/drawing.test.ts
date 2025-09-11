@@ -3,7 +3,7 @@ import { get } from 'svelte/store';
 import { drawingStore } from './drawing';
 import type { Drawing, Shape, Point2D, Line } from '../types';
 import { Unit } from '../utils/units';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 // Mock dependent modules
 vi.mock('./chains', () => ({
@@ -357,10 +357,13 @@ describe('drawingStore', () => {
             await drawingStore.scaleShapes(['line-1'], 2, origin);
 
             const state = get(drawingStore);
-            expect(state.drawing?.shapes[0].geometry).toHaveProperty(
-                'scaled',
-                2
-            );
+            const scaledLine = state.drawing?.shapes[0].geometry as Line;
+
+            // After scaling by 2 from origin (0,0):
+            // Original: start(0,0) end(10,10)
+            // Scaled: start(0,0) end(20,20)
+            expect(scaledLine.start).toEqual({ x: 0, y: 0 });
+            expect(scaledLine.end).toEqual({ x: 20, y: 20 });
         });
 
         it('should reset downstream stages when shapes scaled', async () => {
@@ -388,10 +391,25 @@ describe('drawingStore', () => {
             await drawingStore.rotateShapes(['line-1'], angle, origin);
 
             const state = get(drawingStore);
-            expect(state.drawing?.shapes[0].geometry).toHaveProperty(
-                'rotated',
-                true
-            );
+            const rotatedLine = state.drawing?.shapes[0].geometry as Line;
+
+            // After rotating line from (0,0)-(10,10) by 45 degrees around (5,5):
+            // The line passes through (5,5) so rotation around that point changes endpoints
+            // Original: start(0,0) end(10,10)
+            // After rotation: Calculate new positions
+            const expectedStart = {
+                x: 5 + Math.cos(angle) * -5 - Math.sin(angle) * -5,
+                y: 5 + Math.sin(angle) * -5 + Math.cos(angle) * -5,
+            };
+            const expectedEnd = {
+                x: 5 + Math.cos(angle) * 5 - Math.sin(angle) * 5,
+                y: 5 + Math.sin(angle) * 5 + Math.cos(angle) * 5,
+            };
+
+            expect(rotatedLine.start.x).toBeCloseTo(expectedStart.x);
+            expect(rotatedLine.start.y).toBeCloseTo(expectedStart.y);
+            expect(rotatedLine.end.x).toBeCloseTo(expectedEnd.x);
+            expect(rotatedLine.end.y).toBeCloseTo(expectedEnd.y);
         });
 
         it('should reset downstream stages when shapes rotated', async () => {

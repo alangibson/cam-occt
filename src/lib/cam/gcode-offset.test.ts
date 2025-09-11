@@ -6,7 +6,7 @@ import type { Path } from '../stores/paths';
 import { type Shape, type Drawing, Unit } from '../types';
 import { CutDirection, LeadType } from '../types/direction';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('G-code generation with offset paths', () => {
     // Create test shapes for a simple rectangle

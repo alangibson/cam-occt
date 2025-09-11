@@ -1,8 +1,4 @@
-import type {
-    Shape,
-    Point2D,
-    Polyline,
-} from '../../../../../lib/types/geometry';
+import type { Shape, Point2D, Polyline } from '$lib/types/geometry';
 import type { FillOptions, FillResult, ShapeExtension } from '../types';
 import {
     extendPolylineToPoint,

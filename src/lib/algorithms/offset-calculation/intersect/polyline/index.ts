@@ -5,7 +5,7 @@ import {
     type Arc,
     type Circle,
     GeometryType,
-} from '../../../../../lib/types/geometry';
+} from '$lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import type { SegmentPosition } from '../line-arc/index';
 import type { IntersectionType } from '../index';

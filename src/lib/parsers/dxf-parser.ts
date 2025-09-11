@@ -9,7 +9,7 @@ import type {
     Line,
     Circle,
     Ellipse,
-} from '../../lib/types';
+} from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '../types/geometry';

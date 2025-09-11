@@ -13,7 +13,7 @@ import {
 } from './state-persistence';
 import { LeadType, CutDirection } from '../types/direction';
 import { Unit } from './units';
-import { PartType } from '$lib/algorithms/part-detection';
+import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { WorkflowStage } from '../stores/workflow';
 
 // Mock localStorage
@@ -72,7 +72,10 @@ describe('State Persistence', () => {
                         id: 'shell1',
                         type: PartType.SHELL,
                         chain: { id: 'chain1', shapes: [] },
-                        boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
+                        boundingBox: {
+                            min: { x: 0, y: 0 },
+                            max: { x: 10, y: 10 },
+                        },
                         holes: [],
                     },
                     holes: [],

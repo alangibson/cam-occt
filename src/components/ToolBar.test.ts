@@ -2,10 +2,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
-import { drawingStore } from '../lib/stores/drawing';
-import { Unit } from '../lib/utils/units';
-import type { Drawing } from '../lib/types';
-import { GeometryType } from '$lib/types/geometry';
+import { drawingStore } from '$lib/stores/drawing';
+import { Unit } from '$lib/utils/units';
+import type { Drawing } from '$lib/types';
+import { GeometryType } from '$lib/geometry/shape';
 
 // Mock window.prompt and window.alert
 Object.defineProperty(window, 'prompt', {

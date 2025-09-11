@@ -8,7 +8,10 @@
 
 import type { Path, PathsState } from '../stores/paths';
 import type { Operation } from '../stores/operations';
-import type { DetectedPart, PartHole } from '../algorithms/part-detection';
+import type {
+    DetectedPart,
+    PartHole,
+} from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Point2D } from '../types';
 import {
@@ -21,7 +24,7 @@ import { createLeadInConfig, createLeadOutConfig } from './lead-config-utils';
 import { pathStore } from '../stores/paths';
 import { get } from 'svelte/store';
 import { chainStore, type ChainStore } from '../stores/chains';
-import { partStore, type PartStore } from '../stores/parts';
+import { partStore, type PartStore } from '$lib/stores/parts';
 
 /**
  * Calculate and store lead geometry for a path

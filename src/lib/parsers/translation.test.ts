@@ -11,7 +11,7 @@ import type {
     Circle,
     Arc,
     Polyline,
-} from '../../lib/types/geometry';
+} from '$lib/types/geometry';
 import { EPSILON } from '$lib/geometry/math';
 
 // Helper function to calculate bounds for translated shapes

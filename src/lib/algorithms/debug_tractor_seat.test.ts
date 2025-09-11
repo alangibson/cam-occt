@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
-import { detectParts } from './part-detection';
+import { parseDXF } from '$lib/parsers/dxf-parser';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 
 describe('Tractor Seat Mount Debug Analysis', () => {
     it('should analyze why part detection finds 11 parts instead of 1', async () => {
@@ -65,15 +65,15 @@ describe('Tractor Seat Mount Debug Analysis', () => {
                     if (partResult.parts.length > 1) {
                         const sortedParts = partResult.parts.sort((a, b) => {
                             const aArea =
-                                (a.shell.boundingBox.maxX -
-                                    a.shell.boundingBox.minX) *
-                                (a.shell.boundingBox.maxY -
-                                    a.shell.boundingBox.minY);
+                                (a.shell.boundingBox.max.x -
+                                    a.shell.boundingBox.min.x) *
+                                (a.shell.boundingBox.max.y -
+                                    a.shell.boundingBox.min.y);
                             const bArea =
-                                (b.shell.boundingBox.maxX -
-                                    b.shell.boundingBox.minX) *
-                                (b.shell.boundingBox.maxY -
-                                    b.shell.boundingBox.minY);
+                                (b.shell.boundingBox.max.x -
+                                    b.shell.boundingBox.min.x) *
+                                (b.shell.boundingBox.max.y -
+                                    b.shell.boundingBox.min.y);
                             return bArea - aArea; // Largest first
                         });
 

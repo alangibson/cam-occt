@@ -5,11 +5,11 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
-import type { DetectedPart } from './part-detection';
-import { PartType } from './part-detection';
-import { GeometryType } from '../../lib/types/geometry';
-import type { Shape, Point2D } from '../../lib/types/geometry';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { GeometryType } from '$lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 
 describe('Lead Concave Area Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting
@@ -83,7 +83,7 @@ describe('Lead Concave Area Fix', () => {
                 id: 'shell1',
                 chain,
                 type: PartType.SHELL,
-                boundingBox: { minX: 0, maxX: 20, minY: 0, maxY: 20 },
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
                 holes: [],
             },
             holes: [],
@@ -181,7 +181,7 @@ describe('Lead Concave Area Fix', () => {
                 id: 'shell1',
                 chain,
                 type: PartType.SHELL,
-                boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
                 holes: [],
             },
             holes: [],

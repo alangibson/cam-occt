@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { Shape, Line, Circle } from '../../../../lib/types/geometry';
+import type { Shape, Line, Circle } from '$lib/types/geometry';
 import type { Arc } from '../../../geometry/arc';
-import { GeometryType } from '../../../../lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type { OffsetChain } from './types';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';

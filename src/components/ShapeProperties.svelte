@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { drawingStore } from '../lib/stores/drawing';
+    import { drawingStore } from '$lib/stores/drawing';
     import {
         type Shape,
         type Point2D,
@@ -9,7 +9,7 @@
         type Polyline,
         type Ellipse,
         GeometryType,
-    } from '../lib/types';
+    } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
     import {
         getShapeStartPoint,

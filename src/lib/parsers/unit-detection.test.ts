@@ -10,7 +10,7 @@ import type {
     Circle,
     Arc,
     Polyline,
-} from '../../lib/types/geometry';
+} from '$lib/types/geometry';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {

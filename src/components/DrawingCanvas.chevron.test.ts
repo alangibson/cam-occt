@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
-import type { Shape } from '../lib/types';
+import type { Shape } from '$lib/types';
 import type { Line } from '$lib/geometry/line';
-import { CutDirection } from '../lib/types/direction';
-import { GeometryType } from '$lib/types/geometry';
+import { CutDirection } from '$lib/types/direction';
+import { GeometryType } from '$lib/geometry/shape';
 
 /**
  * Integration tests for chevron arrow rendering

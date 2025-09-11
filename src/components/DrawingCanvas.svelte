@@ -1,38 +1,38 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte';
-    import { drawingStore } from '../lib/stores/drawing';
-    import { chainStore } from '../lib/stores/chains';
-    import { partStore } from '../lib/stores/parts';
-    import { pathStore, type Path } from '../lib/stores/paths';
-    import { operationsStore } from '../lib/stores/operations';
-    import { tessellationStore } from '../lib/stores/tessellation';
-    import { overlayStore } from '../lib/stores/overlay';
+    import { drawingStore } from '$lib/stores/drawing';
+    import { chainStore } from '$lib/stores/chains';
+    import { partStore } from '$lib/stores/parts';
+    import { pathStore, type Path } from '$lib/stores/paths';
+    import { operationsStore } from '$lib/stores/operations';
+    import { tessellationStore } from '$lib/stores/tessellation';
+    import { overlayStore } from '$lib/stores/overlay';
     import {
         rapidStore,
         selectRapid,
         clearRapidHighlight,
-    } from '../lib/stores/rapids';
+    } from '$lib/stores/rapids';
     import {
         getShapeChainId,
         getChainShapeIds,
         clearChainSelection,
-    } from '../lib/stores/chains';
+    } from '$lib/stores/chains';
     import {
         getChainPartType,
         getPartChainIds,
         clearHighlight,
         selectPart,
-    } from '../lib/stores/parts';
-    import { clearPathHighlight } from '../lib/stores/paths';
+    } from '$lib/stores/parts';
+    import { clearPathHighlight } from '$lib/stores/paths';
     import { sampleNURBS, evaluateNURBS } from '$lib/geometry/spline';
     import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
     import {
         getShapeStartPoint,
         getShapeEndPoint,
     } from '$lib/geometry/shape/functions';
-    import { CoordinateTransformer } from '../lib/rendering/coordinate-transformer';
+    import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
     import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline';
-    import { debounce } from '../lib/utils/state-persistence';
+    import { debounce } from '$lib/utils/state-persistence';
     import {
         tessellateEllipse,
         ELLIPSE_TESSELLATION_POINTS,
@@ -41,7 +41,7 @@
     import {
         getCachedTessellation,
         clearTessellationCache,
-    } from '../lib/rendering/tessellation-cache';
+    } from '$lib/rendering/tessellation-cache';
     import {
         getEllipseParameters,
         isFullEllipse,
@@ -50,11 +50,11 @@
     import {
         RenderStateManager,
         PanStateManager,
-    } from '../lib/rendering/render-state';
+    } from '$lib/rendering/render-state';
     import {
         calculateViewportBounds,
         cullShapesToViewport,
-    } from '../lib/rendering/viewport-culling';
+    } from '$lib/rendering/viewport-culling';
     import LeadVisualization from './LeadVisualization.svelte';
     import {
         type Shape,
@@ -65,12 +65,12 @@
         type Ellipse,
         GeometryType,
         type Point2D,
-    } from '../lib/types';
+    } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
-    import type { WorkflowStage } from '../lib/stores/workflow';
-    import { getPhysicalScaleFactor, type Unit } from '../lib/utils/units';
-    import { normalizeAngle } from '../lib/utils/polygon-geometry-shared';
-    import { isPointInsidePart } from '../lib/algorithms/raytracing/point-in-chain';
+    import type { WorkflowStage } from '$lib/stores/workflow';
+    import { getPhysicalScaleFactor, type Unit } from '$lib/utils/units';
+    import { normalizeAngle } from '$lib/utils/polygon-geometry-shared';
+    import { isPointInsidePart } from '$lib/algorithms/raytracing/point-in-chain';
 
     export let respectLayerVisibility = true; // Default to true for Edit stage
     export let treatChainsAsEntities = false; // Default to false, true for Program stage

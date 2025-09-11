@@ -4,7 +4,7 @@ import {
     type Arc,
     type Polyline,
     type Shape,
-} from '../../../../../lib/types/geometry';
+} from '$lib/types/geometry';
 import {
     findPolylineSelfIntersections,
     hasPolylineSelfIntersections,

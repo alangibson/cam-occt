@@ -12,7 +12,7 @@ import { workflowStore, WorkflowStage } from './workflow';
 import { CutDirection, LeadType } from '../types/direction';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import type { Point2D, Shape } from '../types';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 // Mock workflow store
 vi.mock('./workflow');

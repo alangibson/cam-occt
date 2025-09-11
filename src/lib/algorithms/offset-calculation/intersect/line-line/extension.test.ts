@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { findLineLineIntersections } from './index';
-import type { Line } from '../../../../../lib/types/geometry';
+import type { Line } from '$lib/types/geometry';
 
 describe('Line-Line Extension Intersections', () => {
     it('finds intersection between original lines', () => {

@@ -1,4 +1,4 @@
-import type { Shape, Point2D, Line } from '../../../../../lib/types/geometry';
+import type { Shape, Point2D, Line } from '$lib/types/geometry';
 import type { FillOptions, FillResult, ShapeExtension } from '../types';
 import {
     extendLineToPoint,

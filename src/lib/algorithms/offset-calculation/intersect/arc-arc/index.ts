@@ -1,5 +1,5 @@
 import type { Arc } from '../../../../geometry/arc';
-import type { Point2D } from '../../../../../lib/types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import { EPSILON } from '$lib/geometry/math';
 import {

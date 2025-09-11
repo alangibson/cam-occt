@@ -10,7 +10,7 @@ import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type {
     DetectedPart,
     PartDetectionWarning,
-} from '../algorithms/part-detection';
+} from '$lib/algorithms/part-detection/part-detection';
 import type { Rapid } from '../algorithms/optimize-cut-order';
 import type { TessellationPoint, DrawingOverlay } from '../stores/overlay';
 import type { LeadWarning } from '../stores/lead-warnings';

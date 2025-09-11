@@ -14,7 +14,7 @@ import {
     type Line,
     type Circle,
     type Point2D,
-} from '../../../../lib/types/geometry';
+} from '$lib/types/geometry';
 import type { IntersectionResult } from './types';
 import { generateId } from '../../../utils/id';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';

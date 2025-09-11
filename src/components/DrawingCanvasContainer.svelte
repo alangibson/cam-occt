@@ -1,6 +1,6 @@
 <script lang="ts">
     import DrawingCanvas from './DrawingCanvas.svelte';
-    import type { WorkflowStage } from '../lib/stores/workflow';
+    import type { WorkflowStage } from '$lib/stores/workflow';
 
     export let respectLayerVisibility = true;
     export let treatChainsAsEntities = false;

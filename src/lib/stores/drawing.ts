@@ -4,7 +4,7 @@ import {
     type Shape,
     type Point2D,
     WorkflowStage,
-} from '../../lib/types';
+} from '$lib/types';
 import { Unit } from '../utils/units';
 import { clearChains } from './chains';
 import { clearParts } from './parts';

@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { calculateLeads, type LeadInConfig } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
-import type { DetectedPart } from './part-detection';
-import { PartType } from './part-detection';
-import { GeometryType } from '../../lib/types/geometry';
-import type { Shape, Point2D } from '../../lib/types/geometry';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { GeometryType } from '$lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 
 describe('Lead Geometry Debug', () => {
     // Helper to create a simple line chain
@@ -77,7 +77,7 @@ describe('Lead Geometry Debug', () => {
                 id: 'shell1',
                 chain: shellChain,
                 type: PartType.SHELL,
-                boundingBox: { minX: 0, maxX: 100, minY: 0, maxY: 100 },
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                 holes: [],
             },
             holes: [
@@ -85,7 +85,10 @@ describe('Lead Geometry Debug', () => {
                     id: 'hole1',
                     chain: createLineChain({ x: 70, y: 70 }, { x: 90, y: 70 }), // Some hole
                     type: PartType.HOLE,
-                    boundingBox: { minX: 70, maxX: 90, minY: 70, maxY: 90 },
+                    boundingBox: {
+                        min: { x: 70, y: 70 },
+                        max: { x: 90, y: 90 },
+                    },
                     holes: [],
                 },
             ],

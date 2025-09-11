@@ -7,9 +7,9 @@ import type {
     Circle,
     Polyline,
     Ellipse,
-} from '../../../../lib/types/geometry';
+} from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import { GeometryType } from '../../../../lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import { findSplineLineIntersectionsVerb } from '../intersect/line-spline/index';
 import { findSplineSplineIntersectionsVerb } from '../intersect/spline-spline/index';
 import { findSplinePolylineIntersectionsVerb } from '../intersect/polyline-spline/index';

@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
+import { parseDXF } from '$lib/parsers/dxf-parser';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
 import { isChainGeometricallyContained } from '../utils/geometric-operations';
 

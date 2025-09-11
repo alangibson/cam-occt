@@ -1,12 +1,15 @@
 import { describe, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseDXF } from '../parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf-parser';
 import {
     detectShapeChains,
     type Chain,
-} from './chain-detection/chain-detection';
-import { detectParts, type PartShell } from './part-detection';
+} from '$lib/algorithms/chain-detection/chain-detection';
+import {
+    detectParts,
+    type PartShell,
+} from '$lib/algorithms/part-detection/part-detection';
 import {
     calculateLeads,
     type LeadInConfig,
@@ -205,10 +208,10 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
             const bbox = part5.shell.boundingBox;
             const connectionPoint = points[0];
 
-            const distToLeft = connectionPoint.x - bbox.minX;
-            const distToRight = bbox.maxX - connectionPoint.x;
-            const distToBottom = connectionPoint.y - bbox.minY;
-            const distToTop = bbox.maxY - connectionPoint.y;
+            const distToLeft = connectionPoint.x - bbox.min.x;
+            const distToRight = bbox.max.x - connectionPoint.x;
+            const distToBottom = connectionPoint.y - bbox.min.y;
+            const distToTop = bbox.max.y - connectionPoint.y;
 
             const minDist = Math.min(
                 distToLeft,

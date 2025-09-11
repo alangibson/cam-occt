@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { getChainPartType } from './parts';
-import { PartType, type DetectedPart } from '../algorithms/part-detection';
+import {
+    PartType,
+    type DetectedPart,
+} from '$lib/algorithms/part-detection/part-detection';
 
 describe('Parts Store Chain Type Detection', () => {
     // Helper function to create test parts matching the real structure
@@ -14,7 +17,7 @@ describe('Parts Store Chain Type Detection', () => {
                     shapes: [],
                 },
                 type: PartType.SHELL as const,
-                boundingBox: { minX: 0, maxX: 20, minY: 0, maxY: 20 },
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
                 holes: [
                     {
                         id: 'hole-1',
@@ -23,7 +26,10 @@ describe('Parts Store Chain Type Detection', () => {
                             shapes: [],
                         },
                         type: PartType.HOLE as const,
-                        boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
+                        boundingBox: {
+                            min: { x: 2, y: 2 },
+                            max: { x: 8, y: 8 },
+                        },
                         holes: [],
                     },
                     {
@@ -33,7 +39,10 @@ describe('Parts Store Chain Type Detection', () => {
                             shapes: [],
                         },
                         type: PartType.HOLE as const,
-                        boundingBox: { minX: 12, maxX: 18, minY: 12, maxY: 18 },
+                        boundingBox: {
+                            min: { x: 12, y: 12 },
+                            max: { x: 18, y: 18 },
+                        },
                         holes: [],
                     },
                 ],
@@ -46,7 +55,7 @@ describe('Parts Store Chain Type Detection', () => {
                         shapes: [],
                     },
                     type: PartType.HOLE as const,
-                    boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
+                    boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
                     holes: [],
                 },
                 {
@@ -56,7 +65,10 @@ describe('Parts Store Chain Type Detection', () => {
                         shapes: [],
                     },
                     type: PartType.HOLE as const,
-                    boundingBox: { minX: 12, maxX: 18, minY: 12, maxY: 18 },
+                    boundingBox: {
+                        min: { x: 12, y: 12 },
+                        max: { x: 18, y: 18 },
+                    },
                     holes: [],
                 },
             ],
@@ -105,7 +117,7 @@ describe('Parts Store Chain Type Detection', () => {
                     shapes: [],
                 },
                 type: PartType.SHELL,
-                boundingBox: { minX: 30, maxX: 50, minY: 30, maxY: 50 },
+                boundingBox: { min: { x: 30, y: 30 }, max: { x: 50, y: 50 } },
                 holes: [],
             },
             holes: [],

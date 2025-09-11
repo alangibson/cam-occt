@@ -5,11 +5,11 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
-import type { DetectedPart } from './part-detection';
-import { PartType } from './part-detection';
-import { GeometryType } from '../../lib/types/geometry';
-import type { Shape } from '../../lib/types/geometry';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { GeometryType } from '$lib/types/geometry';
+import type { Shape } from '$lib/types/geometry';
 
 describe('Lead Tangency Tests', () => {
     // Helper to create a simple line chain
@@ -174,7 +174,7 @@ describe('Lead Tangency Tests', () => {
                     id: 'shell1',
                     chain: shellChain,
                     type: PartType.SHELL,
-                    boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
+                    boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
                     holes: [],
                 },
                 holes: [],
@@ -186,7 +186,7 @@ describe('Lead Tangency Tests', () => {
                     id: 'shell2',
                     chain: shellChain,
                     type: PartType.SHELL,
-                    boundingBox: { minX: 2, maxX: 8, minY: 2, maxY: 8 },
+                    boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
                     holes: [],
                 },
                 holes: [
@@ -194,7 +194,10 @@ describe('Lead Tangency Tests', () => {
                         id: 'hole1',
                         chain: holeChain,
                         type: PartType.HOLE,
-                        boundingBox: { minX: 4, maxX: 6, minY: 4, maxY: 6 },
+                        boundingBox: {
+                            min: { x: 4, y: 4 },
+                            max: { x: 6, y: 6 },
+                        },
                         holes: [],
                     },
                 ],

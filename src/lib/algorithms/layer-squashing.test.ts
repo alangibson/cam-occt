@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
+import { parseDXF } from '$lib/parsers/dxf-parser';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import {
     squashLayers,
     getLayerStatistics,

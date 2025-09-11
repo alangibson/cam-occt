@@ -4,7 +4,7 @@ import {
     isPointInsideChain,
     determineChainOrientation,
 } from './side-detection';
-import { GeometryType, type Shape } from '../../../../lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/types/geometry';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '../../../utils/id';

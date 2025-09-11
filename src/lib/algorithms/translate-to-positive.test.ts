@@ -5,15 +5,9 @@ import {
     polylineToVertices,
     createPolylineFromVertices,
 } from '$lib/geometry/polyline';
-import { GeometryType } from '../../lib/types/geometry';
-import type { Shape } from '../../lib/types';
-import type {
-    Line,
-    Circle,
-    Arc,
-    Polyline,
-    Ellipse,
-} from '../../lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
+import type { Shape } from '$lib/types';
+import type { Line, Circle, Arc, Polyline, Ellipse } from '$lib/types/geometry';
 
 describe('Translate to Positive Quadrant Algorithm', () => {
     describe('Basic Functionality', () => {
@@ -397,10 +391,10 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             expect(result).toHaveLength(1);
             const ellipse: import('$lib/types/geometry').Ellipse = result[0]
                 .geometry as Ellipse;
-            // Major axis length = 4, minor = 2, max extent = 4
-            // Bounding box: center(-8,-6) ± 4 = min(-12,-10), max(-4,-2)
-            // Translation: x+12, y+10
-            expect(ellipse.center).toEqual({ x: 4, y: 4 }); // -8+12=4, -6+10=4
+            // Major axis length = 4, minor = 2, horizontal major axis
+            // Bounding box: center(-8,-6) ± (4,2) = min(-12,-8), max(-4,-4)
+            // Translation: x+12, y+8
+            expect(ellipse.center).toEqual({ x: 4, y: 2 }); // -8+12=4, -6+8=2
             expect(ellipse.majorAxisEndpoint).toEqual({ x: 4, y: 0 }); // Vector unchanged
             expect(ellipse.minorToMajorRatio).toBe(0.5);
         });

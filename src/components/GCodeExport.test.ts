@@ -1,14 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
-import { generateToolPaths } from '../lib/cam/path-generator';
-import { generateGCode } from '../lib/cam/gcode-generator';
-import { GeometryType } from '$lib/types/geometry';
-import { Unit } from '../lib/utils/units';
-import { CutterCompensation } from '../lib/types/cam';
+import { generateToolPaths } from '$lib/cam/path-generator';
+import { generateGCode } from '$lib/cam/gcode-generator';
+import { GeometryType } from '$lib/geometry/shape';
+import { Unit } from '$lib/utils/units';
+import { CutterCompensation } from '$lib/types/cam';
 import type { ToolPath } from '$lib/types';
 
 // Mock the modules
-vi.mock('../lib/cam/path-generator');
-vi.mock('../lib/cam/gcode-generator');
+vi.mock('$lib/cam/path-generator');
+vi.mock('$lib/cam/gcode-generator');
 
 describe('GCodeExport Component Logic', () => {
     describe('G-code generation', () => {

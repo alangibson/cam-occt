@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { drawingStore } from '../lib/stores/drawing';
+    import { drawingStore } from '$lib/stores/drawing';
 
     $: drawing = $drawingStore.drawing;
 

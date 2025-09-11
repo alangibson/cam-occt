@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { drawingStore } from '../lib/stores/drawing';
-    import type { Point2D } from '../lib/types';
+    import { drawingStore } from '$lib/stores/drawing';
+    import type { Point2D } from '$lib/types';
 
     $: selectedCount = $drawingStore.selectedShapes.size;
     $: fileName = $drawingStore.fileName;

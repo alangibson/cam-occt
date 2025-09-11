@@ -12,7 +12,7 @@ import {
     calculateDynamicTolerance,
 } from './functions';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type {
     Line,
     Circle,

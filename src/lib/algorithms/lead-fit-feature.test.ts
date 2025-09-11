@@ -12,10 +12,10 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { LeadType, CutDirection } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
-import type { DetectedPart } from './part-detection';
-import { PartType } from './part-detection';
-import { GeometryType } from '$lib/types/geometry';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('Lead Fit Feature', () => {
     // Create a simple test chain (square)
@@ -64,7 +64,7 @@ describe('Lead Fit Feature', () => {
             id: 'shell-1',
             type: PartType.SHELL,
             chain: testChain,
-            boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             holes: [],
         },
         holes: [],

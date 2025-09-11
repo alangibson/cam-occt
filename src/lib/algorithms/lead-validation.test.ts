@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { validateLeadConfiguration } from './lead-validation';
 import { LeadType, CutDirection } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
-import type { DetectedPart } from './part-detection';
-import { PartType } from './part-detection';
-import type { Shape } from '../../lib/types/geometry';
-import { GeometryType } from '../../lib/types/geometry';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import type { Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('Lead Validation Pipeline', () => {
     // Helper to create a simple line chain
@@ -192,7 +192,10 @@ describe('Lead Validation Pipeline', () => {
                     id: 'shell1',
                     chain: shellChain,
                     type: PartType.SHELL,
-                    boundingBox: { minX: -5, maxX: 15, minY: -5, maxY: 15 },
+                    boundingBox: {
+                        min: { x: -5, y: -5 },
+                        max: { x: 15, y: 15 },
+                    },
                     holes: [],
                 },
                 holes: [
@@ -200,7 +203,10 @@ describe('Lead Validation Pipeline', () => {
                         id: 'hole1',
                         chain: holeChain,
                         type: PartType.HOLE,
-                        boundingBox: { minX: 3, maxX: 7, minY: 3, maxY: 7 },
+                        boundingBox: {
+                            min: { x: 3, y: 3 },
+                            max: { x: 7, y: 7 },
+                        },
                         holes: [],
                     },
                 ],
@@ -239,7 +245,10 @@ describe('Lead Validation Pipeline', () => {
                     id: 'shell1',
                     chain: shellChain,
                     type: PartType.SHELL,
-                    boundingBox: { minX: -5, maxX: 15, minY: -5, maxY: 15 },
+                    boundingBox: {
+                        min: { x: -5, y: -5 },
+                        max: { x: 15, y: 15 },
+                    },
                     holes: [],
                 },
                 holes: [],

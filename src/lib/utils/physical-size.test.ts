@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseDXF } from '../parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf-parser';
 import { getPhysicalScaleFactor, Unit } from './units';
 
 describe('Physical Size Display', () => {

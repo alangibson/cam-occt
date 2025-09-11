@@ -14,7 +14,7 @@ import {
     calculatePolygonPerimeter,
 } from './geometry-utils';
 import { calculateLineDirectionAndLength } from '$lib/geometry/line';
-import type { Point2D, Line } from '../../lib/types/geometry';
+import type { Point2D, Line } from '$lib/types/geometry';
 
 describe('Geometry Utils', () => {
     // Test shapes with known properties

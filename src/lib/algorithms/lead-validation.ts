@@ -1,5 +1,5 @@
-import type { Chain } from './chain-detection/chain-detection';
-import type { DetectedPart } from './part-detection';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { LeadType, CutDirection } from '../types/direction';
 import type { LeadInConfig, LeadOutConfig } from './lead-calculation';
 import {
@@ -485,10 +485,10 @@ function calculateChainBounds(chain: Chain): {
     for (const shape of chain.shapes) {
         // Get shape bounds based on type
         const bounds = getShapeBoundingBox(shape);
-        minX = Math.min(minX, bounds.minX);
-        maxX = Math.max(maxX, bounds.maxX);
-        minY = Math.min(minY, bounds.minY);
-        maxY = Math.max(maxY, bounds.maxY);
+        minX = Math.min(minX, bounds.min.x);
+        maxX = Math.max(maxX, bounds.max.x);
+        minY = Math.min(minY, bounds.min.y);
+        maxY = Math.max(maxY, bounds.max.y);
     }
 
     return {

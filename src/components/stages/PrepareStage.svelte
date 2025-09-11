@@ -2,8 +2,8 @@
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import LayersInfo from '../LayersInfo.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
-    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
-    import { drawingStore } from '../../lib/stores/drawing';
+    import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
+    import { drawingStore } from '$lib/stores/drawing';
     import {
         chainStore,
         setChains,
@@ -12,7 +12,7 @@
         clearChains,
         highlightChain,
         clearChainHighlight,
-    } from '../../lib/stores/chains';
+    } from '$lib/stores/chains';
     import {
         partStore,
         setParts,
@@ -22,31 +22,28 @@
         hoverPart,
         clearPartHover,
         selectPart,
-    } from '../../lib/stores/parts';
-    import { detectShapeChains } from '../../lib/algorithms/chain-detection/chain-detection';
+    } from '$lib/stores/parts';
+    import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
     import {
         detectParts,
         type PartDetectionWarning,
         isChainClosed as isChainClosedAlgorithm,
-    } from '../../lib/algorithms/part-detection';
+    } from '$lib/algorithms/part-detection/part-detection';
     import {
         analyzeChainTraversal,
         normalizeChain,
-    } from '../../lib/algorithms/chain-normalization/chain-normalization';
+    } from '$lib/algorithms/chain-normalization/chain-normalization';
     import {
         tessellationStore,
         type TessellationPoint,
-    } from '../../lib/stores/tessellation';
+    } from '$lib/stores/tessellation';
     import { tessellateShape } from '$lib/geometry/shape';
-    import {
-        overlayStore,
-        generateChainEndpoints,
-    } from '../../lib/stores/overlay';
-    import { optimizeStartPoints } from '../../lib/algorithms/optimize-start-points';
-    import { prepareStageStore } from '../../lib/stores/prepare-stage';
-    import { decomposePolylines } from '../../lib/algorithms/decompose-polylines';
-    import { translateToPositiveQuadrant } from '../../lib/algorithms/translate-to-positive';
-    import { joinColinearLines } from '../../lib/algorithms/join-colinear-lines';
+    import { overlayStore, generateChainEndpoints } from '$lib/stores/overlay';
+    import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points';
+    import { prepareStageStore } from '$lib/stores/prepare-stage';
+    import { decomposePolylines } from '$lib/algorithms/decompose-polylines';
+    import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive';
+    import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
     import {
         type Shape,
         type Line,
@@ -55,9 +52,9 @@
         type Polyline,
         type Ellipse,
         GeometryType,
-    } from '../../lib/types';
+    } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
-    import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
+    import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
     import {
         getShapeStartPoint,
         getShapeEndPoint,
@@ -69,10 +66,10 @@
         handlePartClick as sharedHandlePartClick,
         handlePartMouseEnter,
         handlePartMouseLeave,
-    } from '../../lib/utils/chain-part-interactions';
+    } from '$lib/utils/chain-part-interactions';
     import { polylineToPoints } from '$lib/geometry/polyline';
-    import { detectCutDirection } from '../../lib/algorithms/cut-direction';
-    import { CutDirection } from '../../lib/types/direction';
+    import { detectCutDirection } from '$lib/algorithms/cut-direction';
+    import { CutDirection } from '$lib/types/direction';
 
     // Resizable columns state - initialize from store, update local variables during drag
     let leftColumnWidth = $prepareStageStore.leftColumnWidth;

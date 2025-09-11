@@ -8,23 +8,19 @@ import {
     type Line,
     type Circle,
     Unit,
-} from '../../lib/types';
+} from '$lib/types';
 
 // Mock getShapePoints function
-vi.mock('$lib/geometry/shape', () => ({
-    getShapePoints: vi.fn(),
-    GeometryType: {
-        LINE: 'line',
-        ARC: 'arc',
-        CIRCLE: 'circle',
-        POLYLINE: 'polyline',
-        SPLINE: 'spline',
-        ELLIPSE: 'ellipse',
-    },
-}));
+vi.mock('$lib/geometry/shape', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('$lib/geometry/shape')>();
+    return {
+        ...actual,
+        getShapePoints: vi.fn(),
+    };
+});
 
 import { getShapePoints } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 const mockGetShapePoints = vi.mocked(getShapePoints);
 
 describe('generateToolPaths', () => {

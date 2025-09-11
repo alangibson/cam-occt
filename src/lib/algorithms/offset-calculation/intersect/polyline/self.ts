@@ -5,7 +5,7 @@ import {
     type Arc,
     type Point2D,
     GeometryType,
-} from '../../../../../lib/types/geometry';
+} from '$lib/types/geometry';
 import type {
     IntersectionResult,
     PolylineSelfIntersection,

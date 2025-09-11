@@ -1,5 +1,5 @@
-import type { Shape, Point2D } from '../../../../lib/types/geometry';
-import { GeometryType } from '../../../../lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type {
     FillOptions,
     FillResult,

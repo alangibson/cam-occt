@@ -1,12 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
-import { pathStore } from '../../lib/stores/paths';
-import { rapidStore } from '../../lib/stores/rapids';
-import { chainStore } from '../../lib/stores/chains';
-import { operationsStore } from '../../lib/stores/operations';
-import { drawingStore } from '../../lib/stores/drawing';
-import { uiStore } from '../../lib/stores/ui';
+import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
+import { pathStore } from '$lib/stores/paths';
+import { rapidStore } from '$lib/stores/rapids';
+import { chainStore } from '$lib/stores/chains';
+import { operationsStore } from '$lib/stores/operations';
+import { drawingStore } from '$lib/stores/drawing';
+import { uiStore } from '$lib/stores/ui';
 import { CutDirection } from '$lib/types/direction';
 
 describe('SimulateStage store subscription cleanup', () => {

@@ -1,10 +1,10 @@
 import { render } from '@testing-library/svelte';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { WorkflowStage } from '../../lib/stores/workflow';
+import { WorkflowStage } from '$lib/stores/workflow';
 import NewProgramStage from './NewProgramStage.svelte';
 
 // Mock all store dependencies
-vi.mock('../../lib/stores/workflow', () => ({
+vi.mock('$lib/stores/workflow', () => ({
     workflowStore: {
         subscribe: vi.fn((callback) => {
             callback({
@@ -18,7 +18,7 @@ vi.mock('../../lib/stores/workflow', () => ({
     },
 }));
 
-vi.mock('../../lib/stores/drawing', () => ({
+vi.mock('$lib/stores/drawing', () => ({
     drawingStore: {
         subscribe: vi.fn((callback) => {
             callback({
@@ -30,7 +30,7 @@ vi.mock('../../lib/stores/drawing', () => ({
     },
 }));
 
-vi.mock('../../lib/stores/chains', () => ({
+vi.mock('$lib/stores/chains', () => ({
     chainStore: {
         subscribe: vi.fn((callback) => {
             callback({
@@ -43,7 +43,7 @@ vi.mock('../../lib/stores/chains', () => ({
     selectChain: vi.fn(),
 }));
 
-vi.mock('../../lib/stores/parts', () => ({
+vi.mock('$lib/stores/parts', () => ({
     partStore: {
         subscribe: vi.fn((callback) => {
             callback({
@@ -57,7 +57,7 @@ vi.mock('../../lib/stores/parts', () => ({
     clearHighlight: vi.fn(),
 }));
 
-vi.mock('../../lib/stores/paths', () => ({
+vi.mock('$lib/stores/paths', () => ({
     pathStore: {
         subscribe: vi.fn((callback) => {
             callback({
@@ -69,7 +69,7 @@ vi.mock('../../lib/stores/paths', () => ({
     },
 }));
 
-vi.mock('../../lib/stores/rapids', () => ({
+vi.mock('$lib/stores/rapids', () => ({
     rapidStore: {
         subscribe: vi.fn((callback) => {
             callback({
@@ -87,7 +87,7 @@ vi.mock('../../lib/stores/rapids', () => ({
     clearRapidHighlight: vi.fn(),
 }));
 
-vi.mock('../../lib/stores/lead-warnings', () => ({
+vi.mock('$lib/stores/lead-warnings', () => ({
     leadWarningsStore: {
         subscribe: vi.fn((callback) => {
             callback({
@@ -98,7 +98,7 @@ vi.mock('../../lib/stores/lead-warnings', () => ({
     },
 }));
 
-vi.mock('../../lib/stores/offset-warnings', () => ({
+vi.mock('$lib/stores/offset-warnings', () => ({
     offsetWarningsStore: {
         subscribe: vi.fn((callback) => {
             callback({
@@ -172,11 +172,11 @@ vi.mock('../ShapeProperties.svelte', () => ({
 }));
 
 // Mock algorithm dependencies
-vi.mock('../../lib/algorithms/part-detection', () => ({
+vi.mock('$lib/algorithms/part-detection/part-detection', () => ({
     isChainClosed: vi.fn().mockReturnValue(false),
 }));
 
-vi.mock('../../lib/algorithms/optimize-cut-order', () => ({
+vi.mock('$lib/algorithms/optimize-cut-order', () => ({
     optimizeCutOrder: vi.fn().mockReturnValue({
         orderedPaths: [],
         rapids: [],

@@ -46,7 +46,7 @@ describe('Workflow Components', () => {
     describe('Stage helper functions', () => {
         it('should import and use workflow utilities', async () => {
             const { getStageDisplayName, getStageDescription, WorkflowStage } =
-                await import('../lib/stores/workflow');
+                await import('$lib/stores/workflow');
 
             expect(getStageDisplayName(WorkflowStage.IMPORT)).toBe('Import');
             expect(getStageDisplayName(WorkflowStage.EDIT)).toBe('Edit');
@@ -81,7 +81,7 @@ describe('Workflow Components', () => {
     describe('Workflow stage progression logic', () => {
         it('should define correct stage order', async () => {
             const { workflowStore, WorkflowStage } = await import(
-                '../lib/stores/workflow'
+                '$lib/stores/workflow'
             );
 
             // Test the expected progression through store methods

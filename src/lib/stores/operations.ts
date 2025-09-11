@@ -34,7 +34,10 @@ import { leadWarningsStore } from './lead-warnings';
 import { offsetWarningsStore } from './offset-warnings';
 import { CutDirection, LeadType } from '../types/direction';
 import { calculateAndStoreOperationLeads } from '../utils/lead-persistence-utils';
-import type { DetectedPart, PartHole } from '$lib/algorithms/part-detection';
+import type {
+    DetectedPart,
+    PartHole,
+} from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import { KerfCompensation } from '../types/kerf-compensation';

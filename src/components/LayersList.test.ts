@@ -2,10 +2,10 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import LayersList from './LayersList.svelte';
-import { drawingStore } from '../lib/stores/drawing';
-import { Unit } from '../lib/utils/units';
-import type { Drawing } from '../lib/types';
-import { GeometryType } from '$lib/types/geometry';
+import { drawingStore } from '$lib/stores/drawing';
+import { Unit } from '$lib/utils/units';
+import type { Drawing } from '$lib/types';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('LayersList Component', () => {
     beforeEach(() => {

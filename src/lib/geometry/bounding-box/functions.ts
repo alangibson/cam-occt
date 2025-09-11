@@ -9,7 +9,7 @@ import type {
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import type { BoundingBox } from './interfaces';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { sampleNURBS } from '$lib/geometry/spline';
 import { calculateArcPoint } from '$lib/geometry/arc';

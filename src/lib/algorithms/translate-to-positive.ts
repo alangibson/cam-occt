@@ -1,4 +1,4 @@
-import { GeometryType } from '../../lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type {
     Shape,
     Point2D,
@@ -6,7 +6,7 @@ import type {
     Circle,
     Polyline,
     Ellipse,
-} from '../../lib/types';
+} from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { getShapePointsForBounds } from '../utils/shape-bounds-utils';

@@ -1,20 +1,20 @@
 <script lang="ts">
-    import type { Path } from '../lib/stores/paths';
-    import type { Operation } from '../lib/stores/operations';
-    import type { DetectedPart } from '../lib/algorithms/part-detection';
+    import type { Path } from '$lib/stores/paths';
+    import type { Operation } from '$lib/stores/operations';
+    import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import {
         calculateLeads,
         type LeadInConfig,
         type LeadOutConfig,
-    } from '../lib/algorithms/lead-calculation';
-    import type { CoordinateTransformer } from '../lib/rendering/coordinate-transformer';
-    import type { Point2D } from '../lib/types';
-    import { LeadType } from '../lib/types/direction';
+    } from '$lib/algorithms/lead-calculation';
+    import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
+    import type { Point2D } from '$lib/types';
+    import { LeadType } from '$lib/types/direction';
     import {
         getCachedLeadGeometry,
         hasValidCachedLeads,
-    } from '../lib/utils/lead-persistence-utils';
-    import { findPartContainingChain } from '../lib/utils/chain-part-interactions';
+    } from '$lib/utils/lead-persistence-utils';
+    import { findPartContainingChain } from '$lib/utils/chain-part-interactions';
 
     // Props
     export let ctx: CanvasRenderingContext2D;

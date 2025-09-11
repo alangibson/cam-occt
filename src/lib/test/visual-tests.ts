@@ -101,10 +101,10 @@ function aggregateShapeBounds(shapes: Shape[]): {
 
     for (const shape of shapes) {
         const shapeBounds = getShapeBoundingBox(shape);
-        minX = Math.min(minX, shapeBounds.minX);
-        minY = Math.min(minY, shapeBounds.minY);
-        maxX = Math.max(maxX, shapeBounds.maxX);
-        maxY = Math.max(maxY, shapeBounds.maxY);
+        minX = Math.min(minX, shapeBounds.min.x);
+        minY = Math.min(minY, shapeBounds.min.y);
+        maxX = Math.max(maxX, shapeBounds.max.x);
+        maxY = Math.max(maxY, shapeBounds.max.y);
     }
 
     return { minX, minY, maxX, maxY };

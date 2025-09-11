@@ -3,7 +3,7 @@ import type {
     DetectedPart,
     PartDetectionWarning,
     PartHole,
-} from '../algorithms/part-detection';
+} from '$lib/algorithms/part-detection/part-detection';
 
 export interface PartStore {
     parts: DetectedPart[];

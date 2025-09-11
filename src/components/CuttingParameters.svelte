@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CuttingParameters } from '../lib/types';
+    import type { CuttingParameters } from '$lib/types';
 
     export let parameters: CuttingParameters = {
         feedRate: 1000,

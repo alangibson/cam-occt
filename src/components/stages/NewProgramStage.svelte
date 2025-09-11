@@ -5,14 +5,14 @@
     import Paths from '../Paths.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
     import ShapeProperties from '../ShapeProperties.svelte';
-    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
-    import { drawingStore } from '../../lib/stores/drawing';
+    import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
+    import { drawingStore } from '$lib/stores/drawing';
     import {
         chainStore,
         selectChain,
         highlightChain,
         clearChainHighlight,
-    } from '../../lib/stores/chains';
+    } from '$lib/stores/chains';
     import {
         partStore,
         highlightPart,
@@ -20,15 +20,15 @@
         hoverPart,
         clearPartHover,
         selectPart,
-    } from '../../lib/stores/parts';
-    import { isChainClosed } from '../../lib/algorithms/part-detection';
-    import { pathStore } from '../../lib/stores/paths';
+    } from '$lib/stores/parts';
+    import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
+    import { pathStore } from '$lib/stores/paths';
     import {
         rapidStore,
         selectRapid,
         highlightRapid,
         clearRapidHighlight,
-    } from '../../lib/stores/rapids';
+    } from '$lib/stores/rapids';
     import {
         handleChainClick as sharedHandleChainClick,
         handleChainMouseEnter,
@@ -36,10 +36,10 @@
         handlePartClick as sharedHandlePartClick,
         handlePartMouseEnter,
         handlePartMouseLeave,
-    } from '../../lib/utils/chain-part-interactions';
-    import { leadWarningsStore } from '../../lib/stores/lead-warnings';
-    import { offsetWarningsStore } from '../../lib/stores/offset-warnings';
-    import { optimizeCutOrder } from '../../lib/algorithms/optimize-cut-order';
+    } from '$lib/utils/chain-part-interactions';
+    import { leadWarningsStore } from '$lib/stores/lead-warnings';
+    import { offsetWarningsStore } from '$lib/stores/offset-warnings';
+    import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order';
 
     let operationsComponent: Operations;
 

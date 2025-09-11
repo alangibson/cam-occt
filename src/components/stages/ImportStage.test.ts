@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
-import { drawingStore } from '../../lib/stores/drawing';
-import { Unit } from '../../lib/utils/units';
+import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
+import { drawingStore } from '$lib/stores/drawing';
+import { Unit } from '$lib/utils/units';
 
 describe('ImportStage workflow behavior', () => {
     beforeEach(() => {

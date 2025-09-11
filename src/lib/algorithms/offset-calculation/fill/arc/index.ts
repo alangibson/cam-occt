@@ -16,7 +16,7 @@ import {
 import {
     HIGH_PRECISION_TOLERANCE,
     CONFIDENCE_HIGH_THRESHOLD,
-} from '../../../../../lib/geometry/constants';
+} from '$lib/geometry/constants';
 
 /**
  * Arc Fill Module

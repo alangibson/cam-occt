@@ -1,8 +1,8 @@
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
-import { generateId } from '../utils/id';
-import type { Chain as ShapeChain } from './chain-detection/chain-detection';
-import { detectParts } from './part-detection';
+import { generateId } from '$lib/utils/id';
+import type { Chain as ShapeChain } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 
 describe('Part Detection Algorithm', () => {
     // Helper function to create test shapes
@@ -180,8 +180,8 @@ describe('Part Detection Algorithm', () => {
             const outerPart = result.parts.find((p) => {
                 const bounds = p.shell.boundingBox;
                 return (
-                    bounds.maxX - bounds.minX === 30 &&
-                    bounds.maxY - bounds.minY === 30
+                    bounds.max.x - bounds.min.x === 30 &&
+                    bounds.max.y - bounds.min.y === 30
                 );
             });
 
@@ -189,8 +189,8 @@ describe('Part Detection Algorithm', () => {
             const innerPart = result.parts.find((p) => {
                 const bounds = p.shell.boundingBox;
                 return (
-                    bounds.maxX - bounds.minX === 10 &&
-                    bounds.maxY - bounds.minY === 10
+                    bounds.max.x - bounds.min.x === 10 &&
+                    bounds.max.y - bounds.min.y === 10
                 );
             });
 
@@ -200,8 +200,8 @@ describe('Part Detection Algorithm', () => {
 
             // The hole should be the middle-sized rectangle (20x20)
             const hole = outerPart!.holes[0];
-            expect(hole.boundingBox.maxX - hole.boundingBox.minX).toBe(20);
-            expect(hole.boundingBox.maxY - hole.boundingBox.minY).toBe(20);
+            expect(hole.boundingBox.max.x - hole.boundingBox.min.x).toBe(20);
+            expect(hole.boundingBox.max.y - hole.boundingBox.min.y).toBe(20);
 
             expect(innerPart!.holes).toHaveLength(0);
             expect(result.warnings).toHaveLength(0);
@@ -223,8 +223,8 @@ describe('Part Detection Algorithm', () => {
             const outerPart = result.parts.find((p) => {
                 const bounds = p.shell.boundingBox;
                 return (
-                    bounds.maxX - bounds.minX === 40 &&
-                    bounds.maxY - bounds.minY === 40
+                    bounds.max.x - bounds.min.x === 40 &&
+                    bounds.max.y - bounds.min.y === 40
                 );
             });
 
@@ -232,8 +232,8 @@ describe('Part Detection Algorithm', () => {
             const innerPart = result.parts.find((p) => {
                 const bounds = p.shell.boundingBox;
                 return (
-                    bounds.maxX - bounds.minX === 20 &&
-                    bounds.maxY - bounds.minY === 20
+                    bounds.max.x - bounds.min.x === 20 &&
+                    bounds.max.y - bounds.min.y === 20
                 );
             });
 
@@ -245,19 +245,19 @@ describe('Part Detection Algorithm', () => {
             // The outer part's hole should be 30x30
             const outerHole = outerPart!.holes[0];
             expect(
-                outerHole.boundingBox.maxX - outerHole.boundingBox.minX
+                outerHole.boundingBox.max.x - outerHole.boundingBox.min.x
             ).toBe(30);
             expect(
-                outerHole.boundingBox.maxY - outerHole.boundingBox.minY
+                outerHole.boundingBox.max.y - outerHole.boundingBox.min.y
             ).toBe(30);
 
             // The inner part's hole should be 10x10
             const innerHole = innerPart!.holes[0];
             expect(
-                innerHole.boundingBox.maxX - innerHole.boundingBox.minX
+                innerHole.boundingBox.max.x - innerHole.boundingBox.min.x
             ).toBe(10);
             expect(
-                innerHole.boundingBox.maxY - innerHole.boundingBox.minY
+                innerHole.boundingBox.max.y - innerHole.boundingBox.min.y
             ).toBe(10);
 
             expect(result.warnings).toHaveLength(0);

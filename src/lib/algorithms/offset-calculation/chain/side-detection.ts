@@ -1,11 +1,11 @@
-import type { Shape, Point2D } from '../../../../lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 import type { Chain } from '../../chain-detection/chain-detection';
 import type {
     OffsetSide,
     SideDetectionResult,
     SideDetectionOptions,
 } from './types.ts';
-import { isChainClosed } from '../../part-detection';
+import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import { normalizeVector } from '$lib/geometry/math/functions';
 import { getShapeMidpoint } from '$lib/geometry/shape/functions';
 import { getShapePointAt } from '$lib/geometry/shape/functions';

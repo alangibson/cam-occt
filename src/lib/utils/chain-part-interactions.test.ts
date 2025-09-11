@@ -5,7 +5,7 @@ import {
     type DetectedPart,
     type PartHole,
     type PartShell,
-} from '../algorithms/part-detection';
+} from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 
 describe('findPartContainingChain', () => {
@@ -23,7 +23,7 @@ describe('findPartContainingChain', () => {
             id: `shell-${chainId}`,
             chain: createMockChain(chainId),
             type: PartType.SHELL,
-            boundingBox: { minX: 0, minY: 0, maxX: 100, maxY: 100 },
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
             holes: [],
         };
     }
@@ -34,7 +34,7 @@ describe('findPartContainingChain', () => {
             id: `hole-${chainId}`,
             chain: createMockChain(chainId),
             type: PartType.HOLE,
-            boundingBox: { minX: 10, minY: 10, maxX: 20, maxY: 20 },
+            boundingBox: { min: { x: 10, y: 10 }, max: { x: 20, y: 20 } },
             holes: [],
         };
     }

@@ -1,4 +1,4 @@
-import type { Shape, Line, Point2D } from '../../../../../lib/types/geometry';
+import type { Shape, Line, Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { IntersectionResult } from '../../chain/types.ts';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';

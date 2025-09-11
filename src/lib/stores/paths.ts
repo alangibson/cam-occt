@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { Point2D, Shape } from '../../lib/types';
+import type { Point2D, Shape } from '$lib/types';
 import { WorkflowStage, workflowStore } from './workflow';
 import { CutDirection, LeadType } from '../types/direction';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';

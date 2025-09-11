@@ -10,28 +10,26 @@
  * Uses JSTS for robust geometric containment detection based on MetalHeadCAM reference
  */
 
-import type { Chain } from './chain-detection/chain-detection';
-import type { Point2D, Shape } from '../../lib/types';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Point2D, Shape } from '$lib/types';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Polyline } from '$lib/geometry/polyline';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,
-} from '../utils/geometric-containment';
-import type { PartDetectionParameters } from '../../lib/types/part-detection';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
-import { normalizeChain } from './chain-normalization/chain-normalization';
+} from '$lib/algorithms/part-detection/geometric-containment';
+import type { PartDetectionParameters } from '$lib/types/part-detection';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
+import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import {
     getShapeStartPoint,
     getShapeEndPoint,
 } from '$lib/geometry/shape/functions';
-import {
-    calculateChainBoundingBox,
-    type BoundingBox,
-} from '../utils/shape-bounds-utils';
 import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
-import { CONTAINMENT_AREA_TOLERANCE } from '../geometry/constants';
+import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
+import type { BoundingBox } from '$lib/geometry/bounding-box';
+import { calculateChainBoundingBox } from '$lib/utils/shape-bounds-utils';
 
 /**
  * Part type enumeration
@@ -336,8 +334,6 @@ function checkOpenChainBoundaryCrossing(
     closedChains: Chain[],
     chainBounds: Map<string, BoundingBox>
 ): string | null {
-    const _openChainBounds: BoundingBox = calculateChainBoundingBox(openChain);
-
     for (const closedChain of closedChains) {
         const closedBounds: BoundingBox | undefined = chainBounds.get(
             closedChain.id
@@ -392,10 +388,10 @@ function isPointInBoundingBox(
 ): boolean {
     if (!point) return false;
     return (
-        point.x >= bbox.minX &&
-        point.x <= bbox.maxX &&
-        point.y >= bbox.minY &&
-        point.y <= bbox.maxY
+        point.x >= bbox.min.x &&
+        point.x <= bbox.max.x &&
+        point.y >= bbox.min.y &&
+        point.y <= bbox.max.y
     );
 }
 

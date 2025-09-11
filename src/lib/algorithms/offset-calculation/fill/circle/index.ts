@@ -1,4 +1,4 @@
-import type { Shape, Point2D } from '../../../../../lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 import type { Circle } from '$lib/geometry/circle';
 import type { FillOptions, FillResult } from '../types';
 import type { OperationParams } from '../../shared/fill-extend-ops';

@@ -1,9 +1,9 @@
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
-import type { Shape } from '../../lib/types';
+import type { Shape } from '$lib/types';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
-import type { Chain } from './chain-detection/chain-detection';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import { optimizeStartPoints } from './optimize-start-points';
 
 describe('optimizeStartPoints - ADLER.dxf scenario', () => {

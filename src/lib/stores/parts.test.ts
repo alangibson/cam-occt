@@ -18,7 +18,7 @@ import {
     type DetectedPart,
     type PartDetectionWarning,
     type PartHole,
-} from '../algorithms/part-detection';
+} from '$lib/algorithms/part-detection/part-detection';
 
 describe('Parts Store', () => {
     beforeEach(() => {
@@ -38,7 +38,7 @@ describe('Parts Store', () => {
                 shapes: [],
             },
             type: PartType.HOLE as const,
-            boundingBox: { minX: 0, maxX: 10, minY: 0, maxY: 10 },
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             holes: [],
         }));
 
@@ -51,7 +51,7 @@ describe('Parts Store', () => {
                     shapes: [],
                 },
                 type: PartType.SHELL as const,
-                boundingBox: { minX: 0, maxX: 20, minY: 0, maxY: 20 },
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
                 holes: holes,
             },
             holes: holes,
@@ -194,17 +194,15 @@ describe('Parts Store', () => {
                     id: 'shell-1',
                     chain: { id: 'shell-chain', shapes: [] },
                     type: PartType.SHELL,
-                    boundingBox: { minX: 0, maxX: 30, minY: 0, maxY: 30 },
+                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 30, y: 30 } },
                     holes: [
                         {
                             id: 'hole-1',
                             chain: { id: 'hole-chain', shapes: [] },
                             type: PartType.HOLE,
                             boundingBox: {
-                                minX: 5,
-                                maxX: 25,
-                                minY: 5,
-                                maxY: 25,
+                                min: { x: 5, y: 5 },
+                                max: { x: 25, y: 25 },
                             },
                             holes: [
                                 {
@@ -212,10 +210,8 @@ describe('Parts Store', () => {
                                     chain: { id: 'nested-chain', shapes: [] },
                                     type: PartType.HOLE,
                                     boundingBox: {
-                                        minX: 10,
-                                        maxX: 20,
-                                        minY: 10,
-                                        maxY: 20,
+                                        min: { x: 10, y: 10 },
+                                        max: { x: 20, y: 20 },
                                     },
                                     holes: [],
                                 },
@@ -228,17 +224,18 @@ describe('Parts Store', () => {
                         id: 'hole-1',
                         chain: { id: 'hole-chain', shapes: [] },
                         type: PartType.HOLE,
-                        boundingBox: { minX: 5, maxX: 25, minY: 5, maxY: 25 },
+                        boundingBox: {
+                            min: { x: 5, y: 5 },
+                            max: { x: 25, y: 25 },
+                        },
                         holes: [
                             {
                                 id: 'nested-hole',
                                 chain: { id: 'nested-chain', shapes: [] },
                                 type: PartType.HOLE,
                                 boundingBox: {
-                                    minX: 10,
-                                    maxX: 20,
-                                    minY: 10,
-                                    maxY: 20,
+                                    min: { x: 10, y: 10 },
+                                    max: { x: 20, y: 20 },
                                 },
                                 holes: [],
                             },

@@ -3,7 +3,7 @@ import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detecti
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import { offsetChain } from './offset';
 import type { Shape } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type { OffsetChain } from './types';
 import { generateChainOffsetSVG } from '../../../test/visual-tests';
 

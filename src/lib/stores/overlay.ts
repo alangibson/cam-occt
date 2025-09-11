@@ -12,7 +12,7 @@ import type {
     Circle,
     Polyline,
     Ellipse,
-} from '../../lib/types';
+} from '$lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import {

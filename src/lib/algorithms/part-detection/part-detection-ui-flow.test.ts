@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseDXF } from '../parsers/dxf-parser';
-import { detectShapeChains } from './chain-detection/chain-detection';
-import { detectParts } from './part-detection';
-import { getChainPartType } from '../stores/parts';
+import { parseDXF } from '$lib/parsers/dxf-parser';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import { getChainPartType } from '$lib/stores/parts';
 
 describe('UI Flow Integration Test', () => {
     it('should correctly identify part types in the complete 1997.dxf workflow', async () => {

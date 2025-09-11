@@ -11,7 +11,7 @@ import {
 import { WorkflowStage } from './workflow';
 import type { Shape, Point2D } from '../types';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('overlayStore', () => {
     beforeEach(() => {

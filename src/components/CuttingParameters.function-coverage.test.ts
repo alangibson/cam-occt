@@ -2,7 +2,7 @@
 import { describe, it, expect } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import CuttingParameters from './CuttingParameters.svelte';
-import type { CuttingParameters as CuttingParametersType } from '../lib/types';
+import type { CuttingParameters as CuttingParametersType } from '$lib/types';
 
 describe('CuttingParameters Component - Function Coverage', () => {
     const defaultParameters: CuttingParametersType = {

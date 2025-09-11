@@ -1,4 +1,4 @@
-import type { Shape, Point2D } from '../../../../../lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { FillOptions, FillResult, ShapeExtension } from '../types';
 import {
@@ -11,7 +11,7 @@ import {
 import {
     CONFIDENCE_HIGH_THRESHOLD,
     CONFIDENCE_THRESHOLD,
-} from '../../../../../lib/geometry/constants';
+} from '$lib/geometry/constants';
 
 /**
  * Spline Fill Module

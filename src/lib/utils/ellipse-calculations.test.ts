@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import type { Point2D } from '../../lib/types';
+import type { Point2D } from '$lib/types';
 
 interface Ellipse {
     center: Point2D;

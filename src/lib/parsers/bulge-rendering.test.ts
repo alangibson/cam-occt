@@ -10,7 +10,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { EPSILON } from '$lib/geometry/math';
 import type { Arc } from '../geometry/arc';
-import type { Polyline } from '../../lib/types/geometry';
+import type { Polyline } from '$lib/types/geometry';
 
 describe('Bulge Rendering Fixes', () => {
     describe('Polylinie.dxf', () => {

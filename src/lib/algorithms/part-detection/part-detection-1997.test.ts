@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
-import { parseDXF } from '../parsers/dxf-parser';
-import { decomposePolylines } from './decompose-polylines';
-import { detectShapeChains } from './chain-detection/chain-detection';
-import { detectParts } from './part-detection';
+import { parseDXF } from '../../parsers/dxf-parser';
+import { decomposePolylines } from '../decompose-polylines';
+import { detectShapeChains } from '../chain-detection/chain-detection';
+import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import fs from 'fs';
 import path from 'path';
 

@@ -3,8 +3,11 @@ import {
     highlightChain,
     clearChainHighlight,
 } from '../stores/chains';
-import { selectPart, hoverPart, clearPartHover } from '../stores/parts';
-import type { DetectedPart, PartHole } from '../algorithms/part-detection';
+import { selectPart, hoverPart, clearPartHover } from '$lib/stores/parts';
+import type {
+    DetectedPart,
+    PartHole,
+} from '$lib/algorithms/part-detection/part-detection';
 
 /**
  * Shared chain interaction handlers for both Prepare and Program stages

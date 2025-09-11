@@ -14,19 +14,19 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { parseDXF } from '../parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf-parser';
 import {
     detectShapeChains,
     type Chain,
-} from './chain-detection/chain-detection';
-import { normalizeChain } from './chain-normalization/chain-normalization';
-import { detectParts, type PartHole } from './part-detection';
+} from '$lib/algorithms/chain-detection/chain-detection';
 import {
     getShapeStartPoint,
     getShapeEndPoint,
 } from '$lib/geometry/shape/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { detectParts, type PartHole } from './part-detection';
+import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 
 describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
     // CRITICAL: Never remove these tests nor change expectations without user permission

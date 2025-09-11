@@ -3,7 +3,7 @@ import { get } from 'svelte/store';
 import { chainStore, setChains, clearChains } from './chains';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Shape } from '../types';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('Chain Store - Clockwise Property Setting', () => {
     beforeEach(() => {

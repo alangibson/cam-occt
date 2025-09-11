@@ -1,4 +1,4 @@
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { Shape } from '../../types';

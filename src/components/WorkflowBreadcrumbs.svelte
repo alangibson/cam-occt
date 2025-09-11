@@ -4,8 +4,8 @@
         getStageDisplayName,
         WorkflowStage,
         type WorkflowStage as WorkflowStageType,
-    } from '../lib/stores/workflow';
-    import { uiStore } from '../lib/stores/ui';
+    } from '$lib/stores/workflow';
+    import { uiStore } from '$lib/stores/ui';
 
     const stages: WorkflowStageType[] = [
         WorkflowStage.IMPORT,

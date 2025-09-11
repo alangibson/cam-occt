@@ -16,20 +16,20 @@
      */
     import AccordionPanel from '../AccordionPanel.svelte';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
-    import { workflowStore, WorkflowStage } from '../../lib/stores/workflow';
-    import { pathStore } from '../../lib/stores/paths';
-    import { rapidStore } from '../../lib/stores/rapids';
-    import { chainStore } from '../../lib/stores/chains';
-    import { operationsStore } from '../../lib/stores/operations';
-    import { drawingStore } from '../../lib/stores/drawing';
-    import { toolStore } from '../../lib/stores/tools';
-    import { overlayStore } from '../../lib/stores/overlay';
-    import { partStore } from '../../lib/stores/parts';
-    import { findPartContainingChain } from '../../lib/utils/chain-part-interactions';
+    import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
+    import { pathStore } from '$lib/stores/paths';
+    import { rapidStore } from '$lib/stores/rapids';
+    import { chainStore } from '$lib/stores/chains';
+    import { operationsStore } from '$lib/stores/operations';
+    import { drawingStore } from '$lib/stores/drawing';
+    import { toolStore } from '$lib/stores/tools';
+    import { overlayStore } from '$lib/stores/overlay';
+    import { partStore } from '$lib/stores/parts';
+    import { findPartContainingChain } from '$lib/utils/chain-part-interactions';
     import {
         hasValidCachedLeads,
         getCachedLeadGeometry,
-    } from '../../lib/utils/lead-persistence-utils';
+    } from '$lib/utils/lead-persistence-utils';
     import { onMount, onDestroy } from 'svelte';
     import {
         type Shape,
@@ -40,12 +40,12 @@
         type Polyline,
         type Ellipse,
         GeometryType,
-    } from '../../lib/types';
+    } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
-    import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
-    import type { Path } from '../../lib/stores/paths';
-    import type { Rapid } from '../../lib/algorithms/optimize-cut-order';
-    import { getPhysicalScaleFactor } from '../../lib/utils/units';
+    import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+    import type { Path } from '$lib/stores/paths';
+    import type { Rapid } from '$lib/algorithms/optimize-cut-order';
+    import { getPhysicalScaleFactor } from '$lib/utils/units';
     import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
     import { polylineToPoints } from '$lib/geometry/polyline';
     import { getShapePointAt } from '$lib/geometry/shape/functions';
@@ -53,9 +53,9 @@
         calculateLeads,
         type LeadInConfig,
         type LeadOutConfig,
-    } from '../../lib/algorithms/lead-calculation';
-    import type { DetectedPart } from '../../lib/algorithms/part-detection';
-    import { LeadType } from '../../lib/types/direction';
+    } from '$lib/algorithms/lead-calculation';
+    import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+    import { LeadType } from '$lib/types/direction';
 
     // Resizable columns state
     let rightColumnWidth = 280; // Default width in pixels

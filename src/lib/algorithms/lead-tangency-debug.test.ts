@@ -5,9 +5,9 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { LeadType } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
-import type { Shape } from '../../lib/types/geometry';
-import { GeometryType } from '../../lib/types/geometry';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('Lead Tangency Debug', () => {
     function createLineChain(

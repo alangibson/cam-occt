@@ -11,7 +11,7 @@ import {
     type Drawing,
     type Polyline,
     Unit,
-} from '../../lib/types';
+} from '$lib/types';
 
 describe('Polyline Dragging Bug Fixes', () => {
     describe('moveShape function', () => {

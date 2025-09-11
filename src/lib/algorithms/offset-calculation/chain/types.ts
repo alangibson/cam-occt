@@ -1,4 +1,4 @@
-import type { Shape, Point2D } from '../../../../lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 import type { IntersectionType } from '../intersect/index';
 import { MAX_EXTENSION } from '$lib/algorithms/constants';
 

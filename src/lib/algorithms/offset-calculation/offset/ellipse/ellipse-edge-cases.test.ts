@@ -23,9 +23,37 @@ vi.mock('$lib/geometry/ellipse', () => ({
     getEllipseParameters: vi.fn(),
 }));
 
+// Mock chain constants
+vi.mock('$lib/geometry/chain', () => ({
+    POLYGON_POINTS_MIN: 3,
+}));
+
 // Mock NURBS utils
 vi.mock('$lib/geometry/spline', () => ({
-    generateUniformKnotVector: vi.fn(),
+    generateUniformKnotVector: vi.fn((controlPointsCount, degree) => {
+        // Generate a valid uniform knot vector
+        const knotCount = controlPointsCount + degree + 1;
+        const knots = [];
+
+        // Repeat the first knot (degree + 1) times
+        for (let i = 0; i <= degree; i++) {
+            knots.push(0);
+        }
+
+        // Internal knots
+        const internalKnotCount = knotCount - 2 * (degree + 1);
+        for (let i = 1; i <= internalKnotCount; i++) {
+            knots.push(i / (internalKnotCount + 1));
+        }
+
+        // Repeat the last knot (degree + 1) times
+        for (let i = 0; i <= degree; i++) {
+            knots.push(1);
+        }
+
+        return knots;
+    }),
+    DEFAULT_SPLINE_DEGREE: 3,
 }));
 
 describe('Ellipse Offset Edge Cases and Error Handling', () => {

@@ -6,8 +6,8 @@
  */
 
 import { writable } from 'svelte/store';
-import type { AlgorithmParameters } from '../../lib/types/algorithm-parameters';
-import { DEFAULT_ALGORITHM_PARAMETERS } from '../../lib/types/algorithm-parameters';
+import type { AlgorithmParameters } from '$lib/types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
 import type { ChainNormalizationResult } from '../algorithms/chain-normalization/chain-normalization';
 import type { Shape } from '../types/geometry';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';

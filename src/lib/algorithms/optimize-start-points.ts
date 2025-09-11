@@ -1,8 +1,8 @@
-import type { Shape } from '../../lib/types';
+import type { Shape } from '$lib/types';
 import type { Polyline } from '$lib/geometry/polyline';
-import { GeometryType } from '../../lib/types';
-import type { Chain } from './chain-detection/chain-detection';
-import { isChainClosed } from './part-detection';
+import { GeometryType } from '$lib/types';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import {
     polylineToPoints,
     MIN_VERTICES_FOR_POLYLINE,

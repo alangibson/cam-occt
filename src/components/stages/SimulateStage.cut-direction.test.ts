@@ -6,9 +6,9 @@ import {
     setChains,
 } from '$lib/stores/chains';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
-import type { Shape } from '../../lib/types';
+import type { Shape } from '$lib/types';
 import { CutDirection } from '$lib/types/direction';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('SimulateStage Cut Direction', () => {
     beforeEach(() => {

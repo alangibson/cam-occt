@@ -2,10 +2,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
-import { drawingStore } from '../lib/stores/drawing';
-import type { Drawing } from '../lib/types';
-import { Unit } from '../lib/utils/units';
-import { GeometryType } from '$lib/types/geometry';
+import { drawingStore } from '$lib/stores/drawing';
+import type { Drawing } from '$lib/types';
+import { Unit } from '$lib/utils/units';
+import { GeometryType } from '$lib/geometry/shape';
 
 // Mock window.prompt
 const mockPrompt = vi.fn();

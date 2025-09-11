@@ -1,8 +1,4 @@
-import type {
-    Shape,
-    Point2D,
-    Ellipse,
-} from '../../../../../lib/types/geometry';
+import type { Shape, Point2D, Ellipse } from '$lib/types/geometry';
 import type { FillOptions, FillResult } from '../types';
 import type { OperationParams } from '../../shared/fill-extend-ops';
 import {

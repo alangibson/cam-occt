@@ -5,8 +5,8 @@ import {
     type LeadOutConfig,
 } from './lead-calculation';
 import { LeadType } from '../types/direction';
-import type { Chain } from './chain-detection/chain-detection';
-import { GeometryType } from '$lib/types/geometry';
+import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('Lead Rotation Angle', () => {
     // Simple horizontal line for testing lead angles

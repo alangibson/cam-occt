@@ -16,7 +16,7 @@ import { LeadType, CutDirection } from '../types/direction';
 import { KerfCompensation } from '../types/kerf-compensation';
 import { GeometryType } from '../types/geometry';
 import { chainStore } from '../stores/chains';
-import { partStore } from '../stores/parts';
+import { partStore } from '$lib/stores/parts';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 // Mock the stores
@@ -32,7 +32,7 @@ vi.mock('../stores/chains', () => ({
     },
 }));
 
-vi.mock('../stores/parts', () => ({
+vi.mock('$lib/stores/parts', () => ({
     partStore: {
         subscribe: vi.fn(() => vi.fn()),
     },
