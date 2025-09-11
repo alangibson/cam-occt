@@ -12,11 +12,11 @@ import { GeometryType } from '../../types';
 // Unused imports removed to fix lint warnings
 import { evaluateNURBS } from '$lib/geometry/spline';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { calculateSquaredDistance } from '../../utils/math-utils';
+import { calculateSquaredDistance } from '$lib/geometry/math';
 import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { detectCutDirection } from '../cut-direction';
 import { CutDirection } from '../../types/direction';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '../../constants';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 

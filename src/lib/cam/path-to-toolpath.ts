@@ -10,7 +10,7 @@ import {
 } from '../utils/lead-persistence-utils';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { DetectedPart } from '../algorithms/part-detection';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '../constants';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { GeometryType } from '../types/geometry';
 import {
     DEFAULT_FEED_RATE,

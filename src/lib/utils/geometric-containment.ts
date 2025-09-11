@@ -13,11 +13,14 @@ import { GeometryFactory, Coordinate } from 'jsts/org/locationtech/jts/geom';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { Point2D, Shape } from '../../lib/types';
-import { AREA_RATIO_THRESHOLD } from '../constants';
+import { AREA_RATIO_THRESHOLD } from '$lib/algorithms/constants';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import { calculateChainBoundingBox } from './shape-bounds-utils';
 import { tessellateShape as tessellateShapeCorrect } from '$lib/geometry/shape';
 import {

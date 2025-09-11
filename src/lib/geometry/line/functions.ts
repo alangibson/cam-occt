@@ -1,6 +1,6 @@
 import type { Geometry, Point2D } from '../../types/geometry';
 import type { Line } from './interfaces';
-import { EPSILON } from '../../constants';
+import { EPSILON } from '$lib/geometry/math';
 
 export function getLineStartPoint(line: Line): Point2D {
     return line.start;

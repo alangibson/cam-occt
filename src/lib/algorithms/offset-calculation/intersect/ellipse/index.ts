@@ -6,7 +6,7 @@ import type {
 } from '../../../../types/geometry';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { IntersectionResult } from '../../chain/types';
-import { EPSILON } from '../../../../constants';
+import { EPSILON } from '../../../../geometry/math/constants';
 import { findEllipseEllipseIntersections } from '../ellipse-ellipse/index';
 import { findEllipseLineIntersections } from '../line-ellipse/index';
 import { findEllipsePolylineIntersectionsVerb } from '../polyline-ellipse/index';

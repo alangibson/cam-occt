@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EPSILON } from '../../../constants';
+import { EPSILON } from '../../../geometry/math/constants';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import {
     GeometryType,

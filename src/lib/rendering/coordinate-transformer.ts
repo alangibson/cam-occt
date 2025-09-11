@@ -1,5 +1,5 @@
 import type { Point2D } from '../types/geometry';
-import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '../constants';
+import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '$lib/geometry/math';
 
 /**
  * Manages coordinate transformations between different coordinate systems:

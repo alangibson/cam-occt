@@ -25,11 +25,11 @@
     } from '../lib/stores/parts';
     import { clearPathHighlight } from '../lib/stores/paths';
     import { sampleNURBS, evaluateNURBS } from '$lib/geometry/spline';
+    import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
     import {
         getShapeStartPoint,
         getShapeEndPoint,
-        samplePathAtDistanceIntervals,
-    } from '$lib/geometry';
+    } from '$lib/geometry/shape/functions';
     import { CoordinateTransformer } from '../lib/rendering/coordinate-transformer';
     import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline';
     import { debounce } from '../lib/utils/state-persistence';

@@ -7,7 +7,7 @@ import type { Chain } from '../lib/algorithms/chain-detection/chain-detection';
 import type { Shape } from '../lib/types';
 import { CutDirection, LeadType } from '../lib/types/direction';
 import { KerfCompensation } from '../lib/types/kerf-compensation';
-import { samplePathAtDistanceIntervals } from '../lib/geometry';
+import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
 import { GeometryType } from '$lib/types/geometry';
 
 // Helper to wait for async path generation

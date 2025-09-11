@@ -6,7 +6,10 @@ import { createExtendedPolyline } from '../../extend/polyline';
 import { createExtendedArc } from '../../extend/arc';
 import { findLineArcIntersections } from '../line-arc';
 import { isPointOnArc } from '../../../intersection-arc-utils';
-import { EPSILON, INTERSECTION_TOLERANCE } from '../../../../constants';
+import {
+    EPSILON,
+    INTERSECTION_TOLERANCE,
+} from '../../../../geometry/math/constants';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 
 /**

@@ -2,14 +2,16 @@ import type { Shape, Point2D } from '../../../../types/geometry';
 import type { Line } from '$lib/geometry/line';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { IntersectionResult } from '../../chain/types';
-import { EPSILON } from '../../../../constants';
+import {
+    EPSILON,
+    INTERSECTION_TOLERANCE,
+} from '../../../../geometry/math/constants';
 import { snapParameter } from '../line-arc/index';
 import {
     createVerbCurveFromEllipse,
     createVerbCurveFromLine,
     processVerbIntersectionResults,
 } from '../../../../utils/verb-integration-utils';
-import { INTERSECTION_TOLERANCE } from '../../../../constants';
 import { getEllipseParameters } from '$lib/geometry/ellipse/index';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 

@@ -6,11 +6,9 @@ import type {
     SideDetectionOptions,
 } from './types.ts';
 import { isChainClosed } from '../../part-detection';
-import {
-    getShapePointAt,
-    getShapeMidpoint,
-    normalizeVector,
-} from '$lib/geometry';
+import { normalizeVector } from '$lib/geometry/math/functions';
+import { getShapeMidpoint } from '$lib/geometry/shape/functions';
+import { getShapePointAt } from '$lib/geometry/shape/functions';
 import { isPointInsideChainExact } from '../../raytracing/point-in-chain';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 

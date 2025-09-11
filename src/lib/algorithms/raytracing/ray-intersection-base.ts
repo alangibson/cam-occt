@@ -10,7 +10,7 @@ import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { solveQuadratic } from './utils';
 import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle';
-import { EPSILON } from '$lib/constants';
+import { EPSILON } from '$lib/geometry/math/constants';
 
 /**
  * Quadratic setup result for ray-circle intersection

@@ -6,7 +6,7 @@ import {
     type Shape,
 } from '../../../types/geometry';
 import type { IntersectionResult } from '../chain/types';
-import { INTERSECTION_TOLERANCE } from '../../../constants';
+import { INTERSECTION_TOLERANCE } from '../../../geometry/math/constants';
 import {
     calculateEllipseEllipseIntersection,
     calculateIntersectionScore,

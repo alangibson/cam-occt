@@ -5,7 +5,7 @@ import {
     createVerbCurveFromSpline,
     processVerbIntersectionResults,
 } from '../../../utils/verb-integration-utils';
-import { INTERSECTION_TOLERANCE } from '../../../constants';
+import { INTERSECTION_TOLERANCE } from '../../../geometry/math/constants';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../geometry/constants';
 import {
     DEFAULT_SPLINE_DEGREE,

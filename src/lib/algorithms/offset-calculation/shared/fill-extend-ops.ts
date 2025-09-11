@@ -10,7 +10,7 @@ import type {
 } from '../../../types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { FillResult } from '../fill/types';
-import { EPSILON } from '../../../constants';
+import { EPSILON } from '../../../geometry/math/constants';
 import {
     MICRO_TOLERANCE,
     DECIMAL_PRECISION,

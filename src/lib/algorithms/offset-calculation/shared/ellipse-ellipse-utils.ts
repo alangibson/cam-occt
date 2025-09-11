@@ -5,10 +5,8 @@ import {
     createVerbCurveFromEllipse,
     processVerbIntersectionResults,
 } from '../../../utils/verb-integration-utils';
-import {
-    INTERSECTION_TOLERANCE,
-    DUPLICATE_FILTERING_TOLERANCE,
-} from '../../../constants';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math';
+import { DUPLICATE_FILTERING_TOLERANCE } from '../../constants';
 
 /**
  * Ellipse-Ellipse Intersection Utilities

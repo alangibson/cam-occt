@@ -10,7 +10,7 @@ import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
 import { calculateArcPoint, convertBulgeToArc } from '$lib/geometry/arc';
-import { EPSILON } from '$lib/constants';
+import { EPSILON } from '$lib/geometry/math';
 import {
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,
@@ -453,4 +453,19 @@ export function getPolylinePointAt(polyline: Polyline, t: number): Point2D {
     }
 
     return points[points.length - 1];
+}
+/**
+ * Calculate total length of a polyline from its points
+ * @param points - Array of 2D points
+ * @returns Total length of the polyline
+ */
+
+export function calculatePolylineLength(points: Point2D[]): number {
+    let length = 0;
+    for (let i = 1; i < points.length; i++) {
+        const dx = points[i].x - points[i - 1].x;
+        const dy = points[i].y - points[i - 1].y;
+        length += Math.sqrt(dx * dx + dy * dy);
+    }
+    return length;
 }

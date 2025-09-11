@@ -9,7 +9,7 @@
 
 import type { Point2D } from '../../types/geometry';
 import type { Ellipse, EllipseTessellationConfig } from './interfaces';
-import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '../../constants';
+import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { MIN_TESSELLATION_POINTS, MAX_TESSELLATION_POINTS } from './constants';
 
 /**

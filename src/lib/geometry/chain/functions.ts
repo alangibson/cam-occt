@@ -4,8 +4,8 @@
 
 import type { Point2D } from '$lib/types/geometry';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
-import { reverseShape } from '$lib/geometry';
-import { calculatePerimeter } from '$lib/utils/math-utils';
+import { reverseShape } from '../shape/functions';
+import { calculatePerimeter } from '$lib/geometry/math';
 import { calculatePolygonArea as calculatePolygonAreaShared } from '$lib/utils/polygon-geometry-shared';
 import { POLYGON_POINTS_MIN } from './constants';
 import { WindingDirection } from './enums';

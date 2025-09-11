@@ -12,15 +12,18 @@ import {
     type LeadValidationResult,
 } from './lead-validation';
 import { isPointInPolygon } from '../utils/geometric-operations';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import {
     GEOMETRIC_PRECISION_TOLERANCE,
     HALF_PERCENT,
     THREE_QUARTERS_PERCENT,
     QUARTER_PERCENT,
-    MAX_ITERATIONS,
-} from '../constants';
+} from '$lib/geometry/math';
+import { MAX_ITERATIONS } from '../constants';
 import { HALF_CIRCLE_DEG, FULL_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
     OCTAGON_SIDES,

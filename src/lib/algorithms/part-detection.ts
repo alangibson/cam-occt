@@ -21,7 +21,10 @@ import {
 import type { PartDetectionParameters } from '../../lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '../../lib/types/part-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import {
     calculateChainBoundingBox,
     type BoundingBox,

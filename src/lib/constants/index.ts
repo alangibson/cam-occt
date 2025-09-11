@@ -1,75 +1,9 @@
 /**
- * Mathematical constants used throughout the application
+ * General application constants
+ *
+ * Math constants have been moved to $lib/geometry/math/constants
+ * Algorithm constants have been moved to $lib/algorithms/constants
  */
-
-/**
- * Small epsilon value for floating point comparisons.
- * Two numbers with difference <= EPSILON are considered equal.
- */
-export const EPSILON: number = 1e-10;
-
-/**
- * Machining tolerance
- * TODO this is actually a property of the machine, so it should not be constant.
- */
-export const TOLERANCE: number = 0.05;
-
-/**
- * Intersection tolerance for precise geometric intersections and mathematical operations
- */
-export const INTERSECTION_TOLERANCE: number = 1e-6;
-
-/**
- * Geometric precision tolerance for shape matching and distance calculations
- */
-export const GEOMETRIC_PRECISION_TOLERANCE: number = 0.001;
-
-// CHAIN_CLOSURE_TOLERANCE moved to geometry/chain module
-
-/**
- * Duplicate filtering tolerance for removing nearly identical intersection points
- */
-export const DUPLICATE_FILTERING_TOLERANCE: number = 0.01;
-
-/**
- * Area ratio threshold for geometric containment fallback (5%)
- */
-export const AREA_RATIO_THRESHOLD: number = 0.05;
-
-/**
- * Maximum offset gap filling extension length
- */
-export const MAX_EXTENSION: number = 20;
-
-/**
- * High-resolution tessellation for ellipse rendering (points)
- * MOVED: This constant has been moved to $lib/geometry/ellipse/constants
- */
-
-/**
- * Fine tessellation tolerance for spline rendering (pixels)
- * MOVED: This constant has been moved to $lib/geometry/spline/constants
- */
-
-/**
- * Standard tessellation count for smooth curves
- */
-export const STANDARD_TESSELLATION_COUNT: number = 20;
-
-/**
- * Half percentage value for ratios and fractions
- */
-export const HALF_PERCENT: number = 0.5;
-
-/**
- * Three quarters percentage value for ratios and fractions
- */
-export const THREE_QUARTERS_PERCENT: number = 0.75;
-
-/**
- * Quarter percentage value for ratios and fractions
- */
-export const QUARTER_PERCENT: number = 0.25;
 
 /**
  * Common timeout value in milliseconds (1 second)

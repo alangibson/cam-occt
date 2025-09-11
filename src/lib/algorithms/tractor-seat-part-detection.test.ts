@@ -8,7 +8,10 @@ import {
 } from './chain-detection/chain-detection';
 import { detectParts } from './part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import type { Shape, Line, Circle, Arc, Polyline } from '$lib/types/geometry';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 

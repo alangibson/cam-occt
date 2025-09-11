@@ -7,9 +7,9 @@ import { GeometryType } from '../types/geometry';
 import { tessellateEllipse } from '$lib/geometry/ellipse/index';
 import type { Shape } from '../algorithms/offset-calculation/chain/types';
 import { tessellateVerbCurve } from '../algorithms/offset-calculation/offset/spline/spline';
-import { EPSILON } from '../constants';
-import { getShapeEndPoint } from '$lib/geometry';
-import { getShapeStartPoint } from '$lib/geometry';
+import { EPSILON } from '$lib/geometry/math';
+import { getShapeEndPoint } from '$lib/geometry/shape/functions';
+import { getShapeStartPoint } from '$lib/geometry/shape/functions';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { calculateArcPoint, isArc } from '$lib/geometry/arc';
 import {

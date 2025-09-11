@@ -1,5 +1,5 @@
 import verb from 'verb-nurbs';
-import { EPSILON } from '../../../../constants';
+import { EPSILON } from '../../../../geometry/math/constants';
 import {
     GeometryType,
     type Ellipse,

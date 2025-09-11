@@ -15,7 +15,10 @@ import type {
 } from '../../lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 

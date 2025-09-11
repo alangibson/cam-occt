@@ -8,7 +8,10 @@ import {
 } from './chain-detection/chain-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
 import { isChainGeometricallyContained } from '../utils/geometric-operations';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 
 describe('Chain-7 vs Chain-13 Identical Letter T Comparison', () => {
     it('should verify that identical chains chain-7 and chain-13 behave identically after normalization', async () => {

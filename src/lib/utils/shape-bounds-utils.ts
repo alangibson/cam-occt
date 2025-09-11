@@ -14,7 +14,7 @@ import { GeometryType } from '../types/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { sampleNURBS } from '$lib/geometry/spline';
 import { HIGH_TESSELLATION_SEGMENTS } from '../geometry/constants';
-import { STANDARD_TESSELLATION_COUNT } from '$lib/constants';
+import { STANDARD_TESSELLATION_COUNT } from '$lib/geometry/math/constants';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
 
 export interface BoundingBox {

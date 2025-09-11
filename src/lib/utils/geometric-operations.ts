@@ -25,7 +25,7 @@ import {
     calculateDistanceBetweenPoints,
     isPointInPolygon as isPointInPolygonShared,
 } from './polygon-geometry-shared';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '../constants';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/index';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 

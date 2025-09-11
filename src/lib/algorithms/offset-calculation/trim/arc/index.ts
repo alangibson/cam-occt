@@ -1,5 +1,5 @@
 import type { Arc, Shape, Point2D } from '$lib/types/geometry';
-import { TOLERANCE } from '$lib/constants';
+import { TOLERANCE } from '$lib/geometry/math/constants';
 import { generateId } from '$lib/utils/id';
 import { pointDistance } from '..';
 import { type KeepSide, type TrimResult } from '../types';

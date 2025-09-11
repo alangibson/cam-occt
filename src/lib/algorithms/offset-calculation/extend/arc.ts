@@ -1,6 +1,6 @@
 import type { Point2D } from '../../../types/geometry';
 import type { Arc } from '$lib/geometry/arc';
-import { MAX_EXTENSION } from '../../../constants';
+import { MAX_EXTENSION } from '../../constants';
 import {
     HIGH_PRECISION_TOLERANCE,
     DECIMAL_PRECISION,

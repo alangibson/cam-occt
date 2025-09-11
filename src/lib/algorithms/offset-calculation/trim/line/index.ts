@@ -1,4 +1,4 @@
-import { EPSILON, TOLERANCE } from '$lib/constants';
+import { EPSILON, TOLERANCE } from '$lib/geometry/math/constants';
 import type { Shape, Point2D, Line } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
 import { pointDistance } from '..';

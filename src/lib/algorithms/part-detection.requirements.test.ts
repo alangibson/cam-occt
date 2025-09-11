@@ -21,7 +21,10 @@ import {
 } from './chain-detection/chain-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
 import { detectParts, type PartHole } from './part-detection';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

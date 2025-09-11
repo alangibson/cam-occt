@@ -22,7 +22,7 @@ import {
     getShapeStartPoint,
     getShapeEndPoint,
     reverseShape,
-} from '$lib/geometry';
+} from '$lib/geometry/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import {
     DEFAULT_ARRAY_NOT_FOUND_INDEX,

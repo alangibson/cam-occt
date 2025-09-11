@@ -7,7 +7,10 @@ import {
     type Chain,
 } from './chain-detection/chain-detection';
 import { normalizeChain } from './chain-normalization/chain-normalization';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import type { Shape } from '../types/geometry';
 
 describe('Simple Chain Comparison - Find Root Differences', () => {

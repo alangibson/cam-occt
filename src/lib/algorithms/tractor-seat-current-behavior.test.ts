@@ -4,7 +4,10 @@ import path from 'path';
 import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection/chain-detection';
 import { detectParts } from './part-detection';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 
 describe('Tractor Seat Mount Current Behavior', () => {
     it('should confirm current behavior: detects 11 parts instead of 1 part with holes', async () => {

@@ -11,7 +11,10 @@
         GeometryType,
     } from '../lib/types';
     import type { Spline } from '$lib/geometry/spline';
-    import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+    import {
+        getShapeStartPoint,
+        getShapeEndPoint,
+    } from '$lib/geometry/shape/functions';
     import { polylineToPoints } from '$lib/geometry/polyline';
 
     $: drawing = $drawingStore.drawing;

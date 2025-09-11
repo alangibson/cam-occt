@@ -6,9 +6,8 @@ import {
     INTERSECTION_TOLERANCE,
     GEOMETRIC_PRECISION_TOLERANCE,
     STANDARD_TESSELLATION_COUNT,
-    STANDARD_GRID_SPACING,
-    MAX_ITERATIONS,
-} from '$lib/constants/index';
+} from '$lib/geometry/math';
+import { STANDARD_GRID_SPACING, MAX_ITERATIONS } from '$lib/constants/index';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import {
     SPLINE_COMPLEXITY_WEIGHT_MULTIPLIER,

@@ -8,7 +8,10 @@ import { parseDXF } from '../parsers/dxf-parser';
 import { detectShapeChains } from './chain-detection/chain-detection';
 import { detectParts } from './part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Shape } from '../../lib/types';

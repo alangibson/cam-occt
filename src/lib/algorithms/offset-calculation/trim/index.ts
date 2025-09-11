@@ -32,9 +32,9 @@ import { trimSpline } from './spline';
 import { trimEllipse } from './ellipse';
 import type { KeepSide, TrimResult } from './types';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { isNearlyEqual } from '../../../utils/math-utils';
+import { isNearlyEqual } from '$lib/geometry/math';
 import { pointDistance } from '../shared/trim-extend-utils';
-import { INTERSECTION_TOLERANCE } from '../../../constants';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math';
 
 // Re-export shared utilities for backward compatibility
 export { pointDistance } from '../shared/trim-extend-utils';

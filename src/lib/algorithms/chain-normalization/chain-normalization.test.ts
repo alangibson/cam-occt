@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { EPSILON } from '../../constants';
-import { getShapeEndPoint, getShapeStartPoint } from '../../geometry';
+import { EPSILON } from '$lib/geometry/math';
+import {
+    getShapeEndPoint,
+    getShapeStartPoint,
+} from '$lib/geometry/shape/functions';
 import type { Arc } from '../../geometry/arc';
 import {
     createPolylineFromVertices,

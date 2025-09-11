@@ -48,7 +48,7 @@
     import { getPhysicalScaleFactor } from '../../lib/utils/units';
     import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
     import { polylineToPoints } from '$lib/geometry/polyline';
-    import { getShapePointAt } from '$lib/geometry';
+    import { getShapePointAt } from '$lib/geometry/shape/functions';
     import {
         calculateLeads,
         type LeadInConfig,

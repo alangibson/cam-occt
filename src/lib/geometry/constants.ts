@@ -1,10 +1,3 @@
-// POLYGON_POINTS_MIN moved to geometry/chain module
-
-// Spline constants have been moved to geometry/spline module
-// DEFAULT_RETRY_COUNT moved to geometry/spline module
-
-// THREE_HALVES_PI moved to geometry/bounding-box module
-
 /**
  * Number of quadrants in a quarter circle for arc/lead calculations
  */
@@ -123,5 +116,9 @@ export const PRECISION_TOLERANCE_MULTIPLIER = 10;
  * Default extension length for shape intersection calculations
  */
 export const DEFAULT_EXTENSION_LENGTH = 1000;
+/**
+ * Parametric t value for midpoint (0.5)
+ */
+export const MIDPOINT_T = 0.5;
 
 // DEFAULT_RETRY_COUNT moved to geometry/spline module

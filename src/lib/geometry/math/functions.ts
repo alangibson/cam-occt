@@ -1,5 +1,5 @@
-import type { Point2D } from '../types/geometry';
-import { EPSILON } from '../constants';
+import type { Point2D } from '../point';
+import { EPSILON } from './constants';
 
 /**
  * Solves a quadratic equation ax² + bx + c = 0
@@ -86,4 +86,11 @@ export function isNearlyEqual(
     epsilon: number = EPSILON
 ): boolean {
     return Math.abs(a - b) < epsilon;
+}
+// Helper functions for vector operations
+
+export function normalizeVector(v: Point2D): Point2D {
+    const length: number = Math.sqrt(v.x * v.x + v.y * v.y);
+    if (length === 0) return { x: 0, y: 0 };
+    return { x: v.x / length, y: v.y / length };
 }

@@ -14,8 +14,11 @@ import {
     createLeadInConfig,
     createLeadOutConfig,
 } from '../utils/lead-config-utils';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
-import { calculateSquaredDistance } from '../utils/math-utils';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
+import { calculateSquaredDistance } from '$lib/geometry/math';
 
 /**
  * Find the nearest path from a current point

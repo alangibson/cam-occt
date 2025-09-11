@@ -6,7 +6,7 @@
  */
 
 // Import part detection parameters for combined interface
-import { TOLERANCE } from '$lib/constants';
+import { TOLERANCE } from '$lib/geometry/math';
 import type { PartDetectionParameters } from './part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './part-detection';
 // Import PartDetectionParameters and DEFAULT_PART_DETECTION_PARAMETERS directly from './part-detection'

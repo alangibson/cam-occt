@@ -6,7 +6,7 @@ import {
     getWindingDirection,
     WindingDirection,
 } from '$lib/geometry/chain';
-import { calculatePerimeter } from '../utils/math-utils';
+import { calculatePerimeter } from '$lib/geometry/math';
 import {
     calculateDistanceBetweenPoints,
     isPointInPolygon,

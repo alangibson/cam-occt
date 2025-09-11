@@ -1,7 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { scaleShape } from '../../geometry';
+import { scaleShape } from '$lib/geometry/shape/functions';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
 import { parseDXF } from '../../parsers/dxf-parser';
 import { SVGBuilder } from '../../test/svg-builder';

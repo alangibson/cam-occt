@@ -58,7 +58,10 @@
     } from '../../lib/types';
     import type { Spline } from '$lib/geometry/spline';
     import type { Chain } from '../../lib/algorithms/chain-detection/chain-detection';
-    import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+    import {
+        getShapeStartPoint,
+        getShapeEndPoint,
+    } from '$lib/geometry/shape/functions';
     import {
         handleChainClick as sharedHandleChainClick,
         handleChainMouseEnter,

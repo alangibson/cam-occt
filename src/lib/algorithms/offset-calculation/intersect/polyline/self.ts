@@ -17,7 +17,7 @@ import {
 } from '../index';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import { calculatePolylineParameter } from '../polyline-spline/helpers';
-import { EPSILON } from '$lib/constants';
+import { EPSILON } from '$lib/geometry/math/constants';
 
 /**
  * Algorithm selection threshold based on segment count

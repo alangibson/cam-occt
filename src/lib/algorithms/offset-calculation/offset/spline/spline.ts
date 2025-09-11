@@ -3,7 +3,10 @@ import { GeometryType, type Point2D } from '../../../../types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { generateUniformKnotVector } from '$lib/geometry/spline';
 import { OffsetDirection, type OffsetResult } from '../types';
-import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '../../../../constants';
+import {
+    EPSILON,
+    GEOMETRIC_PRECISION_TOLERANCE,
+} from '../../../../geometry/math/constants';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import {
     VALIDATION_SAMPLE_COUNT,

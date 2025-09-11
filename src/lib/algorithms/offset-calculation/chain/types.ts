@@ -1,6 +1,6 @@
 import type { Shape, Point2D } from '../../../../lib/types/geometry';
 import type { IntersectionType } from '../intersect/index';
-import { MAX_EXTENSION } from '../../../constants';
+import { MAX_EXTENSION } from '$lib/algorithms/constants';
 
 // Re-export Shape type for use by other offset modules
 export type { Shape };

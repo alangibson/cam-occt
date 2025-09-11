@@ -1,4 +1,4 @@
-import { EPSILON } from '$lib/constants';
+import { EPSILON } from '$lib/geometry/math/constants';
 import type { Shape, Point2D, Line } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { generateId } from '$lib/utils/id';

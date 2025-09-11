@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EPSILON } from '../constants';
+import { EPSILON } from '$lib/geometry/math';
 import {
     analyzePolygon,
     classifyPolygonsAsShellsAndHoles,

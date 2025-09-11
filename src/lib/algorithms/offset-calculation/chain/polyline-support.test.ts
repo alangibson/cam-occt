@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { parseDXF } from '../../../parsers/dxf-parser';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { offsetChain } from './offset';
-import { scaleShape } from '../../../geometry';
+import { scaleShape } from '$lib/geometry/shape/functions';
 import { getPhysicalScaleFactor, Unit } from '../../../utils/units';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
 import {

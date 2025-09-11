@@ -8,12 +8,12 @@ import type { Circle } from '$lib/geometry/circle';
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import { CutDirection } from '../types/direction';
-import { getShapeEndPoint } from '$lib/geometry';
-import { getShapeStartPoint } from '$lib/geometry';
+import { getShapeEndPoint } from '$lib/geometry/shape/functions';
+import { getShapeStartPoint } from '$lib/geometry/shape/functions';
 import { STANDARD_GRID_SPACING } from '../constants';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { calculateSquaredDistance } from '../utils/math-utils';
+import { calculateSquaredDistance } from '$lib/geometry/math';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import {
     DEFAULT_TESSELLATION_SEGMENTS,

@@ -1,7 +1,7 @@
 import type { Chain } from '../chain-detection/chain-detection';
 import type { Polyline, Shape, Line, Point2D } from '../../types/geometry';
 import type { JoinColinearLinesParameters } from '../../types/algorithm-parameters';
-import { TOLERANCE } from '../../constants';
+import { TOLERANCE } from '$lib/geometry/math';
 
 /**
  * Primary function to join collinear lines in chains with configurable parameters

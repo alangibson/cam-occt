@@ -2,7 +2,7 @@ import type { Point2D } from '../../../../../lib/types/geometry';
 import type { Line } from '$lib/geometry/line';
 import type { IntersectionResult } from '../../chain/types';
 import type { IntersectionType } from '../index';
-import { EPSILON } from '../../../../constants';
+import { EPSILON } from '../../../../geometry/math/constants';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 // Import shared line intersection utilities
 import {

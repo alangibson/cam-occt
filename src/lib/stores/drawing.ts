@@ -8,7 +8,11 @@ import {
 import { Unit } from '../utils/units';
 import { clearChains } from './chains';
 import { clearParts } from './parts';
-import { moveShape, rotateShape, scaleShape } from '$lib/geometry';
+import {
+    moveShape,
+    rotateShape,
+    scaleShape,
+} from '$lib/geometry/shape/functions';
 import { overlayStore } from './overlay';
 import { tessellationStore } from './tessellation';
 import { pathStore } from './paths';

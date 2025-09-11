@@ -12,7 +12,7 @@ import type {
     Arc,
     Polyline,
 } from '../../lib/types/geometry';
-import { EPSILON } from '../constants';
+import { EPSILON } from '$lib/geometry/math';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {

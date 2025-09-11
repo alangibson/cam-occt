@@ -8,7 +8,7 @@
 import type { Point2D, Shape } from '../types/geometry';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 import { getBoundingBoxForShape } from '$lib/geometry/bounding-box';
-import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '../constants';
+import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '$lib/geometry/math';
 /**
  * Default margin for viewport culling in world units
  */

@@ -7,8 +7,11 @@ import type {
     Polyline,
 } from '../../../types/geometry';
 import type { IntersectionResult } from '../chain/types';
-import { EPSILON } from '../../../constants';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import { EPSILON } from '../../../geometry/math/constants';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import { pointDistance } from '../shared/trim-extend-utils';
 import {
     MAX_ITERATIONS,

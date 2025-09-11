@@ -8,7 +8,7 @@ import {
 } from '$lib/geometry/polyline';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { EPSILON } from '../constants';
+import { EPSILON } from '$lib/geometry/math';
 import type { Arc } from '../geometry/arc';
 import type { Polyline } from '../../lib/types/geometry';
 

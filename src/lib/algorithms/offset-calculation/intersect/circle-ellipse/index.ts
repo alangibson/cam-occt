@@ -7,7 +7,7 @@ import {
     processVerbIntersectionResults,
     createVerbCurveFromCircle,
 } from '../../../../utils/verb-integration-utils';
-import { INTERSECTION_TOLERANCE } from '../../../../constants';
+import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 
 /**

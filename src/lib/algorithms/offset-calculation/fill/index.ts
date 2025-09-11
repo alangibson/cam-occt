@@ -7,7 +7,7 @@ import type {
     FillStrategy,
     ShapeExtension,
 } from './types';
-import { MAX_EXTENSION } from '../../../constants';
+import { MAX_EXTENSION } from '$lib/algorithms/constants';
 import { findShapeIntersections } from '../intersect';
 import { pointDistance } from '../trim';
 import {

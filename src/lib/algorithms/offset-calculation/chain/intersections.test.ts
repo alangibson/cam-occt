@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { EPSILON } from '../../../constants';
+import { EPSILON } from '$lib/geometry/math';
 import { findLineLineIntersections } from '../intersect/line-line/index';
 import { findLineArcIntersections } from '../intersect/line-arc/index';
 import { findArcArcIntersections } from '../intersect/arc-arc/index';

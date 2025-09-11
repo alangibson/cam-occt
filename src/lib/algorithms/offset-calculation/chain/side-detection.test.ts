@@ -8,7 +8,10 @@ import { GeometryType, type Shape } from '../../../../lib/types/geometry';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '../../../utils/id';
-import { getShapeNormal, getShapeMidpoint } from '../../../../lib/geometry';
+import {
+    getShapeNormal,
+    getShapeMidpoint,
+} from '$lib/geometry/shape/functions';
 
 describe('side-detection', () => {
     // Helper to create a line shape

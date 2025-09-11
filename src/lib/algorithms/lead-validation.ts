@@ -2,15 +2,17 @@ import type { Chain } from './chain-detection/chain-detection';
 import type { DetectedPart } from './part-detection';
 import { LeadType, CutDirection } from '../types/direction';
 import type { LeadInConfig, LeadOutConfig } from './lead-calculation';
-import { getShapeStartPoint, getShapeEndPoint } from '$lib/geometry';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 import type { Shape } from '$lib/types';
 import { getShapeBoundingBox } from '../utils/shape-bounds-utils';
 import {
-    MAX_ITERATIONS,
     HALF_PERCENT,
-    STANDARD_GRID_SPACING,
     GEOMETRIC_PRECISION_TOLERANCE,
-} from '../constants';
+} from '$lib/geometry/math';
+import { MAX_ITERATIONS, STANDARD_GRID_SPACING } from '../constants';
 import { FULL_CIRCLE_DEG } from '$lib/geometry/circle';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 

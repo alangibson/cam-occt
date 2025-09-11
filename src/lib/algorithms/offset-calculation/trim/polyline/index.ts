@@ -1,4 +1,4 @@
-import { EPSILON } from '$lib/constants';
+import { EPSILON } from '$lib/geometry/math/constants';
 import type { Shape, Point2D, Polyline, Line } from '$lib/types/geometry';
 import { generateId } from '$lib/utils/id';
 import { type KeepSide, type TrimResult } from '../types';

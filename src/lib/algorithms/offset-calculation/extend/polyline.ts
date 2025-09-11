@@ -1,6 +1,7 @@
 import type { Point2D, Shape } from '../../../types/geometry';
 import type { Polyline } from '$lib/geometry/polyline';
-import { EPSILON, MAX_EXTENSION } from '../../../constants';
+import { EPSILON } from '$lib/geometry/math';
+import { MAX_EXTENSION } from '../../constants';
 import { pointDistance } from '../trim';
 import {
     polylineToPoints,

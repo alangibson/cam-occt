@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { samplePathAtDistanceIntervals } from '../lib/geometry/index';
+import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
 import type { Shape } from '../lib/types';
 import type { Line } from '$lib/geometry/line';
 import { CutDirection } from '../lib/types/direction';

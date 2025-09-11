@@ -8,9 +8,9 @@ import type { Point2D } from '../../types/geometry';
 import {
     solveQuadratic as mathSolveQuadratic,
     isNearlyEqual,
-} from '../../utils/math-utils';
+} from '$lib/geometry/math';
 import { normalizeAngle } from '../../utils/polygon-geometry-shared';
-import { EPSILON } from '../../constants';
+import { EPSILON } from '$lib/geometry/math';
 
 // Re-export normalizeAngle from shared library for backward compatibility
 export { normalizeAngle };

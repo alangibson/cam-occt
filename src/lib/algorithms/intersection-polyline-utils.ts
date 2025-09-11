@@ -6,7 +6,7 @@ import {
     createVerbCurveFromLine,
     processVerbIntersectionResults,
 } from '../utils/verb-integration-utils';
-import { INTERSECTION_TOLERANCE } from '../constants';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math';
 import { createSegmentLine } from './intersection-base';
 import verb from 'verb-nurbs';
 
