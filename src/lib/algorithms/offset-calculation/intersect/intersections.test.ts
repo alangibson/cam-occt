@@ -8,7 +8,7 @@ import {
     type Point2D,
     type Shape,
 } from '$lib/types/geometry';
-import { generateId } from '../../../utils/id';
+import { generateId } from '$lib/domain/id';
 import type { IntersectionResult } from '../chain/types';
 import { findArcArcIntersections } from './arc-arc/index';
 import { clusterIntersections, findShapeIntersections } from './index';

@@ -1,7 +1,7 @@
 import { GeometryType } from '$lib/geometry/shape';
 import { get } from 'svelte/store';
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
     chainStore,
     clearChainHighlight,

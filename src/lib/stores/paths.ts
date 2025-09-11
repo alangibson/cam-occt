@@ -4,7 +4,7 @@ import { WorkflowStage, workflowStore } from './workflow';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 
 export interface Path {
     id: string;

@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import type { Arc } from '$lib/geometry/arc';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { tessellateSpline } from '$lib/geometry/spline';
 import { tessellateEllipse, type Ellipse } from '$lib/geometry/ellipse/index';
 import { polylineToPoints, type Polyline } from '$lib/geometry/polyline';

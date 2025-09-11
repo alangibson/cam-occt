@@ -7,6 +7,7 @@ import { Unit } from '$lib/utils/units';
 import type { Drawing } from '$lib/types';
 import type { DrawingSize } from '$lib/algorithms/drawing-size/drawing-size';
 import { GeometryType } from '$lib/geometry/shape';
+import { calculateDrawingSize } from '$lib/algorithms/drawing-size/drawing-size';
 
 // Mock the drawing size calculation
 vi.mock('$lib/algorithms/drawing-size/drawing-size', () => ({
@@ -64,9 +65,6 @@ describe('Footer Component', () => {
         };
 
         // Mock a delayed calculation
-        const { calculateDrawingSize } = await import(
-            '$lib/algorithms/drawing-size/drawing-size'
-        );
         vi.mocked(calculateDrawingSize).mockImplementation(() => ({
             width: 10,
             height: 10,
@@ -96,9 +94,6 @@ describe('Footer Component', () => {
         };
 
         // Mock successful calculation
-        const { calculateDrawingSize } = await import(
-            '$lib/algorithms/drawing-size/drawing-size'
-        );
         vi.mocked(calculateDrawingSize).mockResolvedValue({
             width: 50,
             height: 30,
@@ -124,9 +119,6 @@ describe('Footer Component', () => {
         };
 
         // Mock failed calculation
-        const { calculateDrawingSize } = await import(
-            '$lib/algorithms/drawing-size/drawing-size'
-        );
         vi.mocked(calculateDrawingSize).mockRejectedValue(
             new Error('Calculation failed')
         );

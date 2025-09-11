@@ -6,7 +6,7 @@
         calculateLeads,
         type LeadInConfig,
         type LeadOutConfig,
-    } from '$lib/algorithms/lead-calculation';
+    } from '$lib/algorithms/leads/lead-calculation';
     import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
     import type { Point2D } from '$lib/types';
     import { LeadType } from '$lib/types/direction';

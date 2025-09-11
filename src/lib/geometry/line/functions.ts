@@ -65,4 +65,50 @@ export function calculateLineDirectionAndLength(line: Line): {
     };
 
     return { direction, unitDirection, length };
+} /**
+ * Calculates the direction of turn from line p1-p2 to point p3
+ */
+export function direction(p1: Point2D, p2: Point2D, p3: Point2D): number {
+    return (p3.x - p1.x) * (p2.y - p1.y) - (p2.x - p1.x) * (p3.y - p1.y);
+}
+/**
+ * Checks if point q lies on line segment pr
+ */
+export function onSegment(p: Point2D, q: Point2D, r: Point2D): boolean {
+    return (
+        q.x <= Math.max(p.x, r.x) &&
+        q.x >= Math.min(p.x, r.x) &&
+        q.y <= Math.max(p.y, r.y) &&
+        q.y >= Math.min(p.y, r.y)
+    );
+}
+/**
+ * Checks if two line segments intersect
+ */
+
+export function doLineSegmentsIntersect(
+    p1: Point2D,
+    p2: Point2D,
+    p3: Point2D,
+    p4: Point2D
+): boolean {
+    const d1: number = direction(p3, p4, p1);
+    const d2: number = direction(p3, p4, p2);
+    const d3: number = direction(p1, p2, p3);
+    const d4: number = direction(p1, p2, p4);
+
+    if (
+        ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+        ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+    ) {
+        return true;
+    }
+
+    // Check for collinear points
+    if (d1 === 0 && onSegment(p3, p1, p4)) return true;
+    if (d2 === 0 && onSegment(p3, p2, p4)) return true;
+    if (d3 === 0 && onSegment(p1, p3, p2)) return true;
+    if (d4 === 0 && onSegment(p1, p4, p2)) return true;
+
+    return false;
 }

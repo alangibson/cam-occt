@@ -66,9 +66,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
 
     describe('Edge Cases', () => {
         it('should handle ellipse with zero major axis length', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 0,
                 minorAxisLength: 5,
@@ -84,9 +81,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle ellipse with zero minor axis length', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 0,
@@ -102,9 +96,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle degenerate ellipse (both axes zero)', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 0,
                 minorAxisLength: 0,
@@ -122,9 +113,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle extremely small ellipse', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 1e-10,
                 minorAxisLength: 1e-10,
@@ -140,9 +128,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle ellipse arc with invalid parameter range', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 5,
@@ -162,11 +147,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle ellipse arc with reversed parameter range', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 5,
@@ -251,11 +231,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle extremely large offset distance', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 5,
@@ -337,11 +312,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle ellipse with extreme rotation angle', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 5,
@@ -422,11 +392,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle negative offset distance with outset direction', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 5,
@@ -509,11 +474,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
 
     describe('Error Handling', () => {
         it('should handle verb-nurbs curve fitting failure', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 5,
@@ -534,11 +494,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle verb-nurbs curve fitting failure with non-Error exception', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 5,
@@ -559,10 +514,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle getEllipseParameters throwing an error', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-
             vi.mocked(getEllipseParameters).mockImplementation(() => {
                 throw new Error('Invalid ellipse parameters');
             });
@@ -577,10 +528,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should handle getEllipseParameters throwing non-Error exception', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-
             vi.mocked(getEllipseParameters).mockImplementation(() => {
                 throw 'Parameter extraction failed';
             });
@@ -775,9 +722,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should preserve valid knot vector structure', async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
             // Static imports moved to top of file
 
             vi.mocked(getEllipseParameters).mockReturnValue({
@@ -870,11 +814,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
 
     describe('Direction and Distance Handling', () => {
         beforeEach(async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 5,
@@ -993,10 +932,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
 
     describe('Spline Properties', () => {
         beforeEach(async () => {
-            const { getEllipseParameters } = await import(
-                '$lib/geometry/ellipse'
-            );
-
             vi.mocked(getEllipseParameters).mockReturnValue({
                 majorAxisLength: 10,
                 minorAxisLength: 5,
@@ -1005,8 +940,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should create closed spline for full ellipse', async () => {
-            const { default: verb } = await import('verb-nurbs');
-
             const mockCurve = {
                 controlPoints: vi.fn(() => [
                     [1, 2, 0],
@@ -1082,8 +1015,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should create open spline for ellipse arc', async () => {
-            const { default: verb } = await import('verb-nurbs');
-
             const mockCurve = {
                 controlPoints: vi.fn(() => [
                     [1, 2, 0],
@@ -1162,8 +1093,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should create spline with proper properties', async () => {
-            const { default: verb } = await import('verb-nurbs');
-
             const controlPoints = [
                 [1, 2, 0],
                 [3, 4, 0],
@@ -1244,8 +1173,6 @@ describe('Ellipse Offset Edge Cases and Error Handling', () => {
         });
 
         it('should generate reasonable shape id', async () => {
-            const { default: verb } = await import('verb-nurbs');
-
             const mockCurve = {
                 controlPoints: vi.fn(() => [
                     [1, 2, 0],

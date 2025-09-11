@@ -1,7 +1,7 @@
 import { EPSILON } from '$lib/geometry/math/constants';
 import type { Shape, Point2D, Line } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import { generateId } from '$lib/utils/id';
+import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';
 import { calculateLineParameter } from '../../shared/trim-extend-utils';
 import { type KeepSide, type TrimResult } from '../types';

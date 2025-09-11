@@ -10,6 +10,10 @@ import {
     processEllipseIntersectionResults,
     validateEllipseIntersectionParameters,
 } from './ellipse-ellipse-utils';
+import {
+    createVerbCurveFromEllipse,
+    processVerbIntersectionResults,
+} from '../../../utils/verb-integration-utils';
 // VerbCurve interface for testing
 interface VerbCurve {
     degree(): number;
@@ -74,12 +78,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
                 },
             ];
 
-            const {
-                createVerbCurveFromEllipse,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
-
             const mockCurve1: Partial<VerbCurve> = {
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -142,12 +140,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
 
             const mockIntersections = [{ u0: 0.5, u1: 0.3, pt: [7.5, 2.5, 0] }];
 
-            const {
-                createVerbCurveFromEllipse,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(createVerbCurveFromEllipse).mockReturnValue({
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -174,11 +166,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
         it('should handle verb-nurbs errors gracefully', async () => {
             const ellipse1 = createTestEllipse();
             const ellipse2 = createTestEllipse();
-
-            const { createVerbCurveFromEllipse } = await import(
-                '../../../utils/verb-integration-utils'
-            );
-            const { default: verb } = await import('verb-nurbs');
 
             vi.mocked(createVerbCurveFromEllipse).mockReturnValue({
                 degree: () => 2,
@@ -266,9 +253,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
                 },
             ];
 
-            const { processVerbIntersectionResults } = await import(
-                '../../../utils/verb-integration-utils'
-            );
             vi.mocked(processVerbIntersectionResults).mockReturnValue(
                 mockProcessedResults
             );
@@ -313,9 +297,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
                 },
             ];
 
-            const { processVerbIntersectionResults } = await import(
-                '../../../utils/verb-integration-utils'
-            );
             vi.mocked(processVerbIntersectionResults).mockReturnValue(
                 mockProcessedResults
             );
@@ -333,9 +314,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
         it('should handle parameter swapping', async () => {
             const rawResults = [{ u0: 0.5, u1: 0.3, pt: [7.5, 2.5, 0] }];
 
-            const { processVerbIntersectionResults } = await import(
-                '../../../utils/verb-integration-utils'
-            );
             vi.mocked(processVerbIntersectionResults).mockReturnValue([]);
 
             processEllipseIntersectionResults(rawResults, true, false);
@@ -457,12 +435,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
                 },
             ];
 
-            const {
-                createVerbCurveFromEllipse,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(createVerbCurveFromEllipse).mockReturnValue({
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -494,12 +466,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
             const ellipse2 = createTestEllipse();
             const shape1 = createEllipseShape(ellipse1);
             const shape2 = createEllipseShape(ellipse2);
-
-            const {
-                createVerbCurveFromEllipse,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
 
             vi.mocked(createVerbCurveFromEllipse).mockReturnValue({
                 degree: () => 2,
@@ -552,11 +518,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
             const shape1 = createEllipseShape(ellipse1);
             const shape2 = createEllipseShape(ellipse2);
 
-            const { createVerbCurveFromEllipse } = await import(
-                '../../../utils/verb-integration-utils'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(createVerbCurveFromEllipse).mockReturnValue({
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -597,9 +558,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
                 })
             );
 
-            const { processVerbIntersectionResults } = await import(
-                '../../../utils/verb-integration-utils'
-            );
             vi.mocked(processVerbIntersectionResults).mockReturnValue(
                 mockProcessedResults
             );
@@ -633,9 +591,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
                 })
             );
 
-            const { processVerbIntersectionResults } = await import(
-                '../../../utils/verb-integration-utils'
-            );
             vi.mocked(processVerbIntersectionResults).mockReturnValue(
                 mockProcessedResults
             );
@@ -652,9 +607,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
         });
 
         it('should handle empty intersection results', async () => {
-            const { processVerbIntersectionResults } = await import(
-                '../../../utils/verb-integration-utils'
-            );
             vi.mocked(processVerbIntersectionResults).mockReturnValue([]);
 
             const results = processEllipseIntersectionResults([], false, true);
@@ -667,12 +619,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
         it('should handle identical ellipses', async () => {
             const ellipse1 = createTestEllipse();
             const ellipse2 = createTestEllipse(); // Identical
-
-            const {
-                createVerbCurveFromEllipse,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
 
             vi.mocked(createVerbCurveFromEllipse).mockReturnValue({
                 degree: () => 2,
@@ -701,12 +647,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
                 center: { x: 1000, y: 1000 },
             }); // Far away
 
-            const {
-                createVerbCurveFromEllipse,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(createVerbCurveFromEllipse).mockReturnValue({
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -731,10 +671,6 @@ describe('Ellipse-Ellipse Intersection Utilities', () => {
         it('should handle degenerate ellipses', async () => {
             const ellipse1 = createTestEllipse({ minorToMajorRatio: 0.001 }); // Very thin
             const ellipse2 = createTestEllipse();
-
-            const { createVerbCurveFromEllipse } = await import(
-                '../../../utils/verb-integration-utils'
-            );
 
             vi.mocked(createVerbCurveFromEllipse).mockReturnValue({
                 degree: () => 2,

@@ -7,7 +7,7 @@ import { parseDXF } from '../../parsers/dxf-parser';
 import { SVGBuilder } from '../../test/svg-builder';
 import { GeometryType, type Circle, type Shape } from '$lib/types/geometry';
 import { Unit, getPhysicalScaleFactor } from '../../utils/units';
-import type { Chain } from '../chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { detectShapeChains } from '../chain-detection/chain-detection';
 import { normalizeChain } from '../chain-normalization/chain-normalization';
 import { offsetChain } from './chain/offset';

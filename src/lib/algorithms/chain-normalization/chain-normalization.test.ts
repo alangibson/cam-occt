@@ -13,7 +13,7 @@ import type { Shape } from '$lib/types';
 import type { Line } from '$lib/geometry/line';
 import type { Polyline } from '$lib/geometry/polyline';
 import { GeometryType } from '$lib/types/geometry';
-import type { Chain } from '../chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
 
 describe('Chain Normalization', () => {

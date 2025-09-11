@@ -6,8 +6,8 @@ import {
 } from './index';
 import { GeometryType } from '$lib/types/geometry';
 import type { Polyline, Shape, Line } from '$lib/types/geometry';
-import { generateId } from '../../utils/id';
-import type { Chain } from '../chain-detection/chain-detection';
+import { generateId } from '$lib/domain/id';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 
 describe('join-colinear-lines', () => {
     describe('joinColinearLinesInPolyline', () => {

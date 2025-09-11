@@ -10,7 +10,7 @@ import {
     normalizeAngle,
     isAngleInArcRange,
 } from '../../intersection-arc-utils';
-import { calculateIntersectionAngle } from '../../arc-operations-utils';
+import { calculateIntersectionAngle } from '$lib/geometry/arc/functions';
 
 /**
  * Arc Extension Module

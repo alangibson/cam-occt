@@ -12,7 +12,7 @@ import {
     getBoundingBoxForShape,
 } from '$lib/geometry/bounding-box';
 import type { Spline } from '$lib/geometry/spline';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D, Polyline, Shape } from '$lib/types';
 import { GeometryType } from '$lib/types/geometry';
 

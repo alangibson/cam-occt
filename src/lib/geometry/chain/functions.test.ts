@@ -8,7 +8,7 @@ import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
 import type { Shape } from '$lib/types';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from './interfaces';
 
 // Helper function to create test chains
 function createTestChain(id: string, shapes: Shape[]): Chain {

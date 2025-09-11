@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
+import verb from 'verb-nurbs';
 import type { Point2D, Line } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Circle } from '$lib/geometry/circle';
@@ -75,7 +76,6 @@ describe('Spline Extension Functions', () => {
 
     describe('calculateSplineStartTangent', () => {
         it('should calculate tangent at start of spline using verb', async () => {
-            const { default: verb } = await import('verb-nurbs');
             const mockDerivatives = [
                 [10, 20],
                 [3, 4],
@@ -98,7 +98,6 @@ describe('Spline Extension Functions', () => {
         });
 
         it('should fallback to linear approximation when verb fails', async () => {
-            const { default: verb } = await import('verb-nurbs');
             vi.mocked(
                 verb.eval.Eval.rationalCurveDerivatives
             ).mockImplementation(() => {
@@ -119,7 +118,6 @@ describe('Spline Extension Functions', () => {
         });
 
         it('should fallback to linear approximation when derivatives are degenerate', async () => {
-            const { default: verb } = await import('verb-nurbs');
             const mockDerivatives = [
                 [10, 20],
                 [1e-12, 1e-12],
@@ -144,7 +142,6 @@ describe('Spline Extension Functions', () => {
 
     describe('calculateSplineEndTangent', () => {
         it('should calculate tangent at end of spline using verb', async () => {
-            const { default: verb } = await import('verb-nurbs');
             const mockDerivatives = [
                 [20, 0],
                 [-4, 3],
@@ -167,7 +164,6 @@ describe('Spline Extension Functions', () => {
         });
 
         it('should fallback to linear approximation when verb fails', async () => {
-            const { default: verb } = await import('verb-nurbs');
             vi.mocked(
                 verb.eval.Eval.rationalCurveDerivatives
             ).mockImplementation(() => {
@@ -300,7 +296,6 @@ describe('Spline Extension Functions', () => {
         });
 
         it('should fallback to control points when verb evaluation fails', async () => {
-            const { default: verb } = await import('verb-nurbs');
             vi.mocked(verb.eval.Eval.rationalCurvePoint).mockImplementation(
                 () => {
                     throw new Error('Verb failed');

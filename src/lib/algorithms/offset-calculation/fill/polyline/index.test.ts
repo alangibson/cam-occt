@@ -8,7 +8,7 @@ import {
     type Polyline,
     type Shape,
 } from '$lib/types/geometry';
-import { generateId } from '$lib/utils/id';
+import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
 import { type FillOptions, type FillResult } from '../types';
 import { fillPolylineToIntersection } from './index';

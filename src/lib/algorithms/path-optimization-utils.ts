@@ -1,5 +1,5 @@
 import type { Path } from '$lib/stores/paths';
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import type { Line } from '$lib/geometry/line';
@@ -9,7 +9,7 @@ import {
     calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
-} from './lead-calculation';
+} from './leads/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,

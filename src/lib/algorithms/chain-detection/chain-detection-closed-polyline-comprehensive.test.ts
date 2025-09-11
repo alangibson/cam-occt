@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { detectShapeChains, isShapeClosed } from './chain-detection';
+import { detectShapeChains } from './chain-detection';
+import { isShapeClosed } from '$lib/geometry/shape/functions';
 import { parseDXF } from '../../parsers/dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';

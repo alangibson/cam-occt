@@ -5,7 +5,7 @@ import {
     clearChainSelection,
     setChains,
 } from '$lib/stores/chains';
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
 import { CutDirection } from '$lib/types/direction';
 import { GeometryType } from '$lib/geometry/shape';

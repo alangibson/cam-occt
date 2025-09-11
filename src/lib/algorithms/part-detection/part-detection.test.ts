@@ -1,7 +1,7 @@
 import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
-import { generateId } from '$lib/utils/id';
-import type { Chain as ShapeChain } from '$lib/algorithms/chain-detection/chain-detection';
+import { generateId } from '$lib/domain/id';
+import type { Chain as ShapeChain } from '$lib/geometry/chain/interfaces';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 
 describe('Part Detection Algorithm', () => {

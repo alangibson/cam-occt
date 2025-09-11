@@ -13,7 +13,7 @@ import {
     type Polyline,
     type Shape,
 } from '$lib/types/geometry';
-import { generateId } from '../../../utils/id';
+import { generateId } from '$lib/domain/id';
 import type { IntersectionResult } from '../chain/types';
 import {
     selectTrimPoint,

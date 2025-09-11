@@ -10,7 +10,7 @@
  * Uses JSTS for robust geometric containment detection based on MetalHeadCAM reference
  */
 
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D, Shape } from '$lib/types';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Polyline } from '$lib/geometry/polyline';

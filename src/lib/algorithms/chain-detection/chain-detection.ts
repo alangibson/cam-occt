@@ -9,25 +9,15 @@ import type {
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types';
-// Unused imports removed to fix lint warnings
-import { evaluateNURBS } from '$lib/geometry/spline';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { calculateSquaredDistance } from '$lib/geometry/math';
-import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { detectCutDirection } from '../cut-direction';
 import { CutDirection } from '$lib/types/direction';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 
 export interface ChainDetectionOptions {
     tolerance: number;
-}
-
-export interface Chain {
-    id: string;
-    shapes: Shape[];
-    clockwise?: boolean | null; // true=clockwise, false=counterclockwise, null=open chain, undefined=not analyzed
 }
 
 /**
@@ -276,99 +266,6 @@ function getShapePoints(shape: Shape): Point2D[] {
 
         default:
             return [];
-    }
-}
-
-/**
- * Checks if a single shape forms a closed loop
- */
-export function isShapeClosed(shape: Shape, tolerance: number): boolean {
-    switch (shape.type) {
-        case GeometryType.CIRCLE:
-            // Circles are always closed
-            return true;
-
-        case GeometryType.POLYLINE:
-            const polyline: Polyline = shape.geometry as Polyline;
-            const points: Point2D[] = polylineToPoints(polyline);
-            if (!points || points.length < POLYGON_POINTS_MIN) return false;
-
-            // CRITICAL FIX: For polylines, first check the explicit closed flag from DXF parsing
-            // This is especially important for polylines with bulges where the geometric
-            // first/last points don't represent the actual curve endpoints
-            if (typeof polyline.closed === 'boolean') {
-                return polyline.closed;
-            }
-
-            // Fallback: geometric check for polylines without explicit closure information
-            const firstPoint: Point2D = points[0];
-            const lastPoint: Point2D = points[points.length - 1];
-
-            if (!firstPoint || !lastPoint) return false;
-
-            // Check if first and last points are within tolerance
-            const distance: number = Math.sqrt(
-                Math.pow(firstPoint.x - lastPoint.x, 2) +
-                    Math.pow(firstPoint.y - lastPoint.y, 2)
-            );
-
-            return distance <= tolerance;
-
-        case GeometryType.ARC:
-            // Arcs are open by definition (unless they're a full circle, but that would be a circle)
-            return false;
-
-        case GeometryType.LINE:
-            // Lines are open by definition
-            return false;
-
-        case GeometryType.ELLIPSE:
-            const ellipse: Ellipse = shape.geometry as Ellipse;
-            // Use the centralized ellipse closed detection logic
-            return isEllipseClosed(ellipse, GEOMETRIC_PRECISION_TOLERANCE);
-
-        case GeometryType.SPLINE:
-            const splineGeom: Spline = shape.geometry as Spline;
-
-            // For splines, use proper NURBS evaluation to get actual start and end points
-            let splineFirstPoint: Point2D | null = null;
-            let splineLastPoint: Point2D | null = null;
-
-            try {
-                // Use NURBS evaluation for accurate endpoints
-                splineFirstPoint = evaluateNURBS(0, splineGeom);
-                splineLastPoint = evaluateNURBS(1, splineGeom);
-            } catch {
-                // Fallback to fit points if NURBS evaluation fails
-                if (splineGeom.fitPoints && splineGeom.fitPoints.length > 0) {
-                    splineFirstPoint = splineGeom.fitPoints[0];
-                    splineLastPoint =
-                        splineGeom.fitPoints[splineGeom.fitPoints.length - 1];
-                } else if (
-                    splineGeom.controlPoints &&
-                    splineGeom.controlPoints.length > 0
-                ) {
-                    // Final fallback to control points
-                    splineFirstPoint = splineGeom.controlPoints[0];
-                    splineLastPoint =
-                        splineGeom.controlPoints[
-                            splineGeom.controlPoints.length - 1
-                        ];
-                }
-            }
-
-            if (!splineFirstPoint || !splineLastPoint) return false;
-
-            // Check if first and last points are within tolerance
-            const splineDistance: number = Math.sqrt(
-                Math.pow(splineFirstPoint.x - splineLastPoint.x, 2) +
-                    Math.pow(splineFirstPoint.y - splineLastPoint.y, 2)
-            );
-
-            return splineDistance <= tolerance;
-
-        default:
-            throw new Error(`Unknown type ${shape.type}`);
     }
 }
 

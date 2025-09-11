@@ -3,6 +3,12 @@ import { GeometryType, type Point2D, type Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { FillOptions, FillResult } from '../types';
 import { fillSplineToIntersection } from './index';
+import {
+    extendSplineToPoint,
+    determineSplineExtensionDirection,
+    calculateSplineExtension,
+    getSplinePoint,
+} from '../../extend/spline';
 
 // Mock the extend/spline module
 vi.mock('../../extend/spline', () => ({
@@ -54,13 +60,6 @@ describe('Spline Fill Operations', () => {
                 { x: 25, y: -5 },
             ]);
 
-            const {
-                extendSplineToPoint,
-                determineSplineExtensionDirection,
-                calculateSplineExtension,
-                getSplinePoint,
-            } = await import('../../extend/spline');
-
             vi.mocked(extendSplineToPoint).mockReturnValue(extendedSpline);
             vi.mocked(determineSplineExtensionDirection).mockReturnValue('end');
             vi.mocked(calculateSplineExtension).mockReturnValue({
@@ -109,13 +108,6 @@ describe('Spline Fill Operations', () => {
                 { x: 10, y: 10 },
                 { x: 20, y: 0 },
             ]);
-
-            const {
-                extendSplineToPoint,
-                determineSplineExtensionDirection,
-                calculateSplineExtension,
-                getSplinePoint,
-            } = await import('../../extend/spline');
 
             vi.mocked(extendSplineToPoint).mockReturnValue(extendedSpline);
             vi.mocked(determineSplineExtensionDirection).mockReturnValue(
@@ -173,7 +165,6 @@ describe('Spline Fill Operations', () => {
             const intersectionPoint: Point2D = { x: 25, y: -5 };
             const options = createDefaultFillOptions();
 
-            const { extendSplineToPoint } = await import('../../extend/spline');
             vi.mocked(extendSplineToPoint).mockReturnValue(null);
 
             const result: FillResult = fillSplineToIntersection(
@@ -206,9 +197,6 @@ describe('Spline Fill Operations', () => {
                 { x: 20, y: 0 },
                 { x: 25, y: -5 },
             ]);
-
-            const { extendSplineToPoint, determineSplineExtensionDirection } =
-                await import('../../extend/spline');
 
             vi.mocked(extendSplineToPoint).mockReturnValue(extendedSpline);
             vi.mocked(determineSplineExtensionDirection).mockReturnValue(null);
@@ -243,12 +231,6 @@ describe('Spline Fill Operations', () => {
                 { x: 20, y: 0 },
                 { x: 25, y: -5 },
             ]);
-
-            const {
-                extendSplineToPoint,
-                determineSplineExtensionDirection,
-                calculateSplineExtension,
-            } = await import('../../extend/spline');
 
             vi.mocked(extendSplineToPoint).mockReturnValue(extendedSpline);
             vi.mocked(determineSplineExtensionDirection).mockReturnValue('end');
@@ -291,13 +273,6 @@ describe('Spline Fill Operations', () => {
                 { x: 10, y: 10 },
                 { x: 20, y: 0 },
             ]);
-
-            const {
-                extendSplineToPoint,
-                determineSplineExtensionDirection,
-                calculateSplineExtension,
-                getSplinePoint,
-            } = await import('../../extend/spline');
 
             vi.mocked(extendSplineToPoint).mockReturnValue(extendedSpline);
             vi.mocked(determineSplineExtensionDirection).mockReturnValue(
@@ -348,13 +323,6 @@ describe('Spline Fill Operations', () => {
                 { x: 25, y: -5 },
             ]);
 
-            const {
-                extendSplineToPoint,
-                determineSplineExtensionDirection,
-                calculateSplineExtension,
-                getSplinePoint,
-            } = await import('../../extend/spline');
-
             vi.mocked(extendSplineToPoint).mockReturnValue(extendedSpline);
             vi.mocked(determineSplineExtensionDirection).mockReturnValue('end');
             vi.mocked(calculateSplineExtension).mockReturnValue({
@@ -403,13 +371,6 @@ describe('Spline Fill Operations', () => {
                 { x: 25, y: -5 },
             ]);
 
-            const {
-                extendSplineToPoint,
-                determineSplineExtensionDirection,
-                calculateSplineExtension,
-                getSplinePoint,
-            } = await import('../../extend/spline');
-
             vi.mocked(extendSplineToPoint).mockReturnValue(extendedSpline);
             vi.mocked(determineSplineExtensionDirection).mockReturnValue('end');
             vi.mocked(calculateSplineExtension).mockReturnValue({
@@ -451,7 +412,6 @@ describe('Spline Fill Operations', () => {
             const intersectionPoint: Point2D = { x: 25, y: -5 };
             const options = createDefaultFillOptions();
 
-            const { extendSplineToPoint } = await import('../../extend/spline');
             vi.mocked(extendSplineToPoint).mockImplementation(() => {
                 throw new Error('Unexpected error during extension');
             });
@@ -480,7 +440,6 @@ describe('Spline Fill Operations', () => {
             const intersectionPoint: Point2D = { x: 25, y: -5 };
             const options = createDefaultFillOptions();
 
-            const { extendSplineToPoint } = await import('../../extend/spline');
             vi.mocked(extendSplineToPoint).mockImplementation(() => {
                 throw 'String error';
             });
@@ -520,13 +479,6 @@ describe('Spline Fill Operations', () => {
                 { x: 20, y: 0 },
                 { x: 25, y: -5 },
             ]);
-
-            const {
-                extendSplineToPoint,
-                determineSplineExtensionDirection,
-                calculateSplineExtension,
-                getSplinePoint,
-            } = await import('../../extend/spline');
 
             vi.mocked(extendSplineToPoint).mockReturnValue(extendedSpline);
             vi.mocked(determineSplineExtensionDirection).mockReturnValue('end');
@@ -568,13 +520,6 @@ describe('Spline Fill Operations', () => {
                 { x: 10, y: 10 },
                 { x: 20, y: 0 },
             ]);
-
-            const {
-                extendSplineToPoint,
-                determineSplineExtensionDirection,
-                calculateSplineExtension,
-                getSplinePoint,
-            } = await import('../../extend/spline');
 
             vi.mocked(extendSplineToPoint).mockReturnValue(extendedSpline);
             vi.mocked(determineSplineExtensionDirection).mockReturnValue(

@@ -7,7 +7,7 @@ import {
 import { GeometryType, type Shape } from '$lib/types/geometry';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import { generateId } from '../../../utils/id';
+import { generateId } from '$lib/domain/id';
 import {
     getShapeNormal,
     getShapeMidpoint,

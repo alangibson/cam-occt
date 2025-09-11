@@ -8,7 +8,7 @@ import type {
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/geometry/shape';
-import { generateId } from '$lib/utils/id';
+import { generateId } from '$lib/domain/id';
 import { calculateArcPoint, convertBulgeToArc } from '$lib/geometry/arc';
 import { EPSILON } from '$lib/geometry/math';
 import {

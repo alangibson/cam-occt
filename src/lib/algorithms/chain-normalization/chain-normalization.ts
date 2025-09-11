@@ -10,7 +10,7 @@
  * - Shapes with coincident points that break traversal order
  */
 
-import type { Chain } from '../chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape, Point2D } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';

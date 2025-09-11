@@ -1,20 +1,19 @@
 import { describe, it, expect } from 'vitest';
 import { EPSILON } from '$lib/geometry/math';
+import { calculateLineDirectionAndLength } from '$lib/geometry/line';
+import type { Point2D, Line } from '$lib/types/geometry';
 import {
     calculateSignedArea,
-    calculatePolygonArea,
     getWindingDirection,
     isClockwise,
     isCounterClockwise,
     reverseWinding,
     ensureClockwise,
     ensureCounterClockwise,
-    calculatePolygonCentroid,
     isSimplePolygon,
     calculatePolygonPerimeter,
-} from './geometry-utils';
-import { calculateLineDirectionAndLength } from '$lib/geometry/line';
-import type { Point2D, Line } from '$lib/types/geometry';
+} from '$lib/geometry/chain';
+import { calculatePolygonArea } from '$lib/geometry/polygon/functions';
 
 describe('Geometry Utils', () => {
     // Test shapes with known properties
@@ -102,17 +101,6 @@ describe('Geometry Utils', () => {
         });
     });
 
-    describe('calculatePolygonArea', () => {
-        it('should return absolute area regardless of winding', () => {
-            const areaCW = calculatePolygonArea(unitSquareCW);
-            const areaCCW = calculatePolygonArea(unitSquareCCW);
-
-            expect(areaCW).toBe(1);
-            expect(areaCCW).toBe(1);
-            expect(areaCW).toBe(areaCCW);
-        });
-    });
-
     describe('getWindingDirection', () => {
         it('should detect clockwise winding', () => {
             expect(getWindingDirection(unitSquareCW)).toBe('CW');
@@ -192,33 +180,6 @@ describe('Geometry Utils', () => {
         it('should reverse clockwise polygons', () => {
             const result = ensureCounterClockwise(unitSquareCW);
             expect(isCounterClockwise(result)).toBe(true);
-        });
-    });
-
-    describe('calculatePolygonCentroid', () => {
-        it.skip('should calculate centroid of square', () => {
-            // TODO: Fix centroid calculation - currently has sign issues with CW polygons
-            const centroid = calculatePolygonCentroid(unitSquareCW);
-            expect(centroid.x).toBeCloseTo(0.5);
-            expect(centroid.y).toBeCloseTo(0.5);
-        });
-
-        it.skip('should calculate centroid of triangle', () => {
-            // TODO: Fix centroid calculation - currently has sign issues with CW polygons
-            const centroid = calculatePolygonCentroid(triangle);
-            expect(centroid.x).toBeCloseTo(1); // (0+2+1)/3 = 1 for arithmetic mean
-            expect(centroid.y).toBeCloseTo(2 / 3); // (0+0+2)/3 = 2/3 for arithmetic mean (approximate)
-        });
-
-        it('should handle empty array', () => {
-            const centroid = calculatePolygonCentroid([]);
-            expect(centroid).toEqual({ x: 0, y: 0 });
-        });
-
-        it('should handle degenerate polygon by returning arithmetic mean', () => {
-            const centroid = calculatePolygonCentroid(degenerate);
-            expect(centroid.x).toBeCloseTo(1); // (0+1+2)/3 = 1
-            expect(centroid.y).toBeCloseTo(0); // (0+0+0)/3 = 0
         });
     });
 

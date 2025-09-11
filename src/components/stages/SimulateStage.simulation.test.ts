@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Shape, Point2D } from '$lib/types';
 import type { Line } from '$lib/geometry/line';
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape';
 import type { Arc } from '$lib/geometry/arc';
 

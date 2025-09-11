@@ -1,53 +1,56 @@
 import { describe, it, expect } from 'vitest';
+import WorkflowBreadcrumbs from './WorkflowBreadcrumbs.svelte';
+import WorkflowContainer from './WorkflowContainer.svelte';
+import ImportStage from './stages/ImportStage.svelte';
+import EditStage from './stages/EditStage.svelte';
+import PrepareStage from './stages/PrepareStage.svelte';
+import NewProgramStage from './stages/NewProgramStage.svelte';
+import SimulateStage from './stages/SimulateStage.svelte';
+import ExportStage from './stages/ExportStage.svelte';
+import {
+    getStageDisplayName,
+    getStageDescription,
+    WorkflowStage,
+    workflowStore,
+} from '$lib/stores/workflow';
 
 describe('Workflow Components', () => {
     describe('Component imports', () => {
         it('should import WorkflowBreadcrumbs without errors', async () => {
-            const module = await import('./WorkflowBreadcrumbs.svelte');
-            expect(module.default).toBeDefined();
+            expect(WorkflowBreadcrumbs).toBeDefined();
         });
 
         it('should import WorkflowContainer without errors', async () => {
-            const module = await import('./WorkflowContainer.svelte');
-            expect(module.default).toBeDefined();
+            expect(WorkflowContainer).toBeDefined();
         });
 
         it('should import ImportStage without errors', async () => {
-            const module = await import('./stages/ImportStage.svelte');
-            expect(module.default).toBeDefined();
+            expect(ImportStage).toBeDefined();
         });
 
         it('should import EditStage without errors', async () => {
-            const module = await import('./stages/EditStage.svelte');
-            expect(module.default).toBeDefined();
+            expect(EditStage).toBeDefined();
         });
 
         it('should import PrepareStage without errors', async () => {
-            const module = await import('./stages/PrepareStage.svelte');
-            expect(module.default).toBeDefined();
+            expect(PrepareStage).toBeDefined();
         });
 
         it('should import NewProgramStage without errors', async () => {
-            const module = await import('./stages/NewProgramStage.svelte');
-            expect(module.default).toBeDefined();
+            expect(NewProgramStage).toBeDefined();
         });
 
         it('should import SimulateStage without errors', async () => {
-            const module = await import('./stages/SimulateStage.svelte');
-            expect(module.default).toBeDefined();
+            expect(SimulateStage).toBeDefined();
         });
 
         it('should import ExportStage without errors', async () => {
-            const module = await import('./stages/ExportStage.svelte');
-            expect(module.default).toBeDefined();
+            expect(ExportStage).toBeDefined();
         });
     });
 
     describe('Stage helper functions', () => {
         it('should import and use workflow utilities', async () => {
-            const { getStageDisplayName, getStageDescription, WorkflowStage } =
-                await import('$lib/stores/workflow');
-
             expect(getStageDisplayName(WorkflowStage.IMPORT)).toBe('Import');
             expect(getStageDisplayName(WorkflowStage.EDIT)).toBe('Edit');
             expect(getStageDisplayName(WorkflowStage.PREPARE)).toBe('Prepare');
@@ -80,10 +83,6 @@ describe('Workflow Components', () => {
 
     describe('Workflow stage progression logic', () => {
         it('should define correct stage order', async () => {
-            const { workflowStore, WorkflowStage } = await import(
-                '$lib/stores/workflow'
-            );
-
             // Test the expected progression through store methods
             expect(workflowStore.getNextStage()).toBe(WorkflowStage.EDIT);
 

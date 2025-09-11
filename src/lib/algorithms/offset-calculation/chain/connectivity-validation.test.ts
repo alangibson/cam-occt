@@ -5,7 +5,7 @@ import { GeometryType } from '$lib/types/geometry';
 import type { OffsetChain } from './types';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import { generateId } from '../../../utils/id';
+import { generateId } from '$lib/domain/id';
 
 describe('offset chain connectivity validation', () => {
     // Helper to create shapes

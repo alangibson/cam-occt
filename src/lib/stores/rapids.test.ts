@@ -6,7 +6,7 @@ import {
     highlightRapid,
     clearRapidHighlight,
 } from './rapids';
-import type { Rapid } from '../algorithms/optimize-cut-order';
+import type { Rapid } from '../algorithms/optimize-cut-order/optimize-cut-order';
 
 describe('rapidStore', () => {
     beforeEach(() => {

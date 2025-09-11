@@ -4,9 +4,15 @@ import { trimPolyline } from './index';
 import { type KeepSide } from '../types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import type { PolylineVertex } from '$lib/types';
+import {
+    polylineToPoints,
+    createPolylineFromVertices,
+    polylineToVertices,
+} from '$lib/geometry/polyline';
+import { calculateLineParameter } from '../../shared/trim-extend-utils';
 
 // Mock dependencies
-vi.mock('$lib/utils/id', () => ({
+vi.mock('$lib/domain/id', () => ({
     generateId: vi.fn(() => 'generated-id-123'),
 }));
 
@@ -51,15 +57,6 @@ describe('Polyline Trimming Functions', () => {
             const shape = createPolylineShape(polyline);
             const trimPoint = { x: 15, y: 0 }; // On second segment
 
-            const {
-                polylineToPoints,
-                createPolylineFromVertices,
-                polylineToVertices,
-            } = await import('$lib/geometry/polyline');
-            const { calculateLineParameter } = await import(
-                '../../shared/trim-extend-utils'
-            );
-
             vi.mocked(polylineToPoints).mockReturnValue(points);
             vi.mocked(polylineToVertices).mockReturnValue([]);
             vi.mocked(calculateLineParameter).mockImplementation(
@@ -95,15 +92,6 @@ describe('Polyline Trimming Functions', () => {
             const shape = createPolylineShape(polyline);
             const trimPoint = { x: 15, y: 0 }; // On second segment
 
-            const {
-                polylineToPoints,
-                createPolylineFromVertices,
-                polylineToVertices,
-            } = await import('$lib/geometry/polyline');
-            const { calculateLineParameter } = await import(
-                '../../shared/trim-extend-utils'
-            );
-
             vi.mocked(polylineToPoints).mockReturnValue(points);
             vi.mocked(polylineToVertices).mockReturnValue([]);
             vi.mocked(calculateLineParameter).mockImplementation(
@@ -137,15 +125,6 @@ describe('Polyline Trimming Functions', () => {
             const shape = createPolylineShape(polyline);
             const trimPoint = { x: 10, y: 0 }; // Exactly at vertex
 
-            const {
-                polylineToPoints,
-                createPolylineFromVertices,
-                polylineToVertices,
-            } = await import('$lib/geometry/polyline');
-            const { calculateLineParameter } = await import(
-                '../../shared/trim-extend-utils'
-            );
-
             vi.mocked(polylineToPoints).mockReturnValue(points);
             vi.mocked(polylineToVertices).mockReturnValue([]);
             vi.mocked(calculateLineParameter).mockImplementation(
@@ -176,15 +155,6 @@ describe('Polyline Trimming Functions', () => {
             const polyline = createTestPolyline();
             const shape = createPolylineShape(polyline);
             const trimPoint = { x: 10, y: 0 }; // Exactly at vertex
-
-            const {
-                polylineToPoints,
-                createPolylineFromVertices,
-                polylineToVertices,
-            } = await import('$lib/geometry/polyline');
-            const { calculateLineParameter } = await import(
-                '../../shared/trim-extend-utils'
-            );
 
             vi.mocked(polylineToPoints).mockReturnValue(points);
             vi.mocked(polylineToVertices).mockReturnValue([]);
@@ -223,15 +193,6 @@ describe('Polyline Trimming Functions', () => {
             const shape = createPolylineShape(polyline);
             const trimPoint = { x: 5, y: 0 };
 
-            const {
-                polylineToPoints,
-                createPolylineFromVertices,
-                polylineToVertices,
-            } = await import('$lib/geometry/polyline');
-            const { calculateLineParameter } = await import(
-                '../../shared/trim-extend-utils'
-            );
-
             vi.mocked(polylineToPoints).mockReturnValue(points);
             vi.mocked(polylineToVertices).mockReturnValue(vertices);
             vi.mocked(calculateLineParameter).mockImplementation(
@@ -263,15 +224,6 @@ describe('Polyline Trimming Functions', () => {
             const shape = createPolylineShape(polyline);
             const trimPoint = { x: 5, y: 1 }; // Slightly off the line
 
-            const {
-                polylineToPoints,
-                createPolylineFromVertices,
-                polylineToVertices,
-            } = await import('$lib/geometry/polyline');
-            const { calculateLineParameter } = await import(
-                '../../shared/trim-extend-utils'
-            );
-
             vi.mocked(polylineToPoints).mockReturnValue(points);
             vi.mocked(polylineToVertices).mockReturnValue([]);
             vi.mocked(calculateLineParameter).mockReturnValue(-1); // Not exactly on any segment
@@ -294,15 +246,6 @@ describe('Polyline Trimming Functions', () => {
             const polyline = createTestPolyline();
             const shape = createPolylineShape(polyline);
             const trimPoint = { x: 5, y: 0 };
-
-            const {
-                polylineToPoints,
-                createPolylineFromVertices,
-                polylineToVertices,
-            } = await import('$lib/geometry/polyline');
-            const { calculateLineParameter } = await import(
-                '../../shared/trim-extend-utils'
-            );
 
             vi.mocked(polylineToPoints).mockReturnValue(points);
             vi.mocked(polylineToVertices).mockReturnValue([]);
@@ -337,15 +280,6 @@ describe('Polyline Trimming Functions', () => {
             const shape = createPolylineShape(polyline);
             const trimPoint = { x: 15, y: 0 };
 
-            const {
-                polylineToPoints,
-                createPolylineFromVertices,
-                polylineToVertices,
-            } = await import('$lib/geometry/polyline');
-            const { calculateLineParameter } = await import(
-                '../../shared/trim-extend-utils'
-            );
-
             vi.mocked(polylineToPoints).mockReturnValue(points);
             vi.mocked(polylineToVertices).mockReturnValue([]);
             vi.mocked(calculateLineParameter).mockImplementation(
@@ -372,9 +306,6 @@ describe('Polyline Trimming Functions', () => {
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: 5, y: 0 };
 
-                const { polylineToPoints } = await import(
-                    '$lib/geometry/polyline'
-                );
                 vi.mocked(polylineToPoints).mockReturnValue(points);
 
                 const result = trimPolyline(shape, trimPoint, 'start', 0.1);
@@ -396,13 +327,6 @@ describe('Polyline Trimming Functions', () => {
                 const polyline = createTestPolyline();
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: 5, y: 100 }; // Far from polyline
-
-                const { polylineToPoints, polylineToVertices } = await import(
-                    '$lib/geometry/polyline'
-                );
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
 
                 vi.mocked(polylineToPoints).mockReturnValue(points);
                 vi.mocked(polylineToVertices).mockReturnValue([]);
@@ -427,13 +351,6 @@ describe('Polyline Trimming Functions', () => {
                 const polyline = createTestPolyline();
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: 5, y: 0 };
-
-                const { polylineToPoints, polylineToVertices } = await import(
-                    '$lib/geometry/polyline'
-                );
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
 
                 vi.mocked(polylineToPoints).mockReturnValue(points);
                 vi.mocked(polylineToVertices).mockReturnValue([]);
@@ -470,13 +387,6 @@ describe('Polyline Trimming Functions', () => {
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: 0, y: 0 }; // Trim at start
 
-                const { polylineToPoints, polylineToVertices } = await import(
-                    '$lib/geometry/polyline'
-                );
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
-
                 vi.mocked(polylineToPoints).mockReturnValue(points);
                 vi.mocked(polylineToVertices).mockReturnValue([]);
                 vi.mocked(calculateLineParameter).mockImplementation(
@@ -505,15 +415,6 @@ describe('Polyline Trimming Functions', () => {
                 const polyline = createTestPolyline();
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: 5, y: 0.1 }; // Exactly at tolerance
-
-                const {
-                    polylineToPoints,
-                    createPolylineFromVertices,
-                    polylineToVertices,
-                } = await import('$lib/geometry/polyline');
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
 
                 vi.mocked(polylineToPoints).mockReturnValue(points);
                 vi.mocked(polylineToVertices).mockReturnValue([]);
@@ -548,15 +449,6 @@ describe('Polyline Trimming Functions', () => {
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: -5, y: 0 }; // Before first segment
 
-                const {
-                    polylineToPoints,
-                    createPolylineFromVertices,
-                    polylineToVertices,
-                } = await import('$lib/geometry/polyline');
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
-
                 vi.mocked(polylineToPoints).mockReturnValue(points);
                 vi.mocked(polylineToVertices).mockReturnValue([]);
                 vi.mocked(calculateLineParameter).mockImplementation(
@@ -589,13 +481,6 @@ describe('Polyline Trimming Functions', () => {
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: 5, y: 5 };
 
-                const { polylineToPoints, polylineToVertices } = await import(
-                    '$lib/geometry/polyline'
-                );
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
-
                 vi.mocked(polylineToPoints).mockReturnValue(points);
                 vi.mocked(polylineToVertices).mockReturnValue([]);
                 vi.mocked(calculateLineParameter).mockReturnValue(0.5); // Mock finding on degenerate segment
@@ -615,15 +500,6 @@ describe('Polyline Trimming Functions', () => {
                 const polyline = createTestPolyline();
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: 5, y: 0.001 }; // Very small deviation
-
-                const {
-                    polylineToPoints,
-                    createPolylineFromVertices,
-                    polylineToVertices,
-                } = await import('$lib/geometry/polyline');
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
 
                 vi.mocked(polylineToPoints).mockReturnValue(points);
                 vi.mocked(polylineToVertices).mockReturnValue([]);
@@ -659,15 +535,6 @@ describe('Polyline Trimming Functions', () => {
                 const polyline = createTestPolyline();
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: 10, y: 5 }; // On vertical segment
-
-                const {
-                    polylineToPoints,
-                    createPolylineFromVertices,
-                    polylineToVertices,
-                } = await import('$lib/geometry/polyline');
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
 
                 vi.mocked(polylineToPoints).mockReturnValue(points);
                 vi.mocked(polylineToVertices).mockReturnValue([]);
@@ -707,15 +574,6 @@ describe('Polyline Trimming Functions', () => {
                 const polyline = createTestPolyline();
                 const shape = createPolylineShape(polyline);
                 const trimPoint = { x: 25, y: 5 }; // On third segment
-
-                const {
-                    polylineToPoints,
-                    createPolylineFromVertices,
-                    polylineToVertices,
-                } = await import('$lib/geometry/polyline');
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
 
                 vi.mocked(polylineToPoints).mockReturnValue(points);
                 vi.mocked(polylineToVertices).mockReturnValue([]);

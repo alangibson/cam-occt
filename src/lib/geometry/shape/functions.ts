@@ -28,6 +28,7 @@ import type { Polyline } from '$lib/geometry/polyline';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import { GeometryType } from './enums';
 import {
+    evaluateNURBS,
     getSplineEndPoint,
     getSplinePointAt,
     getSplineStartPoint,
@@ -41,6 +42,8 @@ import {
     getEllipsePointAt,
     getEllipseStartPoint,
     reverseEllipse,
+    generateEllipsePoints,
+    isEllipseClosed,
 } from '$lib/geometry/ellipse/index';
 import {
     DEFAULT_PART_DETECTION_PARAMETERS,
@@ -68,6 +71,8 @@ import { GeometryFactory, Coordinate } from 'jsts/org/locationtech/jts/geom';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from '../chain';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';
+import { LEAD_SEGMENT_COUNT } from '../line/constants';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '../math';
 
 /**
  * Extract points from a shape for path generation
@@ -884,7 +889,9 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
     }
 
     return moved;
-} /**
+}
+
+/**
  * Check if one shape is geometrically contained within another shape
  * @param inner The potentially contained shape
  * @param outer The potentially containing shape
@@ -892,7 +899,6 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
  * @param params Additional parameters for tessellation
  * @returns True if inner shape is contained within outer shape
  */
-
 export function isShapeContainedInShape(
     inner: Shape,
     outer: Shape,
@@ -1006,5 +1012,222 @@ export function isShapeContainedInShape(
     } catch (error) {
         console.warn('Error in shape containment detection:', error);
         return false;
+    }
+}
+
+/**
+ * Gets representative points from a shape
+ */
+export function getShapePoints2(shape: Shape): Point2D[] {
+    switch (shape.type) {
+        case GeometryType.LINE:
+            const line: Line = shape.geometry as Line;
+            return [line.start, line.end];
+
+        case GeometryType.CIRCLE:
+            const circle: Circle = shape.geometry as Circle;
+            // Create polygon approximation of circle with 32 points
+            const points: Point2D[] = [];
+            const segments: number = 32;
+            for (let i: number = 0; i < segments; i++) {
+                const angle: number = (i * 2 * Math.PI) / segments;
+                points.push({
+                    x: circle.center.x + circle.radius * Math.cos(angle),
+                    y: circle.center.y + circle.radius * Math.sin(angle),
+                });
+            }
+            return points;
+
+        case GeometryType.ARC:
+            const arc: Arc = shape.geometry as Arc;
+            // Create polygon approximation of arc
+            const arcPoints: Point2D[] = [];
+            let startAngle: number = arc.startAngle;
+            let endAngle: number = arc.endAngle;
+
+            // Normalize angles and handle clockwise arcs
+            if (arc.clockwise) {
+                [startAngle, endAngle] = [endAngle, startAngle];
+            }
+
+            // Calculate arc span
+            let span: number = endAngle - startAngle;
+            if (span <= 0) span += 2 * Math.PI;
+
+            const arcSegments: number = Math.max(
+                LEAD_SEGMENT_COUNT,
+                Math.ceil(span / (Math.PI / LEAD_SEGMENT_COUNT))
+            ); // At least 8 segments
+
+            for (let i: number = 0; i <= arcSegments; i++) {
+                const angle: number = startAngle + (span * i) / arcSegments;
+                arcPoints.push({
+                    x: arc.center.x + arc.radius * Math.cos(angle),
+                    y: arc.center.y + arc.radius * Math.sin(angle),
+                });
+            }
+            return arcPoints;
+
+        case GeometryType.POLYLINE:
+            const polyline: Polyline = shape.geometry as Polyline;
+            return polylineToPoints(polyline);
+
+        case GeometryType.ELLIPSE:
+            const ellipse: Ellipse = shape.geometry as Ellipse;
+            // Create polygon approximation of ellipse
+            const ellipsePoints: Point2D[] = [];
+            const ellipseSegments: number = 64; // More segments for ellipse to capture shape accurately
+
+            // Determine if this is an ellipse arc or full ellipse
+            const isArc: boolean =
+                typeof ellipse.startParam === 'number' &&
+                typeof ellipse.endParam === 'number';
+
+            if (isArc) {
+                // Ellipse arc - only sample between start and end parameters
+                const startParam: number = ellipse.startParam!;
+                const endParam: number = ellipse.endParam!;
+                let paramSpan: number = endParam - startParam;
+
+                // Handle parameter wrapping
+                if (paramSpan <= 0) paramSpan += 2 * Math.PI;
+
+                const numSegments: number = Math.max(
+                    LEAD_SEGMENT_COUNT,
+                    Math.ceil((ellipseSegments * paramSpan) / (2 * Math.PI))
+                );
+
+                const arcPoints = generateEllipsePoints(
+                    ellipse,
+                    startParam,
+                    startParam + paramSpan,
+                    numSegments + 1
+                );
+                ellipsePoints.push(...arcPoints);
+            } else {
+                // Full ellipse
+                const fullEllipsePoints = generateEllipsePoints(
+                    ellipse,
+                    0,
+                    2 * Math.PI,
+                    ellipseSegments
+                );
+                ellipsePoints.push(...fullEllipsePoints);
+            }
+
+            return ellipsePoints;
+
+        case GeometryType.SPLINE:
+            const spline: Spline = shape.geometry as Spline;
+            try {
+                // Use NURBS sampling for accurate polygon representation
+                return sampleNURBS(spline, ELLIPSE_TESSELLATION_POINTS); // Use more points for geometric accuracy
+            } catch {
+                // Fallback to fit points or control points if NURBS evaluation fails
+                if (spline.fitPoints && spline.fitPoints.length > 0) {
+                    return spline.fitPoints;
+                } else if (
+                    spline.controlPoints &&
+                    spline.controlPoints.length > 0
+                ) {
+                    return spline.controlPoints;
+                }
+                return [];
+            }
+
+        default:
+            return [];
+    }
+} /**
+ * Checks if a single shape forms a closed loop
+ */
+
+export function isShapeClosed(shape: Shape, tolerance: number): boolean {
+    switch (shape.type) {
+        case GeometryType.CIRCLE:
+            // Circles are always closed
+            return true;
+
+        case GeometryType.POLYLINE:
+            const polyline: Polyline = shape.geometry as Polyline;
+            const points: Point2D[] = polylineToPoints(polyline);
+            if (!points || points.length < POLYGON_POINTS_MIN) return false;
+
+            // CRITICAL FIX: For polylines, first check the explicit closed flag from DXF parsing
+            // This is especially important for polylines with bulges where the geometric
+            // first/last points don't represent the actual curve endpoints
+            if (typeof polyline.closed === 'boolean') {
+                return polyline.closed;
+            }
+
+            // Fallback: geometric check for polylines without explicit closure information
+            const firstPoint: Point2D = points[0];
+            const lastPoint: Point2D = points[points.length - 1];
+
+            if (!firstPoint || !lastPoint) return false;
+
+            // Check if first and last points are within tolerance
+            const distance: number = Math.sqrt(
+                Math.pow(firstPoint.x - lastPoint.x, 2) +
+                    Math.pow(firstPoint.y - lastPoint.y, 2)
+            );
+
+            return distance <= tolerance;
+
+        case GeometryType.ARC:
+            // Arcs are open by definition (unless they're a full circle, but that would be a circle)
+            return false;
+
+        case GeometryType.LINE:
+            // Lines are open by definition
+            return false;
+
+        case GeometryType.ELLIPSE:
+            const ellipse: Ellipse = shape.geometry as Ellipse;
+            // Use the centralized ellipse closed detection logic
+            return isEllipseClosed(ellipse, GEOMETRIC_PRECISION_TOLERANCE);
+
+        case GeometryType.SPLINE:
+            const splineGeom: Spline = shape.geometry as Spline;
+
+            // For splines, use proper NURBS evaluation to get actual start and end points
+            let splineFirstPoint: Point2D | null = null;
+            let splineLastPoint: Point2D | null = null;
+
+            try {
+                // Use NURBS evaluation for accurate endpoints
+                splineFirstPoint = evaluateNURBS(0, splineGeom);
+                splineLastPoint = evaluateNURBS(1, splineGeom);
+            } catch {
+                // Fallback to fit points if NURBS evaluation fails
+                if (splineGeom.fitPoints && splineGeom.fitPoints.length > 0) {
+                    splineFirstPoint = splineGeom.fitPoints[0];
+                    splineLastPoint =
+                        splineGeom.fitPoints[splineGeom.fitPoints.length - 1];
+                } else if (
+                    splineGeom.controlPoints &&
+                    splineGeom.controlPoints.length > 0
+                ) {
+                    // Final fallback to control points
+                    splineFirstPoint = splineGeom.controlPoints[0];
+                    splineLastPoint =
+                        splineGeom.controlPoints[
+                            splineGeom.controlPoints.length - 1
+                        ];
+                }
+            }
+
+            if (!splineFirstPoint || !splineLastPoint) return false;
+
+            // Check if first and last points are within tolerance
+            const splineDistance: number = Math.sqrt(
+                Math.pow(splineFirstPoint.x - splineLastPoint.x, 2) +
+                    Math.pow(splineFirstPoint.y - splineLastPoint.y, 2)
+            );
+
+            return splineDistance <= tolerance;
+
+        default:
+            throw new Error(`Unknown type ${shape.type}`);
     }
 }

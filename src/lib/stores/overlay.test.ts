@@ -10,7 +10,7 @@ import {
 } from './overlay';
 import { WorkflowStage } from './workflow';
 import type { Shape, Point2D } from '$lib/types';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape';
 
 describe('overlayStore', () => {

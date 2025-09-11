@@ -4,6 +4,10 @@ import { drawingStore } from './drawing';
 import type { Drawing, Shape, Point2D, Line } from '$lib/types';
 import { Unit } from '../utils/units';
 import { GeometryType } from '$lib/geometry/shape';
+import { overlayStore } from './overlay';
+import { pathStore } from './paths';
+import { operationsStore } from './operations';
+import { workflowStore, WorkflowStage } from './workflow';
 
 // Mock dependent modules
 vi.mock('./chains', () => ({
@@ -150,10 +154,6 @@ describe('drawingStore', () => {
             await new Promise((resolve) => setTimeout(resolve, 10));
 
             // Use mocked stores
-            const { overlayStore } = await import('./overlay');
-            const { pathStore } = await import('./paths');
-            const { operationsStore } = await import('./operations');
-            const { workflowStore, WorkflowStage } = await import('./workflow');
 
             expect(overlayStore.clearStageOverlay).toHaveBeenCalledWith(
                 WorkflowStage.PREPARE
@@ -272,7 +272,6 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
-            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
                 workflowStore.invalidateDownstreamStages
             ).toHaveBeenCalledWith(WorkflowStage.EDIT);
@@ -322,7 +321,6 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
-            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
                 workflowStore.invalidateDownstreamStages
             ).toHaveBeenCalledWith(WorkflowStage.EDIT);
@@ -372,7 +370,6 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
-            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
                 workflowStore.invalidateDownstreamStages
             ).toHaveBeenCalledWith(WorkflowStage.EDIT);
@@ -421,7 +418,6 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
-            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
                 workflowStore.invalidateDownstreamStages
             ).toHaveBeenCalledWith(WorkflowStage.EDIT);
@@ -533,7 +529,6 @@ describe('drawingStore', () => {
             // Wait for async operations
             await new Promise((resolve) => setTimeout(resolve, 10));
 
-            const { workflowStore, WorkflowStage } = await import('./workflow');
             expect(
                 workflowStore.invalidateDownstreamStages
             ).toHaveBeenCalledWith(WorkflowStage.PREPARE);
@@ -586,7 +581,6 @@ describe('drawingStore', () => {
             expect(state.dragStart).toBeNull();
 
             // Should NOT have called workflow reset functions
-            const { workflowStore } = await import('./workflow');
             expect(
                 workflowStore.invalidateDownstreamStages
             ).not.toHaveBeenCalled();

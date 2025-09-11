@@ -14,7 +14,7 @@ import type {
     Ellipse,
 } from '$lib/types';
 import type { Arc } from '$lib/geometry/arc';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
     getShapeStartPoint,
     getShapeEndPoint,

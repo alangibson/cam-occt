@@ -303,3 +303,17 @@ export function convertBulgeToArc(
         return null;
     }
 }
+/**
+ * Calculate the intersection angle for a point on an arc
+ *
+ * This function calculates the angle from the arc's center to the intersection point.
+ * The angle is measured from the positive x-axis in radians.
+ *
+ * @param point - The intersection point on the arc
+ * @param arc - The arc geometry
+ * @returns The angle in radians from the arc center to the point
+ */
+
+export function calculateIntersectionAngle(point: Point2D, arc: Arc): number {
+    return Math.atan2(point.y - arc.center.y, point.x - arc.center.x);
+}

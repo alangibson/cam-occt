@@ -8,7 +8,7 @@ import {
     type Shape,
 } from '$lib/types/geometry';
 import { SVGBuilder } from '../../../test/svg-builder';
-import type { Chain } from '../../chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { offsetChain } from '../chain/offset';

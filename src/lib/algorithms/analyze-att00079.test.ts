@@ -18,7 +18,7 @@ import type { Shape } from '$lib/types';
 import type { Line, Polyline } from '$lib/types/geometry';
 import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
-import type { Chain as ShapeChain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain as ShapeChain } from '$lib/geometry/chain/interfaces';
 
 const problematicChains = [
     'chain-34',

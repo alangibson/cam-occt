@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { Rapid } from '../algorithms/optimize-cut-order';
+import type { Rapid } from '../algorithms/optimize-cut-order/optimize-cut-order';
 
 export interface RapidsState {
     rapids: Rapid[];

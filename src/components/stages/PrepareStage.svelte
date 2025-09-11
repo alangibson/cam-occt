@@ -39,10 +39,10 @@
     } from '$lib/stores/tessellation';
     import { tessellateShape } from '$lib/geometry/shape';
     import { overlayStore, generateChainEndpoints } from '$lib/stores/overlay';
-    import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points';
+    import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
     import { prepareStageStore } from '$lib/stores/prepare-stage';
-    import { decomposePolylines } from '$lib/algorithms/decompose-polylines';
-    import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive';
+    import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
+    import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
     import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
     import {
         type Shape,
@@ -54,7 +54,7 @@
         GeometryType,
     } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
-    import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+    import type { Chain } from '$lib/geometry/chain/interfaces';
     import {
         getShapeStartPoint,
         getShapeEndPoint,

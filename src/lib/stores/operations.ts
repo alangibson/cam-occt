@@ -38,7 +38,7 @@ import type {
     DetectedPart,
     PartHole,
 } from '$lib/algorithms/part-detection/part-detection';
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import { offsetChain } from '../algorithms/offset-calculation/chain/offset';

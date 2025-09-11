@@ -1,6 +1,6 @@
 import type { Arc, Shape, Point2D } from '$lib/types/geometry';
 import { TOLERANCE } from '$lib/geometry/math/constants';
-import { generateId } from '$lib/utils/id';
+import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';
 import { type KeepSide, type TrimResult } from '../types';
 import { isAngleInArcRange } from '$lib/algorithms/intersection-arc-utils';

@@ -1,5 +1,5 @@
 import type { Shape, Point2D } from '$lib/types/geometry';
-import type { Chain } from '../../chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type {
     OffsetSide,
     SideDetectionResult,

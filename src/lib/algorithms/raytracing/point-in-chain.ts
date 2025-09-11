@@ -15,7 +15,7 @@ import type {
 } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/types/geometry';
-import type { Chain } from '../chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';

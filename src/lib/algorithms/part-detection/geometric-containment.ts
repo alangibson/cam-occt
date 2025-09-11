@@ -9,7 +9,7 @@
  * shapes within shapes, and polygon containment hierarchies.
  */
 
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
 import type { PartDetectionParameters } from '$lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';

@@ -9,7 +9,7 @@ import type { Path } from '$lib/stores/paths';
 import type {
     LeadInConfig,
     LeadOutConfig,
-} from '../algorithms/lead-calculation';
+} from '../algorithms/leads/lead-calculation';
 import { LeadType } from '$lib/types/direction';
 
 /**

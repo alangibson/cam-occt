@@ -2,7 +2,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/svelte';
 import WorkflowBreadcrumbs from './WorkflowBreadcrumbs.svelte';
-import { WorkflowStage } from '$lib/stores/workflow';
+import { WorkflowStage, workflowStore } from '$lib/stores/workflow';
+import { uiStore } from '$lib/stores/ui';
 
 // Mock the stores
 vi.mock('$lib/stores/workflow', () => ({
@@ -44,7 +45,6 @@ describe('WorkflowBreadcrumbs Component', () => {
     beforeEach(async () => {
         vi.clearAllMocks();
 
-        const { workflowStore } = await import('$lib/stores/workflow');
         // Mock store subscription
         vi.mocked(workflowStore.subscribe).mockImplementation((callback) => {
             callback({
@@ -80,9 +80,6 @@ describe('WorkflowBreadcrumbs Component', () => {
     });
 
     it('should call workflowStore.setStage when accessible stage is clicked', async () => {
-        const { workflowStore } = await import('$lib/stores/workflow');
-        const { uiStore } = await import('$lib/stores/ui');
-
         vi.mocked(workflowStore.canAdvanceTo).mockReturnValue(true);
 
         const { getByText } = render(WorkflowBreadcrumbs);
@@ -95,7 +92,6 @@ describe('WorkflowBreadcrumbs Component', () => {
     });
 
     it('should not call setStage when inaccessible stage is clicked', async () => {
-        const { workflowStore } = await import('$lib/stores/workflow');
         vi.mocked(workflowStore.canAdvanceTo).mockReturnValue(false);
 
         const { getByText } = render(WorkflowBreadcrumbs);
@@ -107,7 +103,6 @@ describe('WorkflowBreadcrumbs Component', () => {
     });
 
     it('should disable buttons for inaccessible stages', async () => {
-        const { workflowStore } = await import('$lib/stores/workflow');
         vi.mocked(workflowStore.canAdvanceTo).mockImplementation(
             (stage: string) => {
                 return (
@@ -129,7 +124,6 @@ describe('WorkflowBreadcrumbs Component', () => {
     });
 
     it('should show completed stages with appropriate styling', async () => {
-        const { workflowStore } = await import('$lib/stores/workflow');
         vi.mocked(workflowStore.subscribe).mockImplementation((callback) => {
             callback({
                 currentStage: WorkflowStage.PREPARE,

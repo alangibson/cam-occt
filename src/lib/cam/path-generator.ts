@@ -5,7 +5,7 @@ import type {
     ToolPath,
     CuttingParameters,
 } from '$lib/types';
-import { generateId } from '../utils/id';
+import { generateId } from '$lib/domain/id';
 import { getShapePoints } from '$lib/geometry/shape';
 
 export function generateToolPaths(

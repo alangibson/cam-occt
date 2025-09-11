@@ -42,10 +42,9 @@
         GeometryType,
     } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
-    import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+    import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { Path } from '$lib/stores/paths';
-    import type { Rapid } from '$lib/algorithms/optimize-cut-order';
-    import { getPhysicalScaleFactor } from '$lib/utils/units';
+    import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
     import { polylineToPoints } from '$lib/geometry/polyline';
     import { getShapePointAt } from '$lib/geometry/shape/functions';
@@ -53,7 +52,7 @@
         calculateLeads,
         type LeadInConfig,
         type LeadOutConfig,
-    } from '$lib/algorithms/lead-calculation';
+    } from '$lib/algorithms/leads/lead-calculation';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import { LeadType } from '$lib/types/direction';
 

@@ -7,9 +7,9 @@
  * 3. Performs basic trimming and gap filling to create continuous chains
  */
 
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
-import { generateId } from '$lib/utils/id';
+import { generateId } from '$lib/domain/id';
 import { validateSplineGeometry2 } from '$lib/geometry/spline/functions';
 import { type SplineValidationResult } from '$lib/geometry/spline/interfaces';
 import type { Line, Circle, Polyline, Ellipse } from '$lib/types/geometry';

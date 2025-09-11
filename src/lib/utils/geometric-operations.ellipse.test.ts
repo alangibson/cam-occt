@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Ellipse, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
-import { isChainGeometricallyContained } from './geometric-operations';
+import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
 
 // Helper function to create ellipse shapes for testing
 function createEllipseShape(

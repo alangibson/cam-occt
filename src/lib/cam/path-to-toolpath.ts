@@ -8,7 +8,7 @@ import {
     getCachedLeadGeometry,
     calculateLeadPoints,
 } from '../utils/lead-persistence-utils';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { GeometryType } from '$lib/types/geometry';

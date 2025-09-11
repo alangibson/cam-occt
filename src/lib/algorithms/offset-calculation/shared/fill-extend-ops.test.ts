@@ -20,6 +20,7 @@ import {
     type ExtensionResult,
     type EllipseGeometry,
 } from './fill-extend-ops';
+import { pointDistance } from '../trim';
 
 // Mock dependencies
 vi.mock('../../../geometry/ellipse', () => ({
@@ -415,7 +416,6 @@ describe('Fill-Extend Operations Library', () => {
                 const circle = createTestCircle();
                 const point: Point2D = { x: 10, y: 0 }; // On circle
 
-                const { pointDistance } = await import('../trim');
                 vi.mocked(pointDistance).mockReturnValue(10); // Distance from center to point
 
                 const result = validateCircleIntersectionPoint(
@@ -432,7 +432,6 @@ describe('Fill-Extend Operations Library', () => {
                 const circle = createTestCircle();
                 const point: Point2D = { x: 100, y: 100 }; // Far from circle
 
-                const { pointDistance } = await import('../trim');
                 vi.mocked(pointDistance).mockReturnValue(141.42); // Distance from center
 
                 const result = validateCircleIntersectionPoint(
@@ -452,7 +451,6 @@ describe('Fill-Extend Operations Library', () => {
                 const smallCircle = createTestCircle({ radius: 0.001 });
                 const point: Point2D = { x: 0.001, y: 0 }; // On small circle
 
-                const { pointDistance } = await import('../trim');
                 vi.mocked(pointDistance).mockReturnValue(0.001);
 
                 const result = validateCircleIntersectionPoint(

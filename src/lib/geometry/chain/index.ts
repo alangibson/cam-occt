@@ -15,7 +15,6 @@ export { WindingDirection } from './enums';
 export {
     reverseChain,
     calculateSignedArea,
-    calculatePolygonArea,
     getWindingDirection,
     isClockwise,
     isCounterClockwise,

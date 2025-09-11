@@ -3,19 +3,24 @@
  */
 
 import type { Point2D } from '$lib/types/geometry';
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from './interfaces';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
     reverseShape,
     tessellateShape,
 } from '$lib/geometry/shape/functions';
-import { calculatePerimeter } from '$lib/geometry/math';
-import { calculatePolygonArea as calculatePolygonAreaShared } from '$lib/geometry/polygon/functions';
+import {
+    calculatePerimeter,
+    GEOMETRIC_PRECISION_TOLERANCE,
+} from '$lib/geometry/math';
 import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
 import { WindingDirection } from './enums';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';
-import { roundToDecimalPlaces } from '../math/functions';
+import {
+    calculateDistanceBetweenPoints,
+    roundToDecimalPlaces,
+} from '../math/functions';
 import { GeometryFactory, Coordinate } from 'jsts/org/locationtech/jts/geom';
 import { AREA_RATIO_THRESHOLD } from '$lib/algorithms/constants';
 import { calculateChainBoundingBox } from '$lib/utils/shape-bounds-utils';
@@ -24,6 +29,11 @@ import {
     DEFAULT_PART_DETECTION_PARAMETERS,
     type PartDetectionParameters,
 } from '$lib/types/part-detection';
+import {
+    isPolygonContained,
+    removeDuplicatePoints,
+} from '../polygon/functions';
+import { getShapePoints2 } from '../shape/functions';
 
 /**
  * Reverses a chain's direction by reversing both the order of shapes
@@ -65,17 +75,6 @@ export function calculateSignedArea(points: Point2D[]): number {
         area += (points[j].x - points[i].x) * (points[j].y + points[i].y);
     }
     return area / 2;
-}
-
-/**
- * Calculate the unsigned (absolute) area of a polygon
- * Delegated to polygon-geometry-shared.ts to eliminate duplication
- *
- * @param points Array of polygon vertices in order
- * @returns Absolute area of the polygon (always positive)
- */
-export function calculatePolygonArea(points: Point2D[]): number {
-    return calculatePolygonAreaShared(points);
 }
 
 /**
@@ -449,4 +448,69 @@ export function isChainContainedInChain(
         console.warn('Error in geometric containment detection:', error);
         return false;
     }
+} /**
+ * Checks if one closed chain is completely contained within another closed chain
+ * using proper geometric containment (point-in-polygon testing)
+ */
+
+export function isChainGeometricallyContained(
+    innerChain: Chain,
+    outerChain: Chain
+): boolean {
+    // Extract polygon points from both chains
+    const innerPolygon: Point2D[] | null = extractPolygonFromChain(innerChain);
+    const outerPolygon: Point2D[] | null = extractPolygonFromChain(outerChain);
+
+    if (
+        !innerPolygon ||
+        !outerPolygon ||
+        innerPolygon.length < POLYGON_POINTS_MIN ||
+        outerPolygon.length < POLYGON_POINTS_MIN
+    ) {
+        throw new Error(
+            `Failed to extract polygons for containment check: inner chain ${innerChain.id}=${!!innerPolygon}, outer chain ${outerChain.id}=${!!outerPolygon}. Chains may have gaps preventing polygon creation.`
+        );
+    }
+
+    // Check if all points of inner polygon are inside outer polygon
+    return isPolygonContained(innerPolygon, outerPolygon);
+}
+/**
+ * Extracts a polygon representation from a chain for geometric operations
+ */
+
+export function extractPolygonFromChain(chain: Chain): Point2D[] | null {
+    if (!chain || !chain.shapes || chain.shapes.length === 0) {
+        return null;
+    }
+
+    const points: Point2D[] = [];
+
+    for (const shape of chain.shapes) {
+        const shapePoints: Point2D[] = getShapePoints2(shape);
+        if (shapePoints && shapePoints.length > 0) {
+            // Add points, but avoid duplicating the last point of previous shape with first point of next
+            if (points.length === 0) {
+                points.push(...shapePoints);
+            } else {
+                // Skip first point if it's close to the last added point
+                const lastPoint = points[points.length - 1];
+                const firstNewPoint = shapePoints[0];
+                const distance = calculateDistanceBetweenPoints(
+                    lastPoint,
+                    firstNewPoint
+                );
+
+                if (distance > GEOMETRIC_PRECISION_TOLERANCE) {
+                    points.push(...shapePoints);
+                } else {
+                    points.push(...shapePoints.slice(1));
+                }
+            }
+        }
+    }
+
+    // Remove duplicate points and ensure we have enough for a polygon
+    const cleanedPoints: Point2D[] = removeDuplicatePoints(points);
+    return cleanedPoints.length >= POLYGON_POINTS_MIN ? cleanedPoints : null;
 }

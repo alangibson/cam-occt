@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
-import { detectShapeChains, isShapeClosed } from './chain-detection';
+import { detectShapeChains } from './chain-detection';
+import { isShapeClosed } from '$lib/geometry/shape/functions';
 
 // Helper function to create ellipse shapes
 function createEllipse(

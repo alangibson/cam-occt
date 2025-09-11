@@ -39,7 +39,7 @@
     } from '$lib/utils/chain-part-interactions';
     import { leadWarningsStore } from '$lib/stores/lead-warnings';
     import { offsetWarningsStore } from '$lib/stores/offset-warnings';
-    import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order';
+    import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
 
     let operationsComponent: Operations;
 

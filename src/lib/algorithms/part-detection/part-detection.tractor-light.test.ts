@@ -9,7 +9,7 @@ import {
 } from '$lib/geometry/shape/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { Chain as ShapeChain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain as ShapeChain } from '$lib/geometry/chain/interfaces';
 // Shape and Point2D types not needed in this test
 
 // Helper function to test chain closure (copied from part-detection.ts)

@@ -12,9 +12,9 @@ import {
     type Shape,
     type Drawing,
 } from '$lib/types/geometry';
-import type { Chain } from '../../chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import { generateId } from '../../../utils/id';
+import { generateId } from '$lib/domain/id';
 
 describe('offsetChain Polyline Support', () => {
     it('should offset a closed rectangular polyline correctly', () => {

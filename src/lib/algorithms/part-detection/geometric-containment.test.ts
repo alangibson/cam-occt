@@ -1,7 +1,7 @@
 import type { Line } from '$lib/geometry/line';
 import { GeometryType, type Shape } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '../chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,

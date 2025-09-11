@@ -7,8 +7,8 @@ import {
 } from './point-in-chain';
 import type { Shape, Point2D } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
-import type { Chain } from '../chain-detection/chain-detection';
-import { generateId } from '../../utils/id';
+import type { Chain } from '$lib/geometry/chain/interfaces';
+import { generateId } from '$lib/domain/id';
 
 describe('Point-in-Chain Exact Testing', () => {
     // Helper function to create test chains

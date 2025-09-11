@@ -9,10 +9,10 @@ import {
 } from '../../extend/arc';
 import { pointDistance } from '../../trim';
 import {
-    calculateIntersectionAngle,
     createArcExtensionConfig,
     createArcExtensionOptions,
-} from '../../../arc-operations-utils';
+} from '../../extend/arc-operations-utils';
+import { calculateIntersectionAngle } from '$lib/geometry/arc/functions';
 import {
     HIGH_PRECISION_TOLERANCE,
     CONFIDENCE_HIGH_THRESHOLD,

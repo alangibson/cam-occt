@@ -3,7 +3,7 @@ import { get } from 'svelte/store';
 import { operationsStore, type Operation } from '$lib/stores/operations';
 import { pathStore } from '$lib/stores/paths';
 import { setChains, clearChains } from '$lib/stores/chains';
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';

@@ -4,7 +4,7 @@ import {
     getChainEndPoint,
 } from './path-optimization-utils';
 import type { Path } from '$lib/stores/paths';
-import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape, Line, Point2D } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import { LeadType, CutDirection } from '$lib/types/direction';

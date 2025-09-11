@@ -14,7 +14,7 @@ import {
     type PolygonSimplificationConfig,
 } from './polygon-utilities';
 import type { Point2D } from '$lib/types/geometry';
-import { WindingDirection } from '$lib/utils/geometry-utils';
+import { WindingDirection } from '$lib/geometry/chain/enums';
 
 describe('Polygon Utilities', () => {
     // Standard test polygons

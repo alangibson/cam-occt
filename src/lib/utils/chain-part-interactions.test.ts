@@ -6,7 +6,7 @@ import {
     type PartHole,
     type PartShell,
 } from '$lib/algorithms/part-detection/part-detection';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 
 describe('findPartContainingChain', () => {
     // Helper function to create a mock chain

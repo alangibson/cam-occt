@@ -15,10 +15,8 @@
 
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf-parser';
-import {
-    detectShapeChains,
-    type Chain,
-} from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { type Chain } from '$lib/geometry/chain/interfaces';
 import {
     getShapeStartPoint,
     getShapeEndPoint,

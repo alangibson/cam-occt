@@ -2,12 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf-parser';
-import {
-    detectShapeChains,
-    type Chain,
-} from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { type Chain } from '$lib/geometry/chain/interfaces';
 import { normalizeChain } from './chain-normalization/chain-normalization';
-import { isChainGeometricallyContained } from '../utils/geometric-operations';
+import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
 import {
     getShapeStartPoint,
     getShapeEndPoint,

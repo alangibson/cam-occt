@@ -12,13 +12,13 @@ import type {
     DetectedPart,
     PartHole,
 } from '$lib/algorithms/part-detection/part-detection';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
 import {
     calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
-} from '../algorithms/lead-calculation';
+} from '../algorithms/leads/lead-calculation';
 import { LeadType } from '$lib/types/direction';
 import { createLeadInConfig, createLeadOutConfig } from './lead-config-utils';
 import { pathStore } from '$lib/stores/paths';

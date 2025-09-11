@@ -16,7 +16,7 @@ import {
     type Point2D,
 } from '$lib/types/geometry';
 import type { IntersectionResult } from './types';
-import { generateId } from '../../../utils/id';
+import { generateId } from '$lib/domain/id';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 
 describe('intersections', () => {

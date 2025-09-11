@@ -6,12 +6,12 @@
  */
 
 import type { Drawing } from '$lib/types/geometry';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import type {
     DetectedPart,
     PartDetectionWarning,
 } from '$lib/algorithms/part-detection/part-detection';
-import type { Rapid } from '../algorithms/optimize-cut-order';
+import type { Rapid } from '../algorithms/optimize-cut-order/optimize-cut-order';
 import type { TessellationPoint, DrawingOverlay } from '$lib/stores/overlay';
 import type { LeadWarning } from '$lib/stores/lead-warnings';
 import type { PrepareStageState } from '$lib/stores/prepare-stage';

@@ -18,8 +18,7 @@ import {
     type Polyline,
     type Shape,
 } from '$lib/types/geometry';
-import { calculateSignedArea } from '../../../utils/geometry-utils';
-import type { Chain } from '../../chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { offsetChain } from '../chain/offset';
 import type { ChainOffsetResult } from '../chain/types';
 import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from '../chain/types';
@@ -31,6 +30,7 @@ import { offsetPolyline } from './polyline/polyline';
 import { offsetSpline, tessellateVerbCurve } from './spline/spline';
 import { OffsetDirection } from './types';
 import type { Spline } from '$lib/geometry/spline';
+import { calculateSignedArea } from '$lib/geometry/chain/functions';
 
 // Type guard function to check if a shape has polyline geometry
 function isPolylineShape(

@@ -4,9 +4,11 @@ import { trimSpline } from './index';
 import { type KeepSide } from '../types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import type { Spline } from '$lib/geometry/spline';
+import { pointDistance } from '..';
+import { calculateLineParameter } from '../../shared/trim-extend-utils';
 
 // Mock dependencies
-vi.mock('$lib/utils/id', () => ({
+vi.mock('$lib/domain/id', () => ({
     generateId: vi.fn(() => 'generated-id-456'),
 }));
 
@@ -60,7 +62,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 10, y: 10 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (
                         p1.x === 10 &&
@@ -106,7 +107,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 10, y: 10 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (
                         p1.x === 10 &&
@@ -138,7 +138,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 10, y: 10 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (
                         p1.x === 10 &&
@@ -173,7 +172,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 0, y: 0 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p1.x === 0 && p1.y === 0 && p2.x === 0 && p2.y === 0) {
                         return 0; // Exact match
@@ -200,11 +198,6 @@ describe('Spline Trimming Functions', () => {
                 const spline = createTestSpline({ fitPoints });
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 5, y: 0 }; // Between first two fit points
-
-                const { pointDistance } = await import('..');
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
 
                 // Mock exact fit point checks to fail
                 vi.mocked(pointDistance).mockReturnValue(100);
@@ -246,11 +239,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 5, y: 0.05 }; // Slightly off the line
 
-                const { pointDistance } = await import('..');
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
-
                 vi.mocked(pointDistance).mockReturnValue(100);
                 vi.mocked(calculateLineParameter).mockImplementation(
                     (point, line) => {
@@ -274,7 +262,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 9.5, y: 9.5 }; // Close to second control point (10, 10)
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 10 && p2.y === 10) {
                         return 0.25; // Close to control point but not exact (within relaxed tolerance of 0.3)
@@ -305,7 +292,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 1000, y: 1000 }; // Far from any control point
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockReturnValue(1000); // Large distance to all points
 
                 const result = trimSpline(shape, trimPoint, 'start', 0.1);
@@ -327,7 +313,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 0, y: 0 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 0 && p2.y === 0) {
                         return 0; // Exact match
@@ -349,7 +334,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 20, y: 0 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 20 && p2.y === 0) {
                         return 0; // Exact match
@@ -374,7 +358,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 10, y: 10 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 10 && p2.y === 10) {
                         return 0; // Exact match
@@ -425,7 +408,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 0, y: 0 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 0 && p2.y === 0) {
                         return 0; // Exact match
@@ -458,7 +440,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 0, y: 0 }; // Trim at first point
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 0 && p2.y === 0) {
                         return 0; // Exact match
@@ -478,7 +459,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 0, y: 0 }; // First control point
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 0 && p2.y === 0) {
                         return 0; // Exact match
@@ -496,7 +476,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 30, y: 10 }; // Last control point
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 30 && p2.y === 10) {
                         return 0; // Exact match
@@ -522,7 +501,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 50, y: Math.sin(10 * 0.5) * 10 }; // Middle-ish point
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (
                         Math.abs(p2.x - 50) < 0.1 &&
@@ -555,11 +533,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 5, y: 5 };
 
-                const { pointDistance } = await import('..');
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
-
                 vi.mocked(pointDistance).mockReturnValue(100); // No exact matches
                 vi.mocked(calculateLineParameter).mockImplementation(
                     (point, line) => {
@@ -589,7 +562,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 10, y: 10 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 10 && p2.y === 10) {
                         return 0; // Exact match
@@ -616,7 +588,6 @@ describe('Spline Trimming Functions', () => {
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 10, y: 10 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 10 && p2.y === 10) {
                         return 0; // Exact match
@@ -646,11 +617,6 @@ describe('Spline Trimming Functions', () => {
                 const spline = createTestSpline({ fitPoints });
                 const shape = createSplineShape(spline);
                 const trimPoint = { x: 12.5, y: 7.5 }; // Between fit points
-
-                const { pointDistance } = await import('..');
-                const { calculateLineParameter } = await import(
-                    '../../shared/trim-extend-utils'
-                );
 
                 vi.mocked(pointDistance).mockReturnValue(100); // No exact matches
                 vi.mocked(calculateLineParameter).mockImplementation(
@@ -689,7 +655,6 @@ describe('Spline Trimming Functions', () => {
 
                 const trimPoint = { x: 10, y: 10 };
 
-                const { pointDistance } = await import('..');
                 vi.mocked(pointDistance).mockImplementation((p1, p2) => {
                     if (p2.x === 10 && p2.y === 10) {
                         return 0; // Exact match

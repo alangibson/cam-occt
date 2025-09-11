@@ -10,7 +10,7 @@ import type { AlgorithmParameters } from '$lib/types/algorithm-parameters';
 import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
 import type { ChainNormalizationResult } from '../algorithms/chain-normalization/chain-normalization';
 import type { Shape } from '$lib/types/geometry';
-import type { Chain } from '../algorithms/chain-detection/chain-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 
 export interface PrepareStageState {
     // Algorithm parameters

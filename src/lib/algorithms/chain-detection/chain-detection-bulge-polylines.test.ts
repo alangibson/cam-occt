@@ -5,6 +5,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { polylineToVertices } from '$lib/geometry/polyline';
 import type { Polyline, PolylineVertex } from '$lib/types';
+import { isShapeClosed } from '$lib/geometry/shape/functions';
 
 describe('Chain Detection for Polylines with Bulges', () => {
     it('should correctly detect closed polylines with bulges as closed chains', async () => {
@@ -64,8 +65,6 @@ describe('Chain Detection for Polylines with Bulges', () => {
 
         // Test that the chain detection algorithm correctly identifies these as closed chains
         // Import the chain closure detection function to test it directly
-        const { isShapeClosed } = await import('./chain-detection');
-
         // Both polylines should be detected as closed using the fixed algorithm
         expect(isShapeClosed(drawing.shapes[0], 0.1)).toBe(true);
         expect(isShapeClosed(drawing.shapes[1], 0.1)).toBe(true);
@@ -84,9 +83,6 @@ describe('Chain Detection for Polylines with Bulges', () => {
 
         // Detect chains using a reasonable tolerance
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
-
-        // Import the chain closure detection function to test it directly
-        const { isShapeClosed } = await import('./chain-detection');
 
         // Both polylines should be detected as closed
         for (const chain of chains) {
