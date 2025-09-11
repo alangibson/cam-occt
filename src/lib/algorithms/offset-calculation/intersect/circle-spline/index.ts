@@ -1,4 +1,4 @@
-import { createVerbCurveFromCircle } from '$lib/utils/verb-integration-utils';
+import { createVerbCurveFromCircle } from '$lib/geometry/circle/nurbs';
 import type { Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Circle } from '$lib/geometry/circle';

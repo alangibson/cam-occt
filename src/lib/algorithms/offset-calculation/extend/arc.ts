@@ -6,11 +6,9 @@ import {
     DECIMAL_PRECISION,
 } from '../../../geometry/constants';
 import { pointDistance } from '../shared/trim-extend-utils';
-import {
-    normalizeAngle,
-    isAngleInArcRange,
-} from '../../intersection-arc-utils';
+import { isAngleInArcRange } from '$lib/geometry/arc/functions';
 import { calculateIntersectionAngle } from '$lib/geometry/arc/functions';
+import { normalizeAngle } from '$lib/geometry/math/functions';
 
 /**
  * Arc Extension Module

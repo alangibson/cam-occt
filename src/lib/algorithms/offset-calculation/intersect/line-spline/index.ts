@@ -2,11 +2,9 @@ import type { Shape, Line, Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { IntersectionResult } from '../../chain/types.ts';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
-import {
-    createVerbCurveFromLine,
-    createVerbCurveFromSpline,
-    processVerbIntersectionResults,
-} from '../../../../utils/verb-integration-utils';
+import { processVerbIntersectionResults } from '../verb-integration-utils.js';
+import { createVerbCurveFromLine } from '$lib/geometry/line/nurbs.js';
+import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs.js';
 import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 import { DEFAULT_RETRY_COUNT } from '$lib/geometry/spline';

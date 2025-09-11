@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
 import { STANDARD_TIMEOUT_MS } from '../../src/lib/constants/index.js';
+import { promises as fs } from 'fs';
 
 test.describe('Ellipse Chain Detection', () => {
     test('should detect chains containing ellipses', async ({ page }) => {
@@ -102,7 +103,6 @@ ENDSEC
 EOF`;
 
         // Write the test file
-        const fs = await import('fs').then((m) => m.promises);
         await fs.writeFile(testFilePath, dxfContent);
 
         // Upload the file
@@ -233,7 +233,6 @@ ENDSEC
 EOF`;
 
         // Write the test file
-        const fs = await import('fs').then((m) => m.promises);
         await fs.writeFile(testFilePath, dxfContent);
 
         // Upload the file

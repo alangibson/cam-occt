@@ -9,7 +9,7 @@ import { EPSILON } from '$lib/geometry/math';
 import { MAX_EXTENSION } from '../../constants';
 import { pointDistance } from '../trim';
 import verb from 'verb-nurbs';
-import { createVerbCurveFromSpline } from '../../../utils/verb-integration-utils';
+import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
 import { generateUniformKnots } from './common';
 import { isLine } from '$lib/geometry/line';
 import { isCircle } from '$lib/geometry/circle';

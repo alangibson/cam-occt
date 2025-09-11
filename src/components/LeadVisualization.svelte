@@ -14,7 +14,7 @@
         getCachedLeadGeometry,
         hasValidCachedLeads,
     } from '$lib/utils/lead-persistence-utils';
-    import { findPartContainingChain } from '$lib/utils/chain-part-interactions';
+    import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
 
     // Props
     export let ctx: CanvasRenderingContext2D;

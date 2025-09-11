@@ -1,5 +1,4 @@
-// Dynamic import to avoid SSR issues
-let parseString: typeof import('dxf').parseString;
+import { parseString } from 'dxf';
 import type {
     Drawing,
     Shape,
@@ -20,7 +19,7 @@ import {
     MIN_VERTICES_FOR_POLYLINE,
 } from '$lib/geometry/polyline';
 import { normalizeSplineWeights } from '$lib/geometry/spline';
-import { getShapePointsForBounds } from '../utils/shape-bounds-utils';
+import { getShapePointsForBounds } from '$lib/geometry/bounding-box/functions';
 import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
 import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
@@ -62,12 +61,6 @@ export async function parseDXF(
     content: string,
     options: DXFOptions = {}
 ): Promise<Drawing> {
-    // Dynamically import DXF parser only on client side
-    if (!parseString) {
-        const dxfModule = await import('dxf');
-        parseString = dxfModule.parseString;
-    }
-
     let parsed: DXFParsed;
     try {
         parsed = parseString(content);

@@ -36,7 +36,7 @@
         handlePartClick as sharedHandlePartClick,
         handlePartMouseEnter,
         handlePartMouseLeave,
-    } from '$lib/utils/chain-part-interactions';
+    } from '$lib/algorithms/part-detection/chain-part-interactions';
     import { leadWarningsStore } from '$lib/stores/lead-warnings';
     import { offsetWarningsStore } from '$lib/stores/offset-warnings';
     import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';

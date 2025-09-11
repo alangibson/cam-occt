@@ -1,6 +1,6 @@
 import type { Point2D, Line } from '$lib/types/geometry';
 import { EPSILON } from '../../../geometry/math/constants';
-import { calculateLineParameterForPoint } from '../../intersection-line-utils';
+import { calculateLineParameterForPoint } from '$lib/geometry/line/functions';
 
 /**
  * Trim-Extend Utilities Library

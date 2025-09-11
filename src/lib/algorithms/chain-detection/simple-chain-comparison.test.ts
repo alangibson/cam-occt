@@ -4,7 +4,7 @@ import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
-import { normalizeChain } from './chain-normalization/chain-normalization';
+import { normalizeChain } from '../chain-normalization/chain-normalization';
 import {
     getShapeStartPoint,
     getShapeEndPoint,

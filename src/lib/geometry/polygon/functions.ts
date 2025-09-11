@@ -176,3 +176,22 @@ function doPolygonsIntersect(poly1: Point2D[], poly2: Point2D[]): boolean {
 
     return false;
 }
+/**
+ * Calculate signed area using the shoelace formula
+ * Positive area indicates counterclockwise orientation
+ * Negative area indicates clockwise orientation
+ */
+export function calculateSignedArea(points: Point2D[]): number {
+    if (points.length < POLYGON_POINTS_MIN) return 0;
+
+    let area: number = 0;
+    const n: number = points.length;
+
+    for (let i: number = 0; i < n; i++) {
+        const j: number = (i + 1) % n;
+        area += points[i].x * points[j].y;
+        area -= points[j].x * points[i].y;
+    }
+
+    return area / 2;
+}

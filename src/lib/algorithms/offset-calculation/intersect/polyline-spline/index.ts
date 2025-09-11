@@ -2,13 +2,13 @@ import type { Shape, Polyline } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { IntersectionResult } from '../../chain/types';
 import verb from 'verb-nurbs';
-import { createVerbCurveFromSpline } from '../../../../utils/verb-integration-utils';
+import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
 import { createExtendedSplineVerb } from '../../extend/spline';
 import { createExtendedPolyline } from '../../extend/polyline';
 import {
     processPolylineSegments,
     handleClosedPolylineIntersection,
-} from '../../../intersection-polyline-utils';
+} from '../intersection-polyline-utils';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 
 /**

@@ -2,11 +2,9 @@ import type { Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from '../../chain/types';
-import {
-    createVerbCurveFromArc,
-    createVerbCurveFromSpline,
-    processVerbIntersectionResults,
-} from '../../../../utils/verb-integration-utils';
+import { processVerbIntersectionResults } from '../verb-integration-utils';
+import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
+import { createVerbCurveFromArc } from '$lib/geometry/arc/nurbs';
 import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 import { createExtendedArc } from '../../extend/arc';

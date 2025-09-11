@@ -9,7 +9,6 @@ import {
     type Shape,
 } from '$lib/types/geometry';
 import {
-    approximateEllipseAsPolyline,
     findEllipseGenericIntersections,
     findEllipseIntersections,
 } from './index';
@@ -245,100 +244,6 @@ describe('Ellipse Intersections', () => {
 
             // Should not crash and may return results based on fallback logic
             expect(results.length).toBeGreaterThanOrEqual(0);
-        });
-    });
-
-    describe('approximateEllipseAsPolyline', () => {
-        it('should create polyline approximation of full ellipse', () => {
-            const ellipse: Ellipse = {
-                center: { x: 0, y: 0 },
-                majorAxisEndpoint: { x: 50, y: 0 },
-                minorToMajorRatio: 0.6,
-            };
-
-            const polyline = approximateEllipseAsPolyline(ellipse, 32);
-
-            expect(polyline).toBeDefined();
-            expect(polyline.shapes.length).toBeGreaterThan(30);
-            expect(polyline.closed).toBe(true);
-        });
-
-        it('should create polyline approximation of ellipse arc', () => {
-            const ellipseArc: Ellipse = {
-                center: { x: 0, y: 0 },
-                majorAxisEndpoint: { x: 40, y: 0 },
-                minorToMajorRatio: 0.5,
-                startParam: 0,
-                endParam: Math.PI,
-            };
-
-            const polyline = approximateEllipseAsPolyline(ellipseArc, 16);
-
-            expect(polyline).toBeDefined();
-            expect(polyline.shapes.length).toBeGreaterThan(10);
-            expect(polyline.closed).toBe(false);
-        });
-
-        it('should handle small segment count', () => {
-            const ellipse: Ellipse = {
-                center: { x: 0, y: 0 },
-                majorAxisEndpoint: { x: 20, y: 0 },
-                minorToMajorRatio: 0.5,
-            };
-
-            const polyline = approximateEllipseAsPolyline(ellipse, 8);
-
-            expect(polyline).toBeDefined();
-            expect(polyline.shapes.length).toBeGreaterThanOrEqual(7);
-        });
-
-        it('should handle ellipse with rotation', () => {
-            const ellipse: Ellipse = {
-                center: { x: 10, y: 10 },
-                majorAxisEndpoint: { x: 30, y: 40 }, // Rotated major axis
-                minorToMajorRatio: 0.4,
-            };
-
-            const polyline = approximateEllipseAsPolyline(ellipse, 24);
-
-            expect(polyline).toBeDefined();
-            expect(polyline.shapes.length).toBeGreaterThan(20);
-
-            // All points should be roughly the correct distance from center
-            const majorAxisLength = Math.sqrt(30 ** 2 + 40 ** 2);
-            void (majorAxisLength * 0.4);
-
-            // Check a few sample points are reasonable
-            expect(polyline.shapes.length).toBeGreaterThan(0);
-        });
-
-        it('should handle default segment count', () => {
-            const ellipse: Ellipse = {
-                center: { x: 0, y: 0 },
-                majorAxisEndpoint: { x: 25, y: 0 },
-                minorToMajorRatio: 0.8,
-            };
-
-            const polyline = approximateEllipseAsPolyline(ellipse);
-
-            expect(polyline).toBeDefined();
-            expect(polyline.shapes.length).toBeGreaterThan(30); // Default 32 segments
-        });
-
-        it('should correctly handle ellipse arc with negative parameter range', () => {
-            const ellipseArc: Ellipse = {
-                center: { x: 0, y: 0 },
-                majorAxisEndpoint: { x: 30, y: 0 },
-                minorToMajorRatio: 0.5,
-                startParam: (3 * Math.PI) / 2,
-                endParam: Math.PI / 2,
-            };
-
-            const polyline = approximateEllipseAsPolyline(ellipseArc, 16);
-
-            expect(polyline).toBeDefined();
-            expect(polyline.closed).toBe(false);
-            expect(polyline.shapes.length).toBeGreaterThan(10);
         });
     });
 });

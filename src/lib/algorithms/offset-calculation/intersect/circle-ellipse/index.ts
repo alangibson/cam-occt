@@ -2,11 +2,9 @@ import type { Shape } from '$lib/types/geometry';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Circle } from '$lib/geometry/circle';
 import type { IntersectionResult } from '../../chain/types';
-import {
-    createVerbCurveFromEllipse,
-    processVerbIntersectionResults,
-    createVerbCurveFromCircle,
-} from '../../../../utils/verb-integration-utils';
+import { processVerbIntersectionResults } from '../verb-integration-utils';
+import { createVerbCurveFromCircle } from '$lib/geometry/circle/nurbs';
+import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
 import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 

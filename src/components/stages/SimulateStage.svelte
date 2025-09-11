@@ -25,7 +25,6 @@
     import { toolStore } from '$lib/stores/tools';
     import { overlayStore } from '$lib/stores/overlay';
     import { partStore } from '$lib/stores/parts';
-    import { findPartContainingChain } from '$lib/utils/chain-part-interactions';
     import {
         hasValidCachedLeads,
         getCachedLeadGeometry,
@@ -55,6 +54,7 @@
     } from '$lib/algorithms/leads/lead-calculation';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import { LeadType } from '$lib/types/direction';
+    import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
 
     // Resizable columns state
     let rightColumnWidth = 280; // Default width in pixels

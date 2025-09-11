@@ -15,7 +15,7 @@ import { createExtendedArc } from '../../extend/arc';
 import {
     calculateArcParameter,
     isPointOnArc,
-} from '../../../intersection-arc-utils';
+} from '$lib/geometry/arc/functions';
 
 /**
  * Segment position in a polyline

@@ -64,6 +64,8 @@ import {
     HIGH_TESSELLATION_SEGMENTS,
     MAX_ITERATIONS,
     MIDPOINT_T,
+    QUARTER_CIRCLE_QUADRANTS,
+    TESSELLATION_SAMPLE_MULTIPLIER,
 } from '$lib/geometry/constants';
 import { normalizeVector, roundToDecimalPlaces } from '../math/functions';
 import { calculatePolylineLength } from '../polyline/functions';
@@ -73,6 +75,10 @@ import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from '../chain';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';
 import { LEAD_SEGMENT_COUNT } from '../line/constants';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '../math';
+import { STANDARD_GRID_SPACING } from '$lib/constants';
+import { calculateEllipsePoint2 } from '../ellipse/functions';
+import { splitArcAtMidpoint } from '$lib/algorithms/optimize-start-points/path-optimization-utils';
+import { splitLineAtMidpoint } from '$lib/algorithms/optimize-start-points/path-optimization-utils';
 
 /**
  * Extract points from a shape for path generation
@@ -368,6 +374,7 @@ export function getShapeEndPoint(shape: Shape): Point2D {
             throw new Error(`Unknown shape type: ${shape.type}`);
     }
 }
+
 /**
  * Reverses a shape (swaps start and end points)
  */
@@ -1230,4 +1237,145 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
         default:
             throw new Error(`Unknown type ${shape.type}`);
     }
+}
+
+/**
+ * Get points from a shape for area calculation
+ */
+export function getShapePoints3(shape: Shape): Point2D[] {
+    switch (shape.type) {
+        case GeometryType.LINE:
+            const line: Line = shape.geometry as Line;
+            return [line.start, line.end];
+
+        case GeometryType.CIRCLE:
+            // For circles, we don't need to sample points to calculate direction
+            // Circles are inherently counterclockwise in CAD coordinate systems
+            // Return a simple set of points that will give us the correct orientation
+            const circle: Circle = shape.geometry as Circle;
+            // Create 4 points in counterclockwise order (right, top, left, bottom)
+            return [
+                { x: circle.center.x + circle.radius, y: circle.center.y }, // right
+                { x: circle.center.x, y: circle.center.y + circle.radius }, // top
+                { x: circle.center.x - circle.radius, y: circle.center.y }, // left
+                { x: circle.center.x, y: circle.center.y - circle.radius }, // bottom
+            ];
+
+        case GeometryType.ARC:
+            // Sample arc with points based on angle span, respecting clockwise property
+            const arc: Arc = shape.geometry as Arc;
+            const arcPoints: Point2D[] = [];
+            const angleSpan: number = Math.abs(arc.endAngle - arc.startAngle);
+            const numArcSamples: number = Math.max(
+                QUARTER_CIRCLE_QUADRANTS,
+                // eslint-disable-next-line no-magic-numbers
+                Math.ceil(angleSpan / (Math.PI / 8))
+            ); // At least 4 points
+
+            for (let i: number = 0; i <= numArcSamples; i++) {
+                const t: number = i / numArcSamples;
+                let angle: number;
+
+                if (arc.clockwise) {
+                    // For clockwise arcs, reverse the direction
+                    angle =
+                        arc.startAngle + t * (arc.endAngle - arc.startAngle);
+                } else {
+                    // For counterclockwise arcs, use normal direction
+                    angle =
+                        arc.startAngle + t * (arc.endAngle - arc.startAngle);
+                }
+
+                arcPoints.push({
+                    x: arc.center.x + arc.radius * Math.cos(angle),
+                    y: arc.center.y + arc.radius * Math.sin(angle),
+                });
+            }
+            return arcPoints;
+
+        case GeometryType.POLYLINE:
+            const polyline: Polyline = shape.geometry as Polyline;
+            return [...polylineToPoints(polyline)]; // Copy to avoid mutation
+
+        case GeometryType.SPLINE:
+            // Sample spline with multiple points for accurate area calculation
+            const spline: Spline = shape.geometry as Spline;
+            const splinePoints: Point2D[] = [];
+            const numSplineSamples: number = Math.max(
+                STANDARD_GRID_SPACING,
+                spline.controlPoints.length * TESSELLATION_SAMPLE_MULTIPLIER
+            );
+
+            for (let i: number = 0; i <= numSplineSamples; i++) {
+                const t: number = i / numSplineSamples;
+                // Simple linear interpolation for now - could be improved with actual spline evaluation
+                const segmentIndex: number = Math.min(
+                    Math.floor(t * (spline.controlPoints.length - 1)),
+                    spline.controlPoints.length - 2
+                );
+                const localT: number =
+                    t * (spline.controlPoints.length - 1) - segmentIndex;
+
+                const p1: Point2D = spline.controlPoints[segmentIndex];
+                const p2: Point2D = spline.controlPoints[segmentIndex + 1];
+
+                splinePoints.push({
+                    x: p1.x + localT * (p2.x - p1.x),
+                    y: p1.y + localT * (p2.y - p1.y),
+                });
+            }
+            return splinePoints;
+
+        case GeometryType.ELLIPSE:
+            // Sample ellipse with multiple points for accurate area calculation
+            const ellipse: Ellipse = shape.geometry as Ellipse;
+            const ellipsePoints: Point2D[] = [];
+
+            // Check if it's a full ellipse or elliptical arc
+            if (
+                ellipse.startParam !== undefined &&
+                ellipse.endParam !== undefined
+            ) {
+                // It's an elliptical arc
+                const paramSpan: number = ellipse.endParam - ellipse.startParam;
+                const numEllipseSamples: number = Math.max(
+                    OCTAGON_SIDES,
+                    // eslint-disable-next-line no-magic-numbers
+                    Math.ceil(Math.abs(paramSpan) / (Math.PI / 8))
+                );
+
+                for (let i: number = 0; i <= numEllipseSamples; i++) {
+                    const t: number = i / numEllipseSamples;
+                    const param: number =
+                        ellipse.startParam +
+                        t * (ellipse.endParam - ellipse.startParam);
+                    ellipsePoints.push(calculateEllipsePoint2(ellipse, param));
+                }
+            } else {
+                // It's a full ellipse - sample points around the complete ellipse
+                const numEllipseSamples: number = DEFAULT_TESSELLATION_SEGMENTS;
+                for (let i: number = 0; i < numEllipseSamples; i++) {
+                    const param: number = (i / numEllipseSamples) * 2 * Math.PI;
+                    ellipsePoints.push(calculateEllipsePoint2(ellipse, param));
+                }
+            }
+
+            return ellipsePoints;
+
+        default:
+            return [];
+    }
+} /**
+ * Split a shape at its midpoint, creating two shapes
+ * Extracted from optimize-start-points.ts to eliminate duplication
+ */
+
+export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
+    if (shape.type === GeometryType.LINE) {
+        return splitLineAtMidpoint(shape);
+    } else if (shape.type === GeometryType.ARC) {
+        return splitArcAtMidpoint(shape);
+    }
+
+    return null;
 }

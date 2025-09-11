@@ -21,6 +21,11 @@ import {
     type EllipseGeometry,
 } from './fill-extend-ops';
 import { pointDistance } from '../trim';
+import {
+    getEllipseRadiusX,
+    getEllipseRadiusY,
+    getEllipseRotation,
+} from '$lib/geometry/ellipse';
 
 // Mock dependencies
 vi.mock('../../../geometry/ellipse', () => ({
@@ -80,11 +85,6 @@ describe('Fill-Extend Operations Library', () => {
                 const ellipse = createTestEllipse();
                 const params = createTestOperationParams();
 
-                const {
-                    getEllipseRadiusX,
-                    getEllipseRadiusY,
-                    getEllipseRotation,
-                } = await import('../../../geometry/ellipse');
                 vi.mocked(getEllipseRadiusX).mockReturnValue(10);
                 vi.mocked(getEllipseRadiusY).mockReturnValue(5);
                 vi.mocked(getEllipseRotation).mockReturnValue(0);

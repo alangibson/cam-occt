@@ -23,7 +23,7 @@ import {
     isChainClosed,
     isChainContainedInChain,
 } from '$lib/geometry/chain/functions';
-import { calculateChainBoundingBox } from '$lib/utils/shape-bounds-utils';
+import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 
 /**
  * Geometric containment constants

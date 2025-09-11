@@ -7,18 +7,15 @@ import { describe, it, expect } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
-import { polylineToPoints } from '$lib/geometry/polyline';
 import {
     getShapeStartPoint,
     getShapeEndPoint,
 } from '$lib/geometry/shape/functions';
+import { isChainClosed } from '$lib/geometry/chain/functions';
+import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { Shape } from '$lib/types';
-import type { Line, Polyline } from '$lib/types/geometry';
-import type { Circle } from '$lib/geometry/circle';
-import type { Arc } from '$lib/geometry/arc';
-import type { Chain as ShapeChain } from '$lib/geometry/chain/interfaces';
+import type { BoundingBox } from '$lib/geometry/bounding-box';
 
 const problematicChains = [
     'chain-34',
@@ -27,13 +24,6 @@ const problematicChains = [
     'chain-85',
     'chain-90',
 ];
-
-interface BoundingBox {
-    minX: number;
-    maxX: number;
-    minY: number;
-    maxY: number;
-}
 
 interface ContainerInfo {
     chainId: string;
@@ -116,18 +106,18 @@ describe('ATT00079.dxf Part Detection Verification', () => {
 
                 // Check bounding box containment
                 const isContained =
-                    analysis.bounds.minX >= otherBounds.minX &&
-                    analysis.bounds.maxX <= otherBounds.maxX &&
-                    analysis.bounds.minY >= otherBounds.minY &&
-                    analysis.bounds.maxY <= otherBounds.maxY;
+                    analysis.bounds.min.x >= otherBounds.min.x &&
+                    analysis.bounds.max.x <= otherBounds.max.x &&
+                    analysis.bounds.min.y >= otherBounds.min.y &&
+                    analysis.bounds.max.y <= otherBounds.max.y;
 
                 if (isContained) {
                     const area1 =
-                        (analysis.bounds.maxX - analysis.bounds.minX) *
-                        (analysis.bounds.maxY - analysis.bounds.minY);
+                        (analysis.bounds.max.x - analysis.bounds.min.x) *
+                        (analysis.bounds.max.y - analysis.bounds.min.y);
                     const area2 =
-                        (otherBounds.maxX - otherBounds.minX) *
-                        (otherBounds.maxY - otherBounds.maxY);
+                        (otherBounds.max.x - otherBounds.min.x) *
+                        (otherBounds.max.y - otherBounds.min.y);
                     const ratio = area1 / area2;
 
                     const containerInfo = {
@@ -177,96 +167,3 @@ describe('ATT00079.dxf Part Detection Verification', () => {
         // They don't need to have containing chains - they are legitimate separate parts
     });
 });
-
-// Helper functions
-function isChainClosed(chain: ShapeChain, tolerance: number): boolean {
-    if (chain.shapes.length === 0) return false;
-
-    // Special case: single-shape circles are inherently closed
-    if (chain.shapes.length === 1 && chain.shapes[0].type === 'circle') {
-        return true;
-    }
-
-    const firstShape = chain.shapes[0];
-    const lastShape = chain.shapes[chain.shapes.length - 1];
-
-    const firstStart = getShapeStartPoint(firstShape);
-    const lastEnd = getShapeEndPoint(lastShape);
-
-    const distance: number = Math.sqrt(
-        Math.pow(firstStart.x - lastEnd.x, 2) +
-            Math.pow(firstStart.y - lastEnd.y, 2)
-    );
-
-    return distance < tolerance;
-}
-
-function calculateChainBoundingBox(chain: ShapeChain) {
-    let minX = Infinity,
-        maxX = -Infinity;
-    let minY = Infinity,
-        maxY = -Infinity;
-
-    for (const shape of chain.shapes) {
-        const shapeBounds = getShapeBoundingBox(shape);
-        minX = Math.min(minX, shapeBounds.minX);
-        maxX = Math.max(maxX, shapeBounds.maxX);
-        minY = Math.min(minY, shapeBounds.minY);
-        maxY = Math.max(maxY, shapeBounds.maxY);
-    }
-
-    return { minX, maxX, minY, maxY };
-}
-
-function getShapeBoundingBox(shape: Shape) {
-    switch (shape.type) {
-        case 'line':
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
-            return {
-                minX: Math.min(line.start.x, line.end.x),
-                maxX: Math.max(line.start.x, line.end.x),
-                minY: Math.min(line.start.y, line.end.y),
-                maxY: Math.max(line.start.y, line.end.y),
-            };
-
-        case 'circle':
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle;
-            return {
-                minX: circle.center.x - circle.radius,
-                maxX: circle.center.x + circle.radius,
-                minY: circle.center.y - circle.radius,
-                maxY: circle.center.y + circle.radius,
-            };
-
-        case 'arc':
-            const arc: Arc = shape.geometry as Arc;
-            return {
-                minX: arc.center.x - arc.radius,
-                maxX: arc.center.x + arc.radius,
-                minY: arc.center.y - arc.radius,
-                maxY: arc.center.y + arc.radius,
-            };
-
-        case 'polyline':
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
-            let minX = Infinity,
-                maxX = -Infinity;
-            let minY = Infinity,
-                maxY = -Infinity;
-
-            for (const point of polylineToPoints(polyline)) {
-                minX = Math.min(minX, point.x);
-                maxX = Math.max(maxX, point.x);
-                minY = Math.min(minY, point.y);
-                maxY = Math.max(maxY, point.y);
-            }
-
-            return { minX, maxX, minY, maxY };
-
-        default:
-            return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-    }
-}

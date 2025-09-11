@@ -1,6 +1,6 @@
 import type { Shape } from '$lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
-import { findEllipseEllipseIntersectionsVerb as findEllipseEllipseIntersectionsVerbUtil } from '../../shared/ellipse-ellipse-utils';
+import { findEllipseEllipseIntersectionsVerb as findEllipseEllipseIntersectionsVerbUtil } from '../ellipse';
 
 /**
  * Find intersections between two ellipses using verb-nurbs

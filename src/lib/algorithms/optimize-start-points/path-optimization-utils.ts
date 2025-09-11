@@ -1,24 +1,29 @@
 import type { Path } from '$lib/stores/paths';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Point2D, Shape } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
-import type { Line } from '$lib/geometry/line';
-import type { Arc } from '$lib/geometry/arc';
+import {
+    GeometryType,
+    type Arc,
+    type Line,
+    type Point2D,
+    type Shape,
+} from '$lib/types/geometry';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import {
     calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
-} from './leads/lead-calculation';
+} from '../leads/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
-} from '../utils/lead-config-utils';
-import {
-    getShapeStartPoint,
-    getShapeEndPoint,
-} from '$lib/geometry/shape/functions';
+} from '../../utils/lead-config-utils';
 import { calculateSquaredDistance } from '$lib/geometry/math';
+import {
+    getChainEndPoint,
+    getChainStartPoint,
+} from '$lib/geometry/chain/functions';
+import { calculateMidpoint } from '$lib/geometry/point/functions';
+import { calculateArcMidpointAngle } from '$lib/geometry/arc/functions';
 
 /**
  * Find the nearest path from a current point
@@ -59,20 +64,6 @@ export function findNearestPath(
  */
 export function calculateDistance(p1: Point2D, p2: Point2D): number {
     return Math.sqrt(calculateSquaredDistance(p1, p2));
-}
-
-/**
- * Split a shape at its midpoint, creating two shapes
- * Extracted from optimize-start-points.ts to eliminate duplication
- */
-export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
-    if (shape.type === GeometryType.LINE) {
-        return splitLineAtMidpoint(shape);
-    } else if (shape.type === GeometryType.ARC) {
-        return splitArcAtMidpoint(shape);
-    }
-
-    return null;
 }
 
 /**
@@ -162,18 +153,6 @@ export function getPathStartPoint(
 }
 
 /**
- * Get the start point of a shape chain
- */
-function getChainStartPoint(chain: Chain): Point2D {
-    if (chain.shapes.length === 0) {
-        throw new Error('Chain has no shapes');
-    }
-
-    const firstShape = chain.shapes[0];
-    return getShapeStartPoint(firstShape);
-}
-
-/**
  * Get the effective start point of a path's chain, using offset geometry if available
  */
 export function getPathChainStartPoint(path: Path, chain: Chain): Point2D {
@@ -207,106 +186,6 @@ export function getPathChainEndPoint(path: Path, chain: Chain): Point2D {
     }
 
     return getChainEndPoint(chain);
-}
-
-/**
- * Get the end point of a shape chain
- */
-export function getChainEndPoint(chain: Chain): Point2D {
-    if (chain.shapes.length === 0) {
-        throw new Error('Chain has no shapes');
-    }
-
-    const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
-    return getShapeEndPoint(lastShape);
-}
-
-/**
- * Splits a line shape at its midpoint, creating two line shapes
- */
-function splitLineAtMidpoint(shape: Shape): [Shape, Shape] | null {
-    if (shape.type !== 'line') return null;
-
-    const geom = shape.geometry as Line;
-    const midpoint = calculateMidpoint(geom.start, geom.end);
-
-    // Create two line geometries
-    const firstGeometry = {
-        start: { ...geom.start },
-        end: midpoint,
-    };
-
-    const secondGeometry = {
-        start: midpoint,
-        end: { ...geom.end },
-    };
-
-    return [
-        createSplitShape(shape, '1', GeometryType.LINE, firstGeometry),
-        createSplitShape(shape, '2', GeometryType.LINE, secondGeometry),
-    ];
-}
-
-/**
- * Splits an arc shape at its midpoint angle, creating two arc shapes
- */
-function splitArcAtMidpoint(shape: Shape): [Shape, Shape] | null {
-    if (shape.type !== GeometryType.ARC) return null;
-
-    const geom = shape.geometry as Arc;
-    const midAngle = calculateArcMidpointAngle(geom.startAngle, geom.endAngle);
-
-    // Create two arc geometries
-    const firstGeometry = {
-        center: { ...geom.center },
-        radius: geom.radius,
-        startAngle: geom.startAngle,
-        endAngle: midAngle,
-    };
-
-    const secondGeometry = {
-        center: { ...geom.center },
-        radius: geom.radius,
-        startAngle: midAngle,
-        endAngle: geom.endAngle,
-    };
-
-    return [
-        createSplitShape(shape, '1', GeometryType.ARC, firstGeometry),
-        createSplitShape(shape, '2', GeometryType.ARC, secondGeometry),
-    ];
-}
-
-/**
- * Calculate the midpoint between two points
- * Exported for use in optimize-start-points.ts
- */
-export function calculateMidpoint(start: Point2D, end: Point2D): Point2D {
-    return {
-        x: (start.x + end.x) / 2,
-        y: (start.y + end.y) / 2,
-    };
-}
-
-/**
- * Calculate the midpoint angle for an arc, handling angle wrapping
- * Exported for use in optimize-start-points.ts
- */
-export function calculateArcMidpointAngle(
-    startAngle: number,
-    endAngle: number
-): number {
-    let midAngle = (startAngle + endAngle) / 2;
-
-    // Handle arc crossing 0 degrees
-    if (endAngle < startAngle) {
-        midAngle = (startAngle + endAngle + 2 * Math.PI) / 2;
-        if (midAngle > 2 * Math.PI) {
-            midAngle -= 2 * Math.PI;
-        }
-    }
-
-    return midAngle;
 }
 
 /**
@@ -358,4 +237,60 @@ export function createSplitShape(
         }),
         ...(originalShape.metadata && { metadata: originalShape.metadata }),
     };
+}
+
+/**
+ * Splits a line shape at its midpoint, creating two line shapes
+ */
+export function splitLineAtMidpoint(shape: Shape): [Shape, Shape] | null {
+    if (shape.type !== 'line') return null;
+
+    const geom = shape.geometry as Line;
+    const midpoint = calculateMidpoint(geom.start, geom.end);
+
+    // Create two line geometries
+    const firstGeometry = {
+        start: { ...geom.start },
+        end: midpoint,
+    };
+
+    const secondGeometry = {
+        start: midpoint,
+        end: { ...geom.end },
+    };
+
+    return [
+        createSplitShape(shape, '1', GeometryType.LINE, firstGeometry),
+        createSplitShape(shape, '2', GeometryType.LINE, secondGeometry),
+    ];
+}
+
+/**
+ * Splits an arc shape at its midpoint angle, creating two arc shapes
+ */
+export function splitArcAtMidpoint(shape: Shape): [Shape, Shape] | null {
+    if (shape.type !== GeometryType.ARC) return null;
+
+    const geom = shape.geometry as Arc;
+    const midAngle = calculateArcMidpointAngle(geom.startAngle, geom.endAngle);
+
+    // Create two arc geometries
+    const firstGeometry = {
+        center: { ...geom.center },
+        radius: geom.radius,
+        startAngle: geom.startAngle,
+        endAngle: midAngle,
+    };
+
+    const secondGeometry = {
+        center: { ...geom.center },
+        radius: geom.radius,
+        startAngle: midAngle,
+        endAngle: geom.endAngle,
+    };
+
+    return [
+        createSplitShape(shape, '1', GeometryType.ARC, firstGeometry),
+        createSplitShape(shape, '2', GeometryType.ARC, secondGeometry),
+    ];
 }

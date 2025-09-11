@@ -1,22 +1,21 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { pathToToolPath, pathsToToolPaths } from './path-to-toolpath';
 import type { Path } from '$lib/stores/paths';
 import type { Tool } from '$lib/stores/tools';
-import type { Shape, Point2D, Line } from '$lib/types';
+import type { Line, Point2D, Shape } from '$lib/types';
+import { CutDirection, LeadType } from '$lib/types/direction';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { pathToToolPath, pathsToToolPaths } from './path-to-toolpath';
+import { GeometryType, getShapePoints } from '$lib/geometry/shape';
 
 // Mock getShapePoints function
-vi.mock('$lib/geometry/shape', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('$lib/geometry/shape')>();
+vi.mock('$lib/geometry/shape', async () => {
+    const actual = await vi.importActual('$lib/geometry/shape');
     return {
         ...actual,
         getShapePoints: vi.fn(),
     };
 });
 
-import { getShapePoints } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
 const mockGetShapePoints = vi.mocked(getShapePoints);
 
 describe('pathToToolPath', () => {

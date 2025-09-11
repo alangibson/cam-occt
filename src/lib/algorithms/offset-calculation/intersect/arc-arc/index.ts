@@ -5,13 +5,13 @@ import { EPSILON } from '$lib/geometry/math';
 import {
     isPointOnArc,
     calculateArcParameter,
-} from '../../../intersection-arc-utils';
+} from '$lib/geometry/arc/functions';
 import {
     createExtendedArc,
     isIntersectionOnArcExtension,
 } from '../../extend/arc';
 import { calculateSquaredDistance } from '$lib/geometry/math';
-import { removeDuplicateIntersections } from '../../../intersection-base';
+import { removeDuplicateIntersections } from '../intersection-base';
 import { MAX_ITERATIONS } from '../../../../geometry/constants';
 
 /**

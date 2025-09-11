@@ -7,7 +7,7 @@ import {
     getShapeEndPoint,
 } from '$lib/geometry/shape/functions';
 import type { Shape } from '$lib/types';
-import { getShapeBoundingBox } from '../../utils/shape-bounds-utils';
+import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import {
     HALF_PERCENT,
     GEOMETRIC_PRECISION_TOLERANCE,

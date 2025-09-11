@@ -8,10 +8,10 @@ import {
     MIN_VERTICES_FOR_POLYLINE,
 } from '$lib/geometry/polyline';
 import {
-    splitShapeAtMidpoint,
     reconstructChainFromSplit,
     createSplitShape,
-} from '../path-optimization-utils';
+} from './path-optimization-utils';
+import { splitShapeAtMidpoint } from '$lib/geometry/shape/functions';
 import type { Point2D } from '$lib/types';
 import type { StartPointOptimizationParameters } from '$lib/types/algorithm-parameters';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';

@@ -88,7 +88,6 @@ export function isNearlyEqual(
 ): boolean {
     return Math.abs(a - b) < epsilon;
 }
-// Helper functions for vector operations
 
 export function normalizeVector(v: Point2D): Point2D {
     const length: number = Math.sqrt(v.x * v.x + v.y * v.y);
@@ -107,25 +106,35 @@ export function roundToDecimalPlaces(
     const factor = Math.pow(10, places);
     return Math.round(value * factor) / factor;
 }
+
 /**
  * Calculate Euclidean distance between two points
  * Consolidated from multiple implementations
  */
-
 export function calculateDistanceBetweenPoints(
     p1: Point2D,
     p2: Point2D
 ): number {
     return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
-} /**
+}
+
+/**
  * Normalize an angle to the range [0, 2π]
  * Consolidated from multiple implementations across the codebase
  */
-
 export function normalizeAngle(angle: number): number {
     angle = angle % (2 * Math.PI);
     if (angle < 0) {
         angle += 2 * Math.PI;
     }
     return angle;
+}
+
+/**
+ * Snap parameter to 0 or 1 if very close to endpoints
+ */
+export function snapParameter(t: number): number {
+    if (t < EPSILON) return 0;
+    if (t > 1 - EPSILON) return 1;
+    return t;
 }

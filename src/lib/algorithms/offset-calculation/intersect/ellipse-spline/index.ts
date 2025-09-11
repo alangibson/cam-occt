@@ -2,7 +2,7 @@ import type { Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { IntersectionResult } from '../../chain/types';
-import { createVerbCurveFromEllipse } from '../../../../utils/verb-integration-utils';
+import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
 import { processSplineWithCurveIntersection } from '../../shared/spline-intersection-utils';
 
 /**

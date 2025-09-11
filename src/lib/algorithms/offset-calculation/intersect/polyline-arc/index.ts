@@ -5,7 +5,7 @@ import type { IntersectionResult } from '../../chain/types';
 import { createExtendedPolyline } from '../../extend/polyline';
 import { createExtendedArc } from '../../extend/arc';
 import { findLineArcIntersections } from '../line-arc';
-import { isPointOnArc } from '../../../intersection-arc-utils';
+import { isPointOnArc } from '$lib/geometry/arc/functions';
 import {
     EPSILON,
     INTERSECTION_TOLERANCE,

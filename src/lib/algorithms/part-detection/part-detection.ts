@@ -29,7 +29,7 @@ import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
-import { calculateChainBoundingBox } from '$lib/utils/shape-bounds-utils';
+import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 
 /**
  * Part type enumeration

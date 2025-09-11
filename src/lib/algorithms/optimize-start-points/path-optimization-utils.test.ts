@@ -1,14 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import {
-    prepareChainsAndLeadConfigs,
-    getChainEndPoint,
-} from './path-optimization-utils';
+import { prepareChainsAndLeadConfigs } from './path-optimization-utils';
 import type { Path } from '$lib/stores/paths';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape, Line, Point2D } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import { LeadType, CutDirection } from '$lib/types/direction';
-import { OffsetDirection } from './offset-calculation/offset/types';
+import { OffsetDirection } from '../offset-calculation/offset/types';
 
 // Test data setup
 const createTestPath = (overrides: Partial<Path> = {}): Path => ({
@@ -139,66 +136,6 @@ describe('path-optimization-utils', () => {
             expect(result.leadInConfig.length).toBe(0);
             expect(result.leadOutConfig.type).toBe(LeadType.NONE);
             expect(result.leadOutConfig.length).toBe(0);
-        });
-    });
-
-    describe('getChainEndPoint', () => {
-        it('should return end point of last shape in chain', () => {
-            const chain = createTestChain({
-                shapes: [
-                    createTestShape({ x: 0, y: 0 }, { x: 5, y: 0 }),
-                    createTestShape({ x: 5, y: 0 }, { x: 10, y: 5 }),
-                    createTestShape({ x: 10, y: 5 }, { x: 15, y: 10 }),
-                ],
-            });
-
-            const endPoint = getChainEndPoint(chain);
-
-            expect(endPoint).toEqual({ x: 15, y: 10 });
-        });
-
-        it('should handle chain with single shape', () => {
-            const chain = createTestChain({
-                shapes: [createTestShape({ x: 2, y: 3 }, { x: 8, y: 7 })],
-            });
-
-            const endPoint = getChainEndPoint(chain);
-
-            expect(endPoint).toEqual({ x: 8, y: 7 });
-        });
-
-        it('should throw error for empty chain', () => {
-            const chain = createTestChain({
-                shapes: [],
-            });
-
-            expect(() => getChainEndPoint(chain)).toThrow(
-                'Chain has no shapes'
-            );
-        });
-
-        it('should work with different shape types', () => {
-            const arcShape: Shape = {
-                id: 'arc1',
-                type: GeometryType.ARC,
-                geometry: {
-                    center: { x: 0, y: 0 },
-                    radius: 5,
-                    startAngle: 0,
-                    endAngle: Math.PI / 2,
-                    clockwise: true,
-                },
-            };
-
-            const chain = createTestChain({
-                shapes: [arcShape],
-            });
-
-            const endPoint = getChainEndPoint(chain);
-
-            // For an arc from 0 to π/2, end point should be (0, 5)
-            expect(endPoint.x).toBeCloseTo(0);
-            expect(endPoint.y).toBeCloseTo(5);
         });
     });
 });

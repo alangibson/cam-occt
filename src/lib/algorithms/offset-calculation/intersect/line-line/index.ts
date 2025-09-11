@@ -9,8 +9,8 @@ import {
     calculateLineParameterForPoint,
     isParameterValidForSegment,
     calculateLineIntersection,
-    type SegmentPosition,
-} from '../../../intersection-line-utils';
+} from '$lib/geometry/line/functions';
+import { type SegmentPosition } from '$lib/geometry/line/types';
 
 /**
  * Create parameters for intersection result, handling swap if needed

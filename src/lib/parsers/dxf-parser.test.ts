@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { readFileSync } from 'fs';
+import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
 
 describe('DXF Parser', () => {
@@ -45,7 +46,6 @@ EOF`;
         const dxfContent = readFileSync('tests/dxf/2.dxf', 'utf-8');
 
         // Test the raw DXF parsing library directly
-        const { parseString } = await import('dxf');
         const parsed = parseString(dxfContent);
 
         expect(parsed.entities).toBeDefined();
@@ -59,7 +59,6 @@ EOF`;
         );
 
         // Test the raw DXF parsing library directly
-        const { parseString } = await import('dxf');
         const parsed = parseString(dxfContent);
 
         const splineEntity = parsed.entities?.find(
@@ -77,7 +76,6 @@ EOF`;
         const dxfContent = readFileSync('tests/dxf/2.dxf', 'utf-8');
 
         // Test the raw DXF parsing library directly
-        const { parseString } = await import('dxf');
         const parsed = parseString(dxfContent);
 
         const drawing = await parseDXF(dxfContent);

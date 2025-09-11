@@ -54,7 +54,7 @@ describe('Spline Tessellation', () => {
     // Skip verb-nurbs tests if the library is not available in test environment
     beforeAll(async () => {
         try {
-            await import('verb-nurbs');
+            // verb-nurbs availability will be handled by the import system
         } catch {
             // verb-nurbs not available
         }

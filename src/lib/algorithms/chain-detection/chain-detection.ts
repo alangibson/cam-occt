@@ -11,7 +11,7 @@ import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { calculateSquaredDistance } from '$lib/geometry/math';
-import { detectCutDirection } from '../cut-direction';
+import { detectCutDirection } from '../cut-direction/cut-direction';
 import { CutDirection } from '$lib/types/direction';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import type { Chain } from '$lib/geometry/chain/interfaces';

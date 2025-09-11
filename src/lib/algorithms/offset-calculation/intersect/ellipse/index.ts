@@ -1,19 +1,19 @@
-import type { Shape, Ellipse, Polyline, Point2D } from '$lib/types/geometry';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
+import { DUPLICATE_FILTERING_TOLERANCE } from '$lib/algorithms/constants';
+import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
+import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
+import verb from 'verb-nurbs';
+import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
 import type { IntersectionResult } from '../../chain/types';
-import { EPSILON } from '../../../../geometry/math/constants';
-import { findEllipseEllipseIntersections } from '../ellipse-ellipse/index';
-import { findEllipseLineIntersections } from '../line-ellipse/index';
-import { findEllipsePolylineIntersectionsVerb } from '../polyline-ellipse/index';
-import { findEllipseSplineIntersectionsVerb } from '../ellipse-spline/index';
-import { findEllipseLineIntersectionsVerb } from '../line-ellipse/index';
-import { findEllipseCircleIntersectionsVerb } from '../circle-ellipse/index';
 import { findEllipseArcIntersectionsVerb } from '../arc-ellipse/index';
-
-/**
- * Bezier curve tessellation segments for ellipse intersection calculations
- */
-const CUBIC_BEZIER_SEGMENTS = 32;
+import { findEllipseCircleIntersectionsVerb } from '../circle-ellipse/index';
+import { findEllipseEllipseIntersections } from '../ellipse-ellipse/index';
+import { findEllipseSplineIntersectionsVerb } from '../ellipse-spline/index';
+import {
+    findEllipseLineIntersections,
+    findEllipseLineIntersectionsVerb,
+} from '../line-ellipse/index';
+import { findEllipsePolylineIntersectionsVerb } from '../polyline-ellipse/index';
+import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 
 /**
  * Find intersections involving ellipses
@@ -108,57 +108,193 @@ export function findEllipseGenericIntersections(
                 swapParams
             );
     }
-}
-
-/**
- * Approximate an ellipse as a polyline for intersection calculations
+} /**
+ * Ellipse-Ellipse Intersection Utilities
+ *
+ * Shared utilities for ellipse-ellipse intersection operations.
+ * Consolidates common patterns from ellipse intersection algorithms.
  */
-export function approximateEllipseAsPolyline(
-    ellipse: Ellipse,
-    segments: number = CUBIC_BEZIER_SEGMENTS
-): Polyline {
-    const {
-        center,
-        majorAxisEndpoint,
-        minorToMajorRatio,
-        startParam,
-        endParam,
-    } = ellipse;
-    const points: Point2D[] = [];
+/**
+ * Validation result for ellipse intersection parameters
+ */
 
-    const a: number = Math.sqrt(
-        majorAxisEndpoint.x ** 2 + majorAxisEndpoint.y ** 2
+export interface EllipseIntersectionValidation {
+    isValid: boolean;
+    error?: string;
+}
+/**
+ * Calculate ellipse-ellipse intersections using verb-nurbs
+ * Implements INTERSECTION.md recommendation #135: "Use verb.intersect.curves() with two ellipse objects"
+ *
+ * @param ellipse1 First ellipse geometry
+ * @param ellipse2 Second ellipse geometry
+ * @param swapParams Whether to swap parameter order in results
+ * @returns Array of intersection results
+ */
+
+export function calculateEllipseEllipseIntersection(
+    ellipse1: Ellipse,
+    ellipse2: Ellipse,
+    swapParams: boolean = false
+): IntersectionResult[] {
+    // Convert both ellipses to verb-nurbs curves
+    const curve1 = createVerbCurveFromEllipse(ellipse1);
+    const curve2 = createVerbCurveFromEllipse(ellipse2);
+
+    // Use verb.geom.Intersect.curves() directly
+    const intersections = verb.geom.Intersect.curves(
+        curve1,
+        curve2,
+        INTERSECTION_TOLERANCE
     );
-    const b: number = a * minorToMajorRatio;
-    const rotAngle: number = Math.atan2(
-        majorAxisEndpoint.y,
-        majorAxisEndpoint.x
-    );
-    const cosRot: number = Math.cos(rotAngle);
-    const sinRot: number = Math.sin(rotAngle);
 
-    // Handle ellipse arcs vs full ellipses
-    const isArc: boolean = startParam !== undefined && endParam !== undefined;
-    const tStart: number = isArc ? startParam! : 0;
-    const tEnd: number = isArc ? endParam! : 2 * Math.PI;
+    return processVerbIntersectionResults(intersections, swapParams);
+}
+/**
+ * Validate ellipse intersection parameters
+ * Checks if two ellipses are suitable for intersection calculation
+ *
+ * @param e1 First ellipse
+ * @param e2 Second ellipse
+ * @returns Validation result with error details if invalid
+ */
 
-    let paramRange: number = tEnd - tStart;
-    if (paramRange < 0) paramRange += 2 * Math.PI;
+export function validateEllipseIntersectionParameters(
+    _e1: Ellipse,
+    _e2: Ellipse
+): EllipseIntersectionValidation {
+    // TODO actually validate
+    // Basic validation - just ensure ellipses are not null/undefined
+    // Keep this minimal since we're only deduplicating existing patterns
+    return { isValid: true };
+}
+/**
+ * Process ellipse intersection results with additional filtering and validation
+ * Provides enhanced processing beyond the basic verb-integration-utils function
+ *
+ * @param results Raw verb intersection results
+ * @param swapParams Whether to swap parameter order
+ * @param filterDuplicates Whether to filter near-duplicate intersections
+ * @returns Processed intersection results
+ */
 
-    for (let i: number = 0; i <= segments; i++) {
-        const t: number = tStart + (i / segments) * paramRange;
-        const localX: number = a * Math.cos(t);
-        const localY: number = b * Math.sin(t);
+export function processEllipseIntersectionResults(
+    results: Array<{ u0: number; u1: number; pt: number[] }>,
+    swapParams: boolean = false,
+    filterDuplicates: boolean = true
+): IntersectionResult[] {
+    // Use the standard processing first
+    let processed = processVerbIntersectionResults(results, swapParams);
 
-        // Transform to world coordinates
-        const worldX: number = center.x + localX * cosRot - localY * sinRot;
-        const worldY: number = center.y + localX * sinRot + localY * cosRot;
-
-        points.push({ x: worldX, y: worldY });
+    if (filterDuplicates) {
+        processed = filterDuplicateIntersections(processed);
     }
 
-    const closed: boolean =
-        !isArc && Math.abs(paramRange - 2 * Math.PI) < EPSILON;
-    const polylineShape: Shape = createPolylineFromVertices(points, closed);
-    return polylineShape.geometry as Polyline;
+    return processed;
+}
+/**
+ * Calculate a score for intersection quality based on distance to shape endpoints
+ * Lower scores indicate better intersections (closer to shape endpoints)
+ *
+ * @param intersection Intersection result to score
+ * @param e1StartPoint Start point of first ellipse
+ * @param e1EndPoint End point of first ellipse
+ * @param e2StartPoint Start point of second ellipse
+ * @param e2EndPoint End point of second ellipse
+ * @returns Quality score (lower is better)
+ */
+
+export function calculateIntersectionScore(
+    intersection: IntersectionResult,
+    e1StartPoint: Point2D,
+    e1EndPoint: Point2D,
+    e2StartPoint: Point2D,
+    e2EndPoint: Point2D
+): number {
+    const { point } = intersection;
+
+    // Calculate distances from intersection point to all four shape endpoints
+    const distToE1Start = Math.sqrt(
+        (point.x - e1StartPoint.x) ** 2 + (point.y - e1StartPoint.y) ** 2
+    );
+    const distToE1End = Math.sqrt(
+        (point.x - e1EndPoint.x) ** 2 + (point.y - e1EndPoint.y) ** 2
+    );
+    const distToE2Start = Math.sqrt(
+        (point.x - e2StartPoint.x) ** 2 + (point.y - e2StartPoint.y) ** 2
+    );
+    const distToE2End = Math.sqrt(
+        (point.x - e2EndPoint.x) ** 2 + (point.y - e2EndPoint.y) ** 2
+    );
+
+    // For consecutive shapes, the best intersection should be close to the
+    // connection points (end of first shape, start of second shape)
+    return Math.min(distToE1Start, distToE1End, distToE2Start, distToE2End);
+}
+/**
+ * Filter out duplicate intersections that are very close to each other
+ *
+ * @param intersections Array of intersection results
+ * @param tolerance Distance threshold for considering intersections duplicates
+ * @returns Filtered array with duplicates removed
+ */
+function filterDuplicateIntersections(
+    intersections: IntersectionResult[],
+    tolerance: number = DUPLICATE_FILTERING_TOLERANCE
+): IntersectionResult[] {
+    const filtered: IntersectionResult[] = [];
+
+    for (const intersection of intersections) {
+        let isDuplicate = false;
+
+        for (const existing of filtered) {
+            const distance = Math.sqrt(
+                (intersection.point.x - existing.point.x) ** 2 +
+                    (intersection.point.y - existing.point.y) ** 2
+            );
+
+            if (distance < tolerance) {
+                isDuplicate = true;
+                break;
+            }
+        }
+
+        if (!isDuplicate) {
+            filtered.push(intersection);
+        }
+    }
+
+    return filtered;
+}
+/**
+ * Find intersections between two ellipse shapes using NURBS
+ * High-level function that handles shape extraction and validation
+ *
+ * @param shape1 First shape containing ellipse geometry
+ * @param shape2 Second shape containing ellipse geometry
+ * @param swapParams Whether to swap parameter order in results
+ * @returns Array of intersection results
+ */
+
+export function findEllipseEllipseIntersectionsVerb(
+    shape1: Shape,
+    shape2: Shape,
+    swapParams: boolean = false
+): IntersectionResult[] {
+    const ellipse1 = shape1.geometry as Ellipse;
+    const ellipse2 = shape2.geometry as Ellipse;
+
+    // Validate input ellipses
+    const validation = validateEllipseIntersectionParameters(
+        ellipse1,
+        ellipse2
+    );
+    if (!validation.isValid) {
+        console.warn(
+            `Ellipse intersection validation failed: ${validation.error}`
+        );
+        return [];
+    }
+
+    return calculateEllipseEllipseIntersection(ellipse1, ellipse2, swapParams);
 }

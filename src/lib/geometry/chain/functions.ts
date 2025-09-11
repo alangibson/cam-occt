@@ -2,7 +2,7 @@
  * Chain and polygon functions
  */
 
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Chain } from './interfaces';
 import {
     getShapeEndPoint,
@@ -23,7 +23,7 @@ import {
 } from '../math/functions';
 import { GeometryFactory, Coordinate } from 'jsts/org/locationtech/jts/geom';
 import { AREA_RATIO_THRESHOLD } from '$lib/algorithms/constants';
-import { calculateChainBoundingBox } from '$lib/utils/shape-bounds-utils';
+import { calculateChainBoundingBox } from '../bounding-box/functions';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import {
     DEFAULT_PART_DETECTION_PARAMETERS,
@@ -34,6 +34,7 @@ import {
     removeDuplicatePoints,
 } from '../polygon/functions';
 import { getShapePoints2 } from '../shape/functions';
+// import { getShapePoints3 } from '../shape/functions';
 
 /**
  * Reverses a chain's direction by reversing both the order of shapes
@@ -513,4 +514,42 @@ export function extractPolygonFromChain(chain: Chain): Point2D[] | null {
     // Remove duplicate points and ensure we have enough for a polygon
     const cleanedPoints: Point2D[] = removeDuplicatePoints(points);
     return cleanedPoints.length >= POLYGON_POINTS_MIN ? cleanedPoints : null;
+}
+
+/**
+ * Extract all points from a chain for area calculation
+ */
+export function getChainPoints(chain: Chain): Point2D[] {
+    const points: Point2D[] = [];
+
+    for (const shape of chain.shapes) {
+        const shapePoints: Point2D[] = getShapePoints2(shape);
+        points.push(...shapePoints);
+    }
+
+    return points;
+}
+
+/**
+ * Get the start point of a shape chain
+ */
+export function getChainStartPoint(chain: Chain): Point2D {
+    if (chain.shapes.length === 0) {
+        throw new Error('Chain has no shapes');
+    }
+
+    const firstShape = chain.shapes[0];
+    return getShapeStartPoint(firstShape);
+}
+
+/**
+ * Get the end point of a shape chain
+ */
+export function getChainEndPoint(chain: Chain): Point2D {
+    if (chain.shapes.length === 0) {
+        throw new Error('Chain has no shapes');
+    }
+
+    const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
+    return getShapeEndPoint(lastShape);
 }

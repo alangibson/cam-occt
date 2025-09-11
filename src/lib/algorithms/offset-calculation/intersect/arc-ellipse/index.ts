@@ -3,11 +3,9 @@ import type { Shape } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
-import {
-    createVerbCurveFromEllipse,
-    createVerbCurveFromArc,
-    processVerbIntersectionResults,
-} from '../../../../utils/verb-integration-utils';
+import { processVerbIntersectionResults } from '../verb-integration-utils.js';
+import { createVerbCurveFromArc } from '$lib/geometry/arc/nurbs.js';
+import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs.js';
 import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
 
 /**

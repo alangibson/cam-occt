@@ -715,4 +715,37 @@ export function validateEllipseGeometry(ellipse: Ellipse): string[] {
     }
 
     return errors;
+} /**
+ * Calculate a point on an ellipse at a given parameter
+ */
+
+export function calculateEllipsePoint2(
+    ellipse: Ellipse,
+    param: number
+): Point2D {
+    // Calculate major and minor axis lengths
+    const majorAxisLength: number = Math.sqrt(
+        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
+            ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+    );
+    const minorAxisLength: number = majorAxisLength * ellipse.minorToMajorRatio;
+
+    // Calculate major axis angle
+    const majorAxisAngle: number = Math.atan2(
+        ellipse.majorAxisEndpoint.y,
+        ellipse.majorAxisEndpoint.x
+    );
+
+    // Calculate point on canonical ellipse (axes aligned)
+    const canonicalX: number = majorAxisLength * Math.cos(param);
+    const canonicalY: number = minorAxisLength * Math.sin(param);
+
+    // Rotate by major axis angle and translate to center
+    const cos: number = Math.cos(majorAxisAngle);
+    const sin: number = Math.sin(majorAxisAngle);
+
+    return {
+        x: ellipse.center.x + canonicalX * cos - canonicalY * sin,
+        y: ellipse.center.y + canonicalX * sin + canonicalY * cos,
+    };
 }

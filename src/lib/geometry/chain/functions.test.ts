@@ -1,12 +1,13 @@
 import {
     calculateChainArea,
+    getChainEndPoint,
     isChainClosed,
     isChainContainedInChain,
 } from '$lib/geometry/chain/functions';
 import type { Line } from '$lib/geometry/line';
 import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
-import type { Shape } from '$lib/types';
+import type { Point2D, Shape } from '$lib/types';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
 import type { Chain } from './interfaces';
 
@@ -287,5 +288,87 @@ describe('isChainContainedInChain', () => {
         expect(isChainContainedInChain(innerChain, outerChain, 0.1)).toBe(
             false
         );
+    });
+});
+
+describe('getChainEndPoint', () => {
+    const createTestChain = (overrides: Partial<Chain> = {}): Chain => ({
+        id: 'test-chain',
+        shapes: [
+            {
+                id: 'line1',
+                type: GeometryType.LINE,
+                geometry: {
+                    start: { x: 0, y: 0 },
+                    end: { x: 10, y: 0 },
+                } as Line,
+            },
+        ],
+        ...overrides,
+    });
+
+    const createTestShape = (start: Point2D, end: Point2D): Shape => ({
+        id: 'test-line',
+        type: GeometryType.LINE,
+        geometry: {
+            start,
+            end,
+        } as Line,
+    });
+
+    it('should return end point of last shape in chain', () => {
+        const chain = createTestChain({
+            shapes: [
+                createTestShape({ x: 0, y: 0 }, { x: 5, y: 0 }),
+                createTestShape({ x: 5, y: 0 }, { x: 10, y: 5 }),
+                createTestShape({ x: 10, y: 5 }, { x: 15, y: 10 }),
+            ],
+        });
+
+        const endPoint = getChainEndPoint(chain);
+
+        expect(endPoint).toEqual({ x: 15, y: 10 });
+    });
+
+    it('should handle chain with single shape', () => {
+        const chain = createTestChain({
+            shapes: [createTestShape({ x: 2, y: 3 }, { x: 8, y: 7 })],
+        });
+
+        const endPoint = getChainEndPoint(chain);
+
+        expect(endPoint).toEqual({ x: 8, y: 7 });
+    });
+
+    it('should throw error for empty chain', () => {
+        const chain = createTestChain({
+            shapes: [],
+        });
+
+        expect(() => getChainEndPoint(chain)).toThrow('Chain has no shapes');
+    });
+
+    it('should work with different shape types', () => {
+        const arcShape: Shape = {
+            id: 'arc1',
+            type: GeometryType.ARC,
+            geometry: {
+                center: { x: 0, y: 0 },
+                radius: 5,
+                startAngle: 0,
+                endAngle: Math.PI / 2,
+                clockwise: true,
+            },
+        };
+
+        const chain = createTestChain({
+            shapes: [arcShape],
+        });
+
+        const endPoint = getChainEndPoint(chain);
+
+        // For an arc from 0 to π/2, end point should be (0, 5)
+        expect(endPoint.x).toBeCloseTo(0);
+        expect(endPoint.y).toBeCloseTo(5);
     });
 });

@@ -3,7 +3,7 @@ import { TOLERANCE } from '$lib/geometry/math/constants';
 import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';
 import { type KeepSide, type TrimResult } from '../types';
-import { isAngleInArcRange } from '$lib/algorithms/intersection-arc-utils';
+import { isAngleInArcRange } from '$lib/geometry/arc/functions';
 import { extendArcToPoint } from '../../extend/arc';
 import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 

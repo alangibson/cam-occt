@@ -1,44 +1,12 @@
 import type { Line } from '$lib/geometry/line';
 import type { Polyline } from '$lib/geometry/polyline';
-import type { IntersectionResult } from './offset-calculation/chain/types';
+import type { IntersectionResult } from '../chain/types';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import {
-    createVerbCurveFromLine,
-    processVerbIntersectionResults,
-} from '../utils/verb-integration-utils';
+import { processVerbIntersectionResults } from './verb-integration-utils';
+import { createVerbCurveFromLine } from '$lib/geometry/line/nurbs';
 import { INTERSECTION_TOLERANCE } from '$lib/geometry/math';
-import { createSegmentLine } from './intersection-base';
+import { createSegmentLine } from '$lib/geometry/line/functions';
 import verb from 'verb-nurbs';
-
-/**
- * Creates individual line segments from a polyline for intersection processing
- * Used by multiple polyline intersection algorithms
- */
-export function createPolylineSegmentLines(polyline: Polyline): Line[] {
-    const points = polylineToPoints(polyline);
-    const lines: Line[] = [];
-
-    // Create regular segments
-    for (let i = 0; i < points.length - 1; i++) {
-        lines.push({
-            start: { x: points[i].x, y: points[i].y },
-            end: { x: points[i + 1].x, y: points[i + 1].y },
-        });
-    }
-
-    // Add closing segment for closed polylines
-    if (polyline.closed && points.length > 2) {
-        lines.push({
-            start: {
-                x: points[points.length - 1].x,
-                y: points[points.length - 1].y,
-            },
-            end: { x: points[0].x, y: points[0].y },
-        });
-    }
-
-    return lines;
-}
 
 /**
  * Processes intersections between polyline segments and a curve

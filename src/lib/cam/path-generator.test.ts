@@ -11,16 +11,15 @@ import {
 } from '$lib/types';
 
 // Mock getShapePoints function
-vi.mock('$lib/geometry/shape', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('$lib/geometry/shape')>();
+vi.mock('$lib/geometry/shape', async () => {
+    const actual = await vi.importActual('$lib/geometry/shape');
     return {
         ...actual,
         getShapePoints: vi.fn(),
     };
 });
 
-import { getShapePoints } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
+import { getShapePoints, GeometryType } from '$lib/geometry/shape';
 const mockGetShapePoints = vi.mocked(getShapePoints);
 
 describe('generateToolPaths', () => {

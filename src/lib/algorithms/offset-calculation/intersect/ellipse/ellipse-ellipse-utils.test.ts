@@ -1,19 +1,18 @@
 import verb from 'verb-nurbs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GeometryType, type Ellipse, type Shape } from '$lib/types/geometry';
-import type { IntersectionResult } from '../chain/types';
-import { INTERSECTION_TOLERANCE } from '../../../geometry/math/constants';
+import type { IntersectionResult } from '../../chain/types';
+import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
 import {
     calculateEllipseEllipseIntersection,
     calculateIntersectionScore,
     findEllipseEllipseIntersectionsVerb,
     processEllipseIntersectionResults,
     validateEllipseIntersectionParameters,
-} from './ellipse-ellipse-utils';
-import {
-    createVerbCurveFromEllipse,
-    processVerbIntersectionResults,
-} from '../../../utils/verb-integration-utils';
+} from './';
+import { processVerbIntersectionResults } from '../verb-integration-utils';
+import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
+
 // VerbCurve interface for testing
 interface VerbCurve {
     degree(): number;
@@ -34,10 +33,14 @@ vi.mock('verb-nurbs', () => ({
 }));
 
 // Mock verb integration utils
-vi.mock('../../../utils/verb-integration-utils', () => ({
-    createVerbCurveFromEllipse: vi.fn(),
+vi.mock('../verb-integration-utils', () => ({
     processVerbIntersectionResults: vi.fn(),
     INTERSECTION_TOLERANCE: 0.01,
+}));
+
+// Mock ellipse nurbs utils
+vi.mock('$lib/geometry/ellipse/nurbs', () => ({
+    createVerbCurveFromEllipse: vi.fn(),
 }));
 
 describe('Ellipse-Ellipse Intersection Utilities', () => {

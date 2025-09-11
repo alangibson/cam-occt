@@ -10,6 +10,9 @@ import {
     selectBestIntersectionResult,
 } from './spline-intersection-utils';
 import type { Spline } from '$lib/geometry/spline';
+import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
+import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
+import { createExtendedSplineVerb } from '../extend/spline';
 
 // Mock verb-nurbs
 vi.mock('verb-nurbs', () => ({
@@ -23,10 +26,14 @@ vi.mock('verb-nurbs', () => ({
 }));
 
 // Mock verb integration utils
-vi.mock('../../../utils/verb-integration-utils', () => ({
-    createVerbCurveFromSpline: vi.fn(),
+vi.mock('../intersect/verb-integration-utils', () => ({
     processVerbIntersectionResults: vi.fn(),
     INTERSECTION_TOLERANCE: 0.01,
+}));
+
+// Mock spline nurbs utils
+vi.mock('$lib/geometry/spline/nurbs', () => ({
+    createVerbCurveFromSpline: vi.fn(),
 }));
 
 // Mock extend/spline
@@ -189,12 +196,6 @@ describe('Spline Intersection Utilities', () => {
                 },
             ];
 
-            const {
-                createVerbCurveFromSpline,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(createVerbCurveFromSpline).mockReturnValue({
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -242,15 +243,6 @@ describe('Spline Intersection Utilities', () => {
                 },
             ];
 
-            const {
-                createVerbCurveFromSpline,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { createExtendedSplineVerb } = await import(
-                '../extend/spline'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(createVerbCurveFromSpline).mockReturnValue({
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -297,11 +289,6 @@ describe('Spline Intersection Utilities', () => {
             const spline1 = createTestSpline();
             const spline2 = createTestSpline();
 
-            const { createVerbCurveFromSpline } = await import(
-                '../../../utils/verb-integration-utils'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(createVerbCurveFromSpline).mockReturnValue({
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -328,10 +315,6 @@ describe('Spline Intersection Utilities', () => {
             const spline1 = createTestSpline();
             const spline2 = createTestSpline();
 
-            const { createVerbCurveFromSpline } = await import(
-                '../../../utils/verb-integration-utils'
-            );
-
             vi.mocked(createVerbCurveFromSpline).mockImplementation(() => {
                 throw new Error('Curve creation failed');
             });
@@ -346,12 +329,6 @@ describe('Spline Intersection Utilities', () => {
             const spline2 = createTestSpline();
 
             const mockIntersections = [{ u0: 0.5, u1: 0.3, pt: [15, 5, 0] }];
-
-            const {
-                createVerbCurveFromSpline,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
 
             vi.mocked(createVerbCurveFromSpline).mockReturnValue({
                 degree: () => 2,
@@ -405,12 +382,6 @@ describe('Spline Intersection Utilities', () => {
                     onExtension: false,
                 },
             ];
-
-            const {
-                createVerbCurveFromSpline,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
 
             vi.mocked(createVerbCurveFromSpline).mockReturnValue({
                 degree: () => 2,
@@ -471,15 +442,6 @@ describe('Spline Intersection Utilities', () => {
                 },
             ];
 
-            const {
-                createVerbCurveFromSpline,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { createExtendedSplineVerb } = await import(
-                '../extend/spline'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(createVerbCurveFromSpline).mockReturnValue({
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -539,14 +501,6 @@ describe('Spline Intersection Utilities', () => {
                 weights: () => [1, 1, 1],
             } as verb.geom.ICurve;
 
-            const { createVerbCurveFromSpline } = await import(
-                '../../../utils/verb-integration-utils'
-            );
-            const { createExtendedSplineVerb } = await import(
-                '../extend/spline'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(createVerbCurveFromSpline).mockReturnValue({
                 degree: () => 2,
                 knots: () => [0, 0, 0, 1, 1, 1],
@@ -586,12 +540,6 @@ describe('Spline Intersection Utilities', () => {
             } as verb.geom.ICurve;
 
             const mockIntersections = [{ u0: 0.5, u1: 0.3, pt: [15, 5, 0] }];
-
-            const {
-                createVerbCurveFromSpline,
-                processVerbIntersectionResults,
-            } = await import('../../../utils/verb-integration-utils');
-            const { default: verb } = await import('verb-nurbs');
 
             vi.mocked(createVerbCurveFromSpline).mockReturnValue({
                 degree: () => 2,
@@ -655,11 +603,6 @@ describe('Spline Intersection Utilities', () => {
                 },
             ];
 
-            const { processVerbIntersectionResults } = await import(
-                '../../../utils/verb-integration-utils'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(verb.geom.Intersect.curves).mockReturnValue(
                 mockIntersections
             );
@@ -702,7 +645,7 @@ describe('Spline Intersection Utilities', () => {
             } as verb.geom.ICurve;
 
             const { processVerbIntersectionResults } = await import(
-                '../../../utils/verb-integration-utils'
+                '../intersect/verb-integration-utils'
             );
             const { default: verb } = await import('verb-nurbs');
 
@@ -746,8 +689,6 @@ describe('Spline Intersection Utilities', () => {
                 weights: () => [1, 1, 1],
             } as verb.geom.ICurve;
 
-            const { default: verb } = await import('verb-nurbs');
-
             vi.mocked(verb.geom.Intersect.curves).mockImplementation(() => {
                 throw new Error('Intersection failed');
             });
@@ -783,8 +724,6 @@ describe('Spline Intersection Utilities', () => {
                 ],
                 weights: () => [1, 1, 1],
             } as verb.geom.ICurve;
-
-            const { default: verb } = await import('verb-nurbs');
 
             vi.mocked(verb.geom.Intersect.curves).mockReturnValue([]);
 

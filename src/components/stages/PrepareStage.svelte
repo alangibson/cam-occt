@@ -1,75 +1,63 @@
 <script lang="ts">
-    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
-    import LayersInfo from '../LayersInfo.svelte';
-    import AccordionPanel from '../AccordionPanel.svelte';
-    import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
-    import { drawingStore } from '$lib/stores/drawing';
-    import {
-        chainStore,
-        setChains,
-        setTolerance,
-        selectChain,
-        clearChains,
-        highlightChain,
-        clearChainHighlight,
-    } from '$lib/stores/chains';
-    import {
-        partStore,
-        setParts,
-        highlightPart,
-        clearHighlight,
-        clearParts,
-        hoverPart,
-        clearPartHover,
-        selectPart,
-    } from '$lib/stores/parts';
     import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
-    import {
-        detectParts,
-        type PartDetectionWarning,
-        isChainClosed as isChainClosedAlgorithm,
-    } from '$lib/algorithms/part-detection/part-detection';
     import {
         analyzeChainTraversal,
         normalizeChain,
     } from '$lib/algorithms/chain-normalization/chain-normalization';
+    import { detectCutDirection } from '$lib/algorithms/cut-direction/cut-direction';
+    import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
+    import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
+    import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
+    import {
+        detectParts,
+        type PartDetectionWarning,
+    } from '$lib/algorithms/part-detection/part-detection';
+    import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
+    import { isChainClosed } from '$lib/geometry/chain/functions';
+    import type { Chain } from '$lib/geometry/chain/interfaces';
+    import { polylineToPoints } from '$lib/geometry/polyline';
+    import { tessellateShape } from '$lib/geometry/shape';
+    import {
+        getShapeEndPoint,
+        getShapeStartPoint,
+    } from '$lib/geometry/shape/functions';
+    import {
+        chainStore,
+        clearChains,
+        selectChain,
+        setChains,
+        setTolerance,
+    } from '$lib/stores/chains';
+    import { drawingStore } from '$lib/stores/drawing';
+    import { generateChainEndpoints, overlayStore } from '$lib/stores/overlay';
+    import { clearParts, partStore, setParts } from '$lib/stores/parts';
+    import { prepareStageStore } from '$lib/stores/prepare-stage';
     import {
         tessellationStore,
         type TessellationPoint,
     } from '$lib/stores/tessellation';
-    import { tessellateShape } from '$lib/geometry/shape';
-    import { overlayStore, generateChainEndpoints } from '$lib/stores/overlay';
-    import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
-    import { prepareStageStore } from '$lib/stores/prepare-stage';
-    import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
-    import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-    import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
+    import { WorkflowStage, workflowStore } from '$lib/stores/workflow';
     import {
-        type Shape,
-        type Line,
+        GeometryType,
         type Arc,
         type Circle,
-        type Polyline,
         type Ellipse,
-        GeometryType,
+        type Line,
+        type Polyline,
+        type Shape,
     } from '$lib/types';
-    import type { Spline } from '$lib/geometry/spline';
-    import type { Chain } from '$lib/geometry/chain/interfaces';
+    import { CutDirection } from '$lib/types/direction';
     import {
-        getShapeStartPoint,
-        getShapeEndPoint,
-    } from '$lib/geometry/shape/functions';
-    import {
-        handleChainClick as sharedHandleChainClick,
         handleChainMouseEnter,
         handleChainMouseLeave,
-        handlePartClick as sharedHandlePartClick,
         handlePartMouseEnter,
         handlePartMouseLeave,
-    } from '$lib/utils/chain-part-interactions';
-    import { polylineToPoints } from '$lib/geometry/polyline';
-    import { detectCutDirection } from '$lib/algorithms/cut-direction';
-    import { CutDirection } from '$lib/types/direction';
+        handleChainClick as sharedHandleChainClick,
+        handlePartClick as sharedHandlePartClick,
+    } from '$lib/algorithms/part-detection/chain-part-interactions';
+    import AccordionPanel from '../AccordionPanel.svelte';
+    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
+    import LayersInfo from '../LayersInfo.svelte';
 
     // Resizable columns state - initialize from store, update local variables during drag
     let leftColumnWidth = $prepareStageStore.leftColumnWidth;
@@ -488,7 +476,7 @@
             // Add warnings for open chains first
             const openChainWarnings: PartDetectionWarning[] = [];
             for (const chain of detectedChains) {
-                if (!isChainClosed(chain)) {
+                if (!isChainClosed2(chain)) {
                     const firstShape = chain.shapes[0];
                     const lastShape = chain.shapes[chain.shapes.length - 1];
                     const firstStart = getShapeStartPoint(firstShape);
@@ -578,7 +566,7 @@
     }
 
     // Chain analysis functions
-    function isChainClosed(chain: Chain): boolean {
+    function isChainClosed2(chain: Chain): boolean {
         if (!chain || chain.shapes.length === 0) return false;
 
         // Single shape chains - check if the shape itself is closed
@@ -751,10 +739,7 @@
     function isChainClosedHelper(chainId: string): boolean {
         const chain = detectedChains.find((c) => c.id === chainId);
         if (!chain) return false;
-        return isChainClosedAlgorithm(
-            chain,
-            algorithmParams.chainDetection.tolerance
-        );
+        return isChainClosed(chain, algorithmParams.chainDetection.tolerance);
     }
 
     // Tessellation is now handled by the imported tessellateShape function
@@ -1653,13 +1638,13 @@
                             <div class="property">
                                 <span class="property-label">Status:</span>
                                 <span
-                                    class="property-value {isChainClosed(
+                                    class="property-value {isChainClosed2(
                                         selectedChain
                                     )
                                         ? 'closed'
                                         : 'open'}"
                                 >
-                                    {isChainClosed(selectedChain)
+                                    {isChainClosed2(selectedChain)
                                         ? 'Closed'
                                         : 'Open'}
                                 </span>

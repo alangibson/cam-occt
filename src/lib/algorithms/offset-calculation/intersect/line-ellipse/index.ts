@@ -7,11 +7,9 @@ import {
     INTERSECTION_TOLERANCE,
 } from '../../../../geometry/math/constants';
 import { snapParameter } from '../line-arc/index';
-import {
-    createVerbCurveFromEllipse,
-    createVerbCurveFromLine,
-    processVerbIntersectionResults,
-} from '../../../../utils/verb-integration-utils';
+import { processVerbIntersectionResults } from '../verb-integration-utils';
+import { createVerbCurveFromLine } from '$lib/geometry/line/nurbs';
+import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
 import { getEllipseParameters } from '$lib/geometry/ellipse/index';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 

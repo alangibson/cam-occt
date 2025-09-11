@@ -8,8 +8,8 @@ import {
     findNearestPath,
     getPathStartPoint,
     prepareChainsAndLeadConfigs,
-    getChainEndPoint,
-} from '../path-optimization-utils';
+} from '../optimize-start-points/path-optimization-utils';
+import { getChainEndPoint } from '$lib/geometry/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '../../geometry/constants';
 
 /**

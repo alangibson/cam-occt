@@ -9,7 +9,7 @@ import type {
 } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
-import { getShapePointsForBounds } from '../../utils/shape-bounds-utils';
+import { getShapePointsForBounds } from '$lib/geometry/bounding-box/functions';
 
 /**
  * Translate all shapes to ensure they are in the positive quadrant
