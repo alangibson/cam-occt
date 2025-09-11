@@ -1,6 +1,6 @@
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { LeadType, CutDirection } from '../types/direction';
+import { LeadType, CutDirection } from '$lib/types/direction';
 import type { LeadInConfig, LeadOutConfig } from './lead-calculation';
 import {
     getShapeStartPoint,

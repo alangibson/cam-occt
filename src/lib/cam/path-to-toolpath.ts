@@ -1,7 +1,7 @@
-import { type ToolPath, type Point2D, type Shape, LeadType } from '../types';
+import { type ToolPath, type Point2D, type Shape, LeadType } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
-import type { Path } from '../stores/paths';
-import type { Tool } from '../stores/tools';
+import type { Path } from '$lib/stores/paths';
+import type { Tool } from '$lib/stores/tools';
 import { getShapePoints } from '$lib/geometry/shape';
 import {
     hasValidCachedLeads,
@@ -11,7 +11,7 @@ import {
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
-import { GeometryType } from '../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import {
     DEFAULT_FEED_RATE,
     DEFAULT_PIERCE_HEIGHT,

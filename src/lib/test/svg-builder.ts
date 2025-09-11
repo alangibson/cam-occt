@@ -1,9 +1,9 @@
 import verb from 'verb-nurbs';
-import type { Point2D, Line, Circle, Ellipse, Polyline } from '../types';
+import type { Point2D, Line, Circle, Ellipse, Polyline } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import type { VerbCurve } from 'verb-nurbs';
-import { GeometryType } from '../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import { tessellateEllipse } from '$lib/geometry/ellipse/index';
 import type { Shape } from '../algorithms/offset-calculation/chain/types';
 import { tessellateVerbCurve } from '../algorithms/offset-calculation/offset/spline/spline';

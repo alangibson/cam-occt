@@ -6,8 +6,8 @@
  */
 
 import type { Arc } from '../../geometry/arc';
-import type { Polyline, Point2D, Line } from '../../types/geometry';
-import { GeometryType } from '../../types/geometry';
+import type { Polyline, Point2D, Line } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { countRayLineCrossings, findRayLineIntersections } from './ray-line';

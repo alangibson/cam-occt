@@ -4,7 +4,7 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
 } from './lead-calculation';
-import { LeadType } from '../types/direction';
+import { LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import { GeometryType } from '$lib/geometry/shape';
 

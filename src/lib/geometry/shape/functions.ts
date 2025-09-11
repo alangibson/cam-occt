@@ -1,5 +1,5 @@
 import type { Shape } from './interfaces';
-import type { Point2D } from '../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import {
     generateCirclePoints,
@@ -45,7 +45,7 @@ import {
 import {
     DEFAULT_PART_DETECTION_PARAMETERS,
     type PartDetectionParameters,
-} from '../../types/part-detection';
+} from '$lib/types/part-detection';
 import {
     getPolylineEndPoint,
     getPolylinePointAt,

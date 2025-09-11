@@ -4,12 +4,12 @@
  * Common utility functions for ray-shape intersection algorithms
  */
 
-import type { Point2D } from '../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import {
     solveQuadratic as mathSolveQuadratic,
     isNearlyEqual,
 } from '$lib/geometry/math';
-import { normalizeAngle } from '../../utils/polygon-geometry-shared';
+import { normalizeAngle } from '$lib/geometry/math/functions';
 import { EPSILON } from '$lib/geometry/math';
 
 // Re-export normalizeAngle from shared library for backward compatibility

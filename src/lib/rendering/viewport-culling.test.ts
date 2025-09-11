@@ -7,8 +7,8 @@ import {
     type ViewportBounds,
     type ShapeBounds,
 } from './viewport-culling';
-import { GeometryType } from '../types/geometry';
-import type { Shape, Line } from '../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
+import type { Shape, Line } from '$lib/types/geometry';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 import type { Circle } from '$lib/geometry/circle';
 

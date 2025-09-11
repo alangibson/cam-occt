@@ -7,7 +7,7 @@ import path from 'path';
 import type { PolylineVertex, Shape } from '$lib/types';
 import { EPSILON } from '$lib/geometry/math';
 import type { Arc } from '../geometry/arc';
-import type { Line, Polyline } from '../types/geometry';
+import type { Line, Polyline } from '$lib/types/geometry';
 
 // Mock canvas for screenshot comparison
 function createTestCanvas(width: number = 800, height: number = 600) {

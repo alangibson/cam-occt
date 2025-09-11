@@ -5,17 +5,17 @@ import type {
     Circle,
     Polyline,
     Ellipse,
-} from '../../types';
+} from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '../../types';
+import { GeometryType } from '$lib/types';
 // Unused imports removed to fix lint warnings
 import { evaluateNURBS } from '$lib/geometry/spline';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { calculateSquaredDistance } from '$lib/geometry/math';
 import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { detectCutDirection } from '../cut-direction';
-import { CutDirection } from '../../types/direction';
+import { CutDirection } from '$lib/types/direction';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';

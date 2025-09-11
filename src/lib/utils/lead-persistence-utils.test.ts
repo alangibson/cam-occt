@@ -9,24 +9,24 @@ import {
     getCachedLeadGeometry,
     calculateAndStoreOperationLeads,
 } from './lead-persistence-utils';
-import type { Path } from '../stores/paths';
-import type { Operation } from '../stores/operations';
+import type { Path } from '$lib/stores/paths';
+import type { Operation } from '$lib/stores/operations';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import { LeadType, CutDirection } from '../types/direction';
-import { KerfCompensation } from '../types/kerf-compensation';
-import { GeometryType } from '../types/geometry';
-import { chainStore } from '../stores/chains';
+import { LeadType, CutDirection } from '$lib/types/direction';
+import { KerfCompensation } from '$lib/types/kerf-compensation';
+import { GeometryType } from '$lib/types/geometry';
+import { chainStore } from '$lib/stores/chains';
 import { partStore } from '$lib/stores/parts';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 // Mock the stores
-vi.mock('../stores/paths', () => ({
+vi.mock('$lib/stores/paths', () => ({
     pathStore: {
         updatePathLeadGeometry: vi.fn(),
     },
 }));
 
-vi.mock('../stores/chains', () => ({
+vi.mock('$lib/stores/chains', () => ({
     chainStore: {
         subscribe: vi.fn(() => vi.fn()),
     },
@@ -273,7 +273,7 @@ describe('Lead Persistence Utils', () => {
 
     describe('calculateAndStorePathLeads', () => {
         it('should calculate and store lead geometry', async () => {
-            const { pathStore } = await import('../stores/paths');
+            const { pathStore } = await import('$lib/stores/paths');
 
             await calculateAndStorePathLeads(
                 mockPath,
@@ -313,7 +313,7 @@ describe('Lead Persistence Utils', () => {
             const { calculateLeads } = await import(
                 '../algorithms/lead-calculation'
             );
-            const { pathStore } = await import('../stores/paths');
+            const { pathStore } = await import('$lib/stores/paths');
 
             const pathWithOffset: Path = {
                 ...mockPath,
@@ -371,7 +371,7 @@ describe('Lead Persistence Utils', () => {
             const { calculateLeads } = await import(
                 '../algorithms/lead-calculation'
             );
-            const { pathStore } = await import('../stores/paths');
+            const { pathStore } = await import('$lib/stores/paths');
 
             const pathWithEmptyOffset: Path = {
                 ...mockPath,
@@ -420,7 +420,7 @@ describe('Lead Persistence Utils', () => {
                 leadOutType: LeadType.NONE,
             };
 
-            const { pathStore } = await import('../stores/paths');
+            const { pathStore } = await import('$lib/stores/paths');
 
             await calculateAndStorePathLeads(
                 pathNoLeads,
@@ -436,7 +436,7 @@ describe('Lead Persistence Utils', () => {
             const { calculateLeads } = await import(
                 '../algorithms/lead-calculation'
             );
-            const { pathStore } = await import('../stores/paths');
+            const { pathStore } = await import('$lib/stores/paths');
 
             // Mock calculation to throw error
             vi.mocked(calculateLeads).mockImplementationOnce(() => {
@@ -467,7 +467,7 @@ describe('Lead Persistence Utils', () => {
     describe('calculateAndStoreOperationLeads', () => {
         it('should calculate leads for all paths in operation', async () => {
             const { get } = await import('svelte/store');
-            const { pathStore } = await import('../stores/paths');
+            const { pathStore } = await import('$lib/stores/paths');
 
             // Mock store states
             vi.mocked(get).mockImplementation((store) => {

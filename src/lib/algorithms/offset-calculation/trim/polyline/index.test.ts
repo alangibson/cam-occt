@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import {
-    GeometryType,
-    type Shape,
-    type Polyline,
-} from '../../../../types/geometry';
+import { GeometryType, type Shape, type Polyline } from '$lib/types/geometry';
 import { trimPolyline } from './index';
 import { type KeepSide } from '../types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';

@@ -6,14 +6,14 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import {
     saveApplicationState,
     restoreApplicationState,
-} from '../stores/persistence';
-import { drawingStore } from '../stores/drawing';
-import { pathStore } from '../stores/paths';
-import { operationsStore, type Operation } from '../stores/operations';
-import { setChains } from '../stores/chains';
-import { LeadType, CutDirection } from '../types/direction';
-import { GeometryType } from '../types/geometry';
-import type { PathsState } from '../stores/paths';
+} from '$lib/stores/persistence';
+import { drawingStore } from '$lib/stores/drawing';
+import { pathStore } from '$lib/stores/paths';
+import { operationsStore, type Operation } from '$lib/stores/operations';
+import { setChains } from '$lib/stores/chains';
+import { LeadType, CutDirection } from '$lib/types/direction';
+import { GeometryType } from '$lib/types/geometry';
+import type { PathsState } from '$lib/stores/paths';
 import { Unit } from './units';
 
 // Mock localStorage

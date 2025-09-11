@@ -4,7 +4,7 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
 } from './lead-calculation';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';

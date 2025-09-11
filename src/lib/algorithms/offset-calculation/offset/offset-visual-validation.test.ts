@@ -17,7 +17,7 @@ import {
     type Point2D,
     type Polyline,
     type Shape,
-} from '../../../types/geometry';
+} from '$lib/types/geometry';
 import { calculateSignedArea } from '../../../utils/geometry-utils';
 import type { Chain } from '../../chain-detection/chain-detection';
 import { offsetChain } from '../chain/offset';

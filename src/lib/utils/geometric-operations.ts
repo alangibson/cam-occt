@@ -22,9 +22,9 @@ import { polylineToPoints } from '$lib/geometry/polyline';
 import { generateEllipsePoints } from '$lib/geometry/ellipse/index';
 import {
     calculatePolygonArea as calculatePolygonAreaShared,
-    calculateDistanceBetweenPoints,
     isPointInPolygon as isPointInPolygonShared,
-} from './polygon-geometry-shared';
+} from '../geometry/polygon/functions';
+import { calculateDistanceBetweenPoints } from '$lib/geometry/math/functions';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/index';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';

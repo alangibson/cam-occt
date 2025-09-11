@@ -11,7 +11,7 @@ import {
     type Polyline,
     type Shape,
     type Drawing,
-} from '../../../types/geometry';
+} from '$lib/types/geometry';
 import type { Chain } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '../../../utils/id';

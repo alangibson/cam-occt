@@ -5,12 +5,12 @@
  * Consolidates duplicated lead configuration code across the application.
  */
 
-import type { Path } from '../stores/paths';
+import type { Path } from '$lib/stores/paths';
 import type {
     LeadInConfig,
     LeadOutConfig,
 } from '../algorithms/lead-calculation';
-import { LeadType } from '../types/direction';
+import { LeadType } from '$lib/types/direction';
 
 /**
  * Create lead-in configuration from path

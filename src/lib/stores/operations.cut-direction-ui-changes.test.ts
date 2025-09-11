@@ -4,9 +4,9 @@ import { operationsStore, type Operation } from './operations';
 import { pathStore } from './paths';
 import { setChains, clearChains } from './chains';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import type { Shape } from '../types';
-import { CutDirection, LeadType } from '../types/direction';
-import { KerfCompensation } from '../types/kerf-compensation';
+import type { Shape } from '$lib/types';
+import { CutDirection, LeadType } from '$lib/types/direction';
+import { KerfCompensation } from '$lib/types/kerf-compensation';
 import { GeometryType } from '$lib/geometry/shape';
 
 // Helper to wait for async path generation

@@ -6,12 +6,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import {
     saveApplicationState,
     restoreApplicationState,
-} from '../stores/persistence';
+} from '$lib/stores/persistence';
 import {
     WorkflowStage,
     workflowStore,
     type WorkflowState,
-} from '../stores/workflow';
+} from '$lib/stores/workflow';
 
 // Mock localStorage
 const localStorageMock = {

@@ -5,7 +5,7 @@
  * used in point-in-chain testing for offset side detection
  */
 
-import type { Point2D } from '../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 
 /**
  * Represents a ray in 2D space

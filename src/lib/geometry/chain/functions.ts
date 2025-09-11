@@ -11,7 +11,7 @@ import {
     tessellateShape,
 } from '$lib/geometry/shape/functions';
 import { calculatePerimeter } from '$lib/geometry/math';
-import { calculatePolygonArea as calculatePolygonAreaShared } from '$lib/utils/polygon-geometry-shared';
+import { calculatePolygonArea as calculatePolygonAreaShared } from '$lib/geometry/polygon/functions';
 import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
 import { WindingDirection } from './enums';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';

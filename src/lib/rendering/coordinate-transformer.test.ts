@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { CoordinateTransformer } from './coordinate-transformer';
-import type { Point2D as _Point2D } from '../types/geometry';
+import type { Point2D as _Point2D } from '$lib/types/geometry';
 
 describe('CoordinateTransformer', () => {
     let transformer: CoordinateTransformer;

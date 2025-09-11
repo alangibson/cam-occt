@@ -9,9 +9,9 @@ import {
     type PathsState,
 } from './paths';
 import { workflowStore, WorkflowStage } from './workflow';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
-import type { Point2D, Shape } from '../types';
+import type { Point2D, Shape } from '$lib/types';
 import { GeometryType } from '$lib/geometry/shape';
 
 // Mock workflow store

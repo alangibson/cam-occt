@@ -1,4 +1,4 @@
-import type { Point2D } from '../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
 import {
     determineArcExtensionDirection as _determineArcExtensionDirection,

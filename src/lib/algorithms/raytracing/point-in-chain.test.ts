@@ -5,8 +5,8 @@ import {
     anyPointInsideChainExact,
     countPointsInsideChainExact,
 } from './point-in-chain';
-import type { Shape, Point2D } from '../../types/geometry';
-import { GeometryType } from '../../types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '../chain-detection/chain-detection';
 import { generateId } from '../../utils/id';
 

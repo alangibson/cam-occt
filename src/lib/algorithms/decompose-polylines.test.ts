@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Shape } from '$lib/types';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import type { Line } from '../types/geometry';
-import { GeometryType } from '../types/geometry';
+import type { Line } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import { decomposePolylines } from './decompose-polylines';
 
 describe('Decompose Polylines Algorithm', () => {

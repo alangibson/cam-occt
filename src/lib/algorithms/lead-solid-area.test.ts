@@ -4,7 +4,7 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
 } from './lead-calculation';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import {
     PartType,

@@ -5,19 +5,19 @@
  * Saves all application state to browser localStorage to maintain state across sessions.
  */
 
-import type { Drawing } from '../types/geometry';
+import type { Drawing } from '$lib/types/geometry';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import type {
     DetectedPart,
     PartDetectionWarning,
 } from '$lib/algorithms/part-detection/part-detection';
 import type { Rapid } from '../algorithms/optimize-cut-order';
-import type { TessellationPoint, DrawingOverlay } from '../stores/overlay';
-import type { LeadWarning } from '../stores/lead-warnings';
-import type { PrepareStageState } from '../stores/prepare-stage';
-import type { Operation } from '../stores/operations';
-import type { Path } from '../stores/paths';
-import type { Tool } from '../stores/tools';
+import type { TessellationPoint, DrawingOverlay } from '$lib/stores/overlay';
+import type { LeadWarning } from '$lib/stores/lead-warnings';
+import type { PrepareStageState } from '$lib/stores/prepare-stage';
+import type { Operation } from '$lib/stores/operations';
+import type { Path } from '$lib/stores/paths';
+import type { Tool } from '$lib/stores/tools';
 /**
  * Time conversion constant
  */

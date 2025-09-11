@@ -9,7 +9,7 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
 } from './lead-calculation';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 
 describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     it('should properly detect solid areas using point-in-polygon for ADLER.dxf Part 5', async () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { validateLeadConfiguration } from './lead-validation';
-import { LeadType, CutDirection } from '../types/direction';
+import { LeadType, CutDirection } from '$lib/types/direction';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';

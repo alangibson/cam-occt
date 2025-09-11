@@ -13,7 +13,7 @@ import {
     type PolygonAnalysisConfig,
     type PolygonSimplificationConfig,
 } from './polygon-utilities';
-import type { Point2D } from '../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import { WindingDirection } from '$lib/utils/geometry-utils';
 
 describe('Polygon Utilities', () => {

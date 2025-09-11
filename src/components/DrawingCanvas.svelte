@@ -69,7 +69,7 @@
     import type { Spline } from '$lib/geometry/spline';
     import type { WorkflowStage } from '$lib/stores/workflow';
     import { getPhysicalScaleFactor, type Unit } from '$lib/utils/units';
-    import { normalizeAngle } from '$lib/utils/polygon-geometry-shared';
+    import { normalizeAngle } from '$lib/geometry/math/functions';
     import { isPointInsidePart } from '$lib/algorithms/raytracing/point-in-chain';
 
     export let respectLayerVisibility = true; // Default to true for Edit stage

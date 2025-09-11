@@ -32,7 +32,7 @@ function getChainCutDirection(chain: Chain | undefined): CutDirection {
 }
 import { leadWarningsStore } from './lead-warnings';
 import { offsetWarningsStore } from './offset-warnings';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateAndStoreOperationLeads } from '../utils/lead-persistence-utils';
 import type {
     DetectedPart,
@@ -40,10 +40,10 @@ import type {
 } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
-import { KerfCompensation } from '../types/kerf-compensation';
+import { KerfCompensation } from '$lib/types/kerf-compensation';
 import { offsetChain } from '../algorithms/offset-calculation/chain/offset';
 import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
-import type { Shape } from '../types';
+import type { Shape } from '$lib/types';
 
 interface OffsetCalculation {
     offsetShapes: Shape[];

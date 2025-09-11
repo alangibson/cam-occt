@@ -1,5 +1,5 @@
 import verb, { type VerbDerivatives, type VerbPoint } from 'verb-nurbs';
-import { GeometryType, type Point2D } from '../../../../types/geometry';
+import { GeometryType, type Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { generateUniformKnotVector } from '$lib/geometry/spline';
 import { OffsetDirection, type OffsetResult } from '../types';

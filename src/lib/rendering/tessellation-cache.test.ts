@@ -5,8 +5,8 @@ import {
     cleanupTessellationCache,
     getTessellationCacheStats,
 } from './tessellation-cache';
-import { GeometryType } from '../types/geometry';
-import type { Shape, Ellipse, Line } from '../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
+import type { Shape, Ellipse, Line } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 
 // Mock the tessellation functions

@@ -1,12 +1,12 @@
-import type { Point2D, Shape } from '../types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
-import { GeometryType } from '../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { LeadType, CutDirection } from '../types/direction';
+import { LeadType, CutDirection } from '$lib/types/direction';
 import {
     validateLeadConfiguration,
     type LeadValidationResult,

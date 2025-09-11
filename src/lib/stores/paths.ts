@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import type { Point2D, Shape } from '$lib/types';
 import { WorkflowStage, workflowStore } from './workflow';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';

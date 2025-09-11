@@ -7,7 +7,7 @@ import {
     type Line,
     type Point2D,
     type Shape,
-} from '../../../types/geometry';
+} from '$lib/types/geometry';
 import { generateId } from '../../../utils/id';
 import type { IntersectionResult } from '../chain/types';
 import { findArcArcIntersections } from './arc-arc/index';

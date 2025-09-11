@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline } from './spline';
-import { OffsetDirection } from '../types';
-import type { Polyline, Point2D } from '../../../../types/geometry';
+import type { Polyline, Point2D } from '$lib/types/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Spline } from '$lib/geometry/spline';
+import { OffsetDirection } from '../types';
 
 describe('Combination Operations Diagnostic', () => {
     const outputDir = 'test-output/combination-diagnostic';

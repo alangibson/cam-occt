@@ -9,10 +9,10 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
 } from './lead-calculation';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Arc } from '../geometry/arc';
-import type { Polyline, Shape } from '../types/geometry';
+import type { Polyline, Shape } from '$lib/types/geometry';
 
 describe('Lead Hole Placement Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting

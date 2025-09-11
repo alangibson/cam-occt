@@ -4,7 +4,7 @@ import {
     type Line,
     type Arc,
     GeometryType,
-} from '../../../../types/geometry';
+} from '$lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import type { IntersectionType } from '../index';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';

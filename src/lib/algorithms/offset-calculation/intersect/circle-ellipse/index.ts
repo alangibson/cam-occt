@@ -1,4 +1,4 @@
-import type { Shape } from '../../../../types/geometry';
+import type { Shape } from '$lib/types/geometry';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Circle } from '$lib/geometry/circle';
 import type { IntersectionResult } from '../../chain/types';

@@ -3,7 +3,7 @@ import { optimizeStartPoints } from './optimize-start-points';
 import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
-import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '$lib/types/algorithm-parameters';
 
 describe('optimizeStartPoints - closed polylines', () => {
     const optimizationParams = {

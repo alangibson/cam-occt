@@ -12,9 +12,9 @@ import type {
     Line,
     Arc,
     Circle,
-} from '../../types/geometry';
+} from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import { GeometryType } from '../../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '../chain-detection/chain-detection';
 import type { RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';

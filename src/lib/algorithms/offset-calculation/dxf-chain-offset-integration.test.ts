@@ -5,7 +5,7 @@ import { scaleShape } from '$lib/geometry/shape/functions';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
 import { parseDXF } from '../../parsers/dxf-parser';
 import { SVGBuilder } from '../../test/svg-builder';
-import { GeometryType, type Circle, type Shape } from '../../types/geometry';
+import { GeometryType, type Circle, type Shape } from '$lib/types/geometry';
 import { Unit, getPhysicalScaleFactor } from '../../utils/units';
 import type { Chain } from '../chain-detection/chain-detection';
 import { detectShapeChains } from '../chain-detection/chain-detection';

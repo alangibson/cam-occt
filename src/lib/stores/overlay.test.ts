@@ -9,7 +9,7 @@ import {
     type TessellationPoint,
 } from './overlay';
 import { WorkflowStage } from './workflow';
-import type { Shape, Point2D } from '../types';
+import type { Shape, Point2D } from '$lib/types';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
 import { GeometryType } from '$lib/geometry/shape';
 

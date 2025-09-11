@@ -1,4 +1,4 @@
-import type { Point2D } from '../../../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from '../../chain/types';

@@ -10,7 +10,7 @@ import {
     isEllipseClosed,
     distanceFromEllipsePerimeter,
 } from '$lib/geometry/ellipse';
-import type { Ellipse } from '../types/geometry';
+import type { Ellipse } from '$lib/types/geometry';
 
 describe('ellipse-utils', () => {
     // Create test ellipses

@@ -3,7 +3,7 @@ import {
     type Line,
     type Point2D,
     type Shape,
-} from '../../../../types/geometry';
+} from '$lib/types/geometry';
 import { OffsetDirection, type OffsetResult } from '../types';
 
 /**

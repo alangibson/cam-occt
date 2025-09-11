@@ -11,10 +11,10 @@ import {
     getPersistedStateSize,
     type PersistedState,
 } from './state-persistence';
-import { LeadType, CutDirection } from '../types/direction';
+import { LeadType, CutDirection } from '$lib/types/direction';
 import { Unit } from './units';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
-import { WorkflowStage } from '../stores/workflow';
+import { WorkflowStage } from '$lib/stores/workflow';
 
 // Mock localStorage
 const localStorageMock = {

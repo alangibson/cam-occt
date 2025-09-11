@@ -1,10 +1,6 @@
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import { generateId } from '$lib/utils/id';
-import {
-    GeometryType,
-    type Polyline,
-    type Shape,
-} from '../../../../types/geometry';
+import { GeometryType, type Polyline, type Shape } from '$lib/types/geometry';
 import { offsetChain } from '../../chain/offset';
 import type {
     ChainOffsetParameters,

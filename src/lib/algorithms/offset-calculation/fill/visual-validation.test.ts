@@ -1,7 +1,7 @@
 import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { GeometryType, type Shape } from '../../../types/geometry';
+import { GeometryType, type Shape } from '$lib/types/geometry';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { offsetChain } from '../chain/offset';

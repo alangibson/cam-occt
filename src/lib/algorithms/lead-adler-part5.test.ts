@@ -9,9 +9,9 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
 } from './lead-calculation';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Shape } from '../types';
+import type { Shape } from '$lib/types';
 
 describe('ADLER.dxf Part 5 Lead Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting
@@ -53,11 +53,11 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         for (const shape of chain.shapes) {
             if (shape.type === 'line') {
                 const lineGeometry =
-                    shape.geometry as import('../types/geometry').Line;
+                    shape.geometry as import('$lib/types/geometry').Line;
                 points.push(lineGeometry.start);
             } else if (shape.type === 'polyline') {
                 const polylineGeometry =
-                    shape.geometry as import('../types/geometry').Polyline;
+                    shape.geometry as import('$lib/types/geometry').Polyline;
                 points.push(...polylineToPoints(polylineGeometry));
             }
             // Add other shape types as needed

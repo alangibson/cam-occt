@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Ellipse, Point2D } from '../../../types/geometry';
+import type { Ellipse, Point2D } from '$lib/types/geometry';
 import type { Circle } from '$lib/geometry/circle';
 import {
     validateEllipseOperation,

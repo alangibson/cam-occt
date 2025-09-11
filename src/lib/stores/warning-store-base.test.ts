@@ -8,7 +8,7 @@ import {
     type Warning,
     type WarningStore,
 } from './warning-store-base';
-import { MessageSeverity } from '../types/ui';
+import { MessageSeverity } from '$lib/types/ui';
 
 // Mock crypto.randomUUID
 const mockUUID = vi.fn(() => 'mock-warning-uuid-123');

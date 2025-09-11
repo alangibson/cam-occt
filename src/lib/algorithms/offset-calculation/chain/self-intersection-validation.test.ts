@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import type { Chain } from '../../chain-detection/chain-detection';
-import type { Shape } from '../../../types/geometry';
+import type { Shape } from '$lib/types/geometry';
 import type { ChainOffsetResult, ChainOffsetParameters } from './types';
 import { offsetChain } from './offset';
 import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from './types';

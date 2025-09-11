@@ -1,4 +1,4 @@
-import type { Geometry, Point2D } from '../../types/geometry';
+import type { Geometry, Point2D } from '$lib/types/geometry';
 import type { Line } from './interfaces';
 import { EPSILON } from '$lib/geometry/math';
 

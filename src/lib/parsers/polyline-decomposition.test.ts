@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { decomposePolylines } from '../algorithms/decompose-polylines';
-import type { Line, Arc } from '../types/geometry';
+import type { Line, Arc } from '$lib/types/geometry';
 import { readFileSync } from 'fs';
 import path from 'path';
 

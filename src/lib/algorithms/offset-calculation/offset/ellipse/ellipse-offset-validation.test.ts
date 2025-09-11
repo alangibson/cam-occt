@@ -7,7 +7,7 @@ import {
     type Ellipse,
     type Polyline,
     type Point2D,
-} from '../../../../types/geometry';
+} from '$lib/types/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import verb from 'verb-nurbs';
 import { OffsetDirection } from '../types';

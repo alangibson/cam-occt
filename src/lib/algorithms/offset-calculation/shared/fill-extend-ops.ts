@@ -1,4 +1,4 @@
-import { GeometryType } from '../../../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type {
     Point2D,
     Circle,
@@ -7,7 +7,7 @@ import type {
     Shape,
     Line,
     Polyline,
-} from '../../../types/geometry';
+} from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { FillResult } from '../fill/types';
 import { EPSILON } from '../../../geometry/math/constants';

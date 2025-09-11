@@ -4,8 +4,8 @@ import {
     joinColinearLinesInChains,
     arePointsCollinear,
 } from './index';
-import { GeometryType } from '../../types/geometry';
-import type { Polyline, Shape, Line } from '../../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
+import type { Polyline, Shape, Line } from '$lib/types/geometry';
 import { generateId } from '../../utils/id';
 import type { Chain } from '../chain-detection/chain-detection';
 

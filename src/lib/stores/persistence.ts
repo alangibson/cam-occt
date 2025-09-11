@@ -31,7 +31,7 @@ import { leadWarningsStore, type LeadWarning } from './lead-warnings';
 import { setChains, setTolerance, selectChain } from './chains';
 import { setParts, highlightPart } from './parts';
 import { prepareStageStore, type PrepareStageState } from './prepare-stage';
-import { DEFAULT_ALGORITHM_PARAMETERS } from '../types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
 import { operationsStore, type Operation } from './operations';
 import { pathStore, type PathsState } from './paths';
 import { toolStore, type Tool } from './tools';

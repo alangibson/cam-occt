@@ -52,14 +52,14 @@ describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {
             for (const shape of chain.shapes) {
                 if (shape.type === 'line') {
                     const lineGeom =
-                        shape.geometry as import('../types/geometry').Line;
+                        shape.geometry as import('$lib/types/geometry').Line;
                     minX = Math.min(minX, lineGeom.start.x, lineGeom.end.x);
                     maxX = Math.max(maxX, lineGeom.start.x, lineGeom.end.x);
                     minY = Math.min(minY, lineGeom.start.y, lineGeom.end.y);
                     maxY = Math.max(maxY, lineGeom.start.y, lineGeom.end.y);
                 } else if (shape.type === 'polyline') {
                     const polylineGeom =
-                        shape.geometry as import('../types/geometry').Polyline;
+                        shape.geometry as import('$lib/types/geometry').Polyline;
                     for (const point of polylineToPoints(polylineGeom)) {
                         minX = Math.min(minX, point.x);
                         maxX = Math.max(maxX, point.x);

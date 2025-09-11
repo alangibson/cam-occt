@@ -15,9 +15,9 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
 } from './lead-calculation';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Polyline, Line } from '../types/geometry';
+import type { Polyline, Line } from '$lib/types/geometry';
 
 describe('ADLER Part 5 Cut Direction Analysis', () => {
     // Helper to check if a point is inside a polygon using ray casting

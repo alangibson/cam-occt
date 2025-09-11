@@ -7,7 +7,7 @@ import {
 import type { Shape, Line, Arc, Polyline } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
-import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '../types/algorithm-parameters';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '$lib/types/algorithm-parameters';
 
 describe('optimizeStartPoints - polyline splitting', () => {
     const optimizationParams = {

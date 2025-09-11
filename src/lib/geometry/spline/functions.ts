@@ -1,6 +1,10 @@
 import verb, { type VerbCurve } from 'verb-nurbs';
 import type { Point2D } from '$lib/types/geometry';
-import type { Spline, SplineValidationResult, ValidationResult } from './interfaces';
+import type {
+    Spline,
+    SplineValidationResult,
+    ValidationResult,
+} from './interfaces';
 import {
     EPSILON,
     INTERSECTION_TOLERANCE,
@@ -1292,16 +1296,18 @@ export function simplifyTessellatedSpline(
     simplified.push(points[points.length - 1]); // Always keep last point
 
     return simplified;
-}/**
+} /**
  * Validates a spline geometry to ensure it has valid NURBS parameters
  */
 
 export function validateSplineGeometry2(
     spline: Spline
 ): SplineValidationResult {
-    if (!spline.controlPoints ||
+    if (
+        !spline.controlPoints ||
         !Array.isArray(spline.controlPoints) ||
-        spline.controlPoints.length < 2) {
+        spline.controlPoints.length < 2
+    ) {
         return { isValid: false };
     }
 
@@ -1433,4 +1439,3 @@ export function validateSplineKnots(
 
     return true;
 }
-

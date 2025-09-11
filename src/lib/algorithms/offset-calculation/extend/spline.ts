@@ -1,5 +1,5 @@
 import type { Arc } from '../../../geometry/arc';
-import type { Point2D } from '../../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Line } from '$lib/geometry/line';
 import type { Circle } from '$lib/geometry/circle';

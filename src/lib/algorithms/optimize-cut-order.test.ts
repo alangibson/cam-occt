@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
-import type { Path } from '../stores/paths';
+import type { Path } from '$lib/stores/paths';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import type { Shape, Ellipse, Circle, Line, Arc, Polyline } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/types/geometry';
-import { CutDirection } from '../types/direction';
+import { CutDirection } from '$lib/types/direction';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 
 describe('Optimize Cut Order', () => {

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import type { Point2D } from '../../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { IntersectionResult } from '../chain/types';
 import verb from 'verb-nurbs';
 import {

@@ -1,16 +1,14 @@
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import { TOLERANCE_SNAP_MULTIPLIER } from '$lib/geometry/constants.js';
-import type { Point2D } from '../types/geometry.ts';
+import type { Point2D } from '$lib/types/geometry.ts';
 import {
     calculateSignedArea,
     getWindingDirection,
     WindingDirection,
 } from '$lib/geometry/chain';
 import { calculatePerimeter } from '$lib/geometry/math';
-import {
-    calculateDistanceBetweenPoints,
-    isPointInPolygon,
-} from '../utils/polygon-geometry-shared';
+import { isPointInPolygon } from '../geometry/polygon/functions.js';
+import { calculateDistanceBetweenPoints } from '$lib/geometry/math/functions.js';
 import { arePointsCollinear } from './join-colinear-lines';
 
 /**

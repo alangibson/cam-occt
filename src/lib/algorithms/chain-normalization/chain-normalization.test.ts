@@ -9,10 +9,10 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import type { Shape } from '../../types';
+import type { Shape } from '$lib/types';
 import type { Line } from '$lib/geometry/line';
 import type { Polyline } from '$lib/geometry/polyline';
-import { GeometryType } from '../../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '../chain-detection/chain-detection';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
 

@@ -55,7 +55,7 @@ describe('Polyline Dragging Bug Fixes', () => {
 
             // Verify points array was moved
             const points = polylineToPoints(
-                geometry as import('../types/geometry').Polyline
+                geometry as import('$lib/types/geometry').Polyline
             );
             expect(points).toHaveLength(3);
             expect(points[0].x).toBeCloseTo(50, 10);
@@ -67,7 +67,7 @@ describe('Polyline Dragging Bug Fixes', () => {
 
             // Verify vertices array was moved (preserving bulge data)
             const vertices = polylineToVertices(
-                geometry as import('../types/geometry').Polyline
+                geometry as import('$lib/types/geometry').Polyline
             );
             expect(vertices).toHaveLength(3);
             expect(vertices[0].x).toBeCloseTo(50, 10);
@@ -118,7 +118,7 @@ describe('Polyline Dragging Bug Fixes', () => {
 
             // Verify points array was moved
             const points = polylineToPoints(
-                geometry as import('../types/geometry').Polyline
+                geometry as import('$lib/types/geometry').Polyline
             );
             expect(points).toEqual([
                 { x: 10, y: 20 },
@@ -127,7 +127,7 @@ describe('Polyline Dragging Bug Fixes', () => {
 
             // Verify vertices can still be obtained (will have bulge: 0 for all vertices)
             const vertices = polylineToVertices(
-                geometry as import('../types/geometry').Polyline
+                geometry as import('$lib/types/geometry').Polyline
             );
             expect(vertices).toEqual([
                 { x: 10, y: 20, bulge: 0 },
@@ -174,7 +174,7 @@ describe('Polyline Dragging Bug Fixes', () => {
 
             // Verify both arrays were scaled
             const points = polylineToPoints(
-                geometry as import('../types/geometry').Polyline
+                geometry as import('$lib/types/geometry').Polyline
             );
             expect(points).toHaveLength(2);
             expect(points[0].x).toBeCloseTo(0, 10);
@@ -183,7 +183,7 @@ describe('Polyline Dragging Bug Fixes', () => {
             expect(points[1].y).toBeCloseTo(0, 10);
 
             const vertices = polylineToVertices(
-                geometry as import('../types/geometry').Polyline
+                geometry as import('$lib/types/geometry').Polyline
             );
             expect(vertices).toHaveLength(2);
             expect(vertices[0].x).toBeCloseTo(0, 10);
@@ -231,7 +231,7 @@ describe('Polyline Dragging Bug Fixes', () => {
 
             // After 90° rotation around origin, (100,0) becomes (0,100) and (200,0) becomes (0,200)
             const points = polylineToPoints(
-                geometry as import('../types/geometry').Polyline
+                geometry as import('$lib/types/geometry').Polyline
             );
             expect(points[0].x).toBeCloseTo(0, 5);
             expect(points[0].y).toBeCloseTo(100, 5);
@@ -240,7 +240,7 @@ describe('Polyline Dragging Bug Fixes', () => {
 
             // Verify vertices array was also rotated with bulge preserved
             const vertices = polylineToVertices(
-                geometry as import('../types/geometry').Polyline
+                geometry as import('$lib/types/geometry').Polyline
             );
             expect(vertices[0].x).toBeCloseTo(0, 5);
             expect(vertices[0].y).toBeCloseTo(100, 5);

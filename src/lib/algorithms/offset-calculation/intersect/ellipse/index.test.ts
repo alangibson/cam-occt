@@ -7,7 +7,7 @@ import {
     type Line,
     type Polyline,
     type Shape,
-} from '../../../../types/geometry';
+} from '$lib/types/geometry';
 import {
     approximateEllipseAsPolyline,
     findEllipseGenericIntersections,

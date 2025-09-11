@@ -1,8 +1,8 @@
-import type { Point2D } from '../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from './offset-calculation/chain/types';
 import { EPSILON } from '$lib/geometry/math';
-import { normalizeAngle } from '../utils/polygon-geometry-shared';
+import { normalizeAngle } from '$lib/geometry/math/functions';
 
 // Re-export normalizeAngle from shared library for backward compatibility
 export { normalizeAngle };

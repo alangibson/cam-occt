@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Point2D } from '../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Ray } from './types';
 import {

@@ -1,4 +1,4 @@
-import type { Point2D } from '../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 
 export interface Ellipse {
     center: Point2D;

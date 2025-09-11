@@ -1,4 +1,4 @@
-import type { Shape, Point2D, Ellipse } from '../../../types/geometry';
+import type { Shape, Point2D, Ellipse } from '$lib/types/geometry';
 import type { IntersectionResult } from '../chain/types';
 import verb from 'verb-nurbs';
 import {

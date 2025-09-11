@@ -5,7 +5,7 @@
  * to avoid expensive full re-renders during pan operations.
  */
 
-import type { Point2D } from '../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 
 /**
  * 60fps frame limiting interval in milliseconds

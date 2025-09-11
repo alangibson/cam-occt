@@ -5,7 +5,7 @@ import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Polyline, Shape } from '../types/geometry';
+import type { Polyline, Shape } from '$lib/types/geometry';
 
 describe('Lead Solid Area Verification - Catch the Error', () => {
     it('Debug: Verify part 5 geometry and chain association', async () => {

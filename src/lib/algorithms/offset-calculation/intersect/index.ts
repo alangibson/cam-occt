@@ -5,7 +5,7 @@ import type {
     Arc,
     Circle,
     Polyline,
-} from '../../../types/geometry';
+} from '$lib/types/geometry';
 import type { IntersectionResult } from '../chain/types';
 import { EPSILON } from '../../../geometry/math/constants';
 import {

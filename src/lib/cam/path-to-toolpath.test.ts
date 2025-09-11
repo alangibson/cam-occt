@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { pathToToolPath, pathsToToolPaths } from './path-to-toolpath';
-import type { Path } from '../stores/paths';
-import type { Tool } from '../stores/tools';
-import type { Shape, Point2D, Line } from '../types';
+import type { Path } from '$lib/stores/paths';
+import type { Tool } from '$lib/stores/tools';
+import type { Shape, Point2D, Line } from '$lib/types';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
-import { LeadType, CutDirection } from '../types/direction';
+import { LeadType, CutDirection } from '$lib/types/direction';
 
 // Mock getShapePoints function
 vi.mock('$lib/geometry/shape', async (importOriginal) => {

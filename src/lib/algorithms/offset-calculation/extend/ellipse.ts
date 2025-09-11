@@ -1,4 +1,4 @@
-import type { Point2D } from '../../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { OperationParams } from '../shared/fill-extend-ops';
 import { MAX_EXTENSION } from '$lib/algorithms/constants';
 import {

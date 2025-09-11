@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { Line } from '../types/geometry';
+import type { Line } from '$lib/types/geometry';
 import type { DXFEntity } from 'dxf';
 
 describe('DXF Parser - INSERT Entities', () => {

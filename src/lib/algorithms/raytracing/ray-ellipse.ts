@@ -6,7 +6,7 @@
  */
 
 import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Point2D } from '../../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { normalizeAngle } from './utils';

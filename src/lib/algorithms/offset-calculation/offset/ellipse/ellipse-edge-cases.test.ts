@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { offsetEllipse } from './ellipse';
-import type { Ellipse } from '../../../../types/geometry';
+import type { Ellipse } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { generateUniformKnotVector } from '$lib/geometry/spline';
 import { getEllipseParameters } from '$lib/geometry/ellipse';

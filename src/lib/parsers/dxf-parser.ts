@@ -12,7 +12,7 @@ import type {
 } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '../types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import { Unit } from '../utils/units';
 import { generateId } from '../utils/id';
 import {

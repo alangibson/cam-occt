@@ -2,7 +2,7 @@ import {
     selectChain,
     highlightChain,
     clearChainHighlight,
-} from '../stores/chains';
+} from '$lib/stores/chains';
 import { selectPart, hoverPart, clearPartHover } from '$lib/stores/parts';
 import type {
     DetectedPart,

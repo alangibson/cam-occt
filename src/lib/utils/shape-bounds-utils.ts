@@ -13,8 +13,8 @@ import {
 } from '$lib/geometry/bounding-box';
 import type { Spline } from '$lib/geometry/spline';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import type { Point2D, Polyline, Shape } from '../types';
-import { GeometryType } from '../types/geometry';
+import type { Point2D, Polyline, Shape } from '$lib/types';
+import { GeometryType } from '$lib/types/geometry';
 
 /**
  * Calculates the bounding box of a chain by aggregating bounds of all shapes

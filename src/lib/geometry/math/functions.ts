@@ -107,3 +107,25 @@ export function roundToDecimalPlaces(
     const factor = Math.pow(10, places);
     return Math.round(value * factor) / factor;
 }
+/**
+ * Calculate Euclidean distance between two points
+ * Consolidated from multiple implementations
+ */
+
+export function calculateDistanceBetweenPoints(
+    p1: Point2D,
+    p2: Point2D
+): number {
+    return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
+} /**
+ * Normalize an angle to the range [0, 2π]
+ * Consolidated from multiple implementations across the codebase
+ */
+
+export function normalizeAngle(angle: number): number {
+    angle = angle % (2 * Math.PI);
+    if (angle < 0) {
+        angle += 2 * Math.PI;
+    }
+    return angle;
+}

@@ -12,7 +12,7 @@ import {
     type Point2D,
     type Polyline,
     type Shape,
-} from '../../../types/geometry';
+} from '$lib/types/geometry';
 import { generateId } from '../../../utils/id';
 import type { IntersectionResult } from '../chain/types';
 import {

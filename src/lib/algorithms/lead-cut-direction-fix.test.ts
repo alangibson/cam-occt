@@ -9,13 +9,13 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
 } from './lead-calculation';
-import { CutDirection, LeadType } from '../types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
 import type { Arc } from '../geometry/arc';
-import type { Shape } from '../types';
+import type { Shape } from '$lib/types';
 
 describe('Lead Cut Direction Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting
@@ -57,11 +57,11 @@ describe('Lead Cut Direction Fix', () => {
         for (const shape of chain.shapes) {
             if (shape.type === 'line') {
                 const lineGeometry =
-                    shape.geometry as import('../types/geometry').Line;
+                    shape.geometry as import('$lib/types/geometry').Line;
                 points.push(lineGeometry.start);
             } else if (shape.type === 'polyline') {
                 const polylineGeometry =
-                    shape.geometry as import('../types/geometry').Polyline;
+                    shape.geometry as import('$lib/types/geometry').Polyline;
                 points.push(...polylineToPoints(polylineGeometry));
             } else if (shape.type === 'arc') {
                 // Sample points along the arc
@@ -85,7 +85,7 @@ describe('Lead Cut Direction Fix', () => {
             } else if (shape.type === 'circle') {
                 // Sample points around the circle
                 const circle =
-                    shape.geometry as import('../types/geometry').Circle;
+                    shape.geometry as import('$lib/types/geometry').Circle;
                 const segments = Math.max(
                     16,
                     Math.ceil((2 * Math.PI * circle.radius) / 2)

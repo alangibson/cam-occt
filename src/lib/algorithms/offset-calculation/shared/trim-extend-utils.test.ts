@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Point2D, Line } from '../../../types/geometry';
+import type { Point2D, Line } from '$lib/types/geometry';
 import {
     calculateLineParameter,
     pointDistance,

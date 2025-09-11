@@ -16,7 +16,7 @@ import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
 import {
     calculatePolygonArea,
     isPointInPolygon as isPointInPolygonShared,
-} from '$lib/utils/polygon-geometry-shared';
+} from '$lib/geometry/polygon/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import {
     calculateChainArea,

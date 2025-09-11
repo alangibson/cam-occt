@@ -1,9 +1,4 @@
-import type {
-    Shape,
-    Ellipse,
-    Polyline,
-    Point2D,
-} from '../../../../types/geometry';
+import type { Shape, Ellipse, Polyline, Point2D } from '$lib/types/geometry';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { IntersectionResult } from '../../chain/types';
 import { EPSILON } from '../../../../geometry/math/constants';

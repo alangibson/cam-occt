@@ -1,4 +1,4 @@
-import type { Point2D } from '../types/geometry';
+import type { Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Line } from '$lib/geometry/line';
 import type { Ellipse } from '$lib/geometry/ellipse';

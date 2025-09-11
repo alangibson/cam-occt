@@ -1,4 +1,4 @@
-import type { Shape } from '../../../types/geometry';
+import type { Shape } from '$lib/types/geometry';
 
 /**
  * Direction for offset operation

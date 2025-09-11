@@ -5,7 +5,7 @@
  * to dramatically improve performance with large drawings.
  */
 
-import type { Point2D, Shape } from '../types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 import { getBoundingBoxForShape } from '$lib/geometry/bounding-box';
 import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '$lib/geometry/math';

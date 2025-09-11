@@ -1,7 +1,6 @@
 import type { Line } from '$lib/geometry/line';
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
-import type { Point2D, Shape } from '../../types';
 import type { Chain } from '../chain-detection/chain-detection';
 import {
     buildContainmentHierarchy,
@@ -10,6 +9,7 @@ import {
     identifyShells,
     isPointInPolygon,
 } from '$lib/algorithms/part-detection/geometric-containment';
+import type { Point2D } from '$lib/geometry/point';
 
 // Helper function to create test chains
 function createTestChain(id: string, shapes: Shape[]): Chain {

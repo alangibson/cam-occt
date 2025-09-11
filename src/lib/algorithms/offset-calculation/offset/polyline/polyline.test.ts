@@ -9,7 +9,7 @@ import type {
     Line,
     Arc,
     Circle,
-} from '../../../../types/geometry';
+} from '$lib/types/geometry';
 import {
     createPolylineFromVertices,
     polylineToPoints,

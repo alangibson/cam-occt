@@ -1,5 +1,5 @@
 import type { Arc } from '../../../../geometry/arc';
-import type { Shape, Point2D } from '../../../../types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 import type { FillOptions, FillResult, ShapeExtension } from '../types';
 import {
     extendArcToPoint,

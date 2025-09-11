@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { offsetLine } from './line';
-import type { Line } from '../../../../types/geometry';
+import type { Line } from '$lib/types/geometry';
 import { EPSILON } from '../../../../geometry/math/constants';
 import { OffsetDirection } from '../types';
 

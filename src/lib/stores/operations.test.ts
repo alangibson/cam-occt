@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { get } from 'svelte/store';
-import { CutDirection, LeadType } from '../types/direction';
-import { KerfCompensation } from '../types/kerf-compensation';
+import { CutDirection, LeadType } from '$lib/types/direction';
+import { KerfCompensation } from '$lib/types/kerf-compensation';
 
 // Mock the stores before importing the module under test
 vi.mock('./paths', () => ({

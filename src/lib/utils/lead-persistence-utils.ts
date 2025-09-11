@@ -6,24 +6,24 @@
  * using the offset shapes instead of the original chain geometry.
  */
 
-import type { Path, PathsState } from '../stores/paths';
-import type { Operation } from '../stores/operations';
+import type { Path, PathsState } from '$lib/stores/paths';
+import type { Operation } from '$lib/stores/operations';
 import type {
     DetectedPart,
     PartHole,
 } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '../algorithms/chain-detection/chain-detection';
-import type { Point2D } from '../types';
+import type { Point2D } from '$lib/types';
 import {
     calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
 } from '../algorithms/lead-calculation';
-import { LeadType } from '../types/direction';
+import { LeadType } from '$lib/types/direction';
 import { createLeadInConfig, createLeadOutConfig } from './lead-config-utils';
-import { pathStore } from '../stores/paths';
+import { pathStore } from '$lib/stores/paths';
 import { get } from 'svelte/store';
-import { chainStore, type ChainStore } from '../stores/chains';
+import { chainStore, type ChainStore } from '$lib/stores/chains';
 import { partStore, type PartStore } from '$lib/stores/parts';
 
 /**

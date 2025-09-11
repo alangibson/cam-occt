@@ -1,6 +1,6 @@
 import type { Chain } from '../chain-detection/chain-detection';
-import type { Polyline, Shape, Line, Point2D } from '../../types/geometry';
-import type { JoinColinearLinesParameters } from '../../types/algorithm-parameters';
+import type { Polyline, Shape, Line, Point2D } from '$lib/types/geometry';
+import type { JoinColinearLinesParameters } from '$lib/types/algorithm-parameters';
 import { TOLERANCE } from '$lib/geometry/math';
 
 /**

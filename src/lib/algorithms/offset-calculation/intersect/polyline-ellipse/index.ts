@@ -1,4 +1,4 @@
-import type { Shape } from '../../../../types/geometry';
+import type { Shape } from '$lib/types/geometry';
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { IntersectionResult } from '../../chain/types.ts';

@@ -1,7 +1,7 @@
 import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import type { Shape } from '../../types';
+import type { Shape } from '$lib/types';
 import { generateId } from '../../utils/id';
 import { detectShapeChains } from './chain-detection';
 

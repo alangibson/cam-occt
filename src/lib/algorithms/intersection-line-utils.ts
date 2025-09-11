@@ -1,4 +1,4 @@
-import type { Point2D, Line } from '../types/geometry';
+import type { Point2D, Line } from '$lib/types/geometry';
 import type { IntersectionResult } from './offset-calculation/chain/types';
 import { EPSILON } from '$lib/geometry/math';
 import { TOLERANCE_RELAXATION_MULTIPLIER } from '../geometry/constants';

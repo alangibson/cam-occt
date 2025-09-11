@@ -4,7 +4,7 @@ import { parseDXF } from '../../parsers/dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { polylineToVertices } from '$lib/geometry/polyline';
-import type { Polyline, PolylineVertex } from '../../types';
+import type { Polyline, PolylineVertex } from '$lib/types';
 
 describe('Chain Detection for Polylines with Bulges', () => {
     it('should correctly detect closed polylines with bulges as closed chains', async () => {

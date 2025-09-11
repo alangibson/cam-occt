@@ -1,4 +1,4 @@
-import type { Point2D, Line } from '../../../types/geometry';
+import type { Point2D, Line } from '$lib/types/geometry';
 import { EPSILON } from '../../../geometry/math/constants';
 import { calculateLineParameterForPoint } from '../../intersection-line-utils';
 

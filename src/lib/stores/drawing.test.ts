@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { drawingStore } from './drawing';
-import type { Drawing, Shape, Point2D, Line } from '../types';
+import type { Drawing, Shape, Point2D, Line } from '$lib/types';
 import { Unit } from '../utils/units';
 import { GeometryType } from '$lib/geometry/shape';
 

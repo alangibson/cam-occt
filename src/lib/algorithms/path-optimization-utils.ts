@@ -1,7 +1,7 @@
-import type { Path } from '../stores/paths';
+import type { Path } from '$lib/stores/paths';
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
-import type { Point2D, Shape } from '../types/geometry';
-import { GeometryType } from '../types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';

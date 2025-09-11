@@ -3,7 +3,7 @@ import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { SVGBuilder } from '../../../test/svg-builder';
-import { GeometryType, type Shape } from '../../../types/geometry';
+import { GeometryType, type Shape } from '$lib/types/geometry';
 import { findShapeIntersections } from '../intersect';
 import { offsetShape } from '../offset/index';
 import { OffsetDirection } from '../offset/types';

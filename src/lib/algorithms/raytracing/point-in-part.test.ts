@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { isPointInsidePart } from './point-in-chain';
-import type { Point2D } from '../../types';
+import type { Point2D } from '$lib/types';
 import { GeometryType } from '$lib/geometry/shape';
 
 describe('Part Selection - Point-in-Part Detection', () => {

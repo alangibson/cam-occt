@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import type { Polyline, Shape, Point2D } from '../../types/geometry';
-import { GeometryType } from '../../types/geometry';
+import type { Polyline, Shape, Point2D } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import type { Ray } from './types';
 import {
     countRayPolylineCrossings,

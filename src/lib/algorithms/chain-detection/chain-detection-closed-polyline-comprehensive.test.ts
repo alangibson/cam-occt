@@ -4,7 +4,7 @@ import { parseDXF } from '../../parsers/dxf-parser';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
-import type { Polyline } from '../../types/geometry';
+import type { Polyline } from '$lib/types/geometry';
 
 describe('Comprehensive Closed Polyline with Bulges Test', () => {
     it('should correctly handle closed polylines with bulges end-to-end', async () => {
