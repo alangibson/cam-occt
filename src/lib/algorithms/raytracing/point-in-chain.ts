@@ -6,12 +6,12 @@
  */
 
 import type {
-    Shape,
-    Point2D,
-    Polyline,
-    Line,
     Arc,
     Circle,
+    Line,
+    Point2D,
+    Polyline,
+    Shape,
 } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/types/geometry';
@@ -22,17 +22,17 @@ import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import { createHorizontalRay } from './utils';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import {
-    countRayLineCrossings,
     countHorizontalRayLineCrossings,
+    countRayLineCrossings,
 } from './ray-line';
 import {
-    countRayArcCrossings,
     countHorizontalRayArcCrossings,
+    countRayArcCrossings,
 } from './ray-arc';
 import { countRayCircleCrossings } from './ray-circle';
 import {
-    countRaySplineCrossings,
     countHorizontalRaySplineCrossings,
+    countRaySplineCrossings,
 } from './ray-spline';
 
 /**

@@ -4,10 +4,10 @@ import {
     polylineToPoints,
 } from '$lib/geometry/polyline';
 import {
-    GeometryType,
     type Arc,
     type Circle,
     type Ellipse,
+    GeometryType,
     type Line,
     type Point2D,
     type Polyline,

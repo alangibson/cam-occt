@@ -1,5 +1,5 @@
 import verb from 'verb-nurbs';
-import type { Point2D, Line, Circle, Ellipse, Polyline } from '$lib/types';
+import type { Circle, Ellipse, Line, Point2D, Polyline } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import type { VerbCurve } from 'verb-nurbs';
@@ -8,8 +8,10 @@ import { tessellateEllipse } from '$lib/geometry/ellipse/index';
 import type { Shape } from '../algorithms/offset-calculation/chain/types';
 import { tessellateVerbCurve } from '../algorithms/offset-calculation/offset/spline/spline';
 import { EPSILON } from '$lib/geometry/math';
-import { getShapeEndPoint } from '$lib/geometry/shape/functions';
-import { getShapeStartPoint } from '$lib/geometry/shape/functions';
+import {
+    getShapeEndPoint,
+    getShapeStartPoint,
+} from '$lib/geometry/shape/functions';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { calculateArcPoint, isArc } from '$lib/geometry/arc';
 import {

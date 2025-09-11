@@ -67,7 +67,13 @@ export default [
       "prefer-const": "warn",
       "@typescript-eslint/no-inferrable-types": 0,
       "import/no-relative-packages": "error",
+      "import/no-unresolved": "error",
+      "import/no-duplicates": "error",
+      "import/first": "error",
+      "import/newline-after-import": "error",
+      "import/no-unused-modules": "warn",
       "prettier/prettier": ["error", {}, { "usePrettierrc": true }],
+      "sort-imports": "off",
       "no-magic-numbers": ["error", {
         "ignore": [0, 1, 2],
         "ignoreArrayIndexes": true,

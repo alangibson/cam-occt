@@ -1,19 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { EPSILON } from '$lib/geometry/math';
 import { findLineLineIntersections } from '../intersect/line-line/index';
 import { findLineArcIntersections } from '../intersect/line-arc/index';
 import { findArcArcIntersections } from '../intersect/arc-arc/index';
 import {
-    findShapeIntersections,
     clusterIntersections,
+    findShapeIntersections,
 } from '../intersect/index';
 import type { Arc } from '../../../geometry/arc';
 import {
-    GeometryType,
-    type Shape,
-    type Line,
     type Circle,
+    GeometryType,
+    type Line,
     type Point2D,
+    type Shape,
 } from '$lib/types/geometry';
 import type { IntersectionResult } from './types';
 import { generateId } from '$lib/domain/id';

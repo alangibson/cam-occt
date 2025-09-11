@@ -3,7 +3,7 @@
  * Testing the mathematical correctness of ellipse parametric equations
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/types';
 
 interface Ellipse {

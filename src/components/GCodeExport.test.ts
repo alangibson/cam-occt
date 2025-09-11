@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { generateToolPaths } from '$lib/cam/path-generator';
 import { generateGCode } from '$lib/cam/gcode-generator';
 import { GeometryType } from '$lib/geometry/shape';

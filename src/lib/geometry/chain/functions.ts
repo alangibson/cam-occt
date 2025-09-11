@@ -9,10 +9,11 @@ import {
     getShapeStartPoint,
     reverseShape,
     tessellateShape,
+    getShapePoints2,
 } from '$lib/geometry/shape/functions';
 import {
-    calculatePerimeter,
     GEOMETRIC_PRECISION_TOLERANCE,
+    calculatePerimeter,
 } from '$lib/geometry/math';
 import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
 import { WindingDirection } from './enums';
@@ -21,7 +22,7 @@ import {
     calculateDistanceBetweenPoints,
     roundToDecimalPlaces,
 } from '../math/functions';
-import { GeometryFactory, Coordinate } from 'jsts/org/locationtech/jts/geom';
+import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
 import { AREA_RATIO_THRESHOLD } from '$lib/algorithms/constants';
 import { calculateChainBoundingBox } from '../bounding-box/functions';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
@@ -33,7 +34,6 @@ import {
     isPolygonContained,
     removeDuplicatePoints,
 } from '../polygon/functions';
-import { getShapePoints2 } from '../shape/functions';
 // import { getShapePoints3 } from '../shape/functions';
 
 /**

@@ -2,16 +2,16 @@
  * Tests for state persistence utilities
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-    saveState,
-    loadState,
-    clearPersistedState,
-    hasPersistedState,
-    getPersistedStateSize,
     type PersistedState,
+    clearPersistedState,
+    getPersistedStateSize,
+    hasPersistedState,
+    loadState,
+    saveState,
 } from './state-persistence';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { Unit } from './units';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { WorkflowStage } from '$lib/stores/workflow';

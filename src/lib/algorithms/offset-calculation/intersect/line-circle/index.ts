@@ -3,9 +3,9 @@ import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
 import type { IntersectionResult } from '../../chain/types';
 import {
+    type SegmentPosition,
     findLineArcIntersections,
     findLineArcIntersectionsSegmentAware,
-    type SegmentPosition,
 } from '../line-arc/index';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 

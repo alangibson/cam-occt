@@ -7,17 +7,17 @@
  */
 
 import type {
-    Drawing,
-    Shape,
-    Line,
     Circle,
-    Polyline,
+    Drawing,
+    Line,
     Point2D,
+    Polyline,
     PolylineVertex,
+    Shape,
 } from '$lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types';
-import { polylineToVertices, polylineToPoints } from '$lib/geometry/polyline';
+import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
 import { DUPLICATE_FILTERING_TOLERANCE } from '../constants';
 
 export interface LayerSquashingOptions {

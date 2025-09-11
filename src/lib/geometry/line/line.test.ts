@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    getLineStartPoint,
     getLineEndPoint,
-    reverseLine,
     getLinePointAt,
+    getLineStartPoint,
     isLine,
+    reverseLine,
 } from './functions';
 import type { Line } from './interfaces';
 import type { Geometry } from '$lib/types/geometry';

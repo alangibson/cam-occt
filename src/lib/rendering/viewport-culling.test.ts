@@ -1,14 +1,14 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
+    type ShapeBounds,
+    type ViewportBounds,
     calculateShapeBounds,
-    isShapeInViewport,
     calculateViewportBounds,
     cullShapesToViewport,
-    type ViewportBounds,
-    type ShapeBounds,
+    isShapeInViewport,
 } from './viewport-culling';
 import { GeometryType } from '$lib/types/geometry';
-import type { Shape, Line } from '$lib/types/geometry';
+import type { Line, Shape } from '$lib/types/geometry';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 import type { Circle } from '$lib/geometry/circle';
 import { getBoundingBoxForShape } from '$lib/geometry/bounding-box';

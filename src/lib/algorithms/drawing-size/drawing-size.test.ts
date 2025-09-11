@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { calculateDrawingSize } from './drawing-size';
 import type { Drawing } from '$lib/types';
 import { Unit } from '../../utils/units';

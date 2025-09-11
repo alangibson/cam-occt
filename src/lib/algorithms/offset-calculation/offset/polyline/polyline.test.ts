@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { offsetPolyline } from './polyline';
 import type {
-    Polyline,
-    Point2D,
-    Drawing,
-    Shape,
-    Line,
     Arc,
     Circle,
+    Drawing,
+    Line,
+    Point2D,
+    Polyline,
+    Shape,
 } from '$lib/types/geometry';
 import {
     createPolylineFromVertices,

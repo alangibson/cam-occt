@@ -1,17 +1,17 @@
 import type { Path } from '$lib/stores/paths';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
-    GeometryType,
     type Arc,
+    GeometryType,
     type Line,
     type Point2D,
     type Shape,
 } from '$lib/types/geometry';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import {
-    calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
+    calculateLeads,
 } from '../leads/lead-calculation';
 import {
     createLeadInConfig,

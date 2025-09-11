@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import type { Ellipse } from '$lib/types';
 

@@ -1,8 +1,8 @@
 import { writable } from 'svelte/store';
 import {
     type Drawing,
-    type Shape,
     type Point2D,
+    type Shape,
     WorkflowStage,
 } from '$lib/types';
 import { Unit } from '../utils/units';

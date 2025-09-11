@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { Path } from '$lib/stores/paths';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
 import type { Line } from '$lib/geometry/line';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { GeometryType } from '$lib/geometry/shape';
 
 describe('SimulateStage offset path detection', () => {

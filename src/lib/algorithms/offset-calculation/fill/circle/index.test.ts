@@ -1,7 +1,7 @@
 import type { Arc } from '../../../../geometry/arc';
 import {
-    GeometryType,
     type Circle,
+    GeometryType,
     type Point2D,
     type Shape,
 } from '$lib/types/geometry';

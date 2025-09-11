@@ -15,16 +15,16 @@ import type {
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
 import {
-    calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
+    calculateLeads,
 } from '../algorithms/leads/lead-calculation';
 import { LeadType } from '$lib/types/direction';
 import { createLeadInConfig, createLeadOutConfig } from './lead-config-utils';
 import { pathStore } from '$lib/stores/paths';
 import { get } from 'svelte/store';
-import { chainStore, type ChainStore } from '$lib/stores/chains';
-import { partStore, type PartStore } from '$lib/stores/parts';
+import { type ChainStore, chainStore } from '$lib/stores/chains';
+import { type PartStore, partStore } from '$lib/stores/parts';
 
 /**
  * Calculate and store lead geometry for a path

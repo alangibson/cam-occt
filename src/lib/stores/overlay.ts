@@ -6,18 +6,18 @@
 import { writable } from 'svelte/store';
 import { WorkflowStage } from './workflow';
 import type {
-    Point2D,
-    Shape,
-    Line,
     Circle,
-    Polyline,
     Ellipse,
+    Line,
+    Point2D,
+    Polyline,
+    Shape,
 } from '$lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';

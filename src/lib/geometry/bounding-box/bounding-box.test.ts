@@ -1,26 +1,26 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    getBoundingBoxForLine,
-    getBoundingBoxForCircle,
-    getBoundingBoxForArc,
-    getBoundingBoxForPolyline,
-    getBoundingBoxForEllipse,
-    getBoundingBoxForSpline,
-    getBoundingBoxForShape,
-    combineBoundingBoxes,
-    getBoundingBoxForShapes,
     calculateDynamicTolerance,
+    combineBoundingBoxes,
+    getBoundingBoxForArc,
+    getBoundingBoxForCircle,
+    getBoundingBoxForEllipse,
+    getBoundingBoxForLine,
+    getBoundingBoxForPolyline,
+    getBoundingBoxForShape,
+    getBoundingBoxForShapes,
+    getBoundingBoxForSpline,
 } from './functions';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { GeometryType } from '$lib/geometry/shape';
 import type {
-    Line,
     Circle,
-    Polyline,
     Ellipse,
-    Shape,
-    Point2D,
     Geometry,
+    Line,
+    Point2D,
+    Polyline,
+    Shape,
 } from '$lib/types/geometry';
 import type { BoundingBox } from './interfaces';
 import type { Arc } from '$lib/geometry/arc';

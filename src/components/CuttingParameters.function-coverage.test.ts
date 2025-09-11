@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
-import { render, fireEvent } from '@testing-library/svelte';
+import { describe, expect, it } from 'vitest';
+import { fireEvent, render } from '@testing-library/svelte';
 import CuttingParameters from './CuttingParameters.svelte';
 import type { CuttingParameters as CuttingParametersType } from '$lib/types';
 

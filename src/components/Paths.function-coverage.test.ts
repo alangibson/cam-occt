@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { render, fireEvent } from '@testing-library/svelte';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Paths from './Paths.svelte';
-import { pathStore, selectPath, highlightPath } from '$lib/stores/paths';
+import { highlightPath, pathStore, selectPath } from '$lib/stores/paths';
 import { operationsStore } from '$lib/stores/operations';
 import { toolStore } from '$lib/stores/tools';
 import { CutDirection, LeadType } from '$lib/types/direction';

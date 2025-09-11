@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf-parser';
@@ -7,8 +7,8 @@ import { type Chain } from '$lib/geometry/chain/interfaces';
 import { normalizeChain } from '../chain-normalization/chain-normalization';
 import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 
 describe('Chain-7 vs Chain-13 Identical Letter T Comparison', () => {

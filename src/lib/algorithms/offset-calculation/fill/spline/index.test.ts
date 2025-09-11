@@ -4,9 +4,9 @@ import type { Spline } from '$lib/geometry/spline';
 import type { FillOptions, FillResult } from '../types';
 import { fillSplineToIntersection } from './index';
 import {
-    extendSplineToPoint,
-    determineSplineExtensionDirection,
     calculateSplineExtension,
+    determineSplineExtensionDirection,
+    extendSplineToPoint,
     getSplinePoint,
 } from '../../extend/spline';
 

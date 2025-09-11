@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-    GeometryType,
     type Arc,
+    GeometryType,
     type Polyline,
     type Shape,
 } from '$lib/types/geometry';

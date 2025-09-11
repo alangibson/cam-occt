@@ -1,13 +1,13 @@
 import { parseString } from 'dxf';
 import type {
-    Drawing,
-    Shape,
-    Point2D,
-    PolylineVertex,
-    Polyline,
-    Line,
     Circle,
+    Drawing,
     Ellipse,
+    Line,
+    Point2D,
+    Polyline,
+    PolylineVertex,
+    Shape,
 } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
@@ -15,17 +15,17 @@ import { GeometryType } from '$lib/types/geometry';
 import { Unit } from '../utils/units';
 import { generateId } from '$lib/domain/id';
 import {
-    generateSegments,
     MIN_VERTICES_FOR_POLYLINE,
+    generateSegments,
 } from '$lib/geometry/polyline';
-import { normalizeSplineWeights } from '$lib/geometry/spline';
-import { getShapePointsForBounds } from '$lib/geometry/bounding-box/functions';
-import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
-import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
+    normalizeSplineWeights,
     DEFAULT_SPLINE_DEGREE,
     MIN_CONTROL_POINTS_FOR_SPLINE,
 } from '$lib/geometry/spline';
+import { getShapePointsForBounds } from '$lib/geometry/bounding-box/functions';
+import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
+import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
 
 // DXF INSUNITS constants

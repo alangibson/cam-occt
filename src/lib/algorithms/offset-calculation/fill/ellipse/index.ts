@@ -1,9 +1,9 @@
-import type { Shape, Point2D, Ellipse } from '$lib/types/geometry';
+import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
 import type { FillOptions, FillResult } from '../types';
 import type { OperationParams } from '../../shared/fill-extend-ops';
 import {
-    processEllipseOperation,
     getEllipsePoint,
+    processEllipseOperation,
     processFillExtendResult,
 } from '../../shared/fill-extend-ops';
 

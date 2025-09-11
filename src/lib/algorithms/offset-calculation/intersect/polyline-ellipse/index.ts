@@ -5,8 +5,8 @@ import type { IntersectionResult } from '../../chain/types.ts';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs.js';
 import verb from 'verb-nurbs';
 import {
-    processPolylineSegments,
     handleClosedPolylineIntersection,
+    processPolylineSegments,
 } from '../intersection-polyline-utils.js';
 
 /**

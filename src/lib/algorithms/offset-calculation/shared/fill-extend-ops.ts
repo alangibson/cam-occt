@@ -1,19 +1,19 @@
 import { GeometryType } from '$lib/types/geometry';
 import type {
-    Point2D,
+    Arc,
     Circle,
     Ellipse,
-    Arc,
-    Shape,
     Line,
+    Point2D,
     Polyline,
+    Shape,
 } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { FillResult } from '../fill/types';
 import { EPSILON } from '../../../geometry/math/constants';
 import {
-    MICRO_TOLERANCE,
     DECIMAL_PRECISION,
+    MICRO_TOLERANCE,
     QUARTER_CIRCLE_QUADRANTS,
 } from '../../../geometry/constants';
 import { pointDistance } from '../trim';

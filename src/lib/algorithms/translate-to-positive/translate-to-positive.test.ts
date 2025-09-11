@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+    createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
-    createPolylineFromVertices,
 } from '$lib/geometry/polyline';
 import { GeometryType } from '$lib/types/geometry';
 import type { Shape } from '$lib/types';
-import type { Line, Circle, Arc, Polyline, Ellipse } from '$lib/types/geometry';
+import type { Arc, Circle, Ellipse, Line, Polyline } from '$lib/types/geometry';
 import { translateToPositiveQuadrant } from './translate-to-positive';
 
 describe('Translate to Positive Quadrant Algorithm', () => {

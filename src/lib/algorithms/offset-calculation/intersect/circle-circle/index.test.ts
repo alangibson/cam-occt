@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { findCircleCircleIntersections } from './index';
 import type { Circle } from '$lib/geometry/circle';
 

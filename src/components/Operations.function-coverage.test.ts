@@ -1,16 +1,16 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { render, fireEvent } from '@testing-library/svelte';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
 import { operationsStore } from '$lib/stores/operations';
 import { toolStore } from '$lib/stores/tools';
 import {
     chainStore,
-    clearChains,
     clearChainSelection,
+    clearChains,
 } from '$lib/stores/chains';
-import { partStore, clearParts, selectPart } from '$lib/stores/parts';
+import { clearParts, partStore, selectPart } from '$lib/stores/parts';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { PartShell } from '$lib/algorithms/part-detection/part-detection';

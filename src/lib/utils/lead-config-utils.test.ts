@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+    createLeadConfigs,
     createLeadInConfig,
     createLeadOutConfig,
-    createLeadConfigs,
 } from './lead-config-utils';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Path } from '$lib/stores/paths';
 
 // Helper function to create test path

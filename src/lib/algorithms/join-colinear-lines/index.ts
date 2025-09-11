@@ -1,5 +1,5 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Polyline, Shape, Line, Point2D } from '$lib/types/geometry';
+import type { Line, Point2D, Polyline, Shape } from '$lib/types/geometry';
 import type { JoinColinearLinesParameters } from '$lib/types/algorithm-parameters';
 import { TOLERANCE } from '$lib/geometry/math';
 

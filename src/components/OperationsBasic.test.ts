@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 // Direct function testing for Operations.svelte functions
 describe('Operations Component Basic Function Coverage', () => {

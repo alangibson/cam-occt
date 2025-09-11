@@ -2,17 +2,17 @@
  * Tests for lead persistence utilities
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-    calculateAndStorePathLeads,
-    hasValidCachedLeads,
-    getCachedLeadGeometry,
     calculateAndStoreOperationLeads,
+    calculateAndStorePathLeads,
+    getCachedLeadGeometry,
+    hasValidCachedLeads,
 } from './lead-persistence-utils';
 import type { Path } from '$lib/stores/paths';
 import type { Operation } from '$lib/stores/operations';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import { GeometryType } from '$lib/types/geometry';
 import { chainStore } from '$lib/stores/chains';

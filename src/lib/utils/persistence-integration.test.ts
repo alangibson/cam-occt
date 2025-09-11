@@ -2,16 +2,16 @@
  * Integration test for complete persistence system including lead geometry
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-    saveApplicationState,
     restoreApplicationState,
+    saveApplicationState,
 } from '$lib/stores/persistence';
 import { drawingStore } from '$lib/stores/drawing';
 import { pathStore } from '$lib/stores/paths';
-import { operationsStore, type Operation } from '$lib/stores/operations';
+import { type Operation, operationsStore } from '$lib/stores/operations';
 import { setChains } from '$lib/stores/chains';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { GeometryType } from '$lib/types/geometry';
 import type { PathsState } from '$lib/stores/paths';
 import { Unit } from './units';

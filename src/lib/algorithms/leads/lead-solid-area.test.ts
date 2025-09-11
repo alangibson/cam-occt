@@ -1,17 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
+    calculateLeads,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
-    PartType,
     type DetectedPart,
+    PartType,
 } from '$lib/algorithms/part-detection/part-detection';
 import { GeometryType } from '$lib/types/geometry';
-import type { Shape, Point2D } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 
 describe('Lead Solid Area Avoidance', () => {
     // Helper to create a rectangle chain

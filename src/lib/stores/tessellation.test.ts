@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
-import { tessellationStore, type TessellationPoint } from './tessellation';
+import { type TessellationPoint, tessellationStore } from './tessellation';
 
 describe('tessellationStore', () => {
     beforeEach(() => {

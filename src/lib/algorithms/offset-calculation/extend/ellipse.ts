@@ -2,12 +2,12 @@ import type { Point2D } from '$lib/types/geometry';
 import type { OperationParams } from '../shared/fill-extend-ops';
 import { MAX_EXTENSION } from '$lib/algorithms/constants';
 import {
+    calculateEllipseAngle,
+    createEllipticalArcFromEllipse,
+    determineEllipseExtension,
+    getEllipsePoint,
     processEllipseOperation,
     validateEllipseIntersectionPoint,
-    calculateEllipseAngle,
-    determineEllipseExtension,
-    createEllipticalArcFromEllipse,
-    getEllipsePoint,
 } from '../shared/fill-extend-ops';
 
 /**

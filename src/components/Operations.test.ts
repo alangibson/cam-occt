@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, fireEvent } from '@testing-library/svelte';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
 import { toolStore } from '$lib/stores/tools';

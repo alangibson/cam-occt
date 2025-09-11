@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { mkdirSync, writeFileSync } from 'fs';
 import { offsetEllipse } from './ellipse';
 import {
-    GeometryType,
-    type Shape,
     type Ellipse,
-    type Polyline,
+    GeometryType,
     type Point2D,
+    type Polyline,
+    type Shape,
 } from '$lib/types/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import verb from 'verb-nurbs';

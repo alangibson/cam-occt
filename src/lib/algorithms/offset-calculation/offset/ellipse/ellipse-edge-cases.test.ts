@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { offsetEllipse } from './ellipse';
 import type { Ellipse } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';

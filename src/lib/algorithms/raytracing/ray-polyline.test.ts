@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
-import type { Polyline, Shape, Point2D } from '$lib/types/geometry';
+import { describe, expect, it, vi } from 'vitest';
+import type { Point2D, Polyline, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import type { Ray } from './types';
 import {
+    countHorizontalRayPolylineCrossings,
     countRayPolylineCrossings,
     findRayPolylineIntersections,
-    countHorizontalRayPolylineCrossings,
 } from './ray-polyline';
 
 describe('Ray-Polyline Intersection', () => {

@@ -3,8 +3,8 @@ import type { Line } from '$lib/geometry/line';
 import { EPSILON } from '$lib/geometry/math';
 import { MAX_EXTENSION } from '../../constants';
 import {
-    pointDistance,
     calculateLineParameter,
+    pointDistance,
 } from '../shared/trim-extend-utils';
 import { calculateLineDirectionAndLength } from '../../../geometry/line';
 

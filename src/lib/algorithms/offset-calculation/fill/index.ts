@@ -1,18 +1,18 @@
-import type { Shape, Point2D } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import type {
     FillOptions,
     FillResult,
-    GapContext,
     FillStrategy,
+    GapContext,
     ShapeExtension,
 } from './types';
 import { MAX_EXTENSION } from '$lib/algorithms/constants';
 import { findShapeIntersections } from '../intersect';
 import { pointDistance } from '../trim';
 import {
-    HIGH_PRECISION_TOLERANCE,
     CONFIDENCE_THRESHOLD,
+    HIGH_PRECISION_TOLERANCE,
     TOLERANCE_SNAP_MULTIPLIER,
 } from '../../../geometry/constants';
 import { fillLineToIntersection } from './line';

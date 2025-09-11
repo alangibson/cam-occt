@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Arc } from '../../../geometry/arc';
 import type {
-    Shape,
-    Point2D,
-    Line,
     Circle,
-    Polyline,
     Ellipse,
+    Line,
+    Point2D,
+    Polyline,
+    Shape,
 } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/types/geometry';

@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/svelte';
 import DrawingCanvas from './DrawingCanvas.svelte';
 import { drawingStore } from '$lib/stores/drawing';
 import { Unit } from '$lib/utils/units';
 import { WorkflowStage } from '$lib/stores/workflow';
-import type { Shape, Drawing } from '$lib/types';
+import type { Drawing, Shape } from '$lib/types';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import { GeometryType } from '$lib/geometry/shape';
 

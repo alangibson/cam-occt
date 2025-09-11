@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import {
-    pathStore,
-    selectPath,
-    highlightPath,
-    clearPathHighlight,
     type Path,
     type PathsState,
+    clearPathHighlight,
+    highlightPath,
+    pathStore,
+    selectPath,
 } from './paths';
-import { workflowStore, WorkflowStage } from './workflow';
+import { WorkflowStage, workflowStore } from './workflow';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import type { Point2D, Shape } from '$lib/types';

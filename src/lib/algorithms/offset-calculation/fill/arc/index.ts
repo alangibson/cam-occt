@@ -1,11 +1,11 @@
 import type { Arc } from '../../../../geometry/arc';
-import type { Shape, Point2D } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 import type { FillOptions, FillResult, ShapeExtension } from '../types';
 import {
-    extendArcToPoint,
-    calculateArcExtension,
-    getArcEndpoint,
     type ArcExtensionResult,
+    calculateArcExtension,
+    extendArcToPoint,
+    getArcEndpoint,
 } from '../../extend/arc';
 import { pointDistance } from '../../trim';
 import {
@@ -14,8 +14,8 @@ import {
 } from '../../extend/arc-operations-utils';
 import { calculateIntersectionAngle } from '$lib/geometry/arc/functions';
 import {
-    HIGH_PRECISION_TOLERANCE,
     CONFIDENCE_HIGH_THRESHOLD,
+    HIGH_PRECISION_TOLERANCE,
 } from '$lib/geometry/constants';
 
 /**

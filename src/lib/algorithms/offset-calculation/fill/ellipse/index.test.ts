@@ -1,6 +1,6 @@
 import {
-    GeometryType,
     type Ellipse,
+    GeometryType,
     type Point2D,
     type Shape,
 } from '$lib/types/geometry';

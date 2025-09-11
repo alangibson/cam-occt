@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+    countHorizontalRayLineCrossings,
     countRayLineCrossings,
     findRayLineIntersections,
-    countHorizontalRayLineCrossings,
 } from './ray-line';
 import type { Line, Point2D } from '$lib/types/geometry';
 import type { Ray, RayTracingConfig } from './types';

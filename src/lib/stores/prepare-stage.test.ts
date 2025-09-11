@@ -2,7 +2,7 @@
  * Tests for Prepare Stage Store
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { prepareStageStore } from './prepare-stage';
 import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';

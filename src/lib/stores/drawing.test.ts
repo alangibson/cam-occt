@@ -1,13 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { drawingStore } from './drawing';
-import type { Drawing, Shape, Point2D, Line } from '$lib/types';
+import type { Drawing, Line, Point2D, Shape } from '$lib/types';
 import { Unit } from '../utils/units';
 import { GeometryType } from '$lib/geometry/shape';
 import { overlayStore } from './overlay';
 import { pathStore } from './paths';
 import { operationsStore } from './operations';
-import { workflowStore, WorkflowStage } from './workflow';
+import { WorkflowStage, workflowStore } from './workflow';
 
 // Mock dependent modules
 vi.mock('./chains', () => ({

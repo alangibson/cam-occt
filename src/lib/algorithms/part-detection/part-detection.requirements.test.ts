@@ -13,17 +13,17 @@
  * - Detect parts
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { detectParts, type PartHole } from './part-detection';
+import { type PartHole, detectParts } from './part-detection';
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 
 describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {

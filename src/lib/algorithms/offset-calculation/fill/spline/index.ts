@@ -1,12 +1,12 @@
-import type { Shape, Point2D } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { FillOptions, FillResult, ShapeExtension } from '../types';
 import {
-    extendSplineToPoint,
-    determineSplineExtensionDirection,
-    calculateSplineExtension,
-    getSplinePoint,
     type SplineExtensionResult,
+    calculateSplineExtension,
+    determineSplineExtensionDirection,
+    extendSplineToPoint,
+    getSplinePoint,
 } from '../../extend/spline';
 import {
     CONFIDENCE_HIGH_THRESHOLD,

@@ -1,13 +1,13 @@
 import { EPSILON } from '$lib/geometry/math/constants';
-import type { Shape, Point2D, Line } from '$lib/types/geometry';
+import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';
 import { calculateLineParameter } from '../../shared/trim-extend-utils';
 import { type KeepSide, type TrimResult } from '../types';
 import {
-    TOLERANCE_RELAXATION_MULTIPLIER,
     DEFAULT_ARRAY_NOT_FOUND_INDEX,
+    TOLERANCE_RELAXATION_MULTIPLIER,
 } from '../../../../geometry/constants';
 import { MIN_CONTROL_POINTS_FOR_SPLINE } from '$lib/geometry/spline';
 

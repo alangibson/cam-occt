@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
     generateUniformKnotVector,
     generateValidKnotVector,
-    validateKnotVector,
     repairKnotVector,
+    validateKnotVector,
 } from '$lib/geometry/spline';
 
 describe('nurbs-utils', () => {

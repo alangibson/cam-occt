@@ -1,5 +1,5 @@
 import { describe, it } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline, splitVerbCurve, tessellateVerbCurve } from './spline';
 import { OffsetDirection } from '../types';

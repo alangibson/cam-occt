@@ -9,10 +9,10 @@ import {
 } from '$lib/geometry/polyline';
 import { SVGBuilder } from '../../../test/svg-builder';
 import {
-    GeometryType,
     type Arc,
     type Circle,
     type Ellipse,
+    GeometryType,
     type Line,
     type Point2D,
     type Polyline,

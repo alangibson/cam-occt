@@ -1,10 +1,10 @@
 import {
-    type Shape,
-    type Polyline,
-    type Line,
     type Arc,
     type Circle,
     GeometryType,
+    type Line,
+    type Polyline,
+    type Shape,
 } from '$lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import type { SegmentPosition } from '../line-arc/index';

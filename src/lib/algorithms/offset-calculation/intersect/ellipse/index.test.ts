@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
-    GeometryType,
     type Arc,
     type Circle,
     type Ellipse,
+    GeometryType,
     type Line,
     type Polyline,
     type Shape,

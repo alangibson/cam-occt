@@ -12,7 +12,7 @@ import type {
     PartDetectionWarning,
 } from '$lib/algorithms/part-detection/part-detection';
 import type { Rapid } from '../algorithms/optimize-cut-order/optimize-cut-order';
-import type { TessellationPoint, DrawingOverlay } from '$lib/stores/overlay';
+import type { DrawingOverlay, TessellationPoint } from '$lib/stores/overlay';
 import type { LeadWarning } from '$lib/stores/lead-warnings';
 import type { PrepareStageState } from '$lib/stores/prepare-stage';
 import type { Operation } from '$lib/stores/operations';

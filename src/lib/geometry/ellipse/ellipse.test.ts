@@ -1,12 +1,12 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
-    getEllipseStartPoint,
     getEllipseEndPoint,
-    reverseEllipse,
     getEllipsePointAt,
     getEllipseRadiusX,
     getEllipseRadiusY,
     getEllipseRotation,
+    getEllipseStartPoint,
+    reverseEllipse,
 } from './functions';
 import type { Ellipse } from './interfaces';
 

@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types/geometry';
-import type { ChainOffsetResult, ChainOffsetParameters } from './types';
+import type { ChainOffsetParameters, ChainOffsetResult } from './types';
 import { offsetChain } from './offset';
 import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from './types';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';

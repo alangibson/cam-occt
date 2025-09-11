@@ -1,26 +1,23 @@
 import type {
-    Shape,
-    Point2D,
-    Line,
     Arc,
     Circle,
+    Line,
+    Point2D,
     Polyline,
+    Shape,
 } from '$lib/types/geometry';
 import type { IntersectionResult } from '../chain/types';
 import { EPSILON } from '../../../geometry/math/constants';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import { pointDistance } from '../shared/trim-extend-utils';
 import {
-    MAX_ITERATIONS,
-    CONFIDENCE_THRESHOLD,
     CONFIDENCE_HIGH_THRESHOLD,
+    CONFIDENCE_THRESHOLD,
+    MAX_ITERATIONS,
 } from '../../../geometry/constants';
-
-// Re-export shared utility for backward compatibility
-export { pointDistance } from '../shared/trim-extend-utils';
 
 // Import intersection functions from dedicated modules and chain module
 import { findLineLineIntersections } from './line-line/index';
@@ -61,6 +58,9 @@ import { findEllipseArcIntersectionsVerb } from './arc-ellipse/index';
 
 // Import spline-polyline intersection from dedicated module
 import { findSplinePolylineIntersectionsVerb } from './polyline-spline/index';
+
+// Re-export shared utility for backward compatibility
+export { pointDistance } from '../shared/trim-extend-utils';
 
 /**
  * Intersection Detection Module

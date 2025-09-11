@@ -1,9 +1,9 @@
 import {
-    type Shape,
-    type Polyline,
-    type Line,
     type Arc,
     GeometryType,
+    type Line,
+    type Polyline,
+    type Shape,
 } from '$lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
 import type { IntersectionType } from '../index';

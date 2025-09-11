@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import { offsetChain } from './offset';

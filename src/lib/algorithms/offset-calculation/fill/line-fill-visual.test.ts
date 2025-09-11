@@ -2,8 +2,8 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
-    GeometryType,
     type Ellipse,
+    GeometryType,
     type Line,
     type Shape,
 } from '$lib/types/geometry';

@@ -1,19 +1,19 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import verb from 'verb-nurbs';
-import type { Point2D, Line } from '$lib/types/geometry';
+import type { Line, Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Circle } from '$lib/geometry/circle';
 import {
-    calculateSplineStartTangent,
-    calculateSplineEndTangent,
-    calculateSplineExtensionLength,
-    createExtendedSplineVerb,
-    analyzeParameterLocation,
-    extendSplineToPoint,
-    determineSplineExtensionDirection,
-    calculateSplineExtension,
-    getSplinePoint,
     type SplineExtensionOptions,
+    analyzeParameterLocation,
+    calculateSplineEndTangent,
+    calculateSplineExtension,
+    calculateSplineExtensionLength,
+    calculateSplineStartTangent,
+    createExtendedSplineVerb,
+    determineSplineExtensionDirection,
+    extendSplineToPoint,
+    getSplinePoint,
 } from './spline';
 
 // Mock verb-nurbs

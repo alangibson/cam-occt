@@ -1,10 +1,14 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types/geometry';
 import { CutDirection } from '$lib/types/direction';
-import { getShapeEndPoint } from '$lib/geometry/shape/functions';
-import { getShapeStartPoint } from '$lib/geometry/shape/functions';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
+import {
+    getShapeEndPoint,
+    getShapeStartPoint,
+} from '$lib/geometry/shape/functions';
+import {
+    CHAIN_CLOSURE_TOLERANCE,
+    POLYGON_POINTS_MIN,
+} from '$lib/geometry/chain';
 import { getChainPoints } from '$lib/geometry/chain/functions';
 import { isPointsClosed } from '$lib/geometry/point/functions';
 import { calculateSignedArea } from '$lib/geometry/polygon/functions';

@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import { parseDXF } from './dxf-parser';
 import { decomposePolylines } from '../algorithms/decompose-polylines/decompose-polylines';
 import {
-    polylineToVertices,
     type PolylineVertex,
+    polylineToVertices,
 } from '$lib/geometry/polyline';
 import { readFileSync } from 'fs';
 import path from 'path';

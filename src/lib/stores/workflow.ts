@@ -3,7 +3,7 @@
  * Manages the 6-stage workflow: Import → Edit → Prepare → Program → Simulate → Export
  */
 
-import { writable, type Writable } from 'svelte/store';
+import { type Writable, writable } from 'svelte/store';
 
 export enum WorkflowStage {
     IMPORT = 'import',

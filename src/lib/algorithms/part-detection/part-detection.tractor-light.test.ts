@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';

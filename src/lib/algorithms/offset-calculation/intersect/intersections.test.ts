@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { EPSILON } from '../../../geometry/math/constants';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import {
-    GeometryType,
     type Arc,
+    GeometryType,
     type Line,
     type Point2D,
     type Shape,

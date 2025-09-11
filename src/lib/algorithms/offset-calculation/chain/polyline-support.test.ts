@@ -1,16 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { parseDXF } from '../../../parsers/dxf-parser';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { offsetChain } from './offset';
 import { scaleShape } from '$lib/geometry/shape/functions';
-import { getPhysicalScaleFactor, Unit } from '../../../utils/units';
+import { Unit, getPhysicalScaleFactor } from '../../../utils/units';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
 import {
+    type Drawing,
     GeometryType,
     type Polyline,
     type Shape,
-    type Drawing,
 } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';

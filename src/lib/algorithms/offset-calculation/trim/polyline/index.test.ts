@@ -1,12 +1,12 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GeometryType, type Shape, type Polyline } from '$lib/types/geometry';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { GeometryType, type Polyline, type Shape } from '$lib/types/geometry';
 import { trimPolyline } from './index';
 import { type KeepSide } from '../types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import type { PolylineVertex } from '$lib/types';
 import {
-    polylineToPoints,
     createPolylineFromVertices,
+    polylineToPoints,
     polylineToVertices,
 } from '$lib/geometry/polyline';
 import { calculateLineParameter } from '../../shared/trim-extend-utils';

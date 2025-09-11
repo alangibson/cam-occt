@@ -1,9 +1,9 @@
 import {
-    selectChain,
-    highlightChain,
     clearChainHighlight,
+    highlightChain,
+    selectChain,
 } from '$lib/stores/chains';
-import { selectPart, hoverPart, clearPartHover } from '$lib/stores/parts';
+import { clearPartHover, hoverPart, selectPart } from '$lib/stores/parts';
 import type {
     DetectedPart,
     PartHole,

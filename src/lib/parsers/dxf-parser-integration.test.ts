@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { readFileSync } from 'fs';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
 import {
-    polylineToVertices,
     type PolylineVertex,
+    polylineToVertices,
 } from '$lib/geometry/polyline';
-import type { Polyline, Ellipse } from '$lib/types/geometry';
+import type { Ellipse, Polyline } from '$lib/types/geometry';
 
 describe('DXF Parser - Integration Tests', () => {
     describe('Whitespace handling', () => {

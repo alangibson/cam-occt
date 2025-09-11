@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import {
+    clearRapidHighlight,
+    highlightRapid,
     rapidStore,
     selectRapid,
-    highlightRapid,
-    clearRapidHighlight,
 } from './rapids';
 import type { Rapid } from '../algorithms/optimize-cut-order/optimize-cut-order';
 

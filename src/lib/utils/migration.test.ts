@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { migrateLegacyData, hasLegacyData } from './migration.js';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { hasLegacyData, migrateLegacyData } from './migration.js';
 
 describe('migration utilities', () => {
     const mockLocalStorage = {

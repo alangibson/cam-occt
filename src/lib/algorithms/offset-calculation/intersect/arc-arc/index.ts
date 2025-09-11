@@ -1,16 +1,15 @@
 import type { Arc } from '../../../../geometry/arc';
 import type { Point2D } from '$lib/types/geometry';
 import type { IntersectionResult } from '../../chain/types';
-import { EPSILON } from '$lib/geometry/math';
+import { EPSILON, calculateSquaredDistance } from '$lib/geometry/math';
 import {
-    isPointOnArc,
     calculateArcParameter,
+    isPointOnArc,
 } from '$lib/geometry/arc/functions';
 import {
     createExtendedArc,
     isIntersectionOnArcExtension,
 } from '../../extend/arc';
-import { calculateSquaredDistance } from '$lib/geometry/math';
 import { removeDuplicateIntersections } from '../intersection-base';
 import { MAX_ITERATIONS } from '../../../../geometry/constants';
 

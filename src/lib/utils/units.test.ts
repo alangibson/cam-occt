@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    getPixelsPerUnit,
-    convertUnits,
-    getPhysicalScaleFactor,
-    formatValue,
-    getUnitSymbol,
     Unit,
+    convertUnits,
+    formatValue,
+    getPhysicalScaleFactor,
+    getPixelsPerUnit,
+    getUnitSymbol,
 } from './units';
 
 describe('Units utilities', () => {

@@ -1,12 +1,12 @@
 import type { OperationParams } from '../shared/fill-extend-ops';
 import { MAX_EXTENSION } from '$lib/algorithms/constants';
 import {
+    calculateCircleAngle,
+    createArcFromCircle,
+    determineCircleExtension,
+    getCirclePoint,
     processCircleOperation,
     validateCircleIntersectionPoint,
-    calculateCircleAngle,
-    determineCircleExtension,
-    createArcFromCircle,
-    getCirclePoint,
 } from '../shared/fill-extend-ops';
 import type { Point2D } from '$lib/types/geometry';
 import type { Circle } from '$lib/geometry/circle';

@@ -5,13 +5,13 @@
  * automatically adjust their length to avoid solid areas.
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
+    calculateLeads,
 } from './lead-calculation';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';

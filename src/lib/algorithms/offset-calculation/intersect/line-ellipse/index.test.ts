@@ -1,6 +1,6 @@
 import {
-    GeometryType,
     type Ellipse,
+    GeometryType,
     type Line,
     type Point2D,
     type Shape,

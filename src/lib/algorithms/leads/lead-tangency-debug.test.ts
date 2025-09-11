@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
+    calculateLeads,
 } from './lead-calculation';
 import { LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';

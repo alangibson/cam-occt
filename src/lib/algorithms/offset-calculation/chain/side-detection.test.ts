@@ -1,16 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
     detectChainSide,
-    isPointInsideChain,
     determineChainOrientation,
+    isPointInsideChain,
 } from './side-detection';
 import { GeometryType, type Shape } from '$lib/types/geometry';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { normalizeChain } from '../../chain-normalization/chain-normalization';
 import { generateId } from '$lib/domain/id';
 import {
-    getShapeNormal,
     getShapeMidpoint,
+    getShapeNormal,
 } from '$lib/geometry/shape/functions';
 
 describe('side-detection', () => {

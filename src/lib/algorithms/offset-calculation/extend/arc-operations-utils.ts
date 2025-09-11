@@ -1,7 +1,7 @@
 import type { Arc } from '$lib/geometry/arc';
 import {
-    determineArcExtensionDirection as _determineArcExtensionDirection,
     type ArcExtensionOptions,
+    determineArcExtensionDirection as _determineArcExtensionDirection,
 } from './arc';
 import type { FillOptions } from '../fill/types';
 

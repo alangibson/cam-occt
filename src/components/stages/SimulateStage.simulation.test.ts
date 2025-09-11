@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import type { Shape, Point2D } from '$lib/types';
+import { describe, expect, it } from 'vitest';
+import type { Point2D, Shape } from '$lib/types';
 import type { Line } from '$lib/geometry/line';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape';

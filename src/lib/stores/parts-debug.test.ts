@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { getChainPartType } from './parts';
 import {
-    PartType,
     type DetectedPart,
+    PartType,
 } from '$lib/algorithms/part-detection/part-detection';
 
 describe('Parts Store Chain Type Detection', () => {

@@ -1,9 +1,9 @@
 import type {
-    Point2D,
-    Line,
     Circle,
-    Polyline,
     Ellipse,
+    Line,
+    Point2D,
+    Polyline,
     Shape,
 } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
@@ -11,12 +11,14 @@ import type { Arc } from '$lib/geometry/arc';
 import type { BoundingBox } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { sampleNURBS } from '$lib/geometry/spline';
+import {
+    sampleNURBS,
+    VALIDATION_SAMPLE_COUNT,
+    SPLINE_TESSELLATION_TOLERANCE,
+} from '$lib/geometry/spline';
 import { calculateArcPoint } from '$lib/geometry/arc';
-import { VALIDATION_SAMPLE_COUNT } from '$lib/geometry/spline';
 import { THREE_HALVES_PI } from './constants';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
-import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline';
 import type { Chain } from '../chain/interfaces';
 
 export function getBoundingBoxForLine(line: Line): BoundingBox {

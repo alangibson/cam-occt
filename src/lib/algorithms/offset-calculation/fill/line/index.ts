@@ -1,9 +1,9 @@
-import type { Shape, Point2D, Line } from '$lib/types/geometry';
+import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import type { FillOptions, FillResult, ShapeExtension } from '../types';
 import {
-    extendLineToPoint,
-    determineExtensionDirection,
     calculateExtension,
+    determineExtensionDirection,
+    extendLineToPoint,
 } from '../../extend/line';
 import type { LineExtensionResult } from '../../extend/line';
 import { pointDistance } from '../../shared/trim-extend-utils';

@@ -6,30 +6,30 @@ import type { Circle } from '$lib/geometry/circle';
 import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import {
-    validateLeadConfiguration,
     type LeadValidationResult,
+    validateLeadConfiguration,
 } from './lead-validation';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import {
     GEOMETRIC_PRECISION_TOLERANCE,
     HALF_PERCENT,
-    THREE_QUARTERS_PERCENT,
     QUARTER_PERCENT,
+    THREE_QUARTERS_PERCENT,
 } from '$lib/geometry/math';
 import { MAX_ITERATIONS } from '../../constants';
-import { HALF_CIRCLE_DEG, FULL_CIRCLE_DEG } from '$lib/geometry/circle';
+import { FULL_CIRCLE_DEG, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
-    OCTAGON_SIDES,
-    SMALL_ANGLE_INCREMENT_DEG,
     DEFAULT_TESSELLATION_SEGMENTS,
-    QUARTER_CIRCLE_QUADRANTS,
     LEAD_REACHABLE_DISTANCE_MULTIPLIER,
+    OCTAGON_SIDES,
+    QUARTER_CIRCLE_QUADRANTS,
+    SMALL_ANGLE_INCREMENT_DEG,
 } from '../../geometry/constants';
 import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
 import { isPointInPolygon } from '$lib/geometry/polygon/functions';

@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/types/cam';
-import { type ToolPath, type Drawing, Unit } from '$lib/types';
+import { type Drawing, type ToolPath, Unit } from '$lib/types';
 
 describe('GCode Generator - THC and Paused Motion', () => {
     const mockDrawing: Drawing = {

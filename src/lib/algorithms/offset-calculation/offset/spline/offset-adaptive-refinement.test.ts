@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import _verb from 'verb-nurbs';
 import { offsetSpline } from './spline';
 import { OffsetDirection } from '../types';

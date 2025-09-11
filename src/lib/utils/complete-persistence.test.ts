@@ -2,17 +2,17 @@
  * Complete persistence integration test - verifies that both lead geometry and workflow stage persist correctly
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-    saveApplicationState,
     restoreApplicationState,
+    saveApplicationState,
 } from '$lib/stores/persistence';
 import { drawingStore } from '$lib/stores/drawing';
 import { pathStore } from '$lib/stores/paths';
 import { operationsStore } from '$lib/stores/operations';
 import { setChains } from '$lib/stores/chains';
 import { WorkflowStage, workflowStore } from '$lib/stores/workflow';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { GeometryType } from '$lib/types/geometry';
 import type { PathsState } from '$lib/stores/paths';
 import type { WorkflowState } from '$lib/stores/workflow';

@@ -12,7 +12,7 @@ import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import { generateId } from '$lib/domain/id';
 import { validateSplineGeometry2 } from '$lib/geometry/spline/functions';
 import { type SplineValidationResult } from '$lib/geometry/spline/interfaces';
-import type { Line, Circle, Polyline, Ellipse } from '$lib/types/geometry';
+import type { Circle, Ellipse, Line, Polyline } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/geometry/shape';
@@ -21,20 +21,20 @@ import { findShapeIntersections } from '../intersect';
 import { findPolylineSelfIntersections } from '../intersect/polyline/self';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { offsetShape } from '../offset/index';
-import { trimConsecutiveShapes, pointDistance } from '../trim';
+import { pointDistance, trimConsecutiveShapes } from '../trim';
 import type { TrimResult } from '../trim/types';
 import { fillGapBetweenShapes } from '../fill';
-import type { GapContext, FillResult } from '../fill/types';
+import type { FillResult, GapContext } from '../fill/types';
 import { detectChainSide } from './side-detection';
 import {
-    DEFAULT_CHAIN_OFFSET_PARAMETERS,
     type ChainOffsetParameters,
     type ChainOffsetResult,
+    DEFAULT_CHAIN_OFFSET_PARAMETERS,
+    type GapFillingResult,
     type IntersectionResult,
     type OffsetChain,
     type Shape,
     type TrimPoint,
-    type GapFillingResult,
 } from './types';
 
 /**

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf-parser';
@@ -7,10 +7,10 @@ import { type Chain } from '$lib/geometry/chain/interfaces';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import type { Shape, Line, Circle, Arc, Polyline } from '$lib/types/geometry';
+import type { Arc, Circle, Line, Polyline, Shape } from '$lib/types/geometry';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 
 describe('Tractor Seat Mount Part Detection', () => {

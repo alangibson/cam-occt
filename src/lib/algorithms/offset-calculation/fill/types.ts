@@ -1,4 +1,4 @@
-import type { Shape, Point2D } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 
 /**
  * Fill Types Module

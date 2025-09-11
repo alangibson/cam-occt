@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { prepareChainsAndLeadConfigs } from './path-optimization-utils';
 import type { Path } from '$lib/stores/paths';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape, Line, Point2D } from '$lib/types/geometry';
+import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '../offset-calculation/offset/types';
 
 // Test data setup

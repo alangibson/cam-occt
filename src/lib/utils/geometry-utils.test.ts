@@ -1,17 +1,17 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { EPSILON } from '$lib/geometry/math';
 import { calculateLineDirectionAndLength } from '$lib/geometry/line';
-import type { Point2D, Line } from '$lib/types/geometry';
+import type { Line, Point2D } from '$lib/types/geometry';
 import {
+    calculatePolygonPerimeter,
     calculateSignedArea,
+    ensureClockwise,
+    ensureCounterClockwise,
     getWindingDirection,
     isClockwise,
     isCounterClockwise,
-    reverseWinding,
-    ensureClockwise,
-    ensureCounterClockwise,
     isSimplePolygon,
-    calculatePolygonPerimeter,
+    reverseWinding,
 } from '$lib/geometry/chain';
 import { calculatePolygonArea } from '$lib/geometry/polygon/functions';
 

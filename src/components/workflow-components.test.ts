@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import WorkflowBreadcrumbs from './WorkflowBreadcrumbs.svelte';
 import WorkflowContainer from './WorkflowContainer.svelte';
 import ImportStage from './stages/ImportStage.svelte';
@@ -8,9 +8,9 @@ import NewProgramStage from './stages/NewProgramStage.svelte';
 import SimulateStage from './stages/SimulateStage.svelte';
 import ExportStage from './stages/ExportStage.svelte';
 import {
-    getStageDisplayName,
-    getStageDescription,
     WorkflowStage,
+    getStageDescription,
+    getStageDisplayName,
     workflowStore,
 } from '$lib/stores/workflow';
 

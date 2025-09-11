@@ -3,13 +3,13 @@
  * Tests the specific 5 chains that should be holes but are being detected as parts
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';

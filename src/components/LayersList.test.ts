@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, fireEvent } from '@testing-library/svelte';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { fireEvent, render } from '@testing-library/svelte';
 import LayersList from './LayersList.svelte';
 import { drawingStore } from '$lib/stores/drawing';
 import { Unit } from '$lib/utils/units';

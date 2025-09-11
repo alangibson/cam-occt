@@ -1,18 +1,17 @@
-import type { Shape } from '$lib/types';
+import type { Shape, Point2D } from '$lib/types';
 import type { Polyline } from '$lib/geometry/polyline';
 import { GeometryType } from '$lib/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import {
-    polylineToPoints,
     MIN_VERTICES_FOR_POLYLINE,
+    polylineToPoints,
 } from '$lib/geometry/polyline';
 import {
-    reconstructChainFromSplit,
     createSplitShape,
+    reconstructChainFromSplit,
 } from './path-optimization-utils';
 import { splitShapeAtMidpoint } from '$lib/geometry/shape/functions';
-import type { Point2D } from '$lib/types';
 import type { StartPointOptimizationParameters } from '$lib/types/algorithm-parameters';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '../../geometry/constants';

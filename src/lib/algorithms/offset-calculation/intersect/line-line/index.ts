@@ -6,9 +6,9 @@ import { EPSILON } from '../../../../geometry/math/constants';
 import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
 // Import shared line intersection utilities
 import {
+    calculateLineIntersection,
     calculateLineParameterForPoint,
     isParameterValidForSegment,
-    calculateLineIntersection,
 } from '$lib/geometry/line/functions';
 import { type SegmentPosition } from '$lib/geometry/line/types';
 

@@ -2,8 +2,8 @@
 import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { tessellateSpline } from '$lib/geometry/spline';
-import { tessellateEllipse, type Ellipse } from '$lib/geometry/ellipse/index';
-import { polylineToPoints, type Polyline } from '$lib/geometry/polyline';
+import { type Ellipse, tessellateEllipse } from '$lib/geometry/ellipse/index';
+import { type Polyline, polylineToPoints } from '$lib/geometry/polyline';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { writeFileSync } from 'fs';
 import { join } from 'path';

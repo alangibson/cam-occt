@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { findPartContainingChain } from './chain-part-interactions';
 import {
-    PartType,
     type DetectedPart,
     type PartHole,
     type PartShell,
+    PartType,
 } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 

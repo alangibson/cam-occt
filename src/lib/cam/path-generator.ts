@@ -1,9 +1,9 @@
 import type {
-    Shape,
-    Point2D,
-    Drawing,
-    ToolPath,
     CuttingParameters,
+    Drawing,
+    Point2D,
+    Shape,
+    ToolPath,
 } from '$lib/types';
 import { generateId } from '$lib/domain/id';
 import { getShapePoints } from '$lib/geometry/shape';

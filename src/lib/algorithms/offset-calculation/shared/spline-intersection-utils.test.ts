@@ -1,13 +1,13 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Point2D } from '$lib/types/geometry';
 import type { IntersectionResult } from '../chain/types';
 import verb from 'verb-nurbs';
 import {
-    validateSplineForIntersection,
     processSplineIntersection,
-    processSplineWithCurveIntersection,
     processSplineIntersectionWithRetry,
+    processSplineWithCurveIntersection,
     selectBestIntersectionResult,
+    validateSplineForIntersection,
 } from './spline-intersection-utils';
 import type { Spline } from '$lib/geometry/spline';
 import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';

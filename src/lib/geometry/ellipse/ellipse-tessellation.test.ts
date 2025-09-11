@@ -1,13 +1,13 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { EPSILON } from '$lib/geometry/math';
 import {
-    tessellateEllipseWithConfig,
-    evaluateEllipseAtParameter,
     calculateEllipseArcLength,
     createAdaptiveTessellationConfig,
+    evaluateEllipseAtParameter,
+    tessellateEllipseWithConfig,
     validateEllipseGeometry,
 } from './functions';
-import type { EllipseTessellationConfig, Ellipse } from './interfaces';
+import type { Ellipse, EllipseTessellationConfig } from './interfaces';
 
 describe('Ellipse Tessellation', () => {
     // Test ellipse shapes with known properties

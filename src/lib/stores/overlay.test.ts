@@ -1,15 +1,15 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import {
-    overlayStore,
-    generateShapePoints,
-    generateChainEndpoints,
-    type ShapePoint,
     type ChainEndpoint,
+    type ShapePoint,
     type TessellationPoint,
+    generateChainEndpoints,
+    generateShapePoints,
+    overlayStore,
 } from './overlay';
 import { WorkflowStage } from './workflow';
-import type { Shape, Point2D } from '$lib/types';
+import type { Point2D, Shape } from '$lib/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape';
 

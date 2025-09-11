@@ -1,4 +1,4 @@
-import { type Point2D, type Geometry } from '$lib/types/geometry';
+import { type Geometry, type Point2D } from '$lib/types/geometry';
 import type { Arc } from './interfaces';
 import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle';
@@ -10,9 +10,9 @@ import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
 import {
     ARC_TESSELLATION_CHORD_LENGTH,
     DEFAULT_ARC_TESSELLATION_POINTS,
-    QUARTER_CIRCLE_QUADRANTS,
-    DIRECTION_COUNTERCLOCKWISE,
     DIRECTION_CLOCKWISE,
+    DIRECTION_COUNTERCLOCKWISE,
+    QUARTER_CIRCLE_QUADRANTS,
 } from './constants';
 import { normalizeAngle } from '../math/functions';
 

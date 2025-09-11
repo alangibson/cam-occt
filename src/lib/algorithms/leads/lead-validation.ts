@@ -1,16 +1,16 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import type { LeadInConfig, LeadOutConfig } from './lead-calculation';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import type { Shape } from '$lib/types';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import {
-    HALF_PERCENT,
     GEOMETRIC_PRECISION_TOLERANCE,
+    HALF_PERCENT,
 } from '$lib/geometry/math';
 import { MAX_ITERATIONS, STANDARD_GRID_SPACING } from '../../constants';
 import { FULL_CIRCLE_DEG } from '$lib/geometry/circle';

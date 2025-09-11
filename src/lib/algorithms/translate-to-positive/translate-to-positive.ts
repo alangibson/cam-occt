@@ -1,11 +1,11 @@
 import { GeometryType } from '$lib/types/geometry';
 import type {
-    Shape,
-    Point2D,
-    Line,
     Circle,
-    Polyline,
     Ellipse,
+    Line,
+    Point2D,
+    Polyline,
+    Shape,
 } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';

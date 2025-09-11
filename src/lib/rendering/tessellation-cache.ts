@@ -5,14 +5,14 @@
  * expensive recalculation on every render frame.
  */
 
-import type { Point2D, Shape, Ellipse } from '$lib/types/geometry';
+import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { tessellateSpline } from '$lib/geometry/spline';
 import {
     ELLIPSE_TESSELLATION_POINTS,
     tessellateEllipse,
 } from '$lib/geometry/ellipse/index';
-import { STANDARD_TIMEOUT_MS, EXTENDED_TIMEOUT_MS } from '../constants';
+import { EXTENDED_TIMEOUT_MS, STANDARD_TIMEOUT_MS } from '../constants';
 
 interface CachedTessellation {
     points: Point2D[];

@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
     calculateEllipsePoint,
     calculateEllipsePointWithRotation,
-    generateEllipsePoints,
-    tessellateEllipse,
-    getEllipseStartEndPoints,
-    getEllipseParameters,
-    isFullEllipse,
-    isEllipseClosed,
     distanceFromEllipsePerimeter,
+    generateEllipsePoints,
+    getEllipseParameters,
+    getEllipseStartEndPoints,
+    isEllipseClosed,
+    isFullEllipse,
+    tessellateEllipse,
 } from '$lib/geometry/ellipse';
 import type { Ellipse } from '$lib/types/geometry';
 

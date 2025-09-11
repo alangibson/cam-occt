@@ -1,14 +1,14 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
 import { operationsStore } from '$lib/stores/operations';
-import { partStore, highlightPart, clearParts } from '$lib/stores/parts';
+import { clearParts, highlightPart, partStore } from '$lib/stores/parts';
 import {
     chainStore,
-    selectChain,
-    clearChains,
     clearChainSelection,
+    clearChains,
+    selectChain,
 } from '$lib/stores/chains';
 import { toolStore } from '$lib/stores/tools';
 import { CutDirection, LeadType } from '$lib/types/direction';

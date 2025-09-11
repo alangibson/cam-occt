@@ -1,26 +1,26 @@
-import { describe, it, expect } from 'vitest';
-import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
+import { describe, expect, it } from 'vitest';
+import {
+    isChainGeometricallyContained,
+    calculatePolygonCentroid,
+} from '$lib/geometry/chain/functions';
 import {
     calculatePolygonBounds,
     calculatePolygonCentroid2,
+    calculatePolygonArea,
+    isPointInPolygon,
 } from '$lib/geometry/polygon/functions';
 import { GeometryType } from '$lib/geometry/shape';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type {
-    Shape,
-    Line,
     Circle,
     Ellipse,
-    Polyline,
+    Line,
     Point2D,
+    Polyline,
+    Shape,
 } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
-import {
-    calculatePolygonArea,
-    isPointInPolygon,
-} from '$lib/geometry/polygon/functions';
-import { calculatePolygonCentroid } from '$lib/geometry/chain/functions';
 
 // Helper function to create test chains
 function createTestChain(id: string, shapes: Shape[]): Chain {

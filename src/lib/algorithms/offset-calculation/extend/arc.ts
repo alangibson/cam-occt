@@ -2,12 +2,14 @@ import type { Point2D } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
 import { MAX_EXTENSION } from '../../constants';
 import {
-    HIGH_PRECISION_TOLERANCE,
     DECIMAL_PRECISION,
+    HIGH_PRECISION_TOLERANCE,
 } from '../../../geometry/constants';
 import { pointDistance } from '../shared/trim-extend-utils';
-import { isAngleInArcRange } from '$lib/geometry/arc/functions';
-import { calculateIntersectionAngle } from '$lib/geometry/arc/functions';
+import {
+    isAngleInArcRange,
+    calculateIntersectionAngle,
+} from '$lib/geometry/arc/functions';
 import { normalizeAngle } from '$lib/geometry/math/functions';
 
 /**

@@ -11,7 +11,7 @@
  */
 
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape, Point2D } from '$lib/types';
+import type { Point2D, Shape } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
@@ -19,8 +19,8 @@ import type { Ellipse } from '$lib/geometry/ellipse';
 import type { ChainNormalizationParameters } from '$lib/types/algorithm-parameters';
 import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS } from '$lib/types/algorithm-parameters';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
     reverseShape,
 } from '$lib/geometry/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';

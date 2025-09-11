@@ -1,5 +1,5 @@
 import { render } from '@testing-library/svelte';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { WorkflowStage } from '$lib/stores/workflow';
 import NewProgramStage from './NewProgramStage.svelte';
 

@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { drawingStore } from './drawing';
 import {
     createPolylineFromVertices,
@@ -6,10 +6,10 @@ import {
     polylineToVertices,
 } from '$lib/geometry/polyline';
 import {
-    type Shape,
-    type Point2D,
     type Drawing,
+    type Point2D,
     type Polyline,
+    type Shape,
     Unit,
 } from '$lib/types';
 

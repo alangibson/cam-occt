@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';

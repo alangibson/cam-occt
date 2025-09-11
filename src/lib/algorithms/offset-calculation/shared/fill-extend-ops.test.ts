@@ -1,24 +1,24 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Ellipse, Point2D } from '$lib/types/geometry';
 import type { Circle } from '$lib/geometry/circle';
 import {
-    validateEllipseOperation,
-    validateEllipseIntersectionPoint,
-    calculateEllipseAngle,
-    determineEllipseExtension,
-    createEllipticalArcFromEllipse,
-    transformToEllipseLocal,
-    getEllipsePoint,
-    validateCircleOperation,
-    validateCircleIntersectionPoint,
-    calculateCircleAngle,
-    determineCircleExtension,
-    createArcFromCircle,
-    getCirclePoint,
-    applyRotation,
-    type OperationParams,
-    type ExtensionResult,
     type EllipseGeometry,
+    type ExtensionResult,
+    type OperationParams,
+    applyRotation,
+    calculateCircleAngle,
+    calculateEllipseAngle,
+    createArcFromCircle,
+    createEllipticalArcFromEllipse,
+    determineCircleExtension,
+    determineEllipseExtension,
+    getCirclePoint,
+    getEllipsePoint,
+    transformToEllipseLocal,
+    validateCircleIntersectionPoint,
+    validateCircleOperation,
+    validateEllipseIntersectionPoint,
+    validateEllipseOperation,
 } from './fill-extend-ops';
 import { pointDistance } from '../trim';
 import {

@@ -1,14 +1,16 @@
-import type { Shape, Point2D } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type {
     OffsetSide,
-    SideDetectionResult,
     SideDetectionOptions,
+    SideDetectionResult,
 } from './types.ts';
 import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import { normalizeVector } from '$lib/geometry/math/functions';
-import { getShapeMidpoint } from '$lib/geometry/shape/functions';
-import { getShapePointAt } from '$lib/geometry/shape/functions';
+import {
+    getShapeMidpoint,
+    getShapePointAt,
+} from '$lib/geometry/shape/functions';
 import { isPointInsideChainExact } from '../../raytracing/point-in-chain';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 

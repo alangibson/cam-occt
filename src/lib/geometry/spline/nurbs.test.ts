@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
 import type { Spline } from '$lib/geometry/spline';
 

@@ -1,12 +1,12 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-    getCachedTessellation,
-    clearTessellationCache,
     cleanupTessellationCache,
+    clearTessellationCache,
+    getCachedTessellation,
     getTessellationCacheStats,
 } from './tessellation-cache';
 import { GeometryType } from '$lib/types/geometry';
-import type { Shape, Ellipse, Line } from '$lib/types/geometry';
+import type { Ellipse, Line, Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { tessellateSpline } from '$lib/geometry/spline';
 

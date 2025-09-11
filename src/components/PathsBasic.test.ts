@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 // Import component for basic function testing
 describe('Paths Component Basic Function Coverage', () => {

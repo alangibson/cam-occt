@@ -1,14 +1,16 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateToolPaths } from './path-generator';
 import {
-    type Drawing,
-    type CuttingParameters,
-    type Shape,
-    type Point2D,
-    type Line,
     type Circle,
+    type CuttingParameters,
+    type Drawing,
+    type Line,
+    type Point2D,
+    type Shape,
     Unit,
 } from '$lib/types';
+
+import { GeometryType, getShapePoints } from '$lib/geometry/shape';
 
 // Mock getShapePoints function
 vi.mock('$lib/geometry/shape', async () => {
@@ -18,8 +20,6 @@ vi.mock('$lib/geometry/shape', async () => {
         getShapePoints: vi.fn(),
     };
 });
-
-import { getShapePoints, GeometryType } from '$lib/geometry/shape';
 const mockGetShapePoints = vi.mocked(getShapePoints);
 
 describe('generateToolPaths', () => {

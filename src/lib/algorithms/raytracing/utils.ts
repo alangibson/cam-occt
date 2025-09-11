@@ -6,11 +6,11 @@
 
 import type { Point2D } from '$lib/types/geometry';
 import {
-    solveQuadratic as mathSolveQuadratic,
     isNearlyEqual,
+    solveQuadratic as mathSolveQuadratic,
+    EPSILON,
 } from '$lib/geometry/math';
 import { normalizeAngle } from '$lib/geometry/math/functions';
-import { EPSILON } from '$lib/geometry/math';
 
 // Re-export normalizeAngle from shared library for backward compatibility
 export { normalizeAngle };

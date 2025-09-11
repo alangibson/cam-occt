@@ -4,8 +4,8 @@ import { EPSILON } from '$lib/geometry/math';
 import { MAX_EXTENSION } from '../../constants';
 import { pointDistance } from '../trim';
 import {
-    polylineToPoints,
     createPolylineFromVertices,
+    polylineToPoints,
 } from '$lib/geometry/polyline';
 
 /**

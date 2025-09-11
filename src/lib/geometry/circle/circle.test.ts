@@ -1,14 +1,14 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    getCircleStartPoint,
-    getCircleEndPoint,
-    reverseCircle,
-    getCirclePointAt,
-    isCircle,
-    generateCirclePoints,
     type Circle,
+    generateCirclePoints,
+    getCircleEndPoint,
+    getCirclePointAt,
+    getCircleStartPoint,
+    isCircle,
+    reverseCircle,
 } from '$lib/geometry/circle';
-import type { Line, Geometry } from '$lib/types/geometry';
+import type { Geometry, Line } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
 
 describe('getCircleStartPoint', () => {

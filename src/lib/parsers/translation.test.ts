@@ -1,16 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDXF } from './dxf-parser';
 import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines/decompose-polylines';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
 import type {
-    Shape,
-    Point2D,
-    Line,
-    Circle,
     Arc,
+    Circle,
+    Line,
+    Point2D,
     Polyline,
+    Shape,
 } from '$lib/types/geometry';
 import { EPSILON } from '$lib/geometry/math';
 

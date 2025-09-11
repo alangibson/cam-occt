@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf-parser';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { decomposePolylines } from './decompose-polylines';

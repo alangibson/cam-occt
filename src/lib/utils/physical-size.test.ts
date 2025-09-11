@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf-parser';
-import { getPhysicalScaleFactor, Unit } from './units';
+import { Unit, getPhysicalScaleFactor } from './units';
 
 describe('Physical Size Display', () => {
     describe('Real-world DXF physical sizing', () => {

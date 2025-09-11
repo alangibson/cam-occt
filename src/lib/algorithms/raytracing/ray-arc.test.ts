@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
+    countHorizontalRayArcCrossings,
     countRayArcCrossings,
     findRayArcIntersections,
-    countHorizontalRayArcCrossings,
 } from './ray-arc';
 import type { Arc } from '../../geometry/arc';
 import type { Point2D } from '$lib/types/geometry';

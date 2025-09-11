@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { parseDXF } from '../../parsers/dxf-parser';
 import { decomposePolylines } from '../decompose-polylines/decompose-polylines';
 import { detectShapeChains } from '../chain-detection/chain-detection';

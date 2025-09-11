@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
     createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
 } from './functions';
-import type { PolylineVertex, Polyline } from './interfaces';
+import type { Polyline, PolylineVertex } from './interfaces';
 
 describe('Polyline Segments Functionality', () => {
     it('should create segments for simple polyline without bulges', () => {

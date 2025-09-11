@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Ellipse, Point2D } from '$lib/types/geometry';
 import type { Ray } from './types';
 import {
+    countHorizontalRayEllipseCrossings,
     countRayEllipseCrossings,
     findRayEllipseIntersections,
-    countHorizontalRayEllipseCrossings,
 } from './ray-ellipse';
 
 describe('Ray-Ellipse Intersection', () => {

@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { operationsStore, type Operation } from '$lib/stores/operations';
+import { type Operation, operationsStore } from '$lib/stores/operations';
 import { pathStore } from '$lib/stores/paths';
-import { setChains, clearChains } from '$lib/stores/chains';
+import { clearChains, setChains } from '$lib/stores/chains';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';

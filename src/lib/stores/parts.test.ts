@@ -1,23 +1,23 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import {
-    partStore,
-    setParts,
-    clearParts,
-    highlightPart,
     clearHighlight,
-    hoverPart,
     clearPartHover,
-    selectPart,
     clearPartSelection,
-    getPartChainIds,
+    clearParts,
     getChainPartType,
+    getPartChainIds,
+    highlightPart,
+    hoverPart,
+    partStore,
+    selectPart,
+    setParts,
 } from './parts';
 import {
-    PartType,
     type DetectedPart,
     type PartDetectionWarning,
     type PartHole,
+    PartType,
 } from '$lib/algorithms/part-detection/part-detection';
 
 describe('Parts Store', () => {

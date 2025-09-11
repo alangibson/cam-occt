@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import type { Shape, Line, Arc, Polyline } from '$lib/types/geometry';
+import type { Arc, Line, Polyline, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '$lib/types/algorithm-parameters';

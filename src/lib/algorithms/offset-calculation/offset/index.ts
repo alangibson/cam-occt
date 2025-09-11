@@ -9,12 +9,12 @@
 // - ./types for OffsetDirection, OffsetResult types
 
 import type {
-    Shape,
-    Line,
     Arc,
     Circle,
-    Polyline,
     Ellipse,
+    Line,
+    Polyline,
+    Shape,
 } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/types/geometry';

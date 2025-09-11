@@ -2,14 +2,14 @@
  * Tests for ray-circle intersection algorithms
  */
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/types/geometry';
 import type { Circle } from '$lib/geometry/circle';
 import type { Ray } from './types';
 import {
+    countHorizontalRayCircleCrossings,
     countRayCircleCrossings,
     findRayCircleIntersections,
-    countHorizontalRayCircleCrossings,
     isPointOnCircle,
 } from './ray-circle';
 

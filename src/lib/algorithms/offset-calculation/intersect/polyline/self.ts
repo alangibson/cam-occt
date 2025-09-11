@@ -1,19 +1,19 @@
 import {
-    type Shape,
-    type Polyline,
-    type Line,
     type Arc,
-    type Point2D,
     GeometryType,
+    type Line,
+    type Point2D,
+    type Polyline,
+    type Shape,
 } from '$lib/types/geometry';
 import type {
     IntersectionResult,
     PolylineSelfIntersection,
 } from '../../chain/types';
 import {
-    findIntersectionsByType,
-    type IntersectionType,
     DEFAULT_INTERSECTION_TYPE,
+    type IntersectionType,
+    findIntersectionsByType,
 } from '../index';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import { calculatePolylineParameter } from '../polyline-spline/helpers';

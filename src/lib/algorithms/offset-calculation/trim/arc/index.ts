@@ -1,4 +1,4 @@
-import type { Arc, Shape, Point2D } from '$lib/types/geometry';
+import type { Arc, Point2D, Shape } from '$lib/types/geometry';
 import { TOLERANCE } from '$lib/geometry/math/constants';
 import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';

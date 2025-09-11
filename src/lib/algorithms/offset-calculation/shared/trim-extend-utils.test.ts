@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
-import type { Point2D, Line } from '$lib/types/geometry';
+import { describe, expect, it } from 'vitest';
+import type { Line, Point2D } from '$lib/types/geometry';
 import {
+    type TrimExtendParams,
     calculateLineParameter,
-    pointDistance,
     calculatePointToLineDistance,
+    pointDistance,
     snapParameterToEndpoints,
     validateTrimExtendParameters,
-    type TrimExtendParams,
 } from './trim-extend-utils';
 
 describe('trim-extend-utils', () => {

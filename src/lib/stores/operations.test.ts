@@ -1,7 +1,13 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
+
+// Now import the modules we need
+import { type Operation, operationsStore } from './operations';
+import { pathStore } from './paths';
+import { leadWarningsStore } from './lead-warnings';
+import { offsetWarningsStore } from './offset-warnings';
 
 // Mock the stores before importing the module under test
 vi.mock('./paths', () => ({
@@ -64,12 +70,6 @@ vi.mock('./offset-warnings', () => ({
 }));
 
 vi.mock('../utils/lead-persistence-utils');
-
-// Now import the modules we need
-import { operationsStore, type Operation } from './operations';
-import { pathStore } from './paths';
-import { leadWarningsStore } from './lead-warnings';
-import { offsetWarningsStore } from './offset-warnings';
 
 // Mock crypto.randomUUID
 const mockUUID = vi.fn(() => 'mock-uuid-123');

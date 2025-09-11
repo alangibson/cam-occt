@@ -1,18 +1,18 @@
 import verb, { type VerbDerivatives, type VerbPoint } from 'verb-nurbs';
 import { GeometryType, type Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import { generateUniformKnotVector } from '$lib/geometry/spline';
+import {
+    generateUniformKnotVector,
+    DEFAULT_RETRY_COUNT,
+    SPLINE_SAMPLE_COUNT,
+    VALIDATION_SAMPLE_COUNT,
+} from '$lib/geometry/spline';
 import { OffsetDirection, type OffsetResult } from '../types';
 import {
     EPSILON,
     GEOMETRIC_PRECISION_TOLERANCE,
 } from '../../../../geometry/math/constants';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
-import {
-    VALIDATION_SAMPLE_COUNT,
-    SPLINE_SAMPLE_COUNT,
-    DEFAULT_RETRY_COUNT,
-} from '$lib/geometry/spline';
 
 /**
  * Default timeout for computationally intensive operations (10 seconds)

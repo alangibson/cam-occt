@@ -6,35 +6,35 @@
 
 import { get } from 'svelte/store';
 import {
-    saveState,
-    loadState,
+    type PersistedState,
     clearPersistedState,
     debouncedSave,
-    type PersistedState,
+    loadState,
+    saveState,
 } from '../utils/state-persistence';
 import { Unit } from '../utils/units';
 
 // Import all stores
-import { drawingStore, type DrawingState } from './drawing';
+import { type DrawingState, drawingStore } from './drawing';
 import {
-    workflowStore,
-    type WorkflowState,
     type WorkflowStage,
+    type WorkflowState,
+    workflowStore,
 } from './workflow';
-import { chainStore, type ChainStore } from './chains';
-import { partStore, type PartStore } from './parts';
-import { rapidStore, type RapidsState } from './rapids';
-import { uiStore, type UIState } from './ui';
-import { tessellationStore, type TessellationState } from './tessellation';
-import { overlayStore, type OverlayState } from './overlay';
-import { leadWarningsStore, type LeadWarning } from './lead-warnings';
-import { setChains, setTolerance, selectChain } from './chains';
-import { setParts, highlightPart } from './parts';
-import { prepareStageStore, type PrepareStageState } from './prepare-stage';
+import { type ChainStore, chainStore } from './chains';
+import { type PartStore, partStore } from './parts';
+import { type RapidsState, rapidStore } from './rapids';
+import { type UIState, uiStore } from './ui';
+import { type TessellationState, tessellationStore } from './tessellation';
+import { type OverlayState, overlayStore } from './overlay';
+import { type LeadWarning, leadWarningsStore } from './lead-warnings';
+import { selectChain, setChains, setTolerance } from './chains';
+import { highlightPart, setParts } from './parts';
+import { type PrepareStageState, prepareStageStore } from './prepare-stage';
 import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
-import { operationsStore, type Operation } from './operations';
-import { pathStore, type PathsState } from './paths';
-import { toolStore, type Tool } from './tools';
+import { type Operation, operationsStore } from './operations';
+import { type PathsState, pathStore } from './paths';
+import { type Tool, toolStore } from './tools';
 import type { WarningState } from './warning-store-base';
 
 /**

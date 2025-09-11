@@ -1,15 +1,28 @@
-import { writable } from 'svelte/store';
-import { pathStore, type Path } from './paths';
+import { writable, get } from 'svelte/store';
+import { type Path, pathStore } from './paths';
 import { partStore } from './parts';
-import { workflowStore, WorkflowStage } from './workflow';
+import { WorkflowStage, workflowStore } from './workflow';
 import { chainStore } from './chains';
 import { toolStore } from './tools';
-import { get } from 'svelte/store';
 import { reverseChain } from '$lib/geometry/chain';
 import {
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,
 } from '$lib/geometry/constants';
+import { leadWarningsStore } from './lead-warnings';
+import { offsetWarningsStore } from './offset-warnings';
+import { CutDirection, LeadType } from '$lib/types/direction';
+import { calculateAndStoreOperationLeads } from '../utils/lead-persistence-utils';
+import type {
+    DetectedPart,
+    PartHole,
+} from '$lib/algorithms/part-detection/part-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
+import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
+import { KerfCompensation } from '$lib/types/kerf-compensation';
+import { offsetChain } from '../algorithms/offset-calculation/chain/offset';
+import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
+import type { Shape } from '$lib/types';
 
 /**
  * Path update timing delay in milliseconds
@@ -30,20 +43,6 @@ function getChainCutDirection(chain: Chain | undefined): CutDirection {
           ? CutDirection.COUNTERCLOCKWISE
           : CutDirection.NONE;
 }
-import { leadWarningsStore } from './lead-warnings';
-import { offsetWarningsStore } from './offset-warnings';
-import { CutDirection, LeadType } from '$lib/types/direction';
-import { calculateAndStoreOperationLeads } from '../utils/lead-persistence-utils';
-import type {
-    DetectedPart,
-    PartHole,
-} from '$lib/algorithms/part-detection/part-detection';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
-import { offsetChain } from '../algorithms/offset-calculation/chain/offset';
-import type { GapFillingResult } from '../algorithms/offset-calculation/chain/types';
-import type { Shape } from '$lib/types';
 
 interface OffsetCalculation {
     offsetShapes: Shape[];

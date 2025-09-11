@@ -22,8 +22,8 @@ import type { PartDetectionParameters } from '$lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import {
-    getShapeStartPoint,
     getShapeEndPoint,
+    getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';

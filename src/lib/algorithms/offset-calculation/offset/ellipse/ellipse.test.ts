@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GeometryType, type Ellipse, type Point2D } from '$lib/types/geometry';
+import { type Ellipse, GeometryType, type Point2D } from '$lib/types/geometry';
 import { findEllipseEllipseIntersectionsVerb } from '../../intersect/ellipse-ellipse';
 import { findEllipseArcIntersectionsVerb } from '../../intersect/arc-ellipse';
 import { OffsetDirection } from '../types';

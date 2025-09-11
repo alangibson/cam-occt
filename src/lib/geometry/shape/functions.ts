@@ -2,27 +2,27 @@ import type { Shape } from './interfaces';
 import type { Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import {
+    type Circle,
     generateCirclePoints,
     getCircleEndPoint,
     getCirclePointAt,
     getCircleStartPoint,
     reverseCircle,
-    type Circle,
 } from '$lib/geometry/circle';
 import {
+    type Arc,
     generateArcPoints,
     getArcEndPoint,
     getArcPointAt,
     getArcStartPoint,
     reverseArc,
-    type Arc,
 } from '$lib/geometry/arc';
 import {
+    type Line,
     getLineEndPoint,
     getLinePointAt,
     getLineStartPoint,
     reverseLine,
-    type Line,
 } from '$lib/geometry/line';
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Ellipse } from '$lib/geometry/ellipse';
@@ -36,14 +36,15 @@ import {
     sampleNURBS,
 } from '$lib/geometry/spline';
 import {
-    tessellateEllipse,
     ELLIPSE_TESSELLATION_POINTS,
+    generateEllipsePoints,
     getEllipseEndPoint,
     getEllipsePointAt,
     getEllipseStartPoint,
-    reverseEllipse,
-    generateEllipsePoints,
     isEllipseClosed,
+    reverseEllipse,
+    tessellateEllipse,
+    calculateEllipsePoint,
 } from '$lib/geometry/ellipse/index';
 import {
     DEFAULT_PART_DETECTION_PARAMETERS,
@@ -57,19 +58,18 @@ import {
     polylineToVertices,
     reversePolyline,
 } from '$lib/geometry/polyline';
-import { calculateEllipsePoint } from '$lib/geometry/ellipse/index';
 import {
-    OCTAGON_SIDES,
     DEFAULT_TESSELLATION_SEGMENTS,
     HIGH_TESSELLATION_SEGMENTS,
     MAX_ITERATIONS,
     MIDPOINT_T,
+    OCTAGON_SIDES,
     QUARTER_CIRCLE_QUADRANTS,
     TESSELLATION_SAMPLE_MULTIPLIER,
 } from '$lib/geometry/constants';
 import { normalizeVector, roundToDecimalPlaces } from '../math/functions';
 import { calculatePolylineLength } from '../polyline/functions';
-import { GeometryFactory, Coordinate } from 'jsts/org/locationtech/jts/geom';
+import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from '../chain';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';
@@ -77,8 +77,10 @@ import { LEAD_SEGMENT_COUNT } from '../line/constants';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '../math';
 import { STANDARD_GRID_SPACING } from '$lib/constants';
 import { calculateEllipsePoint2 } from '../ellipse/functions';
-import { splitArcAtMidpoint } from '$lib/algorithms/optimize-start-points/path-optimization-utils';
-import { splitLineAtMidpoint } from '$lib/algorithms/optimize-start-points/path-optimization-utils';
+import {
+    splitArcAtMidpoint,
+    splitLineAtMidpoint,
+} from '$lib/algorithms/optimize-start-points/path-optimization-utils';
 
 /**
  * Extract points from a shape for path generation

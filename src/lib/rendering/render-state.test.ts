@@ -1,5 +1,5 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { RenderStateManager, PanStateManager } from './render-state';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PanStateManager, RenderStateManager } from './render-state';
 
 describe('RenderStateManager', () => {
     let renderState: RenderStateManager;

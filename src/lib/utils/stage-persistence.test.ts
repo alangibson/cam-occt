@@ -2,15 +2,15 @@
  * Test to verify workflow stage persistence
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
-    saveApplicationState,
     restoreApplicationState,
+    saveApplicationState,
 } from '$lib/stores/persistence';
 import {
     WorkflowStage,
-    workflowStore,
     type WorkflowState,
+    workflowStore,
 } from '$lib/stores/workflow';
 
 // Mock localStorage

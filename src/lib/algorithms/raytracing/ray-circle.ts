@@ -10,11 +10,11 @@ import type { Circle } from '$lib/geometry/circle';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import {
-    setupQuadraticIntersection,
-    solveQuadraticIntersection,
+    countHorizontalRayCrossings,
     createRayIntersectionPoints,
     setupHorizontalRayIntersection,
-    countHorizontalRayCrossings,
+    setupQuadraticIntersection,
+    solveQuadraticIntersection,
 } from './ray-intersection-base';
 
 /**

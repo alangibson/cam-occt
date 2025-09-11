@@ -1,19 +1,19 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-    getArcStartPoint,
-    getArcEndPoint,
-    reverseArc,
-    getArcPointAt,
-    tessellateArc,
-    isArc,
-    generateArcPoints,
+    calculateArcEndPoint,
     calculateArcPoint,
     calculateArcStartPoint,
     convertBulgeToArc,
-    calculateArcEndPoint,
+    generateArcPoints,
+    getArcEndPoint,
+    getArcPointAt,
+    getArcStartPoint,
+    isArc,
+    reverseArc,
+    tessellateArc,
 } from './functions';
 import type { Arc } from './interfaces';
-import type { Line, Geometry } from '$lib/types/geometry';
+import type { Geometry, Line } from '$lib/types/geometry';
 
 describe('getArcStartPoint', () => {
     it('should calculate start point for arc at 0 degrees', () => {

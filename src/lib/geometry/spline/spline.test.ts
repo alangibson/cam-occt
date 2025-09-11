@@ -1,12 +1,12 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Spline } from './interfaces';
 import {
-    getSplineStartPoint,
-    getSplineEndPoint,
-    reverseSpline,
-    normalizeSplineWeights,
     evaluateNURBS,
     generateUniformKnotVector,
+    getSplineEndPoint,
+    getSplineStartPoint,
+    normalizeSplineWeights,
+    reverseSpline,
     validateKnotVector,
 } from './functions';
 

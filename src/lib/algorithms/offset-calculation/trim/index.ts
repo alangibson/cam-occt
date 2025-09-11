@@ -1,13 +1,24 @@
 import type {
-    Shape,
-    Point2D,
-    Line,
     Arc,
     Circle,
+    Line,
+    Point2D,
     Polyline,
+    Shape,
 } from '$lib/types/geometry';
 import type { IntersectionResult } from '../chain/types';
 import { MICRO_TOLERANCE } from '../../../geometry/constants';
+
+import { trimArc } from './arc';
+import { trimCircle } from './circle';
+import { trimLine } from './line';
+import { trimPolyline } from './polyline';
+import { trimSpline } from './spline';
+import { trimEllipse } from './ellipse';
+import type { KeepSide, TrimResult } from './types';
+import { polylineToPoints } from '$lib/geometry/polyline';
+import { isNearlyEqual, INTERSECTION_TOLERANCE } from '$lib/geometry/math';
+import { pointDistance } from '../shared/trim-extend-utils';
 
 /**
  * Intersection scoring constants for comprehensive intersection scoring system
@@ -23,18 +34,6 @@ const INTERSECTION_SCORE_APPROXIMATE = 10;
 const INTERSECTION_SCORE_COINCIDENT = 5;
 const INTERSECTION_SCORE_PARAMETER_WEIGHT = 5;
 const INTERSECTION_SCORE_MAX_DISTANCE = 100;
-
-import { trimArc } from './arc';
-import { trimCircle } from './circle';
-import { trimLine } from './line';
-import { trimPolyline } from './polyline';
-import { trimSpline } from './spline';
-import { trimEllipse } from './ellipse';
-import type { KeepSide, TrimResult } from './types';
-import { polylineToPoints } from '$lib/geometry/polyline';
-import { isNearlyEqual } from '$lib/geometry/math';
-import { pointDistance } from '../shared/trim-extend-utils';
-import { INTERSECTION_TOLERANCE } from '$lib/geometry/math';
 
 // Re-export shared utilities for backward compatibility
 export { pointDistance } from '../shared/trim-extend-utils';

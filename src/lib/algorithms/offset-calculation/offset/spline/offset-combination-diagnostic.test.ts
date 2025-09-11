@@ -1,8 +1,8 @@
-import { describe, it, expect } from 'vitest';
-import { writeFileSync, mkdirSync } from 'fs';
+import { describe, expect, it } from 'vitest';
+import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline } from './spline';
-import type { Polyline, Point2D } from '$lib/types/geometry';
+import type { Point2D, Polyline } from '$lib/types/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Spline } from '$lib/geometry/spline';
 import { OffsetDirection } from '../types';

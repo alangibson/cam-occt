@@ -5,17 +5,17 @@ import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
 import {
-    detectParts,
     type PartShell,
+    detectParts,
 } from '$lib/algorithms/part-detection/part-detection';
 import {
-    calculateLeads,
     type LeadInConfig,
     type LeadOutConfig,
+    calculateLeads,
 } from './lead-calculation';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Polyline, Line } from '$lib/types/geometry';
+import type { Line, Polyline } from '$lib/types/geometry';
 
 describe('ADLER Part 5 Cut Direction Analysis', () => {
     // Helper to check if a point is inside a polygon using ray casting

@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    isPointInsideChainExact,
-    arePointsInsideChainExact,
     anyPointInsideChainExact,
+    arePointsInsideChainExact,
     countPointsInsideChainExact,
+    isPointInsideChainExact,
 } from './point-in-chain';
-import type { Shape, Point2D } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { generateId } from '$lib/domain/id';

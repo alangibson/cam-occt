@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Ray } from './types';
 import {
+    countHorizontalRaySplineCrossings,
     countRaySplineCrossings,
     findRaySplineIntersections,
-    countHorizontalRaySplineCrossings,
 } from './ray-spline';
 
 describe('Ray-Spline Intersection', () => {

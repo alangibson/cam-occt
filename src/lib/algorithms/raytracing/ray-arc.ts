@@ -12,9 +12,9 @@ import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { approxEqual, isAngleInArcRange } from './utils';
 import {
+    setupHorizontalRayIntersection,
     setupQuadraticIntersection,
     solveQuadraticIntersection,
-    setupHorizontalRayIntersection,
     validateRayIntersectionPoint,
 } from './ray-intersection-base';
 

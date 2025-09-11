@@ -13,12 +13,12 @@ import { GeometryType } from '$lib/geometry/shape';
 import { CutterCompensation } from '$lib/types';
 import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 import {
-    DEFAULT_PIERCE_HEIGHT,
-    DEFAULT_PIERCE_DELAY,
     DEFAULT_CUT_HEIGHT,
-    IMPERIAL_FEED_RATE,
+    DEFAULT_PIERCE_DELAY,
+    DEFAULT_PIERCE_HEIGHT,
     GCODE_COORDINATE_PRECISION,
     GCODE_PARAMETER_PRECISION,
+    IMPERIAL_FEED_RATE,
 } from './constants';
 
 /**

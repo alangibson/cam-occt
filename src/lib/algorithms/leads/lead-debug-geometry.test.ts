@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
-import { calculateLeads, type LeadInConfig } from './lead-calculation';
+import { describe, expect, it } from 'vitest';
+import { type LeadInConfig, calculateLeads } from './lead-calculation';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { GeometryType } from '$lib/types/geometry';
-import type { Shape, Point2D } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types/geometry';
 
 describe('Lead Geometry Debug', () => {
     // Helper to create a simple line chain

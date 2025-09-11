@@ -1,7 +1,7 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import {
-    validateSplineGeometry2,
     repairSplineKnotVector,
+    validateSplineGeometry2,
     validateSplineKnots,
 } from '$lib/geometry/spline/functions.js';
 import type { Spline } from '$lib/geometry/spline';

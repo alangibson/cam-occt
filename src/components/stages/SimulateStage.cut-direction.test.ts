@@ -1,8 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { pathStore } from '$lib/stores/paths';
 import {
-    clearChains,
     clearChainSelection,
+    clearChains,
     setChains,
 } from '$lib/stores/chains';
 import type { Chain } from '$lib/geometry/chain/interfaces';

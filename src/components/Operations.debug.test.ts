@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { partStore, highlightPart, clearHighlight } from '$lib/stores/parts';
+import { clearHighlight, highlightPart, partStore } from '$lib/stores/parts';
 import { chainStore, selectChain } from '$lib/stores/chains';
 
 // Test that we can directly call the store functions that Operations uses

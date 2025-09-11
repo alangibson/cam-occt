@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GeometryType, type Shape } from '$lib/types/geometry';
 import { trimSpline } from './index';
 import { type KeepSide } from '../types';

@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { pathsToToolPaths } from './path-to-toolpath';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/types/cam';
 import type { Path } from '$lib/stores/paths';
-import { type Shape, type Drawing, Unit } from '$lib/types';
+import { type Drawing, type Shape, Unit } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import { GeometryType } from '$lib/geometry/shape';

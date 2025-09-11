@@ -11,7 +11,7 @@
  * 4. No Chord-Arc Gap: Perfect curve representation
  */
 
-import { test, expect, describe } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { isPointInsideChainExact } from './point-in-chain';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types/geometry';
