@@ -3,7 +3,7 @@
     import ImportStage from './stages/ImportStage.svelte';
     import EditStage from './stages/EditStage.svelte';
     import PrepareStage from './stages/PrepareStage.svelte';
-    import ProgramStage from './stages/NewProgramStage.svelte';
+    import ProgramStage from './stages/ProgramStage.svelte';
     import SimulateStage from './stages/SimulateStage.svelte';
     import ExportStage from './stages/ExportStage.svelte';
 </script>

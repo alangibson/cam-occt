@@ -6,7 +6,7 @@ import {
     simplifyTessellatedSpline,
     tessellateSpline,
     validateSplineGeometry,
-    Spline,
+    type Spline,
 } from '$lib/geometry/spline';
 import type { Point2D } from '$lib/types/geometry';
 

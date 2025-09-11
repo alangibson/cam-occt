@@ -1,7 +1,7 @@
 import { render } from '@testing-library/svelte';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { WorkflowStage } from '$lib/stores/workflow';
-import NewProgramStage from './NewProgramStage.svelte';
+import ProgramStage from './ProgramStage.svelte';
 
 // Mock all store dependencies
 vi.mock('$lib/stores/workflow', () => ({
@@ -184,7 +184,7 @@ vi.mock('$lib/algorithms/optimize-cut-order', () => ({
     }),
 }));
 
-describe('NewProgramStage', () => {
+describe('ProgramStage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -192,12 +192,12 @@ describe('NewProgramStage', () => {
     describe('Basic Functionality', () => {
         it('renders without crashing', () => {
             // This test verifies that the component can be instantiated with all its dependencies mocked
-            expect(() => render(NewProgramStage)).not.toThrow();
+            expect(() => render(ProgramStage)).not.toThrow();
         });
 
         it('initializes all store subscriptions', () => {
             // Test that component initializes and subscribes to stores without error
-            const component = render(NewProgramStage);
+            const component = render(ProgramStage);
 
             // If the component renders successfully, stores are properly subscribed
             expect(component).toBeTruthy();
@@ -205,7 +205,7 @@ describe('NewProgramStage', () => {
 
         it('handles missing data gracefully', () => {
             // Test that component doesn't crash when stores return empty/null data
-            render(NewProgramStage);
+            render(ProgramStage);
 
             // If we get here without throwing, the component handles empty data correctly
             expect(true).toBe(true);
@@ -213,7 +213,7 @@ describe('NewProgramStage', () => {
 
         it('properly integrates with workflow store', () => {
             // Test that component integrates with workflow store without error
-            const component = render(NewProgramStage);
+            const component = render(ProgramStage);
 
             // If the component renders successfully, workflow integration is working
             expect(component).toBeTruthy();
@@ -221,7 +221,7 @@ describe('NewProgramStage', () => {
 
         it('integrates with all required algorithm modules', () => {
             // Test that component integrates with algorithm modules without error
-            const component = render(NewProgramStage);
+            const component = render(ProgramStage);
 
             // If the component renders successfully, algorithm integration is working
             expect(component).toBeTruthy();
@@ -231,7 +231,7 @@ describe('NewProgramStage', () => {
     describe('Component Integration', () => {
         it('renders with all child components', () => {
             // This test ensures all child components are properly integrated
-            const component = render(NewProgramStage);
+            const component = render(ProgramStage);
 
             // If the component renders successfully, all child components are integrated correctly
             expect(component).toBeTruthy();
@@ -239,7 +239,7 @@ describe('NewProgramStage', () => {
 
         it('handles store updates without crashing', () => {
             // Test that component can handle store updates
-            render(NewProgramStage);
+            render(ProgramStage);
 
             // The component should handle reactive updates from stores without issues
             expect(true).toBe(true);
@@ -249,12 +249,12 @@ describe('NewProgramStage', () => {
     describe('Error Boundaries', () => {
         it('handles component initialization errors gracefully', () => {
             // Ensure component doesn't crash during initialization
-            expect(() => render(NewProgramStage)).not.toThrow();
+            expect(() => render(ProgramStage)).not.toThrow();
         });
 
         it('maintains stability with empty store data', () => {
             // All stores are mocked to return empty data, component should handle this gracefully
-            const component = render(NewProgramStage);
+            const component = render(ProgramStage);
             expect(component).toBeTruthy();
         });
     });

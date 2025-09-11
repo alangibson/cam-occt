@@ -7,20 +7,8 @@
     import ShapeProperties from '../ShapeProperties.svelte';
     import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
     import { drawingStore } from '$lib/stores/drawing';
-    import {
-        chainStore,
-        selectChain,
-        highlightChain,
-        clearChainHighlight,
-    } from '$lib/stores/chains';
-    import {
-        partStore,
-        highlightPart,
-        clearHighlight,
-        hoverPart,
-        clearPartHover,
-        selectPart,
-    } from '$lib/stores/parts';
+    import { chainStore } from '$lib/stores/chains';
+    import { partStore } from '$lib/stores/parts';
     import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
     import { pathStore } from '$lib/stores/paths';
     import {

@@ -4,7 +4,7 @@ import WorkflowContainer from './WorkflowContainer.svelte';
 import ImportStage from './stages/ImportStage.svelte';
 import EditStage from './stages/EditStage.svelte';
 import PrepareStage from './stages/PrepareStage.svelte';
-import NewProgramStage from './stages/NewProgramStage.svelte';
+import ProgramStage from './stages/ProgramStage.svelte';
 import SimulateStage from './stages/SimulateStage.svelte';
 import ExportStage from './stages/ExportStage.svelte';
 import {
@@ -36,8 +36,8 @@ describe('Workflow Components', () => {
             expect(PrepareStage).toBeDefined();
         });
 
-        it('should import NewProgramStage without errors', async () => {
-            expect(NewProgramStage).toBeDefined();
+        it('should import ProgramStage without errors', async () => {
+            expect(ProgramStage).toBeDefined();
         });
 
         it('should import SimulateStage without errors', async () => {
