@@ -67,6 +67,7 @@ describe('pathToToolPath', () => {
                     feedRate: 2000,
                     rapidRate: 5000,
                     pierceHeight: 4.0,
+                    cutHeight: 1.5,
                     pierceDelay: 1.0,
                     arcVoltage: 120,
                     kerfWidth: 1.5,

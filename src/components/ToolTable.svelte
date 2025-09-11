@@ -51,6 +51,7 @@
             feedRate: 100,
             rapidRate: 3000,
             pierceHeight: 3.8,
+            cutHeight: 1.5,
             pierceDelay: 0.5,
             arcVoltage: 120,
             kerfWidth: 1.5,
@@ -133,6 +134,7 @@
                     <th>Feed Rate<br />({displayUnit}/min)</th>
                     <th>Rapid Rate<br />({displayUnit}/min)</th>
                     <th>Pierce<br />Height<br />({displayUnit})</th>
+                    <th>Cut<br />Height<br />({displayUnit})</th>
                     <th>Pierce<br />Delay<br />(sec)</th>
                     <th>Arc<br />Voltage<br />(V)</th>
                     <th>Kerf<br />Width<br />({displayUnit})</th>
@@ -219,6 +221,20 @@
                                     updateToolField(
                                         tool.id,
                                         'pierceHeight',
+                                        parseFloat(e.currentTarget.value)
+                                    )}
+                                class="input-xs"
+                                step="0.1"
+                            />
+                        </td>
+                        <td>
+                            <input
+                                type="number"
+                                value={tool.cutHeight}
+                                onchange={(e) =>
+                                    updateToolField(
+                                        tool.id,
+                                        'cutHeight',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"

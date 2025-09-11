@@ -227,7 +227,7 @@ export function pathToToolPath(
         feedRate: tool?.feedRate || DEFAULT_FEED_RATE,
         pierceHeight: tool?.pierceHeight || DEFAULT_PIERCE_HEIGHT,
         pierceDelay: tool?.pierceDelay || DEFAULT_PIERCE_DELAY,
-        cutHeight: DEFAULT_CUT_HEIGHT, // Default cut height
+        cutHeight: tool?.cutHeight || DEFAULT_CUT_HEIGHT,
         kerf: tool?.kerfWidth || 0,
         leadInLength: path.leadInLength || 0,
         leadOutLength: path.leadOutLength || 0,

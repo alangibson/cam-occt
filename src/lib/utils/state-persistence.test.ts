@@ -211,6 +211,7 @@ describe('State Persistence', () => {
                     feedRate: 100,
                     rapidRate: 1000,
                     pierceHeight: 3,
+                    cutHeight: 1.5,
                     pierceDelay: 0.5,
                     arcVoltage: 120,
                     kerfWidth: 1.0,
