@@ -10,10 +10,8 @@
 import type { Chain } from '$lib/algorithms/chain-detection/chain-detection';
 import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
 import { generateId } from '$lib/utils/id';
-import {
-    validateSplineGeometry,
-    type SplineValidationResult,
-} from '$lib/utils/spline-validation-utils';
+import { validateSplineGeometry2 } from '$lib/geometry/spline/functions';
+import { type SplineValidationResult } from '$lib/geometry/spline/interfaces';
 import type { Line, Circle, Polyline, Ellipse } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
@@ -68,7 +66,7 @@ function processAndValidateOffsetShape(
 ): { shape: Shape; originalIndex: number; offset: number } {
     // Validate splines before adding to results
     if (offsetShape.type === 'spline') {
-        const validation: SplineValidationResult = validateSplineGeometry(
+        const validation: SplineValidationResult = validateSplineGeometry2(
             offsetShape.geometry as Spline
         );
         if (!validation.isValid && validation.repairedSpline) {

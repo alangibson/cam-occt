@@ -19,3 +19,7 @@ export interface ValidationResult {
     isValid: boolean;
     error?: string;
 }
+export interface SplineValidationResult {
+    isValid: boolean;
+    repairedSpline?: Spline;
+}

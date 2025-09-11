@@ -1,9 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import {
-    validateSplineGeometry,
+    validateSplineGeometry2,
     repairSplineKnotVector,
     validateSplineKnots,
-} from './spline-validation-utils.js';
+} from '$lib/geometry/spline/functions.js';
 import type { Spline } from '$lib/geometry/spline';
 
 describe('spline-validation-utils', () => {
@@ -24,7 +24,7 @@ describe('spline-validation-utils', () => {
     describe('validateSplineGeometry', () => {
         it('should validate a correct spline', () => {
             const spline = createValidSpline();
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
 
             expect(result.isValid).toBe(true);
             expect(result.repairedSpline).toBeUndefined();
@@ -36,7 +36,7 @@ describe('spline-validation-utils', () => {
                 controlPoints: [],
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeUndefined();
         });
@@ -47,7 +47,7 @@ describe('spline-validation-utils', () => {
                 controlPoints: undefined!,
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeUndefined();
         });
@@ -58,7 +58,7 @@ describe('spline-validation-utils', () => {
                 controlPoints: [{ x: 0, y: 0 }],
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeUndefined();
         });
@@ -69,7 +69,7 @@ describe('spline-validation-utils', () => {
                 controlPoints: 'not-array' as never,
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeUndefined();
         });
@@ -80,7 +80,7 @@ describe('spline-validation-utils', () => {
                 knots: undefined as never,
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeDefined();
             expect(result.repairedSpline!.knots).toEqual([
@@ -96,7 +96,7 @@ describe('spline-validation-utils', () => {
                 knots: [0, 0.5, 1], // Wrong length for cubic with 4 points
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeDefined();
             expect(result.repairedSpline!.knots).toHaveLength(8);
@@ -109,7 +109,7 @@ describe('spline-validation-utils', () => {
                 knots: undefined as never,
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeDefined();
             expect(result.repairedSpline!.degree).toBe(3);
@@ -121,7 +121,7 @@ describe('spline-validation-utils', () => {
                 knots: [0, 0.1, 0.2, 0.3, 0.7, 1, 1, 1], // First knots not properly clamped
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeDefined();
             expect(result.repairedSpline!.knots.slice(0, 4)).toEqual([
@@ -135,7 +135,7 @@ describe('spline-validation-utils', () => {
                 knots: [0, 0, 0, 0, 0.7, 0.8, 0.9, 1], // Last knots not properly clamped
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeDefined();
             expect(result.repairedSpline!.knots.slice(-4)).toEqual([
@@ -155,7 +155,7 @@ describe('spline-validation-utils', () => {
                 knots: undefined as never,
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeDefined();
             expect(result.repairedSpline!.knots).toHaveLength(6); // 3 + 2 + 1
@@ -168,7 +168,7 @@ describe('spline-validation-utils', () => {
                 knots: undefined as never,
             };
 
-            const result = validateSplineGeometry(spline);
+            const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
             expect(result.repairedSpline).toBeDefined();
             expect(result.repairedSpline!.weights).toEqual([1, 2, 3, 4]);
