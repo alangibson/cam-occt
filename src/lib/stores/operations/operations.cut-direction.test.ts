@@ -422,7 +422,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
     });
 
     describe('Open Chains', () => {
-        it('should handle open chains (no reversal since direction is NONE)', async () => {
+        it('should handle open chains by respecting operation cut direction', async () => {
             // Create an open line chain
             const openLine: Shape[] = [
                 {
@@ -443,7 +443,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
                 name: 'Open Line Operation',
                 targetType: 'chains',
                 targetIds: ['open-line'],
-                cutDirection: CutDirection.CLOCKWISE, // This should be ignored for open chains
+                cutDirection: CutDirection.CLOCKWISE, // This should be applied to open chains
                 toolId: null,
                 enabled: true,
                 order: 1,
@@ -468,7 +468,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             const pathsState = get(pathStore);
             const path = pathsState.paths[0];
 
-            expect(path.cutDirection).toBe(CutDirection.NONE); // Open chains should have NONE
+            expect(path.cutDirection).toBe(CutDirection.CLOCKWISE); // Should respect operation's cut direction
             expect(path.cutChain!.shapes[0].id).toBe('line1'); // Should use original order
         });
     });

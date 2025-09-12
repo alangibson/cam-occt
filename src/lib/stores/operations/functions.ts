@@ -143,7 +143,10 @@ export function createCutChain(
         geometry: { ...shape.geometry },
     }));
 
-    // For open chains, no execution direction
+    // Get the natural direction of the ORIGINAL chain (geometric property)
+    const naturalDirection = getChainCutDirection(originalChain);
+
+    // Handle case where user specifies NONE (no direction preference)
     if (userCutDirection === CutDirection.NONE) {
         return {
             cutChain: {
@@ -154,15 +157,27 @@ export function createCutChain(
         };
     }
 
-    // Get the natural direction of the ORIGINAL chain (geometric property)
-    const naturalDirection = getChainCutDirection(originalChain);
-
     // Determine final execution order based on user preference vs natural direction
     let executionShapes: Shape[];
     let executionClockwise: boolean;
 
-    if (naturalDirection !== userCutDirection) {
-        // User wants opposite of natural direction - reverse the entire chain
+    // For open chains (naturalDirection is NONE), apply user's requested direction
+    if (naturalDirection === CutDirection.NONE) {
+        // Open chain - user wants specific direction
+        // For open chains, we can interpret direction as traversal order:
+        // CLOCKWISE = original order, COUNTERCLOCKWISE = reversed order
+        if (userCutDirection === CutDirection.COUNTERCLOCKWISE) {
+            const reversedChain = reverseChain({
+                id: originalChain.id,
+                shapes: clonedShapes,
+            });
+            executionShapes = reversedChain.shapes;
+        } else {
+            executionShapes = clonedShapes;
+        }
+        executionClockwise = userCutDirection === CutDirection.CLOCKWISE;
+    } else if (naturalDirection !== userCutDirection) {
+        // Closed chain - user wants opposite of natural direction
         const reversedChain = reverseChain({
             id: originalChain.id,
             shapes: clonedShapes,
@@ -170,7 +185,7 @@ export function createCutChain(
         executionShapes = reversedChain.shapes;
         executionClockwise = userCutDirection === CutDirection.CLOCKWISE;
     } else {
-        // User wants same as natural direction - keep cloned shapes in order
+        // Closed chain - user wants same as natural direction
         executionShapes = clonedShapes;
         executionClockwise = userCutDirection === CutDirection.CLOCKWISE;
     }
@@ -199,11 +214,7 @@ export function generatePathsForChainWithOperation(
     if (!chain) {
         return { paths: [], warnings: [] };
     }
-    const storedDirection: CutDirection = getChainCutDirection(chain);
-    const cutDirection: CutDirection =
-        storedDirection === CutDirection.NONE
-            ? CutDirection.NONE
-            : operation.cutDirection;
+    const cutDirection: CutDirection = operation.cutDirection;
 
     // Convert KerfCompensation to OffsetDirection for chains
     let kerfCompensation: OffsetDirection = OffsetDirection.NONE;
