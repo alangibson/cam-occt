@@ -1,6 +1,4 @@
 <script lang="ts">
-    import { pathsToToolPaths } from '$lib/cam/path-to-toolpath';
-    import { generateGCode } from '$lib/cam/gcode-generator';
     import { drawingStore } from '$lib/stores/drawing';
     import { pathStore } from '$lib/stores/paths';
     import { chainStore } from '$lib/stores/chains';
@@ -10,6 +8,8 @@
     import { Unit } from '$lib/utils/units';
     import { CutterCompensation } from '$lib/types/cam';
     import { onMount, createEventDispatcher } from 'svelte';
+    import { pathsToToolPaths } from '$lib/cam/path-generator/path-to-toolpath';
+    import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';
 
     // Props from parent component
     export let includeComments: boolean = true;

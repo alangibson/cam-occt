@@ -3,9 +3,9 @@ import type { Tool } from '$lib/stores/tools';
 import type { Line, Point2D, Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { OffsetDirection } from '../algorithms/offset-calculation/offset/types';
 import { pathToToolPath, pathsToToolPaths } from './path-to-toolpath';
 import { GeometryType, getShapePoints } from '$lib/geometry/shape';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 // Mock getShapePoints function
 vi.mock('$lib/geometry/shape', async () => {

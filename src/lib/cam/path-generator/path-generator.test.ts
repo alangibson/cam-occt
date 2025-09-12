@@ -1,5 +1,4 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { generateToolPaths } from './path-generator';
 import {
     type Circle,
     type CuttingParameters,
@@ -11,6 +10,7 @@ import {
 } from '$lib/types';
 
 import { GeometryType, getShapePoints } from '$lib/geometry/shape';
+import { generateToolPaths } from './path-generator';
 
 // Mock getShapePoints function
 vi.mock('$lib/geometry/shape', async () => {

@@ -7,7 +7,7 @@ import {
     calculateLeadPoints,
     getCachedLeadGeometry,
     hasValidCachedLeads,
-} from '../utils/lead-persistence-utils';
+} from '../../utils/lead-persistence-utils';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
@@ -18,7 +18,7 @@ import {
     DEFAULT_FEED_RATE,
     DEFAULT_PIERCE_DELAY,
     DEFAULT_PIERCE_HEIGHT,
-} from './constants';
+} from '../constants';
 
 /**
  * Convert a Path from the path store to a ToolPath for G-code generation.
