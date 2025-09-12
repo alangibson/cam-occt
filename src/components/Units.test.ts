@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Units from './Units.svelte';
-import { drawingStore } from '$lib/stores/drawing';
+import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/utils/units';
 
 describe('Units Component', () => {

@@ -1,12 +1,7 @@
 <script lang="ts">
-    import {
-        pathStore,
-        selectPath,
-        highlightPath,
-        clearPathHighlight,
-    } from '$lib/stores/paths';
-    import { operationsStore } from '$lib/stores/operations';
-    import { toolStore } from '$lib/stores/tools';
+    import { pathStore } from '$lib/stores/paths/store';
+    import { operationsStore } from '$lib/stores/operations/store';
+    import { toolStore } from '$lib/stores/tools/store';
     import { flip } from 'svelte/animate';
     import { onMount } from 'svelte';
 
@@ -28,18 +23,18 @@
 
     function handlePathClick(pathId: string) {
         if (selectedPathId === pathId) {
-            selectPath(null); // Deselect if already selected
+            pathStore.selectPath(null); // Deselect if already selected
         } else {
-            selectPath(pathId);
+            pathStore.selectPath(pathId);
         }
     }
 
     function handlePathHover(pathId: string | null) {
         highlightedPathId = pathId;
         if (pathId) {
-            highlightPath(pathId);
+            pathStore.highlightPath(pathId);
         } else {
-            clearPathHighlight();
+            pathStore.clearHighlight();
         }
     }
 

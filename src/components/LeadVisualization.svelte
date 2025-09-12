@@ -1,6 +1,5 @@
 <script lang="ts">
-    import type { Path } from '$lib/stores/paths';
-    import type { Operation } from '$lib/stores/operations';
+    import type { Path } from '$lib/stores/paths/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import {
         calculateLeads,
@@ -15,6 +14,7 @@
         hasValidCachedLeads,
     } from '$lib/utils/lead-persistence-utils';
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
+    import type { Operation } from '$lib/stores/operations/interfaces';
 
     // Props
     export let ctx: CanvasRenderingContext2D;

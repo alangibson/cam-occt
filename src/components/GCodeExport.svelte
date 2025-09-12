@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { drawingStore } from '$lib/stores/drawing';
-    import { pathStore } from '$lib/stores/paths';
-    import { chainStore } from '$lib/stores/chains';
-    import { partStore } from '$lib/stores/parts';
-    import { toolStore } from '$lib/stores/tools';
+    import { drawingStore } from '$lib/stores/drawing/store';
+    import { pathStore } from '$lib/stores/paths/store';
+    import { chainStore } from '$lib/stores/chains/store';
+    import { partStore } from '$lib/stores/parts/store';
+    import { toolStore } from '$lib/stores/tools/store';
     import type { CuttingParameters } from '$lib/types';
     import { Unit } from '$lib/utils/units';
     import { CutterCompensation } from '$lib/types/cam';

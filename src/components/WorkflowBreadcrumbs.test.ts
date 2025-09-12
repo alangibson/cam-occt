@@ -2,11 +2,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import WorkflowBreadcrumbs from './WorkflowBreadcrumbs.svelte';
-import { WorkflowStage, workflowStore } from '$lib/stores/workflow';
-import { uiStore } from '$lib/stores/ui';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
+import { uiStore } from '$lib/stores/ui/store';
 
-// Mock the stores
-vi.mock('$lib/stores/workflow', () => ({
+// Mock the stores with corrected paths
+vi.mock('$lib/stores/workflow/store', () => ({
+    workflowStore: {
+        subscribe: vi.fn(),
+        currentStage: 'import',
+        completedStages: new Set(),
+        canAdvanceTo: vi.fn().mockReturnValue(true),
+        setStage: vi.fn(),
+    },
+}));
+
+vi.mock('$lib/stores/workflow/enums', () => ({
     WorkflowStage: {
         IMPORT: 'import',
         EDIT: 'edit',
@@ -15,13 +26,9 @@ vi.mock('$lib/stores/workflow', () => ({
         SIMULATE: 'simulate',
         EXPORT: 'export',
     },
-    workflowStore: {
-        subscribe: vi.fn(),
-        currentStage: 'import',
-        completedStages: new Set(),
-        canAdvanceTo: vi.fn().mockReturnValue(true),
-        setStage: vi.fn(),
-    },
+}));
+
+vi.mock('$lib/stores/workflow/functions', () => ({
     getStageDisplayName: vi.fn((stage: string) => {
         const names = {
             import: 'Import',
@@ -35,7 +42,7 @@ vi.mock('$lib/stores/workflow', () => ({
     }),
 }));
 
-vi.mock('$lib/stores/ui', () => ({
+vi.mock('$lib/stores/ui/store', () => ({
     uiStore: {
         hideToolTable: vi.fn(),
     },

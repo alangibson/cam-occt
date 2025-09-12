@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { clearHighlight, partStore } from '$lib/stores/parts';
-import { chainStore, selectChain } from '$lib/stores/chains';
+import { partStore } from '$lib/stores/parts/store';
+import { chainStore } from '$lib/stores/chains/store';
 
 // Mock the Operations component functions directly
 describe('Operations Component Hover Functions', () => {
@@ -13,33 +13,24 @@ describe('Operations Component Hover Functions', () => {
         hoveredPartId = partId;
         if (partId) {
             // This should call the highlightPart function
-            partStore.update((state) => ({
-                ...state,
-                highlightedPartId: partId,
-            }));
+            partStore.highlightPart(partId);
         } else {
             // This should call clearHighlight
-            partStore.update((state) => ({
-                ...state,
-                highlightedPartId: null,
-            }));
+            partStore.clearHighlight();
         }
     }
 
     function handlePathHover(pathId: string | null) {
         hoveredPathId = pathId;
         // This should call selectChain
-        chainStore.update((state) => ({
-            ...state,
-            selectedChainId: pathId,
-        }));
+        chainStore.selectChain(pathId);
     }
 
     beforeEach(() => {
         hoveredPartId = null;
         hoveredPathId = null;
-        clearHighlight();
-        selectChain(null);
+        partStore.clearHighlight();
+        chainStore.selectChain(null);
     });
 
     it('should update part store when hovering over part', () => {

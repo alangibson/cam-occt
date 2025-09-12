@@ -1,9 +1,5 @@
-import {
-    clearChainHighlight,
-    highlightChain,
-    selectChain,
-} from '$lib/stores/chains';
-import { clearPartHover, hoverPart, selectPart } from '$lib/stores/parts';
+import { chainStore } from '$lib/stores/chains/store';
+import { partStore } from '$lib/stores/parts/store';
 import type {
     DetectedPart,
     PartHole,
@@ -39,36 +35,36 @@ export function handleChainClick(
     selectedChainId: string | null
 ) {
     if (selectedChainId === chainId) {
-        selectChain(null); // Deselect if already selected
+        chainStore.selectChain(null); // Deselect if already selected
     } else {
-        selectChain(chainId);
+        chainStore.selectChain(chainId);
     }
 }
 
 // Chain hover functions
 export function handleChainMouseEnter(chainId: string) {
-    highlightChain(chainId);
+    chainStore.highlightChain(chainId);
 }
 
 export function handleChainMouseLeave() {
     // Clear chain highlight on mouse leave since chains have separate selection state
-    clearChainHighlight();
+    chainStore.clearChainHighlight();
 }
 
 // Part selection functions
 export function handlePartClick(partId: string, selectedPartId: string | null) {
     if (selectedPartId === partId) {
-        selectPart(null);
+        partStore.selectPart(null);
     } else {
-        selectPart(partId);
+        partStore.selectPart(partId);
     }
 }
 
 // Part hover functions
 export function handlePartMouseEnter(partId: string) {
-    hoverPart(partId);
+    partStore.hoverPart(partId);
 }
 
 export function handlePartMouseLeave() {
-    clearPartHover();
+    partStore.clearPartHover();
 }

@@ -3,9 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Paths from './Paths.svelte';
-import { highlightPath, pathStore, selectPath } from '$lib/stores/paths';
-import { operationsStore } from '$lib/stores/operations';
-import { toolStore } from '$lib/stores/tools';
+import { pathStore } from '$lib/stores/paths/store';
+import { operationsStore } from '$lib/stores/operations/store';
+import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 
@@ -118,8 +118,8 @@ describe('Paths Component - Function Coverage', () => {
             const pathState = get(pathStore);
             const pathId = pathState.paths[0]?.id;
 
-            // First select the path using selectPath
-            selectPath(pathId!);
+            // First select the path using pathStore method
+            pathStore.selectPath(pathId!);
 
             // Then click it again to deselect
             const pathItem = container.querySelector('.path-item');
@@ -160,7 +160,7 @@ describe('Paths Component - Function Coverage', () => {
     describe('hover and utility functions', () => {
         it('should test highlight functions', () => {
             // Test highlightPath function directly
-            highlightPath('path-1');
+            pathStore.highlightPath('path-1');
 
             const pathState = get(pathStore);
             expect(pathState.highlightedPathId).toBe('path-1');

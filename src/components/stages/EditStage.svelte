@@ -6,9 +6,11 @@
     import ShapeProperties from '../ShapeProperties.svelte';
     import Units from '../Units.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
-    import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
-    import { drawingStore } from '$lib/stores/drawing';
-    import { overlayStore, generateShapePoints } from '$lib/stores/overlay';
+    import { workflowStore } from '$lib/stores/workflow/store';
+    import { WorkflowStage } from '$lib/stores/workflow/enums';
+    import { drawingStore } from '$lib/stores/drawing/store';
+    import { overlayStore } from '$lib/stores/overlay/store';
+    import { generateShapePoints } from '$lib/stores/overlay/functions';
 
     function handleNext() {
         workflowStore.completeStage(WorkflowStage.EDIT);

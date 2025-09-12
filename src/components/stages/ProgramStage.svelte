@@ -5,18 +5,19 @@
     import Paths from '../Paths.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
     import ShapeProperties from '../ShapeProperties.svelte';
-    import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
-    import { drawingStore } from '$lib/stores/drawing';
-    import { chainStore } from '$lib/stores/chains';
-    import { partStore } from '$lib/stores/parts';
+    import { workflowStore } from '$lib/stores/workflow/store';
+    import { WorkflowStage } from '$lib/stores/workflow/enums';
+    import { drawingStore } from '$lib/stores/drawing/store';
+    import { chainStore } from '$lib/stores/chains/store';
+    import { partStore } from '$lib/stores/parts/store';
     import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
-    import { pathStore } from '$lib/stores/paths';
+    import { pathStore } from '$lib/stores/paths/store';
+    import { rapidStore } from '$lib/stores/rapids/store';
     import {
-        rapidStore,
         selectRapid,
         highlightRapid,
         clearRapidHighlight,
-    } from '$lib/stores/rapids';
+    } from '$lib/stores/rapids/functions';
     import {
         handleChainClick as sharedHandleChainClick,
         handleChainMouseEnter,
@@ -25,8 +26,8 @@
         handlePartMouseEnter,
         handlePartMouseLeave,
     } from '$lib/algorithms/part-detection/chain-part-interactions';
-    import { leadWarningsStore } from '$lib/stores/lead-warnings';
-    import { offsetWarningsStore } from '$lib/stores/offset-warnings';
+    import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
+    import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
     import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
 
     let operationsComponent: Operations;

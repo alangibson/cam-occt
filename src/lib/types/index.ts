@@ -5,7 +5,7 @@ export * from './geometry';
 export * from '$lib/algorithms/part-detection/part-detection';
 export * from './ui';
 export { Unit } from '../utils/units';
-export { WorkflowStage } from '$lib/stores/workflow';
+export { WorkflowStage } from '$lib/stores/workflow/enums';
 
 // Re-export geometry types for backward compatibility
 export type { Arc } from '../geometry/arc';

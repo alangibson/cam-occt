@@ -1,4 +1,4 @@
-import type { Path } from '$lib/stores/paths';
+import type { Path } from '$lib/stores/paths/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';

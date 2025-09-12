@@ -2,24 +2,19 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
-import { operationsStore } from '$lib/stores/operations';
-import { clearParts, highlightPart, partStore } from '$lib/stores/parts';
-import {
-    chainStore,
-    clearChainSelection,
-    clearChains,
-    selectChain,
-} from '$lib/stores/chains';
-import { toolStore } from '$lib/stores/tools';
+import { operationsStore } from '$lib/stores/operations/store';
+import { partStore } from '$lib/stores/parts/store';
+import { chainStore } from '$lib/stores/chains/store';
+import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
 
 describe('Operations Auto-Selection Feature', () => {
     beforeEach(() => {
         // Clear all stores
         operationsStore.reset();
-        clearParts();
-        clearChains();
-        clearChainSelection();
+        partStore.clearParts();
+        chainStore.clearChains();
+        chainStore.clearChainSelection();
         toolStore.reset();
 
         // Add a test tool
@@ -44,7 +39,7 @@ describe('Operations Auto-Selection Feature', () => {
 
     it('should auto-select highlighted part when adding new operation', async () => {
         // Highlight a part
-        highlightPart('part-1');
+        partStore.highlightPart('part-1');
 
         // Render the component
         const { container: _container } = render(Operations);
@@ -83,7 +78,7 @@ describe('Operations Auto-Selection Feature', () => {
 
     it('should auto-select selected chain when adding new operation', async () => {
         // Select a chain
-        selectChain('chain-2');
+        chainStore.selectChain('chain-2');
 
         // Render the component
         const { container: _container } = render(Operations);
@@ -123,8 +118,8 @@ describe('Operations Auto-Selection Feature', () => {
 
     it('should prioritize part over chain when both are selected', async () => {
         // Select both a part and a chain
-        highlightPart('part-3');
-        selectChain('chain-4');
+        partStore.highlightPart('part-3');
+        chainStore.selectChain('chain-4');
 
         // Render the component
         const { container: _container } = render(Operations);

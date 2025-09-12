@@ -6,16 +6,17 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
     restoreApplicationState,
     saveApplicationState,
-} from '$lib/stores/persistence';
-import { drawingStore } from '$lib/stores/drawing';
-import { pathStore } from '$lib/stores/paths';
-import { operationsStore } from '$lib/stores/operations';
-import { setChains } from '$lib/stores/chains';
-import { WorkflowStage, workflowStore } from '$lib/stores/workflow';
+} from '$lib/stores/storage/store';
+import { drawingStore } from '$lib/stores/drawing/store';
+import { pathStore } from '$lib/stores/paths/store';
+import { operationsStore } from '$lib/stores/operations/store';
+import { chainStore } from '$lib/stores/chains/store';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { GeometryType } from '$lib/types/geometry';
-import type { PathsState } from '$lib/stores/paths';
-import type { WorkflowState } from '$lib/stores/workflow';
+import type { PathsState } from '$lib/stores/paths/interfaces';
+import type { WorkflowState } from '$lib/stores/workflow/interfaces';
 import { Unit } from './units';
 
 // Mock localStorage
@@ -71,7 +72,7 @@ describe('Complete Persistence Integration', () => {
         };
 
         drawingStore.setDrawing(testDrawing, 'complete-test.dxf');
-        setChains([testChain]);
+        chainStore.setChains([testChain]);
 
         // 2. Progress through workflow stages
         workflowStore.completeStage(WorkflowStage.IMPORT);

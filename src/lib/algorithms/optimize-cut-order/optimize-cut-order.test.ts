@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
-import type { Path } from '$lib/stores/paths';
+import type { Path } from '$lib/stores/paths/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Arc, Circle, Ellipse, Line, Polyline, Shape } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';

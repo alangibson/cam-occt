@@ -5,7 +5,7 @@
  * Consolidates duplicated lead configuration code across the application.
  */
 
-import type { Path } from '$lib/stores/paths';
+import type { Path } from '$lib/stores/paths/interfaces';
 import type {
     LeadInConfig,
     LeadOutConfig,

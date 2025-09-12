@@ -1,6 +1,6 @@
 <script lang="ts">
-    import { toolStore, type Tool } from '$lib/stores/tools';
-    import { drawingStore } from '$lib/stores/drawing';
+    import { toolStore, type Tool } from '$lib/stores/tools/store';
+    import { drawingStore } from '$lib/stores/drawing/store';
     import { flip } from 'svelte/animate';
     import { onMount } from 'svelte';
 

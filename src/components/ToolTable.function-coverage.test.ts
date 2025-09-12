@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import ToolTable from './ToolTable.svelte';
-import { toolStore } from '$lib/stores/tools';
+import { toolStore } from '$lib/stores/tools/store';
 
 // Mock localStorage
 const localStorageMock = {

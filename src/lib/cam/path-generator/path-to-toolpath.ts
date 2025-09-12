@@ -1,7 +1,7 @@
 import { LeadType, type Point2D, type Shape, type ToolPath } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
-import type { Path } from '$lib/stores/paths';
-import type { Tool } from '$lib/stores/tools';
+import type { Path } from '$lib/stores/paths/interfaces';
+import type { Tool } from '$lib/stores/tools/interfaces';
 import { getShapePoints } from '$lib/geometry/shape';
 import {
     calculateLeadPoints,

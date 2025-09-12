@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { prepareChainsAndLeadConfigs } from './path-optimization-utils';
-import type { Path } from '$lib/stores/paths';
+import type { Path } from '$lib/stores/paths/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';

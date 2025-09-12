@@ -5,7 +5,7 @@ import {
     createLeadOutConfig,
 } from './lead-config-utils';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import type { Path } from '$lib/stores/paths';
+import type { Path } from '$lib/stores/paths/interfaces';
 
 // Helper function to create test path
 function createTestPath(overrides: Partial<Path> = {}): Path {

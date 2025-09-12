@@ -16,15 +16,16 @@
      */
     import AccordionPanel from '../AccordionPanel.svelte';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
-    import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
-    import { pathStore } from '$lib/stores/paths';
-    import { rapidStore } from '$lib/stores/rapids';
-    import { chainStore } from '$lib/stores/chains';
-    import { operationsStore } from '$lib/stores/operations';
-    import { drawingStore } from '$lib/stores/drawing';
-    import { toolStore } from '$lib/stores/tools';
-    import { overlayStore } from '$lib/stores/overlay';
-    import { partStore } from '$lib/stores/parts';
+    import { workflowStore } from '$lib/stores/workflow/store';
+    import { WorkflowStage } from '$lib/stores/workflow/enums';
+    import { pathStore } from '$lib/stores/paths/store';
+    import { rapidStore } from '$lib/stores/rapids/store';
+    import { chainStore } from '$lib/stores/chains/store';
+    import { operationsStore } from '$lib/stores/operations/store';
+    import { drawingStore } from '$lib/stores/drawing/store';
+    import { toolStore } from '$lib/stores/tools/store';
+    import { overlayStore } from '$lib/stores/overlay/store';
+    import { partStore } from '$lib/stores/parts/store';
     import {
         hasValidCachedLeads,
         getCachedLeadGeometry,
@@ -42,7 +43,7 @@
     } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { Path } from '$lib/stores/paths';
+    import type { Path } from '$lib/stores/paths/interfaces';
     import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
     import { polylineToPoints } from '$lib/geometry/polyline';

@@ -3,14 +3,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
-import { operationsStore } from '$lib/stores/operations';
-import { toolStore } from '$lib/stores/tools';
-import {
-    chainStore,
-    clearChainSelection,
-    clearChains,
-} from '$lib/stores/chains';
-import { clearParts, partStore, selectPart } from '$lib/stores/parts';
+import { operationsStore } from '$lib/stores/operations/store';
+import { toolStore } from '$lib/stores/tools/store';
+import { chainStore } from '$lib/stores/chains/store';
+import { partStore } from '$lib/stores/parts/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { PartShell } from '$lib/algorithms/part-detection/part-detection';
@@ -63,9 +59,9 @@ describe('Operations Component - Function Coverage', () => {
         // Reset all stores
         operationsStore.reset();
         toolStore.reset();
-        clearParts();
-        clearChains();
-        clearChainSelection();
+        partStore.clearParts();
+        chainStore.clearChains();
+        chainStore.clearChainSelection();
 
         // Add test tool
         toolStore.addTool({
@@ -98,7 +94,7 @@ describe('Operations Component - Function Coverage', () => {
             const { component: comp } = render(Operations);
             component = comp;
 
-            selectPart('part-1');
+            partStore.selectPart('part-1');
 
             // Call addNewOperation function
             comp.addNewOperation();
@@ -114,11 +110,8 @@ describe('Operations Component - Function Coverage', () => {
             component = comp;
 
             // Add chain to store first
-            chainStore.update((state) => ({
-                ...state,
-                chains: [{ id: 'chain-1', shapes: [] }],
-                selectedChainId: 'chain-1',
-            }));
+            chainStore.setChains([{ id: 'chain-1', shapes: [] }]);
+            chainStore.selectChain('chain-1');
 
             comp.addNewOperation();
 
@@ -501,16 +494,13 @@ describe('Operations Component - Function Coverage', () => {
             });
 
             // Add parts to part store
-            partStore.update((state) => ({
-                ...state,
-                parts: [
-                    {
-                        id: 'part-1',
-                        shell: createMockPartShell('1'),
-                        holes: [],
-                    },
-                ],
-            }));
+            partStore.setParts([
+                {
+                    id: 'part-1',
+                    shell: createMockPartShell('1'),
+                    holes: [],
+                },
+            ]);
 
             const partCheckbox = container.querySelector(
                 'input[type="checkbox"][value="part-1"]'
@@ -529,16 +519,13 @@ describe('Operations Component - Function Coverage', () => {
             const { container } = render(Operations);
 
             // Add parts to store
-            partStore.update((state) => ({
-                ...state,
-                parts: [
-                    {
-                        id: 'part-1',
-                        shell: createMockPartShell('1'),
-                        holes: [],
-                    },
-                ],
-            }));
+            partStore.setParts([
+                {
+                    id: 'part-1',
+                    shell: createMockPartShell('1'),
+                    holes: [],
+                },
+            ]);
 
             operationsStore.addOperation({
                 name: 'Test Op',
@@ -577,10 +564,7 @@ describe('Operations Component - Function Coverage', () => {
             const { container } = render(Operations);
 
             // Add chains to store
-            chainStore.update((state) => ({
-                ...state,
-                chains: [{ id: 'chain-1', shapes: [] }],
-            }));
+            chainStore.setChains([{ id: 'chain-1', shapes: [] }]);
 
             operationsStore.addOperation({
                 name: 'Test Op',

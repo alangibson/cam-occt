@@ -1,10 +1,11 @@
 <script lang="ts">
     import FileImport from '../FileImport.svelte';
-    import { workflowStore, WorkflowStage } from '$lib/stores/workflow';
-    import { clearChains } from '$lib/stores/chains';
-    import { clearParts } from '$lib/stores/parts';
-    import { overlayStore } from '$lib/stores/overlay';
-    import { tessellationStore } from '$lib/stores/tessellation';
+    import { workflowStore } from '$lib/stores/workflow/store';
+    import { WorkflowStage } from '$lib/stores/workflow/enums';
+    import { chainStore } from '$lib/stores/chains/store';
+    import { partStore } from '$lib/stores/parts/store';
+    import { overlayStore } from '$lib/stores/overlay/store';
+    import { tessellationStore } from '$lib/stores/tessellation/store';
 
     function handleFileImported() {
         // Reset all application state when a new file is imported
@@ -14,8 +15,8 @@
         workflowStore.reset();
 
         // Clear all stage-specific data
-        clearChains();
-        clearParts();
+        chainStore.clearChains();
+        partStore.clearParts();
         overlayStore.clearAllOverlays();
         tessellationStore.clearTessellation();
 

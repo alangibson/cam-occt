@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { type Operation, operationsStore } from '$lib/stores/operations';
-import { pathStore } from '$lib/stores/paths';
-import { clearChains, setChains } from '$lib/stores/chains';
+import { operationsStore } from '$lib/stores/operations/store';
+import { pathStore } from '$lib/stores/paths/store';
+import { chainStore } from '$lib/stores/chains/store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
 import { GeometryType } from '$lib/geometry/shape';
+import type { Operation } from '$lib/stores/operations/interfaces';
 
 // Helper to wait for async path generation
 async function waitForPaths(expectedCount: number, timeout = 200) {
@@ -64,7 +65,7 @@ describe('Cut Direction End-to-End Integration', () => {
     beforeEach(() => {
         operationsStore.reset();
         pathStore.reset();
-        clearChains();
+        chainStore.clearChains();
     });
 
     it('should respect user Cut Direction in Program stage (rendering arrows)', async () => {
@@ -97,7 +98,7 @@ describe('Cut Direction End-to-End Integration', () => {
             shapes: clockwiseSquare,
         };
 
-        setChains([chain]);
+        chainStore.setChains([chain]);
 
         // Test 1: Create operation with COUNTERCLOCKWISE direction (opposite of natural)
         const operation: Omit<Operation, 'id'> = {
@@ -186,7 +187,7 @@ describe('Cut Direction End-to-End Integration', () => {
             shapes: counterclockwiseSquare,
         };
 
-        setChains([chain]);
+        chainStore.setChains([chain]);
 
         // Create operation with CLOCKWISE direction (opposite of natural)
         const operation: Omit<Operation, 'id'> = {
@@ -263,7 +264,7 @@ describe('Cut Direction End-to-End Integration', () => {
             shapes: clockwiseSquare,
         };
 
-        setChains([chain]);
+        chainStore.setChains([chain]);
 
         const operation: Omit<Operation, 'id'> = {
             name: 'Test Operation',

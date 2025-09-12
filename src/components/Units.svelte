@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { drawingStore } from '$lib/stores/drawing';
+    import { drawingStore } from '$lib/stores/drawing/store';
     import { Unit } from '$lib/utils/units';
 
     // Get current display unit from store

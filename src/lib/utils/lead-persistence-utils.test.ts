@@ -4,38 +4,34 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-    calculateAndStoreOperationLeads,
-    calculateAndStorePathLeads,
     getCachedLeadGeometry,
     hasValidCachedLeads,
 } from './lead-persistence-utils';
-import type { Path } from '$lib/stores/paths';
-import type { Operation } from '$lib/stores/operations';
+import type { Path } from '$lib/stores/paths/interfaces';
+import { calculatePathLeads } from '$lib/stores/operations/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import { GeometryType } from '$lib/types/geometry';
-import { chainStore } from '$lib/stores/chains';
-import { partStore } from '$lib/stores/parts';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { pathStore } from '$lib/stores/paths';
 import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
-import { get } from 'svelte/store';
+import type { Operation } from '$lib/stores/operations/interfaces';
 
 // Mock the stores
-vi.mock('$lib/stores/paths', () => ({
+vi.mock('$lib/stores/paths/store', () => ({
     pathStore: {
         updatePathLeadGeometry: vi.fn(),
+        subscribe: vi.fn(() => vi.fn()),
     },
 }));
 
-vi.mock('$lib/stores/chains', () => ({
+vi.mock('$lib/stores/chains/store', () => ({
     chainStore: {
         subscribe: vi.fn(() => vi.fn()),
     },
 }));
 
-vi.mock('$lib/stores/parts', () => ({
+vi.mock('$lib/stores/parts/store', () => ({
     partStore: {
         subscribe: vi.fn(() => vi.fn()),
     },
@@ -62,14 +58,18 @@ vi.mock('$lib/algorithms/leads/lead-calculation', () => ({
     })),
 }));
 
-// Mock svelte/store get function
-vi.mock('svelte/store', () => ({
-    get: vi.fn(() => ({
-        chains: [],
-        parts: [],
-        paths: [],
-    })),
-}));
+// Mock svelte/store get function with partial mock to preserve writable
+vi.mock('svelte/store', async (importOriginal) => {
+    const actual = await importOriginal<typeof import('svelte/store')>();
+    return {
+        ...actual,
+        get: vi.fn(() => ({
+            chains: [],
+            parts: [],
+            paths: [],
+        })),
+    };
+});
 
 describe('Lead Persistence Utils', () => {
     const mockPath: Path = {
@@ -292,17 +292,16 @@ describe('Lead Persistence Utils', () => {
         });
     });
 
-    describe('calculateAndStorePathLeads', () => {
-        it('should calculate and store lead geometry', async () => {
-            await calculateAndStorePathLeads(
+    describe('calculatePathLeads', () => {
+        it('should calculate and return lead geometry', async () => {
+            const result = await calculatePathLeads(
                 mockPath,
                 mockOperation,
                 mockChain,
                 []
             );
 
-            expect(pathStore.updatePathLeadGeometry).toHaveBeenCalledWith(
-                'path-1',
+            expect(result).toEqual(
                 expect.objectContaining({
                     leadIn: {
                         points: [
@@ -359,7 +358,7 @@ describe('Lead Persistence Utils', () => {
                 },
             };
 
-            await calculateAndStorePathLeads(
+            const result = await calculatePathLeads(
                 pathWithOffset,
                 mockOperation,
                 mockChain,
@@ -378,7 +377,10 @@ describe('Lead Persistence Utils', () => {
                 undefined
             );
 
-            expect(pathStore.updatePathLeadGeometry).toHaveBeenCalled();
+            // Verify result was returned
+            expect(result).toBeDefined();
+            expect(result.leadIn).toBeDefined();
+            expect(result.leadOut).toBeDefined();
         });
 
         it('should use original geometry when calculatedOffset has empty shapes', async () => {
@@ -403,7 +405,7 @@ describe('Lead Persistence Utils', () => {
                 },
             };
 
-            await calculateAndStorePathLeads(
+            const result = await calculatePathLeads(
                 pathWithEmptyOffset,
                 mockOperation,
                 mockChain,
@@ -419,7 +421,8 @@ describe('Lead Persistence Utils', () => {
                 undefined
             );
 
-            expect(pathStore.updatePathLeadGeometry).toHaveBeenCalled();
+            // Verify result was returned
+            expect(result).toBeDefined();
         });
 
         it('should skip calculation when both leads are disabled', async () => {
@@ -429,14 +432,15 @@ describe('Lead Persistence Utils', () => {
                 leadOutType: LeadType.NONE,
             };
 
-            await calculateAndStorePathLeads(
+            const result = await calculatePathLeads(
                 pathNoLeads,
                 mockOperation,
                 mockChain,
                 []
             );
 
-            expect(pathStore.updatePathLeadGeometry).not.toHaveBeenCalled();
+            expect(result).toEqual({});
+            expect(calculateLeads).not.toHaveBeenCalled();
         });
 
         it('should handle calculation errors gracefully', async () => {
@@ -445,15 +449,14 @@ describe('Lead Persistence Utils', () => {
                 throw new Error('Calculation failed');
             });
 
-            await calculateAndStorePathLeads(
+            const result = await calculatePathLeads(
                 mockPath,
                 mockOperation,
                 mockChain,
                 []
             );
 
-            expect(pathStore.updatePathLeadGeometry).toHaveBeenCalledWith(
-                'path-1',
+            expect(result).toEqual(
                 expect.objectContaining({
                     validation: {
                         isValid: false,
@@ -463,26 +466,6 @@ describe('Lead Persistence Utils', () => {
                     },
                 })
             );
-        });
-    });
-
-    describe('calculateAndStoreOperationLeads', () => {
-        it('should calculate leads for all paths in operation', async () => {
-            // Mock store states
-            vi.mocked(get).mockImplementation((store) => {
-                if (store === pathStore) {
-                    return { paths: [mockPath] };
-                }
-                if (store === chainStore || store === partStore) {
-                    // chainStore or partStore
-                    return { chains: [mockChain], parts: [] };
-                }
-                return {};
-            });
-
-            await calculateAndStoreOperationLeads(mockOperation);
-
-            expect(pathStore.updatePathLeadGeometry).toHaveBeenCalledTimes(1);
         });
     });
 });

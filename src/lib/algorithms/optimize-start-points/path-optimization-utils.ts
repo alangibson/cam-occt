@@ -1,4 +1,4 @@
-import type { Path } from '$lib/stores/paths';
+import type { Path } from '$lib/stores/paths/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
     type Arc,

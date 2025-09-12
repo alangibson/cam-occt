@@ -1,6 +1,6 @@
 import { render } from '@testing-library/svelte';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { WorkflowStage } from '$lib/stores/workflow';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 import ProgramStage from './ProgramStage.svelte';
 
 // Mock all store dependencies

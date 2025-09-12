@@ -21,22 +21,19 @@
         getShapeEndPoint,
         getShapeStartPoint,
     } from '$lib/geometry/shape/functions';
+    import { chainStore } from '$lib/stores/chains/store';
+    import { drawingStore } from '$lib/stores/drawing/store';
+    import { overlayStore } from '$lib/stores/overlay/store';
     import {
-        chainStore,
-        clearChains,
-        selectChain,
-        setChains,
-        setTolerance,
-    } from '$lib/stores/chains';
-    import { drawingStore } from '$lib/stores/drawing';
-    import { generateChainEndpoints, overlayStore } from '$lib/stores/overlay';
-    import { clearParts, partStore, setParts } from '$lib/stores/parts';
-    import { prepareStageStore } from '$lib/stores/prepare-stage';
-    import {
-        tessellationStore,
-        type TessellationPoint,
-    } from '$lib/stores/tessellation';
-    import { WorkflowStage, workflowStore } from '$lib/stores/workflow';
+        generateShapePoints,
+        generateChainEndpoints,
+    } from '$lib/stores/overlay/functions';
+    import { partStore } from '$lib/stores/parts/store';
+    import { prepareStageStore } from '$lib/stores/prepare-stage/store';
+    import { tessellationStore } from '$lib/stores/tessellation/store';
+    import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
+    import { workflowStore } from '$lib/stores/workflow/store';
+    import { WorkflowStage } from '$lib/stores/workflow/enums';
     import {
         GeometryType,
         type Arc,
@@ -167,7 +164,7 @@
             prepareStageStore.setChainNormalizationResults(newResults);
         } else {
             prepareStageStore.clearChainNormalizationResults();
-            selectChain(null);
+            chainStore.selectChain(null);
         }
     }
 
@@ -212,8 +209,8 @@
             }
 
             // Clear chains and all dependent state
-            clearChains();
-            clearParts();
+            chainStore.clearChains();
+            partStore.clearParts();
             tessellationStore.clearTessellation();
             prepareStageStore.clearChainNormalizationResults();
             prepareStageStore.clearOriginalNormalizationState();
@@ -221,7 +218,7 @@
             prepareStageStore.setPartsDetected(false);
             overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
             overlayStore.clearTessellationPoints(WorkflowStage.PREPARE);
-            selectChain(null);
+            chainStore.selectChain(null);
             console.log('Cleared all chains and dependent state');
             return;
         }
@@ -233,25 +230,25 @@
             const currentDrawing = $drawingStore.drawing;
             if (!currentDrawing || !currentDrawing.shapes) {
                 console.warn('No drawing available for chain detection');
-                setChains([]);
+                chainStore.setChains([]);
                 return;
             }
 
             // Update tolerance in store
-            setTolerance(algorithmParams.chainDetection.tolerance);
+            chainStore.setTolerance(algorithmParams.chainDetection.tolerance);
 
             // Detect chains and update store
             const chains = detectShapeChains(currentDrawing.shapes, {
                 tolerance: algorithmParams.chainDetection.tolerance,
             });
-            setChains(chains);
+            chainStore.setChains(chains);
 
             console.log(
                 `Detected ${chains.length} chains with ${chains.reduce((sum, chain) => sum + chain.shapes.length, 0)} total shapes`
             );
         } catch (error) {
             console.error('Error detecting chains:', error);
-            setChains([]);
+            chainStore.setChains([]);
         } finally {
             isDetectingChains = false;
         }
@@ -267,7 +264,7 @@
                 drawingStore.replaceAllShapes(originalState.shapes);
 
                 // Restore original chains
-                setChains(originalState.chains);
+                chainStore.setChains(originalState.chains);
 
                 // Clear the saved original state
                 prepareStageStore.clearOriginalNormalizationState();
@@ -325,7 +322,7 @@
             const newChains = detectShapeChains(normalizedShapes, {
                 tolerance: algorithmParams.chainDetection.tolerance,
             });
-            setChains(newChains);
+            chainStore.setChains(newChains);
 
             // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
             setTimeout(() => {
@@ -366,7 +363,7 @@
                 drawingStore.replaceAllShapes(originalState.shapes);
 
                 // Restore original chains
-                setChains(originalState.chains);
+                chainStore.setChains(originalState.chains);
 
                 // Clear the saved original state
                 prepareStageStore.clearOriginalOptimizationState();
@@ -420,7 +417,7 @@
             const newChains = detectShapeChains(optimizedShapes, {
                 tolerance: algorithmParams.chainDetection.tolerance,
             });
-            setChains(newChains);
+            chainStore.setChains(newChains);
 
             // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
             setTimeout(() => {
@@ -455,7 +452,7 @@
         // Handle clear operation if parts have been detected
         if (partsDetectionApplied && !isDetectingParts) {
             // Clear parts and reset detection state
-            clearParts();
+            partStore.clearParts();
             prepareStageStore.setPartsDetected(false);
 
             // Clear tessellation if it was enabled
@@ -500,7 +497,7 @@
 
             // Combine open chain warnings with part detection warnings
             const allWarnings = [...openChainWarnings, ...partResult.warnings];
-            setParts(partResult.parts, allWarnings);
+            partStore.setParts(partResult.parts, allWarnings);
 
             // Mark parts as detected in the store
             prepareStageStore.setPartsDetected(true);
@@ -552,7 +549,7 @@
             );
         } catch (error) {
             console.error('Error detecting parts:', error);
-            setParts([], []);
+            partStore.setParts([], []);
             prepareStageStore.setPartsDetected(false);
             tessellationStore.clearTessellation();
         } finally {

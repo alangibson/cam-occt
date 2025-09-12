@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { clearHighlight, highlightPart, partStore } from '$lib/stores/parts';
-import { chainStore, selectChain } from '$lib/stores/chains';
+import { partStore } from '$lib/stores/parts/store';
+import { chainStore } from '$lib/stores/chains/store';
 
 describe('Operations Final Integration Test', () => {
     beforeEach(() => {
-        clearHighlight();
-        selectChain(null);
+        partStore.clearHighlight();
+        chainStore.selectChain(null);
     });
 
     it('should complete full part hover workflow like Operations component', () => {
@@ -17,14 +17,14 @@ describe('Operations Final Integration Test', () => {
         expect(initialState.highlightedPartId).toBe(null);
 
         // Step 2: Simulate mouseenter on part in Operations apply-to menu
-        highlightPart(testPartId);
+        partStore.highlightPart(testPartId);
 
         // Step 3: Verify store is updated (this should trigger DrawingCanvas re-render)
         const highlightedState = get(partStore);
         expect(highlightedState.highlightedPartId).toBe(testPartId);
 
         // Step 4: Simulate mouseleave from part in Operations apply-to menu
-        clearHighlight();
+        partStore.clearHighlight();
 
         // Step 5: Verify highlighting is cleared
         const clearedState = get(partStore);
@@ -39,7 +39,7 @@ describe('Operations Final Integration Test', () => {
         expect(initialState.selectedChainId).toBe(null);
 
         // Step 2: Simulate mouseenter on path in Operations apply-to menu
-        selectChain(testChainId);
+        chainStore.selectChain(testChainId);
 
         // Step 3: Verify store is updated (this should trigger DrawingCanvas re-render)
         const selectedState = get(chainStore);
@@ -47,14 +47,14 @@ describe('Operations Final Integration Test', () => {
 
         // Step 4: Simulate hover over different path
         const secondChainId = 'chain-final-789';
-        selectChain(secondChainId);
+        chainStore.selectChain(secondChainId);
 
         // Step 5: Verify selection changed
         const changedState = get(chainStore);
         expect(changedState.selectedChainId).toBe(secondChainId);
 
         // Step 6: Simulate mouseleave from path (hovering away)
-        selectChain(null);
+        chainStore.selectChain(null);
 
         // Step 7: Verify selection is cleared
         const clearedState = get(chainStore);
@@ -66,22 +66,22 @@ describe('Operations Final Integration Test', () => {
         const chainId = 'chain-complex-222';
 
         // User hovers over part in Operations menu
-        highlightPart(partId);
+        partStore.highlightPart(partId);
         expect(get(partStore).highlightedPartId).toBe(partId);
         expect(get(chainStore).selectedChainId).toBe(null);
 
         // User then hovers over path in Operations menu (part should stay highlighted)
-        selectChain(chainId);
+        chainStore.selectChain(chainId);
         expect(get(partStore).highlightedPartId).toBe(partId);
         expect(get(chainStore).selectedChainId).toBe(chainId);
 
         // User hovers away from part but stays on path
-        clearHighlight();
+        partStore.clearHighlight();
         expect(get(partStore).highlightedPartId).toBe(null);
         expect(get(chainStore).selectedChainId).toBe(chainId);
 
         // User hovers away from path
-        selectChain(null);
+        chainStore.selectChain(null);
         expect(get(partStore).highlightedPartId).toBe(null);
         expect(get(chainStore).selectedChainId).toBe(null);
     });
@@ -95,20 +95,20 @@ describe('Operations Final Integration Test', () => {
         let chainStoreValue = get(chainStore);
 
         // Highlight part (like Operations component does on part hover)
-        highlightPart(testPartId);
+        partStore.highlightPart(testPartId);
         partStoreValue = get(partStore);
         expect(partStoreValue.highlightedPartId).toBe(testPartId);
 
         // Select chain (like Operations component does on path hover)
-        selectChain(testChainId);
+        chainStore.selectChain(testChainId);
         chainStoreValue = get(chainStore);
         expect(chainStoreValue.selectedChainId).toBe(testChainId);
 
         // This is the data that DrawingCanvas reactive statements would receive
 
         // Clear everything
-        clearHighlight();
-        selectChain(null);
+        partStore.clearHighlight();
+        chainStore.selectChain(null);
 
         partStoreValue = get(partStore);
         chainStoreValue = get(chainStore);

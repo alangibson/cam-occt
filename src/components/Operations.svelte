@@ -1,16 +1,13 @@
 <script lang="ts">
-    import { operationsStore, type Operation } from '$lib/stores/operations';
-    import { toolStore, type Tool } from '$lib/stores/tools';
-    import { chainStore, selectChain } from '$lib/stores/chains';
-    import {
-        partStore,
-        highlightPart,
-        clearHighlight,
-    } from '$lib/stores/parts';
+    import { operationsStore } from '$lib/stores/operations/store';
+    import { toolStore, type Tool } from '$lib/stores/tools/store';
+    import { chainStore } from '$lib/stores/chains/store';
+    import { partStore } from '$lib/stores/parts/store';
     import { flip } from 'svelte/animate';
     import { onMount } from 'svelte';
     import { CutDirection, LeadType } from '$lib/types/direction';
     import { KerfCompensation } from '$lib/types/kerf-compensation';
+    import type { Operation } from '$lib/stores/operations/interfaces';
 
     let operations: Operation[] = [];
     let chains: any[] = [];
@@ -330,16 +327,16 @@
         hoveredPartId = partId;
         // Here you could also trigger highlighting in the drawing canvas
         if (partId) {
-            highlightPart(partId);
+            partStore.highlightPart(partId);
         } else {
-            clearHighlight();
+            partStore.clearHighlight();
         }
     }
 
     function handleChainHover(chainId: string | null) {
         hoveredChainId = chainId;
         // Sync with chain selection in drawing canvas
-        selectChain(chainId);
+        chainStore.selectChain(chainId);
     }
 
     function isTargetAssignedToOther(

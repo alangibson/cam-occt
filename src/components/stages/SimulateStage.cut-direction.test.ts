@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { pathStore } from '$lib/stores/paths';
-import {
-    clearChainSelection,
-    clearChains,
-    setChains,
-} from '$lib/stores/chains';
+import { pathStore } from '$lib/stores/paths/store';
+import { chainStore } from '$lib/stores/chains/store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
 import { CutDirection } from '$lib/types/direction';
@@ -14,8 +10,7 @@ describe('SimulateStage Cut Direction', () => {
     beforeEach(() => {
         // Reset stores
         pathStore.reset();
-        clearChains();
-        clearChainSelection();
+        chainStore.clearChains();
     });
 
     it('should trace circles clockwise when cut direction is clockwise', () => {
@@ -36,7 +31,7 @@ describe('SimulateStage Cut Direction', () => {
         };
 
         // Add chain to store
-        setChains([chain]);
+        chainStore.setChains([chain]);
 
         // Create paths with different cut directions
         pathStore.addPath({
@@ -104,7 +99,7 @@ describe('SimulateStage Cut Direction', () => {
         };
 
         // Add chain to store
-        setChains([chain]);
+        chainStore.setChains([chain]);
 
         // Create paths with different cut directions
         pathStore.addPath({
@@ -151,7 +146,7 @@ describe('SimulateStage Cut Direction', () => {
         };
 
         // Add chain to store
-        setChains([chain]);
+        chainStore.setChains([chain]);
 
         // Create path with "none" cut direction
         pathStore.addPath({

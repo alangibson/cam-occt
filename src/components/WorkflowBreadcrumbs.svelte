@@ -1,11 +1,10 @@
 <script lang="ts">
-    import {
-        workflowStore,
-        getStageDisplayName,
-        WorkflowStage,
-        type WorkflowStage as WorkflowStageType,
-    } from '$lib/stores/workflow';
-    import { uiStore } from '$lib/stores/ui';
+    import { workflowStore } from '$lib/stores/workflow/store';
+    import { WorkflowStage } from '$lib/stores/workflow/enums';
+    import { getStageDisplayName } from '$lib/stores/workflow/functions';
+
+    type WorkflowStageType = WorkflowStage;
+    import { uiStore } from '$lib/stores/ui/store';
 
     const stages: WorkflowStageType[] = [
         WorkflowStage.IMPORT,

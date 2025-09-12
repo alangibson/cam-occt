@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { workflowStore } from '$lib/stores/workflow';
+    import { workflowStore } from '$lib/stores/workflow/store';
     import ImportStage from './stages/ImportStage.svelte';
     import EditStage from './stages/EditStage.svelte';
     import PrepareStage from './stages/PrepareStage.svelte';

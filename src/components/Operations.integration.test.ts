@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { clearHighlight, highlightPart, partStore } from '$lib/stores/parts';
-import { chainStore, selectChain } from '$lib/stores/chains';
+import { partStore } from '$lib/stores/parts/store';
+import { chainStore } from '$lib/stores/chains/store';
 
 describe('Operations Highlighting Integration', () => {
     beforeEach(() => {
         // Reset stores
-        clearHighlight();
-        selectChain(null);
+        partStore.clearHighlight();
+        chainStore.selectChain(null);
     });
 
     it('should highlight parts in part store when handlePartHover is called', () => {
@@ -17,7 +17,7 @@ describe('Operations Highlighting Integration', () => {
         expect(get(partStore).highlightedPartId).toBe(null);
 
         // Simulate hovering over a part in Operations apply-to menu
-        highlightPart(testPartId);
+        partStore.highlightPart(testPartId);
 
         // Verify part is highlighted in store
         expect(get(partStore).highlightedPartId).toBe(testPartId);
@@ -27,11 +27,11 @@ describe('Operations Highlighting Integration', () => {
         const testPartId = 'part-123';
 
         // First highlight a part
-        highlightPart(testPartId);
+        partStore.highlightPart(testPartId);
         expect(get(partStore).highlightedPartId).toBe(testPartId);
 
         // Then clear highlighting (simulating mouse leave)
-        clearHighlight();
+        partStore.clearHighlight();
 
         // Verify highlighting is cleared
         expect(get(partStore).highlightedPartId).toBe(null);
@@ -44,7 +44,7 @@ describe('Operations Highlighting Integration', () => {
         expect(get(chainStore).selectedChainId).toBe(null);
 
         // Simulate hovering over a path in Operations apply-to menu
-        selectChain(testChainId);
+        chainStore.selectChain(testChainId);
 
         // Verify chain is selected in store
         expect(get(chainStore).selectedChainId).toBe(testChainId);
@@ -55,11 +55,11 @@ describe('Operations Highlighting Integration', () => {
         const secondChainId = 'chain-789';
 
         // Select first chain
-        selectChain(firstChainId);
+        chainStore.selectChain(firstChainId);
         expect(get(chainStore).selectedChainId).toBe(firstChainId);
 
         // Select second chain (simulating hovering over different path)
-        selectChain(secondChainId);
+        chainStore.selectChain(secondChainId);
 
         // Verify selection changed
         expect(get(chainStore).selectedChainId).toBe(secondChainId);
@@ -69,11 +69,11 @@ describe('Operations Highlighting Integration', () => {
         const testChainId = 'chain-456';
 
         // First select a chain
-        selectChain(testChainId);
+        chainStore.selectChain(testChainId);
         expect(get(chainStore).selectedChainId).toBe(testChainId);
 
         // Then clear selection (simulating mouse leave)
-        selectChain(null);
+        chainStore.selectChain(null);
 
         // Verify selection is cleared
         expect(get(chainStore).selectedChainId).toBe(null);
@@ -86,21 +86,21 @@ describe('Operations Highlighting Integration', () => {
         const chainId2 = 'chain-222';
 
         // Simulate rapid hovering between parts and paths
-        highlightPart(partId1);
+        partStore.highlightPart(partId1);
         expect(get(partStore).highlightedPartId).toBe(partId1);
 
-        selectChain(chainId1);
+        chainStore.selectChain(chainId1);
         expect(get(chainStore).selectedChainId).toBe(chainId1);
 
-        highlightPart(partId2);
+        partStore.highlightPart(partId2);
         expect(get(partStore).highlightedPartId).toBe(partId2);
 
-        selectChain(chainId2);
+        chainStore.selectChain(chainId2);
         expect(get(chainStore).selectedChainId).toBe(chainId2);
 
         // Clear both
-        clearHighlight();
-        selectChain(null);
+        partStore.clearHighlight();
+        chainStore.selectChain(null);
 
         expect(get(partStore).highlightedPartId).toBe(null);
         expect(get(chainStore).selectedChainId).toBe(null);

@@ -1,12 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { WorkflowStage, workflowStore } from '$lib/stores/workflow';
-import { pathStore } from '$lib/stores/paths';
-import { rapidStore } from '$lib/stores/rapids';
-import { chainStore } from '$lib/stores/chains';
-import { operationsStore } from '$lib/stores/operations';
-import { drawingStore } from '$lib/stores/drawing';
-import { uiStore } from '$lib/stores/ui';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
+import { pathStore } from '$lib/stores/paths/store';
+import { rapidStore } from '$lib/stores/rapids/store';
+import { chainStore } from '$lib/stores/chains/store';
+import { operationsStore } from '$lib/stores/operations/store';
+import { drawingStore } from '$lib/stores/drawing/store';
+import { uiStore } from '$lib/stores/ui/store';
 import { CutDirection } from '$lib/types/direction';
 
 describe('SimulateStage store subscription cleanup', () => {
@@ -15,12 +16,8 @@ describe('SimulateStage store subscription cleanup', () => {
         workflowStore.reset();
         pathStore.reset();
         rapidStore.reset();
-        chainStore.set({
-            chains: [],
-            tolerance: 0.1,
-            selectedChainId: null,
-            highlightedChainId: null,
-        });
+        chainStore.clearChains();
+        chainStore.setTolerance(0.1);
     });
 
     it('should properly manage store subscriptions without memory leaks', () => {

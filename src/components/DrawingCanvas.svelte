@@ -1,29 +1,26 @@
 <script lang="ts">
     import { onMount, onDestroy } from 'svelte';
-    import { drawingStore } from '$lib/stores/drawing';
-    import { chainStore } from '$lib/stores/chains';
-    import { partStore } from '$lib/stores/parts';
-    import { pathStore, type Path } from '$lib/stores/paths';
-    import { operationsStore } from '$lib/stores/operations';
-    import { tessellationStore } from '$lib/stores/tessellation';
-    import { overlayStore } from '$lib/stores/overlay';
+    import { drawingStore } from '$lib/stores/drawing/store';
+    import { chainStore } from '$lib/stores/chains/store';
+    import { partStore } from '$lib/stores/parts/store';
+    import { pathStore } from '$lib/stores/paths/store';
+    import type { Path } from '$lib/stores/paths/interfaces';
+    import { operationsStore } from '$lib/stores/operations/store';
+    import { tessellationStore } from '$lib/stores/tessellation/store';
+    import { overlayStore } from '$lib/stores/overlay/store';
+    import { rapidStore } from '$lib/stores/rapids/store';
     import {
-        rapidStore,
         selectRapid,
         clearRapidHighlight,
-    } from '$lib/stores/rapids';
+    } from '$lib/stores/rapids/functions';
     import {
         getShapeChainId,
         getChainShapeIds,
-        clearChainSelection,
-    } from '$lib/stores/chains';
+    } from '$lib/stores/chains/functions';
     import {
         getChainPartType,
         getPartChainIds,
-        clearHighlight,
-        selectPart,
-    } from '$lib/stores/parts';
-    import { clearPathHighlight } from '$lib/stores/paths';
+    } from '$lib/stores/parts/functions';
     import { sampleNURBS, evaluateNURBS } from '$lib/geometry/spline';
     import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
     import {
@@ -32,7 +29,6 @@
     } from '$lib/geometry/shape/functions';
     import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
     import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline';
-    import { debounce } from '$lib/utils/state-persistence';
     import {
         tessellateEllipse,
         ELLIPSE_TESSELLATION_POINTS,
@@ -67,10 +63,11 @@
         type Point2D,
     } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
-    import type { WorkflowStage } from '$lib/stores/workflow';
+    import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { getPhysicalScaleFactor, type Unit } from '$lib/utils/units';
     import { normalizeAngle } from '$lib/geometry/math/functions';
     import { isPointInsidePart } from '$lib/algorithms/raytracing/point-in-chain';
+    import { debounce } from '$lib/stores/storage/local-storage';
 
     export let respectLayerVisibility = true; // Default to true for Edit stage
     export let treatChainsAsEntities = false; // Default to false, true for Program stage
@@ -1654,11 +1651,11 @@
                 if (!e.ctrlKey) {
                     // Clear all selections when clicking in empty space
                     drawingStore.clearSelection();
-                    clearChainSelection();
-                    clearHighlight();
-                    selectPart(null);
+                    chainStore.clearChainSelection();
+                    partStore.clearHighlight();
+                    partStore.selectPart(null);
                     pathStore.selectPath(null);
-                    clearPathHighlight();
+                    pathStore.clearHighlight();
                     selectRapid(null);
                     clearRapidHighlight();
                 }

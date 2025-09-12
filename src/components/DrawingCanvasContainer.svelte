@@ -1,6 +1,7 @@
 <script lang="ts">
     import DrawingCanvas from './DrawingCanvas.svelte';
-    import type { WorkflowStage } from '$lib/stores/workflow';
+    import { WorkflowStage } from '$lib/stores/workflow/enums';
+    import type { WorkflowStage as WorkflowStageType } from '$lib/stores/workflow/enums';
 
     export let respectLayerVisibility = true;
     export let treatChainsAsEntities = false;

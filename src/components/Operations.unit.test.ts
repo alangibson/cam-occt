@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { type Tool, toolStore } from '$lib/stores/tools';
-import { operationsStore } from '$lib/stores/operations';
+import { toolStore } from '$lib/stores/tools/store';
+import type { Tool } from '$lib/stores/tools/interfaces';
+import { operationsStore } from '$lib/stores/operations/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
 
 describe('Operations Store Integration', () => {

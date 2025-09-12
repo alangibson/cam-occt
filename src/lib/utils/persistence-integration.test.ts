@@ -6,15 +6,16 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     restoreApplicationState,
     saveApplicationState,
-} from '$lib/stores/persistence';
-import { drawingStore } from '$lib/stores/drawing';
-import { pathStore } from '$lib/stores/paths';
-import { type Operation, operationsStore } from '$lib/stores/operations';
-import { setChains } from '$lib/stores/chains';
+} from '$lib/stores/storage/store';
+import { drawingStore } from '$lib/stores/drawing/store';
+import { pathStore } from '$lib/stores/paths/store';
+import { operationsStore } from '$lib/stores/operations/store';
+import { chainStore } from '$lib/stores/chains/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { GeometryType } from '$lib/types/geometry';
-import type { PathsState } from '$lib/stores/paths';
+import type { PathsState } from '$lib/stores/paths/interfaces';
 import { Unit } from './units';
+import type { Operation } from '$lib/stores/operations/interfaces';
 
 // Mock localStorage
 const localStorageMock = {
@@ -102,7 +103,7 @@ describe('Persistence Integration - Lead Geometry', () => {
 
         // Set up the drawing and chains
         drawingStore.setDrawing(testDrawing, 'test.dxf');
-        setChains([testChain]);
+        chainStore.setChains([testChain]);
 
         // Create operation that will generate paths
         const testOperation: Omit<Operation, 'id'> = {

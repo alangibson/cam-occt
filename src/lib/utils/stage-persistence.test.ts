@@ -6,12 +6,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
     restoreApplicationState,
     saveApplicationState,
-} from '$lib/stores/persistence';
-import {
-    WorkflowStage,
-    type WorkflowState,
-    workflowStore,
-} from '$lib/stores/workflow';
+} from '$lib/stores/storage/store';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
+import type { WorkflowState } from '$lib/stores/workflow/interfaces';
 
 // Mock localStorage
 const localStorageMock = {

@@ -1,5 +1,5 @@
-import type { Path } from '$lib/stores/paths';
-import type { Tool } from '$lib/stores/tools';
+import type { Path } from '$lib/stores/paths/interfaces';
+import type { Tool } from '$lib/stores/tools/interfaces';
 import type { Line, Point2D, Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

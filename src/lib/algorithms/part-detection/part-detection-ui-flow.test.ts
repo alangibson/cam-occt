@@ -4,7 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
-import { getChainPartType } from '$lib/stores/parts';
+import { getChainPartType } from '$lib/stores/parts/functions';
 
 describe('UI Flow Integration Test', () => {
     it('should correctly identify part types in the complete 1997.dxf workflow', async () => {

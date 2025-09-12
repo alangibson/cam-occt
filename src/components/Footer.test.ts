@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render, waitFor } from '@testing-library/svelte';
 import Footer from './Footer.svelte';
-import { drawingStore } from '$lib/stores/drawing';
+import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/utils/units';
 import type { Drawing } from '$lib/types';
 import type { DrawingSize } from '$lib/algorithms/drawing-size/drawing-size';

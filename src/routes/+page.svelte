@@ -4,20 +4,20 @@
     import WorkflowContainer from '../components/WorkflowContainer.svelte';
     import Footer from '../components/Footer.svelte';
     import ToolTable from '../components/ToolTable.svelte';
-    import { workflowStore } from '$lib/stores/workflow';
-    import { uiStore } from '$lib/stores/ui';
-    import { drawingStore } from '$lib/stores/drawing';
+    import { workflowStore } from '$lib/stores/workflow/store';
+    import { uiStore } from '$lib/stores/ui/store';
+    import { drawingStore } from '$lib/stores/drawing/store';
     import {
         restoreApplicationState,
         setupAutoSave,
         saveApplicationState,
         clearApplicationState,
-    } from '$lib/stores/persistence';
+    } from '$lib/stores/storage/store';
     import { migrateLegacyData } from '$lib/utils/migration';
     import { Unit } from '$lib/utils/units';
-    import { prepareStageStore } from '$lib/stores/prepare-stage';
-    import { leadWarningsStore } from '$lib/stores/lead-warnings';
-    import { offsetWarningsStore } from '$lib/stores/offset-warnings';
+    import { prepareStageStore } from '$lib/stores/prepare-stage/store';
+    import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
+    import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
 
     let cleanupAutoSave: (() => void) | null = null;
     let isMenuOpen = false;

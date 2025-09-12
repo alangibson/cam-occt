@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { clearHighlight, highlightPart, partStore } from '$lib/stores/parts';
-import { chainStore, selectChain } from '$lib/stores/chains';
+import { partStore } from '$lib/stores/parts/store';
+import { chainStore } from '$lib/stores/chains/store';
 
 // Test that we can directly call the store functions that Operations uses
 describe('Operations Store Functions Debug', () => {
     beforeEach(() => {
-        clearHighlight();
-        selectChain(null);
+        partStore.clearHighlight();
+        chainStore.selectChain(null);
     });
 
     it('should directly test highlightPart function', () => {
         const testPartId = 'part-debug-123';
-        highlightPart(testPartId);
+        partStore.highlightPart(testPartId);
 
         const finalState = get(partStore);
 
@@ -21,7 +21,7 @@ describe('Operations Store Functions Debug', () => {
 
     it('should directly test selectChain function', () => {
         const testChainId = 'chain-debug-456';
-        selectChain(testChainId);
+        chainStore.selectChain(testChainId);
 
         const finalState = get(chainStore);
 
@@ -31,22 +31,22 @@ describe('Operations Store Functions Debug', () => {
     it('should test clearHighlight function', () => {
         // First set a highlighted part
         const testPartId = 'part-debug-123';
-        highlightPart(testPartId);
+        partStore.highlightPart(testPartId);
         expect(get(partStore).highlightedPartId).toBe(testPartId);
 
         // Then clear it
-        clearHighlight();
+        partStore.clearHighlight();
         expect(get(partStore).highlightedPartId).toBe(null);
     });
 
     it('should test selectChain with null', () => {
         // First select a chain
         const testChainId = 'chain-debug-456';
-        selectChain(testChainId);
+        chainStore.selectChain(testChainId);
         expect(get(chainStore).selectedChainId).toBe(testChainId);
 
         // Then clear it
-        selectChain(null);
+        chainStore.selectChain(null);
         expect(get(chainStore).selectedChainId).toBe(null);
     });
 
@@ -68,8 +68,8 @@ describe('Operations Store Functions Debug', () => {
         });
 
         // Trigger changes
-        highlightPart('part-reactive-test');
-        selectChain('chain-reactive-test');
+        partStore.highlightPart('part-reactive-test');
+        chainStore.selectChain('chain-reactive-test');
 
         // Verify callbacks were triggered
         expect(partHighlighted).toBe(true);

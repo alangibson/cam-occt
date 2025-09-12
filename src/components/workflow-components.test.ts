@@ -7,12 +7,12 @@ import PrepareStage from './stages/PrepareStage.svelte';
 import ProgramStage from './stages/ProgramStage.svelte';
 import SimulateStage from './stages/SimulateStage.svelte';
 import ExportStage from './stages/ExportStage.svelte';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {
-    WorkflowStage,
     getStageDescription,
     getStageDisplayName,
-    workflowStore,
-} from '$lib/stores/workflow';
+} from '$lib/stores/workflow/functions';
 
 describe('Workflow Components', () => {
     describe('Component imports', () => {

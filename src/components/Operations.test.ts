@@ -3,8 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Operations from './Operations.svelte';
-import { toolStore } from '$lib/stores/tools';
-import { operationsStore } from '$lib/stores/operations';
+import { toolStore } from '$lib/stores/tools/store';
+import { operationsStore } from '$lib/stores/operations/store';
 
 describe('Operations Component', () => {
     beforeEach(() => {
