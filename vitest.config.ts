@@ -10,11 +10,7 @@ export default defineConfig({
 		include: ["src/**/*.{test,spec}.{js,ts}"],
 		watchExclude: ["**/node_modules/**", "**/dist/**", "**/docs/**"],
 		silent: true,
-		reporters: [
-			['default', { 
-				summary: false
-			}]
-		],
+		reporter: 'dot',
 		coverage: {
 			provider: "v8",
 			reporter: ["html"],
