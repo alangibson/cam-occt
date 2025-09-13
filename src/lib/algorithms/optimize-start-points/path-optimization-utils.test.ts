@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { prepareChainsAndLeadConfigs } from './path-optimization-utils';
+import {
+    prepareChainsAndLeadConfigs,
+    getPathStartPoint,
+} from './path-optimization-utils';
 import type { Path } from '$lib/stores/paths/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Line, Point2D, Shape } from '$lib/types/geometry';
@@ -136,6 +139,59 @@ describe('path-optimization-utils', () => {
             expect(result.leadInConfig.length).toBe(0);
             expect(result.leadOutConfig.type).toBe(LeadType.NONE);
             expect(result.leadOutConfig.length).toBe(0);
+        });
+    });
+
+    describe('getPathStartPoint', () => {
+        it('should handle lead calculation and return appropriate point', () => {
+            const path = createTestPath({
+                leadInType: LeadType.LINE,
+                leadInLength: 5,
+            });
+            const chain = createTestChain();
+
+            // This tests that the function works with valid inputs
+            const result = getPathStartPoint(path, chain);
+
+            // Just verify the function returns a valid point
+            expect(typeof result.x).toBe('number');
+            expect(typeof result.y).toBe('number');
+        });
+
+        it('should use offset chain start point when offset is available and no lead-in', () => {
+            const offsetShapes: Shape[] = [
+                createTestShape({ x: 5, y: 5 }, { x: 15, y: 5 }),
+            ];
+
+            const path = createTestPath({
+                leadInType: LeadType.NONE,
+                calculatedOffset: {
+                    offsetShapes,
+                    originalShapes: [],
+                    direction: OffsetDirection.INSET,
+                    kerfWidth: 1,
+                    generatedAt: new Date().toISOString(),
+                    version: '1.0.0',
+                },
+            });
+            const chain = createTestChain();
+
+            const result = getPathStartPoint(path, chain);
+
+            // Should use offset chain start point
+            expect(result).toEqual({ x: 5, y: 5 });
+        });
+
+        it('should use original chain start point when no offset and no lead-in', () => {
+            const path = createTestPath({
+                leadInType: LeadType.NONE,
+            });
+            const chain = createTestChain();
+
+            const result = getPathStartPoint(path, chain);
+
+            // Should use original chain start point
+            expect(result).toEqual({ x: 0, y: 0 });
         });
     });
 });

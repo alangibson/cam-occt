@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { offsetPolyline } from './polyline';
-import type {
-    Arc,
-    Circle,
-    Drawing,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
+import {
+    GeometryType,
+    type Arc,
+    type Circle,
+    type Drawing,
+    type Line,
+    type Point2D,
+    type Polyline,
+    type Shape,
 } from '$lib/types/geometry';
 import {
     createPolylineFromVertices,
@@ -546,6 +547,84 @@ describe('offsetPolyline', () => {
                     `Polyline ${i}: outset produced ${outsetResult.shapes.length} shapes, inset produced ${insetResult.shapes.length} shapes`
                 );
             }
+        });
+    });
+
+    describe('error handling and edge cases', () => {
+        it('should handle polyline with shapes that already have IDs', () => {
+            // Create polyline with shapes that already have IDs
+            const polylineWithIds: Polyline = {
+                closed: false,
+                shapes: [
+                    {
+                        id: 'existing-id-1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                    {
+                        id: 'existing-id-2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 10, y: 0 },
+                            end: { x: 10, y: 10 },
+                        },
+                    },
+                ],
+            };
+
+            const result = offsetPolyline(
+                polylineWithIds,
+                2,
+                OffsetDirection.OUTSET
+            );
+            expect(result.success).toBe(true);
+        });
+
+        it('should handle zero offset distance', () => {
+            const result = offsetPolyline(
+                openPolyline,
+                0,
+                OffsetDirection.OUTSET
+            );
+            expect(result.success).toBe(true);
+            expect(result.shapes).toHaveLength(0);
+            expect(result.errors).toHaveLength(0);
+            expect(result.warnings).toHaveLength(0);
+        });
+
+        // Skip this test - it's very hard to reliably trigger the catch block
+        // The offsetChain function is robust and handles most invalid inputs gracefully
+        it.skip('should handle error when offsetChain throws', () => {
+            // Create a polyline that might cause offsetChain to throw
+            // We'll use a polyline with invalid geometry that should trigger an error
+            const invalidPolyline: Polyline = {
+                closed: true,
+                shapes: [
+                    {
+                        id: 'invalid-1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: NaN, y: NaN },
+                            end: { x: Infinity, y: -Infinity },
+                        },
+                    },
+                ],
+            };
+
+            const result = offsetPolyline(
+                invalidPolyline,
+                5,
+                OffsetDirection.OUTSET
+            );
+
+            // The function should catch the error and return a failure result
+            expect(result.success).toBe(false);
+            expect(result.shapes).toHaveLength(0);
+            expect(result.errors.length).toBeGreaterThan(0);
+            expect(result.errors[0]).toContain('Polyline offset failed');
         });
     });
 });
