@@ -6,7 +6,6 @@ import {
     getShapeNormal,
     getShapePointAt,
     getShapePoints,
-    getShapePoints3,
     getShapeStartPoint,
     isShapeContainedInShape,
     isShapeClosed,
@@ -168,7 +167,7 @@ describe('getShapePoints', () => {
 
         const points = getShapePoints(shape);
         expect(polylineToPoints).toHaveBeenCalledWith(polylineGeometry);
-        expect(points).toBe(mockPoints);
+        expect(points).toStrictEqual(mockPoints);
     });
 
     it('should call tessellateEllipse for ellipse shape with correct parameters', () => {
@@ -261,7 +260,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(shape);
-        expect(points).toBe(fitPoints);
+        expect(points).toStrictEqual(fitPoints);
     });
 
     it('should fallback to controlPoints when NURBS fails and no fitPoints', () => {
@@ -291,7 +290,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(shape);
-        expect(points).toBe(controlPoints);
+        expect(points).toStrictEqual(controlPoints);
     });
 
     it('should return empty array when NURBS fails and no fallback points', () => {
@@ -419,7 +418,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(shape);
-        expect(points).toBe(fitPoints);
+        expect(points).toStrictEqual(fitPoints);
     });
 
     it('should handle spline with only controlPoints', () => {
@@ -450,7 +449,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(shape);
-        expect(points).toBe(controlPoints);
+        expect(points).toStrictEqual(controlPoints);
     });
 });
 
@@ -1802,7 +1801,7 @@ describe('getShapePoints for native shapes', () => {
     });
 });
 
-describe('getShapePoints3 - additional coverage', () => {
+describe('getShapePoints - direction analysis mode', () => {
     it('should handle arc with clockwise property correctly', () => {
         const clockwiseArc: Shape = {
             id: '1',
@@ -1816,7 +1815,9 @@ describe('getShapePoints3 - additional coverage', () => {
             } as Arc,
         };
 
-        const result = getShapePoints3(clockwiseArc);
+        const result = getShapePoints(clockwiseArc, {
+            mode: 'DIRECTION_ANALYSIS',
+        });
         expect(result.length).toBeGreaterThan(2);
     });
 
@@ -1833,7 +1834,7 @@ describe('getShapePoints3 - additional coverage', () => {
             } as Arc,
         };
 
-        const result = getShapePoints3(ccwArc);
+        const result = getShapePoints(ccwArc, { mode: 'DIRECTION_ANALYSIS' });
         expect(result.length).toBeGreaterThan(2);
     });
 });

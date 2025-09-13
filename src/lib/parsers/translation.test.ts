@@ -4,6 +4,7 @@ import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines/decompose-polylines';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
+import { getShapePoints } from '$lib/geometry/shape/functions';
 import type {
     Arc,
     Circle,
@@ -26,7 +27,7 @@ function calculateBounds(shapes: Shape[]) {
         maxY = -Infinity;
 
     shapes.forEach((shape) => {
-        const points = getShapePoints(shape);
+        const points = getShapePoints(shape, { mode: 'BOUNDS' });
         points.forEach((point) => {
             minX = Math.min(minX, point.x);
             maxX = Math.max(maxX, point.x);
@@ -39,41 +40,6 @@ function calculateBounds(shapes: Shape[]) {
         min: { x: isFinite(minX) ? minX : 0, y: isFinite(minY) ? minY : 0 },
         max: { x: isFinite(maxX) ? maxX : 0, y: isFinite(maxY) ? maxY : 0 },
     };
-}
-
-// Helper function to get shape points (copied from translate-to-positive.ts)
-function getShapePoints(shape: Shape): Point2D[] {
-    switch (shape.type) {
-        case 'line':
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
-            return [line.start, line.end];
-        case 'circle':
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle;
-            return [
-                {
-                    x: circle.center.x - circle.radius,
-                    y: circle.center.y - circle.radius,
-                },
-                {
-                    x: circle.center.x + circle.radius,
-                    y: circle.center.y + circle.radius,
-                },
-            ];
-        case 'arc':
-            const arc: import('$lib/types/geometry').Arc =
-                shape.geometry as Arc;
-            // Use actual arc bounds instead of full circle bounds
-            const arcBounds = getBoundingBoxForArc(arc);
-            return [arcBounds.min, arcBounds.max];
-        case 'polyline':
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
-            return polylineToPoints(polyline);
-        default:
-            return [];
-    }
 }
 
 describe('Translation to Positive Quadrant Feature', () => {

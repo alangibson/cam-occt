@@ -14,6 +14,7 @@ import {
 import {
     getShapeEndPoint,
     getShapeStartPoint,
+    getShapePoints,
 } from '$lib/geometry/shape/functions';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import {
@@ -28,7 +29,6 @@ import {
     DEFAULT_TESSELLATION_SEGMENTS,
     LEAD_REACHABLE_DISTANCE_MULTIPLIER,
     OCTAGON_SIDES,
-    QUARTER_CIRCLE_QUADRANTS,
     SMALL_ANGLE_INCREMENT_DEG,
 } from '../../geometry/constants';
 import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
@@ -1397,7 +1397,9 @@ function calculateChainCentroid(chain: Chain): Point2D {
     let count: number = 0;
 
     for (const shape of chain.shapes) {
-        const points: Point2D[] = getShapePoints(shape);
+        const points: Point2D[] = getShapePoints(shape, {
+            mode: 'DIRECTION_ANALYSIS',
+        });
         for (const point of points) {
             sumX += point.x;
             sumY += point.y;
@@ -1406,45 +1408,6 @@ function calculateChainCentroid(chain: Chain): Point2D {
     }
 
     return count > 0 ? { x: sumX / count, y: sumY / count } : { x: 0, y: 0 };
-}
-
-/**
- * Get sample points from a shape for centroid calculation.
- */
-function getShapePoints(shape: Shape): Point2D[] {
-    switch (shape.type) {
-        case GeometryType.LINE:
-            const line: Line = shape.geometry as Line;
-            return [line.start, line.end];
-        case GeometryType.ARC:
-            // Sample a few points along the arc
-            const arc: Arc = shape.geometry as Arc;
-            const points: Point2D[] = [];
-            const segments: number = QUARTER_CIRCLE_QUADRANTS;
-            for (let i: number = 0; i <= segments; i++) {
-                const angle: number =
-                    arc.startAngle +
-                    ((arc.endAngle - arc.startAngle) * i) / segments;
-                points.push({
-                    x: arc.center.x + arc.radius * Math.cos(angle),
-                    y: arc.center.y + arc.radius * Math.sin(angle),
-                });
-            }
-            return points;
-        case GeometryType.CIRCLE:
-            // Sample points around circle
-            const circle: Circle = shape.geometry as Circle;
-            return [
-                { x: circle.center.x + circle.radius, y: circle.center.y },
-                { x: circle.center.x, y: circle.center.y + circle.radius },
-                { x: circle.center.x - circle.radius, y: circle.center.y },
-                { x: circle.center.x, y: circle.center.y - circle.radius },
-            ];
-        case GeometryType.POLYLINE:
-            return polylineToPoints(shape.geometry as Polyline);
-        default:
-            return [];
-    }
 }
 
 /**
@@ -1570,7 +1533,9 @@ function getPolygonFromChain(chain: Chain): Point2D[] {
 
             default:
                 // For other shape types, use bounding points
-                const shapePoints: Point2D[] = getShapePoints(shape);
+                const shapePoints: Point2D[] = getShapePoints(shape, {
+                    mode: 'DIRECTION_ANALYSIS',
+                });
                 points.push(...shapePoints);
                 break;
         }

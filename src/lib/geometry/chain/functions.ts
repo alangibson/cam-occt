@@ -11,7 +11,7 @@ import {
     getShapeStartPoint,
     reverseShape,
     tessellateShape,
-    getShapePoints2,
+    getShapePoints,
 } from '$lib/geometry/shape/functions';
 import {
     GEOMETRIC_PRECISION_TOLERANCE,
@@ -545,7 +545,9 @@ export function extractPolygonFromChain(chain: Chain): Point2D[] | null {
     const points: Point2D[] = [];
 
     for (const shape of chain.shapes) {
-        const shapePoints: Point2D[] = getShapePoints2(shape);
+        const shapePoints: Point2D[] = getShapePoints(shape, {
+            resolution: 'HIGH',
+        });
         if (shapePoints && shapePoints.length > 0) {
             // Add points, but avoid duplicating the last point of previous shape with first point of next
             if (points.length === 0) {
@@ -580,7 +582,9 @@ export function getChainPoints(chain: Chain): Point2D[] {
     const points: Point2D[] = [];
 
     for (const shape of chain.shapes) {
-        const shapePoints: Point2D[] = getShapePoints2(shape);
+        const shapePoints: Point2D[] = getShapePoints(shape, {
+            resolution: 'HIGH',
+        });
         points.push(...shapePoints);
     }
 

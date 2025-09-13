@@ -2,4 +2,10 @@
 export { GeometryType } from './enums';
 export type { Shape, Layer, Drawing } from './interfaces';
 export type { Geometry } from './types';
-export { getShapePoints, tessellateShape } from './functions';
+export {
+    getShapePoints,
+    tessellateShape,
+    type GetShapePointsMode,
+    type GetShapePointsResolution,
+    type GetShapePointsOptions,
+} from './functions';

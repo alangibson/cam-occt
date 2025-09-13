@@ -1,16 +1,6 @@
-import type {
-    Circle,
-    Ellipse,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
-} from '$lib/types';
-import type { Spline } from '$lib/geometry/spline';
-import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '$lib/types';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import type { Point2D, Shape } from '$lib/types';
 import { calculateSquaredDistance } from '$lib/geometry/math';
+import { getShapePoints } from '$lib/geometry/shape/functions';
 import { detectCutDirection } from '../cut-direction/cut-direction';
 import { CutDirection } from '$lib/types/direction';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
@@ -90,8 +80,12 @@ function areShapesConnected(
     shapeB: Shape,
     tolerance: number
 ): boolean {
-    const pointsA: Point2D[] = getShapePoints(shapeA);
-    const pointsB: Point2D[] = getShapePoints(shapeB);
+    const pointsA: Point2D[] = getShapePoints(shapeA, {
+        mode: 'CHAIN_DETECTION',
+    });
+    const pointsB: Point2D[] = getShapePoints(shapeB, {
+        mode: 'CHAIN_DETECTION',
+    });
 
     // Check if any point from shape A is within tolerance of any point from shape B
     for (const pointA of pointsA) {
@@ -117,156 +111,6 @@ function arePointsWithinTolerance(
         calculateSquaredDistance(pointA, pointB)
     );
     return distance <= tolerance;
-}
-
-/**
- * Extract key points from a shape for connectivity analysis
- */
-function getShapePoints(shape: Shape): Point2D[] {
-    switch (shape.type) {
-        case GeometryType.LINE:
-            const line: Line = shape.geometry as Line;
-            return [line.start, line.end];
-
-        case GeometryType.CIRCLE:
-            const circle: Circle = shape.geometry as Circle;
-            // For circles, use key points around the circumference
-            return [
-                { x: circle.center.x + circle.radius, y: circle.center.y }, // Right
-                { x: circle.center.x - circle.radius, y: circle.center.y }, // Left
-                { x: circle.center.x, y: circle.center.y + circle.radius }, // Top
-                { x: circle.center.x, y: circle.center.y - circle.radius }, // Bottom
-                circle.center, // Center
-            ];
-
-        case GeometryType.ARC:
-            const arc: Arc = shape.geometry as Arc;
-            const startX: number =
-                arc.center.x + arc.radius * Math.cos(arc.startAngle);
-            const startY: number =
-                arc.center.y + arc.radius * Math.sin(arc.startAngle);
-            const endX: number =
-                arc.center.x + arc.radius * Math.cos(arc.endAngle);
-            const endY: number =
-                arc.center.y + arc.radius * Math.sin(arc.endAngle);
-
-            return [
-                { x: startX, y: startY }, // Start point
-                { x: endX, y: endY }, // End point
-                arc.center, // Center
-            ];
-
-        case GeometryType.POLYLINE:
-            const polyline: Polyline = shape.geometry as Polyline;
-            return polylineToPoints(polyline);
-
-        case GeometryType.SPLINE:
-            const spline: Spline = shape.geometry as Spline;
-
-            // For chain detection, start with fit points or control points as fallback
-            const points: Point2D[] = [];
-
-            // Use fit points if available (most accurate representation)
-            if (spline.fitPoints && spline.fitPoints.length > 0) {
-                points.push(...spline.fitPoints);
-            } else if (
-                spline.controlPoints &&
-                spline.controlPoints.length > 0
-            ) {
-                // Fallback to control points if no fit points
-                points.push(...spline.controlPoints);
-            }
-
-            return points;
-
-        case GeometryType.ELLIPSE:
-            const ellipse: Ellipse = shape.geometry as Ellipse;
-
-            // Calculate major and minor axis lengths
-            const majorAxisLength: number = Math.sqrt(
-                ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
-                    ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-            );
-            const minorAxisLength: number =
-                majorAxisLength * ellipse.minorToMajorRatio;
-
-            // Calculate rotation angle of major axis
-            const majorAxisAngle: number = Math.atan2(
-                ellipse.majorAxisEndpoint.y,
-                ellipse.majorAxisEndpoint.x
-            );
-
-            if (
-                typeof ellipse.startParam === 'number' &&
-                typeof ellipse.endParam === 'number'
-            ) {
-                // Ellipse arc - return start and end points
-                const startParam: number = ellipse.startParam;
-                const endParam: number = ellipse.endParam;
-
-                // Calculate start point
-                const startX: number = majorAxisLength * Math.cos(startParam);
-                const startY: number = minorAxisLength * Math.sin(startParam);
-                const rotatedStartX: number =
-                    startX * Math.cos(majorAxisAngle) -
-                    startY * Math.sin(majorAxisAngle);
-                const rotatedStartY: number =
-                    startX * Math.sin(majorAxisAngle) +
-                    startY * Math.cos(majorAxisAngle);
-
-                // Calculate end point
-                const endX: number = majorAxisLength * Math.cos(endParam);
-                const endY: number = minorAxisLength * Math.sin(endParam);
-                const rotatedEndX: number =
-                    endX * Math.cos(majorAxisAngle) -
-                    endY * Math.sin(majorAxisAngle);
-                const rotatedEndY: number =
-                    endX * Math.sin(majorAxisAngle) +
-                    endY * Math.cos(majorAxisAngle);
-
-                return [
-                    {
-                        x: ellipse.center.x + rotatedStartX,
-                        y: ellipse.center.y + rotatedStartY,
-                    }, // Start point
-                    {
-                        x: ellipse.center.x + rotatedEndX,
-                        y: ellipse.center.y + rotatedEndY,
-                    }, // End point
-                    ellipse.center, // Center
-                ];
-            } else {
-                // Full ellipse - return key points around the perimeter
-                const points: Point2D[] = [];
-
-                // Sample key points around the ellipse perimeter (0°, 90°, 180°, 270°)
-                for (
-                    let angle: number = 0;
-                    angle < 2 * Math.PI;
-                    angle += Math.PI / 2
-                ) {
-                    const x: number = majorAxisLength * Math.cos(angle);
-                    const y: number = minorAxisLength * Math.sin(angle);
-                    const rotatedX: number =
-                        x * Math.cos(majorAxisAngle) -
-                        y * Math.sin(majorAxisAngle);
-                    const rotatedY: number =
-                        x * Math.sin(majorAxisAngle) +
-                        y * Math.cos(majorAxisAngle);
-
-                    points.push({
-                        x: ellipse.center.x + rotatedX,
-                        y: ellipse.center.y + rotatedY,
-                    });
-                }
-
-                points.push(ellipse.center); // Add center point
-                return points;
-            }
-
-        default:
-            return [];
-    }
 }
 
 /**

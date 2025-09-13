@@ -1,16 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './dxf-parser';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { getShapePoints } from '$lib/geometry/shape/functions';
 import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '../algorithms/decompose-polylines/decompose-polylines';
-import type {
-    Arc,
-    Circle,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
-} from '$lib/types/geometry';
+import type { Circle, Line, Shape } from '$lib/types/geometry';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {
@@ -24,7 +17,7 @@ function calculateBounds(shapes: Shape[]) {
         maxY = -Infinity;
 
     shapes.forEach((shape) => {
-        const points = getShapePoints(shape);
+        const points = getShapePoints(shape, { mode: 'BOUNDS' });
         points.forEach((point) => {
             minX = Math.min(minX, point.x);
             maxX = Math.max(maxX, point.x);
@@ -37,42 +30,6 @@ function calculateBounds(shapes: Shape[]) {
         min: { x: isFinite(minX) ? minX : 0, y: isFinite(minY) ? minY : 0 },
         max: { x: isFinite(maxX) ? maxX : 0, y: isFinite(maxY) ? maxY : 0 },
     };
-}
-
-// Helper function to get shape points
-function getShapePoints(shape: Shape): Point2D[] {
-    switch (shape.type) {
-        case 'line':
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
-            return [line.start, line.end];
-        case 'circle':
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle;
-            return [
-                {
-                    x: circle.center.x - circle.radius,
-                    y: circle.center.y - circle.radius,
-                },
-                {
-                    x: circle.center.x + circle.radius,
-                    y: circle.center.y + circle.radius,
-                },
-            ];
-        case 'arc':
-            const arc: import('$lib/types/geometry').Arc =
-                shape.geometry as Arc;
-            return [
-                { x: arc.center.x - arc.radius, y: arc.center.y - arc.radius },
-                { x: arc.center.x + arc.radius, y: arc.center.y + arc.radius },
-            ];
-        case 'polyline':
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
-            return polylineToPoints(polyline);
-        default:
-            return [];
-    }
 }
 
 describe('DXF Unit Detection', () => {

@@ -77,20 +77,49 @@ import { LEAD_SEGMENT_COUNT } from '../line/constants';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '../math';
 import { STANDARD_GRID_SPACING } from '$lib/constants';
 import { calculateEllipsePoint2 } from '../ellipse/functions';
+import { getBoundingBoxForArc } from '../bounding-box/functions';
 import {
     splitArcAtMidpoint,
     splitLineAtMidpoint,
 } from '$lib/algorithms/optimize-start-points/path-optimization-utils';
+
+// Constants for shape point generation
+const HIGH_RESOLUTION_CIRCLE_SEGMENTS = 32;
 
 /**
  * Extract points from a shape for path generation
  * @param shape - The shape to extract points from
  * @param forNativeShapes - If true, avoid tessellation for shapes that support native G-code commands
  */
+export type GetShapePointsMode =
+    | 'TESSELLATION'
+    | 'BOUNDS'
+    | 'CHAIN_DETECTION'
+    | 'DIRECTION_ANALYSIS';
+export type GetShapePointsResolution = 'LOW' | 'MEDIUM' | 'HIGH' | 'ADAPTIVE';
+
+export interface GetShapePointsOptions {
+    forNativeShapes?: boolean;
+    mode?: GetShapePointsMode;
+    resolution?: GetShapePointsResolution;
+}
+
 export function getShapePoints(
     shape: Shape,
-    forNativeShapes: boolean = false
+    optionsOrForNativeShapes: GetShapePointsOptions | boolean = {}
 ): Point2D[] {
+    // Handle backward compatibility: if boolean is passed, convert to options
+    const options: GetShapePointsOptions =
+        typeof optionsOrForNativeShapes === 'boolean'
+            ? { forNativeShapes: optionsOrForNativeShapes }
+            : optionsOrForNativeShapes;
+
+    const {
+        forNativeShapes = false,
+        mode = 'TESSELLATION',
+        resolution = 'MEDIUM',
+    } = options;
+
     switch (shape.type) {
         case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
@@ -98,20 +127,93 @@ export function getShapePoints(
 
         case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
+
+            if (mode === 'BOUNDS') {
+                // Return bounding box corners for test/analysis purposes
+                return [
+                    {
+                        x: circle.center.x - circle.radius,
+                        y: circle.center.y - circle.radius,
+                    },
+                    {
+                        x: circle.center.x + circle.radius,
+                        y: circle.center.y + circle.radius,
+                    },
+                ];
+            }
+
+            if (mode === 'CHAIN_DETECTION') {
+                // For chain detection, use key points around circumference plus center
+                return [
+                    { x: circle.center.x + circle.radius, y: circle.center.y }, // Right
+                    { x: circle.center.x - circle.radius, y: circle.center.y }, // Left
+                    { x: circle.center.x, y: circle.center.y + circle.radius }, // Top
+                    { x: circle.center.x, y: circle.center.y - circle.radius }, // Bottom
+                    circle.center, // Center for connectivity analysis
+                ];
+            }
+
+            if (mode === 'DIRECTION_ANALYSIS' || resolution === 'LOW') {
+                // For direction analysis, return 4 compass points
+                return [
+                    { x: circle.center.x + circle.radius, y: circle.center.y }, // Right
+                    { x: circle.center.x, y: circle.center.y + circle.radius }, // Top
+                    { x: circle.center.x - circle.radius, y: circle.center.y }, // Left
+                    { x: circle.center.x, y: circle.center.y - circle.radius }, // Bottom
+                ];
+            }
+
             if (forNativeShapes) {
                 // For native G-code generation, return just the start point
-                // The native command generation will handle the full circle
                 return [
                     { x: circle.center.x + circle.radius, y: circle.center.y },
                 ];
             }
+
+            if (resolution === 'HIGH') {
+                // High resolution approximation with 32 points
+                const points: Point2D[] = [];
+                const segments = HIGH_RESOLUTION_CIRCLE_SEGMENTS;
+                for (let i = 0; i < segments; i++) {
+                    const angle = (i * 2 * Math.PI) / segments;
+                    points.push({
+                        x: circle.center.x + circle.radius * Math.cos(angle),
+                        y: circle.center.y + circle.radius * Math.sin(angle),
+                    });
+                }
+                return points;
+            }
+
+            // Default tessellation
             return generateCirclePoints(circle.center, circle.radius);
 
         case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
+
+            if (mode === 'BOUNDS') {
+                // Use actual arc bounds instead of full circle bounds
+                const arcBounds = getBoundingBoxForArc(arc);
+                return [arcBounds.min, arcBounds.max];
+            }
+
+            if (mode === 'CHAIN_DETECTION') {
+                // For chain detection, return start, end, and center points
+                const startX =
+                    arc.center.x + arc.radius * Math.cos(arc.startAngle);
+                const startY =
+                    arc.center.y + arc.radius * Math.sin(arc.startAngle);
+                const endX = arc.center.x + arc.radius * Math.cos(arc.endAngle);
+                const endY = arc.center.y + arc.radius * Math.sin(arc.endAngle);
+
+                return [
+                    { x: startX, y: startY }, // Start point
+                    { x: endX, y: endY }, // End point
+                    arc.center, // Center for connectivity analysis
+                ];
+            }
+
             if (forNativeShapes) {
                 // For native G-code generation, return start and end points only
-                // The native command generation will handle the arc interpolation
                 const startX =
                     arc.center.x + arc.radius * Math.cos(arc.startAngle);
                 const startY =
@@ -123,30 +225,205 @@ export function getShapePoints(
                     { x: endX, y: endY },
                 ];
             }
+
+            if (resolution === 'HIGH' || resolution === 'ADAPTIVE') {
+                // High resolution or adaptive arc approximation with proper clockwise handling
+                const arcPoints: Point2D[] = [];
+                let startAngle = arc.startAngle;
+                let endAngle = arc.endAngle;
+
+                // Normalize angles and handle clockwise arcs
+                if (arc.clockwise) {
+                    [startAngle, endAngle] = [endAngle, startAngle];
+                }
+
+                // Calculate arc span
+                let span = endAngle - startAngle;
+                if (span <= 0) span += 2 * Math.PI;
+
+                const arcSegments =
+                    resolution === 'ADAPTIVE'
+                        ? Math.max(
+                              LEAD_SEGMENT_COUNT,
+                              Math.ceil(span / (Math.PI / LEAD_SEGMENT_COUNT))
+                          )
+                        : HIGH_RESOLUTION_CIRCLE_SEGMENTS;
+
+                for (let i = 0; i <= arcSegments; i++) {
+                    const angle = startAngle + (span * i) / arcSegments;
+                    arcPoints.push({
+                        x: arc.center.x + arc.radius * Math.cos(angle),
+                        y: arc.center.y + arc.radius * Math.sin(angle),
+                    });
+                }
+                return arcPoints;
+            }
+
+            if (mode === 'DIRECTION_ANALYSIS' || resolution === 'LOW') {
+                // Sample a few points along the arc with proper direction handling
+                const points: Point2D[] = [];
+                const segments = QUARTER_CIRCLE_QUADRANTS;
+
+                for (let i = 0; i <= segments; i++) {
+                    let angle: number;
+                    const t = i / segments;
+
+                    if (arc.clockwise) {
+                        // For clockwise arcs, interpolate in reverse direction
+                        angle =
+                            arc.startAngle +
+                            t * (arc.endAngle - arc.startAngle);
+                    } else {
+                        // For counterclockwise arcs, use normal direction
+                        angle =
+                            arc.startAngle +
+                            t * (arc.endAngle - arc.startAngle);
+                    }
+
+                    points.push({
+                        x: arc.center.x + arc.radius * Math.cos(angle),
+                        y: arc.center.y + arc.radius * Math.sin(angle),
+                    });
+                }
+                return points;
+            }
+
+            // Default to existing generateArcPoints
             return generateArcPoints(arc);
 
         case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
-            return polylineToPoints(polyline);
+            // Always return a copy to prevent mutation
+            return [...polylineToPoints(polyline)];
 
         case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
+
+            if (mode === 'CHAIN_DETECTION') {
+                // Calculate major and minor axis lengths
+                const majorAxisLength: number = Math.sqrt(
+                    ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
+                        ellipse.majorAxisEndpoint.y *
+                            ellipse.majorAxisEndpoint.y
+                );
+                const minorAxisLength: number =
+                    majorAxisLength * ellipse.minorToMajorRatio;
+
+                // Calculate rotation angle of major axis
+                const majorAxisAngle: number = Math.atan2(
+                    ellipse.majorAxisEndpoint.y,
+                    ellipse.majorAxisEndpoint.x
+                );
+
+                if (
+                    typeof ellipse.startParam === 'number' &&
+                    typeof ellipse.endParam === 'number'
+                ) {
+                    // Ellipse arc - return start and end points
+                    const startParam: number = ellipse.startParam;
+                    const endParam: number = ellipse.endParam;
+
+                    // Calculate start point
+                    const startX: number =
+                        majorAxisLength * Math.cos(startParam);
+                    const startY: number =
+                        minorAxisLength * Math.sin(startParam);
+                    const rotatedStartX: number =
+                        startX * Math.cos(majorAxisAngle) -
+                        startY * Math.sin(majorAxisAngle);
+                    const rotatedStartY: number =
+                        startX * Math.sin(majorAxisAngle) +
+                        startY * Math.cos(majorAxisAngle);
+
+                    // Calculate end point
+                    const endX: number = majorAxisLength * Math.cos(endParam);
+                    const endY: number = minorAxisLength * Math.sin(endParam);
+                    const rotatedEndX: number =
+                        endX * Math.cos(majorAxisAngle) -
+                        endY * Math.sin(majorAxisAngle);
+                    const rotatedEndY: number =
+                        endX * Math.sin(majorAxisAngle) +
+                        endY * Math.cos(majorAxisAngle);
+
+                    return [
+                        {
+                            x: ellipse.center.x + rotatedStartX,
+                            y: ellipse.center.y + rotatedStartY,
+                        }, // Start point
+                        {
+                            x: ellipse.center.x + rotatedEndX,
+                            y: ellipse.center.y + rotatedEndY,
+                        }, // End point
+                        ellipse.center, // Center for connectivity analysis
+                    ];
+                } else {
+                    // Full ellipse - return key points around the perimeter
+                    const points: Point2D[] = [];
+
+                    // Sample key points around the ellipse perimeter (0°, 90°, 180°, 270°)
+                    for (
+                        let angle: number = 0;
+                        angle < 2 * Math.PI;
+                        angle += Math.PI / 2
+                    ) {
+                        const x: number = majorAxisLength * Math.cos(angle);
+                        const y: number = minorAxisLength * Math.sin(angle);
+                        const rotatedX: number =
+                            x * Math.cos(majorAxisAngle) -
+                            y * Math.sin(majorAxisAngle);
+                        const rotatedY: number =
+                            x * Math.sin(majorAxisAngle) +
+                            y * Math.cos(majorAxisAngle);
+
+                        points.push({
+                            x: ellipse.center.x + rotatedX,
+                            y: ellipse.center.y + rotatedY,
+                        });
+                    }
+
+                    points.push(ellipse.center); // Add center point
+                    return points;
+                }
+            }
+
             return tessellateEllipse(ellipse, ELLIPSE_TESSELLATION_POINTS);
 
         case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;
-            try {
-                // Use NURBS sampling for tool path generation
-                return sampleNURBS(spline, ELLIPSE_TESSELLATION_POINTS); // Use good resolution for tool paths
-            } catch {
-                // Fallback to fit points or control points if NURBS evaluation fails
+
+            if (mode === 'CHAIN_DETECTION') {
+                // For chain detection, start with fit points or control points as fallback
+                const points: Point2D[] = [];
+
+                // Use fit points if available (most accurate representation)
                 if (spline.fitPoints && spline.fitPoints.length > 0) {
-                    return spline.fitPoints;
+                    points.push(...spline.fitPoints);
                 } else if (
                     spline.controlPoints &&
                     spline.controlPoints.length > 0
                 ) {
-                    return spline.controlPoints;
+                    // Fallback to control points if no fit points
+                    points.push(...spline.controlPoints);
+                }
+
+                return [...points]; // Copy to prevent mutation
+            }
+
+            try {
+                const tessellationPoints =
+                    resolution === 'HIGH'
+                        ? ELLIPSE_TESSELLATION_POINTS * 2
+                        : ELLIPSE_TESSELLATION_POINTS;
+                return sampleNURBS(spline, tessellationPoints);
+            } catch {
+                // Fallback to fit points or control points if NURBS evaluation fails
+                if (spline.fitPoints && spline.fitPoints.length > 0) {
+                    return [...spline.fitPoints]; // Copy to prevent mutation
+                } else if (
+                    spline.controlPoints &&
+                    spline.controlPoints.length > 0
+                ) {
+                    return [...spline.controlPoints]; // Copy to prevent mutation
                 }
                 return [];
             }
