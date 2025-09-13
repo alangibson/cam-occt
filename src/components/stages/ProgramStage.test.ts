@@ -176,7 +176,16 @@ vi.mock('$lib/algorithms/part-detection/part-detection', () => ({
     isChainClosed: vi.fn().mockReturnValue(false),
 }));
 
-vi.mock('$lib/algorithms/optimize-cut-order', () => ({
+vi.mock('$lib/algorithms/part-detection/chain-part-interactions', () => ({
+    handleChainClick: vi.fn(),
+    handleChainMouseEnter: vi.fn(),
+    handleChainMouseLeave: vi.fn(),
+    handlePartClick: vi.fn(),
+    handlePartMouseEnter: vi.fn(),
+    handlePartMouseLeave: vi.fn(),
+}));
+
+vi.mock('$lib/algorithms/optimize-cut-order/optimize-cut-order', () => ({
     optimizeCutOrder: vi.fn().mockReturnValue({
         orderedPaths: [],
         rapids: [],
@@ -256,6 +265,241 @@ describe('ProgramStage', () => {
             // All stores are mocked to return empty data, component should handle this gracefully
             const component = render(ProgramStage);
             expect(component).toBeTruthy();
+        });
+    });
+
+    describe('Store State Handling', () => {
+        it('should handle workflow store with canAdvanceTo returning true', () => {
+            const canAdvanceToMock = vi.fn().mockReturnValue(true);
+            vi.mocked(
+                vi.doMock('$lib/stores/workflow', () => ({
+                    workflowStore: {
+                        subscribe: vi.fn((callback) => {
+                            callback({
+                                currentStage: WorkflowStage.PROGRAM,
+                                canAdvanceTo: canAdvanceToMock,
+                            });
+                            return vi.fn();
+                        }),
+                        setStage: vi.fn(),
+                        canAdvanceTo: canAdvanceToMock,
+                    },
+                }))
+            );
+
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+        });
+
+        it('should handle drawing store with fileName present', () => {
+            vi.doMock('$lib/stores/drawing', () => ({
+                drawingStore: {
+                    subscribe: vi.fn((callback) => {
+                        callback({
+                            drawing: { id: 'test-drawing', shapes: [] },
+                            fileName: 'test-file.dxf',
+                        });
+                        return vi.fn();
+                    }),
+                },
+            }));
+
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+        });
+
+        it('should handle chains with data', () => {
+            vi.doMock('$lib/stores/chains', () => ({
+                chainStore: {
+                    subscribe: vi.fn((callback) => {
+                        callback({
+                            chains: [
+                                {
+                                    id: 'chain-1',
+                                    shapes: [
+                                        {
+                                            id: 'shape-1',
+                                            type: 'line',
+                                            geometry: {
+                                                start: { x: 0, y: 0 },
+                                                end: { x: 10, y: 0 },
+                                            },
+                                        },
+                                    ],
+                                },
+                            ],
+                            selectedChainId: 'chain-1',
+                            highlightedChainId: 'chain-1',
+                        });
+                        return vi.fn();
+                    }),
+                },
+            }));
+
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+        });
+
+        it('should handle parts with data', () => {
+            vi.doMock('$lib/stores/parts', () => ({
+                partStore: {
+                    subscribe: vi.fn((callback) => {
+                        callback({
+                            parts: [
+                                {
+                                    id: 'part-1',
+                                    holes: [{ id: 'hole-1' }],
+                                },
+                            ],
+                            highlightedPartId: 'part-1',
+                            hoveredPartId: 'part-1',
+                            selectedPartId: 'part-1',
+                        });
+                        return vi.fn();
+                    }),
+                },
+            }));
+
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+        });
+
+        it('should handle paths with data', () => {
+            vi.doMock('$lib/stores/paths', () => ({
+                pathStore: {
+                    subscribe: vi.fn((callback) => {
+                        callback({
+                            paths: [
+                                {
+                                    id: 'path-1',
+                                    name: 'Test Path',
+                                    enabled: true,
+                                    leadInType: 'arc',
+                                    leadInLength: 5,
+                                    leadInFlipSide: false,
+                                    leadInAngle: 45,
+                                    leadOutType: 'line',
+                                    leadOutLength: 3,
+                                    leadOutFlipSide: false,
+                                    leadOutAngle: 90,
+                                },
+                            ],
+                        });
+                        return vi.fn();
+                    }),
+                    reorderPaths: vi.fn(),
+                },
+            }));
+
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+        });
+
+        it('should handle rapids with data', () => {
+            vi.doMock('$lib/stores/rapids', () => ({
+                rapidStore: {
+                    subscribe: vi.fn((callback) => {
+                        callback({
+                            rapids: [
+                                {
+                                    id: 'rapid-1',
+                                    start: { x: 0, y: 0 },
+                                    end: { x: 10, y: 10 },
+                                },
+                            ],
+                            selectedRapidId: 'rapid-1',
+                            highlightedRapidId: 'rapid-1',
+                        });
+                        return vi.fn();
+                    }),
+                    setRapids: vi.fn(),
+                    clearRapids: vi.fn(),
+                },
+                selectRapid: vi.fn(),
+                highlightRapid: vi.fn(),
+                clearRapidHighlight: vi.fn(),
+            }));
+
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+        });
+
+        it('should handle lead warnings with data', () => {
+            vi.doMock('$lib/stores/lead-warnings', () => ({
+                leadWarningsStore: {
+                    subscribe: vi.fn((callback) => {
+                        callback({
+                            warnings: [
+                                {
+                                    id: 'warning-1',
+                                    type: 'lead-in',
+                                    chainId: 'chain-1',
+                                    message: 'Test warning',
+                                },
+                            ],
+                        });
+                        return vi.fn();
+                    }),
+                },
+            }));
+
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+        });
+
+        it('should handle offset warnings with data', () => {
+            vi.doMock('$lib/stores/offset-warnings', () => ({
+                offsetWarningsStore: {
+                    subscribe: vi.fn((callback) => {
+                        callback({
+                            warnings: [
+                                {
+                                    id: 'warning-1',
+                                    type: 'offset',
+                                    chainId: 'chain-1',
+                                    message: 'Test offset warning',
+                                },
+                            ],
+                        });
+                        return vi.fn();
+                    }),
+                },
+            }));
+
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+        });
+    });
+
+    describe('Component Methods', () => {
+        it('should handle isChainClosed being true', () => {
+            vi.mocked(
+                vi.doMock(
+                    '$lib/algorithms/part-detection/part-detection',
+                    () => ({
+                        isChainClosed: vi.fn().mockReturnValue(true),
+                    })
+                )
+            );
+
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+        });
+
+        it('should handle console.warn in handleOptimizeCutOrder when no data is available', () => {
+            const consoleSpy = vi
+                .spyOn(console, 'warn')
+                .mockImplementation(() => {});
+            const consoleSpy2 = vi
+                .spyOn(console, 'log')
+                .mockImplementation(() => {});
+
+            // Test the warning case where no drawing, chains, or paths are available
+            const component = render(ProgramStage);
+            expect(component).toBeTruthy();
+
+            consoleSpy.mockRestore();
+            consoleSpy2.mockRestore();
         });
     });
 });

@@ -1,14 +1,7 @@
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Line } from '$lib/geometry/line';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 import { Unit } from '../../utils/units';
 import type { GeometryType } from './enums';
-
-export type Geometry = Arc | Line | Circle | Ellipse | Polyline | Spline;
+import type { Geometry } from './types';
 
 export interface Shape {
     id: string;

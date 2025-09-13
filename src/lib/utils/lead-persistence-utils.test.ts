@@ -4,6 +4,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+    calculateLeadPoints,
     getCachedLeadGeometry,
     hasValidCachedLeads,
 } from './lead-persistence-utils';
@@ -110,7 +111,7 @@ describe('Lead Persistence Utils', () => {
         leadOutFlipSide: false,
         leadOutFit: false,
         leadOutAngle: 90,
-        kerfCompensation: 'none' as unknown as KerfCompensation,
+        kerfCompensation: KerfCompensation.NONE,
     };
 
     const mockChain: Chain = {
@@ -466,6 +467,211 @@ describe('Lead Persistence Utils', () => {
                     },
                 })
             );
+        });
+    });
+
+    describe('calculateLeadPoints', () => {
+        const mockChainMap = new Map<string, Chain>();
+        const mockPartMap = new Map();
+
+        beforeEach(() => {
+            mockChainMap.clear();
+            mockPartMap.clear();
+            mockChainMap.set('chain-1', mockChain);
+            mockPartMap.set('chain-1', { id: 'part-1', shells: [], holes: [] });
+        });
+
+        it('should return undefined when chainMap is undefined', () => {
+            const result = calculateLeadPoints(
+                mockPath,
+                undefined,
+                mockPartMap,
+                'leadIn'
+            );
+            expect(result).toBeUndefined();
+        });
+
+        it('should return undefined when partMap is undefined', () => {
+            const result = calculateLeadPoints(
+                mockPath,
+                mockChainMap,
+                undefined,
+                'leadIn'
+            );
+            expect(result).toBeUndefined();
+        });
+
+        it('should return undefined when chain is not found', () => {
+            const pathWithUnknownChain = {
+                ...mockPath,
+                chainId: 'unknown-chain',
+            };
+            const result = calculateLeadPoints(
+                pathWithUnknownChain,
+                mockChainMap,
+                mockPartMap,
+                'leadIn'
+            );
+            expect(result).toBeUndefined();
+        });
+
+        it('should calculate and return leadIn points', () => {
+            const result = calculateLeadPoints(
+                mockPath,
+                mockChainMap,
+                mockPartMap,
+                'leadIn'
+            );
+
+            expect(result).toEqual([
+                { x: 0, y: 0 },
+                { x: 5, y: 5 },
+            ]);
+            expect(calculateLeads).toHaveBeenCalled();
+        });
+
+        it('should calculate and return leadOut points', () => {
+            const result = calculateLeadPoints(
+                mockPath,
+                mockChainMap,
+                mockPartMap,
+                'leadOut'
+            );
+
+            expect(result).toEqual([
+                { x: 10, y: 10 },
+                { x: 15, y: 15 },
+            ]);
+            expect(calculateLeads).toHaveBeenCalled();
+        });
+
+        it('should return undefined when lead has no points', () => {
+            vi.mocked(calculateLeads).mockReturnValueOnce({
+                leadIn: {
+                    points: [],
+                    type: LeadType.ARC,
+                },
+                leadOut: {
+                    points: [],
+                    type: LeadType.LINE,
+                },
+                warnings: [],
+            });
+
+            const result = calculateLeadPoints(
+                mockPath,
+                mockChainMap,
+                mockPartMap,
+                'leadIn'
+            );
+            expect(result).toBeUndefined();
+        });
+
+        it('should return undefined when lead is null', () => {
+            vi.mocked(calculateLeads).mockReturnValueOnce({
+                leadIn: undefined,
+                leadOut: undefined,
+                warnings: [],
+            });
+
+            const result = calculateLeadPoints(
+                mockPath,
+                mockChainMap,
+                mockPartMap,
+                'leadIn'
+            );
+            expect(result).toBeUndefined();
+        });
+
+        it('should use offset shapes when available', () => {
+            const pathWithOffset: Path = {
+                ...mockPath,
+                calculatedOffset: {
+                    offsetShapes: [
+                        {
+                            id: 'offset-shape-1',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: -2 },
+                                end: { x: 10, y: -2 },
+                            },
+                        },
+                    ],
+                    originalShapes: [mockChain.shapes[0]],
+                    direction: OffsetDirection.INSET,
+                    kerfWidth: 4,
+                    generatedAt: '2023-01-01T12:00:00.000Z',
+                    version: '1.0.0',
+                },
+            };
+
+            const result = calculateLeadPoints(
+                pathWithOffset,
+                mockChainMap,
+                mockPartMap,
+                'leadIn'
+            );
+
+            expect(calculateLeads).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    shapes: pathWithOffset.calculatedOffset!.offsetShapes,
+                }),
+                expect.any(Object),
+                expect.any(Object),
+                CutDirection.CLOCKWISE,
+                expect.any(Object)
+            );
+            expect(result).toBeDefined();
+        });
+
+        it('should handle calculation errors and return undefined', () => {
+            const consoleSpy = vi
+                .spyOn(console, 'warn')
+                .mockImplementation(() => {});
+            vi.mocked(calculateLeads).mockImplementationOnce(() => {
+                throw new Error('Test calculation error');
+            });
+
+            const result = calculateLeadPoints(
+                mockPath,
+                mockChainMap,
+                mockPartMap,
+                'leadIn'
+            );
+
+            expect(result).toBeUndefined();
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Failed to calculate lead-in for G-code generation:',
+                'Test Path',
+                expect.any(Error)
+            );
+
+            consoleSpy.mockRestore();
+        });
+
+        it('should handle calculation errors for leadOut', () => {
+            const consoleSpy = vi
+                .spyOn(console, 'warn')
+                .mockImplementation(() => {});
+            vi.mocked(calculateLeads).mockImplementationOnce(() => {
+                throw new Error('Test calculation error');
+            });
+
+            const result = calculateLeadPoints(
+                mockPath,
+                mockChainMap,
+                mockPartMap,
+                'leadOut'
+            );
+
+            expect(result).toBeUndefined();
+            expect(consoleSpy).toHaveBeenCalledWith(
+                'Failed to calculate lead-out for G-code generation:',
+                'Test Path',
+                expect.any(Error)
+            );
+
+            consoleSpy.mockRestore();
         });
     });
 });

@@ -6,6 +6,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { prepareStageStore } from './store';
 import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
+import { GeometryType } from '$lib/geometry/shape';
+import type { Shape } from '$lib/types/geometry';
 
 describe('Prepare Stage Store', () => {
     beforeEach(() => {
@@ -138,5 +140,161 @@ describe('Prepare Stage Store', () => {
         expect(state.leftColumnWidth).toBe(280);
         expect(state.rightColumnWidth).toBe(280);
         expect(state.lastAnalysisTimestamp).toBe(0);
+    });
+
+    describe('normalization state management', () => {
+        const mockShapes: Shape[] = [
+            {
+                id: 'shape1',
+                type: GeometryType.LINE,
+                geometry: { start: { x: 0, y: 0 }, end: { x: 1, y: 1 } },
+            },
+            {
+                id: 'shape2',
+                type: GeometryType.LINE,
+                geometry: { start: { x: 1, y: 1 }, end: { x: 2, y: 2 } },
+            },
+        ];
+
+        const mockChains = [
+            {
+                id: 'chain1',
+                shapes: mockShapes,
+                closed: false,
+                type: 'chain',
+            },
+        ];
+
+        it('should save and restore original state before normalization', () => {
+            // Save original state
+            prepareStageStore.saveOriginalStateForNormalization(
+                mockShapes,
+                mockChains
+            );
+
+            // Verify state was saved
+            const state = get(prepareStageStore);
+            expect(state.originalShapesBeforeNormalization).not.toBeNull();
+            expect(state.originalChainsBeforeNormalization).not.toBeNull();
+
+            // Restore original state
+            const restored =
+                prepareStageStore.restoreOriginalStateFromNormalization();
+
+            expect(restored).not.toBeNull();
+            expect(restored?.shapes).toEqual(mockShapes);
+            expect(restored?.chains).toEqual(mockChains);
+        });
+
+        it('should return null when no original state saved for normalization', () => {
+            const restored =
+                prepareStageStore.restoreOriginalStateFromNormalization();
+            expect(restored).toBeNull();
+        });
+
+        it('should clear original normalization state', () => {
+            // Save some state first
+            prepareStageStore.saveOriginalStateForNormalization(
+                mockShapes,
+                mockChains
+            );
+
+            let state = get(prepareStageStore);
+            expect(state.originalShapesBeforeNormalization).not.toBeNull();
+
+            // Clear the state
+            prepareStageStore.clearOriginalNormalizationState();
+
+            state = get(prepareStageStore);
+            expect(state.originalShapesBeforeNormalization).toBeNull();
+            expect(state.originalChainsBeforeNormalization).toBeNull();
+        });
+    });
+
+    describe('optimization state management', () => {
+        const mockShapes: Shape[] = [
+            {
+                id: 'shape1',
+                type: GeometryType.LINE,
+                geometry: { start: { x: 0, y: 0 }, end: { x: 1, y: 1 } },
+            },
+            {
+                id: 'shape2',
+                type: GeometryType.LINE,
+                geometry: { start: { x: 1, y: 1 }, end: { x: 2, y: 2 } },
+            },
+        ];
+
+        const mockChains = [
+            {
+                id: 'chain1',
+                shapes: mockShapes,
+                closed: false,
+                type: 'chain',
+            },
+        ];
+
+        it('should save and restore original state before optimization', () => {
+            // Save original state
+            prepareStageStore.saveOriginalStateForOptimization(
+                mockShapes,
+                mockChains
+            );
+
+            // Verify state was saved
+            const state = get(prepareStageStore);
+            expect(state.originalShapesBeforeOptimization).not.toBeNull();
+            expect(state.originalChainsBeforeOptimization).not.toBeNull();
+
+            // Restore original state
+            const restored =
+                prepareStageStore.restoreOriginalStateFromOptimization();
+
+            expect(restored).not.toBeNull();
+            expect(restored?.shapes).toEqual(mockShapes);
+            expect(restored?.chains).toEqual(mockChains);
+        });
+
+        it('should return null when no original state saved for optimization', () => {
+            const restored =
+                prepareStageStore.restoreOriginalStateFromOptimization();
+            expect(restored).toBeNull();
+        });
+
+        it('should clear original optimization state', () => {
+            // Save some state first
+            prepareStageStore.saveOriginalStateForOptimization(
+                mockShapes,
+                mockChains
+            );
+
+            let state = get(prepareStageStore);
+            expect(state.originalShapesBeforeOptimization).not.toBeNull();
+
+            // Clear the state
+            prepareStageStore.clearOriginalOptimizationState();
+
+            state = get(prepareStageStore);
+            expect(state.originalShapesBeforeOptimization).toBeNull();
+            expect(state.originalChainsBeforeOptimization).toBeNull();
+        });
+    });
+
+    describe('parts detection state', () => {
+        it('should set parts detected state', () => {
+            // Initially false
+            let state = get(prepareStageStore);
+            expect(state.partsDetected).toBe(false);
+
+            // Set to true
+            prepareStageStore.setPartsDetected(true);
+            state = get(prepareStageStore);
+            expect(state.partsDetected).toBe(true);
+
+            // Set back to false
+            prepareStageStore.setPartsDetected(false);
+            state = get(prepareStageStore);
+            expect(state.partsDetected).toBe(false);
+        });
     });
 });

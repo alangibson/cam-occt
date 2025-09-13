@@ -3,6 +3,9 @@
  */
 
 import { describe, expect, it } from 'vitest';
+import { GeometryType } from '$lib/types/geometry';
+import { Unit } from '$lib/types';
+import type { Shape, Geometry } from '$lib/geometry/shape';
 import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import {
@@ -135,5 +138,477 @@ describe('Layer Squashing Algorithm', () => {
             (shape) => shape.metadata?.originalLayer || shape.layer
         );
         expect(shapesWithLayerInfo.length).toBeGreaterThan(0);
+    });
+
+    describe('Edge Cases and Branch Coverage', () => {
+        it('should handle drawing with no main shapes but with layer shapes', () => {
+            const drawing = {
+                shapes: [] as Shape[],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+                layers: {
+                    layer1: {
+                        shapes: [
+                            {
+                                id: 'shape1',
+                                type: GeometryType.CIRCLE,
+                                geometry: { center: { x: 0, y: 0 }, radius: 5 },
+                            },
+                        ],
+                    },
+                },
+            };
+
+            const result = squashLayers(drawing, { tolerance: 0.1 });
+            expect(result.shapes).toHaveLength(1);
+            expect(result.shapes[0].layer).toBe('layer1');
+        });
+
+        it('should handle drawing with empty shapes array', () => {
+            const drawing = {
+                shapes: [],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+                layers: {
+                    layer1: {
+                        shapes: [
+                            {
+                                id: 'shape1',
+                                type: GeometryType.LINE,
+                                geometry: {
+                                    start: { x: 0, y: 0 },
+                                    end: { x: 10, y: 0 },
+                                },
+                            },
+                        ],
+                    },
+                },
+            };
+
+            const result = squashLayers(drawing, { tolerance: 0.1 });
+            expect(result.shapes).toHaveLength(1);
+        });
+
+        it('should handle layers with empty shapes arrays', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: 'shape1',
+                        type: GeometryType.CIRCLE,
+                        geometry: { center: { x: 0, y: 0 }, radius: 5 },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+                layers: {
+                    emptyLayer: { shapes: [] },
+                    undefinedLayer: { shapes: [] as Shape[] },
+                },
+            };
+
+            const result = squashLayers(drawing, { tolerance: 0.1 });
+            expect(result.shapes).toHaveLength(1);
+        });
+
+        it('should handle drawing with no layers property', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: 'shape1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = squashLayers(drawing);
+            expect(result.shapes).toHaveLength(1);
+            expect(result.layers).toBeUndefined();
+        });
+
+        it('should handle drawing with existing shape metadata when preserving layer info', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: 'shape1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                        layer: 'originalLayer',
+                        metadata: { existingProperty: 'value' },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = squashLayers(drawing, { preserveLayerInfo: true });
+            expect(result.shapes[0].metadata?.existingProperty).toBe('value');
+            expect(result.shapes[0].metadata?.originalLayer).toBe(
+                'originalLayer'
+            );
+            expect(result.layers).toBeUndefined(); // No separate layers in original
+        });
+
+        it('should remove duplicate shapes correctly', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: 'shape1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                    {
+                        id: 'shape2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        }, // Exact duplicate
+                    },
+                    {
+                        id: 'shape3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0.01 },
+                        }, // Within tolerance
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = squashLayers(drawing, { tolerance: 0.1 });
+            expect(result.shapes).toHaveLength(1); // Should keep only first shape
+        });
+
+        it('should handle shapes with unknown types as not equal', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: 'shape1',
+                        type: 'unknown' as GeometryType,
+                        geometry: { data: 'test' } as unknown as Geometry,
+                    },
+                    {
+                        id: 'shape2',
+                        type: 'unknown' as GeometryType,
+                        geometry: { data: 'test' } as unknown as Geometry, // Same but unknown type
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = squashLayers(drawing, { tolerance: 0.1 });
+            expect(result.shapes).toHaveLength(2); // Should keep both since unknown types are not considered equal
+        });
+
+        it('should handle different shape types as not equal', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: 'shape1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                    {
+                        id: 'shape2',
+                        type: GeometryType.CIRCLE,
+                        geometry: { center: { x: 5, y: 0 }, radius: 5 },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = squashLayers(drawing, { tolerance: 0.1 });
+            expect(result.shapes).toHaveLength(2); // Should keep both different types
+        });
+
+        it('should handle arc comparison with different clockwise values', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: 'arc1',
+                        type: GeometryType.ARC,
+                        geometry: {
+                            center: { x: 0, y: 0 },
+                            radius: 5,
+                            startAngle: 0,
+                            endAngle: Math.PI,
+                            clockwise: true,
+                        },
+                    },
+                    {
+                        id: 'arc2',
+                        type: GeometryType.ARC,
+                        geometry: {
+                            center: { x: 0, y: 0 },
+                            radius: 5,
+                            startAngle: 0,
+                            endAngle: Math.PI,
+                            clockwise: false, // Different clockwise value
+                        },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = squashLayers(drawing, { tolerance: 0.1 });
+            expect(result.shapes).toHaveLength(2); // Should keep both since clockwise differs
+        });
+
+        it('should handle polyline comparison with different vertex counts', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: 'poly1',
+                        type: GeometryType.POLYLINE,
+                        geometry: {
+                            closed: false,
+                            shapes: [
+                                {
+                                    id: 'seg1',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 0, y: 0 },
+                                        end: { x: 5, y: 0 },
+                                    },
+                                },
+                                {
+                                    id: 'seg2',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 5, y: 0 },
+                                        end: { x: 10, y: 0 },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        id: 'poly2',
+                        type: GeometryType.POLYLINE,
+                        geometry: {
+                            closed: false,
+                            shapes: [
+                                {
+                                    id: 'seg1',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 0, y: 0 },
+                                        end: { x: 10, y: 0 },
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = squashLayers(drawing, { tolerance: 0.1 });
+            expect(result.shapes).toHaveLength(2); // Should keep both since vertex counts differ
+        });
+
+        it('should handle lines in reverse direction as equal', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 10, y: 0 },
+                            end: { x: 0, y: 0 },
+                        }, // Reversed
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = squashLayers(drawing, { tolerance: 0.1 });
+            expect(result.shapes).toHaveLength(1); // Should keep only one since they're equivalent
+        });
+
+        it('should handle validateSquashing success case', () => {
+            const originalDrawing = {
+                shapes: [
+                    {
+                        id: '1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+                layers: {
+                    layer1: {
+                        shapes: [
+                            {
+                                id: '2',
+                                type: GeometryType.CIRCLE,
+                                geometry: { center: { x: 5, y: 5 }, radius: 3 },
+                            },
+                        ],
+                    },
+                },
+            };
+
+            const squashedDrawing = {
+                shapes: [
+                    {
+                        id: '1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                    {
+                        id: '2',
+                        type: GeometryType.CIRCLE,
+                        geometry: { center: { x: 5, y: 5 }, radius: 3 },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = validateSquashing(originalDrawing, squashedDrawing);
+            expect(result.success).toBe(true);
+            expect(result.originalShapeCount).toBe(2);
+            expect(result.squashedShapeCount).toBe(2);
+            expect(result.message).toContain('successful');
+        });
+
+        it('should handle validateSquashing failure case', () => {
+            const originalDrawing = {
+                shapes: [
+                    {
+                        id: '1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+                layers: {
+                    layer1: {
+                        shapes: [
+                            {
+                                id: '2',
+                                type: GeometryType.CIRCLE,
+                                geometry: { center: { x: 5, y: 5 }, radius: 3 },
+                            },
+                        ],
+                    },
+                },
+            };
+
+            const squashedDrawing = {
+                shapes: [
+                    {
+                        id: '1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                ], // Missing one shape
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = validateSquashing(originalDrawing, squashedDrawing);
+            expect(result.success).toBe(false);
+            expect(result.originalShapeCount).toBe(2);
+            expect(result.squashedShapeCount).toBe(1);
+            expect(result.message).toContain('mismatch');
+        });
+
+        it('should handle getLayerStatistics with no layers', () => {
+            const drawing = {
+                shapes: [
+                    {
+                        id: '1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                ],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+            };
+
+            const result = getLayerStatistics(drawing);
+            expect(result.totalShapes).toBe(1);
+            expect(result.mainShapes).toBe(1);
+            expect(result.layerCounts).toEqual({});
+            expect(result.layerNames).toEqual([]);
+        });
+
+        it('should handle getLayerStatistics with no main shapes', () => {
+            const drawing = {
+                shapes: [],
+                bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                units: Unit.MM,
+                layers: {
+                    layer1: {
+                        shapes: [
+                            {
+                                id: '1',
+                                type: GeometryType.LINE,
+                                geometry: {
+                                    start: { x: 0, y: 0 },
+                                    end: { x: 10, y: 0 },
+                                },
+                            },
+                        ],
+                    },
+                    layer2: { shapes: [] as Shape[] },
+                },
+            };
+
+            const result = getLayerStatistics(drawing);
+            expect(result.totalShapes).toBe(1);
+            expect(result.mainShapes).toBe(0);
+            expect(result.layerCounts.layer1).toBe(1);
+            expect(result.layerCounts.layer2).toBe(0);
+        });
     });
 });

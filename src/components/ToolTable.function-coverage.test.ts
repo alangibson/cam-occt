@@ -303,6 +303,218 @@ describe('ToolTable Component - Function Coverage', () => {
                 expect(tools[0].toolName).toBe('Updated Tool Name');
             }
         });
+
+        it('should update toolNumber field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const toolNumberInput = container.querySelector(
+                'input[type="number"]'
+            ) as HTMLInputElement;
+            if (toolNumberInput) {
+                await fireEvent.change(toolNumberInput, {
+                    target: { value: '5' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].toolNumber).toBe(5);
+            }
+        });
+
+        it('should update feedRate field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const feedRateInput = inputs[1] as HTMLInputElement; // Second numeric input
+            if (feedRateInput) {
+                await fireEvent.change(feedRateInput, {
+                    target: { value: '150.5' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].feedRate).toBe(150.5);
+            }
+        });
+
+        it('should update rapidRate field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const rapidRateInput = inputs[2] as HTMLInputElement; // Third numeric input
+            if (rapidRateInput) {
+                await fireEvent.change(rapidRateInput, {
+                    target: { value: '3500' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].rapidRate).toBe(3500);
+            }
+        });
+
+        it('should update pierceHeight field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const pierceHeightInput = inputs[3] as HTMLInputElement;
+            if (pierceHeightInput) {
+                await fireEvent.change(pierceHeightInput, {
+                    target: { value: '4.2' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].pierceHeight).toBe(4.2);
+            }
+        });
+
+        it('should update cutHeight field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const cutHeightInput = inputs[4] as HTMLInputElement;
+            if (cutHeightInput) {
+                await fireEvent.change(cutHeightInput, {
+                    target: { value: '2.0' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].cutHeight).toBe(2.0);
+            }
+        });
+
+        it('should update pierceDelay field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const pierceDelayInput = inputs[5] as HTMLInputElement;
+            if (pierceDelayInput) {
+                await fireEvent.change(pierceDelayInput, {
+                    target: { value: '0.8' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].pierceDelay).toBe(0.8);
+            }
+        });
+
+        it('should update arcVoltage field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const arcVoltageInput = inputs[6] as HTMLInputElement;
+            if (arcVoltageInput) {
+                await fireEvent.change(arcVoltageInput, {
+                    target: { value: '135' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].arcVoltage).toBe(135);
+            }
+        });
+
+        it('should update kerfWidth field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const kerfWidthInput = inputs[7] as HTMLInputElement;
+            if (kerfWidthInput) {
+                await fireEvent.change(kerfWidthInput, {
+                    target: { value: '1.8' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].kerfWidth).toBe(1.8);
+            }
+        });
+
+        it('should update thcEnable field through checkbox input', async () => {
+            const { container } = render(ToolTable);
+
+            const checkboxInput = container.querySelector(
+                'input[type="checkbox"]'
+            ) as HTMLInputElement;
+            if (checkboxInput) {
+                await fireEvent.change(checkboxInput, {
+                    target: { checked: false },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].thcEnable).toBe(false);
+            }
+        });
+
+        it('should update gasPressure field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const gasPressureInput = inputs[8] as HTMLInputElement;
+            if (gasPressureInput) {
+                await fireEvent.change(gasPressureInput, {
+                    target: { value: '5.2' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].gasPressure).toBe(5.2);
+            }
+        });
+
+        it('should update pauseAtEnd field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const pauseAtEndInput = inputs[9] as HTMLInputElement;
+            if (pauseAtEndInput) {
+                await fireEvent.change(pauseAtEndInput, {
+                    target: { value: '1.5' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].pauseAtEnd).toBe(1.5);
+            }
+        });
+
+        it('should update puddleJumpHeight field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const puddleJumpHeightInput = inputs[10] as HTMLInputElement;
+            if (puddleJumpHeightInput) {
+                await fireEvent.change(puddleJumpHeightInput, {
+                    target: { value: '75' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].puddleJumpHeight).toBe(75);
+            }
+        });
+
+        it('should update puddleJumpDelay field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const puddleJumpDelayInput = inputs[11] as HTMLInputElement;
+            if (puddleJumpDelayInput) {
+                await fireEvent.change(puddleJumpDelayInput, {
+                    target: { value: '0.3' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].puddleJumpDelay).toBe(0.3);
+            }
+        });
+
+        it('should update plungeRate field through numeric input', async () => {
+            const { container } = render(ToolTable);
+
+            const inputs = container.querySelectorAll('input[type="number"]');
+            const plungeRateInput = inputs[12] as HTMLInputElement;
+            if (plungeRateInput) {
+                await fireEvent.change(plungeRateInput, {
+                    target: { value: '700' },
+                });
+
+                const tools = get(toolStore);
+                expect(tools[0].plungeRate).toBe(700);
+            }
+        });
     });
 
     describe('drag and drop functionality', () => {

@@ -400,4 +400,192 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
             expect(get(workflowStore).currentStage).toBe(WorkflowStage.EXPORT); // Can navigate to export
         });
     });
+
+    describe('Navigation and Store Methods', () => {
+        beforeEach(() => {
+            // Complete some stages for navigation testing
+            workflowStore.completeStage(WorkflowStage.IMPORT);
+            workflowStore.completeStage(WorkflowStage.EDIT);
+            workflowStore.completeStage(WorkflowStage.PREPARE);
+            workflowStore.setStage(WorkflowStage.PROGRAM);
+        });
+
+        describe('canAdvanceTo method', () => {
+            it('should return true for accessible stages', () => {
+                const canAdvance = workflowStore.canAdvanceTo(
+                    WorkflowStage.PREPARE
+                );
+                expect(canAdvance).toBe(true);
+            });
+
+            it('should return false for inaccessible stages', () => {
+                const canAdvance = workflowStore.canAdvanceTo(
+                    WorkflowStage.SIMULATE
+                );
+                expect(canAdvance).toBe(false);
+            });
+        });
+
+        describe('getNextStage method', () => {
+            it('should return next stage in sequence', () => {
+                const nextStage = workflowStore.getNextStage();
+                expect(nextStage).toBe(WorkflowStage.SIMULATE);
+            });
+
+            it('should return null when at last stage', () => {
+                // First complete program to allow access to export
+                workflowStore.completeStage(WorkflowStage.PROGRAM);
+                workflowStore.setStage(WorkflowStage.EXPORT);
+                const nextStage = workflowStore.getNextStage();
+                expect(nextStage).toBe(null);
+            });
+        });
+
+        describe('getPreviousStage method', () => {
+            it('should return previous stage in sequence', () => {
+                const prevStage = workflowStore.getPreviousStage();
+                expect(prevStage).toBe(WorkflowStage.PREPARE);
+            });
+
+            it('should return null when at first stage', () => {
+                workflowStore.setStage(WorkflowStage.IMPORT);
+                const prevStage = workflowStore.getPreviousStage();
+                expect(prevStage).toBe(null);
+            });
+        });
+
+        describe('resetFromStage method', () => {
+            it('should reset from specified stage', () => {
+                workflowStore.completeStage(WorkflowStage.PROGRAM);
+                workflowStore.completeStage(WorkflowStage.SIMULATE);
+                workflowStore.setStage(WorkflowStage.EXPORT);
+
+                // Reset from prepare stage
+                workflowStore.resetFromStage(WorkflowStage.PREPARE);
+
+                const state = get(workflowStore);
+                expect(state.completedStages.has(WorkflowStage.IMPORT)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.EDIT)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.PREPARE)).toBe(
+                    false
+                );
+                expect(state.completedStages.has(WorkflowStage.PROGRAM)).toBe(
+                    false
+                );
+                expect(state.completedStages.has(WorkflowStage.SIMULATE)).toBe(
+                    false
+                );
+            });
+
+            it('should move current stage back when resetting from earlier stage', () => {
+                workflowStore.setStage(WorkflowStage.PROGRAM);
+
+                // Reset from edit stage (current stage should move back)
+                workflowStore.resetFromStage(WorkflowStage.EDIT);
+
+                const state = get(workflowStore);
+                expect(state.currentStage).toBe(WorkflowStage.EDIT);
+            });
+
+            it('should not move current stage back when resetting from later stage', () => {
+                workflowStore.setStage(WorkflowStage.EDIT);
+
+                // Reset from program stage (current stage should stay the same)
+                workflowStore.resetFromStage(WorkflowStage.PROGRAM);
+
+                const state = get(workflowStore);
+                expect(state.currentStage).toBe(WorkflowStage.EDIT);
+            });
+        });
+
+        describe('invalidateDownstreamStages method', () => {
+            it('should invalidate stages after specified stage', () => {
+                workflowStore.completeStage(WorkflowStage.PROGRAM);
+                workflowStore.completeStage(WorkflowStage.SIMULATE);
+
+                // Invalidate downstream from prepare
+                workflowStore.invalidateDownstreamStages(WorkflowStage.PREPARE);
+
+                const state = get(workflowStore);
+                expect(state.completedStages.has(WorkflowStage.IMPORT)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.EDIT)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.PREPARE)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.PROGRAM)).toBe(
+                    false
+                );
+                expect(state.completedStages.has(WorkflowStage.SIMULATE)).toBe(
+                    false
+                );
+            });
+        });
+
+        describe('restore method', () => {
+            it('should restore workflow state from persistence', () => {
+                // Reset to clean state first
+                workflowStore.reset();
+
+                // Restore to a specific state
+                workflowStore.restore(WorkflowStage.PROGRAM, [
+                    WorkflowStage.IMPORT,
+                    WorkflowStage.EDIT,
+                    WorkflowStage.PREPARE,
+                    WorkflowStage.PROGRAM,
+                ]);
+
+                const state = get(workflowStore);
+                expect(state.currentStage).toBe(WorkflowStage.PROGRAM);
+                expect(state.completedStages.has(WorkflowStage.IMPORT)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.EDIT)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.PREPARE)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.PROGRAM)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.SIMULATE)).toBe(
+                    false
+                );
+            });
+
+            it('should bypass validation when restoring', () => {
+                // Reset to clean state
+                workflowStore.reset();
+
+                // Restore to a state that would not be achievable through normal progression
+                workflowStore.restore(WorkflowStage.EXPORT, [
+                    WorkflowStage.IMPORT,
+                    WorkflowStage.PROGRAM, // Missing EDIT and PREPARE
+                ]);
+
+                const state = get(workflowStore);
+                expect(state.currentStage).toBe(WorkflowStage.EXPORT);
+                expect(state.completedStages.has(WorkflowStage.IMPORT)).toBe(
+                    true
+                );
+                expect(state.completedStages.has(WorkflowStage.EDIT)).toBe(
+                    false
+                );
+                expect(state.completedStages.has(WorkflowStage.PREPARE)).toBe(
+                    false
+                );
+                expect(state.completedStages.has(WorkflowStage.PROGRAM)).toBe(
+                    true
+                );
+            });
+        });
+    });
 });

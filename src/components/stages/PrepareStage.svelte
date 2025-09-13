@@ -611,122 +611,6 @@
         return distance < algorithmParams.chainDetection.tolerance;
     }
 
-    function calculateChainBoundingBox(chain: Chain): {
-        minX: number;
-        maxX: number;
-        minY: number;
-        maxY: number;
-    } {
-        let minX = Infinity,
-            maxX = -Infinity,
-            minY = Infinity,
-            maxY = -Infinity;
-
-        for (const shape of chain.shapes) {
-            const shapeBounds = getShapeBoundingBox(shape);
-            minX = Math.min(minX, shapeBounds.minX);
-            maxX = Math.max(maxX, shapeBounds.maxX);
-            minY = Math.min(minY, shapeBounds.minY);
-            maxY = Math.max(maxY, shapeBounds.maxY);
-        }
-
-        return { minX, maxX, minY, maxY };
-    }
-
-    function getShapeBoundingBox(shape: Shape): {
-        minX: number;
-        maxX: number;
-        minY: number;
-        maxY: number;
-    } {
-        switch (shape.type) {
-            case GeometryType.LINE:
-                const line = shape.geometry as Line;
-                return {
-                    minX: Math.min(line.start.x, line.end.x),
-                    maxX: Math.max(line.start.x, line.end.x),
-                    minY: Math.min(line.start.y, line.end.y),
-                    maxY: Math.max(line.start.y, line.end.y),
-                };
-            case GeometryType.CIRCLE:
-                const circle = shape.geometry as Circle;
-                return {
-                    minX: circle.center.x - circle.radius,
-                    maxX: circle.center.x + circle.radius,
-                    minY: circle.center.y - circle.radius,
-                    maxY: circle.center.y + circle.radius,
-                };
-            case GeometryType.ARC:
-                const arc = shape.geometry as Arc;
-                return {
-                    minX: arc.center.x - arc.radius,
-                    maxX: arc.center.x + arc.radius,
-                    minY: arc.center.y - arc.radius,
-                    maxY: arc.center.y + arc.radius,
-                };
-            case GeometryType.POLYLINE:
-                const polyline = shape.geometry as Polyline;
-                let minX = Infinity,
-                    maxX = -Infinity,
-                    minY = Infinity,
-                    maxY = -Infinity;
-                for (const point of polylineToPoints(polyline)) {
-                    minX = Math.min(minX, point.x);
-                    maxX = Math.max(maxX, point.x);
-                    minY = Math.min(minY, point.y);
-                    maxY = Math.max(maxY, point.y);
-                }
-                return { minX, maxX, minY, maxY };
-            case GeometryType.ELLIPSE:
-                const ellipse = shape.geometry as Ellipse;
-
-                // Calculate major and minor axis lengths
-                const majorAxisLength = Math.sqrt(
-                    ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
-                        ellipse.majorAxisEndpoint.y *
-                            ellipse.majorAxisEndpoint.y
-                );
-                const minorAxisLength =
-                    majorAxisLength * ellipse.minorToMajorRatio;
-
-                // Calculate rotation angle of major axis
-                const majorAxisAngle = Math.atan2(
-                    ellipse.majorAxisEndpoint.y,
-                    ellipse.majorAxisEndpoint.x
-                );
-
-                // For a rotated ellipse, we need to find the actual bounding box
-                // This requires finding the extrema of the parametric ellipse equations
-                const cos_angle = Math.cos(majorAxisAngle);
-                const sin_angle = Math.sin(majorAxisAngle);
-
-                // Calculate the bounding box dimensions
-                const halfWidth = Math.sqrt(
-                    majorAxisLength * majorAxisLength * cos_angle * cos_angle +
-                        minorAxisLength *
-                            minorAxisLength *
-                            sin_angle *
-                            sin_angle
-                );
-                const halfHeight = Math.sqrt(
-                    majorAxisLength * majorAxisLength * sin_angle * sin_angle +
-                        minorAxisLength *
-                            minorAxisLength *
-                            cos_angle *
-                            cos_angle
-                );
-
-                return {
-                    minX: ellipse.center.x - halfWidth,
-                    maxX: ellipse.center.x + halfWidth,
-                    minY: ellipse.center.y - halfHeight,
-                    maxY: ellipse.center.y + halfHeight,
-                };
-            default:
-                return { minX: 0, maxX: 0, minY: 0, maxY: 0 };
-        }
-    }
-
     // Chain interaction functions using shared handlers
     function handleChainClick(chainId: string) {
         sharedHandleChainClick(chainId, selectedChainId);
@@ -738,8 +622,6 @@
         if (!chain) return false;
         return isChainClosed(chain, algorithmParams.chainDetection.tolerance);
     }
-
-    // Tessellation is now handled by the imported tessellateShape function
 
     function handleDecomposePolylines() {
         const drawing = $drawingStore.drawing;
