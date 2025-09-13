@@ -15,6 +15,7 @@
     } from '$lib/utils/lead-persistence-utils';
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
     import type { Operation } from '$lib/stores/operations/interfaces';
+    import type { Chain } from '$lib/geometry/chain/interfaces';
 
     // Props
     export let ctx: CanvasRenderingContext2D;
@@ -22,7 +23,7 @@
     export let paths: Path[];
     export let operations: Operation[];
     export let parts: DetectedPart[];
-    export let chains: any[]; // Add chains prop
+    export let chains: Chain[];
     export let currentStage: string = 'program';
     export let isSimulating: boolean = false;
     export let simulationProgress: number = 0;

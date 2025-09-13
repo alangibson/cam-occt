@@ -21,7 +21,7 @@
         getChainPartType,
         getPartChainIds,
     } from '$lib/stores/parts/functions';
-    import { sampleNURBS, evaluateNURBS } from '$lib/geometry/spline';
+    import { sampleNURBS } from '$lib/geometry/spline';
     import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
     import {
         getShapeStartPoint,
@@ -64,7 +64,7 @@
     } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import { getPhysicalScaleFactor, type Unit } from '$lib/utils/units';
+    import { getPhysicalScaleFactor } from '$lib/utils/units';
     import { normalizeAngle } from '$lib/geometry/math/functions';
     import { isPointInsidePart } from '$lib/algorithms/raytracing/point-in-chain';
     import { debounce } from '$lib/stores/storage/local-storage';
@@ -161,7 +161,6 @@
     $: physicalScale = drawing
         ? getPhysicalScaleFactor(drawing.units, displayUnit)
         : 1;
-    $: totalScale = scale * physicalScale;
 
     // Update coordinate transformer when parameters change
     $: if (canvas && coordinator) {
@@ -276,8 +275,8 @@
                 const { width, height } = entry.contentRect;
 
                 // Store previous canvas dimensions to calculate offset adjustment
-                const prevWidth = canvas.width;
-                const prevHeight = canvas.height;
+                const _prevWidth = canvas.width;
+                const _prevHeight = canvas.height;
 
                 // Update canvas size to match container
                 canvas.width = width;
@@ -614,33 +613,35 @@
 
         ctx.save();
 
-        rapids.forEach((rapid: { id: string; start: any; end: any }) => {
-            // Determine visual state
-            const isSelected = selectedRapidId === rapid.id;
-            const isHighlighted = highlightedRapidId === rapid.id;
+        rapids.forEach(
+            (rapid: { id: string; start: Point2D; end: Point2D }) => {
+                // Determine visual state
+                const isSelected = selectedRapidId === rapid.id;
+                const isHighlighted = highlightedRapidId === rapid.id;
 
-            // Set styling based on state
-            if (isSelected) {
-                ctx.strokeStyle = '#ff6600'; // Orange for selected (same as selected shapes)
-                ctx.lineWidth = coordinator.screenToWorldDistance(2); // Thicker line
-                ctx.setLineDash([]); // Solid line for selected
-            } else if (isHighlighted) {
-                ctx.strokeStyle = '#ff6600'; // Orange for highlighted
-                ctx.lineWidth = coordinator.screenToWorldDistance(1.5); // Medium thickness
-                const dashSize = coordinator.screenToWorldDistance(3);
-                ctx.setLineDash([dashSize, dashSize]); // Shorter dashes
-            } else {
-                ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for normal
-                ctx.lineWidth = coordinator.screenToWorldDistance(0.5); // Thin line
-                const dashSize = coordinator.screenToWorldDistance(5);
-                ctx.setLineDash([dashSize, dashSize]); // Normal dashes
+                // Set styling based on state
+                if (isSelected) {
+                    ctx.strokeStyle = '#ff6600'; // Orange for selected (same as selected shapes)
+                    ctx.lineWidth = coordinator.screenToWorldDistance(2); // Thicker line
+                    ctx.setLineDash([]); // Solid line for selected
+                } else if (isHighlighted) {
+                    ctx.strokeStyle = '#ff6600'; // Orange for highlighted
+                    ctx.lineWidth = coordinator.screenToWorldDistance(1.5); // Medium thickness
+                    const dashSize = coordinator.screenToWorldDistance(3);
+                    ctx.setLineDash([dashSize, dashSize]); // Shorter dashes
+                } else {
+                    ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for normal
+                    ctx.lineWidth = coordinator.screenToWorldDistance(0.5); // Thin line
+                    const dashSize = coordinator.screenToWorldDistance(5);
+                    ctx.setLineDash([dashSize, dashSize]); // Normal dashes
+                }
+
+                ctx.beginPath();
+                ctx.moveTo(rapid.start.x, rapid.start.y);
+                ctx.lineTo(rapid.end.x, rapid.end.y);
+                ctx.stroke();
             }
-
-            ctx.beginPath();
-            ctx.moveTo(rapid.start.x, rapid.start.y);
-            ctx.lineTo(rapid.end.x, rapid.end.y);
-            ctx.stroke();
-        });
+        );
 
         ctx.restore();
     }
@@ -900,7 +901,7 @@
         // }
     }
 
-    function drawEllipse(ellipse: any, shape: Shape) {
+    function drawEllipse(ellipse: Ellipse, shape: Shape) {
         // Try to get cached tessellation first
         const cachedPoints = getCachedTessellation(shape);
         const tessellatedPoints =
@@ -929,7 +930,7 @@
         ctx.stroke();
     }
 
-    function drawSpline(spline: any, shape: Shape) {
+    function drawSpline(spline: Spline, shape: Shape) {
         // Try to get cached tessellation first
         const cachedPoints = getCachedTessellation(shape);
         let tessellatedPoints = cachedPoints;
@@ -1094,29 +1095,38 @@
         ctx.restore();
     }
 
-    function drawOverlays(overlay: any) {
+    function drawOverlays(overlay: {
+        shapePoints?: (Point2D & { type?: string })[];
+        chainEndpoints?: (Point2D & { type?: string })[];
+        tessellationPoints?: Point2D[];
+        toolHead?: { x: number; y: number; visible: boolean };
+    }) {
         // Draw shape points (Edit stage)
         if (overlay.shapePoints && overlay.shapePoints.length > 0) {
-            overlay.shapePoints.forEach((point: any) => {
-                drawOverlayPoint(
-                    point.x,
-                    point.y,
-                    point.type,
-                    coordinator.screenToWorldDistance(4)
-                );
-            });
+            overlay.shapePoints.forEach(
+                (point: Point2D & { type?: string }) => {
+                    drawOverlayPoint(
+                        point.x,
+                        point.y,
+                        point.type || 'default',
+                        coordinator.screenToWorldDistance(4)
+                    );
+                }
+            );
         }
 
         // Draw chain endpoints (Prepare stage)
         if (overlay.chainEndpoints && overlay.chainEndpoints.length > 0) {
-            overlay.chainEndpoints.forEach((endpoint: any) => {
-                drawChainEndpoint(
-                    endpoint.x,
-                    endpoint.y,
-                    endpoint.type,
-                    coordinator.screenToWorldDistance(6)
-                );
-            });
+            overlay.chainEndpoints.forEach(
+                (endpoint: Point2D & { type?: string }) => {
+                    drawChainEndpoint(
+                        endpoint.x,
+                        endpoint.y,
+                        endpoint.type || 'default',
+                        coordinator.screenToWorldDistance(6)
+                    );
+                }
+            );
         }
 
         // Draw tessellation points (Program stage)
@@ -1124,7 +1134,7 @@
             overlay.tessellationPoints &&
             overlay.tessellationPoints.length > 0
         ) {
-            overlay.tessellationPoints.forEach((point: any) => {
+            overlay.tessellationPoints.forEach((point: Point2D) => {
                 drawTessellationPoint(
                     point.x,
                     point.y,
@@ -1283,7 +1293,7 @@
 
     function getRapidAtPoint(
         point: Point2D
-    ): { id: string; start: any; end: any } | null {
+    ): { id: string; start: Point2D; end: Point2D } | null {
         if (!showRapids || rapids.length === 0) return null;
 
         const tolerance = coordinator.screenToWorldDistance(5); // Fixed tolerance in screen pixels
@@ -1743,7 +1753,9 @@
         mouseButton = 0; // Reset mouse button
     }
 
-    function handleWheel(e: WheelEvent) {
+    function handleWheel(
+        e: Event & { deltaY: number; clientX: number; clientY: number }
+    ) {
         e.preventDefault();
 
         // Calculate new scale in 5% increments

@@ -3,6 +3,8 @@ import tseslint from "typescript-eslint";
 import eslintPluginImport from "eslint-plugin-import";
 import eslintPluginPrettier from "eslint-plugin-prettier";
 import eslintConfigPrettier from "eslint-config-prettier";
+import eslintPluginSvelte from "eslint-plugin-svelte";
+import svelteParser from "svelte-eslint-parser";
 
 export default [
   {
@@ -17,7 +19,6 @@ export default [
       "playwright.config.ts",
       "reference/**",
       "eslint.config.js",
-      "**/*.svelte",
       "report/**",
       ".wrangler/**",
       "worker/**",
@@ -25,6 +26,7 @@ export default [
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,
+  ...eslintPluginSvelte.configs["flat/recommended"],
   eslintConfigPrettier,
   {
     files: ["src/**/*.js", "src/**/*.ts"],
@@ -74,6 +76,7 @@ export default [
       "import/no-unused-modules": "warn",
       "prettier/prettier": ["error", {}, { "usePrettierrc": true }],
       "sort-imports": "off",
+      "no-underscore-dangle": "error",
       "no-magic-numbers": ["error", {
         "ignore": [0, 1, 2],
         "ignoreArrayIndexes": true,
@@ -92,6 +95,75 @@ export default [
   {
     files: ["**/*.test.ts", "**/*.test.js"],
     rules: {
+      "no-magic-numbers": "off",
+      "no-underscore-dangle": "off",
+    },
+  },
+  {
+    files: ["**/*.svelte"],
+    languageOptions: {
+      parser: svelteParser,
+      parserOptions: {
+        parser: tseslint.parser,
+      },
+      globals: {
+        console: "readonly",
+        window: "readonly",
+        document: "readonly",
+        localStorage: "readonly",
+        sessionStorage: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        cancelAnimationFrame: "readonly",
+        requestAnimationFrame: "readonly",
+        HTMLElement: "readonly",
+        HTMLInputElement: "readonly",
+        HTMLCanvasElement: "readonly",
+        CanvasRenderingContext2D: "readonly",
+        ResizeObserver: "readonly",
+        MouseEvent: "readonly",
+        KeyboardEvent: "readonly",
+        Element: "readonly",
+        DragEvent: "readonly",
+        Event: "readonly",
+        CustomEvent: "readonly",
+        Worker: "readonly",
+        FileReader: "readonly",
+        File: "readonly",
+        FileList: "readonly",
+        Blob: "readonly",
+        URL: "readonly",
+        fetch: "readonly",
+        Response: "readonly",
+        Request: "readonly",
+        Headers: "readonly",
+        FormData: "readonly",
+        AbortController: "readonly",
+        AbortSignal: "readonly",
+        alert: "readonly",
+        navigator: "readonly",
+        performance: "readonly",
+        prompt: "readonly",
+        HTMLSelectElement: "readonly",
+      },
+    },
+    rules: {
+      "svelte/no-at-html-tags": "error",
+      "svelte/no-at-debug-tags": "error",
+      "svelte/valid-compile": "error",
+      "svelte/no-unused-svelte-ignore": "warn",
+      "@typescript-eslint/no-unused-vars": ["error", {
+        argsIgnorePattern: "^_",
+        varsIgnorePattern: "^_|^\\$\\$",
+      }],
+      "@typescript-eslint/no-explicit-any": "error",
+      "no-case-declarations": "off",
+      "@typescript-eslint/no-unused-expressions": ["error", {
+        allowShortCircuit: true,
+        allowTernary: true,
+      }],
       "no-magic-numbers": "off",
     },
   },

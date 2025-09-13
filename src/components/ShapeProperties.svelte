@@ -78,8 +78,12 @@
 
     // Helper function to calculate a point on an ellipse at a given parameter
     // Uses the ezdxf approach: calculating minor axis using counterclockwise perpendicular
-    function getEllipsePointAtParameter(
-        ellipse: any,
+    function _getEllipsePointAtParameter(
+        ellipse: {
+            center: Point2D;
+            majorAxisEndpoint: Point2D;
+            minorToMajorRatio: number;
+        },
         parameter: number
     ): Point2D {
         // IMPORTANT: majorAxisEndpoint is already a VECTOR from center, not an absolute point!
@@ -260,7 +264,7 @@
                         >
                     </div>
                     <div class="spline-points">
-                        {#each splineGeometry.controlPoints.slice(0, 5) as point, index}
+                        {#each splineGeometry.controlPoints.slice(0, 5) as point, index (index)}
                             <div class="property-row small">
                                 <span class="property-label">
                                     CP {index + 1}:</span

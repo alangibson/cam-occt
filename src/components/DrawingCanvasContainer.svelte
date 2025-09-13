@@ -1,7 +1,6 @@
 <script lang="ts">
     import DrawingCanvas from './DrawingCanvas.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import type { WorkflowStage as WorkflowStageType } from '$lib/stores/workflow/enums';
 
     export let respectLayerVisibility = true;
     export let treatChainsAsEntities = false;
@@ -17,6 +16,7 @@
 <div class="canvas-container-wrapper">
     {#if showToolbar && toolbarContent}
         <div class="canvas-header">
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -->
             {@html toolbarContent}
         </div>
     {/if}

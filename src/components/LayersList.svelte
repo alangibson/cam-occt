@@ -1,5 +1,7 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { SvelteSet } from 'svelte/reactivity';
+    import type { Shape } from '$lib/geometry/shape';
 
     $: drawing = $drawingStore.drawing;
 
@@ -32,8 +34,8 @@
         }
     }
 
-    function getUniqueLayers(shapes: any[]) {
-        const layerSet = new Set<string>();
+    function getUniqueLayers(shapes: Shape[]) {
+        const layerSet = new SvelteSet<string>();
         shapes.forEach((shape) => {
             if (shape.layer && shape.layer.trim() !== '') {
                 layerSet.add(shape.layer);
@@ -65,7 +67,7 @@
 <div class="layers-list">
     {#if drawing && layers.length > 0}
         <div class="layers">
-            {#each layers as layer}
+            {#each layers as layer (layer.name)}
                 <div class="layer-item">
                     <button
                         class="visibility-toggle"

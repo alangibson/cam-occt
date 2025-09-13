@@ -8,10 +8,12 @@
     import { CutDirection, LeadType } from '$lib/types/direction';
     import { KerfCompensation } from '$lib/types/kerf-compensation';
     import type { Operation } from '$lib/stores/operations/interfaces';
+    import type { Chain } from '$lib/geometry/chain/interfaces';
+    import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 
     let operations: Operation[] = [];
-    let chains: any[] = [];
-    let parts: any[] = [];
+    let chains: Chain[] = [];
+    let parts: DetectedPart[] = [];
     let draggedOperation: Operation | null = null;
     let dragOverIndex: number | null = null;
 
@@ -29,8 +31,10 @@
     // Collapsed state for operations
     let collapsedOperations: { [operationId: string]: boolean } = {};
 
-    // Track assigned targets
-    $: assignedTargets = operationsStore.getAssignedTargets();
+    // Track assigned targets for side effects
+    $: if ($operationsStore) {
+        operationsStore.getAssignedTargets();
+    }
 
     // Reactive statement to ensure proper tool store reactivity
     $: console.log('Tools reactive update:', $toolStore);
@@ -129,10 +133,10 @@
         operationsStore.duplicateOperation(id);
     }
 
-    function updateOperationField(
+    function updateOperationField<K extends keyof Operation>(
         id: string,
-        field: keyof Operation,
-        value: any
+        field: K,
+        value: Operation[K]
     ) {
         operationsStore.updateOperation(id, { [field]: value });
     }
@@ -497,7 +501,7 @@
                                     updateOperationField(
                                         operation.id,
                                         'cutDirection',
-                                        e.currentTarget.value
+                                        e.currentTarget.value as CutDirection
                                     )}
                                 class="cut-direction-select"
                             >
@@ -710,7 +714,7 @@
                                         updateOperationField(
                                             operation.id,
                                             'leadInType',
-                                            e.currentTarget.value
+                                            e.currentTarget.value as LeadType
                                         )}
                                     class="lead-select"
                                 >
@@ -795,7 +799,7 @@
                                         updateOperationField(
                                             operation.id,
                                             'leadOutType',
-                                            e.currentTarget.value
+                                            e.currentTarget.value as LeadType
                                         )}
                                     class="lead-select"
                                 >
@@ -883,7 +887,9 @@
                                     updateOperationField(
                                         operation.id,
                                         'kerfCompensation',
-                                        e.currentTarget.value
+                                        e.currentTarget.value as
+                                            | KerfCompensation
+                                            | undefined
                                     )}
                                 class="lead-select"
                             >

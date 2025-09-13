@@ -113,7 +113,11 @@
         dragOverIndex = null;
     }
 
-    function updateToolField(id: string, field: keyof Tool, value: any) {
+    function updateToolField(
+        id: string,
+        field: keyof Tool,
+        value: string | number | boolean
+    ) {
         toolStore.updateTool(id, { [field]: value });
     }
 </script>

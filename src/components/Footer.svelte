@@ -1,5 +1,4 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
     import { drawingStore } from '$lib/stores/drawing/store';
     import {
         calculateDrawingSize,
@@ -9,26 +8,24 @@
     $: drawing = $drawingStore.drawing;
     $: scale = $drawingStore.scale;
     let drawingSize: DrawingSize | null = null;
-    let isCalculating = false;
 
-    // Recalculate size when drawing changes
-    $: if (drawing) {
-        calculateSize();
-    } else {
-        drawingSize = null;
-    }
+    // Watch for drawing changes
+    let previousDrawing: typeof drawing | null = null;
 
-    async function calculateSize() {
-        if (!drawing || isCalculating) return;
-
-        isCalculating = true;
-        try {
-            drawingSize = await calculateDrawingSize(drawing);
-        } catch (error) {
-            console.error('Error calculating drawing size:', error);
-            drawingSize = null;
-        } finally {
-            isCalculating = false;
+    // Manual effect tracking
+    $: {
+        if (drawing !== previousDrawing) {
+            previousDrawing = drawing;
+            if (drawing) {
+                try {
+                    drawingSize = calculateDrawingSize(drawing);
+                } catch (error) {
+                    console.error('Error calculating drawing size:', error);
+                    drawingSize = null;
+                }
+            } else {
+                drawingSize = null;
+            }
         }
     }
 
@@ -43,9 +40,7 @@
 
 <footer class="footer">
     <div class="drawing-info">
-        {#if isCalculating}
-            <span class="calculating">Calculating size...</span>
-        {:else if drawingSize}
+        {#if drawingSize}
             <span class="size-info">
                 Size: {formatSize(drawingSize.width, drawingSize.units)} × {formatSize(
                     drawingSize.height,
@@ -89,11 +84,6 @@
         font-size: 0.8rem;
         opacity: 0.7;
         margin-left: 0.5rem;
-    }
-
-    .calculating {
-        color: rgb(0, 83, 135);
-        font-style: italic;
     }
 
     .no-size {

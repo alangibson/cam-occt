@@ -21,7 +21,6 @@
     import { pathStore } from '$lib/stores/paths/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import { chainStore } from '$lib/stores/chains/store';
-    import { operationsStore } from '$lib/stores/operations/store';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { overlayStore } from '$lib/stores/overlay/store';
@@ -45,6 +44,10 @@
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { Path } from '$lib/stores/paths/interfaces';
     import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+    import type { Tool } from '$lib/stores/tools/interfaces';
+    import type { ChainStore } from '$lib/stores/chains/interfaces';
+    import type { DrawingState } from '$lib/stores/drawing/interfaces';
+    import type { PartStore } from '$lib/stores/parts/interfaces';
     import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
     import { polylineToPoints } from '$lib/geometry/polyline';
     import { getShapePointAt } from '$lib/geometry/shape/functions';
@@ -92,13 +95,12 @@
     }> = [];
 
     // Store subscriptions
-    let pathStoreState: any;
-    let rapidStoreState: any;
-    let chainStoreState: any;
-    let operationsState: any;
-    let drawingState: any;
-    let toolStoreState: any;
-    let partStoreState: any;
+    let pathStoreState: { paths: Path[] } | null = null;
+    let rapidStoreState: { rapids: Rapid[] } | null = null;
+    let chainStoreState: ChainStore | null = null;
+    let drawingState: DrawingState | null = null;
+    let toolStoreState: Tool[] | null = null;
+    let partStoreState: PartStore | null = null;
 
     // Statistics
     let totalCutDistance = 0;
@@ -111,7 +113,7 @@
         let baseFeedRate = 1000; // Default feed rate
 
         if (path.toolId && toolStoreState) {
-            const tool = toolStoreState.find((t: any) => t.id === path.toolId);
+            const tool = toolStoreState.find((t: Tool) => t.id === path.toolId);
             if (tool?.feedRate) {
                 baseFeedRate = tool.feedRate;
             }
@@ -153,8 +155,8 @@
 
     // Auto-complete simulate stage when simulation data is available
     $: if (
-        pathStoreState?.paths?.length > 0 ||
-        rapidStoreState?.rapids?.length > 0
+        (pathStoreState?.paths && pathStoreState.paths.length > 0) ||
+        (rapidStoreState?.rapids && rapidStoreState.rapids.length > 0)
     ) {
         workflowStore.completeStage(WorkflowStage.SIMULATE);
     }
@@ -180,12 +182,6 @@
         unsubscribers.push(
             chainStore.subscribe((state) => {
                 chainStoreState = state;
-            })
-        );
-
-        unsubscribers.push(
-            operationsStore.subscribe((state) => {
-                operationsState = state;
             })
         );
 
@@ -228,10 +224,10 @@
         estimatedCutTime = 0;
 
         // Get ordered paths and rapids
-        const orderedPaths = [...pathStoreState.paths].sort(
-            (a, b) => a.order - b.order
-        );
-        const rapids = rapidStoreState.rapids;
+        const orderedPaths = pathStoreState
+            ? [...pathStoreState.paths].sort((a, b) => a.order - b.order)
+            : [];
+        const rapids = rapidStoreState ? rapidStoreState.rapids : [];
 
         // Count pierces (one per path)
         pierceCount = orderedPaths.length;
@@ -306,7 +302,7 @@
             return 3000; // Default rapid rate if no tool specified
         }
 
-        const tool = toolStoreState.find((t: any) => t.id === path.toolId);
+        const tool = toolStoreState.find((t: Tool) => t.id === path.toolId);
         return tool?.rapidRate || 3000; // Use tool's rapid rate or default
     }
 
@@ -326,8 +322,9 @@
         if (!shapes) {
             shapes =
                 path.calculatedOffset?.offsetShapes ||
-                chainStoreState?.chains?.find((c: any) => c.id === path.chainId)
-                    ?.shapes;
+                chainStoreState?.chains?.find(
+                    (c: Chain) => c.id === path.chainId
+                )?.shapes;
         }
 
         if (!shapes || shapes.length === 0) return { x: 0, y: 0 };
@@ -355,7 +352,7 @@
 
                 // Use offset shapes if available
                 const chain = chainStoreState?.chains?.find(
-                    (c: any) => c.id === path.chainId
+                    (c: Chain) => c.id === path.chainId
                 );
                 if (!chain) return { x: 0, y: 0 };
 
@@ -404,97 +401,6 @@
         return line.start || { x: 0, y: 0 };
     }
 
-    /**
-     * Get ending point of a path, accounting for lead-out and offset.
-     * When a path has calculated offset geometry (from kerf compensation),
-     * this function uses the offset shapes instead of the original chain shapes.
-     * Falls back to original chain shapes when no offset exists.
-     * @param path - The path to get the ending point for
-     * @returns The ending point coordinates
-     */
-    function getPathEndPoint(path: Path): Point2D {
-        // Use execution chain if available
-        let shapes = path.cutChain?.shapes;
-        const chain = chainStoreState?.chains?.find(
-            (c: any) => c.id === path.chainId
-        );
-
-        // Fallback for backward compatibility
-        if (!shapes) {
-            if (!chain) return { x: 0, y: 0 };
-            shapes =
-                path.calculatedOffset?.offsetShapes ||
-                path.cutChain?.shapes ||
-                chain.shapes;
-        }
-
-        if (!shapes || shapes.length === 0) return { x: 0, y: 0 };
-
-        // Check if path has lead-out
-        if (
-            path.leadOutType &&
-            path.leadOutType !== 'none' &&
-            path.leadOutLength &&
-            path.leadOutLength > 0
-        ) {
-            try {
-                // Find the part that contains this chain
-                const part = findPartForChain(path.chainId);
-
-                const leadInConfig: LeadInConfig = {
-                    type: path.leadInType || LeadType.NONE,
-                    length: path.leadInLength || 0,
-                    flipSide: path.leadInFlipSide || false,
-                    angle: path.leadInAngle,
-                };
-                const leadOutConfig: LeadOutConfig = {
-                    type: path.leadOutType,
-                    length: path.leadOutLength,
-                    flipSide: path.leadOutFlipSide || false,
-                    angle: path.leadOutAngle,
-                };
-
-                const chainForLeads =
-                    path.calculatedOffset && chain
-                        ? {
-                              ...chain,
-                              shapes: path.calculatedOffset.offsetShapes,
-                          }
-                        : chain;
-
-                const leadResult = calculateLeads(
-                    chainForLeads,
-                    leadInConfig,
-                    leadOutConfig,
-                    path.cutDirection,
-                    part
-                );
-
-                if (
-                    leadResult.leadOut &&
-                    leadResult.leadOut.points.length > 0
-                ) {
-                    // Return the last point of the lead-out (end of lead-out)
-                    return leadResult.leadOut.points[
-                        leadResult.leadOut.points.length - 1
-                    ];
-                }
-            } catch (error) {
-                console.warn(
-                    'Failed to calculate lead-out for path:',
-                    path.name,
-                    error
-                );
-            }
-        }
-
-        // Fallback to chain end point
-        const lastShape = shapes[shapes.length - 1];
-        // Simplified shape end point calculation
-        const line = lastShape.geometry as Line;
-        return line.end || { x: 0, y: 0 };
-    }
-
     // Helper function to find the part that contains a given chain
     function findPartForChain(chainId: string): DetectedPart | undefined {
         return findPartContainingChain(chainId, partStoreState?.parts || []);
@@ -511,7 +417,7 @@
         // Use execution chain if available
         let shapes = path.cutChain?.shapes;
         const chain = chainStoreState?.chains?.find(
-            (c: any) => c.id === path.chainId
+            (c: Chain) => c.id === path.chainId
         );
 
         // Fallback for backward compatibility
@@ -584,29 +490,31 @@
                               }
                             : chain;
 
-                    const leadResult = calculateLeads(
-                        chainForLeads,
-                        leadInConfig,
-                        leadOutConfig,
-                        path.cutDirection,
-                        part
-                    );
+                    if (chainForLeads) {
+                        const leadResult = calculateLeads(
+                            chainForLeads,
+                            leadInConfig,
+                            leadOutConfig,
+                            path.cutDirection,
+                            part
+                        );
 
-                    if (
-                        leadResult.leadIn &&
-                        leadResult.leadIn.points.length > 1
-                    ) {
-                        leadInDistance = calculatePolylineLength(
-                            leadResult.leadIn.points
-                        );
-                    }
-                    if (
-                        leadResult.leadOut &&
-                        leadResult.leadOut.points.length > 1
-                    ) {
-                        leadOutDistance = calculatePolylineLength(
-                            leadResult.leadOut.points
-                        );
+                        if (
+                            leadResult.leadIn &&
+                            leadResult.leadIn.points.length > 1
+                        ) {
+                            leadInDistance = calculatePolylineLength(
+                                leadResult.leadIn.points
+                            );
+                        }
+                        if (
+                            leadResult.leadOut &&
+                            leadResult.leadOut.points.length > 1
+                        ) {
+                            leadOutDistance = calculatePolylineLength(
+                                leadResult.leadOut.points
+                            );
+                        }
                     }
                 }
             }
@@ -663,7 +571,7 @@
                         );
                     }
                     return splineLength;
-                } catch (error) {
+                } catch {
                     // Fallback: calculate distance between fit points or control points
                     if (spline.fitPoints && spline.fitPoints.length > 1) {
                         let fallbackLength = 0;
@@ -866,7 +774,7 @@
         // Fallback for backward compatibility
         if (!shapes) {
             chain = chainStoreState?.chains?.find(
-                (c: any) => c.id === path.chainId
+                (c: Chain) => c.id === path.chainId
             );
             if (!chain) return;
             shapes =
@@ -1149,7 +1057,7 @@
                 try {
                     // Use NURBS evaluation to get position at progress along curve
                     return evaluateNURBS(progress, splineGeom);
-                } catch (error) {
+                } catch {
                     // Fallback: interpolate between fit points or control points
                     if (
                         splineGeom.fitPoints &&
@@ -1290,11 +1198,6 @@
         }
 
         return displayDistance.toFixed(1);
-    }
-
-    // Get display unit string
-    function getDisplayUnit(): string {
-        return drawingState?.displayUnit || 'mm';
     }
 
     // Load column widths from localStorage on mount

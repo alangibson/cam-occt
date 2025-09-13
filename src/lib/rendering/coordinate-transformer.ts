@@ -121,7 +121,6 @@ export class CoordinateTransformer {
         const worldPoint: Point2D = this.screenToWorld(zoomPoint);
 
         // Calculate where this world point would appear with new scale
-        const _oldTotalScale: number = this.totalScale;
         const newTotalScale: number = newScale * this.physicalScale;
 
         const origin: Point2D = this.getScreenOrigin();

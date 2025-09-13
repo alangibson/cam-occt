@@ -14,7 +14,7 @@
     let startWidth = 0;
 
     // Default cutting parameters for G-code generation
-    let cuttingParameters: CuttingParameters = {
+    let _cuttingParameters: CuttingParameters = {
         feedRate: 1000,
         pierceHeight: 3.8,
         pierceDelay: 0.5,

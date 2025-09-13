@@ -15,8 +15,8 @@
     import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
     import { isChainClosed } from '$lib/geometry/chain/functions';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import { polylineToPoints } from '$lib/geometry/polyline';
     import { tessellateShape } from '$lib/geometry/shape';
+    import type { Ellipse } from '$lib/types';
     import {
         getShapeEndPoint,
         getShapeStartPoint,
@@ -24,25 +24,14 @@
     import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { overlayStore } from '$lib/stores/overlay/store';
-    import {
-        generateShapePoints,
-        generateChainEndpoints,
-    } from '$lib/stores/overlay/functions';
+    import { generateChainEndpoints } from '$lib/stores/overlay/functions';
     import { partStore } from '$lib/stores/parts/store';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { tessellationStore } from '$lib/stores/tessellation/store';
     import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import {
-        GeometryType,
-        type Arc,
-        type Circle,
-        type Ellipse,
-        type Line,
-        type Polyline,
-        type Shape,
-    } from '$lib/types';
+    import { GeometryType, type Polyline } from '$lib/types';
     import { CutDirection } from '$lib/types/direction';
     import {
         handleChainMouseEnter,
@@ -73,11 +62,105 @@
     // Algorithm parameters - use store for persistence
     $: algorithmParams = $prepareStageStore.algorithmParams;
 
+    // Helper functions to update algorithm parameters
+    function updateJoinColinearLinesTolerance(value: number) {
+        prepareStageStore.updateAlgorithmParam('joinColinearLines', {
+            tolerance: value,
+        });
+    }
+
+    function updateChainDetectionTolerance(value: number) {
+        prepareStageStore.updateAlgorithmParam('chainDetection', {
+            tolerance: value,
+        });
+    }
+
+    function _updateNormalizationTolerance(value: number) {
+        prepareStageStore.updateAlgorithmParam('chainNormalization', {
+            traversalTolerance: value,
+        });
+    }
+
+    function _updateNormalizationGap(value: number) {
+        prepareStageStore.updateAlgorithmParam('chainNormalization', {
+            maxTraversalAttempts: value,
+        });
+    }
+
+    function _updateStartPointOptimizationEnabled(_value: boolean) {
+        // This function is not used anymore as splitPosition is a string, not boolean
+        // Keeping for compatibility but will be removed later
+    }
+
+    function _updateStartPointOptimizationDistance(value: number) {
+        prepareStageStore.updateAlgorithmParam('startPointOptimization', {
+            tolerance: value,
+        });
+    }
+
+    function _updatePartDetectionTolerance(_value: number) {
+        // Part detection doesn't have a tolerance parameter
+        // This function should not be used
+    }
+
+    function updateTessellationCirclePoints(value: number) {
+        prepareStageStore.updateAlgorithmParam('partDetection', {
+            circleTessellationPoints: value,
+        });
+    }
+
+    function updateTessellationMinArcPoints(value: number) {
+        prepareStageStore.updateAlgorithmParam('partDetection', {
+            minArcTessellationPoints: value,
+        });
+    }
+
+    function updateTessellationArcPrecision(value: number) {
+        prepareStageStore.updateAlgorithmParam('partDetection', {
+            arcTessellationDensity: value,
+        });
+    }
+
+    function updateNormalizationTraversalTolerance(value: number) {
+        prepareStageStore.updateAlgorithmParam('chainNormalization', {
+            traversalTolerance: value,
+        });
+    }
+
+    function updateNormalizationMaxAttempts(value: number) {
+        prepareStageStore.updateAlgorithmParam('chainNormalization', {
+            maxTraversalAttempts: value,
+        });
+    }
+
+    function updateStartPointOptimizationSplitPosition(value: string) {
+        prepareStageStore.updateAlgorithmParam('startPointOptimization', {
+            splitPosition: value as 'midpoint',
+        });
+    }
+
+    function updateStartPointOptimizationTolerance(value: number) {
+        prepareStageStore.updateAlgorithmParam('startPointOptimization', {
+            tolerance: value,
+        });
+    }
+
+    function updatePartDetectionDecimalPrecision(value: number) {
+        prepareStageStore.updateAlgorithmParam('partDetection', {
+            decimalPrecision: value,
+        });
+    }
+
+    function updatePartDetectionTessellationEnabled(value: boolean) {
+        prepareStageStore.updateAlgorithmParam('partDetection', {
+            enableTessellation: value,
+        });
+    }
+
     // Reactive chain and part data
     $: detectedChains = $chainStore.chains;
     $: detectedParts = $partStore.parts;
     $: partWarnings = $partStore.warnings;
-    $: highlightedPartId = $partStore.highlightedPartId;
 
     // Update Prepare stage overlay when chains are detected (but not during normalization, and only when on prepare stage)
     $: if (
@@ -133,7 +216,6 @@
         : null;
 
     // Tessellation state
-    $: tessellationActive = $tessellationStore.isActive;
 
     // Chain detection state
     $: chainsDetected = detectedChains.length > 0;
@@ -884,7 +966,7 @@
             <AccordionPanel title="Parts" isExpanded={true}>
                 {#if detectedParts.length > 0}
                     <div class="parts-list">
-                        {#each detectedParts as part, index}
+                        {#each detectedParts as part, index (part.id)}
                             <div
                                 class="part-item {selectedPartId === part.id
                                     ? 'selected'
@@ -921,7 +1003,7 @@
                                             <span class="holes-label"
                                                 >Holes:</span
                                             >
-                                            {#each part.holes as hole, holeIndex}
+                                            {#each part.holes as hole, holeIndex (hole.id)}
                                                 <div class="hole-item">
                                                     <span class="hole-ref"
                                                         >Hole {holeIndex + 1}: {hole
@@ -949,7 +1031,7 @@
             <AccordionPanel title="Chains" isExpanded={true}>
                 {#if detectedChains.length > 0}
                     <div class="chain-summary">
-                        {#each chainNormalizationResults as result}
+                        {#each chainNormalizationResults as result (result.chainId)}
                             <div
                                 class="chain-summary-item {selectedChainId ===
                                 result.chainId
@@ -1111,9 +1193,12 @@
                             Collinearity Tolerance:
                             <input
                                 type="number"
-                                bind:value={
-                                    algorithmParams.joinColinearLines.tolerance
-                                }
+                                value={algorithmParams.joinColinearLines
+                                    .tolerance}
+                                oninput={(e) =>
+                                    updateJoinColinearLinesTolerance(
+                                        parseFloat(e.currentTarget.value)
+                                    )}
                                 min="0.001"
                                 max="1.0"
                                 step="0.001"
@@ -1184,9 +1269,11 @@
                             Connection Tolerance:
                             <input
                                 type="number"
-                                bind:value={
-                                    algorithmParams.chainDetection.tolerance
-                                }
+                                value={algorithmParams.chainDetection.tolerance}
+                                oninput={(e) =>
+                                    updateChainDetectionTolerance(
+                                        parseFloat(e.currentTarget.value)
+                                    )}
                                 min="0.001"
                                 max="10"
                                 step="0.001"
@@ -1235,10 +1322,12 @@
                             Traversal Tolerance:
                             <input
                                 type="number"
-                                bind:value={
-                                    algorithmParams.chainNormalization
-                                        .traversalTolerance
-                                }
+                                value={algorithmParams.chainNormalization
+                                    .traversalTolerance}
+                                oninput={(e) =>
+                                    updateNormalizationTraversalTolerance(
+                                        parseFloat(e.currentTarget.value)
+                                    )}
                                 min="0.001"
                                 max="1.0"
                                 step="0.001"
@@ -1259,10 +1348,12 @@
                             Max Traversal Attempts:
                             <input
                                 type="number"
-                                bind:value={
-                                    algorithmParams.chainNormalization
-                                        .maxTraversalAttempts
-                                }
+                                value={algorithmParams.chainNormalization
+                                    .maxTraversalAttempts}
+                                oninput={(e) =>
+                                    updateNormalizationMaxAttempts(
+                                        parseFloat(e.currentTarget.value)
+                                    )}
                                 min="1"
                                 max="10"
                                 step="1"
@@ -1310,10 +1401,12 @@
                         <label class="param-label">
                             Split Position:
                             <select
-                                bind:value={
-                                    algorithmParams.startPointOptimization
-                                        .splitPosition
-                                }
+                                value={algorithmParams.startPointOptimization
+                                    .splitPosition}
+                                onchange={(e) =>
+                                    updateStartPointOptimizationSplitPosition(
+                                        e.currentTarget.value
+                                    )}
                                 class="param-input"
                                 title="Position along the shape where to create the split point."
                             >
@@ -1331,10 +1424,12 @@
                             Optimization Tolerance:
                             <input
                                 type="number"
-                                bind:value={
-                                    algorithmParams.startPointOptimization
-                                        .tolerance
-                                }
+                                value={algorithmParams.startPointOptimization
+                                    .tolerance}
+                                oninput={(e) =>
+                                    updateStartPointOptimizationTolerance(
+                                        parseFloat(e.currentTarget.value)
+                                    )}
                                 min="0.001"
                                 max="10"
                                 step="0.001"
@@ -1383,10 +1478,12 @@
                             Circle Points:
                             <input
                                 type="number"
-                                bind:value={
-                                    algorithmParams.partDetection
-                                        .circleTessellationPoints
-                                }
+                                value={algorithmParams.partDetection
+                                    .circleTessellationPoints}
+                                oninput={(e) =>
+                                    updateTessellationCirclePoints(
+                                        parseFloat(e.currentTarget.value)
+                                    )}
                                 min="8"
                                 max="128"
                                 step="1"
@@ -1407,10 +1504,12 @@
                             Min Arc Points:
                             <input
                                 type="number"
-                                bind:value={
-                                    algorithmParams.partDetection
-                                        .minArcTessellationPoints
-                                }
+                                value={algorithmParams.partDetection
+                                    .minArcTessellationPoints}
+                                oninput={(e) =>
+                                    updateTessellationMinArcPoints(
+                                        parseFloat(e.currentTarget.value)
+                                    )}
                                 min="4"
                                 max="64"
                                 step="1"
@@ -1430,10 +1529,12 @@
                             Arc Precision:
                             <input
                                 type="number"
-                                bind:value={
-                                    algorithmParams.partDetection
-                                        .arcTessellationDensity
-                                }
+                                value={algorithmParams.partDetection
+                                    .arcTessellationDensity}
+                                oninput={(e) =>
+                                    updateTessellationArcPrecision(
+                                        parseFloat(e.currentTarget.value)
+                                    )}
                                 min="0.01"
                                 max="0.5"
                                 step="0.01"
@@ -1453,10 +1554,12 @@
                             Decimal Precision:
                             <input
                                 type="number"
-                                bind:value={
-                                    algorithmParams.partDetection
-                                        .decimalPrecision
-                                }
+                                value={algorithmParams.partDetection
+                                    .decimalPrecision}
+                                oninput={(e) =>
+                                    updatePartDetectionDecimalPrecision(
+                                        parseFloat(e.currentTarget.value)
+                                    )}
                                 min="1"
                                 max="6"
                                 step="1"
@@ -1475,10 +1578,12 @@
                         <label class="param-label">
                             <input
                                 type="checkbox"
-                                bind:checked={
-                                    algorithmParams.partDetection
-                                        .enableTessellation
-                                }
+                                checked={algorithmParams.partDetection
+                                    .enableTessellation}
+                                onchange={(e) =>
+                                    updatePartDetectionTessellationEnabled(
+                                        e.currentTarget.checked
+                                    )}
                                 class="param-checkbox"
                                 title="Show tessellation visualization points during parts detection."
                             />
@@ -1558,7 +1663,7 @@
                             <h4 class="shapes-title">
                                 Shapes in Chain ({selectedChain.shapes.length}):
                             </h4>
-                            {#each selectedChain.shapes as shape, index}
+                            {#each selectedChain.shapes as shape, index (`${shape.id}-${index}`)}
                                 {@const startPoint = getShapeStartPoint(shape)}
                                 {@const endPoint = getShapeEndPoint(shape)}
                                 <div class="shape-item">
@@ -1600,7 +1705,7 @@
                         {#if selectedChainAnalysis.issues.length > 0}
                             <div class="chain-issues">
                                 <h4 class="issues-title">Issues:</h4>
-                                {#each selectedChainAnalysis.issues as issue}
+                                {#each selectedChainAnalysis.issues as issue, issueIndex (issueIndex)}
                                     <div class="issue-item">
                                         <span class="issue-type"
                                             >{issue.type.replace(
@@ -1629,7 +1734,7 @@
                     isExpanded={true}
                 >
                     <div class="warnings-list">
-                        {#each partWarnings as warning}
+                        {#each partWarnings as warning, warningIndex (warningIndex)}
                             <div class="warning-item">
                                 <div class="warning-icon">⚠️</div>
                                 <div class="warning-content">
@@ -1659,7 +1764,7 @@
                         </p>
                     </div>
                     <div class="warnings-list">
-                        {#each chainTraversalIssues as issue}
+                        {#each chainTraversalIssues as issue, chainIssueIndex (chainIssueIndex)}
                             <div class="warning-item traversal-warning">
                                 <div class="warning-icon">🔗</div>
                                 <div class="warning-content">

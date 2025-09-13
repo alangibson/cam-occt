@@ -11,6 +11,8 @@
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
     import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
+    import { SvelteMap } from 'svelte/reactivity';
+    import type { Chain } from '$lib/geometry/chain/interfaces';
     import { pathStore } from '$lib/stores/paths/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import {
@@ -38,7 +40,7 @@
     $: parts = $partStore.parts;
     $: selectedChainId = $chainStore.selectedChainId;
     $: highlightedChainId = $chainStore.highlightedChainId;
-    $: highlightedPartId = $partStore.highlightedPartId;
+    $: _highlightedPartId = $partStore.highlightedPartId;
     $: hoveredPartId = $partStore.hoveredPartId;
     $: selectedPartId = $partStore.selectedPartId;
     $: paths = $pathStore.paths;
@@ -54,6 +56,7 @@
 
     // Automatically recalculate rapids when paths change
     // We only react to lead-related changes, not order changes to avoid loops
+
     $: {
         // Only include properties that affect lead geometry, not order
         const pathsHash = paths
@@ -74,10 +77,12 @@
             previousPathsHash = pathsHash;
             // Use setTimeout to avoid recursive updates and ensure all stores are synced
             setTimeout(() => {
+                // eslint-disable-next-line svelte/infinite-reactive-loop
                 isOptimizing = true;
                 handleOptimizeCutOrder();
                 // Reset flag after a short delay to allow for store updates
                 setTimeout(() => {
+                    // eslint-disable-next-line svelte/infinite-reactive-loop
                     isOptimizing = false;
                 }, 100);
             }, 0);
@@ -108,7 +113,7 @@
     }
 
     // Helper function to check if a chain is closed
-    function isChainClosedHelper(chain: any): boolean {
+    function isChainClosedHelper(chain: Chain): boolean {
         return isChainClosed(chain, 0.1); // Use default tolerance since this is display-only
     }
 
@@ -146,7 +151,7 @@
         }
 
         // Create a map of chain IDs to chains for quick lookup
-        const chainMap = new Map();
+        const chainMap = new SvelteMap<string, Chain>();
         chains.forEach((chain) => {
             chainMap.set(chain.id, chain);
         });

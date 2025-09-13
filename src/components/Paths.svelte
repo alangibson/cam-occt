@@ -3,12 +3,12 @@
     import { operationsStore } from '$lib/stores/operations/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { flip } from 'svelte/animate';
-    import { onMount } from 'svelte';
+    import type { Path } from '$lib/stores/paths/interfaces';
 
-    let paths: any[] = [];
+    let paths: Path[] = [];
     let selectedPathId: string | null = null;
     let highlightedPathId: string | null = null;
-    let draggedPath: any = null;
+    let draggedPath: Path | null = null;
     let dragOverIndex: number | null = null;
 
     // Subscribe to stores
@@ -39,7 +39,7 @@
     }
 
     // Drag and drop functions
-    function handleDragStart(event: DragEvent, path: any) {
+    function handleDragStart(event: DragEvent, path: Path) {
         draggedPath = path;
         if (event.dataTransfer) {
             event.dataTransfer.effectAllowed = 'move';
@@ -59,7 +59,7 @@
         event.preventDefault();
         if (!draggedPath) return;
 
-        const draggedIndex = paths.findIndex((p) => p.id === draggedPath.id);
+        const draggedIndex = paths.findIndex((p) => p.id === draggedPath!.id);
         if (draggedIndex === -1) return;
 
         const newPaths = [...paths];

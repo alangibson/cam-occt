@@ -26,7 +26,7 @@
 
 <nav class="breadcrumbs" aria-label="Workflow stages">
     <ol class="breadcrumb-list">
-        {#each stages as stage, index}
+        {#each stages as stage, index (stage)}
             <li class="breadcrumb-item">
                 <button
                     class="breadcrumb-button"

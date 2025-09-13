@@ -4,14 +4,13 @@
 
     // Get current display unit from store
     $: displayUnit = $drawingStore.displayUnit;
-    $: selectedUnit = displayUnit;
 
     function handleUnitChange(event: Event) {
         const target = event.target as HTMLSelectElement;
-        selectedUnit = target.value as Unit;
+        const newUnit = target.value as Unit;
 
         // Update the drawing store with the new display unit
-        drawingStore.setDisplayUnit(selectedUnit);
+        drawingStore.setDisplayUnit(newUnit);
     }
 </script>
 
@@ -20,7 +19,7 @@
         <label for="unit-dropdown">Display Units:</label>
         <select
             id="unit-dropdown"
-            bind:value={selectedUnit}
+            value={displayUnit}
             on:change={handleUnitChange}
         >
             <option value="mm">Millimeters (mm)</option>

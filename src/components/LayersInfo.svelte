@@ -1,5 +1,7 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { SvelteSet } from 'svelte/reactivity';
+    import type { Shape } from '$lib/geometry/shape';
 
     $: drawing = $drawingStore.drawing;
 
@@ -7,9 +9,9 @@
     $: layers = drawing ? getUniqueLayers(drawing.shapes) : [];
 
     function getUniqueLayers(
-        shapes: any[]
+        shapes: Shape[]
     ): { name: string; shapeCount: number }[] {
-        const layerSet = new Set<string>();
+        const layerSet = new SvelteSet<string>();
 
         shapes.forEach((shape) => {
             // Treat empty, null, or whitespace-only layers as '0' (default layer)
@@ -41,7 +43,7 @@
 <div class="layers-info">
     {#if drawing && layers.length > 0}
         <div class="layers">
-            {#each layers as layer}
+            {#each layers as layer (layer.name)}
                 <div class="layer-item">
                     <div class="layer-info">
                         <span class="layer-name">

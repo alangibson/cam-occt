@@ -4,12 +4,14 @@
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
     import { toolStore } from '$lib/stores/tools/store';
-    import type { CuttingParameters } from '$lib/types';
-    import { Unit } from '$lib/utils/units';
+    import { SvelteMap } from 'svelte/reactivity';
     import { CutterCompensation } from '$lib/types/cam';
     import { onMount, createEventDispatcher } from 'svelte';
     import { pathsToToolPaths } from '$lib/cam/path-generator/path-to-toolpath';
     import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';
+    import type { Chain } from '$lib/geometry/chain/interfaces';
+    import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+    import type { Shape } from '$lib/geometry/shape';
 
     // Props from parent component
     export let includeComments: boolean = true;
@@ -18,7 +20,7 @@
     export let adaptiveFeedControl: boolean | null = true;
     export let enableTHC: boolean | null = true;
 
-    const dispatch = createEventDispatcher();
+    const _dispatch = createEventDispatcher();
 
     $: drawing = $drawingStore.drawing;
     $: displayUnit = $drawingStore.displayUnit;
@@ -41,14 +43,14 @@
 
         try {
             // Create maps for chain and part data (simulation's approach)
-            const chainShapes = new Map();
-            const chainMap = new Map();
+            const chainShapes = new SvelteMap<string, Shape[]>();
+            const chainMap = new SvelteMap<string, Chain>();
             chains.forEach((chain) => {
                 chainShapes.set(chain.id, chain.shapes);
                 chainMap.set(chain.id, chain);
             });
 
-            const partMap = new Map();
+            const partMap = new SvelteMap<string, DetectedPart>();
             parts.forEach((part) => {
                 // Map parts by their shell chain ID for lead fitting
                 if (part.shell && part.shell.id) {
@@ -83,7 +85,7 @@
             generatedGCode = gcode;
         } catch (error) {
             console.error('Error generating G-code:', error);
-            alert(
+            console.error(
                 'Error generating G-code. Please check the console for details.'
             );
         } finally {
@@ -108,15 +110,18 @@
     function copyToClipboard() {
         if (!generatedGCode) return;
 
-        navigator.clipboard
-            .writeText(generatedGCode)
-            .then(() => {
-                alert('G-code copied to clipboard!');
-            })
-            .catch((err) => {
-                console.error('Failed to copy G-code:', err);
-                alert('Failed to copy G-code to clipboard');
-            });
+        if (typeof navigator !== 'undefined' && navigator.clipboard) {
+            navigator.clipboard
+                .writeText(generatedGCode)
+                .then(() => {
+                    console.log('G-code copied to clipboard!');
+                })
+                .catch((err) => {
+                    console.error('Failed to copy G-code:', err);
+                });
+        } else {
+            console.error('Clipboard API not available');
+        }
     }
 
     // Automatically generate G-code when component mounts or props change
@@ -130,9 +135,14 @@
     // Regenerate when settings or display units change
     $: if (drawing) {
         // Include all props and display units in the reactive dependencies
-        (includeComments, cutterCompensation, adaptiveFeedControl, enableTHC);
-        displayUnit; // Watch for display unit changes
-        paths; // Watch for path changes
+        void (
+            includeComments &&
+            cutterCompensation &&
+            adaptiveFeedControl &&
+            enableTHC
+        );
+        void displayUnit; // Watch for display unit changes
+        void paths; // Watch for path changes
         handleGenerateGCode();
     }
 </script>

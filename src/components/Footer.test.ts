@@ -5,7 +5,6 @@ import Footer from './Footer.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/utils/units';
 import type { Drawing } from '$lib/types';
-import type { DrawingSize } from '$lib/algorithms/drawing-size/drawing-size';
 import { GeometryType } from '$lib/geometry/shape';
 import { calculateDrawingSize } from '$lib/algorithms/drawing-size/drawing-size';
 
@@ -50,7 +49,7 @@ describe('Footer Component', () => {
         expect(getByText('Zoom: 225%')).toBeDefined();
     });
 
-    it('should show calculating message during size calculation', async () => {
+    it('should display drawing size when valid bounds exist', async () => {
         const mockDrawing: Drawing = {
             shapes: [
                 {
@@ -64,7 +63,7 @@ describe('Footer Component', () => {
             units: Unit.MM,
         };
 
-        // Mock a delayed calculation
+        // Mock successful calculation
         vi.mocked(calculateDrawingSize).mockImplementation(() => ({
             width: 10,
             height: 10,
@@ -75,8 +74,9 @@ describe('Footer Component', () => {
         drawingStore.setDrawing(mockDrawing);
         const { getByText } = render(Footer);
 
-        // Should show calculating initially
-        expect(getByText('Calculating size...')).toBeDefined();
+        // Should show the calculated size
+        expect(getByText(/Size: 10\.00 mm × 10\.00 mm/)).toBeDefined();
+        expect(getByText('(calculated)')).toBeDefined();
     });
 
     it('should display drawing size when calculation completes', async () => {
@@ -94,12 +94,12 @@ describe('Footer Component', () => {
         };
 
         // Mock successful calculation
-        vi.mocked(calculateDrawingSize).mockResolvedValue({
+        vi.mocked(calculateDrawingSize).mockImplementation(() => ({
             width: 50,
             height: 30,
             units: Unit.MM,
             source: 'calculated',
-        } as DrawingSize);
+        }));
 
         drawingStore.setDrawing(mockDrawing);
         const { getByText } = render(Footer);
@@ -119,9 +119,9 @@ describe('Footer Component', () => {
         };
 
         // Mock failed calculation
-        vi.mocked(calculateDrawingSize).mockRejectedValue(
-            new Error('Calculation failed')
-        );
+        vi.mocked(calculateDrawingSize).mockImplementation(() => {
+            throw new Error('Calculation failed');
+        });
 
         drawingStore.setDrawing(mockDrawing);
 
