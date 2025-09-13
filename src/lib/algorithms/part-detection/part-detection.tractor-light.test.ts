@@ -7,32 +7,11 @@ import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
+import { isChainClosed } from '$lib/geometry/chain/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Chain as ShapeChain } from '$lib/geometry/chain/interfaces';
 // Shape and Point2D types not needed in this test
-
-// Helper function to test chain closure (copied from part-detection.ts)
-function isChainClosedTest(
-    chain: ShapeChain,
-    tolerance: number = 0.1
-): boolean {
-    if (chain.shapes.length === 0) return false;
-
-    const firstShape = chain.shapes[0];
-    const lastShape = chain.shapes[chain.shapes.length - 1];
-
-    const firstStart = getShapeStartPoint(firstShape);
-    const lastEnd = getShapeEndPoint(lastShape);
-
-    // Check if the chain is closed (end connects to start within tolerance)
-    const distance: number = Math.sqrt(
-        Math.pow(firstStart.x - lastEnd.x, 2) +
-            Math.pow(firstStart.y - lastEnd.y, 2)
-    );
-
-    return distance < tolerance;
-}
 
 function calculateChainGapDistanceTest(chain: ShapeChain): number {
     if (chain.shapes.length === 0) return 0;
@@ -78,7 +57,7 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         const partResult = await detectParts(chains, 0.1);
 
         normalizedChains.forEach((chain) => {
-            isChainClosedTest(chain, 0.1);
+            isChainClosed(chain, 0.1);
             calculateChainGapDistanceTest(chain);
         });
 
@@ -102,7 +81,7 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         // - chains 1,2,4-16: all holes (15 holes total)
         // - chain-16 is the large missing hole (39 shapes) that was previously undetected
         const closedChains = normalizedChains.filter((chain) =>
-            isChainClosedTest(chain, 0.1)
+            isChainClosed(chain, 0.1)
         );
         expect(closedChains.length).toBe(16); // All 16 chains are now properly detected as closed
     });

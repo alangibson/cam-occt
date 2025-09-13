@@ -10,7 +10,7 @@
     import { drawingStore } from '$lib/stores/drawing/store';
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
-    import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
+    import { isChainClosed } from '$lib/geometry/chain/functions';
     import { SvelteMap } from 'svelte/reactivity';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import { pathStore } from '$lib/stores/paths/store';
@@ -112,11 +112,6 @@
         sharedHandlePartClick(partId, selectedPartId);
     }
 
-    // Helper function to check if a chain is closed
-    function isChainClosedHelper(chain: Chain): boolean {
-        return isChainClosed(chain, 0.1); // Use default tolerance since this is display-only
-    }
-
     // Rapid selection functions
     function handleRapidClick(rapidId: string) {
         if (selectedRapidId === rapidId) {
@@ -207,13 +202,14 @@
                                     >Chain {chain.id.split('-')[1]}</span
                                 >
                                 <span
-                                    class="chain-status {isChainClosedHelper(
-                                        chain
+                                    class="chain-status {isChainClosed(
+                                        chain,
+                                        0.1
                                     )
                                         ? 'closed'
                                         : 'open'}"
                                 >
-                                    {isChainClosedHelper(chain)
+                                    {isChainClosed(chain, 0.1)
                                         ? 'Closed'
                                         : 'Open'}
                                 </span>

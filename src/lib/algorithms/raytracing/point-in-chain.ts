@@ -18,7 +18,7 @@ import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
-import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
+import { isChainClosed } from '$lib/geometry/chain/functions';
 import { createHorizontalRay } from './utils';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import {

@@ -14,9 +14,7 @@
     } from '$lib/algorithms/part-detection/part-detection';
     import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
     import { isChainClosed } from '$lib/geometry/chain/functions';
-    import type { Chain } from '$lib/geometry/chain/interfaces';
     import { tessellateShape } from '$lib/geometry/shape';
-    import type { Ellipse } from '$lib/types';
     import {
         getShapeEndPoint,
         getShapeStartPoint,
@@ -31,7 +29,6 @@
     import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import { GeometryType, type Polyline } from '$lib/types';
     import { CutDirection } from '$lib/types/direction';
     import {
         handleChainMouseEnter,
@@ -555,7 +552,12 @@
             // Add warnings for open chains first
             const openChainWarnings: PartDetectionWarning[] = [];
             for (const chain of detectedChains) {
-                if (!isChainClosed2(chain)) {
+                if (
+                    !isChainClosed(
+                        chain,
+                        algorithmParams.chainDetection.tolerance
+                    )
+                ) {
                     const firstShape = chain.shapes[0];
                     const lastShape = chain.shapes[chain.shapes.length - 1];
                     const firstStart = getShapeStartPoint(firstShape);
@@ -644,65 +646,9 @@
         sharedHandlePartClick(partId, selectedPartId);
     }
 
-    // Chain analysis functions
-    function isChainClosed2(chain: Chain): boolean {
-        if (!chain || chain.shapes.length === 0) return false;
-
-        // Single shape chains - check if the shape itself is closed
-        if (chain.shapes.length === 1) {
-            const shape = chain.shapes[0];
-
-            // Single circle is always closed
-            if (shape.type === GeometryType.CIRCLE) {
-                return true;
-            }
-
-            // Single full ellipse is always closed
-            if (shape.type === GeometryType.ELLIPSE) {
-                const ellipse = shape.geometry as Ellipse;
-                // Full ellipses are closed, ellipse arcs are open
-                return !(
-                    typeof ellipse.startParam === 'number' &&
-                    typeof ellipse.endParam === 'number'
-                );
-            }
-
-            // Single closed polyline
-            if (shape.type === GeometryType.POLYLINE) {
-                const polyline = shape.geometry as Polyline;
-                // Use the explicit closed flag from DXF parsing if available
-                if (typeof polyline.closed === 'boolean') {
-                    return polyline.closed;
-                }
-            }
-        }
-
-        // Multi-shape chains - check if first and last points connect
-        const firstShape = chain.shapes[0];
-        const lastShape = chain.shapes[chain.shapes.length - 1];
-
-        const firstStart = getShapeStartPoint(firstShape);
-        const lastEnd = getShapeEndPoint(lastShape);
-
-        const distance = Math.sqrt(
-            Math.pow(firstStart.x - lastEnd.x, 2) +
-                Math.pow(firstStart.y - lastEnd.y, 2)
-        );
-
-        // Use ONLY the user-set tolerance
-        return distance < algorithmParams.chainDetection.tolerance;
-    }
-
     // Chain interaction functions using shared handlers
     function handleChainClick(chainId: string) {
         sharedHandleChainClick(chainId, selectedChainId);
-    }
-
-    // Helper function to check if a chain is closed (for UI display)
-    function isChainClosedHelper(chainId: string): boolean {
-        const chain = detectedChains.find((c) => c.id === chainId);
-        if (!chain) return false;
-        return isChainClosed(chain, algorithmParams.chainDetection.tolerance);
     }
 
     function handleDecomposePolylines() {
@@ -1057,15 +1003,41 @@
                                     >
                                     <div class="chain-indicators">
                                         <span
-                                            class="chain-status {isChainClosedHelper(
-                                                result.chainId
-                                            )
-                                                ? 'closed'
-                                                : 'open'}"
+                                            class="chain-status {(() => {
+                                                const chain =
+                                                    detectedChains.find(
+                                                        (c) =>
+                                                            c.id ===
+                                                            result.chainId
+                                                    );
+                                                return chain &&
+                                                    isChainClosed(
+                                                        chain,
+                                                        algorithmParams
+                                                            .chainDetection
+                                                            .tolerance
+                                                    )
+                                                    ? 'closed'
+                                                    : 'open';
+                                            })()}"
                                         >
-                                            {isChainClosedHelper(result.chainId)
-                                                ? 'Closed'
-                                                : 'Open'}
+                                            {(() => {
+                                                const chain =
+                                                    detectedChains.find(
+                                                        (c) =>
+                                                            c.id ===
+                                                            result.chainId
+                                                    );
+                                                return chain &&
+                                                    isChainClosed(
+                                                        chain,
+                                                        algorithmParams
+                                                            .chainDetection
+                                                            .tolerance
+                                                    )
+                                                    ? 'Closed'
+                                                    : 'Open';
+                                            })()}
                                         </span>
                                         <span
                                             class="traversal-status {result.canTraverse
@@ -1622,13 +1594,17 @@
                             <div class="property">
                                 <span class="property-label">Status:</span>
                                 <span
-                                    class="property-value {isChainClosed2(
-                                        selectedChain
+                                    class="property-value {isChainClosed(
+                                        selectedChain,
+                                        algorithmParams.chainDetection.tolerance
                                     )
                                         ? 'closed'
                                         : 'open'}"
                                 >
-                                    {isChainClosed2(selectedChain)
+                                    {isChainClosed(
+                                        selectedChain,
+                                        algorithmParams.chainDetection.tolerance
+                                    )
                                         ? 'Closed'
                                         : 'Open'}
                                 </span>

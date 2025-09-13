@@ -2,7 +2,7 @@ import type { Shape, Point2D } from '$lib/types';
 import type { Polyline } from '$lib/geometry/polyline';
 import { GeometryType } from '$lib/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
+import { isChainClosed } from '$lib/geometry/chain/functions';
 import {
     MIN_VERTICES_FOR_POLYLINE,
     polylineToPoints,

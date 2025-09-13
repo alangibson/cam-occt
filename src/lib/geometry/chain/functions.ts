@@ -4,6 +4,8 @@
 
 import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Chain } from './interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Polyline } from '$lib/geometry/polyline';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
@@ -16,6 +18,8 @@ import {
     calculatePerimeter,
 } from '$lib/geometry/math';
 import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
+import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
+import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { WindingDirection } from './enums';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';
 import {
@@ -238,25 +242,78 @@ export function tessellateChain(
     return points;
 }
 /**
- * Check if a chain is closed within tolerance
- * Uses the same logic as part detection for consistency
+ * Helper function to get all endpoints from a shape
  */
+function getShapeEndpoints(shape: Shape): Point2D[] {
+    const start: Point2D = getShapeStartPoint(shape);
+    const end: Point2D = getShapeEndPoint(shape);
 
-export function isChainClosed(chain: Chain, tolerance: number): boolean {
+    const points: Point2D[] = [];
+    points.push(start);
+    if (start.x !== end.x || start.y !== end.y) {
+        points.push(end);
+    }
+
+    return points;
+}
+
+/**
+ * Check if a chain is closed within tolerance
+ * Enhanced version with special handling for single-shape circles, ellipses, and polylines
+ */
+export function isChainClosed(
+    chain: Chain,
+    tolerance: number = CHAIN_CLOSURE_TOLERANCE
+): boolean {
     if (chain.shapes.length === 0) return false;
 
-    const firstShape = chain.shapes[0];
-    const lastShape = chain.shapes[chain.shapes.length - 1];
+    // Special case: single-shape circles, ellipses, and closed polylines are inherently closed
+    if (chain.shapes.length === 1) {
+        const shape: Shape = chain.shapes[0];
+        if (shape.type === 'circle') {
+            return true;
+        }
+        if (shape.type === 'ellipse') {
+            const ellipse: Ellipse = shape.geometry as Ellipse;
+            // Use the centralized ellipse closed detection logic
+            return isEllipseClosed(ellipse, CONTAINMENT_AREA_TOLERANCE);
+        }
+        if (shape.type === 'polyline') {
+            // Check the explicit closed flag from DXF parsing
+            const polyline: Polyline = shape.geometry as Polyline;
+            if (
+                typeof polyline.closed === 'boolean' &&
+                polyline.closed === true
+            ) {
+                return true; // Explicitly closed polylines are definitely closed
+            }
+            // If closed is false or undefined, fall through to geometric check
+        }
+    }
 
-    const firstStart = getShapeStartPoint(firstShape);
-    const lastEnd = getShapeEndPoint(lastShape);
+    // Get all endpoints from the shapes in the chain
+    const endpoints: Point2D[] = [];
+
+    for (const shape of chain.shapes) {
+        const shapeEndpoints: Point2D[] = getShapeEndpoints(shape);
+        endpoints.push(...shapeEndpoints);
+    }
+
+    // A closed chain should have all endpoints paired up (each point appears exactly twice)
+    // For a truly closed chain, the start of the first shape should connect to the end of the last shape
+    const firstShape: Shape = chain.shapes[0];
+    const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
+
+    const firstStart: Point2D = getShapeStartPoint(firstShape);
+    const lastEnd: Point2D = getShapeEndPoint(lastShape);
 
     // Check if the chain is closed (end connects to start within tolerance)
-    const distance = Math.sqrt(
+    const distance: number = Math.sqrt(
         Math.pow(firstStart.x - lastEnd.x, 2) +
             Math.pow(firstStart.y - lastEnd.y, 2)
     );
 
+    // Use ONLY the user-set tolerance - no adaptive tolerance calculations allowed
     return distance < tolerance;
 }
 /**

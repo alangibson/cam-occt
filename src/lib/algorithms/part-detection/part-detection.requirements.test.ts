@@ -16,11 +16,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf-parser';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
-import { type Chain } from '$lib/geometry/chain/interfaces';
-import {
-    getShapeEndPoint,
-    getShapeStartPoint,
-} from '$lib/geometry/shape/functions';
+import { isChainClosed } from '$lib/geometry/chain/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { type PartHole, detectParts } from './part-detection';
@@ -209,21 +205,3 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         expect(partResult.parts).toHaveLength(1);
     });
 });
-
-// Helper function to check if chain is closed (copied from part-detection.ts)
-function isChainClosed(chain: Chain, tolerance: number = 0.1): boolean {
-    if (chain.shapes.length === 0) return false;
-
-    const firstShape = chain.shapes[0];
-    const lastShape = chain.shapes[chain.shapes.length - 1];
-
-    const firstStart = getShapeStartPoint(firstShape);
-    const lastEnd = getShapeEndPoint(lastShape);
-
-    const distance: number = Math.sqrt(
-        Math.pow(firstStart.x - lastEnd.x, 2) +
-            Math.pow(firstStart.y - lastEnd.y, 2)
-    );
-
-    return distance < tolerance;
-}

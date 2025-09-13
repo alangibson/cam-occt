@@ -8,7 +8,7 @@
  */
 
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
+import { isChainClosed } from '$lib/geometry/chain/functions';
 import { generateId } from '$lib/domain/id';
 import { validateSplineGeometry2 } from '$lib/geometry/spline/functions';
 import { type SplineValidationResult } from '$lib/geometry/spline/interfaces';

@@ -40,7 +40,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
             part5.shell.chain,
             leadIn,
             leadOut,
-            CutDirection.NONE,
+            CutDirection.CLOCKWISE, // Use proper cut direction instead of NONE
             part5
         );
 
@@ -132,7 +132,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
             part5.shell.chain,
             leadIn,
             leadOut,
-            CutDirection.NONE,
+            CutDirection.CLOCKWISE, // Use proper cut direction instead of NONE
             part5
         );
 

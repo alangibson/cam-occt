@@ -1,12 +1,8 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
+import { isChainClosed } from '$lib/geometry/chain/functions';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { LeadInConfig, LeadOutConfig } from './lead-calculation';
-import {
-    getShapeEndPoint,
-    getShapeStartPoint,
-} from '$lib/geometry/shape/functions';
-import type { Shape } from '$lib/types';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import {
     GEOMETRIC_PRECISION_TOLERANCE,
@@ -411,7 +407,10 @@ function validateCutDirectionCompatibility(
     let severity: 'info' | 'warning' | 'error' = 'info';
 
     // Check if cut direction is specified for closed chains
-    const isClosed: boolean = isChainClosed(chain);
+    const CHAIN_TOLERANCE_SCALE_FACTOR = 100; // Scale factor for chain tolerance
+    const tolerance: number =
+        GEOMETRIC_PRECISION_TOLERANCE * CHAIN_TOLERANCE_SCALE_FACTOR;
+    const isClosed: boolean = isChainClosed(chain, tolerance);
 
     if (isClosed && config.cutDirection === CutDirection.NONE) {
         warnings.push('Closed chain detected but cut direction is "none"');
@@ -517,35 +516,4 @@ function calculateMinDistanceBetweenBounds(
         Math.max(bounds1.minY - bounds2.maxY, bounds2.minY - bounds1.maxY)
     );
     return Math.sqrt(dx * dx + dy * dy);
-}
-
-/**
- * Helper: Check if a chain is closed
- */
-function isChainClosed(chain: Chain): boolean {
-    if (!chain.shapes || chain.shapes.length === 0) {
-        return false;
-    }
-
-    // For single circles or arcs, they are inherently closed
-    if (chain.shapes.length === 1) {
-        const shape: Shape = chain.shapes[0];
-        return shape.type === 'circle';
-    }
-
-    // For multiple shapes, check if end connects to start
-    const firstShape: Shape = chain.shapes[0];
-    const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
-
-    const startPoint: { x: number; y: number } = getShapeStartPoint(firstShape);
-    const endPoint: { x: number; y: number } = getShapeEndPoint(lastShape);
-
-    // eslint-disable-next-line no-magic-numbers
-    const tolerance: number = GEOMETRIC_PRECISION_TOLERANCE * 100; // Small tolerance for floating point comparison (scaled up from precision tolerance)
-    const distance: number = Math.sqrt(
-        Math.pow(startPoint.x - endPoint.x, 2) +
-            Math.pow(startPoint.y - endPoint.y, 2)
-    );
-
-    return distance < tolerance;
 }

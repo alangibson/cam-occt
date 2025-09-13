@@ -5,7 +5,7 @@ import type {
     SideDetectionOptions,
     SideDetectionResult,
 } from './types.ts';
-import { isChainClosed } from '$lib/algorithms/part-detection/part-detection';
+import { isChainClosed } from '$lib/geometry/chain/functions';
 import { normalizeVector } from '$lib/geometry/math/functions';
 import {
     getShapeMidpoint,
