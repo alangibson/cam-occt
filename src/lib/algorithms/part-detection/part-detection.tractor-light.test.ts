@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
@@ -38,7 +38,7 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         // Parse the DXF file with layer squashing enabled
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
 
         // Log shape types for debugging
         const shapeTypes = new Map<string, number>();
@@ -95,7 +95,7 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         // Parse the DXF file with layer squashing enabled
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
 
         // Use the standard default tolerance (0.1) as would be used from Program page
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });

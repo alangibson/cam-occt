@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
 import { normalizeChain } from '../chain-normalization/chain-normalization';
@@ -18,11 +18,7 @@ describe('Simple Chain Comparison - Find Root Differences', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // Parse DXF
-        const drawing = await parseDXF(dxfContent, {
-            decomposePolylines: true,
-            translateToPositiveQuadrant: true,
-            squashLayers: true,
-        });
+        const drawing = await parseDXF(dxfContent);
 
         // Detect chains
         const tolerance = 1.0;

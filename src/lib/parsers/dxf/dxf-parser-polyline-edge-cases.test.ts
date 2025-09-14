@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from './dxf-parser';
+import { parseDXF } from './functions';
 import { getBoundingBoxForShape } from '$lib/geometry/bounding-box';
 import type { Polyline } from '$lib/types/geometry';
 import { readFileSync } from 'fs';

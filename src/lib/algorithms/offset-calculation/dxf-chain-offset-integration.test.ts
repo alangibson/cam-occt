@@ -3,7 +3,7 @@ import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { scaleShape } from '$lib/geometry/shape/functions';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
-import { parseDXF } from '../../parsers/dxf-parser';
+import { parseDXF } from '../../parsers/dxf/functions';
 import { SVGBuilder } from '../../test/svg-builder';
 import { type Circle, GeometryType, type Shape } from '$lib/types/geometry';
 import { Unit, getPhysicalScaleFactor } from '../../utils/units';
@@ -19,7 +19,7 @@ async function processDxfFile(filename: string, outputDir: string) {
     const dxfContent = readFileSync(`tests/dxf/${filename}`, 'utf-8');
 
     // Parse DXF to shapes
-    const drawing = await parseDXF(dxfContent, { squashLayers: true });
+    const drawing = await parseDXF(dxfContent);
     let shapes = drawing.shapes;
 
     console.log(`Loaded ${shapes.length} shapes from ${filename}`);

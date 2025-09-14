@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parseDXF } from './dxf-parser';
-import { Unit } from '../utils/units';
+import { parseDXF } from './functions';
+import { Unit } from '../../utils/units';
 
 describe('DXF Parser Units', () => {
     describe('$INSUNITS header parsing', () => {

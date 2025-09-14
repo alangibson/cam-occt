@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 
@@ -33,8 +33,8 @@ describe('Tractor Seat Mount Debug Analysis', () => {
             },
         ];
 
-        for (const scenario of scenarios) {
-            const parsed = await parseDXF(dxfContent, scenario.options);
+        for (const _ of scenarios) {
+            const parsed = await parseDXF(dxfContent);
 
             // Analyze layers
             const layerStats: Record<string, number> = {};

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 
@@ -12,11 +12,7 @@ describe('Tractor Seat Mount Final Test', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // Parse DXF with squashed layers to combine all geometry
-        const drawing = await parseDXF(dxfContent, {
-            decomposePolylines: true,
-            translateToPositiveQuadrant: true,
-            squashLayers: true,
-        });
+        const drawing = await parseDXF(dxfContent);
 
         // Detect chains
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.05 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 
@@ -12,7 +12,7 @@ describe('ADLER.dxf Part Detection', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // Parse with decompose polylines enabled (matching UI behavior)
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
 
         // Detect chains with tolerance 0.1 (matching current default)
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
@@ -49,7 +49,7 @@ describe('ADLER.dxf Part Detection', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // This should not throw
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
 

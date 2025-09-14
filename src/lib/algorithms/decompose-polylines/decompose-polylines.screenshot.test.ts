@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { decomposePolylines } from './decompose-polylines';
 import { readFileSync } from 'fs';

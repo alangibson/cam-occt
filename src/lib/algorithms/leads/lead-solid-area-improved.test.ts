@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import {
@@ -18,7 +18,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // Parse with decompose polylines enabled (matching UI behavior)
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
 
         // Detect chains with tolerance 0.1 (standard default)
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
@@ -68,7 +68,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     it('should generate different warnings for lead-in vs lead-out', async () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
@@ -117,7 +117,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
     it('should try multiple angles and lengths before generating warnings', async () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];

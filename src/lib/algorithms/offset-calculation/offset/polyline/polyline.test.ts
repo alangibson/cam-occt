@@ -15,7 +15,7 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import { parseDXF } from '../../../../parsers/dxf-parser';
+import { parseDXF } from '../../../../parsers/dxf/functions';
 import { offsetShape } from '..';
 import { OffsetDirection } from '../types';
 

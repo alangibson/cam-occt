@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
-import { parseDXF } from '../../../parsers/dxf-parser';
+import { parseDXF } from '../../../parsers/dxf/functions';
 import { detectShapeChains } from '../../chain-detection/chain-detection';
 import { offsetChain } from './offset';
 import { scaleShape } from '$lib/geometry/shape/functions';
@@ -262,9 +262,7 @@ describe('offsetChain Polyline Support', () => {
                 'tests/dxf/polylines_with_bulge.dxf',
                 'utf-8'
             );
-            const drawing: Drawing = await parseDXF(dxfContent, {
-                squashLayers: true,
-            });
+            const drawing: Drawing = await parseDXF(dxfContent);
 
             // Scale shapes for proper processing
             const physicalScale = getPhysicalScaleFactor(
@@ -368,9 +366,7 @@ describe('offsetChain Polyline Support', () => {
                 'tests/dxf/polylines_with_bulge.dxf',
                 'utf-8'
             );
-            const drawing: Drawing = await parseDXF(dxfContent, {
-                squashLayers: true,
-            });
+            const drawing: Drawing = await parseDXF(dxfContent);
 
             const physicalScale = getPhysicalScaleFactor(
                 drawing.units,

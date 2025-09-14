@@ -1,0 +1,7 @@
+// DXF INSUNITS constants
+export const DXF_INSUNITS_INCHES = 1;
+export const DXF_INSUNITS_MILLIMETERS = 4;
+export const DXF_INSUNITS_CENTIMETERS = 5;
+export const DXF_INSUNITS_METERS = 6;
+export const DEFAULT_ELLIPSE_START_PARAM = 0;
+export const SCALING_AVERAGE_DIVISOR = 2;

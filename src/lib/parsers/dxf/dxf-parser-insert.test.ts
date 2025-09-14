@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from './dxf-parser';
+import { parseDXF } from './functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Line } from '$lib/types/geometry';

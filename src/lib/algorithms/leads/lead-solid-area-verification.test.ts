@@ -1,7 +1,7 @@
 import { describe, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline';
@@ -11,7 +11,7 @@ describe('Lead Solid Area Verification - Catch the Error', () => {
     it('Debug: Verify part 5 geometry and chain association', async () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];

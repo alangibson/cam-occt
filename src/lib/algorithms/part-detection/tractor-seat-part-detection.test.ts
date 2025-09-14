@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
@@ -20,10 +20,7 @@ describe('Tractor Seat Mount Part Detection', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // Parse DXF with default options
-        const drawing = await parseDXF(dxfContent, {
-            decomposePolylines: true,
-            translateToPositiveQuadrant: true,
-        });
+        const drawing = await parseDXF(dxfContent);
 
         console.log(`Total shapes: ${drawing.shapes.length}`);
         console.log('Shapes by type:', {

@@ -1,5 +1,5 @@
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { readFileSync } from 'fs';
 import path from 'path';
@@ -13,11 +13,7 @@ describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // Parse DXF
-        const drawing = await parseDXF(dxfContent, {
-            decomposePolylines: true,
-            translateToPositiveQuadrant: true,
-            squashLayers: true,
-        });
+        const drawing = await parseDXF(dxfContent);
 
         // Detect chains
         const tolerance = 1.0;

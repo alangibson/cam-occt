@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from './dxf-parser';
+import { parseDXF } from './functions';
 import { readFileSync } from 'fs';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';

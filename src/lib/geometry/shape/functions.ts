@@ -82,6 +82,8 @@ import {
     splitArcAtMidpoint,
     splitLineAtMidpoint,
 } from '$lib/algorithms/optimize-start-points/path-optimization-utils';
+import { generateId } from '$lib/domain/id';
+import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
 
 // Constants for shape point generation
 const HIGH_RESOLUTION_CIRCLE_SEGMENTS = 32;
@@ -1657,4 +1659,140 @@ export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
     }
 
     return null;
+}
+export function transformShape(
+    shape: Shape,
+    transform: {
+        insertX: number;
+        insertY: number;
+        scaleX: number;
+        scaleY: number;
+        rotationRad: number;
+        blockBaseX: number;
+        blockBaseY: number;
+    }
+): Shape | null {
+    const {
+        insertX,
+        insertY,
+        scaleX,
+        scaleY,
+        rotationRad,
+        blockBaseX,
+        blockBaseY,
+    } = transform;
+    const clonedShape: Shape = JSON.parse(JSON.stringify(shape));
+
+    const transformPoint: (p: Point2D) => Point2D = (p: Point2D): Point2D => {
+        // Step 1: Translate by negative block base point (block origin)
+        let x: number = p.x - blockBaseX;
+        let y: number = p.y - blockBaseY;
+
+        // Step 2: Apply scaling
+        x = x * scaleX;
+        y = y * scaleY;
+
+        // Step 3: Apply rotation
+        if (rotationRad !== 0) {
+            const cos: number = Math.cos(rotationRad);
+            const sin: number = Math.sin(rotationRad);
+            const newX: number = x * cos - y * sin;
+            const newY: number = x * sin + y * cos;
+            x = newX;
+            y = newY;
+        }
+
+        // Step 4: Apply INSERT position translation
+        x += insertX;
+        y += insertY;
+
+        return { x, y };
+    };
+
+    // Transform geometry based on shape type
+    switch (clonedShape.type) {
+        case GeometryType.LINE:
+            const line: Line = clonedShape.geometry as Line;
+            line.start = transformPoint(line.start);
+            line.end = transformPoint(line.end);
+            break;
+
+        case GeometryType.CIRCLE:
+        case GeometryType.ARC:
+            const circleOrArc: Circle | Arc = clonedShape.geometry as
+                | Circle
+                | Arc;
+            circleOrArc.center = transformPoint(circleOrArc.center);
+            // Scale radius (use average of scaleX and scaleY for uniform scaling)
+            circleOrArc.radius *= (scaleX + scaleY) / SCALING_AVERAGE_DIVISOR;
+            // Adjust arc angles for rotation
+            if (clonedShape.type === GeometryType.ARC && rotationRad !== 0) {
+                const arc: Arc = circleOrArc as Arc;
+                arc.startAngle += rotationRad;
+                arc.endAngle += rotationRad;
+            }
+            break;
+
+        case GeometryType.POLYLINE:
+            const polyline: Polyline = clonedShape.geometry as Polyline;
+            // Transform all shapes
+            polyline.shapes = polyline.shapes.map((shape) => {
+                const segment = shape.geometry;
+                if ('start' in segment && 'end' in segment) {
+                    // Line segment
+                    return {
+                        ...shape,
+                        geometry: {
+                            start: transformPoint(segment.start),
+                            end: transformPoint(segment.end),
+                        },
+                    };
+                } else if ('center' in segment && 'radius' in segment) {
+                    // Arc segment
+                    const arc: Arc = { ...segment } as Arc;
+                    arc.center = transformPoint(arc.center);
+                    // Scale radius (use average of scaleX and scaleY for uniform scaling)
+                    arc.radius *= (scaleX + scaleY) / SCALING_AVERAGE_DIVISOR;
+                    // Adjust arc angles for rotation
+                    if (rotationRad !== 0) {
+                        arc.startAngle += rotationRad;
+                        arc.endAngle += rotationRad;
+                    }
+                    return {
+                        ...shape,
+                        geometry: arc,
+                    };
+                }
+                return shape;
+            });
+            break;
+
+        case GeometryType.ELLIPSE:
+            const ellipse: Ellipse = clonedShape.geometry as Ellipse;
+            ellipse.center = transformPoint(ellipse.center);
+            // Transform the major axis endpoint vector
+            const majorAxisEnd: Point2D = {
+                x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
+                y: ellipse.center.y + ellipse.majorAxisEndpoint.y,
+            };
+            const transformedMajorAxisEnd: Point2D =
+                transformPoint(majorAxisEnd);
+            ellipse.majorAxisEndpoint = {
+                x: transformedMajorAxisEnd.x - ellipse.center.x,
+                y: transformedMajorAxisEnd.y - ellipse.center.y,
+            };
+            // Note: minorToMajorRatio stays the same as it's a proportion
+            break;
+
+        default:
+            console.warn(
+                `Unknown shape type for transformation: ${clonedShape.type}`
+            );
+            return null;
+    }
+
+    // Generate new ID for transformed shape
+    clonedShape.id = generateId();
+
+    return clonedShape;
 }

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
-    import { parseDXF } from '$lib/parsers/dxf-parser';
+    import { parseDXF } from '$lib/parsers/dxf';
     import { drawingStore } from '$lib/stores/drawing/store';
 
     const dispatch = createEventDispatcher();

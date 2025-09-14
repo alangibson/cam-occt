@@ -1,7 +1,7 @@
 import { describe, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
 import {
@@ -91,7 +91,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     it('should find best cut direction for ADLER Part 5', async () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];
@@ -190,7 +190,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     it('should analyze Part 5 geometry for lead placement insights', async () => {
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
         const partResult = await detectParts(chains);
         const part5 = partResult.parts[4];

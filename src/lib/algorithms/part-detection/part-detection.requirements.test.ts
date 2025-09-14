@@ -14,7 +14,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { readFileSync } from 'fs';
@@ -30,7 +30,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         // Load DXF file
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
 
         // Detect chains
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
@@ -55,7 +55,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const filePath = join(process.cwd(), 'tests/dxf/2.dxf');
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
@@ -72,7 +72,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const filePath = join(process.cwd(), 'tests/dxf/3.dxf');
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
@@ -89,7 +89,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const filePath = join(process.cwd(), 'tests/dxf/1997.dxf');
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
@@ -106,7 +106,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const filePath = join(process.cwd(), 'tests/dxf/2013-11-08_test.dxf');
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
@@ -123,7 +123,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const filePath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
@@ -143,7 +143,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         );
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
@@ -160,7 +160,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const filePath = join(process.cwd(), 'tests/dxf/ATT00079.dxf');
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
@@ -192,7 +192,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         );
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const drawing = await parseDXF(dxfContent, { squashLayers: true });
+        const drawing = await parseDXF(dxfContent);
         const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);

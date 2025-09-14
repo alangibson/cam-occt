@@ -4,7 +4,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import {
@@ -48,10 +48,7 @@ describe('ATT00079.dxf Part Detection Verification', () => {
         const filePath = join(process.cwd(), 'tests/dxf/ATT00079.dxf');
         const dxfContent = readFileSync(filePath, 'utf8');
 
-        const parseResult = await parseDXF(dxfContent, {
-            decomposePolylines: true,
-            translateToPositiveQuadrant: true,
-        });
+        const parseResult = await parseDXF(dxfContent);
 
         // Detect chains
         const chains = detectShapeChains(parseResult.shapes, {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from '../../parsers/dxf-parser';
+import { parseDXF } from '../../parsers/dxf/functions';
 import { decomposePolylines } from '../decompose-polylines/decompose-polylines';
 import { detectShapeChains } from '../chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';

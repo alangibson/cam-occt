@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
@@ -13,11 +13,7 @@ describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // Parse DXF with squashed layers to combine all geometry
-        const drawing = await parseDXF(dxfContent, {
-            decomposePolylines: true,
-            translateToPositiveQuadrant: true,
-            squashLayers: true,
-        });
+        const drawing = await parseDXF(dxfContent);
 
         // Use standard tolerance for chain detection
         const tolerance = 1.0; // Using 1.0 to get more chains connected

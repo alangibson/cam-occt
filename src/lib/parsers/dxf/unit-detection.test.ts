@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from './dxf-parser';
+import { parseDXF } from './functions';
 import { getShapePoints } from '$lib/geometry/shape/functions';
-import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive/translate-to-positive';
-import { decomposePolylines } from '../algorithms/decompose-polylines/decompose-polylines';
+import { translateToPositiveQuadrant } from '../../algorithms/translate-to-positive/translate-to-positive';
+import { decomposePolylines } from '../../algorithms/decompose-polylines/decompose-polylines';
 import type { Circle, Line, Shape } from '$lib/types/geometry';
 
 // Helper function to calculate bounds for translated shapes

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from './dxf-parser';
+import { parseDXF } from './functions';
 import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
-import { translateToPositiveQuadrant } from '../algorithms/translate-to-positive/translate-to-positive';
-import { decomposePolylines } from '../algorithms/decompose-polylines/decompose-polylines';
+import { translateToPositiveQuadrant } from '../../algorithms/translate-to-positive/translate-to-positive';
+import { decomposePolylines } from '../../algorithms/decompose-polylines/decompose-polylines';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
 import { getShapePoints } from '$lib/geometry/shape/functions';
 import type {
@@ -530,13 +530,9 @@ ENDSEC
 0
 EOF`;
 
-            const originalDrawing = await parseDXF(mockDXFContent, {
-                translateToPositiveQuadrant: false,
-            });
+            const originalDrawing = await parseDXF(mockDXFContent);
 
-            const translatedDrawing = await parseDXF(mockDXFContent, {
-                translateToPositiveQuadrant: true,
-            });
+            const translatedDrawing = await parseDXF(mockDXFContent);
 
             // Get the two lines
             const originalLines = originalDrawing.shapes.filter(
@@ -701,9 +697,7 @@ ENDSEC
 0
 EOF`;
 
-            const drawing = await parseDXF(mockDXFContent, {
-                translateToPositiveQuadrant: false,
-            });
+            const drawing = await parseDXF(mockDXFContent);
 
             // Should preserve original negative coordinates
             expect(drawing.bounds.min.x).toBeLessThan(0);

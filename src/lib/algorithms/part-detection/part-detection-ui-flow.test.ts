@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { getChainPartType } from '$lib/stores/parts/functions';
@@ -11,7 +11,7 @@ describe('UI Flow Integration Test', () => {
         // Step 1: Load and parse DXF (matching UI flow)
         const dxfPath = join(process.cwd(), 'tests/dxf/1997.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
 
         // Step 2: Detect chains (matching UI flow)
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });
@@ -65,7 +65,7 @@ describe('UI Flow Integration Test', () => {
         // Step 1: Load and parse DXF (matching UI flow)
         const dxfPath = join(process.cwd(), 'tests/dxf/ADLER.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
-        const parsed = await parseDXF(dxfContent, { decomposePolylines: true });
+        const parsed = await parseDXF(dxfContent);
 
         // Step 2: Detect chains (matching UI flow)
         const chains = detectShapeChains(parsed.shapes, { tolerance: 0.1 });

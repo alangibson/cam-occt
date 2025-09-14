@@ -1,6 +1,6 @@
 import type { Shape, Point2D } from '$lib/types';
 import type { Polyline } from '$lib/geometry/polyline';
-import { GeometryType } from '$lib/types';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import {

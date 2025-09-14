@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDXF } from './dxf-parser';
+import { parseDXF } from './functions';
 
 describe('DXF Parser Error Handling', () => {
     it('should handle entities without vertices gracefully', async () => {

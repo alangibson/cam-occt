@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { GeometryType } from '$lib/types/geometry';
 import { Unit } from '$lib/types';
 import type { Shape, Geometry } from '$lib/geometry/shape';
-import { parseDXF } from '$lib/parsers/dxf-parser';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import {
     getLayerStatistics,
@@ -22,9 +22,7 @@ describe('Layer Squashing Algorithm', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         // Parse DXF without layer squashing first to get original structure
-        const originalDrawing = await parseDXF(dxfContent, {
-            squashLayers: false,
-        });
+        const originalDrawing = await parseDXF(dxfContent);
 
         // Get layer statistics before squashing
         const layerStats = getLayerStatistics(originalDrawing);
@@ -71,9 +69,7 @@ describe('Layer Squashing Algorithm', () => {
         const filePath = 'tests/dxf/Tractor Seat Mount - Left.dxf';
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const originalDrawing = await parseDXF(dxfContent, {
-            squashLayers: false,
-        });
+        const originalDrawing = await parseDXF(dxfContent);
         const squashedDrawing = squashLayers(originalDrawing, {
             tolerance: 0.1,
         });
@@ -102,9 +98,7 @@ describe('Layer Squashing Algorithm', () => {
         const filePath = 'tests/dxf/1.dxf';
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const originalDrawing = await parseDXF(dxfContent, {
-            squashLayers: false,
-        });
+        const originalDrawing = await parseDXF(dxfContent);
         const squashedDrawing = squashLayers(originalDrawing);
 
         const validation = validateSquashing(originalDrawing, squashedDrawing);
@@ -118,9 +112,7 @@ describe('Layer Squashing Algorithm', () => {
         const filePath = 'tests/dxf/Tractor Seat Mount - Left.dxf';
         const dxfContent = readFileSync(filePath, 'utf-8');
 
-        const originalDrawing = await parseDXF(dxfContent, {
-            squashLayers: false,
-        });
+        const originalDrawing = await parseDXF(dxfContent);
         const squashedDrawing = squashLayers(originalDrawing, {
             preserveLayerInfo: true,
         });
