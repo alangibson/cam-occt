@@ -1,13 +1,10 @@
 import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Line } from '$lib/geometry/line';
 import type { Ellipse } from '$lib/geometry/ellipse';
-import type { IntersectionResult } from '../../chain/types';
-import {
-    EPSILON,
-    INTERSECTION_TOLERANCE,
-} from '../../../../geometry/math/constants';
-import { snapParameter } from '../line-arc/index';
-import { processVerbIntersectionResults } from '../verb-integration-utils';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { EPSILON, INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
+import { snapParameter } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
+import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 import { createVerbCurveFromLine } from '$lib/geometry/line/nurbs';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
 import { getEllipseParameters } from '$lib/geometry/ellipse/index';

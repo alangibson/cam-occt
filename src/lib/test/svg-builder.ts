@@ -5,8 +5,8 @@ import type { Arc } from '$lib/geometry/arc';
 import type { VerbCurve } from 'verb-nurbs';
 import { GeometryType } from '$lib/types/geometry';
 import { tessellateEllipse } from '$lib/geometry/ellipse/index';
-import type { Shape } from '../algorithms/offset-calculation/chain/types';
-import { tessellateVerbCurve } from '../algorithms/offset-calculation/offset/spline/spline';
+import type { Shape } from '$lib/algorithms/offset-calculation/chain/types';
+import { tessellateVerbCurve } from '$lib/algorithms/offset-calculation/offset/spline/spline';
 import { EPSILON } from '$lib/geometry/math';
 import {
     getShapeEndPoint,

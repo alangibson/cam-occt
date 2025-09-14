@@ -7,21 +7,21 @@ import {
     setupAutoSave,
 } from './store';
 import * as localStorage from './local-storage';
-import { drawingStore } from '../drawing/store';
-import { workflowStore } from '../workflow/store';
-import { chainStore } from '../chains/store';
-import { partStore } from '../parts/store';
-import { rapidStore } from '../rapids/store';
-import { uiStore } from '../ui/store';
-import { tessellationStore } from '../tessellation/store';
-import { overlayStore } from '../overlay/store';
-import { leadWarningsStore } from '../lead-warnings/store';
-import { prepareStageStore } from '../prepare-stage/store';
-import { operationsStore } from '../operations/store';
-import { pathStore } from '../paths/store';
-import { toolStore } from '../tools/store';
-import { WorkflowStage } from '../workflow/enums';
-import { Unit } from '../../utils/units';
+import { drawingStore } from '$lib/stores/drawing/store';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { chainStore } from '$lib/stores/chains/store';
+import { partStore } from '$lib/stores/parts/store';
+import { rapidStore } from '$lib/stores/rapids/store';
+import { uiStore } from '$lib/stores/ui/store';
+import { tessellationStore } from '$lib/stores/tessellation/store';
+import { overlayStore } from '$lib/stores/overlay/store';
+import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
+import { prepareStageStore } from '$lib/stores/prepare-stage/store';
+import { operationsStore } from '$lib/stores/operations/store';
+import { pathStore } from '$lib/stores/paths/store';
+import { toolStore } from '$lib/stores/tools/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
+import { Unit } from '$lib/utils/units';
 import type { PersistedState } from './interfaces';
 import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
 

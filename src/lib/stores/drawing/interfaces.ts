@@ -5,7 +5,7 @@
  */
 
 import { type Drawing, type Point2D, type Shape } from '$lib/types';
-import { Unit } from '../../utils/units';
+import { Unit } from '$lib/utils/units';
 
 export interface DrawingState {
     drawing: Drawing | null;

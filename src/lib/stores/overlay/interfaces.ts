@@ -1,5 +1,5 @@
 import type { Point2D } from '$lib/types';
-import { WorkflowStage } from '../workflow/enums';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 
 export interface TessellationPoint {
     x: number;

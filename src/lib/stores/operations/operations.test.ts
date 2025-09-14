@@ -5,9 +5,9 @@ import { KerfCompensation } from '$lib/types/kerf-compensation';
 
 // Now import the modules we need
 import { operationsStore } from './store';
-import { pathStore } from '../paths/store';
-import { leadWarningsStore } from '../lead-warnings/store';
-import { offsetWarningsStore } from '../offset-warnings/store';
+import { pathStore } from '$lib/stores/paths/store';
+import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
+import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
 import type { Operation } from './interfaces';
 
 // Mock the stores before importing the module under test

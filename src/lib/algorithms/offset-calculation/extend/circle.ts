@@ -1,4 +1,4 @@
-import type { OperationParams } from '../shared/fill-extend-ops';
+import type { OperationParams } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
 import { MAX_EXTENSION } from '$lib/algorithms/constants';
 import {
     calculateCircleAngle,
@@ -7,7 +7,7 @@ import {
     getCirclePoint,
     processCircleOperation,
     validateCircleIntersectionPoint,
-} from '../shared/fill-extend-ops';
+} from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
 import type { Point2D } from '$lib/types/geometry';
 import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';

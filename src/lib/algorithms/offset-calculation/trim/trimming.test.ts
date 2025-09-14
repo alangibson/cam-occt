@@ -14,7 +14,7 @@ import {
     type Shape,
 } from '$lib/types/geometry';
 import { generateId } from '$lib/domain/id';
-import type { IntersectionResult } from '../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import {
     selectTrimPoint,
     trimConsecutiveShapes,

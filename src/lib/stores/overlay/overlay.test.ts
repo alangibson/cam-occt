@@ -7,7 +7,7 @@ import type {
 } from './interfaces';
 import { generateChainEndpoints, generateShapePoints } from './functions';
 import { overlayStore } from './store';
-import { WorkflowStage } from '../workflow/enums';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Point2D, Shape } from '$lib/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape';

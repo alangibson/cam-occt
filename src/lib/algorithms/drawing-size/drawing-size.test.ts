@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { calculateDrawingSize } from './drawing-size';
 import type { Drawing } from '$lib/types';
-import { Unit } from '../../utils/units';
+import { Unit } from '$lib/utils/units';
 import { GeometryType } from '$lib/geometry/shape';
 
 describe('calculateDrawingSize', () => {

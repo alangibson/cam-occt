@@ -1,4 +1,4 @@
-import type { Shape } from '../shape';
+import type { Shape } from '$lib/geometry/shape';
 
 export interface Chain {
     id: string;

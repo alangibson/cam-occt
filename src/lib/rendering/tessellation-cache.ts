@@ -12,7 +12,7 @@ import {
     ELLIPSE_TESSELLATION_POINTS,
     tessellateEllipse,
 } from '$lib/geometry/ellipse/index';
-import { EXTENDED_TIMEOUT_MS, STANDARD_TIMEOUT_MS } from '../constants';
+import { EXTENDED_TIMEOUT_MS, STANDARD_TIMEOUT_MS } from '$lib/constants';
 
 interface CachedTessellation {
     points: Point2D[];

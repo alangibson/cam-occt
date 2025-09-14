@@ -1,9 +1,9 @@
 import type { Point2D } from '$lib/types/geometry';
 import type { Line } from '$lib/geometry/line';
-import type { IntersectionResult } from '../../chain/types';
-import type { IntersectionType } from '../index';
-import { EPSILON } from '../../../../geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect';
+import { EPSILON } from '$lib/geometry/math/constants';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
 // Import shared line intersection utilities
 import {
     calculateLineIntersection,

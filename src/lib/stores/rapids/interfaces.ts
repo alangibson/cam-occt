@@ -1,4 +1,4 @@
-import type { Rapid } from '../../algorithms/optimize-cut-order/optimize-cut-order';
+import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
 
 export interface RapidsState {
     rapids: Rapid[];

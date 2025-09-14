@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import { parseDXF } from './functions';
-import { decomposePolylines } from '../../algorithms/decompose-polylines/decompose-polylines';
+import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import {
     type PolylineVertex,
     polylineToVertices,
@@ -9,7 +9,7 @@ import {
 import { readFileSync } from 'fs';
 import path from 'path';
 import { EPSILON } from '$lib/geometry/math';
-import type { Arc } from '../../geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 import type { Polyline } from '$lib/types/geometry';
 
 describe('Bulge Rendering Fixes', () => {

@@ -5,11 +5,11 @@ import {
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,
 } from '$lib/geometry/constants';
-import { OffsetDirection } from '../../algorithms/offset-calculation/offset/types';
-import { offsetChain } from '../../algorithms/offset-calculation/chain/offset';
-import type { GapFillingResult } from '../../algorithms/offset-calculation/chain/types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
+import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { DetectedPart, PartHole, Shape } from '$lib/types';
-import type { Tool } from '../tools/interfaces';
+import type { Tool } from '$lib/stores/tools/interfaces';
 import type {
     ChainOffsetResult,
     OffsetCalculation,
@@ -18,7 +18,7 @@ import type {
     PathLeadResult,
 } from './interfaces';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Path } from '../paths/interfaces';
+import type { Path } from '$lib/stores/paths/interfaces';
 import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import {
     createLeadInConfig,

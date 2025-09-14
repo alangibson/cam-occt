@@ -13,8 +13,8 @@ import {
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { offsetPolyline } from '../offset/polyline/polyline';
-import { OffsetDirection } from '../offset/types';
+import { offsetPolyline } from '$lib/algorithms/offset-calculation/offset/polyline/polyline';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 describe('Star Offset Parallelism Diagnostic', () => {
     const outputDir = 'tests/output/diagnostic';

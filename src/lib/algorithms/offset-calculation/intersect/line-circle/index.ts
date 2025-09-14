@@ -1,13 +1,13 @@
 import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
-import type { IntersectionResult } from '../../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import {
     type SegmentPosition,
     findLineArcIntersections,
     findLineArcIntersectionsSegmentAware,
-} from '../line-arc/index';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
+} from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
 
 /**
  * Find intersections between a line and a circle

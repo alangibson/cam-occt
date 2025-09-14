@@ -12,38 +12,38 @@ import {
     saveState,
 } from './local-storage';
 import { type PersistedState } from './interfaces';
-import { Unit } from '../../utils/units';
+import { Unit } from '$lib/utils/units';
 
 // Import all stores
-import { drawingStore } from '../drawing/store';
-import type { DrawingState } from '../drawing/interfaces';
-import { workflowStore } from '../workflow/store';
-import { WorkflowStage } from '../workflow/enums';
-import type { WorkflowState } from '../workflow/interfaces';
-import { chainStore } from '../chains/store';
-import type { ChainStore } from '../chains/interfaces';
-import { partStore } from '../parts/store';
-import type { PartStore } from '../parts/interfaces';
-import { rapidStore } from '../rapids/store';
-import type { RapidsState } from '../rapids/interfaces';
-import { uiStore } from '../ui/store';
-import type { UIState } from '../ui/interfaces';
-import { tessellationStore } from '../tessellation/store';
-import type { TessellationState } from '../tessellation/interfaces';
-import { overlayStore } from '../overlay/store';
-import type { OverlayState } from '../overlay/interfaces';
-import { leadWarningsStore } from '../lead-warnings/store';
-import type { LeadWarning } from '../lead-warnings/interfaces';
-import { prepareStageStore } from '../prepare-stage/store';
-import type { PrepareStageState } from '../prepare-stage/interfaces';
+import { drawingStore } from '$lib/stores/drawing/store';
+import type { DrawingState } from '$lib/stores/drawing/interfaces';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
+import type { WorkflowState } from '$lib/stores/workflow/interfaces';
+import { chainStore } from '$lib/stores/chains/store';
+import type { ChainStore } from '$lib/stores/chains/interfaces';
+import { partStore } from '$lib/stores/parts/store';
+import type { PartStore } from '$lib/stores/parts/interfaces';
+import { rapidStore } from '$lib/stores/rapids/store';
+import type { RapidsState } from '$lib/stores/rapids/interfaces';
+import { uiStore } from '$lib/stores/ui/store';
+import type { UIState } from '$lib/stores/ui/interfaces';
+import { tessellationStore } from '$lib/stores/tessellation/store';
+import type { TessellationState } from '$lib/stores/tessellation/interfaces';
+import { overlayStore } from '$lib/stores/overlay/store';
+import type { OverlayState } from '$lib/stores/overlay/interfaces';
+import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
+import type { LeadWarning } from '$lib/stores/lead-warnings/interfaces';
+import { prepareStageStore } from '$lib/stores/prepare-stage/store';
+import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
-import { operationsStore } from '../operations/store';
-import type { Operation } from '../operations/interfaces';
-import { pathStore } from '../paths/store';
-import type { PathsState } from '../paths/interfaces';
-import { toolStore } from '../tools/store';
-import type { Tool } from '../tools/interfaces';
-import type { WarningState } from '../warnings/interfaces';
+import { operationsStore } from '$lib/stores/operations/store';
+import type { Operation } from '$lib/stores/operations/interfaces';
+import { pathStore } from '$lib/stores/paths/store';
+import type { PathsState } from '$lib/stores/paths/interfaces';
+import { toolStore } from '$lib/stores/tools/store';
+import type { Tool } from '$lib/stores/tools/interfaces';
+import type { WarningState } from '$lib/stores/warnings/interfaces';
 
 /**
  * Collect current state from all stores

@@ -74,6 +74,17 @@ export default [
       "import/first": "error",
       "import/newline-after-import": "error",
       "import/no-unused-modules": "warn",
+      "no-restricted-imports": [
+        "error",
+        {
+          "patterns": [
+            {
+              "group": ["../"],
+              "message": "Relative parent imports are not allowed.",
+            },
+          ],
+        },
+      ],
       "prettier/prettier": ["error", {}, { "usePrettierrc": true }],
       "sort-imports": "off",
       "no-underscore-dangle": "error",

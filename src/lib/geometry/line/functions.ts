@@ -1,9 +1,9 @@
 import { type Geometry, type Point2D } from '$lib/types/geometry';
 import type { Line } from './interfaces';
 import { EPSILON } from '$lib/geometry/math';
-import { snapParameter } from '../math/functions';
+import { snapParameter } from '$lib/geometry/math/functions';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
-import { TOLERANCE_RELAXATION_MULTIPLIER } from '../constants';
+import { TOLERANCE_RELAXATION_MULTIPLIER } from '$lib/geometry/constants';
 import type { SegmentPosition } from './types';
 
 export function getLineStartPoint(line: Line): Point2D {

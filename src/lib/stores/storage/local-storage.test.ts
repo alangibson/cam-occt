@@ -12,7 +12,7 @@ import {
 } from './local-storage';
 import { type PersistedState } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { Unit } from '../../utils/units';
+import { Unit } from '$lib/utils/units';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 

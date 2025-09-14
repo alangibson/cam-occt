@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { drawingStore } from './store';
 import type { Drawing, Line, Point2D, Shape } from '$lib/types';
-import { Unit } from '../../utils/units';
+import { Unit } from '$lib/utils/units';
 import { GeometryType } from '$lib/geometry/shape';
-import { overlayStore } from '../overlay/store';
-import { pathStore } from '../paths/store';
-import { operationsStore } from '../operations/store';
-import { workflowStore } from '../workflow/store';
-import { WorkflowStage } from '../workflow/enums';
+import { overlayStore } from '$lib/stores/overlay/store';
+import { pathStore } from '$lib/stores/paths/store';
+import { operationsStore } from '$lib/stores/operations/store';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 
 // Mock dependent modules
 vi.mock('../chains/functions', () => ({

@@ -1,16 +1,13 @@
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
-import type { IntersectionResult } from '../../chain/types';
-import { createExtendedPolyline } from '../../extend/polyline';
-import { createExtendedArc } from '../../extend/arc';
-import { findLineArcIntersections } from '../line-arc';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { createExtendedPolyline } from '$lib/algorithms/offset-calculation/extend/polyline';
+import { createExtendedArc } from '$lib/algorithms/offset-calculation/extend/arc';
+import { findLineArcIntersections } from '$lib/algorithms/offset-calculation/intersect/line-arc';
 import { isPointOnArc } from '$lib/geometry/arc/functions';
-import {
-    EPSILON,
-    INTERSECTION_TOLERANCE,
-} from '../../../../geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
+import { EPSILON, INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
 
 /**
  * Type guard to check if a segment is a Line

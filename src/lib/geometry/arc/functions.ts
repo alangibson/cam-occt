@@ -14,7 +14,7 @@ import {
     DIRECTION_COUNTERCLOCKWISE,
     QUARTER_CIRCLE_QUADRANTS,
 } from './constants';
-import { normalizeAngle } from '../math/functions';
+import { normalizeAngle } from '$lib/geometry/math/functions';
 
 /**
  * Calculate a point on a circle/arc given center, radius and angle

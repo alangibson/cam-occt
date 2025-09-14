@@ -3,12 +3,15 @@ import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';
-import { calculateLineParameter } from '../../shared/trim-extend-utils';
-import { type KeepSide, type TrimResult } from '../types';
+import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
+import {
+    type KeepSide,
+    type TrimResult,
+} from '$lib/algorithms/offset-calculation/trim/types';
 import {
     DEFAULT_ARRAY_NOT_FOUND_INDEX,
     TOLERANCE_RELAXATION_MULTIPLIER,
-} from '../../../../geometry/constants';
+} from '$lib/geometry/constants';
 import { MIN_CONTROL_POINTS_FOR_SPLINE } from '$lib/geometry/spline';
 
 /**

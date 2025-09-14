@@ -4,8 +4,8 @@
  * Helper functions that work with path data but don't directly modify the store.
  */
 
-import { workflowStore } from '../workflow/store';
-import { WorkflowStage } from '../workflow/enums';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Path } from './interfaces';
 
 /**

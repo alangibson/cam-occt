@@ -14,7 +14,7 @@ import {
 import { splitShapeAtMidpoint } from '$lib/geometry/shape/functions';
 import type { StartPointOptimizationParameters } from '$lib/types/algorithm-parameters';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
-import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '../../geometry/constants';
+import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 
 /**
  * Result of optimizing a single chain's start point

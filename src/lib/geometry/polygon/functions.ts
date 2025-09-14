@@ -7,9 +7,9 @@
 
 import type { Point2D } from '$lib/types/geometry';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
-import { doLineSegmentsIntersect } from '../line/functions';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '../math';
-import { calculateDistanceBetweenPoints } from '../math/functions';
+import { doLineSegmentsIntersect } from '$lib/geometry/line/functions';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
+import { calculateDistanceBetweenPoints } from '$lib/geometry/math/functions';
 
 /**
  * Calculate the area of a polygon using the shoelace formula

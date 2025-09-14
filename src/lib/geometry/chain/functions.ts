@@ -25,10 +25,10 @@ import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection
 import {
     calculateDistanceBetweenPoints,
     roundToDecimalPlaces,
-} from '../math/functions';
+} from '$lib/geometry/math/functions';
 import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
 import { AREA_RATIO_THRESHOLD } from '$lib/algorithms/constants';
-import { calculateChainBoundingBox } from '../bounding-box/functions';
+import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import {
     DEFAULT_PART_DETECTION_PARAMETERS,
@@ -37,7 +37,7 @@ import {
 import {
     isPolygonContained,
     removeDuplicatePoints,
-} from '../polygon/functions';
+} from '$lib/geometry/polygon/functions';
 // import { getShapePoints3 } from '../shape/functions';
 
 /**

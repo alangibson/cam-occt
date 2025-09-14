@@ -1,11 +1,14 @@
 import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
-import type { FillOptions, FillResult } from '../types';
-import type { OperationParams } from '../../shared/fill-extend-ops';
+import type {
+    FillOptions,
+    FillResult,
+} from '$lib/algorithms/offset-calculation/fill/types';
+import type { OperationParams } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
 import {
     getEllipsePoint,
     processEllipseOperation,
     processFillExtendResult,
-} from '../../shared/fill-extend-ops';
+} from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
 
 /**
  * Ellipse Fill Module

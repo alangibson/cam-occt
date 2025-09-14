@@ -1,4 +1,4 @@
-import { createWarningStore } from '../warnings/store';
+import { createWarningStore } from '$lib/stores/warnings/store';
 import type { OffsetWarning, OffsetWarningsStore } from './interfaces';
 
 function createOffsetWarningsStore(): OffsetWarningsStore {

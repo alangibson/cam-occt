@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import _verb from 'verb-nurbs';
 import { offsetSpline } from './spline';
-import { OffsetDirection } from '../types';
 import type { Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 describe('Spline offset adaptive refinement', () => {
     // Create a test spline with high curvature that will require refinement

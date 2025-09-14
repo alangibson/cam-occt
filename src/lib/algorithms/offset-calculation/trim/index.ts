@@ -6,8 +6,8 @@ import type {
     Polyline,
     Shape,
 } from '$lib/types/geometry';
-import type { IntersectionResult } from '../chain/types';
-import { MICRO_TOLERANCE } from '../../../geometry/constants';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { MICRO_TOLERANCE } from '$lib/geometry/constants';
 
 import { trimArc } from './arc';
 import { trimCircle } from './circle';
@@ -18,7 +18,7 @@ import { trimEllipse } from './ellipse';
 import type { KeepSide, TrimResult } from './types';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import { isNearlyEqual, INTERSECTION_TOLERANCE } from '$lib/geometry/math';
-import { pointDistance } from '../shared/trim-extend-utils';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 
 /**
  * Intersection scoring constants for comprehensive intersection scoring system
@@ -36,7 +36,7 @@ const INTERSECTION_SCORE_PARAMETER_WEIGHT = 5;
 const INTERSECTION_SCORE_MAX_DISTANCE = 100;
 
 // Re-export shared utilities for backward compatibility
-export { pointDistance } from '../shared/trim-extend-utils';
+export { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 
 /**
  * Trimming Module

@@ -1,12 +1,15 @@
 import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Circle } from '$lib/geometry/circle';
-import type { FillOptions, FillResult } from '../types';
-import type { OperationParams } from '../../shared/fill-extend-ops';
+import type {
+    FillOptions,
+    FillResult,
+} from '$lib/algorithms/offset-calculation/fill/types';
+import type { OperationParams } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
 import {
     getCirclePoint,
     processCircleOperation,
     processFillExtendResult,
-} from '../../shared/fill-extend-ops';
+} from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
 
 /**
  * Circle Fill Module

@@ -5,11 +5,11 @@
  */
 
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { OffsetDirection } from '../../algorithms/offset-calculation/offset/types';
-import type { GapFillingResult } from '../../algorithms/offset-calculation/chain/types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Point2D, Shape } from '$lib/types';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Path } from '../paths/interfaces';
+import type { Path } from '$lib/stores/paths/interfaces';
 
 export interface OffsetCalculation {
     offsetShapes: Shape[];

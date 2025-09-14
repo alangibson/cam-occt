@@ -7,11 +7,14 @@ import {
     SPLINE_SAMPLE_COUNT,
     VALIDATION_SAMPLE_COUNT,
 } from '$lib/geometry/spline';
-import { OffsetDirection, type OffsetResult } from '../types';
+import {
+    OffsetDirection,
+    type OffsetResult,
+} from '$lib/algorithms/offset-calculation/offset/types';
 import {
     EPSILON,
     GEOMETRIC_PRECISION_TOLERANCE,
-} from '../../../../geometry/math/constants';
+} from '$lib/geometry/math/constants';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 
 /**

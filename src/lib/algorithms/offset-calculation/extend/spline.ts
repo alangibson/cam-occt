@@ -1,4 +1,4 @@
-import type { Arc } from '../../../geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 import type { Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Line } from '$lib/geometry/line';
@@ -6,8 +6,8 @@ import type { Circle } from '$lib/geometry/circle';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Polyline } from '$lib/geometry/polyline';
 import { EPSILON } from '$lib/geometry/math';
-import { MAX_EXTENSION } from '../../constants';
-import { pointDistance } from '../trim';
+import { MAX_EXTENSION } from '$lib/algorithms/constants';
+import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import verb from 'verb-nurbs';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
 import { generateUniformKnots } from './common';

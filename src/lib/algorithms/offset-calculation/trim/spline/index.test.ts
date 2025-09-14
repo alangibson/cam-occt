@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { GeometryType, type Shape } from '$lib/types/geometry';
 import { trimSpline } from './index';
-import { type KeepSide } from '../types';
+import { type KeepSide } from '$lib/algorithms/offset-calculation/trim/types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import type { Spline } from '$lib/geometry/spline';
 import { pointDistance } from '..';
-import { calculateLineParameter } from '../../shared/trim-extend-utils';
+import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 
 // Mock dependencies
 vi.mock('$lib/domain/id', () => ({

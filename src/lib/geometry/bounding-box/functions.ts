@@ -19,7 +19,7 @@ import {
 import { calculateArcPoint } from '$lib/geometry/arc';
 import { THREE_HALVES_PI } from './constants';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
-import type { Chain } from '../chain/interfaces';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 
 export function getBoundingBoxForLine(line: Line): BoundingBox {
     if (

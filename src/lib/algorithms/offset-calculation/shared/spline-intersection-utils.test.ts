@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Point2D } from '$lib/types/geometry';
-import type { IntersectionResult } from '../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import verb from 'verb-nurbs';
 import {
     processSplineIntersection,
@@ -12,7 +12,7 @@ import {
 import type { Spline } from '$lib/geometry/spline';
 import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
-import { createExtendedSplineVerb } from '../extend/spline';
+import { createExtendedSplineVerb } from '$lib/algorithms/offset-calculation/extend/spline';
 
 // Mock verb-nurbs
 vi.mock('verb-nurbs', () => ({

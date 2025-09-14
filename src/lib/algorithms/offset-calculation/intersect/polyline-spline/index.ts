@@ -1,15 +1,15 @@
 import type { Polyline, Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import type { IntersectionResult } from '../../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import verb from 'verb-nurbs';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
-import { createExtendedSplineVerb } from '../../extend/spline';
-import { createExtendedPolyline } from '../../extend/polyline';
+import { createExtendedSplineVerb } from '$lib/algorithms/offset-calculation/extend/spline';
+import { createExtendedPolyline } from '$lib/algorithms/offset-calculation/extend/polyline';
 import {
     handleClosedPolylineIntersection,
     processPolylineSegments,
-} from '../intersection-polyline-utils';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
+} from '$lib/algorithms/offset-calculation/intersect/intersection-polyline-utils';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
 
 /**
  * Find intersections between a spline and a polyline using verb-nurbs

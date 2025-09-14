@@ -8,7 +8,7 @@ import {
     GEOMETRIC_PRECISION_TOLERANCE,
     HALF_PERCENT,
 } from '$lib/geometry/math';
-import { MAX_ITERATIONS, STANDARD_GRID_SPACING } from '../../constants';
+import { MAX_ITERATIONS, STANDARD_GRID_SPACING } from '$lib/constants';
 import { FULL_CIRCLE_DEG } from '$lib/geometry/circle';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 

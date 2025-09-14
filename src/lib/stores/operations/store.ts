@@ -1,20 +1,20 @@
 import { writable, get } from 'svelte/store';
-import { pathStore } from '../paths/store';
-import type { Path, PathsState } from '../paths/interfaces';
-import { partStore } from '../parts/store';
-import { workflowStore } from '../workflow/store';
-import { WorkflowStage } from '../workflow/enums';
-import { chainStore } from '../chains/store';
-import { toolStore } from '../tools/store';
-import { leadWarningsStore } from '../lead-warnings/store';
-import { offsetWarningsStore } from '../offset-warnings/store';
+import { pathStore } from '$lib/stores/paths/store';
+import type { Path, PathsState } from '$lib/stores/paths/interfaces';
+import { partStore } from '$lib/stores/parts/store';
+import { workflowStore } from '$lib/stores/workflow/store';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
+import { chainStore } from '$lib/stores/chains/store';
+import { toolStore } from '$lib/stores/tools/store';
+import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
+import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { PATH_UPDATE_DELAY_MS } from './constants';
 import type { Operation, OperationsStore } from './interfaces';
 import { calculateOperationLeads, createPathsFromOperation } from './functions';
-import type { ChainStore } from '../chains/interfaces';
-import type { PartStore } from '../parts/interfaces';
+import type { ChainStore } from '$lib/stores/chains/interfaces';
+import type { PartStore } from '$lib/stores/parts/interfaces';
 
 function createOperationsStore(): OperationsStore {
     const { subscribe, set, update } = writable<Operation[]>([]);

@@ -1,15 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GeometryType, type Polyline, type Shape } from '$lib/types/geometry';
+import {
+    GeometryType,
+    type Polyline,
+    type PolylineVertex,
+    type Shape,
+} from '$lib/types';
 import { trimPolyline } from './index';
-import { type KeepSide } from '../types';
+import { type KeepSide } from '$lib/algorithms/offset-calculation/trim/types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
-import type { PolylineVertex } from '$lib/types';
 import {
     createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
 } from '$lib/geometry/polyline';
-import { calculateLineParameter } from '../../shared/trim-extend-utils';
+import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 
 // Mock dependencies
 vi.mock('$lib/domain/id', () => ({

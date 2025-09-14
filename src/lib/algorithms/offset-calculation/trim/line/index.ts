@@ -2,8 +2,11 @@ import { EPSILON, TOLERANCE } from '$lib/geometry/math/constants';
 import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';
-import { calculateLineParameter } from '../../shared/trim-extend-utils';
-import { type KeepSide, type TrimResult } from '../types';
+import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
+import {
+    type KeepSide,
+    type TrimResult,
+} from '$lib/algorithms/offset-calculation/trim/types';
 
 /**
  * Trim a line shape at a specific point

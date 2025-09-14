@@ -1,13 +1,13 @@
 import type { Shape } from '$lib/types/geometry';
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Ellipse } from '$lib/geometry/ellipse';
-import type { IntersectionResult } from '../../chain/types.ts';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs.js';
 import verb from 'verb-nurbs';
 import {
     handleClosedPolylineIntersection,
     processPolylineSegments,
-} from '../intersection-polyline-utils.js';
+} from '$lib/algorithms/offset-calculation/intersect/intersection-polyline-utils';
 
 /**
  * Find intersections between an ellipse and a polyline using verb-nurbs

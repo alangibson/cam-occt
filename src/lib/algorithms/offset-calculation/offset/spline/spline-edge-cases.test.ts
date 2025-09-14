@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { offsetSpline, splitVerbCurve, tessellateVerbCurve } from './spline';
-import { OffsetDirection } from '../types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import verb from 'verb-nurbs';
 import type { Spline } from '$lib/geometry/spline';
 

@@ -2,17 +2,17 @@ import { DUPLICATE_FILTERING_TOLERANCE } from '$lib/algorithms/constants';
 import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
 import verb from 'verb-nurbs';
-import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
-import type { IntersectionResult } from '../../chain/types';
-import { findEllipseArcIntersectionsVerb } from '../arc-ellipse/index';
-import { findEllipseCircleIntersectionsVerb } from '../circle-ellipse/index';
-import { findEllipseEllipseIntersections } from '../ellipse-ellipse/index';
-import { findEllipseSplineIntersectionsVerb } from '../ellipse-spline/index';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { findEllipseArcIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/arc-ellipse/index';
+import { findEllipseCircleIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/circle-ellipse/index';
+import { findEllipseEllipseIntersections } from '$lib/algorithms/offset-calculation/intersect/ellipse-ellipse/index';
+import { findEllipseSplineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/ellipse-spline/index';
 import {
     findEllipseLineIntersections,
     findEllipseLineIntersectionsVerb,
-} from '../line-ellipse/index';
-import { findEllipsePolylineIntersectionsVerb } from '../polyline-ellipse/index';
+} from '$lib/algorithms/offset-calculation/intersect/line-ellipse/index';
+import { findEllipsePolylineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/polyline-ellipse/index';
 import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 
 /**

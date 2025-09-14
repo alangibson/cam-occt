@@ -14,7 +14,7 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import type { Arc } from '../../geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 import type { Shape } from '$lib/types';
 
 describe('Lead Cut Direction Fix', () => {

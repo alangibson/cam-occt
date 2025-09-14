@@ -5,16 +5,16 @@ import {
     type Polyline,
     type Shape,
 } from '$lib/types/geometry';
-import type { IntersectionResult } from '../../chain/types';
-import type { IntersectionType } from '../index';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
 // Import intersection functions from line-line module
-import { findLineLineIntersectionsSegmentAware } from '../line-line/index';
-import { type SegmentPosition } from '../line-arc/index';
+import { findLineLineIntersectionsSegmentAware } from '$lib/algorithms/offset-calculation/intersect/line-line/index';
+import { type SegmentPosition } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
 // Import intersection function from intersect module
-import { findIntersectionsByType } from '../index';
+import { findIntersectionsByType } from '$lib/algorithms/offset-calculation/intersect';
 // Import polyline helper functions from the polyline-spline module
-import { calculatePolylineParameter } from '../polyline-spline/helpers';
+import { calculatePolylineParameter } from '$lib/algorithms/offset-calculation/intersect/polyline-spline/helpers';
 
 /**
  * Type guard to check if a segment is a Line

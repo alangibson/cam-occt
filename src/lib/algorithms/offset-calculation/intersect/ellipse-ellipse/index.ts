@@ -1,6 +1,6 @@
 import type { Shape } from '$lib/types/geometry';
-import type { IntersectionResult } from '../../chain/types';
-import { findEllipseEllipseIntersectionsVerb as findEllipseEllipseIntersectionsVerbUtil } from '../ellipse';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { findEllipseEllipseIntersectionsVerb as findEllipseEllipseIntersectionsVerbUtil } from '$lib/algorithms/offset-calculation/intersect/ellipse';
 
 /**
  * Find intersections between two ellipses using verb-nurbs

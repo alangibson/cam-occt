@@ -1,4 +1,4 @@
-import type { Arc } from '../../../../geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 import {
     type Circle,
     GeometryType,
@@ -7,7 +7,10 @@ import {
 } from '$lib/types/geometry';
 import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
-import { type FillOptions, type FillResult } from '../types';
+import {
+    type FillOptions,
+    type FillResult,
+} from '$lib/algorithms/offset-calculation/fill/types';
 import { fillCircleToIntersection } from './index';
 
 describe('fillCircleToIntersection', () => {

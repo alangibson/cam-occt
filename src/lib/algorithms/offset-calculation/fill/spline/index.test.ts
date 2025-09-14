@@ -1,14 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
 import { GeometryType, type Point2D, type Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import type { FillOptions, FillResult } from '../types';
+import type {
+    FillOptions,
+    FillResult,
+} from '$lib/algorithms/offset-calculation/fill/types';
 import { fillSplineToIntersection } from './index';
 import {
     calculateSplineExtension,
     determineSplineExtensionDirection,
     extendSplineToPoint,
     getSplinePoint,
-} from '../../extend/spline';
+} from '$lib/algorithms/offset-calculation/extend/spline';
 
 // Mock the extend/spline module
 vi.mock('../../extend/spline', () => ({

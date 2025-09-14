@@ -67,17 +67,23 @@ import {
     QUARTER_CIRCLE_QUADRANTS,
     TESSELLATION_SAMPLE_MULTIPLIER,
 } from '$lib/geometry/constants';
-import { normalizeVector, roundToDecimalPlaces } from '../math/functions';
-import { calculatePolylineLength } from '../polyline/functions';
+import {
+    normalizeVector,
+    roundToDecimalPlaces,
+} from '$lib/geometry/math/functions';
+import { calculatePolylineLength } from '$lib/geometry/polyline/functions';
 import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
-import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from '../chain';
+import {
+    CHAIN_CLOSURE_TOLERANCE,
+    POLYGON_POINTS_MIN,
+} from '$lib/geometry/chain';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';
-import { LEAD_SEGMENT_COUNT } from '../line/constants';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '../math';
+import { LEAD_SEGMENT_COUNT } from '$lib/geometry/line/constants';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { STANDARD_GRID_SPACING } from '$lib/constants';
-import { calculateEllipsePoint2 } from '../ellipse/functions';
-import { getBoundingBoxForArc } from '../bounding-box/functions';
+import { calculateEllipsePoint2 } from '$lib/geometry/ellipse/functions';
+import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import {
     splitArcAtMidpoint,
     splitLineAtMidpoint,

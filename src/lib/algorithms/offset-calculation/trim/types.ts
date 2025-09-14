@@ -1,5 +1,5 @@
 import type { Shape } from '$lib/types/geometry';
-import type { TrimPoint } from '../chain/types';
+import type { TrimPoint } from '$lib/algorithms/offset-calculation/chain/types';
 
 /**
  * Specifies which side of a shape to keep when trimming

@@ -1,8 +1,8 @@
 import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Polyline } from '$lib/geometry/polyline';
 import { EPSILON } from '$lib/geometry/math';
-import { MAX_EXTENSION } from '../../constants';
-import { pointDistance } from '../trim';
+import { MAX_EXTENSION } from '$lib/algorithms/constants';
+import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import {
     createPolylineFromVertices,
     polylineToPoints,

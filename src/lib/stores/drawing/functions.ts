@@ -5,14 +5,14 @@
  */
 
 import { WorkflowStage } from '$lib/types';
-import { chainStore } from '../chains/store';
-import { partStore } from '../parts/store';
-import { overlayStore } from '../overlay/store';
-import { tessellationStore } from '../tessellation/store';
-import { pathStore } from '../paths/store';
-import { operationsStore } from '../operations/store';
-import { rapidStore } from '../rapids/store';
-import { workflowStore } from '../workflow/store';
+import { chainStore } from '$lib/stores/chains/store';
+import { partStore } from '$lib/stores/parts/store';
+import { overlayStore } from '$lib/stores/overlay/store';
+import { tessellationStore } from '$lib/stores/tessellation/store';
+import { pathStore } from '$lib/stores/paths/store';
+import { operationsStore } from '$lib/stores/operations/store';
+import { rapidStore } from '$lib/stores/rapids/store';
+import { workflowStore } from '$lib/stores/workflow/store';
 
 // Import workflow store for state management
 interface WorkflowStore {

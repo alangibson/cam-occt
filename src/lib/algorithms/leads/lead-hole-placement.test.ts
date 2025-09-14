@@ -11,7 +11,7 @@ import {
 } from './lead-calculation';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Arc } from '../../geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 import type { Polyline, Shape } from '$lib/types/geometry';
 
 describe('Lead Hole Placement Fix', () => {

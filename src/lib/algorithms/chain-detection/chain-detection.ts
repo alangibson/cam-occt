@@ -1,7 +1,7 @@
 import type { Point2D, Shape } from '$lib/types';
 import { calculateSquaredDistance } from '$lib/geometry/math';
 import { getShapePoints } from '$lib/geometry/shape/functions';
-import { detectCutDirection } from '../cut-direction/cut-direction';
+import { detectCutDirection } from '$lib/algorithms/cut-direction/cut-direction';
 import { CutDirection } from '$lib/types/direction';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import type { Chain } from '$lib/geometry/chain/interfaces';

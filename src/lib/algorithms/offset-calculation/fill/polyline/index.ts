@@ -1,11 +1,15 @@
 import type { Point2D, Polyline, Shape } from '$lib/types/geometry';
-import type { FillOptions, FillResult, ShapeExtension } from '../types';
+import type {
+    FillOptions,
+    FillResult,
+    ShapeExtension,
+} from '$lib/algorithms/offset-calculation/fill/types';
 import {
     type PolylineExtensionResult,
     calculatePolylineExtension,
     determinePolylineExtensionDirection,
     extendPolylineToPoint,
-} from '../../extend/polyline';
+} from '$lib/algorithms/offset-calculation/extend/polyline';
 import { polylineToPoints } from '$lib/geometry/polyline';
 
 /**

@@ -1,7 +1,10 @@
 import { EPSILON } from '$lib/geometry/math/constants';
 import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
 import { generateId } from '$lib/domain/id';
-import type { KeepSide, TrimResult } from '../types';
+import type {
+    KeepSide,
+    TrimResult,
+} from '$lib/algorithms/offset-calculation/trim/types';
 
 /**
  * Trim an ellipse at a specific point

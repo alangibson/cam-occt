@@ -7,7 +7,10 @@ import {
 } from '$lib/types/geometry';
 import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';
-import { type KeepSide, type TrimResult } from '../types';
+import {
+    type KeepSide,
+    type TrimResult,
+} from '$lib/algorithms/offset-calculation/trim/types';
 
 /**
  * Trim a circle by converting it to an arc

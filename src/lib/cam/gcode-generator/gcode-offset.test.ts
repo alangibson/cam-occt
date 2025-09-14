@@ -3,9 +3,9 @@ import { CutterCompensation } from '$lib/types/cam';
 import type { Path } from '$lib/stores/paths/interfaces';
 import { type Drawing, type Shape, Unit } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { OffsetDirection } from '../../algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { GeometryType } from '$lib/geometry/shape';
-import { pathsToToolPaths } from '../path-generator/path-to-toolpath';
+import { pathsToToolPaths } from '$lib/cam/path-generator/path-to-toolpath';
 import { generateGCode } from './gcode-generator';
 
 describe('G-code generation with offset paths', () => {

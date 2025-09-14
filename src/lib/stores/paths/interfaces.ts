@@ -6,10 +6,10 @@
 
 import type { Point2D, Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { OffsetDirection } from '../../algorithms/offset-calculation/offset/types';
-import type { GapFillingResult } from '../../algorithms/offset-calculation/chain/types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { PathLeadResult } from '../operations/interfaces';
+import type { PathLeadResult } from '$lib/stores/operations/interfaces';
 
 export interface Path {
     id: string;

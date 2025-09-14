@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { EPSILON } from '$lib/geometry/math';
-import { findLineLineIntersections } from '../intersect/line-line/index';
-import { findLineArcIntersections } from '../intersect/line-arc/index';
-import { findArcArcIntersections } from '../intersect/arc-arc/index';
+import { findLineLineIntersections } from '$lib/algorithms/offset-calculation/intersect/line-line/index';
+import { findLineArcIntersections } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
+import { findArcArcIntersections } from '$lib/algorithms/offset-calculation/intersect/arc-arc/index';
 import {
     clusterIntersections,
     findShapeIntersections,
-} from '../intersect/index';
-import type { Arc } from '../../../geometry/arc';
+} from '$lib/algorithms/offset-calculation/intersect/index';
+import type { Arc } from '$lib/geometry/arc';
 import {
     type Circle,
     GeometryType,

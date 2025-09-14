@@ -1,5 +1,8 @@
 import { type Circle, GeometryType, type Shape } from '$lib/types/geometry';
-import { OffsetDirection, type OffsetResult } from '../types';
+import {
+    OffsetDirection,
+    type OffsetResult,
+} from '$lib/algorithms/offset-calculation/offset/types';
 
 /**
  * Offset a circle by the specified distance

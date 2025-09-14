@@ -16,15 +16,21 @@ import type { Circle, Ellipse, Line, Polyline } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/geometry/shape';
-import { OffsetDirection } from '../offset/types';
-import { findShapeIntersections } from '../intersect';
-import { findPolylineSelfIntersections } from '../intersect/polyline/self';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
+import { findPolylineSelfIntersections } from '$lib/algorithms/offset-calculation/intersect/polyline/self';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import { offsetShape } from '../offset/index';
-import { pointDistance, trimConsecutiveShapes } from '../trim';
-import type { TrimResult } from '../trim/types';
-import { fillGapBetweenShapes } from '../fill';
-import type { FillResult, GapContext } from '../fill/types';
+import { offsetShape } from '$lib/algorithms/offset-calculation/offset/index';
+import {
+    pointDistance,
+    trimConsecutiveShapes,
+} from '$lib/algorithms/offset-calculation/trim';
+import type { TrimResult } from '$lib/algorithms/offset-calculation/trim/types';
+import { fillGapBetweenShapes } from '$lib/algorithms/offset-calculation/fill';
+import type {
+    FillResult,
+    GapContext,
+} from '$lib/algorithms/offset-calculation/fill/types';
 import { detectChainSide } from './side-detection';
 import {
     type ChainOffsetParameters,

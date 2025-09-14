@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Circle, Line, Shape } from '$lib/types/geometry';
-import type { Arc } from '../../../geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/types/geometry';
 import type { OffsetChain } from './types';
-import { detectShapeChains } from '../../chain-detection/chain-detection';
-import { normalizeChain } from '../../chain-normalization/chain-normalization';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import { generateId } from '$lib/domain/id';
 
 describe('offset chain connectivity validation', () => {

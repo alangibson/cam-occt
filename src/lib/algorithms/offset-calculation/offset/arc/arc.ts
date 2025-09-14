@@ -1,6 +1,9 @@
 import { GeometryType, type Shape } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
-import { OffsetDirection, type OffsetResult } from '../types';
+import {
+    OffsetDirection,
+    type OffsetResult,
+} from '$lib/algorithms/offset-calculation/offset/types';
 
 /**
  * Offset an arc by the specified distance

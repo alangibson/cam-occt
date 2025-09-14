@@ -7,12 +7,12 @@ import {
     type Line,
     type Shape,
 } from '$lib/types/geometry';
-import { SVGBuilder } from '../../../test/svg-builder';
+import { SVGBuilder } from '$lib/test/svg-builder';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { detectShapeChains } from '../../chain-detection/chain-detection';
-import { normalizeChain } from '../../chain-normalization/chain-normalization';
-import { offsetChain } from '../chain/offset';
-import type { OffsetChain } from '../chain/types';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
+import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
 
 describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
     const outputDir = 'tests/output/visual/fill';

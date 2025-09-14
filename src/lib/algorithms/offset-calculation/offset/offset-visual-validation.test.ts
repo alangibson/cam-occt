@@ -7,7 +7,7 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import { SVGBuilder } from '../../../test/svg-builder';
+import { SVGBuilder } from '$lib/test/svg-builder';
 import {
     type Arc,
     type Circle,
@@ -19,9 +19,9 @@ import {
     type Shape,
 } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { offsetChain } from '../chain/offset';
-import type { ChainOffsetResult } from '../chain/types';
-import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from '../chain/types';
+import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
+import type { ChainOffsetResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from '$lib/algorithms/offset-calculation/chain/types';
 import { offsetArc } from './arc/arc';
 import { offsetCircle } from './circle/circle';
 import { offsetEllipse } from './ellipse/ellipse';

@@ -1,15 +1,15 @@
 import type { Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
-import type { IntersectionResult } from '../../chain/types';
-import { processVerbIntersectionResults } from '../verb-integration-utils';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
 import { createVerbCurveFromArc } from '$lib/geometry/arc/nurbs';
-import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
-import { createExtendedArc } from '../../extend/arc';
-import { createExtendedSplineVerb } from '../../extend/spline';
-import { processSplineWithCurveIntersection } from '../../shared/spline-intersection-utils';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
+import { createExtendedArc } from '$lib/algorithms/offset-calculation/extend/arc';
+import { createExtendedSplineVerb } from '$lib/algorithms/offset-calculation/extend/spline';
+import { processSplineWithCurveIntersection } from '$lib/algorithms/offset-calculation/shared/spline-intersection-utils';
 import verb from 'verb-nurbs';
 
 /**

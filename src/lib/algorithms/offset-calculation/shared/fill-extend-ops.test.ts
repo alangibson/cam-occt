@@ -20,7 +20,7 @@ import {
     validateEllipseIntersectionPoint,
     validateEllipseOperation,
 } from './fill-extend-ops';
-import { pointDistance } from '../trim';
+import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import {
     getEllipseRadiusX,
     getEllipseRadiusY,

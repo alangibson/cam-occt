@@ -7,7 +7,7 @@ import {
     type Point2D,
     type Shape,
 } from '$lib/types/geometry';
-import type { KeepSide } from '../types';
+import type { KeepSide } from '$lib/algorithms/offset-calculation/trim/types';
 
 describe('trimCircle', () => {
     const createCircleShape = (center: Point2D, radius: number): Shape => ({

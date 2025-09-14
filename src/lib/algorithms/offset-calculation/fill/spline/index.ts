@@ -1,13 +1,17 @@
 import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import type { FillOptions, FillResult, ShapeExtension } from '../types';
+import type {
+    FillOptions,
+    FillResult,
+    ShapeExtension,
+} from '$lib/algorithms/offset-calculation/fill/types';
 import {
     type SplineExtensionResult,
     calculateSplineExtension,
     determineSplineExtensionDirection,
     extendSplineToPoint,
     getSplinePoint,
-} from '../../extend/spline';
+} from '$lib/algorithms/offset-calculation/extend/spline';
 import {
     CONFIDENCE_HIGH_THRESHOLD,
     CONFIDENCE_THRESHOLD,

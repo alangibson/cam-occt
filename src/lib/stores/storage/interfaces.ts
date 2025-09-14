@@ -1,12 +1,15 @@
 import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Drawing, DetectedPart, PartDetectionWarning } from '$lib/types';
-import type { LeadWarning } from '../lead-warnings/interfaces';
-import type { Operation } from '../operations/interfaces';
-import type { TessellationPoint, DrawingOverlay } from '../overlay/interfaces';
-import type { Path } from '../paths/interfaces';
-import type { PrepareStageState } from '../prepare-stage/interfaces';
-import type { Tool } from '../tools/interfaces';
+import type { LeadWarning } from '$lib/stores/lead-warnings/interfaces';
+import type { Operation } from '$lib/stores/operations/interfaces';
+import type {
+    TessellationPoint,
+    DrawingOverlay,
+} from '$lib/stores/overlay/interfaces';
+import type { Path } from '$lib/stores/paths/interfaces';
+import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
+import type { Tool } from '$lib/stores/tools/interfaces';
 
 export interface PersistedState {
     // Drawing state

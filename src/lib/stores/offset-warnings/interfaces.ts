@@ -1,4 +1,4 @@
-import type { Warning, WarningStore } from '../warnings/interfaces';
+import type { Warning, WarningStore } from '$lib/stores/warnings/interfaces';
 
 export interface OffsetWarning extends Warning {
     type: 'offset' | 'trim' | 'gap' | 'intersection' | 'geometry';

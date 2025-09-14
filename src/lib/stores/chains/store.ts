@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { setChainsDirection } from '../../algorithms/chain-detection/chain-detection';
+import { setChainsDirection } from '$lib/algorithms/chain-detection/chain-detection';
 import type { ChainStore } from './interfaces';
 
 function createChainStore() {

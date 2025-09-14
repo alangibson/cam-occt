@@ -6,26 +6,26 @@ import type {
     Polyline,
     Shape,
 } from '$lib/types/geometry';
-import type { IntersectionResult } from '../chain/types';
-import { EPSILON } from '../../../geometry/math/constants';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { EPSILON } from '$lib/geometry/math/constants';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import { pointDistance } from '../shared/trim-extend-utils';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     CONFIDENCE_HIGH_THRESHOLD,
     CONFIDENCE_THRESHOLD,
     MAX_ITERATIONS,
-} from '../../../geometry/constants';
+} from '$lib/geometry/constants';
 
 // Import intersection functions from dedicated modules and chain module
-import { findLineLineIntersections } from './line-line/index';
+import { findLineLineIntersections } from '$lib/algorithms/offset-calculation/intersect/line-line/index';
 import { findLineArcIntersections } from './line-arc/index';
-import { findLineCircleIntersections } from './line-circle/index';
+import { findLineCircleIntersections } from '$lib/algorithms/offset-calculation/intersect/line-circle/index';
 import { findArcArcIntersections } from './arc-arc/index';
 import { findPolylineIntersections } from './polyline/index';
-import { findPolylinePolylineIntersections } from './polyline-polyline/index';
+import { findPolylinePolylineIntersections } from '$lib/algorithms/offset-calculation/intersect/polyline-polyline/index';
 import { findPolylineArcIntersections } from './polyline-arc/index';
 
 // Import verb-based spline intersection methods
@@ -60,7 +60,7 @@ import { findEllipseArcIntersectionsVerb } from './arc-ellipse/index';
 import { findSplinePolylineIntersectionsVerb } from './polyline-spline/index';
 
 // Re-export shared utility for backward compatibility
-export { pointDistance } from '../shared/trim-extend-utils';
+export { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 
 /**
  * Intersection Detection Module

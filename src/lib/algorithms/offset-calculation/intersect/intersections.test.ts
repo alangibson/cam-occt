@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EPSILON } from '../../../geometry/math/constants';
+import { EPSILON } from '$lib/geometry/math/constants';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import {
     type Arc,
@@ -9,11 +9,11 @@ import {
     type Shape,
 } from '$lib/types/geometry';
 import { generateId } from '$lib/domain/id';
-import type { IntersectionResult } from '../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { findArcArcIntersections } from './arc-arc/index';
 import { clusterIntersections, findShapeIntersections } from './index';
 import { findLineArcIntersections } from './line-arc/index';
-import { findLineLineIntersections } from './line-line/index';
+import { findLineLineIntersections } from '$lib/algorithms/offset-calculation/intersect/line-line/index';
 
 describe('intersections', () => {
     // Helper functions to create test shapes

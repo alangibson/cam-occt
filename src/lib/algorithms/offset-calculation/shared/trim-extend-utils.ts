@@ -1,5 +1,5 @@
 import type { Line, Point2D } from '$lib/types/geometry';
-import { EPSILON } from '../../../geometry/math/constants';
+import { EPSILON } from '$lib/geometry/math/constants';
 import { calculateLineParameterForPoint } from '$lib/geometry/line/functions';
 
 /**

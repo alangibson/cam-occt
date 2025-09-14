@@ -1,17 +1,21 @@
-import type { Arc } from '../../../../geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 import type { Point2D, Shape } from '$lib/types/geometry';
-import type { FillOptions, FillResult, ShapeExtension } from '../types';
+import type {
+    FillOptions,
+    FillResult,
+    ShapeExtension,
+} from '$lib/algorithms/offset-calculation/fill/types';
 import {
     type ArcExtensionResult,
     calculateArcExtension,
     extendArcToPoint,
     getArcEndpoint,
-} from '../../extend/arc';
-import { pointDistance } from '../../trim';
+} from '$lib/algorithms/offset-calculation/extend/arc';
+import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import {
     createArcExtensionConfig,
     createArcExtensionOptions,
-} from '../../extend/arc-operations-utils';
+} from '$lib/algorithms/offset-calculation/extend/arc-operations-utils';
 import { calculateIntersectionAngle } from '$lib/geometry/arc/functions';
 import {
     CONFIDENCE_HIGH_THRESHOLD,

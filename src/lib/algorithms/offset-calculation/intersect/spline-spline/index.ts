@@ -1,8 +1,8 @@
 import type { Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import type { IntersectionResult } from '../../chain/types';
-import { processSplineIntersection } from '../../shared/spline-intersection-utils';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { processSplineIntersection } from '$lib/algorithms/offset-calculation/shared/spline-intersection-utils';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
 
 /**
  * Find intersections between two splines using verb-nurbs

@@ -5,7 +5,7 @@ import {
     type Shape,
     WorkflowStage,
 } from '$lib/types';
-import { Unit } from '../../utils/units';
+import { Unit } from '$lib/utils/units';
 import {
     moveShape,
     rotateShape,

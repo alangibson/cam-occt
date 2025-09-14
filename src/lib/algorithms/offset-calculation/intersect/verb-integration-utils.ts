@@ -1,5 +1,5 @@
 import type { Point2D } from '$lib/types/geometry';
-import type { IntersectionResult } from '../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { CurveCurveIntersection } from 'verb-nurbs';
 
 /**

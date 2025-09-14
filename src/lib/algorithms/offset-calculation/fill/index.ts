@@ -8,20 +8,20 @@ import type {
     ShapeExtension,
 } from './types';
 import { MAX_EXTENSION } from '$lib/algorithms/constants';
-import { findShapeIntersections } from '../intersect';
-import { pointDistance } from '../trim';
+import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
+import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import {
     CONFIDENCE_THRESHOLD,
     HIGH_PRECISION_TOLERANCE,
     TOLERANCE_SNAP_MULTIPLIER,
-} from '../../../geometry/constants';
+} from '$lib/geometry/constants';
 import { fillLineToIntersection } from './line';
 import { fillArcToIntersection } from './arc';
 import { fillCircleToIntersection } from './circle';
 import { fillPolylineToIntersection } from './polyline';
 import { fillSplineToIntersection } from './spline';
 import { fillEllipseToIntersection } from './ellipse';
-import type { IntersectionResult } from '../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 
 /**
  * Fill Module - Main Entry Point

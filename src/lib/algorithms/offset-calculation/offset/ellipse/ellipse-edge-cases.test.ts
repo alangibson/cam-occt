@@ -5,7 +5,7 @@ import type { Spline } from '$lib/geometry/spline';
 import { generateUniformKnotVector } from '$lib/geometry/spline';
 import { getEllipseParameters } from '$lib/geometry/ellipse';
 import verb from 'verb-nurbs';
-import { OffsetDirection } from '../types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 // Mock verb-nurbs for error testing
 vi.mock('verb-nurbs', () => ({

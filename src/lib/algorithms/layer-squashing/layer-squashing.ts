@@ -18,7 +18,7 @@ import type {
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/geometry/shape';
 import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
-import { DUPLICATE_FILTERING_TOLERANCE } from '../constants';
+import { DUPLICATE_FILTERING_TOLERANCE } from '$lib/algorithms/constants';
 
 export interface LayerSquashingOptions {
     preserveLayerInfo?: boolean; // Keep original layer info as metadata

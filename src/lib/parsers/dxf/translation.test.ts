@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
 import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
-import { translateToPositiveQuadrant } from '../../algorithms/translate-to-positive/translate-to-positive';
-import { decomposePolylines } from '../../algorithms/decompose-polylines/decompose-polylines';
+import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
+import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
 import { getShapePoints } from '$lib/geometry/shape/functions';
 import type {

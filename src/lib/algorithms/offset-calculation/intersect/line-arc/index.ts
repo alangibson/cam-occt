@@ -1,17 +1,14 @@
 import type { Point2D } from '$lib/types/geometry';
 import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
-import type { IntersectionResult } from '../../chain/types';
-import {
-    EPSILON,
-    INTERSECTION_TOLERANCE,
-} from '../../../../geometry/math/constants';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { EPSILON, INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 import {
     DEFAULT_EXTENSION_LENGTH,
     PRECISION_TOLERANCE_MULTIPLIER,
-} from '../../../../geometry/constants';
-import { createExtendedLine } from '../../extend/line';
-import { createExtendedArc } from '../../extend/arc';
+} from '$lib/geometry/constants';
+import { createExtendedLine } from '$lib/algorithms/offset-calculation/extend/line';
+import { createExtendedArc } from '$lib/algorithms/offset-calculation/extend/arc';
 import {
     calculateArcParameter,
     isPointOnArc,

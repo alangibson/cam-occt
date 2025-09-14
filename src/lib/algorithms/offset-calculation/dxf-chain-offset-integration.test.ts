@@ -3,13 +3,13 @@ import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { scaleShape } from '$lib/geometry/shape/functions';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
-import { parseDXF } from '../../parsers/dxf/functions';
-import { SVGBuilder } from '../../test/svg-builder';
+import { parseDXF } from '$lib/parsers/dxf/functions';
+import { SVGBuilder } from '$lib/test/svg-builder';
 import { type Circle, GeometryType, type Shape } from '$lib/types/geometry';
-import { Unit, getPhysicalScaleFactor } from '../../utils/units';
+import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { detectShapeChains } from '../chain-detection/chain-detection';
-import { normalizeChain } from '../chain-normalization/chain-normalization';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import { offsetChain } from './chain/offset';
 import type { ChainOffsetResult } from './chain/types';
 

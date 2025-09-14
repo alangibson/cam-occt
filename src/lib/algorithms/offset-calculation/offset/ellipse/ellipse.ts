@@ -1,5 +1,5 @@
 import verb from 'verb-nurbs';
-import { EPSILON } from '../../../../geometry/math/constants';
+import { EPSILON } from '$lib/geometry/math/constants';
 import {
     type Ellipse,
     GeometryType,
@@ -13,7 +13,10 @@ import {
     generateUniformKnotVector,
 } from '$lib/geometry/spline';
 import { getEllipseParameters } from '$lib/geometry/ellipse/index';
-import { OffsetDirection, type OffsetResult } from '../types';
+import {
+    OffsetDirection,
+    type OffsetResult,
+} from '$lib/algorithms/offset-calculation/offset/types';
 
 /**
  * Offset an ellipse using true mathematical ellipse offset calculation

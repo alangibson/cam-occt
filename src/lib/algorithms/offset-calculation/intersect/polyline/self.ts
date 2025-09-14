@@ -9,14 +9,14 @@ import {
 import type {
     IntersectionResult,
     PolylineSelfIntersection,
-} from '../../chain/types';
+} from '$lib/algorithms/offset-calculation/chain/types';
 import {
     DEFAULT_INTERSECTION_TYPE,
     type IntersectionType,
     findIntersectionsByType,
-} from '../index';
+} from '$lib/algorithms/offset-calculation/intersect';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
-import { calculatePolylineParameter } from '../polyline-spline/helpers';
+import { calculatePolylineParameter } from '$lib/algorithms/offset-calculation/intersect/polyline-spline/helpers';
 import { EPSILON } from '$lib/geometry/math/constants';
 
 /**

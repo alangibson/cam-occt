@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { offsetSpline } from './spline';
-import { OffsetDirection } from '../types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { Spline } from '$lib/geometry/spline';
 
 describe('Spline Offset Diagnostic Tests', () => {

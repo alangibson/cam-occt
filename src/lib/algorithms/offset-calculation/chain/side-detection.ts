@@ -11,7 +11,7 @@ import {
     getShapeMidpoint,
     getShapePointAt,
 } from '$lib/geometry/shape/functions';
-import { isPointInsideChainExact } from '../../raytracing/point-in-chain';
+import { isPointInsideChainExact } from '$lib/algorithms/raytracing/point-in-chain';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 
 /**

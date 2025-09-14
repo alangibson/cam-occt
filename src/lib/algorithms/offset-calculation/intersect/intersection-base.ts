@@ -1,6 +1,6 @@
-import type { IntersectionResult } from '../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { EPSILON } from '$lib/geometry/math';
-import { TOLERANCE_RELAXATION_MULTIPLIER } from '../../../geometry/constants';
+import { TOLERANCE_RELAXATION_MULTIPLIER } from '$lib/geometry/constants';
 
 /**
  * Removes duplicate intersection points that are very close to each other

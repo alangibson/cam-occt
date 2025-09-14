@@ -1,12 +1,12 @@
-import type { IntersectionResult } from '../../chain/types.ts';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Shape } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
-import { processVerbIntersectionResults } from '../verb-integration-utils.js';
+import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils.js';
 import { createVerbCurveFromArc } from '$lib/geometry/arc/nurbs.js';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs.js';
-import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 
 /**
  * Verb-NURBS Ellipse-Arc Intersection Module

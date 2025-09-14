@@ -1,9 +1,9 @@
 import { writable } from 'svelte/store';
 import type { Shape } from '$lib/types';
-import { OffsetDirection } from '../../algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { Path, PathsState, PathsStore } from './interfaces';
 import { checkProgramStageCompletion } from './functions';
-import type { PathLeadResult } from '../operations/interfaces';
+import type { PathLeadResult } from '$lib/stores/operations/interfaces';
 
 function createPathsStore(): PathsStore {
     const initialState: PathsState = {

@@ -19,7 +19,7 @@ import {
     GCODE_COORDINATE_PRECISION,
     GCODE_PARAMETER_PRECISION,
     IMPERIAL_FEED_RATE,
-} from '../constants';
+} from '$lib/cam/constants';
 
 /**
  * G-code path blending tolerance for metric units (mm)

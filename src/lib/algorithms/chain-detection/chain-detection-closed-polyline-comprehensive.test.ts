@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { detectShapeChains } from './chain-detection';
 import { isShapeClosed } from '$lib/geometry/shape/functions';
-import { parseDXF } from '../../parsers/dxf/functions';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';

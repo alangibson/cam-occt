@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { offsetLine } from './line';
 import type { Line } from '$lib/types/geometry';
-import { EPSILON } from '../../../../geometry/math/constants';
-import { OffsetDirection } from '../types';
+import { EPSILON } from '$lib/geometry/math/constants';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 describe('offsetLine', () => {
     const testLine: Line = {

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
-import { parseDXF } from '../../../parsers/dxf/functions';
-import { detectShapeChains } from '../../chain-detection/chain-detection';
+import { parseDXF } from '$lib/parsers/dxf/functions';
+import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { offsetChain } from './offset';
 import { scaleShape } from '$lib/geometry/shape/functions';
-import { Unit, getPhysicalScaleFactor } from '../../../utils/units';
+import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
 import {
     type Drawing,
@@ -13,7 +13,7 @@ import {
     type Shape,
 } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { normalizeChain } from '../../chain-normalization/chain-normalization';
+import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
 import { generateId } from '$lib/domain/id';
 
 describe('offsetChain Polyline Support', () => {

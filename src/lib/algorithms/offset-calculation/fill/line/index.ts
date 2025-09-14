@@ -1,13 +1,17 @@
 import type { Line, Point2D, Shape } from '$lib/types/geometry';
-import type { FillOptions, FillResult, ShapeExtension } from '../types';
+import type {
+    FillOptions,
+    FillResult,
+    ShapeExtension,
+} from '$lib/algorithms/offset-calculation/fill/types';
 import {
     calculateExtension,
     determineExtensionDirection,
     extendLineToPoint,
-} from '../../extend/line';
-import type { LineExtensionResult } from '../../extend/line';
-import { pointDistance } from '../../shared/trim-extend-utils';
-import { calculateLineDirectionAndLength } from '../../../../geometry/line';
+} from '$lib/algorithms/offset-calculation/extend/line';
+import type { LineExtensionResult } from '$lib/algorithms/offset-calculation/extend/line';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
+import { calculateLineDirectionAndLength } from '$lib/geometry/line';
 
 /**
  * Line Fill Module

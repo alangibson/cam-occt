@@ -7,7 +7,7 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import { SVGBuilder } from '../../../test/svg-builder';
+import { SVGBuilder } from '$lib/test/svg-builder';
 import {
     type Arc,
     type Circle,
@@ -18,12 +18,15 @@ import {
     type Shape,
 } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import { offsetArc } from '../offset/arc/arc';
-import { offsetEllipse } from '../offset/ellipse/ellipse';
-import { offsetLine } from '../offset/line/line';
-import { offsetPolyline } from '../offset/polyline/polyline';
-import { offsetSpline, tessellateVerbCurve } from '../offset/spline/spline';
-import { OffsetDirection } from '../offset/types';
+import { offsetArc } from '$lib/algorithms/offset-calculation/offset/arc/arc';
+import { offsetEllipse } from '$lib/algorithms/offset-calculation/offset/ellipse/ellipse';
+import { offsetLine } from '$lib/algorithms/offset-calculation/offset/line/line';
+import { offsetPolyline } from '$lib/algorithms/offset-calculation/offset/polyline/polyline';
+import {
+    offsetSpline,
+    tessellateVerbCurve,
+} from '$lib/algorithms/offset-calculation/offset/spline/spline';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { createExtendedArc } from './arc';
 import { createExtendedLine } from './line';
 import { createExtendedPolyline } from './polyline';

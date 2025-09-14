@@ -1,7 +1,10 @@
 import { EPSILON } from '$lib/geometry/math/constants';
 import type { Line, Point2D, Polyline, Shape } from '$lib/types/geometry';
 import { generateId } from '$lib/domain/id';
-import { type KeepSide, type TrimResult } from '../types';
+import {
+    type KeepSide,
+    type TrimResult,
+} from '$lib/algorithms/offset-calculation/trim/types';
 import {
     MIN_VERTICES_FOR_POLYLINE,
     type PolylineVertex,
@@ -9,11 +12,11 @@ import {
     polylineToPoints,
     polylineToVertices,
 } from '$lib/geometry/polyline';
-import { calculateLineParameter } from '../../shared/trim-extend-utils';
+import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     DEFAULT_ARRAY_NOT_FOUND_INDEX,
     TOLERANCE_RELAXATION_MULTIPLIER,
-} from '../../../../geometry/constants';
+} from '$lib/geometry/constants';
 
 /**
  * Create a line segment from polyline points at given index

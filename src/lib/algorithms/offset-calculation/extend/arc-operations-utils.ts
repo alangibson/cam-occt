@@ -3,7 +3,7 @@ import {
     type ArcExtensionOptions,
     determineArcExtensionDirection as _determineArcExtensionDirection,
 } from './arc';
-import type { FillOptions } from '../fill/types';
+import type { FillOptions } from '$lib/algorithms/offset-calculation/fill/types';
 
 /**
  * Arc Operations Utilities Library

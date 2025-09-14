@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { offsetArc } from './arc';
 import type { Arc } from '$lib/geometry/arc';
-import { OffsetDirection } from '../types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 describe('offsetArc', () => {
     const testArc: Arc = {

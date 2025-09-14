@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { type Ellipse, GeometryType, type Point2D } from '$lib/types/geometry';
-import { findEllipseEllipseIntersectionsVerb } from '../../intersect/ellipse-ellipse';
-import { findEllipseArcIntersectionsVerb } from '../../intersect/arc-ellipse';
-import { OffsetDirection } from '../types';
+import { findEllipseEllipseIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/ellipse-ellipse';
+import { findEllipseArcIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/arc-ellipse';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { offsetEllipse } from './ellipse';
 import type { Spline } from '$lib/geometry/spline';
 

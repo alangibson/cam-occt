@@ -2,9 +2,12 @@ import type { Arc, Point2D, Shape } from '$lib/types/geometry';
 import { TOLERANCE } from '$lib/geometry/math/constants';
 import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';
-import { type KeepSide, type TrimResult } from '../types';
+import {
+    type KeepSide,
+    type TrimResult,
+} from '$lib/algorithms/offset-calculation/trim/types';
 import { isAngleInArcRange } from '$lib/geometry/arc/functions';
-import { extendArcToPoint } from '../../extend/arc';
+import { extendArcToPoint } from '$lib/algorithms/offset-calculation/extend/arc';
 import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 
 /**

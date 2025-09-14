@@ -1,15 +1,15 @@
 import type { Spline } from '$lib/geometry/spline';
-import type { IntersectionResult } from '../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import verb, { type CurveCurveIntersection, type VerbCurve } from 'verb-nurbs';
-import { processVerbIntersectionResults } from '../intersect/verb-integration-utils';
+import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
-import { INTERSECTION_TOLERANCE } from '../../../geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../geometry/constants';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
 import {
     DEFAULT_RETRY_COUNT,
     DEFAULT_SPLINE_DEGREE,
 } from '$lib/geometry/spline';
-import { createExtendedSplineVerb } from '../extend/spline';
+import { createExtendedSplineVerb } from '$lib/algorithms/offset-calculation/extend/spline';
 
 /**
  * Validates spline geometry for intersection calculations

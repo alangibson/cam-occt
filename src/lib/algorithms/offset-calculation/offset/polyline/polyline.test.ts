@@ -15,9 +15,9 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import { parseDXF } from '../../../../parsers/dxf/functions';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import { offsetShape } from '..';
-import { OffsetDirection } from '../types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 describe('offsetPolyline', () => {
     const openPolyline: Polyline = createPolylineFromVertices(

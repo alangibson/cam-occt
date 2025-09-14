@@ -1,8 +1,8 @@
-import type { Arc } from '../arc';
-import type { Circle } from '../circle';
-import type { Ellipse } from '../ellipse';
-import type { Line } from '../line';
-import type { Polyline } from '../polyline';
-import type { Spline } from '../spline';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Spline } from '$lib/geometry/spline';
 
 export type Geometry = Arc | Line | Circle | Ellipse | Polyline | Spline;

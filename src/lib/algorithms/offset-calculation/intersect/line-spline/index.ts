@@ -1,18 +1,18 @@
 import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import type { IntersectionResult } from '../../chain/types.ts';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
-import { processVerbIntersectionResults } from '../verb-integration-utils.js';
+import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils.js';
 import { createVerbCurveFromLine } from '$lib/geometry/line/nurbs.js';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs.js';
-import { INTERSECTION_TOLERANCE } from '../../../../geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
 import { DEFAULT_RETRY_COUNT } from '$lib/geometry/spline';
 import {
     selectBestIntersectionResult,
     validateSplineForIntersection,
-} from '../../shared/spline-intersection-utils';
-import { createExtendedSplineVerb } from '../../extend/spline';
+} from '$lib/algorithms/offset-calculation/shared/spline-intersection-utils';
+import { createExtendedSplineVerb } from '$lib/algorithms/offset-calculation/extend/spline';
 
 /**
  * Find intersections between a spline and a line using verb-nurbs

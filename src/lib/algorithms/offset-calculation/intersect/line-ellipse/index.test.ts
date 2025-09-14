@@ -7,7 +7,7 @@ import {
 } from '$lib/types/geometry';
 import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
-import type { IntersectionResult } from '../../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import {
     findEllipseLineIntersections,
     findEllipseLineIntersectionsVerb,

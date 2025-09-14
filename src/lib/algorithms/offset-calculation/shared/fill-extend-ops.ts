@@ -9,19 +9,19 @@ import type {
     Shape,
 } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
-import type { FillResult } from '../fill/types';
-import { EPSILON } from '../../../geometry/math/constants';
+import type { FillResult } from '$lib/algorithms/offset-calculation/fill/types';
+import { EPSILON } from '$lib/geometry/math/constants';
 import {
     DECIMAL_PRECISION,
     MICRO_TOLERANCE,
     QUARTER_CIRCLE_QUADRANTS,
-} from '../../../geometry/constants';
-import { pointDistance } from '../trim';
+} from '$lib/geometry/constants';
+import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import {
     getEllipseRadiusX,
     getEllipseRadiusY,
     getEllipseRotation,
-} from '../../../geometry/ellipse';
+} from '$lib/geometry/ellipse';
 
 /**
  * Fill-Extend Operations Library

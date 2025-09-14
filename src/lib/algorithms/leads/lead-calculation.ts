@@ -23,14 +23,14 @@ import {
     QUARTER_PERCENT,
     THREE_QUARTERS_PERCENT,
 } from '$lib/geometry/math';
-import { MAX_ITERATIONS } from '../../constants';
+import { MAX_ITERATIONS } from '$lib/constants';
 import { FULL_CIRCLE_DEG, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
     DEFAULT_TESSELLATION_SEGMENTS,
     LEAD_REACHABLE_DISTANCE_MULTIPLIER,
     OCTAGON_SIDES,
     SMALL_ANGLE_INCREMENT_DEG,
-} from '../../geometry/constants';
+} from '$lib/geometry/constants';
 import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
 import { isPointInPolygon } from '$lib/geometry/polygon/functions';
 

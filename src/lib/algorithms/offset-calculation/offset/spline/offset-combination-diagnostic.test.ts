@@ -5,7 +5,7 @@ import { offsetSpline } from './spline';
 import type { Point2D, Polyline } from '$lib/types/geometry';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Spline } from '$lib/geometry/spline';
-import { OffsetDirection } from '../types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 describe('Combination Operations Diagnostic', () => {
     const outputDir = 'test-output/combination-diagnostic';

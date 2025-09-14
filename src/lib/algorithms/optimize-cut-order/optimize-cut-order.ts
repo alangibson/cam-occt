@@ -2,15 +2,15 @@ import type { Path } from '$lib/stores/paths/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { calculateLeads } from '../leads/lead-calculation';
+import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import {
     calculateDistance,
     findNearestPath,
     getPathStartPoint,
     prepareChainsAndLeadConfigs,
-} from '../optimize-start-points/path-optimization-utils';
+} from '$lib/algorithms/optimize-start-points/path-optimization-utils';
 import { getChainEndPoint } from '$lib/geometry/chain/functions';
-import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '../../geometry/constants';
+import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 
 /**
  * Rapids are the non-cutting paths that connect cut paths.

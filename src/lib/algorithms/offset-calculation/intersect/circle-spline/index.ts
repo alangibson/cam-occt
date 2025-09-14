@@ -2,9 +2,9 @@ import { createVerbCurveFromCircle } from '$lib/geometry/circle/nurbs';
 import type { Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Circle } from '$lib/geometry/circle';
-import type { IntersectionResult } from '../../chain/types';
-import { processSplineWithCurveIntersection } from '../../shared/spline-intersection-utils';
-import { MAX_ITERATIONS } from '../../../../geometry/constants';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import { processSplineWithCurveIntersection } from '$lib/algorithms/offset-calculation/shared/spline-intersection-utils';
+import { MAX_ITERATIONS } from '$lib/geometry/constants';
 
 /**
  * Find intersections between a spline and a circle using verb-nurbs

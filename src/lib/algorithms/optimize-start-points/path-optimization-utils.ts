@@ -12,11 +12,11 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
     calculateLeads,
-} from '../leads/lead-calculation';
+} from '$lib/algorithms/leads/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
-} from '../../utils/lead-config-utils';
+} from '$lib/utils/lead-config-utils';
 import { calculateSquaredDistance } from '$lib/geometry/math';
 import {
     getChainEndPoint,

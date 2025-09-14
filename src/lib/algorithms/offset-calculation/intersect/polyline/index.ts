@@ -6,22 +6,22 @@ import {
     type Polyline,
     type Shape,
 } from '$lib/types/geometry';
-import type { IntersectionResult } from '../../chain/types';
-import type { SegmentPosition } from '../line-arc/index';
-import type { IntersectionType } from '../index';
-import { DEFAULT_EXTENSION_LENGTH } from '../../../../geometry/constants';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import type { SegmentPosition } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
+import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect';
+import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
 // Import intersection functions from intersect module
-import { findIntersectionsByType } from '../index';
+import { findIntersectionsByType } from '$lib/algorithms/offset-calculation/intersect';
 // Import line-line intersection from dedicated module
-import { findLineLineIntersectionsSegmentAware } from '../line-line/index';
+import { findLineLineIntersectionsSegmentAware } from '$lib/algorithms/offset-calculation/intersect/line-line/index';
 // Import line-arc intersection utilities
-import { findLineArcIntersectionsSegmentAware } from '../line-arc/index';
+import { findLineArcIntersectionsSegmentAware } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
 // Import line-circle intersection utilities
-import { findLineCircleIntersectionsSegmentAware } from '../line-circle/index';
+import { findLineCircleIntersectionsSegmentAware } from '$lib/algorithms/offset-calculation/intersect/line-circle/index';
 // Import polyline helper functions from the polyline-spline module
-import { calculatePolylineParameter } from '../polyline-spline/helpers';
+import { calculatePolylineParameter } from '$lib/algorithms/offset-calculation/intersect/polyline-spline/helpers';
 // Import polyline-polyline intersection from dedicated module
-import { findPolylinePolylineIntersections } from '../polyline-polyline/index';
+import { findPolylinePolylineIntersections } from '$lib/algorithms/offset-calculation/intersect/polyline-polyline/index';
 
 /**
  * Type guard to check if a segment is a Line

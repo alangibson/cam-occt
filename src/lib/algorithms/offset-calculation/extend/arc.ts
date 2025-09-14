@@ -1,11 +1,11 @@
 import type { Point2D } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
-import { MAX_EXTENSION } from '../../constants';
+import { MAX_EXTENSION } from '$lib/algorithms/constants';
 import {
     DECIMAL_PRECISION,
     HIGH_PRECISION_TOLERANCE,
-} from '../../../geometry/constants';
-import { pointDistance } from '../shared/trim-extend-utils';
+} from '$lib/geometry/constants';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     isAngleInArcRange,
     calculateIntersectionAngle,

@@ -1,6 +1,6 @@
-import type { Arc } from '../../../../geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 import type { Point2D } from '$lib/types/geometry';
-import type { IntersectionResult } from '../../chain/types';
+import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { EPSILON, calculateSquaredDistance } from '$lib/geometry/math';
 import {
     calculateArcParameter,
@@ -9,9 +9,9 @@ import {
 import {
     createExtendedArc,
     isIntersectionOnArcExtension,
-} from '../../extend/arc';
-import { removeDuplicateIntersections } from '../intersection-base';
-import { MAX_ITERATIONS } from '../../../../geometry/constants';
+} from '$lib/algorithms/offset-calculation/extend/arc';
+import { removeDuplicateIntersections } from '$lib/algorithms/offset-calculation/intersect/intersection-base';
+import { MAX_ITERATIONS } from '$lib/geometry/constants';
 
 /**
  * Find intersections between two arcs using radical axis method

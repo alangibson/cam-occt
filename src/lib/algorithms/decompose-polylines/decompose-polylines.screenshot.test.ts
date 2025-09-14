@@ -6,7 +6,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import type { PolylineVertex, Shape } from '$lib/types';
 import { EPSILON } from '$lib/geometry/math';
-import type { Arc } from '../../geometry/arc';
+import type { Arc } from '$lib/geometry/arc';
 import type { Line, Polyline } from '$lib/types/geometry';
 
 // Mock canvas for screenshot comparison

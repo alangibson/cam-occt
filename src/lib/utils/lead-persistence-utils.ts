@@ -14,7 +14,7 @@ import {
     type LeadInConfig,
     type LeadOutConfig,
     calculateLeads,
-} from '../algorithms/leads/lead-calculation';
+} from '$lib/algorithms/leads/lead-calculation';
 import { LeadType } from '$lib/types/direction';
 import { createLeadInConfig, createLeadOutConfig } from './lead-config-utils';
 

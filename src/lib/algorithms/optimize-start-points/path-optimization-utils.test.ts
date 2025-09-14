@@ -8,7 +8,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { OffsetDirection } from '../offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 // Test data setup
 const createTestPath = (overrides: Partial<Path> = {}): Path => ({
