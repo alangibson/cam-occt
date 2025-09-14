@@ -91,8 +91,7 @@ export function trimPolyline(
     keepSide: KeepSide,
     tolerance: number
 ): TrimResult {
-    const polyline: import('$lib/types/geometry').Polyline =
-        shape.geometry as Polyline;
+    const polyline: Polyline = shape.geometry as Polyline;
     const result: TrimResult = {
         success: false,
         shape: null,

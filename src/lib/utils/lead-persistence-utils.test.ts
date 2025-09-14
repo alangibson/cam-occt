@@ -61,7 +61,7 @@ vi.mock('$lib/algorithms/leads/lead-calculation', () => ({
 
 // Mock svelte/store get function with partial mock to preserve writable
 vi.mock('svelte/store', async (importOriginal) => {
-    const actual = await importOriginal<typeof import('svelte/store')>();
+    const actual: object = await importOriginal();
     return {
         ...actual,
         get: vi.fn(() => ({

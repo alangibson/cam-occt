@@ -17,7 +17,7 @@ export function trimLine(
     keepSide: KeepSide,
     tolerance: number
 ): TrimResult {
-    const line: import('$lib/types/geometry').Line = shape.geometry as Line;
+    const line: Line = shape.geometry as Line;
     const result: TrimResult = {
         success: false,
         shape: null,

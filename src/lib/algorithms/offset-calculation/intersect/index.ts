@@ -1,12 +1,6 @@
-import type {
-    Arc,
-    Circle,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
-} from '$lib/types/geometry';
+import type { Circle } from '$lib/types/geometry';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import type { Arc, Line, Point2D, Polyline, Shape } from '$lib/types';
 import { EPSILON } from '$lib/geometry/math/constants';
 import {
     getShapeEndPoint,
@@ -210,8 +204,7 @@ export function findIntersectionsByType(
     // Arc-Circle intersections
     if (firstType === 'arc' && secondType === 'circle') {
         // Circle as full arc
-        const circle: import('$lib/types/geometry').Circle =
-            second.geometry as Circle;
+        const circle: Circle = second.geometry as Circle;
         const circleAsArc: Arc = {
             center: circle.center,
             radius: circle.radius,

@@ -1,11 +1,5 @@
-import type {
-    Circle,
-    Ellipse,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
-} from '$lib/types';
+import type { Circle, Ellipse, Line, Polyline } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
@@ -70,22 +64,18 @@ export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {
 function getShapeOrigin(shape: Shape): Point2D | null {
     switch (shape.type) {
         case 'line':
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
+            const line: Line = shape.geometry as Line;
             return line.start;
         case 'circle':
         case 'arc':
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle | Arc;
+            const circle: Circle = shape.geometry as Circle | Arc;
             return circle.center;
         case 'polyline':
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
+            const polyline: Polyline = shape.geometry as Polyline;
             const points: Point2D[] = polylineToPoints(polyline);
             return points.length > 0 ? points[0] : null;
         case 'ellipse':
-            const ellipse: import('$lib/types/geometry').Ellipse =
-                shape.geometry as Ellipse;
+            const ellipse: Ellipse = shape.geometry as Ellipse;
             return ellipse.center;
         default:
             return null;

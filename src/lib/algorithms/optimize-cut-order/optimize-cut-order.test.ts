@@ -15,6 +15,7 @@ import { GeometryType } from '$lib/types/geometry';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import * as pathOptUtils from '$lib/algorithms/optimize-start-points/path-optimization-utils';
 
 // Mock crypto.randomUUID
 if (typeof crypto === 'undefined') {
@@ -611,11 +612,8 @@ describe('Optimize Cut Order', () => {
                 .mockImplementation(() => {});
 
             // Mock prepareChainsAndLeadConfigs to throw an error
-            const prepareChainsModule = await import(
-                '../optimize-start-points/path-optimization-utils'
-            );
             vi.spyOn(
-                prepareChainsModule,
+                pathOptUtils,
                 'prepareChainsAndLeadConfigs'
             ).mockImplementation(() => {
                 throw new Error('Mock error in lead calculation');
@@ -631,9 +629,7 @@ describe('Optimize Cut Order', () => {
             );
 
             // Restore mocks
-            vi.mocked(
-                prepareChainsModule.prepareChainsAndLeadConfigs
-            ).mockRestore();
+            vi.mocked(pathOptUtils.prepareChainsAndLeadConfigs).mockRestore();
             consoleSpy.mockRestore();
         });
 

@@ -38,8 +38,7 @@ export function fillEllipseToIntersection(
         return createFailureResult('Shape must be an ellipse');
     }
 
-    const ellipse: import('$lib/types/geometry').Ellipse =
-        shape.geometry as Ellipse;
+    const ellipse: Ellipse = shape.geometry as Ellipse;
 
     // Convert FillOptions to OperationParams
     const params: OperationParams = {

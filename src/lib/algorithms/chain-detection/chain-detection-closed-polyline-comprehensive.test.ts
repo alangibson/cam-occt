@@ -84,8 +84,7 @@ describe('Comprehensive Closed Polyline with Bulges Test', () => {
 
             // Single shape chain - should check the shape's closed flag
             if (shape.type === 'polyline') {
-                const polyline: import('$lib/types/geometry').Polyline =
-                    shape.geometry as Polyline;
+                const polyline: Polyline = shape.geometry as Polyline;
                 expect(polyline.closed).toBe(true);
             }
         }

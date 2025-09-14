@@ -15,8 +15,7 @@ export function trimEllipse(
     keepSide: KeepSide,
     tolerance: number
 ): TrimResult {
-    const ellipse: import('$lib/types/geometry').Ellipse =
-        shape.geometry as Ellipse;
+    const ellipse: Ellipse = shape.geometry as Ellipse;
     const result: TrimResult = {
         success: false,
         shape: null,

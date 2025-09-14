@@ -5,14 +5,8 @@ import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positi
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
 import { getShapePoints } from '$lib/geometry/shape/functions';
-import type {
-    Arc,
-    Circle,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
-} from '$lib/types/geometry';
+import type { Arc, Circle, Line, Polyline } from '$lib/types/geometry';
+import type { Point2D, Shape } from '$lib/types';
 import { EPSILON } from '$lib/geometry/math';
 
 // Helper function to calculate bounds for translated shapes
@@ -215,16 +209,14 @@ EOF`;
             drawing.shapes.forEach((shape) => {
                 switch (shape.type) {
                     case 'line':
-                        const line: import('$lib/types/geometry').Line =
-                            shape.geometry as Line;
+                        const line: Line = shape.geometry as Line;
                         expect(line.start.x).toBeGreaterThanOrEqual(0);
                         expect(line.start.y).toBeGreaterThanOrEqual(0);
                         expect(line.end.x).toBeGreaterThanOrEqual(0);
                         expect(line.end.y).toBeGreaterThanOrEqual(0);
                         break;
                     case 'circle':
-                        const circle: import('$lib/types/geometry').Circle =
-                            shape.geometry as Circle;
+                        const circle: Circle = shape.geometry as Circle;
                         expect(
                             circle.center.x - circle.radius
                         ).toBeGreaterThanOrEqual(0);
@@ -426,16 +418,14 @@ EOF`;
             drawing.shapes.forEach((shape) => {
                 switch (shape.type) {
                     case 'line':
-                        const line: import('$lib/types/geometry').Line =
-                            shape.geometry as Line;
+                        const line: Line = shape.geometry as Line;
                         expect(line.start.x).toBeGreaterThanOrEqual(0);
                         expect(line.start.y).toBeGreaterThanOrEqual(0);
                         expect(line.end.x).toBeGreaterThanOrEqual(0);
                         expect(line.end.y).toBeGreaterThanOrEqual(0);
                         break;
                     case 'arc':
-                        const arc: import('$lib/types/geometry').Arc =
-                            shape.geometry as Arc;
+                        const arc: Arc = shape.geometry as Arc;
                         expect(
                             arc.center.x - arc.radius
                         ).toBeGreaterThanOrEqual(0);
@@ -703,8 +693,7 @@ EOF`;
             expect(drawing.bounds.min.x).toBeLessThan(0);
             expect(drawing.bounds.min.y).toBeLessThan(0);
 
-            const line: import('$lib/types/geometry').Line = drawing.shapes[0]
-                .geometry as Line;
+            const line: Line = drawing.shapes[0].geometry as Line;
             expect(line.start.x).toBe(-50);
             expect(line.start.y).toBe(-25);
         });
@@ -785,15 +774,14 @@ function getShapeBounds(shape: Shape) {
             maxY = Math.max(line.start.y, line.end.y);
             break;
         case 'circle':
-            const circle =
-                shape.geometry as import('$lib/types/geometry').Circle;
+            const circle = shape.geometry as Circle;
             minX = circle.center.x - circle.radius;
             maxX = circle.center.x + circle.radius;
             minY = circle.center.y - circle.radius;
             maxY = circle.center.y + circle.radius;
             break;
         case 'arc':
-            const arc = shape.geometry as import('$lib/types/geometry').Arc;
+            const arc = shape.geometry as Arc;
             // Use actual arc bounds instead of full circle bounds
             const arcBounds = getBoundingBoxForArc(arc);
             minX = arcBounds.min.x;
@@ -802,8 +790,7 @@ function getShapeBounds(shape: Shape) {
             maxY = arcBounds.max.y;
             break;
         case 'polyline':
-            const polyline =
-                shape.geometry as import('$lib/types/geometry').Polyline;
+            const polyline = shape.geometry as Polyline;
             polylineToPoints(polyline).forEach((point: Point2D) => {
                 minX = Math.min(minX, point.x);
                 maxX = Math.max(maxX, point.x);

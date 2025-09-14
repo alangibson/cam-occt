@@ -1,6 +1,4 @@
-import type { Point2D, Shape } from '$lib/types/geometry';
-import type { Line } from '$lib/geometry/line';
-import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Ellipse, Line, Point2D, Shape } from '$lib/types/geometry';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { EPSILON, INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 import { snapParameter } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
@@ -101,9 +99,8 @@ export function findEllipseLineIntersections(
     lineShape: Shape,
     swapParams: boolean
 ): IntersectionResult[] {
-    const ellipse: import('$lib/types/geometry').Ellipse =
-        ellipseShape.geometry as Ellipse;
-    const line: import('$lib/types/geometry').Line = lineShape.geometry as Line;
+    const ellipse: Ellipse = ellipseShape.geometry as Ellipse;
+    const line: Line = lineShape.geometry as Line;
     const results: IntersectionResult[] = [];
 
     // Get ellipse parameters

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { type Ellipse, GeometryType, type Point2D } from '$lib/types/geometry';
+import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/types/geometry';
 import { findEllipseEllipseIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/ellipse-ellipse';
 import { findEllipseArcIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/arc-ellipse';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
@@ -37,7 +38,7 @@ describe('Quick Ellipse Intersection Test', () => {
 
     it('should find intersections between arc and ellipse', () => {
         // Create an arc and ellipse that should intersect
-        const arcShape: import('$lib/types/geometry').Shape = {
+        const arcShape: Shape = {
             id: 'arc1',
             type: GeometryType.ARC,
             geometry: {
@@ -49,7 +50,7 @@ describe('Quick Ellipse Intersection Test', () => {
             },
         };
 
-        const ellipseShape: import('$lib/types/geometry').Shape = {
+        const ellipseShape: Shape = {
             id: 'ellipse1',
             type: GeometryType.ELLIPSE,
             geometry: {

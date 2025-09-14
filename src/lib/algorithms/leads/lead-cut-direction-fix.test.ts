@@ -4,6 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import type { Circle, Line, Polyline } from '$lib/types/geometry';
 import {
     type LeadInConfig,
     type LeadOutConfig,
@@ -56,12 +57,10 @@ describe('Lead Cut Direction Fix', () => {
 
         for (const shape of chain.shapes) {
             if (shape.type === 'line') {
-                const lineGeometry =
-                    shape.geometry as import('$lib/types/geometry').Line;
+                const lineGeometry = shape.geometry as Line;
                 points.push(lineGeometry.start);
             } else if (shape.type === 'polyline') {
-                const polylineGeometry =
-                    shape.geometry as import('$lib/types/geometry').Polyline;
+                const polylineGeometry = shape.geometry as Polyline;
                 points.push(...polylineToPoints(polylineGeometry));
             } else if (shape.type === 'arc') {
                 // Sample points along the arc
@@ -84,8 +83,7 @@ describe('Lead Cut Direction Fix', () => {
                 }
             } else if (shape.type === 'circle') {
                 // Sample points around the circle
-                const circle =
-                    shape.geometry as import('$lib/types/geometry').Circle;
+                const circle = shape.geometry as Circle;
                 const segments = Math.max(
                     16,
                     Math.ceil((2 * Math.PI * circle.radius) / 2)

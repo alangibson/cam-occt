@@ -644,11 +644,6 @@ describe('Spline Intersection Utilities', () => {
                 weights: () => [1, 1, 1],
             } as verb.geom.ICurve;
 
-            const { processVerbIntersectionResults } = await import(
-                '../intersect/verb-integration-utils'
-            );
-            const { default: verb } = await import('verb-nurbs');
-
             // Mock different results for each retry
             vi.mocked(verb.geom.Intersect.curves)
                 .mockReturnValueOnce([{ u0: 0.5, u1: 0.3, pt: [15, 5, 0] }]) // 1 intersection

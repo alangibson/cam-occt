@@ -15,6 +15,8 @@ import {
     PartType,
 } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
+import { chainStore } from '$lib/stores/chains/store';
+import { partStore } from '$lib/stores/parts/store';
 
 describe('findPartContainingChain', () => {
     // Helper function to create a mock chain
@@ -337,24 +339,18 @@ describe('Chain interaction handlers', () => {
 
     describe('handleChainClick', () => {
         it('should deselect chain when already selected', async () => {
-            const { chainStore } = await import('$lib/stores/chains/store');
-
             handleChainClick('chain-1', 'chain-1');
 
             expect(chainStore.selectChain).toHaveBeenCalledWith(null);
         });
 
         it('should select chain when different chain is selected', async () => {
-            const { chainStore } = await import('$lib/stores/chains/store');
-
             handleChainClick('chain-2', 'chain-1');
 
             expect(chainStore.selectChain).toHaveBeenCalledWith('chain-2');
         });
 
         it('should select chain when no chain is selected', async () => {
-            const { chainStore } = await import('$lib/stores/chains/store');
-
             handleChainClick('chain-1', null);
 
             expect(chainStore.selectChain).toHaveBeenCalledWith('chain-1');
@@ -363,8 +359,6 @@ describe('Chain interaction handlers', () => {
 
     describe('handleChainMouseEnter', () => {
         it('should highlight chain', async () => {
-            const { chainStore } = await import('$lib/stores/chains/store');
-
             handleChainMouseEnter('chain-1');
 
             expect(chainStore.highlightChain).toHaveBeenCalledWith('chain-1');
@@ -373,8 +367,6 @@ describe('Chain interaction handlers', () => {
 
     describe('handleChainMouseLeave', () => {
         it('should clear chain highlight', async () => {
-            const { chainStore } = await import('$lib/stores/chains/store');
-
             handleChainMouseLeave();
 
             expect(chainStore.clearChainHighlight).toHaveBeenCalledWith();
@@ -389,24 +381,18 @@ describe('Part interaction handlers', () => {
 
     describe('handlePartClick', () => {
         it('should deselect part when already selected', async () => {
-            const { partStore } = await import('$lib/stores/parts/store');
-
             handlePartClick('part-1', 'part-1');
 
             expect(partStore.selectPart).toHaveBeenCalledWith(null);
         });
 
         it('should select part when different part is selected', async () => {
-            const { partStore } = await import('$lib/stores/parts/store');
-
             handlePartClick('part-2', 'part-1');
 
             expect(partStore.selectPart).toHaveBeenCalledWith('part-2');
         });
 
         it('should select part when no part is selected', async () => {
-            const { partStore } = await import('$lib/stores/parts/store');
-
             handlePartClick('part-1', null);
 
             expect(partStore.selectPart).toHaveBeenCalledWith('part-1');
@@ -415,8 +401,6 @@ describe('Part interaction handlers', () => {
 
     describe('handlePartMouseEnter', () => {
         it('should hover part', async () => {
-            const { partStore } = await import('$lib/stores/parts/store');
-
             handlePartMouseEnter('part-1');
 
             expect(partStore.hoverPart).toHaveBeenCalledWith('part-1');
@@ -425,8 +409,6 @@ describe('Part interaction handlers', () => {
 
     describe('handlePartMouseLeave', () => {
         it('should clear part hover', async () => {
-            const { partStore } = await import('$lib/stores/parts/store');
-
             handlePartMouseLeave();
 
             expect(partStore.clearPartHover).toHaveBeenCalledWith();

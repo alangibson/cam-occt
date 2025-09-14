@@ -1,8 +1,6 @@
-import type { Point2D, Shape } from '$lib/types/geometry';
+import type { Circle, Line, Point2D, Shape } from '$lib/types/geometry';
 import type { Polyline } from '$lib/geometry/polyline';
-import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
 import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
@@ -843,8 +841,7 @@ function getChainTangent(
     switch (shape.type) {
         case GeometryType.LINE:
             // Line tangent is just the line direction
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
+            const line: Line = shape.geometry as Line;
             const dx: number = line.end.x - line.start.x;
             const dy: number = line.end.y - line.start.y;
             const len: number = Math.sqrt(dx * dx + dy * dy);
@@ -867,8 +864,7 @@ function getChainTangent(
 
         case GeometryType.CIRCLE:
             // Circle tangent at any point is perpendicular to radius
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle;
+            const circle: Circle = shape.geometry as Circle;
             const cdx: number = point.x - circle.center.x;
             const cdy: number = point.y - circle.center.y;
             const clen: number = Math.sqrt(cdx * cdx + cdy * cdy);

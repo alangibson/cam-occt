@@ -5,13 +5,15 @@ import type { Arc } from '$lib/geometry/arc';
 import type { Line } from '$lib/geometry/line';
 import type { Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/geometry/shape';
+import { createExtendedPolyline } from '$lib/algorithms/offset-calculation/extend/polyline';
+import { createExtendedArc } from '$lib/algorithms/offset-calculation/extend/arc';
 
 // Mock the extension modules to control their behavior
-vi.mock('../../extend/polyline', () => ({
+vi.mock('$lib/algorithms/offset-calculation/extend/polyline', () => ({
     createExtendedPolyline: vi.fn(),
 }));
 
-vi.mock('../../extend/arc', () => ({
+vi.mock('$lib/algorithms/offset-calculation/extend/arc', () => ({
     createExtendedArc: vi.fn(),
 }));
 
@@ -164,10 +166,6 @@ describe('Polyline-Arc Intersection', () => {
         });
 
         it('should handle extension failures gracefully', async () => {
-            const { createExtendedPolyline } = await import(
-                '../../extend/polyline'
-            );
-            const { createExtendedArc } = await import('../../extend/arc');
             const mockCreateExtendedPolyline = vi.mocked(
                 createExtendedPolyline
             );
@@ -332,10 +330,6 @@ describe('Polyline-Arc Intersection', () => {
         });
 
         it('should handle individual extension failures', async () => {
-            const { createExtendedPolyline } = await import(
-                '../../extend/polyline'
-            );
-            const { createExtendedArc } = await import('../../extend/arc');
             const mockCreateExtendedPolyline = vi.mocked(
                 createExtendedPolyline
             );

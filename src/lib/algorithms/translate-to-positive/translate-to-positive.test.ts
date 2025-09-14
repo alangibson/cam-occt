@@ -4,9 +4,9 @@ import {
     polylineToPoints,
     polylineToVertices,
 } from '$lib/geometry/polyline';
-import { GeometryType } from '$lib/types/geometry';
-import type { Shape } from '$lib/types';
 import type { Arc, Circle, Ellipse, Line, Polyline } from '$lib/types/geometry';
+import type { Shape } from '$lib/types';
+import { GeometryType } from '$lib/types/geometry';
 import { translateToPositiveQuadrant } from './translate-to-positive';
 
 describe('Translate to Positive Quadrant Algorithm', () => {
@@ -26,8 +26,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const line: import('$lib/types/geometry').Line = result[0]
-                .geometry as Line;
+            const line: Line = result[0].geometry as Line;
             expect(line.start).toEqual({ x: 0, y: 0 }); // -10 + 10 = 0, -5 + 5 = 0
             expect(line.end).toEqual({ x: 10, y: 10 }); // 0 + 10 = 10, 5 + 5 = 10
         });
@@ -65,8 +64,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const line: import('$lib/types/geometry').Line = result[0]
-                .geometry as Line;
+            const line: Line = result[0].geometry as Line;
             expect(line.start).toEqual({ x: 0, y: 10 }); // Only X translated
             expect(line.end).toEqual({ x: 10, y: 20 });
         });
@@ -86,8 +84,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const line: import('$lib/types/geometry').Line = result[0]
-                .geometry as Line;
+            const line: Line = result[0].geometry as Line;
             expect(line.start).toEqual({ x: 5, y: 0 }); // Only Y translated
             expect(line.end).toEqual({ x: 15, y: 10 });
         });
@@ -112,8 +109,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const arc: import('$lib/types/geometry').Arc = result[0]
-                .geometry as Arc;
+            const arc: Arc = result[0].geometry as Arc;
             // Arc spans from (15,10) to (10,15) - already positive
             expect(arc.center).toEqual({ x: 10, y: 10 }); // Should be unchanged
             expect(arc.radius).toBe(5);
@@ -137,8 +133,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const arc: import('$lib/types/geometry').Arc = result[0]
-                .geometry as Arc;
+            const arc: Arc = result[0].geometry as Arc;
             // Original arc bounds: x from -2 to 3, y from -2 to 3
             // Translation needed: x+2, y+2
             expect(arc.center).toEqual({ x: 5, y: 5 }); // 3+2=5, 3+2=5
@@ -166,8 +161,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const arc: import('$lib/types/geometry').Arc = result[0]
-                .geometry as Arc;
+            const arc: Arc = result[0].geometry as Arc;
             // Arc spans from (0,4) to (-4,0) - needs translation by x+4, y+4
             expect(arc.center).toEqual({ x: 4, y: 4 }); // 0+4=4, 0+4=4
             expect(arc.radius).toBe(4);
@@ -192,8 +186,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const arc: import('$lib/types/geometry').Arc = result[0]
-                .geometry as Arc;
+            const arc: Arc = result[0].geometry as Arc;
             // This arc includes the 0° extreme (rightmost point at x=6)
             // Arc should remain untranslated since all bounds are positive
             expect(arc.center).toEqual({ x: 3, y: 3 });
@@ -217,8 +210,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const circle: import('$lib/types/geometry').Circle = result[0]
-                .geometry as Circle;
+            const circle: Circle = result[0].geometry as Circle;
             // Bounding box: center(-5,-3) ± radius(2) = min(-7,-5), max(-3,-1)
             // Translation: x+7, y+5
             expect(circle.center).toEqual({ x: 2, y: 2 }); // -5+7=2, -3+5=2
@@ -243,8 +235,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const arc: import('$lib/types/geometry').Arc = result[0]
-                .geometry as Arc;
+            const arc: Arc = result[0].geometry as Arc;
             // Quarter arc from 0° to 90°: spans from (-7,-8) to (-10,-5)
             // Min bounds: x=-10, y=-8, so translation: x+10, y+8
             expect(arc.center).toEqual({ x: 0, y: 0 }); // -10+10=0, -8+8=0
@@ -270,8 +261,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const polyline: import('$lib/types/geometry').Polyline = result[0]
-                .geometry as Polyline;
+            const polyline: Polyline = result[0].geometry as Polyline;
             // Min point: (-5, -10), translation: x+5, y+10
             const translatedPoints = polylineToPoints(polyline);
             expect(translatedPoints).toEqual([
@@ -297,8 +287,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const polyline: import('$lib/types/geometry').Polyline = result[0]
-                .geometry as Polyline;
+            const polyline: Polyline = result[0].geometry as Polyline;
             const translatedVertices = polylineToVertices(polyline);
             expect(translatedVertices).toHaveLength(2);
 
@@ -329,8 +318,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const polyline: import('$lib/types/geometry').Polyline = result[0]
-                .geometry as Polyline;
+            const polyline: Polyline = result[0].geometry as Polyline;
 
             // The arc segment should have been properly translated
             // With bulge=1.0, the arc extends significantly beyond the line endpoints
@@ -357,8 +345,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const polyline: import('$lib/types/geometry').Polyline = result[0]
-                .geometry as Polyline;
+            const polyline: Polyline = result[0].geometry as Polyline;
 
             // All vertices should be translated to positive quadrant
             const translatedVertices = polylineToVertices(polyline);
@@ -389,8 +376,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const ellipse: import('$lib/types/geometry').Ellipse = result[0]
-                .geometry as Ellipse;
+            const ellipse: Ellipse = result[0].geometry as Ellipse;
             // Major axis length = 4, minor = 2, horizontal major axis
             // Bounding box: center(-8,-6) ± (4,2) = min(-12,-8), max(-4,-4)
             // Translation: x+12, y+8
@@ -428,13 +414,11 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             // Global min: x=-5 (from line), y=-9 (from circle: -8-1=-9)
             // Translation: x+5, y+9
 
-            const line: import('$lib/types/geometry').Line = result[0]
-                .geometry as Line;
+            const line: Line = result[0].geometry as Line;
             expect(line.start).toEqual({ x: 0, y: 6 }); // -5+5=0, -3+9=6
             expect(line.end).toEqual({ x: 5, y: 9 }); // 0+5=5, 0+9=9
 
-            const circle: import('$lib/types/geometry').Circle = result[1]
-                .geometry as Circle;
+            const circle: Circle = result[1].geometry as Circle;
             expect(circle.center).toEqual({ x: 15, y: 1 }); // 10+5=15, -8+9=1
         });
     });
@@ -478,8 +462,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const line: import('$lib/types/geometry').Line = result[0]
-                .geometry as Line;
+            const line: Line = result[0].geometry as Line;
             expect(line.start).toEqual({ x: 0, y: 0 });
             expect(line.end).toEqual({ x: 0, y: 0 });
         });
@@ -522,8 +505,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
             const result = translateToPositiveQuadrant(shapes);
 
             expect(result).toHaveLength(1);
-            const line: import('$lib/types/geometry').Line = result[0]
-                .geometry as Line;
+            const line: Line = result[0].geometry as Line;
             expect(line.start.x).toBeCloseTo(0, 6); // Should be very close to 0
             expect(line.start.y).toBe(5); // Y unchanged
             expect(line.end.x).toBeCloseTo(10.001, 6);

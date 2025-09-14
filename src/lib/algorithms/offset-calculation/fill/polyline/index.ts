@@ -38,8 +38,7 @@ export function fillPolylineToIntersection(
         return createFailureResult('Shape must be a polyline');
     }
 
-    const polyline: import('$lib/types/geometry').Polyline =
-        shape.geometry as Polyline;
+    const polyline: Polyline = shape.geometry as Polyline;
 
     try {
         // Use the extend module for all extension logic
@@ -111,8 +110,7 @@ export function fillPolylineToIntersection(
             direction: extendDirection,
             originalShape: shape,
             extensionStart: (() => {
-                const points: import('$lib/types/geometry').Point2D[] =
-                    polylineToPoints(polyline);
+                const points: Point2D[] = polylineToPoints(polyline);
                 return extendDirection === 'start'
                     ? points[0]
                     : points[points.length - 1];

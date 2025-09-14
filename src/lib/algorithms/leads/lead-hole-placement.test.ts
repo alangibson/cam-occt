@@ -12,7 +12,7 @@ import {
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Arc } from '$lib/geometry/arc';
-import type { Polyline, Shape } from '$lib/types/geometry';
+import type { Circle, Line, Polyline, Shape } from '$lib/types/geometry';
 
 describe('Lead Hole Placement Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting
@@ -53,9 +53,7 @@ describe('Lead Hole Placement Fix', () => {
 
         for (const shape of chain.shapes) {
             if (shape.type === 'line') {
-                points.push(
-                    (shape.geometry as import('$lib/types/geometry').Line).start
-                );
+                points.push((shape.geometry as Line).start);
             } else if (shape.type === 'polyline') {
                 points.push(...polylineToPoints(shape.geometry as Polyline));
             } else if (shape.type === 'arc') {
@@ -79,8 +77,7 @@ describe('Lead Hole Placement Fix', () => {
                 }
             } else if (shape.type === 'circle') {
                 // Sample points around the circle
-                const circle =
-                    shape.geometry as import('$lib/types/geometry').Circle;
+                const circle = shape.geometry as Circle;
                 const segments = Math.max(
                     16,
                     Math.ceil((2 * Math.PI * circle.radius) / 2)

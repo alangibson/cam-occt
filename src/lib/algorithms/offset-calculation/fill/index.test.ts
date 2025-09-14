@@ -11,6 +11,14 @@ import type {
     Ellipse,
     Geometry,
 } from '$lib/types/geometry';
+import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
+import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
+import { fillLineToIntersection } from './line';
+import { fillArcToIntersection } from './arc';
+import { fillCircleToIntersection } from './circle';
+import { fillPolylineToIntersection } from './polyline';
+import { fillSplineToIntersection } from './spline';
+import { fillEllipseToIntersection } from './ellipse';
 
 // Mock the dependencies
 vi.mock('../intersect', () => ({
@@ -44,15 +52,6 @@ vi.mock('./spline', () => ({
 vi.mock('./ellipse', () => ({
     fillEllipseToIntersection: vi.fn(),
 }));
-
-const { findShapeIntersections } = await import('../intersect');
-const { pointDistance } = await import('../trim');
-const { fillLineToIntersection } = await import('./line');
-const { fillArcToIntersection } = await import('./arc');
-const { fillCircleToIntersection } = await import('./circle');
-const { fillPolylineToIntersection } = await import('./polyline');
-const { fillSplineToIntersection } = await import('./spline');
-const { fillEllipseToIntersection } = await import('./ellipse');
 
 describe('fillGapBetweenShapes', () => {
     const mockLineShape: Shape = {

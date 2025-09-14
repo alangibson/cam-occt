@@ -1,8 +1,13 @@
 import type { Shape } from './interfaces';
-import type { Point2D } from '$lib/types/geometry';
+import type {
+    Circle,
+    Ellipse,
+    Line,
+    Point2D,
+    Polyline,
+} from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import {
-    type Circle,
     generateCirclePoints,
     getCircleEndPoint,
     getCirclePointAt,
@@ -18,14 +23,11 @@ import {
     reverseArc,
 } from '$lib/geometry/arc';
 import {
-    type Line,
     getLineEndPoint,
     getLinePointAt,
     getLineStartPoint,
     reverseLine,
 } from '$lib/geometry/line';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Ellipse } from '$lib/geometry/ellipse';
 import { GeometryType } from './enums';
 import {
     evaluateNURBS,
@@ -902,8 +904,7 @@ export function scaleShape(
 
     switch (shape.type) {
         case 'line':
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
+            const line: Line = shape.geometry as Line;
             scaled.geometry = {
                 start: scalePoint(line.start),
                 end: scalePoint(line.end),
@@ -912,8 +913,7 @@ export function scaleShape(
 
         case 'circle':
         case 'arc':
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle | Arc;
+            const circle: Circle = shape.geometry as Circle | Arc;
             scaled.geometry = {
                 ...circle,
                 center: scalePoint(circle.center),
@@ -922,8 +922,7 @@ export function scaleShape(
             break;
 
         case 'polyline':
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
+            const polyline: Polyline = shape.geometry as Polyline;
             scaled.geometry = {
                 ...polyline,
                 shapes: polyline.shapes.map((shape) => {
@@ -954,8 +953,7 @@ export function scaleShape(
             break;
 
         case 'ellipse':
-            const ellipse: import('$lib/types/geometry').Ellipse =
-                shape.geometry as Ellipse;
+            const ellipse: Ellipse = shape.geometry as Ellipse;
             const scaledCenter: Point2D = scalePoint(ellipse.center);
             const majorAxisEnd: Point2D = {
                 x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
@@ -1007,8 +1005,7 @@ export function rotateShape(
 
     switch (shape.type) {
         case 'line':
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
+            const line: Line = shape.geometry as Line;
             rotated.geometry = {
                 start: rotatePoint(line.start),
                 end: rotatePoint(line.end),
@@ -1016,8 +1013,7 @@ export function rotateShape(
             break;
 
         case 'circle':
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle;
+            const circle: Circle = shape.geometry as Circle;
             rotated.geometry = {
                 ...circle,
                 center: rotatePoint(circle.center),
@@ -1035,8 +1031,7 @@ export function rotateShape(
             break;
 
         case 'polyline':
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
+            const polyline: Polyline = shape.geometry as Polyline;
             rotated.geometry = {
                 ...polyline,
                 shapes: polyline.shapes.map((shape) => {
@@ -1080,8 +1075,7 @@ export function rotateShape(
             break;
 
         case 'ellipse':
-            const ellipse: import('$lib/types/geometry').Ellipse =
-                shape.geometry as Ellipse;
+            const ellipse: Ellipse = shape.geometry as Ellipse;
             const rotatedCenter: Point2D = rotatePoint(ellipse.center);
             const majorAxisEnd: Point2D = {
                 x: ellipse.center.x + ellipse.majorAxisEndpoint.x,
@@ -1108,8 +1102,7 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
 
     switch (shape.type) {
         case 'line':
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
+            const line: Line = shape.geometry as Line;
             moved.geometry = {
                 start: { x: line.start.x + delta.x, y: line.start.y + delta.y },
                 end: { x: line.end.x + delta.x, y: line.end.y + delta.y },
@@ -1118,8 +1111,7 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
 
         case 'circle':
         case 'arc':
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle | Arc;
+            const circle: Circle = shape.geometry as Circle | Arc;
             moved.geometry = {
                 ...circle,
                 center: {
@@ -1130,8 +1122,7 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
             break;
 
         case 'polyline':
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
+            const polyline: Polyline = shape.geometry as Polyline;
             moved.geometry = {
                 ...polyline,
                 shapes: polyline.shapes.map((shape) => {
@@ -1170,8 +1161,7 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
             break;
 
         case 'ellipse':
-            const ellipse: import('$lib/types/geometry').Ellipse =
-                shape.geometry as Ellipse;
+            const ellipse: Ellipse = shape.geometry as Ellipse;
             moved.geometry = {
                 ...ellipse,
                 center: {

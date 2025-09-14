@@ -1,14 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Arc } from '$lib/geometry/arc';
-import type {
-    Circle,
-    Ellipse,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
-} from '$lib/types/geometry';
+import type { Polyline } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
+import type { Circle, Ellipse, Line, Point2D, Shape } from '$lib/types';
 import { GeometryType } from '$lib/types/geometry';
 import { findSplineLineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/line-spline/index';
 import { findSplineSplineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/spline-spline/index';
@@ -362,8 +356,7 @@ describe('intersections-spline-verb', () => {
                 ],
                 false
             );
-            const polyline: import('$lib/types/geometry').Polyline =
-                polylineShape.geometry as Polyline;
+            const polyline: Polyline = polylineShape.geometry as Polyline;
 
             const result = findSplinePolylineIntersectionsVerb(
                 createTestShape(spline, GeometryType.SPLINE),
@@ -440,8 +433,7 @@ describe('intersections-spline-verb', () => {
                 ],
                 false
             );
-            const polyline: import('$lib/types/geometry').Polyline =
-                polylineShape.geometry as Polyline;
+            const polyline: Polyline = polylineShape.geometry as Polyline;
 
             const normalResult = findSplinePolylineIntersectionsVerb(
                 createTestShape(spline, GeometryType.SPLINE),
@@ -489,8 +481,7 @@ describe('intersections-spline-verb', () => {
                 ],
                 true
             );
-            const polyline: import('$lib/types/geometry').Polyline =
-                polylineShape.geometry as Polyline;
+            const polyline: Polyline = polylineShape.geometry as Polyline;
 
             const result = findSplinePolylineIntersectionsVerb(
                 createTestShape(spline, GeometryType.SPLINE),

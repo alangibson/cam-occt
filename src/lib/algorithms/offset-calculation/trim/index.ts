@@ -1,12 +1,6 @@
-import type {
-    Arc,
-    Circle,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
-} from '$lib/types/geometry';
+import type { Arc, Circle, Line, Polyline } from '$lib/types/geometry';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import type { Point2D, Shape } from '$lib/types';
 import { MICRO_TOLERANCE } from '$lib/geometry/constants';
 
 import { trimArc } from './arc';
@@ -329,23 +323,19 @@ function findConnectionPoint(shape1: Shape, shape2: Shape): Point2D {
 function getShapeCenter(shape: Shape): Point2D {
     switch (shape.type) {
         case 'line':
-            const line: import('$lib/types/geometry').Line =
-                shape.geometry as Line;
+            const line: Line = shape.geometry as Line;
             return {
                 x: (line.start.x + line.end.x) / 2,
                 y: (line.start.y + line.end.y) / 2,
             };
         case 'arc':
-            const arc: import('$lib/types/geometry').Arc =
-                shape.geometry as Arc;
+            const arc: Arc = shape.geometry as Arc;
             return arc.center;
         case 'circle':
-            const circle: import('$lib/types/geometry').Circle =
-                shape.geometry as Circle;
+            const circle: Circle = shape.geometry as Circle;
             return circle.center;
         case 'polyline':
-            const polyline: import('$lib/types/geometry').Polyline =
-                shape.geometry as Polyline;
+            const polyline: Polyline = shape.geometry as Polyline;
             const points: Point2D[] = polylineToPoints(polyline);
             return {
                 x: points.reduce((sum, p) => sum + p.x, 0) / points.length,

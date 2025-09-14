@@ -1,5 +1,4 @@
-import type { Point2D, Shape } from '$lib/types/geometry';
-import type { Circle } from '$lib/geometry/circle';
+import type { Circle, Point2D, Shape } from '$lib/types/geometry';
 import type {
     FillOptions,
     FillResult,
@@ -39,8 +38,7 @@ export function fillCircleToIntersection(
         return createFailureResult('Shape must be a circle');
     }
 
-    const circle: import('$lib/types/geometry').Circle =
-        shape.geometry as Circle;
+    const circle: Circle = shape.geometry as Circle;
 
     // Convert FillOptions to OperationParams
     const params: OperationParams = {

@@ -74,7 +74,7 @@ export function trimArc(
     keepSide: KeepSide,
     tolerance: number
 ): TrimResult {
-    const arc: import('$lib/types/geometry').Arc = shape.geometry as Arc;
+    const arc: Arc = shape.geometry as Arc;
     const result: TrimResult = {
         success: false,
         shape: null,

@@ -1,6 +1,4 @@
-import type { Shape } from '$lib/types/geometry';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Ellipse, Polyline, Shape } from '$lib/types/geometry';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs.js';
 import verb from 'verb-nurbs';
@@ -18,10 +16,8 @@ export function findEllipsePolylineIntersectionsVerb(
     polylineShape: Shape,
     swapParams: boolean = false
 ): IntersectionResult[] {
-    const ellipse: import('$lib/types/geometry').Ellipse =
-        ellipseShape.geometry as Ellipse;
-    const polyline: import('$lib/types/geometry').Polyline =
-        polylineShape.geometry as Polyline;
+    const ellipse: Ellipse = ellipseShape.geometry as Ellipse;
+    const polyline: Polyline = polylineShape.geometry as Polyline;
     const results: IntersectionResult[] = [];
 
     const ellipseCurve: verb.geom.NurbsCurve =

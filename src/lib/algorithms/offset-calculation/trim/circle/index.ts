@@ -1,11 +1,6 @@
-import {
-    type Arc,
-    type Circle,
-    GeometryType,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import type { Circle } from '$lib/types/geometry';
 import { generateId } from '$lib/domain/id';
+import { type Arc, GeometryType, type Point2D, type Shape } from '$lib/types';
 import { pointDistance } from '..';
 import {
     type KeepSide,
@@ -21,8 +16,7 @@ export function trimCircle(
     keepSide: KeepSide,
     tolerance: number
 ): TrimResult {
-    const circle: import('$lib/types/geometry').Circle =
-        shape.geometry as Circle;
+    const circle: Circle = shape.geometry as Circle;
     const result: TrimResult = {
         success: false,
         shape: null,

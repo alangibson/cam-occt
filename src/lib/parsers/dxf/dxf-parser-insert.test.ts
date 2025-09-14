@@ -36,8 +36,7 @@ describe('DXF Parser - INSERT Entities', () => {
 
         drawing.shapes.forEach((shape) => {
             if (shape.type === 'line') {
-                const line: import('$lib/types/geometry').Line =
-                    shape.geometry as Line;
+                const line: Line = shape.geometry as Line;
 
                 // Calculate the center of the line's bounding box (represents the square center)
                 const minX: number = Math.min(line.start.x, line.end.x);
@@ -102,8 +101,7 @@ describe('DXF Parser - INSERT Entities', () => {
         const uniquePositions = new Set();
         drawing.shapes.forEach((shape) => {
             if (shape.type === 'line') {
-                const line: import('$lib/types/geometry').Line =
-                    shape.geometry as Line;
+                const line: Line = shape.geometry as Line;
                 const posKey = `${line.start.x.toFixed(2)},${line.start.y.toFixed(2)}`;
                 uniquePositions.add(posKey);
             }
@@ -219,8 +217,7 @@ EOF`;
         const drawing = await parseDXF(simpleDxf);
 
         if (drawing.shapes.length > 0 && drawing.shapes[0].type === 'line') {
-            const line: import('$lib/types/geometry').Line = drawing.shapes[0]
-                .geometry as Line;
+            const line: Line = drawing.shapes[0].geometry as Line;
 
             // The line should be transformed: scaled by 2, rotated by 45°, translated by (5,5)
             // Original line: (0,0) to (10,0)

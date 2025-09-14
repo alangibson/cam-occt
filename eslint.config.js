@@ -85,22 +85,24 @@ export default [
           ],
         },
       ],
+      "no-restricted-syntax": [
+        "error",
+        {
+          "selector": "ImportExpression",
+          "message": "Dynamic imports are disallowed.",
+        },
+        {
+          "selector": "TSImportType",
+          "message": "Type-only import() expressions are not allowed."
+        }
+      ],
       "prettier/prettier": ["error", {}, { "usePrettierrc": true }],
       "sort-imports": "off",
       "no-underscore-dangle": "error",
       "no-magic-numbers": ["error", {
         "ignore": [0, 1, 2],
         "ignoreArrayIndexes": true,
-        // "ignoreDefaultValues": true,
-        // "detectObjects": false
       }],
-      // "@typescript-eslint/typedef": [
-      //     "warn",
-      //     {
-      //         "variableDeclaration": true
-      //     }
-      // ],
-      // "import/no-relative-parent-imports": "error",
     },
   },
   {

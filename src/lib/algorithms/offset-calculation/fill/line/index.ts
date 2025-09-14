@@ -39,7 +39,7 @@ export function fillLineToIntersection(
         return createFailureResult('Shape must be a line');
     }
 
-    const line: import('$lib/types/geometry').Line = shape.geometry as Line;
+    const line: Line = shape.geometry as Line;
 
     try {
         // Validate line geometry using shared utility

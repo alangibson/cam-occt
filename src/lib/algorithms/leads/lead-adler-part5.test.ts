@@ -4,6 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import type { Line, Polyline } from '$lib/types/geometry';
 import {
     type LeadInConfig,
     type LeadOutConfig,
@@ -52,12 +53,10 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
 
         for (const shape of chain.shapes) {
             if (shape.type === 'line') {
-                const lineGeometry =
-                    shape.geometry as import('$lib/types/geometry').Line;
+                const lineGeometry = shape.geometry as Line;
                 points.push(lineGeometry.start);
             } else if (shape.type === 'polyline') {
-                const polylineGeometry =
-                    shape.geometry as import('$lib/types/geometry').Polyline;
+                const polylineGeometry = shape.geometry as Polyline;
                 points.push(...polylineToPoints(polylineGeometry));
             }
             // Add other shape types as needed

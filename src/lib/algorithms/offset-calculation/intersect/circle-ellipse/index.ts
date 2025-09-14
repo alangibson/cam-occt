@@ -1,6 +1,4 @@
-import type { Shape } from '$lib/types/geometry';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Circle } from '$lib/geometry/circle';
+import type { Circle, Ellipse, Shape } from '$lib/types/geometry';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 import { createVerbCurveFromCircle } from '$lib/geometry/circle/nurbs';
@@ -17,10 +15,8 @@ export function findEllipseCircleIntersectionsVerb(
     circleShape: Shape,
     swapParams: boolean = false
 ): IntersectionResult[] {
-    const ellipse: import('$lib/types/geometry').Ellipse =
-        ellipseShape.geometry as Ellipse;
-    const circle: import('$lib/types/geometry').Circle =
-        circleShape.geometry as Circle;
+    const ellipse: Ellipse = ellipseShape.geometry as Ellipse;
+    const circle: Circle = circleShape.geometry as Circle;
 
     // Convert both shapes to verb-nurbs curves
     const ellipseCurve: verb.geom.NurbsCurve =

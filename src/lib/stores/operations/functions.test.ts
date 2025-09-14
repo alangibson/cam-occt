@@ -19,6 +19,13 @@ import type { Path } from '$lib/stores/paths/interfaces';
 import type { DetectedPart } from '$lib/types';
 import { PartType } from '$lib/types';
 import { GeometryType } from '$lib/types/geometry';
+import { reverseChain } from '$lib/geometry/chain';
+import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
+import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+import {
+    createLeadInConfig,
+    createLeadOutConfig,
+} from '$lib/utils/lead-config-utils';
 
 // Mock dependencies
 vi.mock('$lib/geometry/chain', () => ({
@@ -38,17 +45,6 @@ vi.mock('$lib/utils/lead-config-utils', () => ({
     createLeadInConfig: vi.fn(),
     createLeadOutConfig: vi.fn(),
 }));
-
-const { reverseChain } = await import('$lib/geometry/chain');
-const { offsetChain } = await import(
-    '$lib/algorithms/offset-calculation/chain/offset'
-);
-const { calculateLeads } = await import(
-    '$lib/algorithms/leads/lead-calculation'
-);
-const { createLeadInConfig, createLeadOutConfig } = await import(
-    '$lib/utils/lead-config-utils'
-);
 
 describe('Operations Functions', () => {
     const mockChain: Chain = {
