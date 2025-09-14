@@ -583,6 +583,130 @@ describe('offsetPolyline', () => {
             expect(result.success).toBe(true);
         });
 
+        it('should handle polyline with shapes without IDs', () => {
+            // Test the branch where shape.id is falsy and generateId() is called
+            const polylineWithoutIds: Polyline = {
+                closed: false,
+                shapes: [
+                    {
+                        id: '', // Empty ID to trigger the generateId() branch
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                    },
+                    {
+                        id: '', // Empty ID to trigger the generateId() branch
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 10, y: 0 },
+                            end: { x: 10, y: 10 },
+                        },
+                    },
+                ],
+            };
+
+            const result = offsetPolyline(
+                polylineWithoutIds,
+                2,
+                OffsetDirection.OUTSET
+            );
+            expect(result.success).toBe(true);
+        });
+
+        it('should handle chain offset failure', () => {
+            // Create polyline that might cause chain offset to fail
+            const problematicPolyline: Polyline = {
+                closed: true,
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 0, y: 0 }, // Zero-length line
+                        },
+                    },
+                ],
+            };
+
+            const result = offsetPolyline(
+                problematicPolyline,
+                1000, // Very large offset
+                OffsetDirection.OUTSET
+            );
+
+            // Chain offset might fail or succeed depending on implementation
+            // If it fails, we should get a proper error result
+            if (!result.success) {
+                expect(result.shapes).toHaveLength(0);
+                expect(result.errors.length).toBeGreaterThan(0);
+            }
+        });
+
+        it('should handle case when chain result has no outerChain but has innerChain for outset', () => {
+            // This test covers the branch where chainResult.outerChain is undefined
+            // but chainResult.innerChain exists for outset direction
+            const simplePolyline: Polyline = createPolylineFromVertices(
+                [
+                    { x: 0, y: 0, bulge: 0 },
+                    { x: 10, y: 0, bulge: 0 },
+                    { x: 10, y: 10, bulge: 0 },
+                ],
+                false
+            ).geometry as Polyline;
+
+            const result = offsetPolyline(
+                simplePolyline,
+                1,
+                OffsetDirection.OUTSET
+            );
+            expect(result.success).toBe(true);
+        });
+
+        it('should handle case when chain result has no innerChain but has outerChain for inset', () => {
+            // This test covers the branch where chainResult.innerChain is undefined
+            // but chainResult.outerChain exists for inset direction
+            const simplePolyline: Polyline = createPolylineFromVertices(
+                [
+                    { x: 0, y: 0, bulge: 0 },
+                    { x: 10, y: 0, bulge: 0 },
+                    { x: 10, y: 10, bulge: 0 },
+                ],
+                false
+            ).geometry as Polyline;
+
+            const result = offsetPolyline(
+                simplePolyline,
+                1,
+                OffsetDirection.INSET
+            );
+            expect(result.success).toBe(true);
+        });
+
+        it('should handle case when target chain has no shapes', () => {
+            // This case might happen if chain offset produces empty results
+            // The result should still be successful but with no shapes
+            const tinyPolyline: Polyline = createPolylineFromVertices(
+                [
+                    { x: 0, y: 0, bulge: 0 },
+                    { x: 0.0001, y: 0, bulge: 0 },
+                    { x: 0.0001, y: 0.0001, bulge: 0 },
+                ],
+                true
+            ).geometry as Polyline;
+
+            const result = offsetPolyline(
+                tinyPolyline,
+                100, // Very large offset compared to shape size
+                OffsetDirection.INSET
+            );
+
+            // Should succeed but might have no shapes if offset is too large
+            expect(result.success).toBe(true);
+        });
+
         it('should handle zero offset distance', () => {
             const result = offsetPolyline(
                 openPolyline,

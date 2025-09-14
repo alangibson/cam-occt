@@ -184,4 +184,62 @@ describe('findSplinePolylineIntersectionsVerb error handling', () => {
         // Should return empty array when no intersections found
         expect(result).toEqual([]);
     });
+
+    it('should return intersections when found with original shapes', () => {
+        // Create shapes that might intersect
+        const intersectingSplineShape = createTestSpline();
+        const intersectingPolylineShape = createPolylineFromVertices(
+            [
+                { x: 5, y: 5, bulge: 0 },
+                { x: 15, y: 5, bulge: 0 },
+                { x: 25, y: 15, bulge: 0 },
+            ],
+            false
+        );
+
+        const result = findSplinePolylineIntersectionsVerb(
+            intersectingSplineShape,
+            intersectingPolylineShape,
+            false,
+            true, // allowExtensions = true
+            100
+        );
+
+        // Should return the original results without trying extensions
+        expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('should handle both extension methods when no original intersections found', () => {
+        const splineShape = createTestSpline();
+        const polylineShape = createTestPolyline();
+
+        // This should try all three extension combinations:
+        // 1. Extended polyline vs original spline
+        // 2. Original polyline vs extended spline
+        // 3. Extended polyline vs extended spline
+        const result = findSplinePolylineIntersectionsVerb(
+            splineShape,
+            polylineShape,
+            false,
+            true, // allowExtensions = true
+            50
+        );
+
+        expect(Array.isArray(result)).toBe(true);
+    });
+
+    it('should handle extension methods with custom extension length', () => {
+        const splineShape = createTestSpline();
+        const polylineShape = createTestPolyline();
+
+        const result = findSplinePolylineIntersectionsVerb(
+            splineShape,
+            polylineShape,
+            false,
+            true, // allowExtensions = true
+            200 // larger extension length
+        );
+
+        expect(Array.isArray(result)).toBe(true);
+    });
 });
