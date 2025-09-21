@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
     generateUniformKnotVector,
     generateValidKnotVector,
-    repairKnotVector,
     validateKnotVector,
 } from '$lib/geometry/spline';
 
@@ -184,48 +183,48 @@ describe('nurbs-utils', () => {
         });
     });
 
-    describe('repairKnotVector', () => {
-        it('should repair invalid knot vector by generating uniform vector', () => {
-            const invalidKnots = [0, 1, 2, 3]; // Wrong format
-            const result = repairKnotVector(invalidKnots, 4, 2);
+    // describe('repairKnotVector', () => {
+    //     it('should repair invalid knot vector by generating uniform vector', () => {
+    //         const invalidKnots = [0, 1, 2, 3]; // Wrong format
+    //         const result = repairKnotVector(invalidKnots, 4, 2);
 
-            const expected = generateUniformKnotVector(4, 2);
-            expect(result).toEqual(expected);
-        });
+    //         const expected = generateUniformKnotVector(4, 2);
+    //         expect(result).toEqual(expected);
+    //     });
 
-        it('should repair empty knot vector', () => {
-            const invalidKnots: number[] = [];
-            const result = repairKnotVector(invalidKnots, 3, 1);
+    //     it('should repair empty knot vector', () => {
+    //         const invalidKnots: number[] = [];
+    //         const result = repairKnotVector(invalidKnots, 3, 1);
 
-            const expected = generateUniformKnotVector(3, 1);
-            expect(result).toEqual(expected);
-        });
+    //         const expected = generateUniformKnotVector(3, 1);
+    //         expect(result).toEqual(expected);
+    //     });
 
-        it('should repair decreasing knot vector', () => {
-            const invalidKnots = [1, 0.5, 0]; // Decreasing
-            const result = repairKnotVector(invalidKnots, 2, 1);
+    //     it('should repair decreasing knot vector', () => {
+    //         const invalidKnots = [1, 0.5, 0]; // Decreasing
+    //         const result = repairKnotVector(invalidKnots, 2, 1);
 
-            const expected = generateUniformKnotVector(2, 1);
-            expect(result).toEqual(expected);
-        });
+    //         const expected = generateUniformKnotVector(2, 1);
+    //         expect(result).toEqual(expected);
+    //     });
 
-        it('should repair even if original was valid', () => {
-            const validKnots = [0, 0, 0, 0.5, 1, 1, 1]; // Already valid
-            const result = repairKnotVector(validKnots, 4, 2);
+    //     it('should repair even if original was valid', () => {
+    //         const validKnots = [0, 0, 0, 0.5, 1, 1, 1]; // Already valid
+    //         const result = repairKnotVector(validKnots, 4, 2);
 
-            const expected = generateUniformKnotVector(4, 2);
-            expect(result).toEqual(expected);
-        });
+    //         const expected = generateUniformKnotVector(4, 2);
+    //         expect(result).toEqual(expected);
+    //     });
 
-        it('should work with different parameters', () => {
-            const invalidKnots = [0, 1]; // Wrong for degree 3
-            const result = repairKnotVector(invalidKnots, 5, 3);
+    //     it('should work with different parameters', () => {
+    //         const invalidKnots = [0, 1]; // Wrong for degree 3
+    //         const result = repairKnotVector(invalidKnots, 5, 3);
 
-            const expected = generateUniformKnotVector(5, 3);
-            expect(result).toEqual(expected);
-            expect(result.length).toBe(5 + 3 + 1);
-        });
-    });
+    //         const expected = generateUniformKnotVector(5, 3);
+    //         expect(result).toEqual(expected);
+    //         expect(result.length).toBe(5 + 3 + 1);
+    //     });
+    // });
 
     describe('integration tests', () => {
         it('should validate generated knot vectors', () => {
@@ -253,28 +252,28 @@ describe('nurbs-utils', () => {
             }
         });
 
-        it('should repair invalid vectors to valid ones', () => {
-            const testCases = [
-                { controlPoints: 3, degree: 1, invalid: [1, 0, 0.5] },
-                { controlPoints: 4, degree: 2, invalid: [0, 1] },
-                { controlPoints: 5, degree: 3, invalid: [] },
-            ];
+        // it('should repair invalid vectors to valid ones', () => {
+        //     const testCases = [
+        //         { controlPoints: 3, degree: 1, invalid: [1, 0, 0.5] },
+        //         { controlPoints: 4, degree: 2, invalid: [0, 1] },
+        //         { controlPoints: 5, degree: 3, invalid: [] },
+        //     ];
 
-            for (const testCase of testCases) {
-                const repaired = repairKnotVector(
-                    testCase.invalid,
-                    testCase.controlPoints,
-                    testCase.degree
-                );
-                const validation = validateKnotVector(
-                    repaired,
-                    testCase.controlPoints,
-                    testCase.degree
-                );
+        //     for (const testCase of testCases) {
+        //         const repaired = repairKnotVector(
+        //             testCase.invalid,
+        //             testCase.controlPoints,
+        //             testCase.degree
+        //         );
+        //         const validation = validateKnotVector(
+        //             repaired,
+        //             testCase.controlPoints,
+        //             testCase.degree
+        //         );
 
-                expect(validation.isValid).toBe(true);
-                expect(validation.error).toBeUndefined();
-            }
-        });
+        //         expect(validation.isValid).toBe(true);
+        //         expect(validation.error).toBeUndefined();
+        //     }
+        // });
     });
 });

@@ -17,15 +17,14 @@ function createPathsStore(): PathsStore {
     return {
         subscribe,
 
-        addPath: (path: Omit<Path, 'id'>) => {
+        addPath: (path: Path) => {
             update((state) => {
-                const newPaths: Path[] = [
-                    ...state.paths,
-                    {
-                        ...path,
-                        id: crypto.randomUUID(),
-                    },
-                ];
+                // If path doesn't have an ID, generate one
+                const pathToAdd: Path = path.id
+                    ? path
+                    : { ...path, id: crypto.randomUUID() };
+
+                const newPaths: Path[] = [...state.paths, pathToAdd];
 
                 // Check workflow completion
                 setTimeout(() => checkProgramStageCompletion(newPaths), 0);
@@ -166,8 +165,8 @@ function createPathsStore(): PathsStore {
                     const updates: Partial<Path> = {};
 
                     if (leadGeometry.leadIn) {
-                        updates.calculatedLeadIn = {
-                            points: leadGeometry.leadIn.points,
+                        updates.leadIn = {
+                            geometry: leadGeometry.leadIn.geometry,
                             type: leadGeometry.leadIn.type,
                             generatedAt: timestamp,
                             version,
@@ -175,8 +174,8 @@ function createPathsStore(): PathsStore {
                     }
 
                     if (leadGeometry.leadOut) {
-                        updates.calculatedLeadOut = {
-                            points: leadGeometry.leadOut.points,
+                        updates.leadOut = {
+                            geometry: leadGeometry.leadOut.geometry,
                             type: leadGeometry.leadOut.type,
                             generatedAt: timestamp,
                             version,
@@ -203,8 +202,8 @@ function createPathsStore(): PathsStore {
                     path.id === pathId
                         ? {
                               ...path,
-                              calculatedLeadIn: undefined,
-                              calculatedLeadOut: undefined,
+                              leadIn: undefined,
+                              leadOut: undefined,
                               leadValidation: undefined,
                           }
                         : path
@@ -232,7 +231,7 @@ function createPathsStore(): PathsStore {
 
                     return {
                         ...path,
-                        calculatedOffset: {
+                        offset: {
                             offsetShapes: offsetGeometry.offsetShapes,
                             originalShapes: offsetGeometry.originalShapes,
                             direction: offsetGeometry.direction,
@@ -253,7 +252,7 @@ function createPathsStore(): PathsStore {
                     path.id === pathId
                         ? {
                               ...path,
-                              calculatedOffset: undefined,
+                              offset: undefined,
                           }
                         : path
                 ),

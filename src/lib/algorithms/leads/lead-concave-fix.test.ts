@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { GeometryType } from '$lib/types/geometry';
 import type { Point2D, Shape } from '$lib/types/geometry';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Concave Area Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting
@@ -89,8 +87,8 @@ describe('Lead Concave Area Fix', () => {
             holes: [],
         };
 
-        const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
-        const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+        const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
+        const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
             chain,
@@ -101,7 +99,7 @@ describe('Lead Concave Area Fix', () => {
         );
 
         expect(result.leadIn).toBeDefined();
-        const points = result.leadIn!.points;
+        const points = convertLeadGeometryToPoints(result.leadIn!);
 
         // Get the polygon for point-in-polygon testing
         const polygon: Point2D[] = [
@@ -187,7 +185,7 @@ describe('Lead Concave Area Fix', () => {
             holes: [],
         };
 
-        const leadIn: LeadInConfig = { type: LeadType.ARC, length: 3 };
+        const leadIn: LeadConfig = { type: LeadType.ARC, length: 3 };
         const result = calculateLeads(
             chain,
             leadIn,
@@ -201,7 +199,7 @@ describe('Lead Concave Area Fix', () => {
         // The key is that the algorithm now uses local curvature analysis
         // instead of just centroid-based direction, which should work better
         // for concave areas
-        const points_result = result.leadIn!.points;
+        const points_result = convertLeadGeometryToPoints(result.leadIn!);
         expect(points_result.length).toBeGreaterThan(0);
     });
 });

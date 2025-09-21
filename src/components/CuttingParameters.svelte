@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CuttingParameters } from '$lib/types';
+    import type { CuttingParameters } from '$lib/types/cam';
 
     export let parameters: CuttingParameters = {
         feedRate: 1000,
@@ -7,8 +7,6 @@
         pierceDelay: 0.5,
         cutHeight: 1.5,
         kerf: 1.5,
-        leadInLength: 5,
-        leadOutLength: 5,
     };
 
     export let units: 'mm' | 'inch' = 'mm';
@@ -69,28 +67,6 @@
             bind:value={parameters.kerf}
             min="0"
             step="0.1"
-        />
-    </div>
-
-    <div class="parameter">
-        <label for="leadIn">Lead-in Length ({units}):</label>
-        <input
-            id="leadIn"
-            type="number"
-            bind:value={parameters.leadInLength}
-            min="0"
-            step="0.5"
-        />
-    </div>
-
-    <div class="parameter">
-        <label for="leadOut">Lead-out Length ({units}):</label>
-        <input
-            id="leadOut"
-            type="number"
-            bind:value={parameters.leadOutLength}
-            min="0"
-            step="0.5"
         />
     </div>
 </div>

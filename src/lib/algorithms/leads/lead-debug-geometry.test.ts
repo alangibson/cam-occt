@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { type LeadInConfig, calculateLeads } from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { GeometryType } from '$lib/types/geometry';
 import type { Point2D, Shape } from '$lib/types/geometry';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Geometry Debug', () => {
     // Helper to create a simple line chain
@@ -47,14 +49,14 @@ describe('Lead Geometry Debug', () => {
         const shellChain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
 
         // No part context - should generate a basic lead
-        const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
+        const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
         const result = calculateLeads(shellChain, leadIn, {
             type: LeadType.NONE,
             length: 0,
         });
 
         expect(result.leadIn).toBeDefined();
-        const points = result.leadIn!.points;
+        const points = convertLeadGeometryToPoints(result.leadIn!);
 
         points.forEach((_point, _i) => {
             // Log each point for debugging
@@ -109,7 +111,7 @@ describe('Lead Geometry Debug', () => {
         });
 
         // Generate a lead for this shell
-        const leadIn: LeadInConfig = { type: LeadType.ARC, length: 20 };
+        const leadIn: LeadConfig = { type: LeadType.ARC, length: 20 };
         const result = calculateLeads(
             shellChain,
             leadIn,
@@ -119,7 +121,7 @@ describe('Lead Geometry Debug', () => {
         );
 
         expect(result.leadIn).toBeDefined();
-        const points = result.leadIn!.points;
+        const points = convertLeadGeometryToPoints(result.leadIn!);
 
         points.forEach((point, i) => {
             const inShell = isPointInRectangle(point, 0, 0, 100, 100);

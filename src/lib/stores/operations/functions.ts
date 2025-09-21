@@ -23,7 +23,8 @@ import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
-} from '$lib/utils/lead-config-utils';
+    convertLeadGeometryToPoints,
+} from '$lib/algorithms/leads/functions';
 
 /**
  * Get CutDirection from chain's stored clockwise property.
@@ -199,13 +200,14 @@ export function createCutChain(
     return { cutChain, executionClockwise };
 }
 
-export function generatePathsForChainWithOperation(
+export async function generatePathsForChainWithOperation(
     operation: Operation,
     targetId: string,
     index: number,
     chains: Chain[],
-    tools: Tool[]
-): PathGenerationResult {
+    tools: Tool[],
+    parts: DetectedPart[]
+): Promise<PathGenerationResult> {
     // Use the operation's preferred cut direction
     // For open paths, the stored clockwise property will be null (indicating 'none')
     const chain: Chain | undefined = chains.find((c) => c.id === targetId);
@@ -291,8 +293,9 @@ export function generatePathsForChainWithOperation(
         executionClockwise = cutChainResult.executionClockwise;
     }
 
-    // Return the path object instead of adding directly to store
-    const pathToReturn: Omit<Path, 'id'> = {
+    // Create the path object
+    const pathToReturn: Path = {
+        id: crypto.randomUUID(),
         name: `${operation.name} - Chain ${targetId.split('-')[1]}`,
         operationId: operation.id,
         chainId: targetId,
@@ -301,22 +304,46 @@ export function generatePathsForChainWithOperation(
         order: index + 1,
         cutDirection: cutDirection,
         executionClockwise: executionClockwise,
-        leadInType: operation.leadInType,
-        leadInLength: operation.leadInLength,
-        leadInFlipSide: operation.leadInFlipSide,
-        leadInAngle: operation.leadInAngle,
-        leadInFit: operation.leadInFit,
-        leadOutType: operation.leadOutType,
-        leadOutLength: operation.leadOutLength,
-        leadOutFlipSide: operation.leadOutFlipSide,
-        leadOutAngle: operation.leadOutAngle,
-        leadOutFit: operation.leadOutFit,
+        leadInConfig: operation.leadInConfig,
+        leadOutConfig: operation.leadOutConfig,
         kerfCompensation: kerfCompensation,
-        calculatedOffset: calculatedOffset,
+        offset: calculatedOffset,
         cutChain: cutChain,
         isHole: false,
         holeUnderspeedPercent: undefined,
     };
+
+    // Calculate leads for the path
+    const leadResult = await calculatePathLeads(
+        pathToReturn,
+        operation,
+        chain,
+        parts
+    );
+
+    // Add leads to the path if they were calculated
+    if (leadResult.leadIn) {
+        pathToReturn.leadIn = {
+            ...leadResult.leadIn,
+            generatedAt: new Date().toISOString(),
+            version: '1.0.0',
+        };
+    }
+
+    if (leadResult.leadOut) {
+        pathToReturn.leadOut = {
+            ...leadResult.leadOut,
+            generatedAt: new Date().toISOString(),
+            version: '1.0.0',
+        };
+    }
+
+    if (leadResult.validation) {
+        pathToReturn.leadValidation = {
+            ...leadResult.validation,
+            validatedAt: new Date().toISOString(),
+        };
+    }
 
     return {
         paths: [pathToReturn],
@@ -324,14 +351,14 @@ export function generatePathsForChainWithOperation(
     };
 }
 
-export function generatePathsForPartTargetWithOperation(
+export async function generatePathsForPartTargetWithOperation(
     operation: Operation,
     targetId: string,
     index: number,
     chains: Chain[],
     parts: DetectedPart[],
     tools: Tool[]
-): PathGenerationResult {
+): Promise<PathGenerationResult> {
     // For parts, create paths for all chains that make up the part
     const part: DetectedPart | undefined = parts.find((p) => p.id === targetId);
 
@@ -340,7 +367,7 @@ export function generatePathsForPartTargetWithOperation(
         return { paths: [], warnings: [] };
     }
 
-    const pathsToReturn: Omit<Path, 'id'>[] = [];
+    const pathsToReturn: Path[] = [];
     const warningsToReturn: {
         chainId: string;
         operationId: string;
@@ -426,8 +453,9 @@ export function generatePathsForPartTargetWithOperation(
         shellExecutionClockwise = shellCutChainResult.executionClockwise;
     }
 
-    // Collect shell path for return instead of adding directly to store
-    pathsToReturn.push({
+    // Create shell path
+    const shellPath: Path = {
+        id: crypto.randomUUID(),
         name: `${operation.name} - Part ${targetId.split('-')[1]} (Shell)`,
         operationId: operation.id,
         chainId: part.shell.chain.id,
@@ -436,30 +464,59 @@ export function generatePathsForPartTargetWithOperation(
         order: index + 1,
         cutDirection: shellCutDirection,
         executionClockwise: shellExecutionClockwise,
-        leadInType: operation.leadInType,
-        leadInLength: operation.leadInLength,
-        leadInFlipSide: operation.leadInFlipSide,
-        leadInAngle: operation.leadInAngle,
-        leadInFit: operation.leadInFit,
-        leadOutType: operation.leadOutType,
-        leadOutLength: operation.leadOutLength,
-        leadOutFlipSide: operation.leadOutFlipSide,
-        leadOutAngle: operation.leadOutAngle,
-        leadOutFit: operation.leadOutFit,
+        leadInConfig: operation.leadInConfig,
+        leadOutConfig: operation.leadOutConfig,
         kerfCompensation: shellKerfCompensation,
-        calculatedOffset: shellCalculatedOffset,
+        offset: shellCalculatedOffset,
         cutChain: shellExecutionChain,
         isHole: false,
         holeUnderspeedPercent: operation.holeUnderspeedEnabled
             ? operation.holeUnderspeedPercent
             : undefined,
-    });
+    };
+
+    // Calculate leads for shell path
+    if (shellChain) {
+        const shellLeadResult = await calculatePathLeads(
+            shellPath,
+            operation,
+            shellChain,
+            parts
+        );
+
+        // Add leads to the shell path if they were calculated
+        if (shellLeadResult.leadIn) {
+            shellPath.leadIn = {
+                ...shellLeadResult.leadIn,
+                generatedAt: new Date().toISOString(),
+                version: '1.0.0',
+            };
+        }
+
+        if (shellLeadResult.leadOut) {
+            shellPath.leadOut = {
+                ...shellLeadResult.leadOut,
+                generatedAt: new Date().toISOString(),
+                version: '1.0.0',
+            };
+        }
+
+        if (shellLeadResult.validation) {
+            shellPath.leadValidation = {
+                ...shellLeadResult.validation,
+                validatedAt: new Date().toISOString(),
+            };
+        }
+    }
+
+    pathsToReturn.push(shellPath);
 
     // Create paths for all hole chains (including nested holes)
     let pathOrder: number = index + 1;
 
-    function processHoles(holes: PartHole[], prefix: string = '') {
-        holes.forEach((hole, holeIndex) => {
+    async function processHoles(holes: PartHole[], prefix: string = '') {
+        for (let holeIndex = 0; holeIndex < holes.length; holeIndex++) {
+            const hole = holes[holeIndex];
             // Use operation's preferred cut direction for the hole chain
             const holeChain: Chain | undefined = chains.find(
                 (c) => c.id === hole.chain.id
@@ -539,8 +596,9 @@ export function generatePathsForPartTargetWithOperation(
                 holeExecutionClockwise = holeCutChainResult.executionClockwise;
             }
 
-            // Collect hole path for return instead of adding directly to store
-            pathsToReturn.push({
+            // Create hole path
+            const holePath: Path = {
+                id: crypto.randomUUID(),
                 name: `${operation.name} - Part ${targetId.split('-')[1]} ${prefix}(Hole ${holeIndex + 1})`,
                 operationId: operation.id,
                 chainId: hole.chain.id,
@@ -549,33 +607,64 @@ export function generatePathsForPartTargetWithOperation(
                 order: pathOrder++,
                 cutDirection: holeCutDirection,
                 executionClockwise: holeExecutionClockwise,
-                leadInType: operation.leadInType,
-                leadInLength: operation.leadInLength,
-                leadInFlipSide: operation.leadInFlipSide,
-                leadInAngle: operation.leadInAngle,
-                leadInFit: operation.leadInFit,
-                leadOutType: operation.leadOutType,
-                leadOutLength: operation.leadOutLength,
-                leadOutFlipSide: operation.leadOutFlipSide,
-                leadOutAngle: operation.leadOutAngle,
-                leadOutFit: operation.leadOutFit,
+                leadInConfig: operation.leadInConfig,
+                leadOutConfig: operation.leadOutConfig,
                 kerfCompensation: holeKerfCompensation,
-                calculatedOffset: holeCalculatedOffset,
+                offset: holeCalculatedOffset,
                 cutChain: holeExecutionChain,
                 isHole: true,
                 holeUnderspeedPercent: operation.holeUnderspeedEnabled
                     ? operation.holeUnderspeedPercent
                     : undefined,
-            });
+            };
+
+            // Calculate leads for hole path
+            if (holeChain) {
+                const holeLeadResult = await calculatePathLeads(
+                    holePath,
+                    operation,
+                    holeChain,
+                    parts
+                );
+
+                // Add leads to the hole path if they were calculated
+                if (holeLeadResult.leadIn) {
+                    holePath.leadIn = {
+                        ...holeLeadResult.leadIn,
+                        generatedAt: new Date().toISOString(),
+                        version: '1.0.0',
+                    };
+                }
+
+                if (holeLeadResult.leadOut) {
+                    holePath.leadOut = {
+                        ...holeLeadResult.leadOut,
+                        generatedAt: new Date().toISOString(),
+                        version: '1.0.0',
+                    };
+                }
+
+                if (holeLeadResult.validation) {
+                    holePath.leadValidation = {
+                        ...holeLeadResult.validation,
+                        validatedAt: new Date().toISOString(),
+                    };
+                }
+            }
+
+            pathsToReturn.push(holePath);
 
             // Process nested holes if any
             if (hole.holes && hole.holes.length > 0) {
-                processHoles(hole.holes, `${prefix}(Hole ${holeIndex + 1}) `);
+                await processHoles(
+                    hole.holes,
+                    `${prefix}(Hole ${holeIndex + 1}) `
+                );
             }
-        });
+        }
     }
 
-    processHoles(part.holes);
+    await processHoles(part.holes);
 
     return {
         paths: pathsToReturn,
@@ -594,7 +683,10 @@ export async function calculatePathLeads(
 ): Promise<PathLeadResult> {
     try {
         // Skip if both leads are disabled
-        if (path.leadInType === 'none' && path.leadOutType === 'none') {
+        if (
+            path.leadInConfig?.type === 'none' &&
+            path.leadOutConfig?.type === 'none'
+        ) {
             return {};
         }
 
@@ -615,14 +707,11 @@ export async function calculatePathLeads(
         // Use offset geometry for lead calculation if available
         let leadCalculationChain: Chain = chain;
         let isUsingOffsetGeometry: boolean = false;
-        if (
-            path.calculatedOffset &&
-            path.calculatedOffset.offsetShapes.length > 0
-        ) {
+        if (path.offset && path.offset.offsetShapes.length > 0) {
             // Create a temporary chain from offset shapes
             leadCalculationChain = {
                 id: chain.id + '_offset_temp',
-                shapes: path.calculatedOffset.offsetShapes,
+                shapes: path.offset.offsetShapes,
             };
             isUsingOffsetGeometry = true;
         }
@@ -639,22 +728,20 @@ export async function calculatePathLeads(
         // Build the lead geometry result
         const leadGeometry: PathLeadResult = {};
 
-        if (leadResult.leadIn) {
-            leadGeometry.leadIn = {
-                points: leadResult.leadIn.points,
-                type: leadResult.leadIn.type,
-            };
+        if (leadResult && leadResult.leadIn) {
+            leadGeometry.leadIn = leadResult.leadIn;
         }
 
-        if (leadResult.leadOut) {
-            leadGeometry.leadOut = {
-                points: leadResult.leadOut.points,
-                type: leadResult.leadOut.type,
-            };
+        if (leadResult && leadResult.leadOut) {
+            leadGeometry.leadOut = leadResult.leadOut;
         }
 
         // Store validation results
-        if (leadResult.warnings && leadResult.warnings.length > 0) {
+        if (
+            leadResult &&
+            leadResult.warnings &&
+            leadResult.warnings.length > 0
+        ) {
             leadGeometry.validation = {
                 isValid: true, // Has warnings but still valid
                 warnings: leadResult.warnings,
@@ -671,11 +758,17 @@ export async function calculatePathLeads(
         }
 
         console.log(`Calculated leads for path ${path.name}:`, {
-            leadInPoints: leadResult.leadIn?.points?.length || 0,
-            leadOutPoints: leadResult.leadOut?.points?.length || 0,
-            warnings: leadResult.warnings?.length || 0,
+            leadInPoints:
+                leadResult && leadResult.leadIn
+                    ? convertLeadGeometryToPoints(leadResult.leadIn).length
+                    : 0,
+            leadOutPoints:
+                leadResult && leadResult.leadOut
+                    ? convertLeadGeometryToPoints(leadResult.leadOut).length
+                    : 0,
+            warnings: (leadResult && leadResult.warnings?.length) || 0,
             usedOffsetGeometry: isUsingOffsetGeometry,
-            offsetShapeCount: path.calculatedOffset?.offsetShapes.length || 0,
+            offsetShapeCount: path.offset?.offsetShapes.length || 0,
         });
 
         return leadGeometry;
@@ -758,45 +851,52 @@ export async function calculateOperationLeads(
  * Generate paths from an operation (pure function)
  * Returns paths and warnings, does not interact with stores
  */
-export function createPathsFromOperation(
+export async function createPathsFromOperation(
     operation: Operation,
     chains: Chain[],
     parts: DetectedPart[],
     tools: Tool[]
-): PathGenerationResult {
+): Promise<PathGenerationResult> {
     // If operation is disabled or has no targets, don't generate paths
     if (!operation.enabled || operation.targetIds.length === 0) {
         return { paths: [], warnings: [] };
     }
 
-    const allPaths: Omit<Path, 'id'>[] = [];
+    const allPaths: Path[] = [];
     const allWarnings: PathGenerationResult['warnings'] = [];
 
     // Generate paths for each target
-    operation.targetIds.forEach((targetId, index) => {
+    for (let index = 0; index < operation.targetIds.length; index++) {
+        const targetId = operation.targetIds[index];
         if (operation.targetType === 'chains') {
-            const result = generatePathsForChainWithOperation(
-                operation,
-                targetId,
-                index,
-                chains,
-                tools
-            );
+            const result: PathGenerationResult =
+                await generatePathsForChainWithOperation(
+                    operation,
+                    targetId,
+                    index,
+                    chains,
+                    tools,
+                    parts
+                );
             allPaths.push(...result.paths);
             allWarnings.push(...result.warnings);
         } else if (operation.targetType === 'parts') {
-            const result = generatePathsForPartTargetWithOperation(
-                operation,
-                targetId,
-                index,
-                chains,
-                parts,
-                tools
-            );
+            const result: PathGenerationResult =
+                await generatePathsForPartTargetWithOperation(
+                    operation,
+                    targetId,
+                    index,
+                    chains,
+                    parts,
+                    tools
+                );
             allPaths.push(...result.paths);
             allWarnings.push(...result.warnings);
         }
-    });
+    }
 
-    return { paths: allPaths, warnings: allWarnings };
+    return {
+        paths: allPaths,
+        warnings: allWarnings,
+    };
 }

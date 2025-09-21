@@ -1,7 +1,7 @@
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
-import type { Drawing, Shape, ToolPath } from '$lib/types';
+import type { Drawing, Shape, CutPath } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import { CutterCompensation, Unit } from '$lib/types';
 import { generateGCode } from './gcode-generator';
@@ -14,7 +14,7 @@ describe('generateGCode', () => {
         units: Unit.MM,
     };
 
-    const mockPath: ToolPath = {
+    const mockPath: CutPath = {
         id: 'path1',
         shapeId: 'shape1',
         points: [
@@ -39,8 +39,7 @@ describe('generateGCode', () => {
             pierceDelay: 0.5,
             cutHeight: 1.5,
             kerf: 1.5,
-            leadInLength: 5,
-            leadOutLength: 5,
+            // Lead lengths now come from path configs, not CuttingParameters
         },
     };
 
@@ -129,7 +128,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle rapid movements', () => {
-            const rapidPath: ToolPath = {
+            const rapidPath: CutPath = {
                 ...mockPath,
                 id: 'rapid1',
                 isRapid: true,
@@ -153,7 +152,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle paths without lead-in/lead-out', () => {
-            const simpleToolPath: ToolPath = {
+            const simpleToolPath: CutPath = {
                 ...mockPath,
                 leadIn: undefined,
                 leadOut: undefined,
@@ -204,7 +203,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle hole cutting with velocity reduction when enabled', () => {
-            const holeToolPath: ToolPath = {
+            const holeToolPath: CutPath = {
                 ...mockPath,
                 parameters: {
                     ...mockPath.parameters!,
@@ -227,7 +226,7 @@ describe('generateGCode', () => {
         });
 
         it('should not apply velocity reduction for holes when disabled', () => {
-            const holeToolPath: ToolPath = {
+            const holeToolPath: CutPath = {
                 ...mockPath,
                 parameters: {
                     ...mockPath.parameters!,
@@ -249,7 +248,7 @@ describe('generateGCode', () => {
         });
 
         it('should not apply velocity reduction when set to 100%', () => {
-            const holeToolPath: ToolPath = {
+            const holeToolPath: CutPath = {
                 ...mockPath,
                 parameters: {
                     ...mockPath.parameters!,
@@ -272,7 +271,7 @@ describe('generateGCode', () => {
         });
 
         it('should use custom velocity percentage for holes', () => {
-            const holeToolPath: ToolPath = {
+            const holeToolPath: CutPath = {
                 ...mockPath,
                 parameters: {
                     ...mockPath.parameters!,
@@ -295,7 +294,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle missing pierce parameters gracefully', () => {
-            const pathWithoutParams: ToolPath = {
+            const pathWithoutParams: CutPath = {
                 ...mockPath,
                 parameters: undefined,
             };
@@ -330,7 +329,7 @@ describe('generateGCode', () => {
                 } as Spline,
             };
 
-            const splineToolPath: ToolPath = {
+            const splineToolPath: CutPath = {
                 ...mockPath,
                 originalShape: splineShape,
             };
@@ -363,7 +362,7 @@ describe('generateGCode', () => {
                 } as Arc,
             };
 
-            const arcToolPath: ToolPath = {
+            const arcToolPath: CutPath = {
                 ...mockPath,
                 originalShape: arcShape,
             };
@@ -392,7 +391,7 @@ describe('generateGCode', () => {
                 } as Circle,
             };
 
-            const circleToolPath: ToolPath = {
+            const circleToolPath: CutPath = {
                 ...mockPath,
                 originalShape: circleShape,
                 executionClockwise: false, // Counterclockwise execution
@@ -422,7 +421,7 @@ describe('generateGCode', () => {
                     radius: 5,
                 } as Circle,
             };
-            const holeToolPath: ToolPath = {
+            const holeToolPath: CutPath = {
                 ...mockPath,
                 originalShape: circleShape,
                 parameters: {
@@ -459,7 +458,7 @@ describe('generateGCode', () => {
                 } as Spline,
             };
 
-            const splineToolPath: ToolPath = {
+            const splineToolPath: CutPath = {
                 ...mockPath,
                 originalShape: incompleteSpline,
             };
@@ -480,7 +479,7 @@ describe('generateGCode', () => {
         });
 
         it('should format coordinates with proper precision', () => {
-            const precisionPath: ToolPath = {
+            const precisionPath: CutPath = {
                 ...mockPath,
                 leadIn: undefined,
                 leadOut: undefined,

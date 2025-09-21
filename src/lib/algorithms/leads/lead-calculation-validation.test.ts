@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
@@ -51,8 +48,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
     describe('validation integration', () => {
         it('should include validation results in lead calculation', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 chain,
@@ -71,8 +68,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
 
         it('should prevent calculation with validation errors', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: -5 }; // Invalid negative length
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: -5 }; // Invalid negative length
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 chain,
@@ -92,8 +89,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
 
         it('should proceed with calculation despite warnings', () => {
             const smallChain = createCircleChain({ x: 0, y: 0 }, 2); // Small circle
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 20 }; // Long lead (warning)
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 20 }; // Long lead (warning)
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 smallChain,
@@ -117,8 +114,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
 
         it('should handle empty chain validation', () => {
             const emptyChain: Chain = { id: 'empty', shapes: [] };
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 emptyChain,
@@ -138,8 +135,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
 
         it('should provide actionable suggestions', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.NONE, length: 5 }; // Type/length mismatch
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.NONE, length: 5 }; // Type/length mismatch
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 chain,
@@ -188,8 +185,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 ],
             };
 
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 3 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 3 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 holeChain,
@@ -210,8 +207,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
 
         it('should combine validation and calculation warnings', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 100 }; // Very long (validation warning)
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 100 }; // Very long (validation warning)
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 chain,
@@ -236,8 +233,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
 
         it('should handle no-lead configuration', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.NONE, length: 0 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.NONE, length: 0 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 chain,
@@ -257,8 +254,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
     describe('validation severity levels', () => {
         it('should handle info level validations', () => {
             const closedChain = createCircleChain({ x: 0, y: 0 }, 5);
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 closedChain,
@@ -273,8 +270,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
 
         it('should handle warning level validations', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 100 }; // Very long lead (warning)
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 100 }; // Very long lead (warning)
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 chain,
@@ -289,8 +286,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
 
         it('should handle error level validations', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: -5 }; // Invalid
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: -5 }; // Invalid
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 chain,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/types/cam';
-import { type Drawing, type ToolPath, Unit } from '$lib/types';
+import { type Drawing, type CutPath, Unit } from '$lib/types';
 
 describe('GCode Generator - THC and Paused Motion', () => {
     const mockDrawing: Drawing = {
@@ -10,7 +10,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
         bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
     };
 
-    const mockPath: ToolPath = {
+    const mockPath: CutPath = {
         id: 'path1',
         shapeId: 'shape1',
         points: [
@@ -27,8 +27,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
             pierceDelay: 0.5,
             cutHeight: 1.5,
             kerf: 1.2,
-            leadInLength: 5,
-            leadOutLength: 5,
+            // Lead lengths removed from CuttingParameters
         },
     };
 

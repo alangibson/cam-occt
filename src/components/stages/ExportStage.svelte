@@ -3,7 +3,7 @@
     import AccordionPanel from '../AccordionPanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import type { CuttingParameters } from '$lib/types';
+    import type { CuttingParameters } from '$lib/types/cam';
     import { CutterCompensation } from '$lib/types/cam';
     import { onMount } from 'svelte';
 
@@ -20,8 +20,6 @@
         pierceDelay: 0.5,
         cutHeight: 1.5,
         kerf: 1.5,
-        leadInLength: 5,
-        leadOutLength: 5,
     };
 
     // G-code generation options with localStorage persistence

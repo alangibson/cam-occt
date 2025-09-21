@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { GeometryType } from '$lib/types/geometry';
-import type { Shape } from '$lib/types/geometry';
+import type { Arc, Shape } from '$lib/types/geometry';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Tangency Tests', () => {
     // Helper to create a simple line chain
@@ -63,15 +61,14 @@ describe('Lead Tangency Tests', () => {
         it('should create tangent lead-in for horizontal line', () => {
             // Horizontal line from (0,0) to (10,0)
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
             expect(result.leadIn).toBeDefined();
-            expect(result.leadIn?.points.length).toBeGreaterThan(2);
-
-            const points = result.leadIn!.points;
+            const points = convertLeadGeometryToPoints(result.leadIn!);
+            expect(points.length).toBeGreaterThan(2);
             const connectionPoint = points[points.length - 1]; // Last point should connect to chain
             const previousPoint = points[points.length - 2]; // Second to last point
 
@@ -80,10 +77,37 @@ describe('Lead Tangency Tests', () => {
             expect(connectionPoint.y).toBeCloseTo(0, 5);
 
             // Calculate the tangent direction of the lead at connection point
-            const leadTangent = {
-                x: connectionPoint.x - previousPoint.x,
-                y: connectionPoint.y - previousPoint.y,
-            };
+            // Use the proper geometric tangent from the arc, not tessellated points
+            const leadGeometry = result.leadIn!.geometry;
+            let leadTangent: { x: number; y: number };
+
+            if (result.leadIn!.type === LeadType.ARC) {
+                const arc = leadGeometry as Arc;
+                // For lead-in arc, we want the tangent at the end (connection point)
+                const angle = arc.endAngle;
+                const radiusVector = { x: Math.cos(angle), y: Math.sin(angle) };
+
+                // Tangent is perpendicular to radius
+                if (arc.clockwise) {
+                    leadTangent = { x: radiusVector.y, y: -radiusVector.x };
+                } else {
+                    leadTangent = { x: -radiusVector.y, y: radiusVector.x };
+                }
+            } else {
+                // Fallback to point calculation for non-arc leads
+                leadTangent = {
+                    x: connectionPoint.x - previousPoint.x,
+                    y: connectionPoint.y - previousPoint.y,
+                };
+                const mag = Math.sqrt(
+                    leadTangent.x * leadTangent.x +
+                        leadTangent.y * leadTangent.y
+                );
+                if (mag > 0) {
+                    leadTangent.x /= mag;
+                    leadTangent.y /= mag;
+                }
+            }
 
             // Line tangent is (1, 0) - horizontal direction
             const lineTangent = { x: 1, y: 0 };
@@ -96,15 +120,14 @@ describe('Lead Tangency Tests', () => {
         it('should create tangent lead-out for horizontal line', () => {
             // Horizontal line from (0,0) to (10,0)
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.NONE, length: 0 };
-            const leadOut: LeadOutConfig = { type: LeadType.ARC, length: 5 };
+            const leadIn: LeadConfig = { type: LeadType.NONE, length: 0 };
+            const leadOut: LeadConfig = { type: LeadType.ARC, length: 5 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
             expect(result.leadOut).toBeDefined();
-            expect(result.leadOut?.points.length).toBeGreaterThan(2);
-
-            const points = result.leadOut!.points;
+            const points = convertLeadGeometryToPoints(result.leadOut!);
+            expect(points.length).toBeGreaterThan(2);
             const connectionPoint = points[0]; // First point should connect to chain
             const nextPoint = points[1]; // Second point
 
@@ -113,10 +136,37 @@ describe('Lead Tangency Tests', () => {
             expect(connectionPoint.y).toBeCloseTo(0, 5);
 
             // Calculate the tangent direction of the lead at connection point
-            const leadTangent = {
-                x: nextPoint.x - connectionPoint.x,
-                y: nextPoint.y - connectionPoint.y,
-            };
+            // Use the proper geometric tangent from the arc, not tessellated points
+            const leadGeometry = result.leadOut!.geometry;
+            let leadTangent: { x: number; y: number };
+
+            if (result.leadOut!.type === LeadType.ARC) {
+                const arc = leadGeometry as Arc;
+                // For lead-out arc, we want the tangent at the start (connection point)
+                const angle = arc.startAngle;
+                const radiusVector = { x: Math.cos(angle), y: Math.sin(angle) };
+
+                // Tangent is perpendicular to radius
+                if (arc.clockwise) {
+                    leadTangent = { x: radiusVector.y, y: -radiusVector.x };
+                } else {
+                    leadTangent = { x: -radiusVector.y, y: radiusVector.x };
+                }
+            } else {
+                // Fallback to point calculation for non-arc leads
+                leadTangent = {
+                    x: nextPoint.x - connectionPoint.x,
+                    y: nextPoint.y - connectionPoint.y,
+                };
+                const mag = Math.sqrt(
+                    leadTangent.x * leadTangent.x +
+                        leadTangent.y * leadTangent.y
+                );
+                if (mag > 0) {
+                    leadTangent.x /= mag;
+                    leadTangent.y /= mag;
+                }
+            }
 
             // Line tangent is (1, 0) - horizontal direction
             const lineTangent = { x: 1, y: 0 };
@@ -129,15 +179,14 @@ describe('Lead Tangency Tests', () => {
         it('should create tangent lead for circle', () => {
             // Circle at (5, 5) with radius 3
             const chain = createCircleChain({ x: 5, y: 5 }, 3);
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 4 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 4 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
             expect(result.leadIn).toBeDefined();
-            expect(result.leadIn?.points.length).toBeGreaterThan(2);
-
-            const points = result.leadIn!.points;
+            const points = convertLeadGeometryToPoints(result.leadIn!);
+            expect(points.length).toBeGreaterThan(2);
             const connectionPoint = points[points.length - 1]; // Last point connects to circle
             const previousPoint = points[points.length - 2]; // Second to last point
 
@@ -146,10 +195,37 @@ describe('Lead Tangency Tests', () => {
             expect(connectionPoint.y).toBeCloseTo(5, 5);
 
             // Calculate the tangent direction of the lead at connection point
-            const leadTangent = {
-                x: connectionPoint.x - previousPoint.x,
-                y: connectionPoint.y - previousPoint.y,
-            };
+            // Use the proper geometric tangent from the arc, not tessellated points
+            const leadGeometry = result.leadIn!.geometry;
+            let leadTangent: { x: number; y: number };
+
+            if (result.leadIn!.type === LeadType.ARC) {
+                const arc = leadGeometry as Arc;
+                // For lead-in arc, we want the tangent at the end (connection point)
+                const angle = arc.endAngle;
+                const radiusVector = { x: Math.cos(angle), y: Math.sin(angle) };
+
+                // Tangent is perpendicular to radius
+                if (arc.clockwise) {
+                    leadTangent = { x: radiusVector.y, y: -radiusVector.x };
+                } else {
+                    leadTangent = { x: -radiusVector.y, y: radiusVector.x };
+                }
+            } else {
+                // Fallback to point calculation for non-arc leads
+                leadTangent = {
+                    x: connectionPoint.x - previousPoint.x,
+                    y: connectionPoint.y - previousPoint.y,
+                };
+                const mag = Math.sqrt(
+                    leadTangent.x * leadTangent.x +
+                        leadTangent.y * leadTangent.y
+                );
+                if (mag > 0) {
+                    leadTangent.x /= mag;
+                    leadTangent.y /= mag;
+                }
+            }
 
             // Circle tangent at rightmost point (8, 5) is vertical: (0, 1) or (0, -1)
             // For counterclockwise direction, tangent at rightmost point is (0, 1)
@@ -203,7 +279,7 @@ describe('Lead Tangency Tests', () => {
                 ],
             };
 
-            const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 2 };
+            const leadConfig: LeadConfig = { type: LeadType.ARC, length: 2 };
 
             // Test shell lead
             const shellResult = calculateLeads(
@@ -227,7 +303,9 @@ describe('Lead Tangency Tests', () => {
             expect(holeResult.leadIn).toBeDefined();
 
             // Shell lead should curve away from center (radius should be > shell radius)
-            const shellPoints = shellResult.leadIn!.points;
+            const shellPoints = convertLeadGeometryToPoints(
+                shellResult.leadIn!
+            );
             const shellStart = shellPoints[0];
             const shellDistFromCenter = Math.sqrt(
                 Math.pow(shellStart.x - 5, 2) + Math.pow(shellStart.y - 5, 2)
@@ -235,7 +313,7 @@ describe('Lead Tangency Tests', () => {
             expect(shellDistFromCenter).toBeGreaterThan(3); // Should be outside the shell
 
             // Hole lead should curve toward center (radius should be < hole radius from shell center)
-            const holePoints = holeResult.leadIn!.points;
+            const holePoints = convertLeadGeometryToPoints(holeResult.leadIn!);
             const holeStart = holePoints[0];
             const holeDistFromShellCenter = Math.sqrt(
                 Math.pow(holeStart.x - 5, 2) + Math.pow(holeStart.y - 5, 2)
@@ -248,16 +326,16 @@ describe('Lead Tangency Tests', () => {
         it('should generate arc with correct length', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
             const targetLength = 5;
-            const leadIn: LeadInConfig = {
+            const leadIn: LeadConfig = {
                 type: LeadType.ARC,
                 length: targetLength,
             };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
             expect(result.leadIn).toBeDefined();
-            const points = result.leadIn!.points;
+            const points = convertLeadGeometryToPoints(result.leadIn!);
 
             // Calculate total arc length by summing segment lengths
             let totalLength = 0;
@@ -274,16 +352,16 @@ describe('Lead Tangency Tests', () => {
         it('should respect 90-degree maximum sweep', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
             const veryLongLength = 1000; // This would require > 90° if radius is small
-            const leadIn: LeadInConfig = {
+            const leadIn: LeadConfig = {
                 type: LeadType.ARC,
                 length: veryLongLength,
             };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
             expect(result.leadIn).toBeDefined();
-            const points = result.leadIn!.points;
+            const points = convertLeadGeometryToPoints(result.leadIn!);
 
             // With maximum 90° sweep, the arc should not curve more than a quarter circle
             const start = points[0];

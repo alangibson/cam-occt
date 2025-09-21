@@ -6,7 +6,7 @@ import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { Point2D, Shape } from '$lib/types';
+import type { Shape } from '$lib/types';
 import { GeometryType } from '$lib/geometry/shape';
 
 // Mock workflow store
@@ -36,7 +36,8 @@ describe('pathStore', () => {
         mockUUID.mockReturnValue('mock-path-uuid-123');
     });
 
-    const createTestPath = (): Omit<Path, 'id'> => ({
+    const createTestPath = (id?: string): Path => ({
+        id: id || '', // Empty string will be replaced by the store
         name: 'Test Path',
         operationId: 'op-1',
         chainId: 'chain-1',
@@ -44,14 +45,20 @@ describe('pathStore', () => {
         enabled: true,
         order: 1,
         cutDirection: CutDirection.CLOCKWISE,
-        leadInType: LeadType.LINE,
-        leadInLength: 5,
-        leadInFlipSide: false,
-        leadInAngle: 0,
-        leadOutType: LeadType.LINE,
-        leadOutLength: 5,
-        leadOutFlipSide: false,
-        leadOutAngle: 0,
+        leadInConfig: {
+            type: LeadType.ARC,
+            length: 5,
+            flipSide: false,
+            angle: 0,
+            fit: true,
+        },
+        leadOutConfig: {
+            type: LeadType.ARC,
+            length: 5,
+            flipSide: false,
+            angle: 0,
+            fit: true,
+        },
         kerfCompensation: OffsetDirection.NONE,
     });
 
@@ -305,40 +312,58 @@ describe('pathStore', () => {
             const path = createTestPath();
             pathStore.addPath(path);
 
-            const leadInPoints: Point2D[] = [
-                { x: 0, y: 0 },
-                { x: 5, y: 0 },
-            ];
             pathStore.updatePathLeadGeometry('mock-path-uuid-123', {
-                leadIn: { points: leadInPoints, type: LeadType.LINE },
+                leadIn: {
+                    geometry: {
+                        center: { x: -2.5, y: 0 },
+                        radius: 2.5,
+                        startAngle: 180,
+                        endAngle: 0,
+                        clockwise: false,
+                    },
+                    type: LeadType.ARC,
+                },
             });
 
             const state = get(pathStore);
-            expect(state.paths[0].calculatedLeadIn?.points).toEqual(
-                leadInPoints
-            );
-            expect(state.paths[0].calculatedLeadIn?.type).toBe(LeadType.LINE);
-            expect(state.paths[0].calculatedLeadIn?.generatedAt).toBeDefined();
-            expect(state.paths[0].calculatedLeadIn?.version).toBe('1.0.0');
+            expect(state.paths[0].leadIn?.geometry).toEqual({
+                center: { x: -2.5, y: 0 },
+                radius: 2.5,
+                startAngle: 180,
+                endAngle: 0,
+                clockwise: false,
+            });
+            expect(state.paths[0].leadIn?.type).toBe(LeadType.ARC);
+            expect(state.paths[0].leadIn?.generatedAt).toBeDefined();
+            expect(state.paths[0].leadIn?.version).toBe('1.0.0');
         });
 
         it('should update lead-out geometry', () => {
             const path = createTestPath();
             pathStore.addPath(path);
 
-            const leadOutPoints: Point2D[] = [
-                { x: 10, y: 0 },
-                { x: 15, y: 0 },
-            ];
             pathStore.updatePathLeadGeometry('mock-path-uuid-123', {
-                leadOut: { points: leadOutPoints, type: LeadType.ARC },
+                leadOut: {
+                    geometry: {
+                        center: { x: 12.5, y: 0 },
+                        radius: 2.5,
+                        startAngle: 180,
+                        endAngle: 0,
+                        clockwise: false,
+                    },
+                    type: LeadType.ARC,
+                },
             });
 
             const state = get(pathStore);
-            expect(state.paths[0].calculatedLeadOut?.points).toEqual(
-                leadOutPoints
-            );
-            expect(state.paths[0].calculatedLeadOut?.type).toBe(LeadType.ARC);
+            expect(state.paths[0].leadOut?.geometry).toEqual({
+                center: { x: 12.5, y: 0 },
+                radius: 2.5,
+                startAngle: 180,
+                endAngle: 0,
+                clockwise: false,
+            });
+            expect(state.paths[0].leadOut?.type).toBe(LeadType.ARC);
         });
 
         it('should update validation results', () => {
@@ -372,7 +397,16 @@ describe('pathStore', () => {
 
             // First add some lead geometry
             pathStore.updatePathLeadGeometry('mock-path-uuid-123', {
-                leadIn: { points: [{ x: 0, y: 0 }], type: LeadType.LINE },
+                leadIn: {
+                    geometry: {
+                        center: { x: 0, y: 0 },
+                        radius: 2.5,
+                        startAngle: 0,
+                        endAngle: 90,
+                        clockwise: false,
+                    },
+                    type: LeadType.ARC,
+                },
                 validation: {
                     isValid: true,
                     warnings: [],
@@ -385,8 +419,8 @@ describe('pathStore', () => {
             pathStore.clearPathLeadGeometry('mock-path-uuid-123');
 
             const state = get(pathStore);
-            expect(state.paths[0].calculatedLeadIn).toBeUndefined();
-            expect(state.paths[0].calculatedLeadOut).toBeUndefined();
+            expect(state.paths[0].leadIn).toBeUndefined();
+            expect(state.paths[0].leadOut).toBeUndefined();
             expect(state.paths[0].leadValidation).toBeUndefined();
         });
     });
@@ -419,18 +453,16 @@ describe('pathStore', () => {
             });
 
             const state = get(pathStore);
-            expect(state.paths[0].calculatedOffset?.offsetShapes).toEqual(
-                offsetShapes
-            );
-            expect(state.paths[0].calculatedOffset?.originalShapes).toEqual(
+            expect(state.paths[0].offset?.offsetShapes).toEqual(offsetShapes);
+            expect(state.paths[0].offset?.originalShapes).toEqual(
                 originalShapes
             );
-            expect(state.paths[0].calculatedOffset?.direction).toBe(
+            expect(state.paths[0].offset?.direction).toBe(
                 OffsetDirection.OUTSET
             );
-            expect(state.paths[0].calculatedOffset?.kerfWidth).toBe(2);
-            expect(state.paths[0].calculatedOffset?.generatedAt).toBeDefined();
-            expect(state.paths[0].calculatedOffset?.version).toBe('1.0.0');
+            expect(state.paths[0].offset?.kerfWidth).toBe(2);
+            expect(state.paths[0].offset?.generatedAt).toBeDefined();
+            expect(state.paths[0].offset?.version).toBe('1.0.0');
         });
     });
 
@@ -451,7 +483,7 @@ describe('pathStore', () => {
             pathStore.clearPathOffsetGeometry('mock-path-uuid-123');
 
             const state = get(pathStore);
-            expect(state.paths[0].calculatedOffset).toBeUndefined();
+            expect(state.paths[0].offset).toBeUndefined();
         });
     });
 

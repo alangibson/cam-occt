@@ -135,7 +135,7 @@ describe('Operations Component - Function Coverage', () => {
             expect(operation.targetIds).toEqual([]);
             expect(operation.enabled).toBe(true);
             expect(operation.cutDirection).toBe(CutDirection.COUNTERCLOCKWISE);
-            expect(operation.leadInType).toBe(LeadType.NONE);
+            expect(operation.leadInConfig?.type).toBe(LeadType.ARC);
             expect(operation.kerfCompensation).toBe(KerfCompensation.PART);
         });
 
@@ -163,16 +163,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: true,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: true,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: true,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: true,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
         });
@@ -224,16 +228,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: true,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: true,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: true,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: true,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
             operationsStore.addOperation({
@@ -244,16 +252,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 2,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: true,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: true,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: true,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: true,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
         });
@@ -317,16 +329,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: false,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: false,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
         });
@@ -426,16 +442,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: false,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: false,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
         });
@@ -480,16 +500,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: false,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: false,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
 
@@ -535,16 +559,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: false,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: false,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
 
@@ -574,16 +602,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: false,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: false,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
 
@@ -610,16 +642,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: false,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: false,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
         });
@@ -666,16 +702,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: false,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: false,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
                 kerfCompensation: KerfCompensation.PART,
             });
         });
@@ -709,16 +749,20 @@ describe('Operations Component - Function Coverage', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                leadInType: LeadType.NONE,
-                leadInLength: 5,
-                leadInAngle: 0,
-                leadInFlipSide: false,
-                leadInFit: false,
-                leadOutType: LeadType.NONE,
-                leadOutLength: 5,
-                leadOutAngle: 0,
-                leadOutFlipSide: false,
-                leadOutFit: false,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
+                leadOutConfig: {
+                    type: LeadType.NONE,
+                    length: 5,
+                    angle: 0,
+                    flipSide: false,
+                    fit: false,
+                },
                 kerfCompensation: KerfCompensation.NONE,
                 holeUnderspeedEnabled: false,
                 holeUnderspeedPercent: 60,
@@ -917,11 +961,11 @@ describe('Operations Component - Function Coverage', () => {
             expect(leadInSelect).toBeTruthy();
 
             await fireEvent.change(leadInSelect, {
-                target: { value: LeadType.LINE },
+                target: { value: LeadType.ARC },
             });
 
             const operations = get(operationsStore);
-            expect(operations[0].leadInType).toBe(LeadType.LINE);
+            expect(operations[0].leadInConfig?.type).toBe(LeadType.ARC);
         });
 
         it('should update lead-in length through numeric input', async () => {
@@ -930,7 +974,7 @@ describe('Operations Component - Function Coverage', () => {
             // First set lead-in type to create length input
             const operations = get(operationsStore);
             operationsStore.updateOperation(operations[0].id, {
-                leadInType: LeadType.LINE,
+                leadInConfig: { type: LeadType.ARC, length: 5 },
             });
 
             const { container: newContainer } = render(Operations);
@@ -945,7 +989,7 @@ describe('Operations Component - Function Coverage', () => {
             });
 
             const updatedOperations = get(operationsStore);
-            expect(updatedOperations[0].leadInLength).toBe(7.5);
+            expect(updatedOperations[0].leadInConfig?.length).toBe(7.5);
         });
 
         it('should update lead-in fit through checkbox', async () => {
@@ -954,7 +998,7 @@ describe('Operations Component - Function Coverage', () => {
             // First set lead-in type to create fit checkbox
             const operations = get(operationsStore);
             operationsStore.updateOperation(operations[0].id, {
-                leadInType: LeadType.LINE,
+                leadInConfig: { type: LeadType.ARC, length: 5 },
             });
 
             const { container: newContainer } = render(Operations);
@@ -969,7 +1013,7 @@ describe('Operations Component - Function Coverage', () => {
             });
 
             const updatedOperations = get(operationsStore);
-            expect(updatedOperations[0].leadInFit).toBe(true);
+            expect(updatedOperations[0].leadInConfig?.fit).toBe(true);
         });
 
         it('should update lead-in angle through numeric input', async () => {
@@ -978,7 +1022,7 @@ describe('Operations Component - Function Coverage', () => {
             // First set lead-in type to create angle input
             const operations = get(operationsStore);
             operationsStore.updateOperation(operations[0].id, {
-                leadInType: LeadType.LINE,
+                leadInConfig: { type: LeadType.ARC, length: 5 },
             });
 
             const { container: newContainer } = render(Operations);
@@ -993,7 +1037,7 @@ describe('Operations Component - Function Coverage', () => {
             });
 
             const updatedOperations = get(operationsStore);
-            expect(updatedOperations[0].leadInAngle).toBe(45);
+            expect(updatedOperations[0].leadInConfig?.angle).toBe(45);
         });
 
         it('should update lead-out type through select dropdown', async () => {
@@ -1008,7 +1052,7 @@ describe('Operations Component - Function Coverage', () => {
             });
 
             const operations = get(operationsStore);
-            expect(operations[0].leadOutType).toBe(LeadType.ARC);
+            expect(operations[0].leadOutConfig?.type).toBe(LeadType.ARC);
         });
 
         it('should update lead-out length through numeric input', async () => {
@@ -1017,7 +1061,7 @@ describe('Operations Component - Function Coverage', () => {
             // First set lead-out type to create length input
             const operations = get(operationsStore);
             operationsStore.updateOperation(operations[0].id, {
-                leadOutType: LeadType.LINE,
+                leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
 
             const { container: newContainer } = render(Operations);
@@ -1040,7 +1084,7 @@ describe('Operations Component - Function Coverage', () => {
             });
 
             const updatedOperations = get(operationsStore);
-            expect(updatedOperations[0].leadOutLength).toBe(8.2);
+            expect(updatedOperations[0].leadOutConfig?.length).toBe(8.2);
         });
 
         it('should update lead-out fit through checkbox', async () => {
@@ -1049,7 +1093,7 @@ describe('Operations Component - Function Coverage', () => {
             // First set lead-out type to create fit checkbox
             const operations = get(operationsStore);
             operationsStore.updateOperation(operations[0].id, {
-                leadOutType: LeadType.LINE,
+                leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
 
             const { container: newContainer } = render(Operations);
@@ -1071,7 +1115,7 @@ describe('Operations Component - Function Coverage', () => {
             });
 
             const updatedOperations = get(operationsStore);
-            expect(updatedOperations[0].leadOutFit).toBe(true);
+            expect(updatedOperations[0].leadOutConfig?.fit).toBe(true);
         });
 
         it('should update lead-out angle through numeric input', async () => {
@@ -1080,7 +1124,7 @@ describe('Operations Component - Function Coverage', () => {
             // First set lead-out type to create angle input
             const operations = get(operationsStore);
             operationsStore.updateOperation(operations[0].id, {
-                leadOutType: LeadType.LINE,
+                leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
 
             const { container: newContainer } = render(Operations);
@@ -1102,7 +1146,7 @@ describe('Operations Component - Function Coverage', () => {
             });
 
             const updatedOperations = get(operationsStore);
-            expect(updatedOperations[0].leadOutAngle).toBe(90);
+            expect(updatedOperations[0].leadOutConfig?.angle).toBe(90);
         });
     });
 });

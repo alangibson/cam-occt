@@ -9,7 +9,12 @@ import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/geometry/shape';
 import { generateId } from '$lib/domain/id';
-import { calculateArcPoint, convertBulgeToArc } from '$lib/geometry/arc';
+import {
+    calculateArcPoint,
+    convertBulgeToArc,
+    getArcTangent,
+} from '$lib/geometry/arc/functions';
+import { getLineTangent } from '$lib/geometry/line/functions';
 import { EPSILON } from '$lib/geometry/math';
 import {
     DIRECTION_CLOCKWISE,
@@ -468,4 +473,48 @@ export function calculatePolylineLength(points: Point2D[]): number {
         length += Math.sqrt(dx * dx + dy * dy);
     }
     return length;
+}
+/**
+ * Get tangent direction for a polyline geometry at start or end.
+ */
+export function getPolylineTangent(
+    polyline: Polyline,
+    isStart: boolean
+): Point2D {
+    // For polylines containing arc/line segments, get tangent from actual geometry
+    if (polyline.shapes && polyline.shapes.length > 0) {
+        const shape = isStart
+            ? polyline.shapes[0]
+            : polyline.shapes[polyline.shapes.length - 1];
+
+        switch (shape.type) {
+            case GeometryType.ARC: {
+                const arc = shape.geometry as Arc;
+                return getArcTangent(arc, isStart);
+            }
+            case GeometryType.LINE: {
+                const line = shape.geometry as Line;
+                return getLineTangent(line);
+            }
+            default:
+                // Fallback to point-based calculation
+                break;
+        }
+    }
+
+    // Fallback: use point-based tangent calculation for simple polylines
+    const points: Point2D[] = polylineToPoints(polyline);
+    if (isStart && points.length >= 2) {
+        const dx: number = points[1].x - points[0].x;
+        const dy: number = points[1].y - points[0].y;
+        const len: number = Math.sqrt(dx * dx + dy * dy);
+        return len > 0 ? { x: dx / len, y: dy / len } : { x: 1, y: 0 };
+    } else if (!isStart && points.length >= 2) {
+        const n: number = points.length;
+        const dx: number = points[n - 1].x - points[n - 2].x;
+        const dy: number = points[n - 1].y - points[n - 2].y;
+        const len: number = Math.sqrt(dx * dx + dy * dy);
+        return len > 0 ? { x: dx / len, y: dy / len } : { x: 1, y: 0 };
+    }
+    return { x: 1, y: 0 };
 }

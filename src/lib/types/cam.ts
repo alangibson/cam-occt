@@ -1,6 +1,11 @@
 import type { Point2D, Shape } from './geometry';
 
 /**
+ * Lead representation as an array of points
+ */
+export type Lead = Point2D[];
+
+/**
  * Cutter compensation modes for G-code generation
  */
 export enum CutterCompensation {
@@ -23,8 +28,6 @@ export interface CuttingParameters {
     pierceDelay: number; // seconds
     cutHeight: number; // mm or inch
     kerf: number; // mm or inch
-    leadInLength: number; // mm or inch
-    leadOutLength: number; // mm or inch
     // Optional QtPlasmaC material parameters
     toolName?: string; // Material name
     kerfWidth?: number; // Kerf width override
@@ -40,12 +43,12 @@ export interface CuttingParameters {
     holeUnderspeedPercent?: number; // Velocity percentage for hole cutting (10-100)
 }
 
-export interface ToolPath {
+export interface CutPath {
     id: string;
     shapeId: string;
     points: Point2D[];
-    leadIn?: Point2D[];
-    leadOut?: Point2D[];
+    leadIn?: Lead;
+    leadOut?: Lead;
     isRapid: boolean;
     parameters?: CuttingParameters;
     originalShape?: Shape; // Preserve original shape for native G-code generation
@@ -53,7 +56,7 @@ export interface ToolPath {
 }
 
 export interface CutSequence {
-    paths: ToolPath[];
+    paths: CutPath[];
     totalLength: number;
     rapidLength: number;
     cutLength: number;

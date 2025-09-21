@@ -11,8 +11,7 @@ describe('CuttingParameters Component - Function Coverage', () => {
         pierceDelay: 0.5,
         cutHeight: 1.5,
         kerf: 1.5,
-        leadInLength: 5,
-        leadOutLength: 5,
+        // Lead lengths removed from CuttingParameters interface
     };
 
     describe('parameter binding and updates', () => {
@@ -86,11 +85,6 @@ describe('CuttingParameters Component - Function Coverage', () => {
                 '#kerf'
             ) as HTMLInputElement;
             expect(kerfInput.value).toBe('1.5');
-
-            const leadInInput = container.querySelector(
-                '#leadIn'
-            ) as HTMLInputElement;
-            expect(leadInInput?.value).toBe('5');
         });
 
         it('should handle numeric input validation', async () => {

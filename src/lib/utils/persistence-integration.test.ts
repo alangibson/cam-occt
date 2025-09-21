@@ -39,18 +39,24 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 vi.mock('../algorithms/lead-calculation', () => ({
     calculateLeads: vi.fn(() => ({
         leadIn: {
-            points: [
-                { x: 0, y: 0 },
-                { x: 5, y: 5 },
-            ],
+            geometry: {
+                center: { x: 2.5, y: 2.5 },
+                radius: 3.54,
+                startAngle: Math.PI / 4,
+                endAngle: (5 * Math.PI) / 4,
+                clockwise: false,
+            },
             type: LeadType.ARC,
         },
         leadOut: {
-            points: [
-                { x: 10, y: 10 },
-                { x: 15, y: 15 },
-            ],
-            type: LeadType.LINE,
+            geometry: {
+                center: { x: 12.5, y: 12.5 },
+                radius: 3.536,
+                startAngle: 225,
+                endAngle: 45,
+                clockwise: false,
+            },
+            type: LeadType.ARC,
         },
         warnings: [],
     })),
@@ -114,16 +120,20 @@ describe('Persistence Integration - Lead Geometry', () => {
             enabled: true,
             order: 1,
             cutDirection: CutDirection.CLOCKWISE,
-            leadInType: LeadType.ARC,
-            leadInLength: 5,
-            leadInFlipSide: false,
-            leadInAngle: 45,
-            leadInFit: false,
-            leadOutType: LeadType.LINE,
-            leadOutLength: 3,
-            leadOutFlipSide: false,
-            leadOutAngle: 90,
-            leadOutFit: false,
+            leadInConfig: {
+                type: LeadType.ARC,
+                length: 5,
+                flipSide: false,
+                angle: 45,
+                fit: false,
+            },
+            leadOutConfig: {
+                type: LeadType.ARC,
+                length: 3,
+                flipSide: false,
+                angle: 90,
+                fit: false,
+            },
         };
 
         // Add the operation (this should generate paths)
@@ -147,18 +157,24 @@ describe('Persistence Integration - Lead Geometry', () => {
         // Manually add lead geometry to simulate calculated leads
         pathStore.updatePathLeadGeometry(createdPath.id, {
             leadIn: {
-                points: [
-                    { x: 0, y: 0 },
-                    { x: 5, y: 5 },
-                ],
+                geometry: {
+                    center: { x: 2.5, y: 2.5 },
+                    radius: 3.54,
+                    startAngle: Math.PI / 4,
+                    endAngle: (5 * Math.PI) / 4,
+                    clockwise: false,
+                },
                 type: LeadType.ARC,
             },
             leadOut: {
-                points: [
-                    { x: 10, y: 10 },
-                    { x: 15, y: 15 },
-                ],
-                type: LeadType.LINE,
+                geometry: {
+                    center: { x: 12.5, y: 12.5 },
+                    radius: 3.536,
+                    startAngle: 225,
+                    endAngle: 45,
+                    clockwise: false,
+                },
+                type: LeadType.ARC,
             },
             validation: {
                 isValid: true,
@@ -176,12 +192,12 @@ describe('Persistence Integration - Lead Geometry', () => {
         const pathWithLeads = pathsState!.paths[0];
 
         // Verify lead geometry was added
-        expect(pathWithLeads.calculatedLeadIn).toBeDefined();
-        expect(pathWithLeads.calculatedLeadIn?.points).toHaveLength(2);
-        expect(pathWithLeads.calculatedLeadIn?.type).toBe(LeadType.ARC);
-        expect(pathWithLeads.calculatedLeadOut).toBeDefined();
-        expect(pathWithLeads.calculatedLeadOut?.points).toHaveLength(2);
-        expect(pathWithLeads.calculatedLeadOut?.type).toBe(LeadType.LINE);
+        expect(pathWithLeads.leadIn).toBeDefined();
+        expect(pathWithLeads.leadIn?.geometry).toBeDefined();
+        expect(pathWithLeads.leadIn?.type).toBe(LeadType.ARC);
+        expect(pathWithLeads.leadOut).toBeDefined();
+        expect(pathWithLeads.leadOut?.geometry).toBeDefined();
+        expect(pathWithLeads.leadOut?.type).toBe(LeadType.ARC);
         expect(pathWithLeads.leadValidation?.warnings).toContain(
             'Test warning'
         );
@@ -217,23 +233,29 @@ describe('Persistence Integration - Lead Geometry', () => {
         expect(restoredPath.chainId).toBe('chain-1');
 
         // Most importantly - verify lead geometry was persisted and restored
-        expect(restoredPath.calculatedLeadIn).toBeDefined();
-        expect(restoredPath.calculatedLeadIn?.points).toEqual([
-            { x: 0, y: 0 },
-            { x: 5, y: 5 },
-        ]);
-        expect(restoredPath.calculatedLeadIn?.type).toBe(LeadType.ARC);
-        expect(restoredPath.calculatedLeadIn?.version).toBe('1.0.0');
-        expect(restoredPath.calculatedLeadIn?.generatedAt).toBeDefined();
+        expect(restoredPath.leadIn).toBeDefined();
+        expect(restoredPath.leadIn?.geometry).toEqual({
+            center: { x: 2.5, y: 2.5 },
+            radius: 3.54,
+            startAngle: Math.PI / 4,
+            endAngle: (5 * Math.PI) / 4,
+            clockwise: false,
+        });
+        expect(restoredPath.leadIn?.type).toBe(LeadType.ARC);
+        expect(restoredPath.leadIn?.version).toBe('1.0.0');
+        expect(restoredPath.leadIn?.generatedAt).toBeDefined();
 
-        expect(restoredPath.calculatedLeadOut).toBeDefined();
-        expect(restoredPath.calculatedLeadOut?.points).toEqual([
-            { x: 10, y: 10 },
-            { x: 15, y: 15 },
-        ]);
-        expect(restoredPath.calculatedLeadOut?.type).toBe(LeadType.LINE);
-        expect(restoredPath.calculatedLeadOut?.version).toBe('1.0.0');
-        expect(restoredPath.calculatedLeadOut?.generatedAt).toBeDefined();
+        expect(restoredPath.leadOut).toBeDefined();
+        expect(restoredPath.leadOut?.geometry).toEqual({
+            center: { x: 12.5, y: 12.5 },
+            radius: 3.536,
+            startAngle: 225,
+            endAngle: 45,
+            clockwise: false,
+        });
+        expect(restoredPath.leadOut?.type).toBe(LeadType.ARC);
+        expect(restoredPath.leadOut?.version).toBe('1.0.0');
+        expect(restoredPath.leadOut?.generatedAt).toBeDefined();
 
         expect(restoredPath.leadValidation).toBeDefined();
         expect(restoredPath.leadValidation?.isValid).toBe(true);

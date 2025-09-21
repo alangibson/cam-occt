@@ -5,14 +5,12 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import type { Line, Polyline } from '$lib/types/geometry';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Shape } from '$lib/types';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('ADLER.dxf Part 5 Lead Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting
@@ -25,7 +23,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         const y: number = point.y;
 
         for (
-            let i: number = 0, j = polygon.length - 1;
+            let i: number = 0, j: number = polygon.length - 1;
             i < polygon.length;
             j = i++
         ) {
@@ -93,8 +91,8 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         }
 
         // Test lead generation for the shell chain
-        const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 }; // Moderate lead length
-        const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+        const leadIn: LeadConfig = { type: LeadType.ARC, length: 10 }; // Moderate lead length
+        const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
             part5.shell.chain,
@@ -105,7 +103,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         );
 
         expect(result.leadIn).toBeDefined();
-        const leadPoints = result.leadIn!.points;
+        const leadPoints = convertLeadGeometryToPoints(result.leadIn!);
 
         // Get the polygon representation of the shell for point-in-polygon testing
         const shellPolygon = getPolygonFromChain(part5.shell.chain);
@@ -167,7 +165,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         const leadLengths = [5, 10, 15, 20];
 
         for (const length of leadLengths) {
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length };
             const result = calculateLeads(
                 part5.shell.chain,
                 leadIn,
@@ -178,7 +176,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
 
             if (!result.leadIn) continue;
 
-            const leadPoints = result.leadIn.points;
+            const leadPoints = convertLeadGeometryToPoints(result.leadIn);
             const connectionPoint = leadPoints[leadPoints.length - 1];
 
             let pointsInside = 0;

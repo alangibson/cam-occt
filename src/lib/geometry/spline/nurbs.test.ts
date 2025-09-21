@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
+import { getSplinePointAt, tessellateSpline } from '$lib/geometry/spline';
 import type { Spline } from '$lib/geometry/spline';
 
 describe('NURBS Evaluation', () => {
@@ -16,9 +16,9 @@ describe('NURBS Evaluation', () => {
             closed: false,
         };
 
-        const startPoint = evaluateNURBS(0, spline);
-        const endPoint = evaluateNURBS(1, spline);
-        const midPoint = evaluateNURBS(0.5, spline);
+        const startPoint = getSplinePointAt(spline, 0);
+        const endPoint = getSplinePointAt(spline, 1);
+        const midPoint = getSplinePointAt(spline, 0.5);
 
         expect(startPoint.x).toBeCloseTo(0, 5);
         expect(startPoint.y).toBeCloseTo(0, 5);
@@ -42,9 +42,9 @@ describe('NURBS Evaluation', () => {
             closed: false,
         };
 
-        const startPoint = evaluateNURBS(0, spline);
-        const endPoint = evaluateNURBS(1, spline);
-        const midPoint = evaluateNURBS(0.5, spline);
+        const startPoint = getSplinePointAt(spline, 0);
+        const endPoint = getSplinePointAt(spline, 1);
+        const midPoint = getSplinePointAt(spline, 0.5);
 
         expect(startPoint.x).toBeCloseTo(0, 5);
         expect(startPoint.y).toBeCloseTo(0, 5);
@@ -70,7 +70,7 @@ describe('NURBS Evaluation', () => {
             closed: false,
         };
 
-        const samples = sampleNURBS(spline, 10);
+        const samples = tessellateSpline(spline, { numSamples: 10 }).points;
 
         expect(samples).toHaveLength(11); // 0 to 10 inclusive
         expect(samples[0].x).toBeCloseTo(0, 5);
@@ -93,8 +93,8 @@ describe('NURBS Evaluation', () => {
             closed: false,
         };
 
-        const startPoint = evaluateNURBS(0, spline);
-        const endPoint = evaluateNURBS(1, spline);
+        const startPoint = getSplinePointAt(spline, 0);
+        const endPoint = getSplinePointAt(spline, 1);
 
         expect(startPoint.x).toBeCloseTo(0, 5);
         expect(startPoint.y).toBeCloseTo(0, 5);
@@ -116,7 +116,7 @@ describe('NURBS Evaluation', () => {
             closed: false,
         };
 
-        const midPoint = evaluateNURBS(0.5, spline);
+        const midPoint = getSplinePointAt(spline, 0.5);
 
         // With higher weight on middle control point, curve should be pulled closer to it
         expect(midPoint.x).toBeCloseTo(5, 5);
@@ -142,7 +142,7 @@ describe('NURBS Evaluation', () => {
             closed: false,
         };
 
-        const samples = sampleNURBS(spline, 4);
+        const samples = tessellateSpline(spline, { numSamples: 4 }).points;
 
         // Should return fit points when they are dense enough
         expect(samples).toHaveLength(5);

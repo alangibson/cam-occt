@@ -25,7 +25,7 @@ import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
-} from '$lib/utils/lead-config-utils';
+} from '$lib/algorithms/leads/functions';
 
 // Mock dependencies
 vi.mock('$lib/geometry/chain', () => ({
@@ -38,12 +38,13 @@ vi.mock('$lib/algorithms/offset-calculation/chain/offset', () => ({
 }));
 
 vi.mock('$lib/algorithms/leads/lead-calculation', () => ({
-    calculateLeads: vi.fn(),
+    calculateLeads: vi.fn(() => ({})), // Return empty LeadResult by default
 }));
 
-vi.mock('$lib/utils/lead-config-utils', () => ({
+vi.mock('$lib/algorithms/leads/functions', () => ({
     createLeadInConfig: vi.fn(),
     createLeadOutConfig: vi.fn(),
+    convertLeadGeometryToPoints: vi.fn(() => []),
 }));
 
 describe('Operations Functions', () => {
@@ -87,16 +88,20 @@ describe('Operations Functions', () => {
         enabled: true,
         order: 1,
         cutDirection: CutDirection.CLOCKWISE,
-        leadInType: LeadType.ARC,
-        leadInLength: 5,
-        leadInFlipSide: false,
-        leadInFit: false,
-        leadInAngle: 45,
-        leadOutType: LeadType.LINE,
-        leadOutLength: 3,
-        leadOutFlipSide: false,
-        leadOutFit: false,
-        leadOutAngle: 90,
+        leadInConfig: {
+            type: LeadType.ARC,
+            length: 5,
+            flipSide: false,
+            fit: false,
+            angle: 45,
+        },
+        leadOutConfig: {
+            type: LeadType.ARC,
+            length: 3,
+            flipSide: false,
+            fit: false,
+            angle: 90,
+        },
         kerfCompensation: KerfCompensation.NONE,
         holeUnderspeedEnabled: false,
         holeUnderspeedPercent: 50,
@@ -111,16 +116,20 @@ describe('Operations Functions', () => {
         enabled: true,
         order: 1,
         cutDirection: CutDirection.CLOCKWISE,
-        leadInType: LeadType.ARC,
-        leadInLength: 5,
-        leadInFlipSide: false,
-        leadInAngle: 45,
-        leadInFit: false,
-        leadOutType: LeadType.LINE,
-        leadOutLength: 3,
-        leadOutFlipSide: false,
-        leadOutAngle: 90,
-        leadOutFit: false,
+        leadInConfig: {
+            type: LeadType.ARC,
+            length: 5,
+            flipSide: false,
+            angle: 45,
+            fit: false,
+        },
+        leadOutConfig: {
+            type: LeadType.ARC,
+            length: 3,
+            flipSide: false,
+            angle: 90,
+            fit: false,
+        },
         kerfCompensation: OffsetDirection.NONE,
         isHole: false,
     };
@@ -539,20 +548,21 @@ describe('Operations Functions', () => {
     });
 
     describe('generatePathsForChainWithOperation', () => {
-        it('should return empty arrays when chain not found', () => {
-            const result = generatePathsForChainWithOperation(
+        it('should return empty arrays when chain not found', async () => {
+            const result = await generatePathsForChainWithOperation(
                 mockOperation,
                 'unknown-chain',
                 0,
                 [mockChain],
-                [mockTool]
+                [mockTool],
+                []
             );
 
             expect(result.paths).toEqual([]);
             expect(result.warnings).toEqual([]);
         });
 
-        it('should generate path for chain with kerf compensation INNER', () => {
+        it('should generate path for chain with kerf compensation INNER', async () => {
             const operationWithKerf = {
                 ...mockOperation,
                 kerfCompensation: KerfCompensation.INNER,
@@ -582,12 +592,13 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = generatePathsForChainWithOperation(
+            const result = await generatePathsForChainWithOperation(
                 operationWithKerf,
                 'chain-1',
                 0,
                 [mockChain],
-                [mockTool]
+                [mockTool],
+                []
             );
 
             expect(result.paths).toHaveLength(1);
@@ -596,7 +607,7 @@ describe('Operations Functions', () => {
             );
         });
 
-        it('should generate path for chain with kerf compensation OUTER', () => {
+        it('should generate path for chain with kerf compensation OUTER', async () => {
             const operationWithKerf = {
                 ...mockOperation,
                 kerfCompensation: KerfCompensation.OUTER,
@@ -626,12 +637,13 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = generatePathsForChainWithOperation(
+            const result = await generatePathsForChainWithOperation(
                 operationWithKerf,
                 'chain-1',
                 0,
                 [mockChain],
-                [mockTool]
+                [mockTool],
+                []
             );
 
             expect(result.paths).toHaveLength(1);
@@ -640,18 +652,19 @@ describe('Operations Functions', () => {
             );
         });
 
-        it('should generate path for chain with kerf compensation PART (treated as NONE for chains)', () => {
+        it('should generate path for chain with kerf compensation PART (treated as NONE for chains)', async () => {
             const operationWithKerf = {
                 ...mockOperation,
                 kerfCompensation: KerfCompensation.PART,
             };
 
-            const result = generatePathsForChainWithOperation(
+            const result = await generatePathsForChainWithOperation(
                 operationWithKerf,
                 'chain-1',
                 0,
                 [mockChain],
-                [mockTool]
+                [mockTool],
+                []
             );
 
             expect(result.paths).toHaveLength(1);
@@ -660,8 +673,8 @@ describe('Operations Functions', () => {
     });
 
     describe('generatePathsForPartTargetWithOperation', () => {
-        it('should return empty arrays when part not found', () => {
-            const result = generatePathsForPartTargetWithOperation(
+        it('should return empty arrays when part not found', async () => {
+            const result = await generatePathsForPartTargetWithOperation(
                 mockOperation,
                 'unknown-part',
                 0,
@@ -674,7 +687,7 @@ describe('Operations Functions', () => {
             expect(result.warnings).toEqual([]);
         });
 
-        it('should generate paths for part with kerf compensation PART', () => {
+        it('should generate paths for part with kerf compensation PART', async () => {
             const operationWithKerf = {
                 ...mockOperation,
                 targetType: 'parts' as const,
@@ -714,7 +727,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = generatePathsForPartTargetWithOperation(
+            const result = await generatePathsForPartTargetWithOperation(
                 operationWithKerf,
                 'part-1',
                 0,
@@ -732,7 +745,7 @@ describe('Operations Functions', () => {
             ); // Hole
         });
 
-        it('should handle nested holes', () => {
+        it('should handle nested holes', async () => {
             const partWithNestedHoles: DetectedPart = {
                 ...mockPart,
                 holes: [
@@ -778,7 +791,7 @@ describe('Operations Functions', () => {
                 },
             ];
 
-            const result = generatePathsForPartTargetWithOperation(
+            const result = await generatePathsForPartTargetWithOperation(
                 mockOperation,
                 'part-1',
                 0,
@@ -802,7 +815,7 @@ describe('Operations Functions', () => {
             });
 
             vi.mocked(createLeadOutConfig).mockReturnValue({
-                type: LeadType.LINE,
+                type: LeadType.ARC,
                 length: 3,
                 angle: 90,
                 flipSide: false,
@@ -811,18 +824,24 @@ describe('Operations Functions', () => {
 
             vi.mocked(calculateLeads).mockReturnValue({
                 leadIn: {
-                    points: [
-                        { x: 0, y: 0 },
-                        { x: 1, y: 1 },
-                    ],
+                    geometry: {
+                        center: { x: 0, y: 0 },
+                        radius: 1,
+                        startAngle: 0,
+                        endAngle: Math.PI,
+                        clockwise: false,
+                    },
                     type: LeadType.ARC,
                 },
                 leadOut: {
-                    points: [
-                        { x: 10, y: 0 },
-                        { x: 11, y: 1 },
-                    ],
-                    type: LeadType.LINE,
+                    geometry: {
+                        center: { x: 10.5, y: 0.5 },
+                        radius: 0.707,
+                        startAngle: 225,
+                        endAngle: 45,
+                        clockwise: false,
+                    },
+                    type: LeadType.ARC,
                 },
                 warnings: [],
             });
@@ -831,8 +850,8 @@ describe('Operations Functions', () => {
         it('should return empty object when both leads are disabled', async () => {
             const pathNoLeads = {
                 ...mockPath,
-                leadInType: LeadType.NONE,
-                leadOutType: LeadType.NONE,
+                leadInConfig: { type: LeadType.NONE, length: 0 },
+                leadOutConfig: { type: LeadType.NONE, length: 0 },
             };
 
             const result = await calculatePathLeads(
@@ -848,7 +867,7 @@ describe('Operations Functions', () => {
         it('should calculate leads with offset geometry when available', async () => {
             const pathWithOffset = {
                 ...mockPath,
-                calculatedOffset: {
+                offset: {
                     offsetShapes: [
                         { ...mockChain.shapes[0], id: 'offset-shape' },
                     ],
@@ -875,10 +894,22 @@ describe('Operations Functions', () => {
             expect(calculateLeads).toHaveBeenCalledWith(
                 expect.objectContaining({
                     id: 'chain-1_offset_temp',
-                    shapes: pathWithOffset.calculatedOffset.offsetShapes,
+                    shapes: pathWithOffset.offset.offsetShapes,
                 }),
-                expect.anything(),
-                expect.anything(),
+                expect.objectContaining({
+                    type: LeadType.ARC,
+                    length: 5,
+                    flipSide: false,
+                    angle: 45,
+                    fit: false,
+                }),
+                expect.objectContaining({
+                    type: LeadType.ARC,
+                    length: 3,
+                    flipSide: false,
+                    angle: 90,
+                    fit: false,
+                }),
                 mockPath.cutDirection,
                 mockPart
             );
@@ -922,18 +953,24 @@ describe('Operations Functions', () => {
         it('should return validation with warnings when lead calculation has warnings', async () => {
             vi.mocked(calculateLeads).mockReturnValue({
                 leadIn: {
-                    points: [
-                        { x: 0, y: 0 },
-                        { x: 1, y: 1 },
-                    ],
+                    geometry: {
+                        center: { x: 0, y: 0 },
+                        radius: 1,
+                        startAngle: 0,
+                        endAngle: Math.PI,
+                        clockwise: false,
+                    },
                     type: LeadType.ARC,
                 },
                 leadOut: {
-                    points: [
-                        { x: 10, y: 0 },
-                        { x: 11, y: 1 },
-                    ],
-                    type: LeadType.LINE,
+                    geometry: {
+                        center: { x: 10.5, y: 0.5 },
+                        radius: 0.707,
+                        startAngle: 225,
+                        endAngle: 45,
+                        clockwise: false,
+                    },
+                    type: LeadType.ARC,
                 },
                 warnings: ['Test warning'],
             });
@@ -1000,7 +1037,7 @@ describe('Operations Functions', () => {
             });
 
             vi.mocked(createLeadOutConfig).mockReturnValue({
-                type: LeadType.LINE,
+                type: LeadType.ARC,
                 length: 3,
                 angle: 90,
                 flipSide: false,
@@ -1008,8 +1045,26 @@ describe('Operations Functions', () => {
             });
 
             vi.mocked(calculateLeads).mockReturnValue({
-                leadIn: { points: [{ x: 0, y: 0 }], type: LeadType.ARC },
-                leadOut: { points: [{ x: 10, y: 0 }], type: LeadType.LINE },
+                leadIn: {
+                    geometry: {
+                        center: { x: 0, y: 0 },
+                        radius: 1,
+                        startAngle: 0,
+                        endAngle: Math.PI,
+                        clockwise: false,
+                    },
+                    type: LeadType.ARC,
+                },
+                leadOut: {
+                    geometry: {
+                        center: { x: 10.5, y: 0 },
+                        radius: 0.5,
+                        startAngle: 180,
+                        endAngle: 0,
+                        clockwise: false,
+                    },
+                    type: LeadType.ARC,
+                },
                 warnings: [],
             });
 
@@ -1050,10 +1105,10 @@ describe('Operations Functions', () => {
     });
 
     describe('createPathsFromOperation', () => {
-        it('should return empty arrays when operation is disabled', () => {
+        it('should return empty arrays when operation is disabled', async () => {
             const disabledOperation = { ...mockOperation, enabled: false };
 
-            const result = createPathsFromOperation(
+            const result = await createPathsFromOperation(
                 disabledOperation,
                 [mockChain],
                 [mockPart],
@@ -1064,10 +1119,10 @@ describe('Operations Functions', () => {
             expect(result.warnings).toEqual([]);
         });
 
-        it('should return empty arrays when operation has no target IDs', () => {
+        it('should return empty arrays when operation has no target IDs', async () => {
             const operationNoTargets = { ...mockOperation, targetIds: [] };
 
-            const result = createPathsFromOperation(
+            const result = await createPathsFromOperation(
                 operationNoTargets,
                 [mockChain],
                 [mockPart],
@@ -1078,7 +1133,7 @@ describe('Operations Functions', () => {
             expect(result.warnings).toEqual([]);
         });
 
-        it('should generate paths for chain targets', () => {
+        it('should generate paths for chain targets', async () => {
             vi.mocked(offsetChain).mockReturnValue({
                 success: true,
                 innerChain: {
@@ -1103,7 +1158,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = createPathsFromOperation(
+            const result = await createPathsFromOperation(
                 mockOperation,
                 [mockChain],
                 [mockPart],
@@ -1114,7 +1169,7 @@ describe('Operations Functions', () => {
             expect(result.warnings).toHaveLength(0);
         });
 
-        it('should generate paths for part targets', () => {
+        it('should generate paths for part targets', async () => {
             const operationParts = {
                 ...mockOperation,
                 targetType: 'parts' as const,
@@ -1154,7 +1209,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = createPathsFromOperation(
+            const result = await createPathsFromOperation(
                 operationParts,
                 chains,
                 [mockPart],

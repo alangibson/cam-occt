@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Tangency Debug', () => {
     function createLineChain(
@@ -30,13 +28,13 @@ describe('Lead Tangency Debug', () => {
     it('should debug horizontal line lead-in geometry', () => {
         // Horizontal line from (0,0) to (10,0)
         const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-        const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
-        const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+        const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
+        const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(chain, leadIn, leadOut);
 
         if (result.leadIn) {
-            const points = result.leadIn.points;
+            const points = convertLeadGeometryToPoints(result.leadIn);
             points.forEach(() => {
                 // Process points
             });

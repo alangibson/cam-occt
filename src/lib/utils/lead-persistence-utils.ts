@@ -10,13 +10,17 @@ import type { Path } from '$lib/stores/paths/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
+import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from '$lib/algorithms/leads/lead-calculation';
+    type LeadConfig,
+    type LeadResult,
+} from '$lib/algorithms/leads/interfaces';
 import { LeadType } from '$lib/types/direction';
-import { createLeadInConfig, createLeadOutConfig } from './lead-config-utils';
+import {
+    createLeadInConfig,
+    createLeadOutConfig,
+    convertLeadGeometryToPoints,
+} from '$lib/algorithms/leads/functions';
 
 /**
  * Check if path has valid cached lead geometry
@@ -26,26 +30,30 @@ export function hasValidCachedLeads(path: Path): boolean {
 
     // Check if we have cached lead geometry
     const hasLeadIn: boolean | undefined =
-        path.calculatedLeadIn &&
-        path.calculatedLeadIn.version === currentVersion &&
-        path.calculatedLeadIn.points.length > 0;
+        path.leadIn &&
+        path.leadIn.version === currentVersion &&
+        convertLeadGeometryToPoints(path.leadIn).length > 0;
 
     const hasLeadOut: boolean | undefined =
-        path.calculatedLeadOut &&
-        path.calculatedLeadOut.version === currentVersion &&
-        path.calculatedLeadOut.points.length > 0;
+        path.leadOut &&
+        path.leadOut.version === currentVersion &&
+        convertLeadGeometryToPoints(path.leadOut).length > 0;
+
+    // Get lead types from config or use defaults
+    const leadInType = path.leadInConfig?.type || LeadType.NONE;
+    const leadOutType = path.leadOutConfig?.type || LeadType.NONE;
 
     // For lead-in: either no lead needed OR we have valid cached geometry that matches the type
     const leadInMatches: boolean | undefined =
-        path.leadInType === LeadType.NONE
+        leadInType === LeadType.NONE
             ? true
-            : hasLeadIn && path.calculatedLeadIn?.type === path.leadInType;
+            : hasLeadIn && path.leadIn?.type === leadInType;
 
     // For lead-out: either no lead needed OR we have valid cached geometry that matches the type
     const leadOutMatches: boolean | undefined =
-        path.leadOutType === LeadType.NONE
+        leadOutType === LeadType.NONE
             ? true
-            : hasLeadOut && path.calculatedLeadOut?.type === path.leadOutType;
+            : hasLeadOut && path.leadOut?.type === leadOutType;
 
     return Boolean(leadInMatches && leadOutMatches);
 }
@@ -53,20 +61,10 @@ export function hasValidCachedLeads(path: Path): boolean {
 /**
  * Get cached lead geometry for display
  */
-export function getCachedLeadGeometry(path: Path) {
+export function getCachedLeadGeometry(path: Path): LeadResult {
     return {
-        leadIn: path.calculatedLeadIn
-            ? {
-                  points: path.calculatedLeadIn.points,
-                  type: path.calculatedLeadIn.type,
-              }
-            : null,
-        leadOut: path.calculatedLeadOut
-            ? {
-                  points: path.calculatedLeadOut.points,
-                  type: path.calculatedLeadOut.type,
-              }
-            : null,
+        leadIn: path.leadIn,
+        leadOut: path.leadOut,
         validation: path.leadValidation,
     };
 }
@@ -106,8 +104,11 @@ export function calculateLeadPoints(
         const lead =
             leadType === 'leadIn' ? leadResult.leadIn : leadResult.leadOut;
 
-        if (lead && lead.points.length > 0) {
-            return lead.points;
+        if (lead) {
+            const points = convertLeadGeometryToPoints(lead);
+            if (points.length > 0) {
+                return points;
+            }
         }
 
         return undefined;
@@ -131,12 +132,12 @@ function prepareLeadCalculation(
     chain: Chain
 ): {
     chainForLeads: Chain;
-    leadInConfig: LeadInConfig;
-    leadOutConfig: LeadOutConfig;
+    leadInConfig: LeadConfig;
+    leadOutConfig: LeadConfig;
 } {
     // Use offset shapes for lead calculation if available
-    const chainForLeads = path.calculatedOffset
-        ? { ...chain, shapes: path.calculatedOffset.offsetShapes }
+    const chainForLeads = path.offset
+        ? { ...chain, shapes: path.offset.offsetShapes }
         : chain;
 
     // Create lead configurations based on path properties

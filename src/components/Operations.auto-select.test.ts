@@ -55,16 +55,20 @@ describe('Operations Auto-Selection Feature', () => {
             enabled: true,
             order: 1,
             cutDirection: CutDirection.CLOCKWISE,
-            leadInType: LeadType.LINE,
-            leadInLength: 2.0,
-            leadInFlipSide: false,
-            leadInAngle: 0,
-            leadInFit: true,
-            leadOutType: LeadType.LINE,
-            leadOutLength: 2.0,
-            leadOutFlipSide: false,
-            leadOutAngle: 0,
-            leadOutFit: true,
+            leadInConfig: {
+                type: LeadType.ARC,
+                length: 2.0,
+                flipSide: false,
+                angle: 0,
+                fit: true,
+            },
+            leadOutConfig: {
+                type: LeadType.ARC,
+                length: 2.0,
+                flipSide: false,
+                angle: 0,
+                fit: true,
+            },
         });
 
         // Check that the operation was created with the highlighted part
@@ -95,16 +99,20 @@ describe('Operations Auto-Selection Feature', () => {
             enabled: true,
             order: 1,
             cutDirection: CutDirection.CLOCKWISE,
-            leadInType: LeadType.LINE,
-            leadInLength: 2.0,
-            leadInFlipSide: false,
-            leadInAngle: 0,
-            leadInFit: true,
-            leadOutType: LeadType.LINE,
-            leadOutLength: 2.0,
-            leadOutFlipSide: false,
-            leadOutAngle: 0,
-            leadOutFit: true,
+            leadInConfig: {
+                type: LeadType.ARC,
+                length: 2.0,
+                flipSide: false,
+                angle: 0,
+                fit: true,
+            },
+            leadOutConfig: {
+                type: LeadType.ARC,
+                length: 2.0,
+                flipSide: false,
+                angle: 0,
+                fit: true,
+            },
         });
 
         // Check that the operation was created with the selected chain
@@ -140,16 +148,20 @@ describe('Operations Auto-Selection Feature', () => {
             enabled: true,
             order: 1,
             cutDirection: CutDirection.CLOCKWISE,
-            leadInType: LeadType.LINE,
-            leadInLength: 2.0,
-            leadInFlipSide: false,
-            leadInAngle: 0,
-            leadInFit: true,
-            leadOutType: LeadType.LINE,
-            leadOutLength: 2.0,
-            leadOutFlipSide: false,
-            leadOutAngle: 0,
-            leadOutFit: true,
+            leadInConfig: {
+                type: LeadType.ARC,
+                length: 2.0,
+                flipSide: false,
+                angle: 0,
+                fit: true,
+            },
+            leadOutConfig: {
+                type: LeadType.ARC,
+                length: 2.0,
+                flipSide: false,
+                angle: 0,
+                fit: true,
+            },
         });
 
         // Check that the operation was created with the part (priority over chain)
@@ -176,16 +188,20 @@ describe('Operations Auto-Selection Feature', () => {
             enabled: true,
             order: 1,
             cutDirection: CutDirection.CLOCKWISE,
-            leadInType: LeadType.LINE,
-            leadInLength: 2.0,
-            leadInFlipSide: false,
-            leadInAngle: 0,
-            leadInFit: true,
-            leadOutType: LeadType.LINE,
-            leadOutLength: 2.0,
-            leadOutFlipSide: false,
-            leadOutAngle: 0,
-            leadOutFit: true,
+            leadInConfig: {
+                type: LeadType.ARC,
+                length: 2.0,
+                flipSide: false,
+                angle: 0,
+                fit: true,
+            },
+            leadOutConfig: {
+                type: LeadType.ARC,
+                length: 2.0,
+                flipSide: false,
+                angle: 0,
+                fit: true,
+            },
         });
 
         // Check that the operation was created with no targets

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/types/cam';
-import { type Drawing, type ToolPath, Unit } from '$lib/types';
+import { type Drawing, type CutPath, Unit } from '$lib/types';
 
 describe('GCode Generator - Units', () => {
-    const mockPath: ToolPath = {
+    const mockPath: CutPath = {
         id: 'path1',
         shapeId: 'shape1',
         points: [
@@ -21,8 +21,7 @@ describe('GCode Generator - Units', () => {
             pierceDelay: 0.5,
             cutHeight: 1.5,
             kerf: 1.2,
-            leadInLength: 5,
-            leadOutLength: 5,
+            // Lead lengths removed from CuttingParameters
         },
     };
 

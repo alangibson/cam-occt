@@ -22,7 +22,6 @@ export enum CutDirection {
  */
 export enum LeadType {
     ARC = 'arc',
-    LINE = 'line',
     NONE = 'none',
 }
 

@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
@@ -12,6 +9,7 @@ import {
 } from '$lib/algorithms/part-detection/part-detection';
 import { GeometryType } from '$lib/types/geometry';
 import type { Point2D, Shape } from '$lib/types/geometry';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Solid Area Avoidance', () => {
     // Helper to create a rectangle chain
@@ -161,8 +159,8 @@ describe('Lead Solid Area Avoidance', () => {
                 ],
             };
 
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 20 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 20 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 shellChain,
@@ -173,7 +171,7 @@ describe('Lead Solid Area Avoidance', () => {
             );
 
             expect(result.leadIn).toBeDefined();
-            const points = result.leadIn!.points;
+            const points = convertLeadGeometryToPoints(result.leadIn!);
 
             // Check if any lead points are in the solid area (excluding connection point)
             let pointsInSolidArea = 0;
@@ -240,8 +238,8 @@ describe('Lead Solid Area Avoidance', () => {
                 ],
             };
 
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 }; // Shorter lead
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 10 }; // Shorter lead
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 holeChain,
@@ -252,7 +250,7 @@ describe('Lead Solid Area Avoidance', () => {
             );
 
             expect(result.leadIn).toBeDefined();
-            const points = result.leadIn!.points;
+            const points = convertLeadGeometryToPoints(result.leadIn!);
 
             // Check if any lead points are in the solid area (excluding connection point)
             let pointsInSolidArea = 0;
@@ -327,7 +325,7 @@ describe('Lead Solid Area Avoidance', () => {
             };
 
             // Test leads for both holes with reasonable length
-            const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 12 };
+            const leadConfig: LeadConfig = { type: LeadType.ARC, length: 12 };
 
             const result1 = calculateLeads(
                 hole1Chain,
@@ -347,8 +345,8 @@ describe('Lead Solid Area Avoidance', () => {
             expect(result1.leadIn).toBeDefined();
             expect(result2.leadIn).toBeDefined();
 
-            const points1 = result1.leadIn!.points;
-            const points2 = result2.leadIn!.points;
+            const points1 = convertLeadGeometryToPoints(result1.leadIn!);
+            const points2 = convertLeadGeometryToPoints(result2.leadIn!);
 
             // Check solid area conflicts for both holes (excluding connection points)
             let solidAreaViolations1 = 0;
@@ -400,7 +398,7 @@ describe('Lead Solid Area Avoidance', () => {
                 50,
                 50
             );
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 10 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 10 };
 
             // Generate leads with default direction
             const result1 = calculateLeads(shellChain, leadIn, {
@@ -409,7 +407,7 @@ describe('Lead Solid Area Avoidance', () => {
             });
             expect(result1.leadIn).toBeDefined();
 
-            const points1 = result1.leadIn!.points;
+            const points1 = convertLeadGeometryToPoints(result1.leadIn!);
             const startPoint1 = points1[0];
 
             // We need to be able to generate leads in different directions to avoid solid areas

@@ -12,6 +12,7 @@ import {
     DEFAULT_ARC_TESSELLATION_POINTS,
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,
+    PERPENDICULAR_TOLERANCE,
     QUARTER_CIRCLE_QUADRANTS,
 } from './constants';
 import { normalizeAngle } from '$lib/geometry/math/functions';
@@ -433,4 +434,219 @@ export function calculateArcMidpointAngle(
     }
 
     return midAngle;
+}
+
+/**
+ * Calculate the arc length for an existing arc
+ * Arc length = radius × angular span (in radians)
+ */
+export function calculateArcLength(arc: Arc): number {
+    let angularSpan: number;
+
+    if (arc.clockwise) {
+        // For clockwise arcs, calculate span from start to end in clockwise direction
+        angularSpan = arc.startAngle - arc.endAngle;
+        if (angularSpan <= 0) {
+            angularSpan += FULL_CIRCLE_RADIANS;
+        }
+    } else {
+        // For counter-clockwise arcs, calculate span from start to end in counter-clockwise direction
+        angularSpan = arc.endAngle - arc.startAngle;
+        if (angularSpan <= 0) {
+            angularSpan += FULL_CIRCLE_RADIANS;
+        }
+    }
+
+    return arc.radius * angularSpan;
+}
+
+/**
+ * Create an arc with a specific arc length from starting parameters
+ * @param center - Arc center point
+ * @param radius - Arc radius
+ * @param startAngle - Starting angle in radians
+ * @param arcLength - Desired arc length along the curve
+ * @param clockwise - Direction of arc sweep
+ */
+export function createArcWithLength(
+    center: Point2D,
+    radius: number,
+    startAngle: number,
+    arcLength: number,
+    clockwise: boolean
+): Arc {
+    // Calculate sweep angle from arc length
+    const sweepAngle = arcLength / radius;
+
+    // Calculate end angle based on sweep direction
+    const endAngle = clockwise
+        ? normalizeAngle(startAngle - sweepAngle)
+        : normalizeAngle(startAngle + sweepAngle);
+
+    return {
+        center,
+        radius,
+        startAngle: normalizeAngle(startAngle),
+        endAngle,
+        clockwise,
+    };
+}
+
+/**
+ * Get tangent direction for an arc geometry at start or end.
+ */
+// export function getArcTangent(arc: Arc, isStart: boolean): Point2D {
+//     const angle: number = isStart ? arc.startAngle : arc.endAngle;
+//     // Tangent is perpendicular to radius
+//     // If arc goes counterclockwise, tangent points in +90° direction
+//     // If arc goes clockwise, tangent points in -90° direction
+//     const isCounterClockwise: boolean = arc.endAngle > arc.startAngle;
+//     const tangentAngle: number = angle + (isCounterClockwise ? Math.PI / 2 : -Math.PI / 2);
+//     return {
+//         x: Math.cos(tangentAngle),
+//         y: Math.sin(tangentAngle),
+//     };
+// }
+
+/**
+ * Get the tangent direction at the start or end of an arc
+ * The tangent is perpendicular to the radius at that point
+ * @param arc - The arc
+ * @param atStart - true for start tangent, false for end tangent
+ * @returns Unit vector representing tangent direction
+ */
+export function getArcTangent(arc: Arc, atStart: boolean): Point2D {
+    const angle = atStart ? arc.startAngle : arc.endAngle;
+
+    // Radius vector from center to point on arc
+    const radiusVector: Point2D = {
+        x: Math.cos(angle),
+        y: Math.sin(angle),
+    };
+
+    // Tangent is perpendicular to radius and points in direction of travel
+    // For counterclockwise arcs: tangent = rotate radius 90° CCW = (-radiusVector.y, radiusVector.x)
+    // For clockwise arcs: tangent = rotate radius 90° CW = (radiusVector.y, -radiusVector.x)
+    //
+    // However, we need to consider the actual direction of travel along the arc:
+    // - For counterclockwise: angles increase, so we go from startAngle to endAngle
+    // - For clockwise: angles decrease, so we go from startAngle to endAngle (but decreasing)
+
+    if (arc.clockwise) {
+        // Clockwise: tangent points in clockwise direction (90° CW from radius)
+        return { x: radiusVector.y, y: -radiusVector.x };
+    } else {
+        // Counterclockwise: tangent points in counterclockwise direction (90° CCW from radius)
+        return { x: -radiusVector.y, y: radiusVector.x };
+    }
+}
+
+/**
+ * Create a tangent arc from a connection point with specified arc length
+ * @param connectionPoint - Point where arc connects to path
+ * @param tangentDirection - Unit vector of tangent at connection point
+ * @param arcLength - Total length along the arc curve
+ * @param curveDirection - Normal direction (perpendicular to tangent, indicates which side to curve)
+ * @param isLeadIn - true if this is a lead-in arc (ends at connection), false for lead-out (starts at connection)
+ * @param clockwise - desired arc sweep direction
+ */
+export function createTangentArc(
+    connectionPoint: Point2D,
+    tangentDirection: Point2D,
+    arcLength: number,
+    curveDirection: Point2D,
+    isLeadIn: boolean,
+    clockwise: boolean
+): Arc {
+    // Choose a reasonable radius for the arc length
+    // Smaller radius = tighter curve, larger radius = gentler curve
+    // For a 90-degree arc: radius = arcLength / (π/2) ≈ arcLength / 1.57
+    // For a 180-degree arc: radius = arcLength / π ≈ arcLength / 3.14
+    // We'll use something in between for a good balance
+    const radius = arcLength / 2.0; // This gives about 115 degrees of sweep
+
+    // Calculate the actual sweep angle
+    const sweepAngle = arcLength / radius;
+
+    // For tangency, the arc center must be positioned perpendicular to the tangent direction
+    // The curveDirection already indicates which side, but we need to ensure it's perpendicular
+    let centerOffset: Point2D;
+
+    // Normalize the curve direction
+    const curveLength = Math.sqrt(
+        curveDirection.x * curveDirection.x +
+            curveDirection.y * curveDirection.y
+    );
+    const normalizedCurve = {
+        x: curveDirection.x / curveLength,
+        y: curveDirection.y / curveLength,
+    };
+
+    // For both lead-in and lead-out, ensure the center is perpendicular to tangent
+    // Check if curveDirection is already perpendicular to tangentDirection
+    const dot =
+        tangentDirection.x * normalizedCurve.x +
+        tangentDirection.y * normalizedCurve.y;
+
+    if (Math.abs(dot) < PERPENDICULAR_TOLERANCE) {
+        // curveDirection is already perpendicular (within ~0.57 degrees), use it
+        centerOffset = normalizedCurve;
+    } else {
+        // Need to make it perpendicular
+        // Choose the perpendicular direction that is closest to the requested curveDirection
+        const leftPerp = { x: -tangentDirection.y, y: tangentDirection.x }; // 90° CCW from tangent
+        const rightPerp = { x: tangentDirection.y, y: -tangentDirection.x }; // 90° CW from tangent
+
+        // Check which perpendicular is closer to the requested curve direction
+        const leftDot =
+            leftPerp.x * normalizedCurve.x + leftPerp.y * normalizedCurve.y;
+        const rightDot =
+            rightPerp.x * normalizedCurve.x + rightPerp.y * normalizedCurve.y;
+
+        // Choose the perpendicular that has a positive dot product (same general direction)
+        if (leftDot > rightDot) {
+            centerOffset = leftPerp;
+        } else {
+            centerOffset = rightPerp;
+        }
+    }
+
+    // Arc center is offset from connection point by radius
+    const center: Point2D = {
+        x: connectionPoint.x + centerOffset.x * radius,
+        y: connectionPoint.y + centerOffset.y * radius,
+    };
+
+    // Calculate the angle from center to connection point
+    const connectionAngle = Math.atan2(
+        connectionPoint.y - center.y,
+        connectionPoint.x - center.x
+    );
+
+    // Use the provided clockwise value directly
+
+    let startAngle: number;
+    let endAngle: number;
+
+    if (isLeadIn) {
+        // Lead-in: arc ends at connection point
+        endAngle = connectionAngle;
+        startAngle = clockwise
+            ? normalizeAngle(connectionAngle + sweepAngle)
+            : normalizeAngle(connectionAngle - sweepAngle);
+    } else {
+        // Lead-out: arc starts at connection point
+        startAngle = connectionAngle;
+        endAngle = clockwise
+            ? normalizeAngle(connectionAngle - sweepAngle)
+            : normalizeAngle(connectionAngle + sweepAngle);
+    }
+
+    return {
+        center,
+        radius,
+        startAngle,
+        endAngle,
+        clockwise,
+    };
 }

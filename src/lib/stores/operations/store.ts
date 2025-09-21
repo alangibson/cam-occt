@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { pathStore } from '$lib/stores/paths/store';
-import type { Path, PathsState } from '$lib/stores/paths/interfaces';
+import type { Path } from '$lib/stores/paths/interfaces';
 import { partStore } from '$lib/stores/parts/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -12,9 +12,7 @@ import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { PATH_UPDATE_DELAY_MS } from './constants';
 import type { Operation, OperationsStore } from './interfaces';
-import { calculateOperationLeads, createPathsFromOperation } from './functions';
-import type { ChainStore } from '$lib/stores/chains/interfaces';
-import type { PartStore } from '$lib/stores/parts/interfaces';
+import { createPathsFromOperation } from './functions';
 
 function createOperationsStore(): OperationsStore {
     const { subscribe, set, update } = writable<Operation[]>([]);
@@ -103,83 +101,57 @@ function createOperationsStore(): OperationsStore {
             });
         },
 
-        applyOperation: (operationId: string) => {
-            update((operations) => {
-                const operation: Operation | undefined = operations.find(
-                    (op) => op.id === operationId
+        applyOperation: async (operationId: string) => {
+            const operations = get({ subscribe });
+            const operation: Operation | undefined = operations.find(
+                (op) => op.id === operationId
+            );
+            if (operation && operation.enabled) {
+                // Remove existing paths for this operation
+                pathStore.deletePathsByOperation(operation.id);
+
+                // Get required state data
+                const chainsState: { chains: Chain[] } = get(chainStore);
+                const partsState: { parts: DetectedPart[] } = get(partStore);
+                const tools = get(toolStore);
+
+                // Generate paths with leads (async)
+                const result = await createPathsFromOperation(
+                    operation,
+                    chainsState.chains,
+                    partsState.parts,
+                    tools
                 );
-                if (operation && operation.enabled) {
-                    // Remove existing paths for this operation
-                    pathStore.deletePathsByOperation(operation.id);
 
-                    // Get required state data
-                    const chainsState: { chains: Chain[] } = get(chainStore);
-                    const partsState: { parts: DetectedPart[] } =
-                        get(partStore);
-                    const tools = get(toolStore);
+                // Store generated paths
+                result.paths.forEach((path) => {
+                    pathStore.addPath(path);
+                });
 
-                    // Generate paths
-                    const result = createPathsFromOperation(
-                        operation,
-                        chainsState.chains,
-                        partsState.parts,
-                        tools
-                    );
+                // Handle warnings
+                result.warnings.forEach((warning) => {
+                    if (warning.clearExistingWarnings) {
+                        offsetWarningsStore.clearWarningsForChain(
+                            warning.chainId
+                        );
+                    }
+                    if (warning.offsetWarnings.length > 0) {
+                        offsetWarningsStore.addWarningsFromChainOffset(
+                            warning.operationId,
+                            warning.chainId,
+                            warning.offsetWarnings
+                        );
+                    }
+                });
 
-                    // Store generated paths
-                    result.paths.forEach((path) => {
-                        pathStore.addPath(path);
-                    });
-
-                    // Handle warnings
-                    result.warnings.forEach((warning) => {
-                        if (warning.clearExistingWarnings) {
-                            offsetWarningsStore.clearWarningsForChain(
-                                warning.chainId
-                            );
-                        }
-                        if (warning.offsetWarnings.length > 0) {
-                            offsetWarningsStore.addWarningsFromChainOffset(
-                                warning.operationId,
-                                warning.chainId,
-                                warning.offsetWarnings
-                            );
-                        }
-                    });
-
-                    // Check if any paths exist and mark program stage as complete
-                    setTimeout(() => {
-                        const pathsState: { paths: Path[] } = get(pathStore);
-                        if (pathsState.paths.length > 0) {
-                            workflowStore.completeStage(WorkflowStage.PROGRAM);
-                        }
-                    }, PATH_UPDATE_DELAY_MS); // Small delay to ensure path store is updated
-
-                    // Calculate and store lead geometry for all paths in this operation
-                    // Run immediately to prevent visual jumping when offset geometry exists
-                    // Get current state for lead calculation
-                    const pathsState: PathsState = get(pathStore);
-                    const currentChainsState: ChainStore = get(chainStore);
-                    const currentPartsState: PartStore = get(partStore);
-
-                    // Calculate and store leads for all paths of an operation
-                    calculateOperationLeads(
-                        operation,
-                        pathsState.paths,
-                        currentChainsState.chains,
-                        currentPartsState.parts
-                    ).then((leadResults) => {
-                        // Store the calculated lead geometry
-                        leadResults.forEach((leadGeometry, pathId) => {
-                            pathStore.updatePathLeadGeometry(
-                                pathId,
-                                leadGeometry
-                            );
-                        });
-                    });
-                }
-                return operations;
-            });
+                // Check if any paths exist and mark program stage as complete
+                setTimeout(() => {
+                    const pathsState: { paths: Path[] } = get(pathStore);
+                    if (pathsState.paths.length > 0) {
+                        workflowStore.completeStage(WorkflowStage.PROGRAM);
+                    }
+                }, PATH_UPDATE_DELAY_MS); // Small delay to ensure path store is updated
+            }
         },
 
         applyAllOperations: () => {

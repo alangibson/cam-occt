@@ -164,12 +164,7 @@ export class SVGBuilder {
         }
     }
 
-    private addLine(
-        line: Line,
-        color: string,
-        width: number,
-        dashArray?: string
-    ) {
+    addLine(line: Line, color: string, width: number, dashArray?: string) {
         // Update bounds for auto-sizing with stroke width consideration
         this.updateBoundsWithPoint(line.start, width / 2);
         this.updateBoundsWithPoint(line.end, width / 2);
@@ -203,7 +198,8 @@ export class SVGBuilder {
         arc: Arc,
         color: string,
         strokeWidth: number,
-        dashArray?: string
+        dashArray?: string,
+        showEndpoints: boolean = true
     ) {
         // Update bounds for auto-sizing using arc's bounding circle + stroke width
         this.updateBoundsWithPoint(arc.center, arc.radius + strokeWidth / 2);
@@ -214,32 +210,35 @@ export class SVGBuilder {
         );
 
         // Add green point at arc start and red point at arc end
-        const arcShape: Shape = {
-            id: `arc-${Date.now()}`,
-            type: GeometryType.ARC,
-            geometry: arc,
-        };
-        const startPoint: Point2D = getShapeStartPoint(arcShape);
-        const endPoint: Point2D = getShapeEndPoint(arcShape);
-        this.addCircle(
-            { center: startPoint, radius: CIRCLE_MARKER_RADIUS },
-            'green',
-            CIRCLE_MARKER_STROKE_WIDTH,
-            'green'
-        );
-        this.addCircle(
-            { center: endPoint, radius: CIRCLE_MARKER_RADIUS },
-            'red',
-            CIRCLE_MARKER_STROKE_WIDTH,
-            'red'
-        );
+        if (showEndpoints) {
+            const arcShape: Shape = {
+                id: `arc-${Date.now()}`,
+                type: GeometryType.ARC,
+                geometry: arc,
+            };
+            const startPoint: Point2D = getShapeStartPoint(arcShape);
+            const endPoint: Point2D = getShapeEndPoint(arcShape);
+            this.addCircle(
+                { center: startPoint, radius: CIRCLE_MARKER_RADIUS },
+                'green',
+                CIRCLE_MARKER_STROKE_WIDTH,
+                'green'
+            );
+            this.addCircle(
+                { center: endPoint, radius: CIRCLE_MARKER_RADIUS },
+                'red',
+                CIRCLE_MARKER_STROKE_WIDTH,
+                'red'
+            );
+        }
     }
 
     private addPolyline(
         polyline: Polyline,
         color: string,
         strokeWidth: number,
-        dashArray?: string
+        dashArray?: string,
+        showEndpoints: boolean = true
     ) {
         // Render each shape individually to preserve arcs
         polyline.shapes.forEach((shape) => {
@@ -249,7 +248,13 @@ export class SVGBuilder {
                 this.addLine(segment as Line, color, strokeWidth, dashArray);
             } else if (isArc(segment)) {
                 // Arc segment
-                this.addArc(segment as Arc, color, strokeWidth, dashArray);
+                this.addArc(
+                    segment as Arc,
+                    color,
+                    strokeWidth,
+                    dashArray,
+                    showEndpoints
+                );
             }
         });
     }
@@ -392,7 +397,8 @@ export class SVGBuilder {
         shape: Shape,
         color: string,
         strokeWidth: number,
-        dashArray?: string
+        dashArray?: string,
+        showEndpoints: boolean = true
     ) {
         switch (shape.type) {
             case GeometryType.LINE:
@@ -404,7 +410,8 @@ export class SVGBuilder {
                     shape.geometry as Arc,
                     color,
                     strokeWidth,
-                    dashArray
+                    dashArray,
+                    showEndpoints
                 );
                 break;
             case GeometryType.CIRCLE:
@@ -422,7 +429,8 @@ export class SVGBuilder {
                     shape.geometry as Polyline,
                     color,
                     strokeWidth,
-                    dashArray
+                    dashArray,
+                    showEndpoints
                 );
                 break;
             case GeometryType.SPLINE:
@@ -438,7 +446,8 @@ export class SVGBuilder {
                     shape.geometry as Ellipse,
                     color,
                     strokeWidth,
-                    dashArray
+                    dashArray,
+                    showEndpoints
                 );
                 break;
         }
@@ -560,7 +569,8 @@ export class SVGBuilder {
         ellipse: Ellipse,
         color: string,
         strokeWidth: number,
-        dashArray?: string
+        dashArray?: string,
+        showEndpoints: boolean = true
     ) {
         const points: Point2D[] = tessellateEllipse(
             ellipse,
@@ -579,7 +589,7 @@ export class SVGBuilder {
         );
 
         // Add green point at ellipse arc start and red point at ellipse arc end (like addArc does)
-        if (isArc) {
+        if (isArc && showEndpoints) {
             const ellipseShape: Shape = {
                 id: `ellipse-${Date.now()}`,
                 type: GeometryType.ELLIPSE,

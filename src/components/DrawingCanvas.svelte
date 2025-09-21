@@ -21,19 +21,20 @@
         getChainPartType,
         getPartChainIds,
     } from '$lib/stores/parts/functions';
-    import { sampleNURBS } from '$lib/geometry/spline';
     import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
     import {
         getShapeStartPoint,
         getShapeEndPoint,
     } from '$lib/geometry/shape/functions';
     import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-    import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline';
+    import {
+        SPLINE_TESSELLATION_TOLERANCE,
+        tessellateSpline,
+    } from '$lib/geometry/spline';
     import {
         tessellateEllipse,
         ELLIPSE_TESSELLATION_POINTS,
     } from '$lib/geometry/ellipse/index';
-    import { tessellateSpline } from '$lib/geometry/spline';
     import {
         getCachedTessellation,
         clearTessellationCache,
@@ -179,12 +180,11 @@
         ? pathsState.paths
               .map((path) => ({
                   id: path.id,
-                  hasOffset: !!path.calculatedOffset,
-                  offsetHash: path.calculatedOffset
+                  hasOffset: !!path.offset,
+                  offsetHash: path.offset
                       ? JSON.stringify(
-                            path.calculatedOffset.offsetShapes?.map(
-                                (s: Shape) => s.id
-                            ) || []
+                            path.offset.offsetShapes?.map((s: Shape) => s.id) ||
+                                []
                         )
                       : null,
               }))
@@ -244,9 +244,9 @@
     $: if (pathsState?.paths && ctx) {
         const hasActiveOffsetCalculations = pathsState.paths.some(
             (path) =>
-                path.calculatedOffset &&
-                path.calculatedOffset.offsetShapes &&
-                path.calculatedOffset.offsetShapes.length > 0
+                path.offset &&
+                path.offset.offsetShapes &&
+                path.offset.offsetShapes.length > 0
         );
 
         // Use debounced rendering for complex offset scenarios
@@ -405,13 +405,10 @@
             if (!operation || !operation.enabled || !path.enabled) return;
 
             // Only draw if path has calculated offset
-            if (!path.calculatedOffset) return;
+            if (!path.offset) return;
 
             // Comprehensive validation of offset geometry before rendering
-            if (
-                !path.calculatedOffset.originalShapes ||
-                !path.calculatedOffset.offsetShapes
-            ) {
+            if (!path.offset.originalShapes || !path.offset.offsetShapes) {
                 console.warn(
                     `Invalid offset geometry for path ${path.id}: missing shape arrays`
                 );
@@ -419,8 +416,8 @@
             }
 
             if (
-                !Array.isArray(path.calculatedOffset.originalShapes) ||
-                !Array.isArray(path.calculatedOffset.offsetShapes)
+                !Array.isArray(path.offset.originalShapes) ||
+                !Array.isArray(path.offset.offsetShapes)
             ) {
                 console.warn(
                     `Invalid offset geometry for path ${path.id}: shape arrays are not arrays`
@@ -430,8 +427,8 @@
 
             // Validate that shapes have required properties
             if (
-                path.calculatedOffset.originalShapes.length === 0 ||
-                path.calculatedOffset.offsetShapes.length === 0
+                path.offset.originalShapes.length === 0 ||
+                path.offset.offsetShapes.length === 0
             ) {
                 console.warn(
                     `Invalid offset geometry for path ${path.id}: empty shape arrays`
@@ -461,7 +458,7 @@
                 ctx.lineCap = 'round'; // Professional appearance
                 ctx.lineJoin = 'round'; // Professional appearance
 
-                path.calculatedOffset.originalShapes.forEach((shape, index) => {
+                path.offset.originalShapes.forEach((shape, index) => {
                     try {
                         drawShape(shape);
                     } catch (error) {
@@ -481,7 +478,7 @@
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
 
-                path.calculatedOffset.offsetShapes.forEach((shape, index) => {
+                path.offset.offsetShapes.forEach((shape, index) => {
                     try {
                         // Check if this specific offset shape is selected
                         const isOffsetShapeSelected =
@@ -526,10 +523,7 @@
                 });
 
                 // Render gap fills if they exist (filler shapes and modified shapes)
-                if (
-                    path.calculatedOffset.gapFills &&
-                    path.calculatedOffset.gapFills.length > 0
-                ) {
+                if (path.offset.gapFills && path.offset.gapFills.length > 0) {
                     ctx.save();
 
                     // Use same color logic as offset shapes for consistency
@@ -547,7 +541,7 @@
                     }
                     ctx.setLineDash([]); // Solid line
 
-                    for (const gapFill of path.calculatedOffset.gapFills) {
+                    for (const gapFill of path.offset.gapFills) {
                         // Render filler shape if it exists
                         if (gapFill.fillerShape) {
                             try {
@@ -664,9 +658,8 @@
 
             // Use offset shapes if they exist, otherwise use original chain shapes
             const shapesToUse =
-                path.calculatedOffset &&
-                path.calculatedOffset.offsetShapes.length > 0
-                    ? path.calculatedOffset.offsetShapes
+                path.offset && path.offset.offsetShapes.length > 0
+                    ? path.offset.offsetShapes
                     : chain.shapes;
 
             // Get first and last shape
@@ -729,11 +722,11 @@
                 // Fallback to original shapes for backward compatibility
                 // IMPORTANT: Don't manually apply cut direction here - it conflicts with stored chain direction
                 if (
-                    path.calculatedOffset &&
-                    path.calculatedOffset.offsetShapes &&
-                    path.calculatedOffset.offsetShapes.length > 0
+                    path.offset &&
+                    path.offset.offsetShapes &&
+                    path.offset.offsetShapes.length > 0
                 ) {
-                    shapesToSample = path.calculatedOffset.offsetShapes;
+                    shapesToSample = path.offset.offsetShapes;
                 } else {
                     // Get the chain for this path and use original shapes
                     const chain = chains.find((c) => c.id === path.chainId);
@@ -1272,7 +1265,7 @@
         // Iterate through all paths that have calculated offsets
         for (const path of pathsState.paths) {
             // Only check enabled paths with offset shapes
-            if (!path.enabled || !path.calculatedOffset?.offsetShapes) continue;
+            if (!path.enabled || !path.offset?.offsetShapes) continue;
 
             // Check if the operation for this path is enabled
             const operation = operations.find(
@@ -1281,7 +1274,7 @@
             if (!operation || !operation.enabled) continue;
 
             // Check each offset shape for proximity to the point
-            for (const offsetShape of path.calculatedOffset.offsetShapes) {
+            for (const offsetShape of path.offset.offsetShapes) {
                 if (isPointNearShape(point, offsetShape, tolerance)) {
                     return { shape: offsetShape, pathId: path.id };
                 }
@@ -1432,7 +1425,9 @@
             case GeometryType.SPLINE:
                 const spline = shape.geometry as Spline;
                 // For hit testing, use properly evaluated NURBS points
-                const evaluatedPoints = sampleNURBS(spline, 50); // Use fewer points for hit testing performance
+                const evaluatedPoints = tessellateSpline(spline, {
+                    numSamples: 50,
+                }).points; // Use fewer points for hit testing performance
 
                 if (!evaluatedPoints || evaluatedPoints.length < 2)
                     return false;

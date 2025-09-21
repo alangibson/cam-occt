@@ -48,17 +48,15 @@
     import type { ChainStore } from '$lib/stores/chains/interfaces';
     import type { DrawingState } from '$lib/stores/drawing/interfaces';
     import type { PartStore } from '$lib/stores/parts/interfaces';
-    import { evaluateNURBS, sampleNURBS } from '$lib/geometry/spline';
+    import { getSplinePointAt, tessellateSpline } from '$lib/geometry/spline';
     import { polylineToPoints } from '$lib/geometry/polyline';
     import { getShapePointAt } from '$lib/geometry/shape/functions';
-    import {
-        calculateLeads,
-        type LeadInConfig,
-        type LeadOutConfig,
-    } from '$lib/algorithms/leads/lead-calculation';
+    import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+    import { type LeadConfig } from '$lib/algorithms/leads/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import { LeadType } from '$lib/types/direction';
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
+    import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
 
     // Resizable columns state
     let rightColumnWidth = 280; // Default width in pixels
@@ -321,7 +319,7 @@
         // Fallback to offset shapes or original chain for backward compatibility
         if (!shapes) {
             shapes =
-                path.calculatedOffset?.offsetShapes ||
+                path.offset?.offsetShapes ||
                 chainStoreState?.chains?.find(
                     (c: Chain) => c.id === path.chainId
                 )?.shapes;
@@ -331,17 +329,22 @@
 
         // Check if path has lead-in
         if (
-            path.leadInType &&
-            path.leadInType !== 'none' &&
-            path.leadInLength &&
-            path.leadInLength > 0
+            path.leadInConfig?.type &&
+            path.leadInConfig.type !== 'none' &&
+            path.leadInConfig.length &&
+            path.leadInConfig.length > 0
         ) {
             // First try to use cached lead geometry
             if (hasValidCachedLeads(path)) {
                 const cached = getCachedLeadGeometry(path);
-                if (cached.leadIn && cached.leadIn.points.length > 0) {
-                    // Return the first point of the cached lead-in (start of lead-in)
-                    return cached.leadIn.points[0];
+                if (cached.leadIn) {
+                    const cachedLeadInPoints = convertLeadGeometryToPoints(
+                        cached.leadIn
+                    );
+                    if (cachedLeadInPoints.length > 0) {
+                        // Return the first point of the cached lead-in (start of lead-in)
+                        return cachedLeadInPoints[0];
+                    }
                 }
             }
 
@@ -356,21 +359,21 @@
                 );
                 if (!chain) return { x: 0, y: 0 };
 
-                const chainForLeads = path.calculatedOffset
-                    ? { ...chain, shapes: path.calculatedOffset.offsetShapes }
+                const chainForLeads = path.offset
+                    ? { ...chain, shapes: path.offset.offsetShapes }
                     : chain;
 
-                const leadInConfig: LeadInConfig = {
-                    type: path.leadInType,
-                    length: path.leadInLength,
-                    flipSide: path.leadInFlipSide || false,
-                    angle: path.leadInAngle,
+                const leadInConfig: LeadConfig = path.leadInConfig || {
+                    type: LeadType.NONE,
+                    length: 0,
+                    flipSide: false,
+                    angle: 0,
                 };
-                const leadOutConfig: LeadOutConfig = {
-                    type: path.leadOutType || LeadType.NONE,
-                    length: path.leadOutLength || 0,
-                    flipSide: path.leadOutFlipSide || false,
-                    angle: path.leadOutAngle,
+                const leadOutConfig: LeadConfig = path.leadOutConfig || {
+                    type: LeadType.NONE,
+                    length: 0,
+                    flipSide: false,
+                    angle: 0,
                 };
 
                 const leadResult = calculateLeads(
@@ -381,9 +384,14 @@
                     part
                 );
 
-                if (leadResult.leadIn && leadResult.leadIn.points.length > 0) {
-                    // Return the first point of the lead-in (start of lead-in)
-                    return leadResult.leadIn.points[0];
+                if (leadResult.leadIn) {
+                    // Convert geometry to points and return the first point (start of lead-in)
+                    const points = convertLeadGeometryToPoints(
+                        leadResult.leadIn
+                    );
+                    if (points.length > 0) {
+                        return points[0];
+                    }
                 }
             } catch (error) {
                 console.warn(
@@ -424,7 +432,7 @@
         if (!shapes) {
             if (!chain) return 0;
             shapes =
-                path.calculatedOffset?.offsetShapes ||
+                path.offset?.offsetShapes ||
                 path.cutChain?.shapes ||
                 chain.shapes;
         }
@@ -443,50 +451,58 @@
 
         try {
             if (
-                (path.leadInType &&
-                    path.leadInType !== 'none' &&
-                    path.leadInLength &&
-                    path.leadInLength > 0) ||
-                (path.leadOutType &&
-                    path.leadOutType !== 'none' &&
-                    path.leadOutLength &&
-                    path.leadOutLength > 0)
+                (path.leadInConfig?.type &&
+                    path.leadInConfig.type !== 'none' &&
+                    path.leadInConfig.length &&
+                    path.leadInConfig.length > 0) ||
+                (path.leadOutConfig?.type &&
+                    path.leadOutConfig.type !== 'none' &&
+                    path.leadOutConfig.length &&
+                    path.leadOutConfig.length > 0)
             ) {
                 // First try to use cached lead geometry
                 if (hasValidCachedLeads(path)) {
                     const cached = getCachedLeadGeometry(path);
-                    if (cached.leadIn && cached.leadIn.points.length > 1) {
-                        leadInDistance = calculatePolylineLength(
-                            cached.leadIn.points
+                    if (cached.leadIn) {
+                        const cachedLeadInPoints = convertLeadGeometryToPoints(
+                            cached.leadIn
                         );
+                        if (cachedLeadInPoints.length > 1) {
+                            leadInDistance =
+                                calculatePolylineLength(cachedLeadInPoints);
+                        }
                     }
-                    if (cached.leadOut && cached.leadOut.points.length > 1) {
-                        leadOutDistance = calculatePolylineLength(
-                            cached.leadOut.points
+                    if (cached.leadOut) {
+                        const cachedLeadOutPoints = convertLeadGeometryToPoints(
+                            cached.leadOut
                         );
+                        if (cachedLeadOutPoints.length > 1) {
+                            leadOutDistance =
+                                calculatePolylineLength(cachedLeadOutPoints);
+                        }
                     }
                 } else {
                     // Fallback to calculating if no valid cache
                     const part = findPartForChain(path.chainId);
 
-                    const leadInConfig: LeadInConfig = {
-                        type: path.leadInType || LeadType.NONE,
-                        length: path.leadInLength || 0,
-                        flipSide: path.leadInFlipSide || false,
-                        angle: path.leadInAngle,
+                    const leadInConfig: LeadConfig = path.leadInConfig || {
+                        type: LeadType.NONE,
+                        length: 0,
+                        flipSide: false,
+                        angle: 0,
                     };
-                    const leadOutConfig: LeadOutConfig = {
-                        type: path.leadOutType || LeadType.NONE,
-                        length: path.leadOutLength || 0,
-                        flipSide: path.leadOutFlipSide || false,
-                        angle: path.leadOutAngle,
+                    const leadOutConfig: LeadConfig = path.leadOutConfig || {
+                        type: LeadType.NONE,
+                        length: 0,
+                        flipSide: false,
+                        angle: 0,
                     };
 
                     const chainForLeads =
-                        path.calculatedOffset && chain
+                        path.offset && chain
                             ? {
                                   ...chain,
-                                  shapes: path.calculatedOffset.offsetShapes,
+                                  shapes: path.offset.offsetShapes,
                               }
                             : chain;
 
@@ -499,21 +515,23 @@
                             part
                         );
 
-                        if (
-                            leadResult.leadIn &&
-                            leadResult.leadIn.points.length > 1
-                        ) {
-                            leadInDistance = calculatePolylineLength(
-                                leadResult.leadIn.points
+                        if (leadResult.leadIn) {
+                            const points = convertLeadGeometryToPoints(
+                                leadResult.leadIn
                             );
+                            if (points.length > 1) {
+                                leadInDistance =
+                                    calculatePolylineLength(points);
+                            }
                         }
-                        if (
-                            leadResult.leadOut &&
-                            leadResult.leadOut.points.length > 1
-                        ) {
-                            leadOutDistance = calculatePolylineLength(
-                                leadResult.leadOut.points
+                        if (leadResult.leadOut) {
+                            const points = convertLeadGeometryToPoints(
+                                leadResult.leadOut
                             );
+                            if (points.length > 1) {
+                                leadOutDistance =
+                                    calculatePolylineLength(points);
+                            }
                         }
                     }
                 }
@@ -561,7 +579,9 @@
                 const spline = shape.geometry as Spline;
                 try {
                     // Calculate arc length by sampling the NURBS curve
-                    const samples = sampleNURBS(spline, 100); // Use 100 samples for accurate length
+                    const samples = tessellateSpline(spline, {
+                        numSamples: 100,
+                    }).points; // Use 100 samples for accurate length
                     let splineLength = 0;
                     for (let i = 0; i < samples.length - 1; i++) {
                         const p1 = samples[i];
@@ -778,7 +798,7 @@
             );
             if (!chain) return;
             shapes =
-                path.calculatedOffset?.offsetShapes ||
+                path.offset?.offsetShapes ||
                 path.cutChain?.shapes ||
                 chain.shapes;
         }
@@ -791,46 +811,56 @@
 
         try {
             if (
-                (path.leadInType &&
-                    path.leadInType !== 'none' &&
-                    path.leadInLength &&
-                    path.leadInLength > 0) ||
-                (path.leadOutType &&
-                    path.leadOutType !== 'none' &&
-                    path.leadOutLength &&
-                    path.leadOutLength > 0)
+                (path.leadInConfig?.type &&
+                    path.leadInConfig.type !== 'none' &&
+                    path.leadInConfig.length &&
+                    path.leadInConfig.length > 0) ||
+                (path.leadOutConfig?.type &&
+                    path.leadOutConfig.type !== 'none' &&
+                    path.leadOutConfig.length &&
+                    path.leadOutConfig.length > 0)
             ) {
                 // First try to use cached lead geometry
                 if (hasValidCachedLeads(path)) {
                     const cached = getCachedLeadGeometry(path);
-                    if (cached.leadIn && cached.leadIn.points.length > 1) {
-                        leadInGeometry = cached.leadIn.points;
+                    if (cached.leadIn) {
+                        const cachedLeadInPoints = convertLeadGeometryToPoints(
+                            cached.leadIn
+                        );
+                        if (cachedLeadInPoints.length > 1) {
+                            leadInGeometry = cachedLeadInPoints;
+                        }
                     }
-                    if (cached.leadOut && cached.leadOut.points.length > 1) {
-                        leadOutGeometry = cached.leadOut.points;
+                    if (cached.leadOut) {
+                        const cachedLeadOutPoints = convertLeadGeometryToPoints(
+                            cached.leadOut
+                        );
+                        if (cachedLeadOutPoints.length > 1) {
+                            leadOutGeometry = cachedLeadOutPoints;
+                        }
                     }
                 } else {
                     // Fallback to calculating if no valid cache
                     const part = findPartForChain(path.chainId);
 
-                    const leadInConfig: LeadInConfig = {
-                        type: path.leadInType || LeadType.NONE,
-                        length: path.leadInLength || 0,
-                        flipSide: path.leadInFlipSide || false,
-                        angle: path.leadInAngle,
+                    const leadInConfig: LeadConfig = path.leadInConfig || {
+                        type: LeadType.NONE,
+                        length: 0,
+                        flipSide: false,
+                        angle: 0,
                     };
-                    const leadOutConfig: LeadOutConfig = {
-                        type: path.leadOutType || LeadType.NONE,
-                        length: path.leadOutLength || 0,
-                        flipSide: path.leadOutFlipSide || false,
-                        angle: path.leadOutAngle,
+                    const leadOutConfig: LeadConfig = path.leadOutConfig || {
+                        type: LeadType.NONE,
+                        length: 0,
+                        flipSide: false,
+                        angle: 0,
                     };
 
                     const chainForLeads =
-                        path.calculatedOffset && chain
+                        path.offset && chain
                             ? {
                                   ...chain,
-                                  shapes: path.calculatedOffset.offsetShapes,
+                                  shapes: path.offset.offsetShapes,
                               }
                             : chain;
 
@@ -843,17 +873,21 @@
                             part
                         );
 
-                        if (
-                            leadResult.leadIn &&
-                            leadResult.leadIn.points.length > 1
-                        ) {
-                            leadInGeometry = leadResult.leadIn.points;
+                        if (leadResult.leadIn) {
+                            const points = convertLeadGeometryToPoints(
+                                leadResult.leadIn
+                            );
+                            if (points.length > 1) {
+                                leadInGeometry = points;
+                            }
                         }
-                        if (
-                            leadResult.leadOut &&
-                            leadResult.leadOut.points.length > 1
-                        ) {
-                            leadOutGeometry = leadResult.leadOut.points;
+                        if (leadResult.leadOut) {
+                            const points = convertLeadGeometryToPoints(
+                                leadResult.leadOut
+                            );
+                            if (points.length > 1) {
+                                leadOutGeometry = points;
+                            }
                         }
                     }
                 }
@@ -1056,7 +1090,7 @@
                 const splineGeom = shape.geometry as Spline;
                 try {
                     // Use NURBS evaluation to get position at progress along curve
-                    return evaluateNURBS(progress, splineGeom);
+                    return getSplinePointAt(splineGeom, progress);
                 } catch {
                     // Fallback: interpolate between fit points or control points
                     if (

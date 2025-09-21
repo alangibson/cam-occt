@@ -54,3 +54,16 @@ export function generateCirclePoints(
 
     return points;
 }
+/**
+ * Get tangent direction for a circle geometry at a given point.
+ */
+export function getCircleTangent(circle: Circle, point: Point2D): Point2D {
+    const cdx: number = point.x - circle.center.x;
+    const cdy: number = point.y - circle.center.y;
+    const clen: number = Math.sqrt(cdx * cdx + cdy * cdy);
+    if (clen > 0) {
+        // Tangent is perpendicular to radius, assuming counterclockwise
+        return { x: -cdy / clen, y: cdx / clen };
+    }
+    return { x: 1, y: 0 };
+}

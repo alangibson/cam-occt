@@ -91,16 +91,20 @@ describe('Complete Persistence Integration', () => {
             enabled: true,
             order: 1,
             cutDirection: CutDirection.CLOCKWISE,
-            leadInType: LeadType.ARC,
-            leadInLength: 8,
-            leadInFlipSide: false,
-            leadInAngle: 45,
-            leadInFit: true,
-            leadOutType: LeadType.LINE,
-            leadOutLength: 6,
-            leadOutFlipSide: false,
-            leadOutAngle: 90,
-            leadOutFit: true,
+            leadInConfig: {
+                type: LeadType.ARC,
+                length: 8,
+                flipSide: false,
+                angle: 45,
+                fit: true,
+            },
+            leadOutConfig: {
+                type: LeadType.ARC,
+                length: 6,
+                flipSide: false,
+                angle: 90,
+                fit: true,
+            },
         };
 
         operationsStore.addOperation(testOperation);
@@ -121,19 +125,24 @@ describe('Complete Persistence Integration', () => {
         // Add lead geometry to simulate calculated leads
         pathStore.updatePathLeadGeometry(createdPath.id, {
             leadIn: {
-                points: [
-                    { x: 42, y: 50 },
-                    { x: 38, y: 48 },
-                    { x: 35, y: 45 },
-                ],
+                geometry: {
+                    center: { x: 40, y: 47 },
+                    radius: 5,
+                    startAngle: 0,
+                    endAngle: Math.PI,
+                    clockwise: false,
+                },
                 type: LeadType.ARC,
             },
             leadOut: {
-                points: [
-                    { x: 75, y: 50 },
-                    { x: 80, y: 50 },
-                ],
-                type: LeadType.LINE,
+                geometry: {
+                    center: { x: 77.5, y: 50 },
+                    radius: 2.5,
+                    startAngle: 180,
+                    endAngle: 0,
+                    clockwise: false,
+                },
+                type: LeadType.ARC,
             },
             validation: {
                 isValid: true,
@@ -164,8 +173,8 @@ describe('Complete Persistence Integration', () => {
             true
         );
         // Note: WorkflowStage.PREPARE stage may be affected by path generation, focus on core functionality
-        expect(pathWithLeads.calculatedLeadIn).toBeDefined();
-        expect(pathWithLeads.calculatedLeadOut).toBeDefined();
+        expect(pathWithLeads.leadIn).toBeDefined();
+        expect(pathWithLeads.leadOut).toBeDefined();
         expect(pathWithLeads.leadValidation).toBeDefined();
 
         // 6. Save complete application state
@@ -217,28 +226,33 @@ describe('Complete Persistence Integration', () => {
         const restoredPath = pathsState!.paths[0];
 
         expect(restoredPath.name).toBe('Complete Test Cut - Chain 1');
-        expect(restoredPath.leadInType).toBe(LeadType.ARC);
-        expect(restoredPath.leadInLength).toBe(8);
-        expect(restoredPath.leadOutType).toBe(LeadType.LINE);
-        expect(restoredPath.leadOutLength).toBe(6);
+        expect(restoredPath.leadInConfig?.type).toBe(LeadType.ARC);
+        expect(restoredPath.leadInConfig?.length).toBe(8);
+        expect(restoredPath.leadOutConfig?.type).toBe(LeadType.ARC);
+        expect(restoredPath.leadOutConfig?.length).toBe(6);
 
         // Verify calculated lead geometry
-        expect(restoredPath.calculatedLeadIn).toBeDefined();
-        expect(restoredPath.calculatedLeadIn!.points).toEqual([
-            { x: 42, y: 50 },
-            { x: 38, y: 48 },
-            { x: 35, y: 45 },
-        ]);
-        expect(restoredPath.calculatedLeadIn!.type).toBe(LeadType.ARC);
-        expect(restoredPath.calculatedLeadIn!.version).toBe('1.0.0');
+        expect(restoredPath.leadIn).toBeDefined();
+        expect(restoredPath.leadIn!.geometry).toEqual({
+            center: { x: 40, y: 47 },
+            radius: 5,
+            startAngle: 0,
+            endAngle: Math.PI,
+            clockwise: false,
+        });
+        expect(restoredPath.leadIn!.type).toBe(LeadType.ARC);
+        expect(restoredPath.leadIn!.version).toBe('1.0.0');
 
-        expect(restoredPath.calculatedLeadOut).toBeDefined();
-        expect(restoredPath.calculatedLeadOut!.points).toEqual([
-            { x: 75, y: 50 },
-            { x: 80, y: 50 },
-        ]);
-        expect(restoredPath.calculatedLeadOut!.type).toBe(LeadType.LINE);
-        expect(restoredPath.calculatedLeadOut!.version).toBe('1.0.0');
+        expect(restoredPath.leadOut).toBeDefined();
+        expect(restoredPath.leadOut!.geometry).toEqual({
+            center: { x: 77.5, y: 50 },
+            radius: 2.5,
+            startAngle: 180,
+            endAngle: 0,
+            clockwise: false,
+        });
+        expect(restoredPath.leadOut!.type).toBe(LeadType.ARC);
+        expect(restoredPath.leadOut!.version).toBe('1.0.0');
 
         // Verify lead validation
         expect(restoredPath.leadValidation).toBeDefined();

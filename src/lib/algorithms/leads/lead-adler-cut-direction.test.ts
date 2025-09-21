@@ -8,14 +8,12 @@ import {
     type PartShell,
     detectParts,
 } from '$lib/algorithms/part-detection/part-detection';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Line, Polyline } from '$lib/types/geometry';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('ADLER Part 5 Cut Direction Analysis', () => {
     // Helper to check if a point is inside a polygon using ray casting
@@ -106,8 +104,8 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         ];
 
         for (const length of testLengths) {
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const results: Array<{
                 direction: string;
@@ -126,17 +124,9 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
 
                 let solidPoints = 0;
                 if (result.leadIn) {
-                    for (
-                        let i: number = 0;
-                        i < result.leadIn.points.length - 1;
-                        i++
-                    ) {
-                        if (
-                            isPointInSolidArea(
-                                result.leadIn.points[i],
-                                part5.shell
-                            )
-                        ) {
+                    const points = convertLeadGeometryToPoints(result.leadIn);
+                    for (let i: number = 0; i < points.length - 1; i++) {
+                        if (isPointInSolidArea(points[i], part5.shell)) {
                             solidPoints++;
                         }
                     }
@@ -166,17 +156,9 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
 
         if (shortResult.leadIn) {
             let solidPoints = 0;
-            for (
-                let i: number = 0;
-                i < shortResult.leadIn.points.length - 1;
-                i++
-            ) {
-                if (
-                    isPointInSolidArea(
-                        shortResult.leadIn.points[i],
-                        part5.shell
-                    )
-                ) {
+            const shortPoints = convertLeadGeometryToPoints(shortResult.leadIn);
+            for (let i: number = 0; i < shortPoints.length - 1; i++) {
+                if (isPointInSolidArea(shortPoints[i], part5.shell)) {
                     solidPoints++;
                 }
             }

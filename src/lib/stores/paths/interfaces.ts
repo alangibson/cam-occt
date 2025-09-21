@@ -4,76 +4,73 @@
  * Type definitions for paths and path-related data.
  */
 
-import type { Point2D, Shape } from '$lib/types';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import type { Shape } from '$lib/types';
+import { CutDirection } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { PathLeadResult } from '$lib/stores/operations/interfaces';
+import type {
+    CacheableLead,
+    LeadConfig,
+    LeadValidationResult,
+} from '$lib/algorithms/leads/interfaces';
 
 export interface Path {
     id: string;
     name: string;
+    enabled: boolean;
+    order: number; // Execution order within operation
+
     operationId: string; // Reference to the operation that created this path
     chainId: string; // Reference to the source chain
     toolId: string | null; // Reference to the tool used
-    enabled: boolean;
-    order: number; // Execution order within operation
-    cutDirection: CutDirection; // User-defined cut direction from operation
+
     feedRate?: number; // Cutting speed
     pierceHeight?: number; // Height for pierce operation
     pierceDelay?: number; // Delay for pierce operation
     arcVoltage?: number; // Arc voltage for plasma cutting
-    kerfWidth?: number; // Kerf compensation width
     thcEnabled?: boolean; // Torch height control
-    leadInLength?: number; // Lead-in length
-    leadInType?: LeadType; // Lead-in type
-    leadInFlipSide?: boolean; // Flip which side of the chain the lead-in is on
-    leadInAngle?: number; // Manual rotation angle for lead-in (degrees, 0-360)
-    leadInFit?: boolean; // Whether to automatically adjust lead-in length to avoid solid areas
-    leadOutLength?: number; // Lead-out length
-    leadOutType?: LeadType; // Lead-out type
-    leadOutFlipSide?: boolean; // Flip which side of the chain the lead-out is on
-    leadOutAngle?: number; // Manual rotation angle for lead-out (degrees, 0-360)
-    leadOutFit?: boolean; // Whether to automatically adjust lead-out length to avoid solid areas
     overcutLength?: number; // Overcut length
-    isHole?: boolean; // Whether this path is a hole (for velocity reduction)
-    holeUnderspeedPercent?: number; // Velocity percentage for hole cutting (10-100)
 
+    // Cut
+    //
+    // User-defined cut direction from operation
+    cutDirection: CutDirection;
+    // Cloned chain with shapes reordered for user-specified cut direction
+    cutChain?: Chain;
     // Execution direction (independent of underlying chain's natural winding)
-    executionClockwise?: boolean | null; // true=clockwise execution, false=counterclockwise, null=no direction (open chains)
+    // true=clockwise execution, false=counterclockwise, null=no direction (open chains)
+    executionClockwise?: boolean | null;
 
-    // Cut chain - cloned chain with shapes reordered for user-specified cut direction
-    cutChain?: Chain; // Cloned chain with shapes ordered for execution direction
+    // Hole
+    //
+    // Whether this path is a hole (for velocity reduction)
+    isHole?: boolean;
+    // Velocity percentage for hole cutting (10-100)
+    holeUnderspeedPercent?: number;
 
+    // Leads
+    //
+    // Lead-in configuration
+    leadInConfig?: LeadConfig;
+    // Lead-out configuration
+    leadOutConfig?: LeadConfig;
     // Calculated lead geometry (persisted to avoid recalculation)
-    calculatedLeadIn?: {
-        points: Point2D[];
-        type: LeadType;
-        generatedAt: string; // ISO timestamp
-        version: string; // Algorithm version for invalidation
-    };
-    calculatedLeadOut?: {
-        points: Point2D[];
-        type: LeadType;
-        generatedAt: string; // ISO timestamp
-        version: string; // Algorithm version for invalidation
-    };
-
+    leadIn?: CacheableLead;
+    // Calculated lead geometry (persisted to avoid recalculation)
+    leadOut?: CacheableLead;
     // Lead validation results (persisted)
-    leadValidation?: {
-        isValid: boolean;
-        warnings: string[];
-        errors: string[];
-        severity: 'info' | 'warning' | 'error';
-        validatedAt: string; // ISO timestamp
-    };
+    leadValidation?: LeadValidationResult;
 
+    // Offsets
+    //
+    // Kerf compensation width
+    kerfWidth?: number;
     // Kerf compensation fields
     kerfCompensation?: OffsetDirection; // Direction of kerf compensation
-
     // Calculated offset geometry (persisted to avoid recalculation)
-    calculatedOffset?: {
+    offset?: {
         offsetShapes: Shape[]; // The offset chain shapes
         originalShapes: Shape[]; // The original unmodified chain shapes
         direction: OffsetDirection; // The direction that was applied
@@ -92,7 +89,7 @@ export interface PathsState {
 
 export interface PathsStore {
     subscribe: (run: (value: PathsState) => void) => () => void;
-    addPath: (path: Omit<Path, 'id'>) => void;
+    addPath: (path: Path) => void;
     updatePath: (id: string, updates: Partial<Path>) => void;
     deletePath: (id: string) => void;
     deletePathsByOperation: (operationId: string) => void;

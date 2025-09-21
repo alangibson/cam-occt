@@ -2,10 +2,18 @@
  * Chain and polygon functions
  */
 
-import type { Point2D, Shape } from '$lib/types/geometry';
+import {
+    GeometryType,
+    type Arc,
+    type Circle,
+    type Line,
+    type Point2D,
+    type Shape,
+} from '$lib/types/geometry';
 import type { Chain } from './interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Polyline } from '$lib/geometry/polyline';
+import type { Spline } from '$lib/geometry/spline';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
@@ -38,7 +46,11 @@ import {
     isPolygonContained,
     removeDuplicatePoints,
 } from '$lib/geometry/polygon/functions';
-// import { getShapePoints3 } from '../shape/functions';
+import { getArcTangent } from '$lib/geometry/arc/functions';
+import { getCircleTangent } from '$lib/geometry/circle/functions';
+import { getLineTangent } from '$lib/geometry/line/functions';
+import { getPolylineTangent } from '$lib/geometry/polyline/functions';
+import { getSplineTangent } from '$lib/geometry/spline/functions';
 
 /**
  * Reverses a chain's direction by reversing both the order of shapes
@@ -613,4 +625,37 @@ export function getChainEndPoint(chain: Chain): Point2D {
 
     const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
     return getShapeEndPoint(lastShape);
+}
+
+/**
+ * Get the tangent direction at a point on the chain.
+ */
+export function getChainTangent(
+    chain: Chain,
+    point: Point2D,
+    isStart: boolean
+): Point2D {
+    const shape: Shape = isStart
+        ? chain.shapes[0]
+        : chain.shapes[chain.shapes.length - 1];
+
+    switch (shape.type) {
+        case GeometryType.LINE:
+            return getLineTangent(shape.geometry as Line);
+
+        case GeometryType.ARC:
+            return getArcTangent(shape.geometry as Arc, isStart);
+
+        case GeometryType.CIRCLE:
+            return getCircleTangent(shape.geometry as Circle, point);
+
+        case GeometryType.POLYLINE:
+            return getPolylineTangent(shape.geometry as Polyline, isStart);
+
+        case GeometryType.SPLINE:
+            return getSplineTangent(shape.geometry as Spline, isStart);
+
+        default:
+            throw Error(`Can not find tangent for shape: ${shape}`);
+    }
 }

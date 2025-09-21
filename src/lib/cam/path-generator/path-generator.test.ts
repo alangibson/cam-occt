@@ -29,8 +29,7 @@ describe('generateToolPaths', () => {
         pierceDelay: 0.5,
         cutHeight: 1.5,
         kerf: 1.5,
-        leadInLength: 5,
-        leadOutLength: 5,
+        // Lead lengths removed from CuttingParameters
     };
 
     const createMockLine = (
@@ -132,14 +131,19 @@ describe('generateToolPaths', () => {
         const paths = generateToolPaths(drawing, mockParameters);
 
         expect(paths[0].leadIn).toBeDefined();
-        expect(paths[0].leadIn).toHaveLength(2);
         expect(paths[0].leadOut).toBeDefined();
-        expect(paths[0].leadOut).toHaveLength(2);
+
+        // Lead points are already converted to point arrays
+        const leadInPoints = paths[0].leadIn!;
+        const leadOutPoints = paths[0].leadOut!;
+
+        expect(leadInPoints).toHaveLength(2);
+        expect(leadOutPoints).toHaveLength(2);
 
         // Lead-in should start before the path
-        expect(paths[0].leadIn![0].x).toBeLessThan(paths[0].points[0].x);
+        expect(leadInPoints[0].x).toBeLessThan(paths[0].points[0].x);
         // Lead-out should end after the path
-        expect(paths[0].leadOut![1].x).toBeGreaterThan(
+        expect(leadOutPoints[1].x).toBeGreaterThan(
             paths[0].points[paths[0].points.length - 1].x
         );
     });
@@ -384,18 +388,24 @@ describe('generateToolPaths', () => {
 
             const customParams = {
                 ...mockParameters,
+                // Lead lengths removed from CuttingParameters
+            };
+            const paths = generateToolPaths(drawing, customParams, {
                 leadInLength: 10,
                 leadOutLength: 15,
-            };
-            const paths = generateToolPaths(drawing, customParams);
+            });
+
+            // Lead points are already converted to point arrays
+            const leadInPoints = paths[0].leadIn!;
+            const leadOutPoints = paths[0].leadOut!;
 
             // Lead-in should be 10mm to the left
-            expect(paths[0].leadIn![0].x).toBeCloseTo(40, 3); // 50 - 10
-            expect(paths[0].leadIn![0].y).toBe(50);
+            expect(leadInPoints[0].x).toBeCloseTo(40, 3); // 50 - 10
+            expect(leadInPoints[0].y).toBe(50);
 
             // Lead-out should be 15mm to the right
-            expect(paths[0].leadOut![1].x).toBeCloseTo(115, 3); // 100 + 15
-            expect(paths[0].leadOut![1].y).toBe(50);
+            expect(leadOutPoints[1].x).toBeCloseTo(115, 3); // 100 + 15
+            expect(leadOutPoints[1].y).toBe(50);
         });
 
         it('should handle zero-length leads', () => {
@@ -414,16 +424,22 @@ describe('generateToolPaths', () => {
 
             const zeroLeadParams = {
                 ...mockParameters,
+                // Lead lengths removed from CuttingParameters
+            };
+            const paths = generateToolPaths(drawing, zeroLeadParams, {
                 leadInLength: 0,
                 leadOutLength: 0,
-            };
-            const paths = generateToolPaths(drawing, zeroLeadParams);
+            });
+
+            // Lead points are already converted to point arrays
+            const leadInPoints = paths[0].leadIn!;
+            const leadOutPoints = paths[0].leadOut!;
 
             // Should still generate lead arrays but with zero offset
-            expect(paths[0].leadIn).toHaveLength(2);
-            expect(paths[0].leadOut).toHaveLength(2);
-            expect(paths[0].leadIn![0]).toEqual(paths[0].leadIn![1]);
-            expect(paths[0].leadOut![0]).toEqual(paths[0].leadOut![1]);
+            expect(leadInPoints).toHaveLength(2);
+            expect(leadOutPoints).toHaveLength(2);
+            expect(leadInPoints[0]).toEqual(leadInPoints[1]);
+            expect(leadOutPoints[0]).toEqual(leadOutPoints[1]);
         });
     });
 });

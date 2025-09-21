@@ -30,12 +30,11 @@ import {
 } from '$lib/geometry/line';
 import { GeometryType } from './enums';
 import {
-    evaluateNURBS,
     getSplineEndPoint,
     getSplinePointAt,
     getSplineStartPoint,
     reverseSpline,
-    sampleNURBS,
+    tessellateSpline,
 } from '$lib/geometry/spline';
 import {
     ELLIPSE_TESSELLATION_POINTS,
@@ -63,7 +62,6 @@ import {
 import {
     DEFAULT_TESSELLATION_SEGMENTS,
     HIGH_TESSELLATION_SEGMENTS,
-    MAX_ITERATIONS,
     MIDPOINT_T,
     OCTAGON_SIDES,
     QUARTER_CIRCLE_QUADRANTS,
@@ -420,11 +418,13 @@ export function getShapePoints(
             }
 
             try {
-                const tessellationPoints =
+                const tessellationPoints: number =
                     resolution === 'HIGH'
                         ? ELLIPSE_TESSELLATION_POINTS * 2
                         : ELLIPSE_TESSELLATION_POINTS;
-                return sampleNURBS(spline, tessellationPoints);
+                return tessellateSpline(spline, {
+                    numSamples: tessellationPoints,
+                }).points;
             } catch {
                 // Fallback to fit points or control points if NURBS evaluation fails
                 if (spline.fitPoints && spline.fitPoints.length > 0) {
@@ -598,10 +598,10 @@ export function tessellateShape(
             try {
                 // Use NURBS sampling for accurate tessellation
                 // Use more points for better accuracy in part detection
-                const sampledPoints: Point2D[] = sampleNURBS(
-                    spline,
-                    HIGH_TESSELLATION_SEGMENTS
-                );
+                const sampledPoints: Point2D[] = tessellateSpline(spline, {
+                    numSamples: HIGH_TESSELLATION_SEGMENTS,
+                }).points;
+
                 points.push(...sampledPoints);
             } catch {
                 // Fallback to fit points or control points if NURBS evaluation fails
@@ -746,7 +746,7 @@ export function getShapeLength(shape: Shape): number {
             // For splines, approximate length by sampling points
             const spline = shape.geometry as Spline;
             try {
-                const points = sampleNURBS(spline, MAX_ITERATIONS);
+                const points = tessellateSpline(spline).points;
                 if (points.length < 2) return 0;
                 return calculatePolylineLength(points);
             } catch {
@@ -1405,7 +1405,9 @@ export function getShapePoints2(shape: Shape): Point2D[] {
             const spline: Spline = shape.geometry as Spline;
             try {
                 // Use NURBS sampling for accurate polygon representation
-                return sampleNURBS(spline, ELLIPSE_TESSELLATION_POINTS); // Use more points for geometric accuracy
+                return tessellateSpline(spline, {
+                    numSamples: ELLIPSE_TESSELLATION_POINTS,
+                }).points;
             } catch {
                 // Fallback to fit points or control points if NURBS evaluation fails
                 if (spline.fitPoints && spline.fitPoints.length > 0) {
@@ -1480,8 +1482,8 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
 
             try {
                 // Use NURBS evaluation for accurate endpoints
-                splineFirstPoint = evaluateNURBS(0, splineGeom);
-                splineLastPoint = evaluateNURBS(1, splineGeom);
+                splineFirstPoint = getSplineStartPoint(splineGeom);
+                splineLastPoint = getSplineEndPoint(splineGeom);
             } catch {
                 // Fallback to fit points if NURBS evaluation fails
                 if (splineGeom.fitPoints && splineGeom.fitPoints.length > 0) {

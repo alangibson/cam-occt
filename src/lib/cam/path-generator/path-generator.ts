@@ -3,20 +3,30 @@ import type {
     Drawing,
     Point2D,
     Shape,
-    ToolPath,
+    CutPath,
+    Lead,
 } from '$lib/types';
 import { generateId } from '$lib/domain/id';
 import { getShapePoints } from '$lib/geometry/shape';
+import {
+    DEFAULT_LEAD_IN_LENGTH,
+    DEFAULT_LEAD_OUT_LENGTH,
+} from '$lib/algorithms/leads/constants';
 
 export function generateToolPaths(
     drawing: Drawing,
-    parameters: CuttingParameters
-): ToolPath[] {
-    const paths: ToolPath[] = [];
+    parameters: CuttingParameters,
+    leadOptions?: { leadInLength?: number; leadOutLength?: number }
+): CutPath[] {
+    const paths: CutPath[] = [];
 
     // Generate tool paths for each shape
     drawing.shapes.forEach((shape: Shape) => {
-        const path: ToolPath | null = generateShapeToolPath(shape, parameters);
+        const path: CutPath | null = generateShapeToolPath(
+            shape,
+            parameters,
+            leadOptions
+        );
         if (path) {
             paths.push(path);
         }
@@ -28,8 +38,9 @@ export function generateToolPaths(
 
 function generateShapeToolPath(
     shape: Shape,
-    parameters: CuttingParameters
-): ToolPath | null {
+    parameters: CuttingParameters,
+    leadOptions?: { leadInLength?: number; leadOutLength?: number }
+): CutPath | null {
     const points: Point2D[] = getShapePoints(shape);
     if (points.length < 2) return null;
 
@@ -39,14 +50,14 @@ function generateShapeToolPath(
         parameters.kerf
     );
 
-    // Generate lead-in and lead-out
-    const leadIn: Point2D[] = generateLeadIn(
-        compensatedPoints[0],
-        parameters.leadInLength
-    );
-    const leadOut: Point2D[] = generateLeadOut(
+    // Generate lead-in and lead-out with configurable lengths
+    // Use provided lengths, or defaults, or zero if not specified
+    const leadInLength = leadOptions?.leadInLength ?? DEFAULT_LEAD_IN_LENGTH; // Default 2mm lead-in
+    const leadOutLength = leadOptions?.leadOutLength ?? DEFAULT_LEAD_OUT_LENGTH; // Default 2mm lead-out
+    const leadIn: Lead = generateLeadIn(compensatedPoints[0], leadInLength);
+    const leadOut: Lead = generateLeadOut(
         compensatedPoints[compensatedPoints.length - 1],
-        parameters.leadOutLength
+        leadOutLength
     );
 
     return {
@@ -102,7 +113,7 @@ function applyKerfCompensation(points: Point2D[], kerf: number): Point2D[] {
     return compensated;
 }
 
-function generateLeadIn(startPoint: Point2D, length: number): Point2D[] {
+function generateLeadIn(startPoint: Point2D, length: number): Lead {
     // Simple perpendicular lead-in
     const leadInPoint: Point2D = {
         x: startPoint.x - length,
@@ -112,7 +123,7 @@ function generateLeadIn(startPoint: Point2D, length: number): Point2D[] {
     return [leadInPoint, startPoint];
 }
 
-function generateLeadOut(endPoint: Point2D, length: number): Point2D[] {
+function generateLeadOut(endPoint: Point2D, length: number): Lead {
     // Simple perpendicular lead-out
     const leadOutPoint: Point2D = {
         x: endPoint.x + length,
@@ -122,15 +133,15 @@ function generateLeadOut(endPoint: Point2D, length: number): Point2D[] {
     return [endPoint, leadOutPoint];
 }
 
-function optimizeCutSequence(paths: ToolPath[]): ToolPath[] {
+function optimizeCutSequence(paths: CutPath[]): CutPath[] {
     if (paths.length <= 1) return paths;
 
     // Simple nearest neighbor optimization
-    const optimized: ToolPath[] = [];
-    const remaining: ToolPath[] = [...paths];
+    const optimized: CutPath[] = [];
+    const remaining: CutPath[] = [...paths];
 
     // Start with the first path
-    let current: ToolPath = remaining.shift()!;
+    let current: CutPath = remaining.shift()!;
     optimized.push(current);
 
     while (remaining.length > 0) {
@@ -140,7 +151,7 @@ function optimizeCutSequence(paths: ToolPath[]): ToolPath[] {
 
         const currentEnd: Point2D = current.points[current.points.length - 1];
 
-        remaining.forEach((path: ToolPath, index: number) => {
+        remaining.forEach((path: CutPath, index: number) => {
             const pathStart: Point2D = path.points[0];
             const distance: number = Math.sqrt(
                 Math.pow(pathStart.x - currentEnd.x, 2) +

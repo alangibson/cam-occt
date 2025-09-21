@@ -6,13 +6,11 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
+import { convertLeadGeometryToPoints } from './functions';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { GeometryType } from '$lib/geometry/shape';
@@ -71,13 +69,13 @@ describe('Lead Fit Feature', () => {
     };
 
     it('should preserve full length when fit=false', () => {
-        const leadInConfig: LeadInConfig = {
+        const leadInConfig: LeadConfig = {
             type: LeadType.ARC,
             length: 5,
             fit: false, // Disable length adjustment
         };
 
-        const leadOutConfig: LeadOutConfig = {
+        const LeadConfig: LeadConfig = {
             type: LeadType.ARC,
             length: 5,
             fit: false, // Disable length adjustment
@@ -86,7 +84,7 @@ describe('Lead Fit Feature', () => {
         const result = calculateLeads(
             testChain,
             leadInConfig,
-            leadOutConfig,
+            LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
             testPart
         );
@@ -95,18 +93,24 @@ describe('Lead Fit Feature', () => {
         // even if they intersect solid areas
         expect(result.leadIn).toBeDefined();
         expect(result.leadOut).toBeDefined();
-        expect(result.leadIn?.points.length).toBeGreaterThan(0);
-        expect(result.leadOut?.points.length).toBeGreaterThan(0);
+        if (result.leadIn) {
+            const leadInPoints = convertLeadGeometryToPoints(result.leadIn);
+            expect(leadInPoints.length).toBeGreaterThan(0);
+        }
+        if (result.leadOut) {
+            const leadOutPoints = convertLeadGeometryToPoints(result.leadOut);
+            expect(leadOutPoints.length).toBeGreaterThan(0);
+        }
     });
 
     it('should allow length adjustment when fit=true', () => {
-        const leadInConfig: LeadInConfig = {
+        const leadInConfig: LeadConfig = {
             type: LeadType.ARC,
             length: 5,
             fit: true, // Enable length adjustment (default behavior)
         };
 
-        const leadOutConfig: LeadOutConfig = {
+        const LeadConfig: LeadConfig = {
             type: LeadType.ARC,
             length: 5,
             fit: true, // Enable length adjustment (default behavior)
@@ -115,7 +119,7 @@ describe('Lead Fit Feature', () => {
         const result = calculateLeads(
             testChain,
             leadInConfig,
-            leadOutConfig,
+            LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
             testPart
         );
@@ -123,19 +127,25 @@ describe('Lead Fit Feature', () => {
         // When fit=true, leads can adjust their length to avoid solid areas
         expect(result.leadIn).toBeDefined();
         expect(result.leadOut).toBeDefined();
-        expect(result.leadIn?.points.length).toBeGreaterThan(0);
-        expect(result.leadOut?.points.length).toBeGreaterThan(0);
+        if (result.leadIn) {
+            const leadInPoints = convertLeadGeometryToPoints(result.leadIn);
+            expect(leadInPoints.length).toBeGreaterThan(0);
+        }
+        if (result.leadOut) {
+            const leadOutPoints = convertLeadGeometryToPoints(result.leadOut);
+            expect(leadOutPoints.length).toBeGreaterThan(0);
+        }
     });
 
     it('should default to fit=true when not specified', () => {
-        const leadInConfig: LeadInConfig = {
-            type: LeadType.LINE,
+        const leadInConfig: LeadConfig = {
+            type: LeadType.ARC,
             length: 3,
             // fit parameter not specified, should default to true
         };
 
-        const leadOutConfig: LeadOutConfig = {
-            type: LeadType.LINE,
+        const LeadConfig: LeadConfig = {
+            type: LeadType.ARC,
             length: 3,
             // fit parameter not specified, should default to true
         };
@@ -143,7 +153,7 @@ describe('Lead Fit Feature', () => {
         const result = calculateLeads(
             testChain,
             leadInConfig,
-            leadOutConfig,
+            LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
             testPart
         );
@@ -154,13 +164,13 @@ describe('Lead Fit Feature', () => {
     });
 
     it('should work with mixed fit settings', () => {
-        const leadInConfig: LeadInConfig = {
+        const leadInConfig: LeadConfig = {
             type: LeadType.ARC,
             length: 4,
             fit: false, // Lead-in preserves length
         };
 
-        const leadOutConfig: LeadOutConfig = {
+        const LeadConfig: LeadConfig = {
             type: LeadType.ARC,
             length: 4,
             fit: true, // Lead-out can adjust length
@@ -169,7 +179,7 @@ describe('Lead Fit Feature', () => {
         const result = calculateLeads(
             testChain,
             leadInConfig,
-            leadOutConfig,
+            LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
             testPart
         );

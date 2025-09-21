@@ -2,7 +2,6 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import type { LeadInConfig, LeadOutConfig } from './lead-calculation';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import {
     GEOMETRIC_PRECISION_TOLERANCE,
@@ -11,32 +10,15 @@ import {
 import { MAX_ITERATIONS, STANDARD_GRID_SPACING } from '$lib/constants';
 import { FULL_CIRCLE_DEG } from '$lib/geometry/circle';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
-
-/**
- * Lead validation constants for lead distance validation
- */
-const LEAD_PROXIMITY_THRESHOLD = 50;
-const MINIMUM_SHELL_DISTANCE = 1.0;
-
-export interface LeadValidationResult {
-    isValid: boolean;
-    warnings: string[];
-    suggestions?: string[];
-    severity: 'info' | 'warning' | 'error';
-}
-
-export interface LeadConfig {
-    leadIn: LeadInConfig;
-    leadOut: LeadOutConfig;
-    cutDirection: CutDirection;
-}
+import type { LeadsConfig, LeadValidationResult } from './interfaces';
+import { MINIMUM_SHELL_DISTANCE, LEAD_PROXIMITY_THRESHOLD } from './constants';
 
 /**
  * Comprehensive validation pipeline for lead configurations.
  * Separates validation logic from calculation logic for better error handling.
  */
 export function validateLeadConfiguration(
-    config: LeadConfig,
+    config: LeadsConfig,
     chain: Chain,
     part?: DetectedPart
 ): LeadValidationResult {
@@ -116,7 +98,7 @@ export function validateLeadConfiguration(
 /**
  * Validate basic configuration parameters
  */
-function validateBasicConfiguration(config: LeadConfig): LeadValidationResult {
+function validateBasicConfiguration(config: LeadsConfig): LeadValidationResult {
     const warnings: string[] = [];
     const suggestions: string[] = [];
     let isValid: boolean = true;
@@ -187,7 +169,7 @@ function validateBasicConfiguration(config: LeadConfig): LeadValidationResult {
  */
 function validateChainGeometry(
     chain: Chain,
-    config: LeadConfig
+    config: LeadsConfig
 ): LeadValidationResult {
     const warnings: string[] = [];
     const suggestions: string[] = [];
@@ -258,7 +240,7 @@ function validateChainGeometry(
  * Validate part context constraints (holes vs shells)
  */
 function validatePartContext(
-    config: LeadConfig,
+    config: LeadsConfig,
     chain: Chain,
     part: DetectedPart
 ): LeadValidationResult {
@@ -337,7 +319,7 @@ function validatePartContext(
 /**
  * Validate lead lengths for practical machining
  */
-function validateLeadLengths(config: LeadConfig): LeadValidationResult {
+function validateLeadLengths(config: LeadsConfig): LeadValidationResult {
     const warnings: string[] = [];
     const suggestions: string[] = [];
     let severity: 'info' | 'warning' | 'error' = 'info';
@@ -399,7 +381,7 @@ function validateLeadLengths(config: LeadConfig): LeadValidationResult {
  * Validate cut direction compatibility with lead configuration
  */
 function validateCutDirectionCompatibility(
-    config: LeadConfig,
+    config: LeadsConfig,
     chain: Chain
 ): LeadValidationResult {
     const warnings: string[] = [];

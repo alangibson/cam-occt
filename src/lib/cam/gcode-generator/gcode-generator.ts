@@ -3,7 +3,7 @@ import type {
     CuttingParameters,
     Drawing,
     GCodeCommand,
-    ToolPath,
+    CutPath,
 } from '$lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
@@ -44,7 +44,7 @@ export interface GCodeOptions {
 }
 
 export function generateGCode(
-    paths: ToolPath[],
+    paths: CutPath[],
     drawing: Drawing,
     options: GCodeOptions
 ): string {
@@ -359,7 +359,7 @@ function generateTemporaryMaterial(
 }
 
 function generatePathCommands(
-    path: ToolPath,
+    path: CutPath,
     options: GCodeOptions,
     index: number
 ): GCodeCommand[] {
@@ -382,32 +382,35 @@ function generatePathCommands(
 
     // Lead-in if present
     if (path.leadIn && path.leadIn.length > 0) {
-        // Rapid to lead-in start
-        const leadInStart: { x: number; y: number } = path.leadIn[0];
-        commands.push({
-            code: 'G0',
-            parameters: { X: leadInStart.x, Y: leadInStart.y },
-            comment: 'Move to lead-in start',
-        });
+        const leadInPoints = path.leadIn;
+        if (leadInPoints.length > 0) {
+            // Rapid to lead-in start
+            const leadInStart: { x: number; y: number } = leadInPoints[0];
+            commands.push({
+                code: 'G0',
+                parameters: { X: leadInStart.x, Y: leadInStart.y },
+                comment: 'Move to lead-in start',
+            });
 
-        // Pierce (always in plasma mode)
-        if (path.parameters) {
-            commands.push(...generatePierceCommands(path.parameters));
-        }
-
-        // Cut lead-in
-        path.leadIn.forEach((point, i) => {
-            if (i > 0) {
-                commands.push({
-                    code: 'G1',
-                    parameters: {
-                        X: point.x,
-                        Y: point.y,
-                        // Note: Using HAL feed rate, not explicit F parameter
-                    },
-                });
+            // Pierce (always in plasma mode)
+            if (path.parameters) {
+                commands.push(...generatePierceCommands(path.parameters));
             }
-        });
+
+            // Cut lead-in
+            leadInPoints.forEach((point, i) => {
+                if (i > 0) {
+                    commands.push({
+                        code: 'G1',
+                        parameters: {
+                            X: point.x,
+                            Y: point.y,
+                        },
+                        // Note: Using HAL feed rate, not explicit F parameter
+                    });
+                }
+            });
+        }
     } else {
         // Direct move to path start
         const pathPoints: { x: number; y: number }[] = path.points || [];
@@ -481,14 +484,17 @@ function generatePathCommands(
 
     // Lead-out if present
     if (path.leadOut && path.leadOut.length > 0) {
-        path.leadOut.forEach((point, i) => {
-            if (i > 0) {
-                commands.push({
-                    code: 'G1',
-                    parameters: { X: point.x, Y: point.y },
-                });
-            }
-        });
+        const leadOutPoints = path.leadOut;
+        if (leadOutPoints.length > 0) {
+            leadOutPoints.forEach((point, i) => {
+                if (i > 0) {
+                    commands.push({
+                        code: 'G1',
+                        parameters: { X: point.x, Y: point.y },
+                    });
+                }
+            });
+        }
     }
 
     // Turn off plasma using QtPlasmaC syntax (always in plasma mode)
@@ -587,7 +593,7 @@ function generateFooter(options: GCodeOptions): GCodeCommand[] {
 function generateNativeSplineCommands(
     shape: Shape,
     options: GCodeOptions,
-    toolPath?: ToolPath
+    toolPath?: CutPath
 ): GCodeCommand[] {
     const commands: GCodeCommand[] = [];
 

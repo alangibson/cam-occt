@@ -106,16 +106,20 @@
             enabled: true,
             order: newOrder,
             cutDirection: CutDirection.COUNTERCLOCKWISE,
-            leadInType: LeadType.NONE,
-            leadInLength: 5,
-            leadInAngle: 0,
-            leadInFlipSide: false,
-            leadInFit: true,
-            leadOutType: LeadType.NONE,
-            leadOutLength: 5,
-            leadOutAngle: 0,
-            leadOutFlipSide: false,
-            leadOutFit: true,
+            leadInConfig: {
+                type: LeadType.ARC,
+                length: 5,
+                angle: 0,
+                flipSide: false,
+                fit: true,
+            },
+            leadOutConfig: {
+                type: LeadType.ARC,
+                length: 5,
+                angle: 0,
+                flipSide: false,
+                fit: true,
+            },
             kerfCompensation:
                 targetType === 'parts'
                     ? KerfCompensation.PART
@@ -709,21 +713,25 @@
                                 >
                                 <select
                                     id="lead-in-type-{operation.id}"
-                                    value={operation.leadInType}
+                                    value={operation.leadInConfig?.type ||
+                                        LeadType.NONE}
                                     onchange={(e) =>
                                         updateOperationField(
                                             operation.id,
-                                            'leadInType',
-                                            e.currentTarget.value as LeadType
+                                            'leadInConfig',
+                                            {
+                                                ...operation.leadInConfig,
+                                                type: e.currentTarget
+                                                    .value as LeadType,
+                                            }
                                         )}
                                     class="lead-select"
                                 >
                                     <option value="none">None</option>
                                     <option value="arc">Arc</option>
-                                    <option value="line">Line</option>
                                 </select>
                             </div>
-                            {#if operation.leadInType !== 'none'}
+                            {#if operation.leadInConfig?.type !== 'none'}
                                 <div class="field-group">
                                     <label for="lead-in-length-{operation.id}"
                                         >Length (units):</label
@@ -734,26 +742,37 @@
                                             type="number"
                                             min="0"
                                             step="0.1"
-                                            value={operation.leadInLength}
+                                            value={operation.leadInConfig
+                                                ?.length || 0}
                                             onchange={(e) =>
                                                 updateOperationField(
                                                     operation.id,
-                                                    'leadInLength',
-                                                    parseFloat(
-                                                        e.currentTarget.value
-                                                    ) || 0
+                                                    'leadInConfig',
+                                                    {
+                                                        ...operation.leadInConfig,
+                                                        length:
+                                                            parseFloat(
+                                                                e.currentTarget
+                                                                    .value
+                                                            ) || 0,
+                                                    }
                                                 )}
                                             class="lead-input"
                                         />
                                         <label class="fit-checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                checked={operation.leadInFit}
+                                                checked={operation.leadInConfig
+                                                    ?.fit || false}
                                                 onchange={(e) =>
                                                     updateOperationField(
                                                         operation.id,
-                                                        'leadInFit',
-                                                        e.currentTarget.checked
+                                                        'leadInConfig',
+                                                        {
+                                                            ...operation.leadInConfig,
+                                                            fit: e.currentTarget
+                                                                .checked,
+                                                        }
                                                     )}
                                                 class="fit-checkbox"
                                             />
@@ -771,14 +790,20 @@
                                         min="0"
                                         max="360"
                                         step="1"
-                                        value={operation.leadInAngle || 0}
+                                        value={operation.leadInConfig?.angle ||
+                                            0}
                                         onchange={(e) =>
                                             updateOperationField(
                                                 operation.id,
-                                                'leadInAngle',
-                                                parseFloat(
-                                                    e.currentTarget.value
-                                                ) || 0
+                                                'leadInConfig',
+                                                {
+                                                    ...operation.leadInConfig,
+                                                    angle:
+                                                        parseFloat(
+                                                            e.currentTarget
+                                                                .value
+                                                        ) || 0,
+                                                }
                                             )}
                                         class="lead-input"
                                         placeholder="Auto"
@@ -794,21 +819,25 @@
                                 >
                                 <select
                                     id="lead-out-type-{operation.id}"
-                                    value={operation.leadOutType}
+                                    value={operation.leadOutConfig?.type ||
+                                        LeadType.NONE}
                                     onchange={(e) =>
                                         updateOperationField(
                                             operation.id,
-                                            'leadOutType',
-                                            e.currentTarget.value as LeadType
+                                            'leadOutConfig',
+                                            {
+                                                ...operation.leadOutConfig,
+                                                type: e.currentTarget
+                                                    .value as LeadType,
+                                            }
                                         )}
                                     class="lead-select"
                                 >
                                     <option value="none">None</option>
                                     <option value="arc">Arc</option>
-                                    <option value="line">Line</option>
                                 </select>
                             </div>
-                            {#if operation.leadOutType !== 'none'}
+                            {#if operation.leadOutConfig?.type !== 'none'}
                                 <div class="field-group">
                                     <label for="lead-out-length-{operation.id}"
                                         >Length (units):</label
@@ -819,26 +848,37 @@
                                             type="number"
                                             min="0"
                                             step="0.1"
-                                            value={operation.leadOutLength}
+                                            value={operation.leadOutConfig
+                                                ?.length || 0}
                                             onchange={(e) =>
                                                 updateOperationField(
                                                     operation.id,
-                                                    'leadOutLength',
-                                                    parseFloat(
-                                                        e.currentTarget.value
-                                                    ) || 0
+                                                    'leadOutConfig',
+                                                    {
+                                                        ...operation.leadOutConfig,
+                                                        length:
+                                                            parseFloat(
+                                                                e.currentTarget
+                                                                    .value
+                                                            ) || 0,
+                                                    }
                                                 )}
                                             class="lead-input"
                                         />
                                         <label class="fit-checkbox-label">
                                             <input
                                                 type="checkbox"
-                                                checked={operation.leadOutFit}
+                                                checked={operation.leadOutConfig
+                                                    ?.fit || false}
                                                 onchange={(e) =>
                                                     updateOperationField(
                                                         operation.id,
-                                                        'leadOutFit',
-                                                        e.currentTarget.checked
+                                                        'leadOutConfig',
+                                                        {
+                                                            ...operation.leadOutConfig,
+                                                            fit: e.currentTarget
+                                                                .checked,
+                                                        }
                                                     )}
                                                 class="fit-checkbox"
                                             />
@@ -856,14 +896,20 @@
                                         min="0"
                                         max="360"
                                         step="1"
-                                        value={operation.leadOutAngle || 0}
+                                        value={operation.leadOutConfig?.angle ||
+                                            0}
                                         onchange={(e) =>
                                             updateOperationField(
                                                 operation.id,
-                                                'leadOutAngle',
-                                                parseFloat(
-                                                    e.currentTarget.value
-                                                ) || 0
+                                                'leadOutConfig',
+                                                {
+                                                    ...operation.leadOutConfig,
+                                                    angle:
+                                                        parseFloat(
+                                                            e.currentTarget
+                                                                .value
+                                                        ) || 0,
+                                                }
                                             )}
                                         class="lead-input"
                                         placeholder="Auto"

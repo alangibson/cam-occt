@@ -11,6 +11,7 @@ import {
 } from '$lib/algorithms/optimize-start-points/path-optimization-utils';
 import { getChainEndPoint } from '$lib/geometry/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
+import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
 
 /**
  * Rapids are the non-cutting paths that connect cut paths.
@@ -76,10 +77,9 @@ function getPathEndPoint(
 ): Point2D {
     // Check if path has lead-out
     if (
-        path.leadOutType &&
-        path.leadOutType !== 'none' &&
-        path.leadOutLength &&
-        path.leadOutLength > 0
+        path.leadOutConfig &&
+        path.leadOutConfig.type !== 'none' &&
+        path.leadOutConfig.length > 0
     ) {
         try {
             const { leadCalculationChain, leadInConfig, leadOutConfig } =
@@ -93,12 +93,14 @@ function getPathEndPoint(
                 part
             );
 
-            if (leadResult.leadOut && leadResult.leadOut.points.length > 0) {
-                // Return the last point of the lead-out (end of lead-out)
-                return leadResult.leadOut.points[
-                    leadResult.leadOut.points.length +
-                        DEFAULT_ARRAY_NOT_FOUND_INDEX
-                ];
+            if (leadResult.leadOut) {
+                // Convert geometry to points and return the last point (end of lead-out)
+                const points = convertLeadGeometryToPoints(leadResult.leadOut);
+                if (points.length > 0) {
+                    return points[
+                        points.length + DEFAULT_ARRAY_NOT_FOUND_INDEX
+                    ];
+                }
             }
         } catch (error) {
             console.warn(
@@ -110,13 +112,10 @@ function getPathEndPoint(
     }
 
     // Fallback to chain end point (use offset if available)
-    if (
-        path.calculatedOffset &&
-        path.calculatedOffset.offsetShapes.length > 0
-    ) {
+    if (path.offset && path.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
-            shapes: path.calculatedOffset.offsetShapes,
+            shapes: path.offset.offsetShapes,
         };
         return getChainEndPoint(offsetChain);
     }

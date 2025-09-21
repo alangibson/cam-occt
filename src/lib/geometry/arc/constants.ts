@@ -22,3 +22,5 @@ export const DIRECTION_COUNTERCLOCKWISE = 1;
  * Numeric representation for clockwise direction in arc calculations
  */
 export const DIRECTION_CLOCKWISE = -1;
+
+export const PERPENDICULAR_TOLERANCE = 0.01;

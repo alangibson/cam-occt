@@ -1,13 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Direction Debug', () => {
     it('should debug cut direction logic', () => {
@@ -25,8 +23,8 @@ describe('Lead Direction Debug', () => {
             shapes: [createPolylineFromVertices(squareVertices, true)],
         };
 
-        const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 5 };
-        const noLeadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+        const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
+        const noLeadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         // Create a simple part context to make it a shell
         const simplePart: DetectedPart = {
@@ -49,9 +47,9 @@ describe('Lead Direction Debug', () => {
             simplePart
         );
         if (noneResult.leadIn) {
-            const _start = noneResult.leadIn.points[0];
-            const _end =
-                noneResult.leadIn.points[noneResult.leadIn.points.length - 1];
+            const points = convertLeadGeometryToPoints(noneResult.leadIn);
+            const _start = points[0];
+            const _end = points[points.length - 1];
         }
 
         const clockwiseResult = calculateLeads(
@@ -62,11 +60,9 @@ describe('Lead Direction Debug', () => {
             simplePart
         );
         if (clockwiseResult.leadIn) {
-            const _start = clockwiseResult.leadIn.points[0];
-            const _end =
-                clockwiseResult.leadIn.points[
-                    clockwiseResult.leadIn.points.length - 1
-                ];
+            const points = convertLeadGeometryToPoints(clockwiseResult.leadIn);
+            const _start = points[0];
+            const _end = points[points.length - 1];
         }
 
         const counterclockwiseResult = calculateLeads(
@@ -77,20 +73,22 @@ describe('Lead Direction Debug', () => {
             simplePart
         );
         if (counterclockwiseResult.leadIn) {
-            const _start = counterclockwiseResult.leadIn.points[0];
-            const _end =
-                counterclockwiseResult.leadIn.points[
-                    counterclockwiseResult.leadIn.points.length - 1
-                ];
+            const points = convertLeadGeometryToPoints(
+                counterclockwiseResult.leadIn
+            );
+            const _start = points[0];
+            const _end = points[points.length - 1];
         }
 
         // Test if results are different
         const results = [noneResult, clockwiseResult, counterclockwiseResult];
-        const positions = results.map((r) =>
-            r.leadIn
-                ? `(${r.leadIn.points[0].x.toFixed(3)}, ${r.leadIn.points[0].y.toFixed(3)})`
-                : 'none'
-        );
+        const positions = results.map((r) => {
+            if (r.leadIn) {
+                const points = convertLeadGeometryToPoints(r.leadIn);
+                return `(${points[0].x.toFixed(3)}, ${points[0].y.toFixed(3)})`;
+            }
+            return 'none';
+        });
 
         // Check if they're all the same (problem) or different (good)
         const allSame = positions.every((pos) => pos === positions[0]);
@@ -116,8 +114,8 @@ describe('Lead Direction Debug', () => {
             shapes: [createPolylineFromVertices(squareVertices, true)],
         };
 
-        const leadConfig: LeadInConfig = { type: LeadType.ARC, length: 5 };
-        const noLeadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+        const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
+        const noLeadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         // Test without any part context
         const noneResult = calculateLeads(
@@ -143,11 +141,13 @@ describe('Lead Direction Debug', () => {
             noneResult,
             clockwiseResult,
             counterclockwiseResult,
-        ].map((r) =>
-            r.leadIn
-                ? `(${r.leadIn.points[0].x.toFixed(3)}, ${r.leadIn.points[0].y.toFixed(3)})`
-                : 'none'
-        );
+        ].map((r) => {
+            if (r.leadIn) {
+                const points = convertLeadGeometryToPoints(r.leadIn);
+                return `(${points[0].x.toFixed(3)}, ${points[0].y.toFixed(3)})`;
+            }
+            return 'none';
+        });
 
         const allSame = positions.every((pos) => pos === positions[0]);
 
@@ -180,8 +180,8 @@ describe('Lead Direction Debug', () => {
             ],
         };
 
-        const leadConfig: LeadInConfig = { type: LeadType.LINE, length: 2 }; // Shorter length to avoid validation warnings
-        const noLeadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+        const leadConfig: LeadConfig = { type: LeadType.ARC, length: 2 }; // Shorter length to avoid validation warnings
+        const noLeadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         // Calculate leads for original geometry (what happens initially)
         const originalResult = calculateLeads(

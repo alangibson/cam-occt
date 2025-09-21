@@ -62,7 +62,7 @@
         const pathsHash = paths
             .map(
                 (p) =>
-                    `${p.id}:${p.leadInType}:${p.leadInLength}:${p.leadInFlipSide}:${p.leadInAngle}:${p.leadOutType}:${p.leadOutLength}:${p.leadOutFlipSide}:${p.leadOutAngle}:${p.enabled}`
+                    `${p.id}:${p.leadInConfig?.type}:${p.leadInConfig?.length}:${p.leadInConfig?.flipSide}:${p.leadInConfig?.angle}:${p.leadOutConfig?.type}:${p.leadOutConfig?.length}:${p.leadOutConfig?.flipSide}:${p.leadOutConfig?.angle}:${p.enabled}`
             )
             .join('|');
 

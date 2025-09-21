@@ -28,26 +28,26 @@ export {
 } from './functions';
 
 // Functions - NURBS evaluation
-export {
-    evaluateNURBS,
-    sampleNURBS,
-    evaluateNURBSDerivative,
-    getNURBSParameterRange,
-} from './functions';
+// export {
+// evaluateNURBS,
+// sampleNURBS,
+// evaluateNURBSDerivative,
+// getNURBSParameterRange,
+// } from './functions';
 
 // Functions - NURBS utilities
 export {
     generateUniformKnotVector,
     generateValidKnotVector,
     validateKnotVector,
-    repairKnotVector,
+    // repairKnotVector,
 } from './functions';
 
 // Functions - Tessellation
 export type {
     SplineTessellationConfig,
     SplineTessellationResult,
-} from './functions';
+} from './interfaces';
 export {
     tessellateSpline,
     validateSplineGeometry,

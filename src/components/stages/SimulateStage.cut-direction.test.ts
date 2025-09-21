@@ -35,6 +35,7 @@ describe('SimulateStage Cut Direction', () => {
 
         // Create paths with different cut directions
         pathStore.addPath({
+            id: 'path-clockwise-1',
             name: 'Clockwise Circle',
             operationId: 'op-1',
             chainId: 'chain-1',
@@ -46,6 +47,7 @@ describe('SimulateStage Cut Direction', () => {
         });
 
         pathStore.addPath({
+            id: 'path-counter-1',
             name: 'Counterclockwise Circle',
             operationId: 'op-2',
             chainId: 'chain-1',
@@ -103,6 +105,7 @@ describe('SimulateStage Cut Direction', () => {
 
         // Create paths with different cut directions
         pathStore.addPath({
+            id: 'path-clockwise-2',
             name: 'Clockwise Ellipse',
             operationId: 'op-3',
             chainId: 'chain-2',
@@ -114,6 +117,7 @@ describe('SimulateStage Cut Direction', () => {
         });
 
         pathStore.addPath({
+            id: 'path-counter-2',
             name: 'Counterclockwise Ellipse',
             operationId: 'op-4',
             chainId: 'chain-2',
@@ -150,6 +154,7 @@ describe('SimulateStage Cut Direction', () => {
 
         // Create path with "none" cut direction
         pathStore.addPath({
+            id: 'path-open-1',
             name: 'Open Line',
             operationId: 'op-5',
             chainId: 'chain-3',

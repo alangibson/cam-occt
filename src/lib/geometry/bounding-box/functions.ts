@@ -12,9 +12,9 @@ import type { BoundingBox } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import {
-    sampleNURBS,
     VALIDATION_SAMPLE_COUNT,
     SPLINE_TESSELLATION_TOLERANCE,
+    tessellateSpline,
 } from '$lib/geometry/spline';
 import { calculateArcPoint } from '$lib/geometry/arc';
 import { THREE_HALVES_PI } from './constants';
@@ -267,10 +267,25 @@ export function getBoundingBoxForSpline(spline: Spline): BoundingBox {
     let points: Point2D[];
 
     try {
-        points = sampleNURBS(spline, VALIDATION_SAMPLE_COUNT);
+        const result = tessellateSpline(spline, {
+            numSamples: VALIDATION_SAMPLE_COUNT,
+        });
+        if (result.success) {
+            points = result.points;
+        } else {
+            throw new Error('Tessellation failed');
+        }
     } catch {
         if (spline.fitPoints && spline.fitPoints.length > 0) {
-            points = spline.fitPoints;
+            // Check if ALL fit points have valid finite values
+            const allFitPointsValid = spline.fitPoints.every(
+                (point) => point && isFinite(point.x) && isFinite(point.y)
+            );
+            if (allFitPointsValid) {
+                points = spline.fitPoints;
+            } else {
+                points = spline.controlPoints;
+            }
         } else {
             points = spline.controlPoints;
         }

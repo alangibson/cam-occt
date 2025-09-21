@@ -4,10 +4,11 @@
  * Type definitions for operations and related data structures.
  */
 
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/types/direction';
+import type { LeadConfig, Lead } from '$lib/algorithms/leads/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Point2D, Shape } from '$lib/types';
+import type { Shape } from '$lib/types';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { Path } from '$lib/stores/paths/interfaces';
 
@@ -38,16 +39,8 @@ export interface Operation {
     enabled: boolean;
     order: number; // Execution order
     cutDirection: CutDirection; // Preferred cut direction
-    leadInType: LeadType; // Lead-in type
-    leadInLength: number; // Lead-in length (units)
-    leadInFlipSide: boolean; // Flip which side of the chain the lead-in is on
-    leadInAngle: number; // Manual rotation angle for lead-in (degrees, 0-360)
-    leadInFit: boolean; // Whether to automatically adjust lead-in length to avoid solid areas
-    leadOutType: LeadType; // Lead-out type
-    leadOutLength: number; // Lead-out length (units)
-    leadOutFlipSide: boolean; // Flip which side of the chain the lead-out is on
-    leadOutAngle: number; // Manual rotation angle for lead-out (degrees, 0-360)
-    leadOutFit: boolean; // Whether to automatically adjust lead-out length to avoid solid areas
+    leadInConfig: LeadConfig; // Lead-in configuration
+    leadOutConfig: LeadConfig; // Lead-out configuration
     kerfCompensation?: KerfCompensation; // Kerf compensation type (none, inner, outer, part)
     holeUnderspeedEnabled?: boolean; // Enable velocity reduction for holes
     holeUnderspeedPercent?: number; // Velocity percentage for holes (10-100)
@@ -69,26 +62,22 @@ export interface OperationsStore {
     };
 }
 export interface PathGenerationResult {
-    paths: Omit<Path, 'id'>[];
+    paths: Path[];
     warnings: {
         chainId: string;
         operationId: string;
         offsetWarnings: string[];
         clearExistingWarnings: boolean;
     }[];
-} /**
+}
+
+/**
  * Calculated lead geometry data structure
  */
 
 export interface PathLeadResult {
-    leadIn?: {
-        points: Point2D[];
-        type: LeadType;
-    };
-    leadOut?: {
-        points: Point2D[];
-        type: LeadType;
-    };
+    leadIn?: Lead;
+    leadOut?: Lead;
     validation?: {
         isValid: boolean;
         warnings: string[];

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/types/cam';
-import { type Drawing, type ToolPath, Unit } from '$lib/types';
+import { type Drawing, type CutPath, Unit } from '$lib/types';
 
 describe('GCode Generator - Temporary Materials', () => {
     const mockDrawing: Drawing = {
@@ -11,7 +11,7 @@ describe('GCode Generator - Temporary Materials', () => {
     };
 
     it('should generate temporary material with magic comments', () => {
-        const mockPath: ToolPath = {
+        const mockPath: CutPath = {
             id: 'path1',
             shapeId: 'shape1',
             points: [
@@ -28,8 +28,7 @@ describe('GCode Generator - Temporary Materials', () => {
                 pierceDelay: 0.5,
                 cutHeight: 1.5,
                 kerf: 1.2,
-                leadInLength: 5,
-                leadOutLength: 5,
+                // Lead lengths removed from CuttingParameters
                 toolName: 'Test Material',
                 kerfWidth: 1.2,
                 enableTHC: true,
@@ -63,7 +62,7 @@ describe('GCode Generator - Temporary Materials', () => {
     });
 
     it('should generate multiple temporary materials for multiple paths', () => {
-        const mockPaths: ToolPath[] = [
+        const mockPaths: CutPath[] = [
             {
                 id: 'path1',
                 shapeId: 'shape1',
@@ -78,8 +77,7 @@ describe('GCode Generator - Temporary Materials', () => {
                     pierceDelay: 0.4,
                     cutHeight: 1.2,
                     kerf: 1.0,
-                    leadInLength: 4,
-                    leadOutLength: 4,
+                    // Lead lengths removed from CuttingParameters
                     toolName: 'Material 1',
                 },
             },
@@ -97,8 +95,7 @@ describe('GCode Generator - Temporary Materials', () => {
                     pierceDelay: 0.6,
                     cutHeight: 1.8,
                     kerf: 1.5,
-                    leadInLength: 6,
-                    leadOutLength: 6,
+                    // Lead lengths removed from CuttingParameters
                     toolName: 'Material 2',
                 },
             },
@@ -129,7 +126,7 @@ describe('GCode Generator - Temporary Materials', () => {
     });
 
     it('should handle paths without parameters', () => {
-        const mockPath: ToolPath = {
+        const mockPath: CutPath = {
             id: 'rapid1',
             shapeId: 'shape1',
             points: [
@@ -154,7 +151,7 @@ describe('GCode Generator - Temporary Materials', () => {
     });
 
     it('should use default values for missing parameters', () => {
-        const mockPath: ToolPath = {
+        const mockPath: CutPath = {
             id: 'path1',
             shapeId: 'shape1',
             points: [
@@ -168,8 +165,7 @@ describe('GCode Generator - Temporary Materials', () => {
                 pierceDelay: 0, // Will use default
                 cutHeight: 0, // Will use default
                 kerf: 1.0,
-                leadInLength: 4,
-                leadOutLength: 4,
+                // Lead lengths removed from CuttingParameters
             },
         };
 

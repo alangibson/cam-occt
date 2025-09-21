@@ -1,21 +1,19 @@
 <script lang="ts">
     import type { Path } from '$lib/stores/paths/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+    import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
     import {
-        calculateLeads,
-        type LeadInConfig,
-        type LeadOutConfig,
-    } from '$lib/algorithms/leads/lead-calculation';
+        type LeadConfig,
+        type LeadResult,
+    } from '$lib/algorithms/leads/interfaces';
     import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
     import type { Point2D } from '$lib/types';
     import { LeadType } from '$lib/types/direction';
-    import {
-        getCachedLeadGeometry,
-        hasValidCachedLeads,
-    } from '$lib/utils/lead-persistence-utils';
+    import { hasValidCachedLeads } from '$lib/utils/lead-persistence-utils';
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
     import type { Operation } from '$lib/stores/operations/interfaces';
     import type { Chain } from '$lib/geometry/chain/interfaces';
+    import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
 
     // Props
     export let ctx: CanvasRenderingContext2D;
@@ -63,46 +61,46 @@
      */
     function drawPathLeads(path: Path, operation: Operation) {
         // Skip if both leads are disabled
-        if (path.leadInType === 'none' && path.leadOutType === 'none') return;
+        const leadInType = path.leadInConfig?.type || LeadType.NONE;
+        const leadOutType = path.leadOutConfig?.type || LeadType.NONE;
+        if (leadInType === LeadType.NONE && leadOutType === LeadType.NONE)
+            return;
 
         // Calculate leads for this path
         const leadResult = calculatePathLeads(path, operation);
         if (!leadResult) return;
 
         // Draw lead-in
-        if (
-            showLeadIn &&
-            leadResult.leadIn &&
-            leadResult.leadIn.points.length > 1
-        ) {
-            const opacity = getLeadOpacity(path, 'leadIn');
-            drawLeadGeometry(leadResult.leadIn.points, leadInColor, opacity);
+        if (showLeadIn && leadResult.leadIn) {
+            const points = convertLeadGeometryToPoints(leadResult.leadIn);
+            if (points.length > 1) {
+                const opacity = getLeadOpacity(path, 'leadIn');
+                drawLeadGeometry(points, leadInColor, opacity);
+            }
         }
 
         // Draw lead-out
-        if (
-            showLeadOut &&
-            leadResult.leadOut &&
-            leadResult.leadOut.points.length > 1
-        ) {
-            const opacity = getLeadOpacity(path, 'leadOut');
-            drawLeadGeometry(leadResult.leadOut.points, leadOutColor, opacity);
+        if (showLeadOut && leadResult.leadOut) {
+            const points = convertLeadGeometryToPoints(leadResult.leadOut);
+            if (points.length > 1) {
+                const opacity = getLeadOpacity(path, 'leadOut');
+                drawLeadGeometry(points, leadOutColor, opacity);
+            }
         }
     }
 
     /**
      * Calculate lead geometry for a path (with caching)
      */
-    function calculatePathLeads(path: Path, operation: Operation) {
+    function calculatePathLeads(path: Path, operation: Operation): LeadResult {
         try {
             // First check if we have valid cached lead geometry
             if (hasValidCachedLeads(path)) {
-                const cached = getCachedLeadGeometry(path);
                 console.log(`Using cached lead geometry for path ${path.name}`);
                 return {
-                    leadIn: cached.leadIn,
-                    leadOut: cached.leadOut,
-                    warnings: cached.validation?.warnings || [],
+                    leadIn: path.leadIn || undefined,
+                    leadOut: path.leadOut || undefined,
+                    warnings: path.leadValidation?.warnings || [],
                 };
             }
 
@@ -117,7 +115,8 @@
             // Fallback to original chain lookup for backward compatibility
             if (!chain) {
                 chain = chains.find((c) => c.id === path.chainId);
-                if (!chain || chain.shapes.length === 0) return null;
+                if (!chain || chain.shapes.length === 0)
+                    return { warnings: [] };
 
                 // Apply cut direction ordering if using fallback chain
                 if (path.cutDirection === 'counterclockwise') {
@@ -125,7 +124,7 @@
                 }
             }
 
-            if (!chain || chain.shapes.length === 0) return null;
+            if (!chain || chain.shapes.length === 0) return { warnings: [] };
 
             // Get the part if the path is part of a part
             let part = null;
@@ -134,22 +133,22 @@
             }
 
             // Get lead configurations with proper defaults
-            const leadInConfig: LeadInConfig = {
-                type: path.leadInType || LeadType.NONE,
-                length: path.leadInLength || 0,
-                flipSide: path.leadInFlipSide || false,
-                angle: path.leadInAngle,
+            const leadInConfig: LeadConfig = path.leadInConfig || {
+                type: LeadType.NONE,
+                length: 0,
+                flipSide: false,
+                angle: undefined,
             };
 
-            const leadOutConfig: LeadOutConfig = {
-                type: path.leadOutType || LeadType.NONE,
-                length: path.leadOutLength || 0,
-                flipSide: path.leadOutFlipSide || false,
-                angle: path.leadOutAngle,
+            const leadOutConfig: LeadConfig = path.leadOutConfig || {
+                type: LeadType.NONE,
+                length: 0,
+                flipSide: false,
+                angle: undefined,
             };
 
             // Calculate leads using correct signature
-            const leadResult = calculateLeads(
+            const leadResult: LeadResult = calculateLeads(
                 chain,
                 leadInConfig,
                 leadOutConfig,
@@ -160,7 +159,7 @@
             return leadResult;
         } catch (error) {
             console.warn('Error calculating leads for path:', path.id, error);
-            return null;
+            return { warnings: [`Error calculating leads: ${error}`] };
         }
     }
 

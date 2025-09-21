@@ -78,6 +78,7 @@ describe('SimulateStage store subscription cleanup', () => {
 
         // Add test data
         pathStore.addPath({
+            id: 'test-path-1',
             name: 'Test Path',
             operationId: 'test-op',
             chainId: 'test-chain',

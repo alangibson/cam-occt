@@ -339,8 +339,7 @@ describe('Optimize Cut Order', () => {
                 { x: 20, y: 20 }
             );
             const pathWithLeadOut = createPath('path-1', 'chain-1', {
-                leadOutType: LeadType.LINE,
-                leadOutLength: 5,
+                leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
 
             const chains = new Map([['chain-1', chain]]);
@@ -358,8 +357,7 @@ describe('Optimize Cut Order', () => {
                 { x: 20, y: 20 }
             );
             const pathWithoutLeadOut = createPath('path-1', 'chain-1', {
-                leadOutType: LeadType.NONE,
-                leadOutLength: 0,
+                leadOutConfig: { type: LeadType.NONE, length: 0 },
             });
 
             const chains = new Map([['chain-1', chain]]);
@@ -386,7 +384,7 @@ describe('Optimize Cut Order', () => {
             };
 
             const pathWithOffset = createPath('path-1', 'chain-1', {
-                calculatedOffset: {
+                offset: {
                     offsetShapes: [offsetShape],
                     originalShapes: [offsetShape],
                     direction: OffsetDirection.OUTSET,
@@ -546,8 +544,7 @@ describe('Optimize Cut Order', () => {
                 { x: 100, y: 100 }
             );
             const pathWithLeadOut = createPath('path-1', 'chain-1', {
-                leadOutType: LeadType.LINE,
-                leadOutLength: 10,
+                leadOutConfig: { type: LeadType.ARC, length: 10 },
                 cutDirection: CutDirection.CLOCKWISE,
             });
 
@@ -573,8 +570,7 @@ describe('Optimize Cut Order', () => {
                 { x: 10, y: 10 }
             );
             const pathWithBadLeadOut = createPath('path-1', 'chain-1', {
-                leadOutType: LeadType.ARC,
-                leadOutLength: -1, // Invalid length to potentially cause errors
+                leadOutConfig: { type: LeadType.ARC, length: -1 }, // Invalid length to potentially cause errors
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
             });
 
@@ -600,8 +596,7 @@ describe('Optimize Cut Order', () => {
                 { x: 10, y: 10 }
             );
             const pathWithLeadOut = createPath('path-1', 'chain-1', {
-                leadOutType: LeadType.LINE,
-                leadOutLength: 5,
+                leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
 
             const chains = new Map([['chain-1', chain]]);
@@ -649,8 +644,8 @@ describe('Optimize Cut Order', () => {
             };
 
             const pathWithOffset = createPath('path-1', 'chain-1', {
-                leadOutType: LeadType.NONE, // No lead-out
-                calculatedOffset: {
+                leadOutConfig: { type: LeadType.NONE, length: 0 }, // No lead-out
+                offset: {
                     offsetShapes: [offsetShape],
                     originalShapes: [offsetShape],
                     direction: OffsetDirection.OUTSET,
@@ -675,8 +670,8 @@ describe('Optimize Cut Order', () => {
                 { x: 25, y: 25 }
             );
             const simplePath = createPath('path-1', 'chain-1', {
-                leadOutType: undefined, // No lead-out type
-                calculatedOffset: undefined, // No offset
+                leadOutConfig: undefined, // No lead-out type
+                offset: undefined, // No offset
             });
 
             const chains = new Map([['chain-1', chain]]);
@@ -694,8 +689,8 @@ describe('Optimize Cut Order', () => {
                 { x: 50, y: 50 }
             );
             const pathWithEmptyOffset = createPath('path-1', 'chain-1', {
-                leadOutType: LeadType.NONE,
-                calculatedOffset: {
+                leadOutConfig: { type: LeadType.NONE, length: 0 },
+                offset: {
                     offsetShapes: [], // Empty array
                     originalShapes: [],
                     direction: OffsetDirection.OUTSET,

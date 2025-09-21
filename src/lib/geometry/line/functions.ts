@@ -325,3 +325,31 @@ export function createSegmentLine(start: Point2D, end: Point2D): Line {
         end: { x: end.x, y: end.y },
     };
 }
+
+/**
+ * Get the length of a line
+ */
+export function getLineLength(line: Line): number {
+    const dx = line.end.x - line.start.x;
+    const dy = line.end.y - line.start.y;
+    return Math.sqrt(dx * dx + dy * dy);
+}
+
+/**
+ * Get the tangent direction of a line (normalized unit vector from start to end)
+ */
+export function getLineTangent(line: Line): Point2D {
+    const dx = line.end.x - line.start.x;
+    const dy = line.end.y - line.start.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+
+    if (length < EPSILON) {
+        // Degenerate line, return default direction
+        return { x: 1, y: 0 };
+    }
+
+    return {
+        x: dx / length,
+        y: dy / length,
+    };
+}

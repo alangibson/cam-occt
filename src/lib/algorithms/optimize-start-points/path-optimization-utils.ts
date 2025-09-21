@@ -8,15 +8,13 @@ import {
     type Shape,
 } from '$lib/types/geometry';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+import { type LeadConfig } from '$lib/algorithms/leads/interfaces';
 import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from '$lib/algorithms/leads/lead-calculation';
-import {
+    convertLeadGeometryToPoints,
     createLeadInConfig,
     createLeadOutConfig,
-} from '$lib/utils/lead-config-utils';
+} from '$lib/algorithms/leads/functions';
 import { calculateSquaredDistance } from '$lib/geometry/math';
 import {
     getChainEndPoint,
@@ -74,19 +72,16 @@ export function prepareChainsAndLeadConfigs(
     chain: Chain
 ): {
     leadCalculationChain: Chain;
-    leadInConfig: LeadInConfig;
-    leadOutConfig: LeadOutConfig;
+    leadInConfig: LeadConfig;
+    leadOutConfig: LeadConfig;
 } {
     // Use offset geometry for lead calculation if available
     let leadCalculationChain: Chain = chain;
-    if (
-        path.calculatedOffset &&
-        path.calculatedOffset.offsetShapes.length > 0
-    ) {
+    if (path.offset && path.offset.offsetShapes.length > 0) {
         // Create a temporary chain from offset shapes
         leadCalculationChain = {
             id: chain.id + '_offset_temp',
-            shapes: path.calculatedOffset.offsetShapes,
+            shapes: path.offset.offsetShapes,
         };
     }
 
@@ -107,10 +102,9 @@ export function getPathStartPoint(
 ): Point2D {
     // Check if path has lead-in
     if (
-        path.leadInType &&
-        path.leadInType !== 'none' &&
-        path.leadInLength &&
-        path.leadInLength > 0
+        path.leadInConfig &&
+        path.leadInConfig.type !== 'none' &&
+        path.leadInConfig.length > 0
     ) {
         try {
             const { leadCalculationChain, leadInConfig, leadOutConfig } =
@@ -124,9 +118,12 @@ export function getPathStartPoint(
                 part
             );
 
-            if (leadResult.leadIn && leadResult.leadIn.points.length > 0) {
-                // Return the first point of the lead-in (start of lead-in)
-                return leadResult.leadIn.points[0];
+            if (leadResult.leadIn) {
+                // Convert geometry to points and return the first point (start of lead-in)
+                const points = convertLeadGeometryToPoints(leadResult.leadIn);
+                if (points.length > 0) {
+                    return points[0];
+                }
             }
         } catch (error) {
             console.warn(
@@ -138,13 +135,10 @@ export function getPathStartPoint(
     }
 
     // Fallback to chain start point (use offset if available)
-    if (
-        path.calculatedOffset &&
-        path.calculatedOffset.offsetShapes.length > 0
-    ) {
+    if (path.offset && path.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
-            shapes: path.calculatedOffset.offsetShapes,
+            shapes: path.offset.offsetShapes,
         };
         return getChainStartPoint(offsetChain);
     }
@@ -156,13 +150,10 @@ export function getPathStartPoint(
  * Get the effective start point of a path's chain, using offset geometry if available
  */
 export function getPathChainStartPoint(path: Path, chain: Chain): Point2D {
-    if (
-        path.calculatedOffset &&
-        path.calculatedOffset.offsetShapes.length > 0
-    ) {
+    if (path.offset && path.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
-            shapes: path.calculatedOffset.offsetShapes,
+            shapes: path.offset.offsetShapes,
         };
         return getChainStartPoint(offsetChain);
     }
@@ -174,13 +165,10 @@ export function getPathChainStartPoint(path: Path, chain: Chain): Point2D {
  * Get the effective end point of a path's chain, using offset geometry if available
  */
 export function getPathChainEndPoint(path: Path, chain: Chain): Point2D {
-    if (
-        path.calculatedOffset &&
-        path.calculatedOffset.offsetShapes.length > 0
-    ) {
+    if (path.offset && path.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
-            shapes: path.calculatedOffset.offsetShapes,
+            shapes: path.offset.offsetShapes,
         };
         return getChainEndPoint(offsetChain);
     }

@@ -39,6 +39,7 @@ vi.mock('../constants', () => ({
     ELLIPSE_TESSELLATION_POINTS: 32,
     STANDARD_TIMEOUT_MS: 1000,
     EXTENDED_TIMEOUT_MS: 60000,
+    STANDARD_GRID_SPACING: 10,
 }));
 
 describe('tessellation-cache', () => {

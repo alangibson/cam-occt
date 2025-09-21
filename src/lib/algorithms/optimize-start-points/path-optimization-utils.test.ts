@@ -19,12 +19,18 @@ const createTestPath = (overrides: Partial<Path> = {}): Path => ({
     toolId: 'test-tool',
     enabled: true,
     order: 1,
-    leadInType: LeadType.LINE,
-    leadInLength: 5,
-    leadInFlipSide: false,
-    leadOutType: LeadType.LINE,
-    leadOutLength: 5,
-    leadOutFlipSide: false,
+    leadInConfig: {
+        type: LeadType.ARC,
+        length: 5,
+        flipSide: false,
+        fit: true,
+    },
+    leadOutConfig: {
+        type: LeadType.ARC,
+        length: 5,
+        flipSide: false,
+        fit: true,
+    },
     cutDirection: CutDirection.CLOCKWISE,
     ...overrides,
 });
@@ -71,7 +77,7 @@ describe('path-optimization-utils', () => {
             ];
 
             const path = createTestPath({
-                calculatedOffset: {
+                offset: {
                     offsetShapes,
                     originalShapes: [],
                     direction: OffsetDirection.INSET,
@@ -92,16 +98,19 @@ describe('path-optimization-utils', () => {
 
         it('should create correct lead-in config', () => {
             const path = createTestPath({
-                leadInType: LeadType.LINE,
-                leadInLength: 10,
-                leadInFlipSide: true,
-                leadInAngle: 45,
+                leadInConfig: {
+                    type: LeadType.ARC,
+                    length: 10,
+                    flipSide: true,
+                    angle: 45,
+                    fit: true,
+                },
             });
             const chain = createTestChain();
 
             const result = prepareChainsAndLeadConfigs(path, chain);
 
-            expect(result.leadInConfig.type).toBe(LeadType.LINE);
+            expect(result.leadInConfig.type).toBe(LeadType.ARC);
             expect(result.leadInConfig.length).toBe(10);
             expect(result.leadInConfig.flipSide).toBe(true);
             expect(result.leadInConfig.angle).toBe(45);
@@ -109,10 +118,13 @@ describe('path-optimization-utils', () => {
 
         it('should create correct lead-out config', () => {
             const path = createTestPath({
-                leadOutType: LeadType.ARC,
-                leadOutLength: 15,
-                leadOutFlipSide: false,
-                leadOutAngle: 90,
+                leadOutConfig: {
+                    type: LeadType.ARC,
+                    length: 15,
+                    flipSide: false,
+                    angle: 90,
+                    fit: true,
+                },
             });
             const chain = createTestChain();
 
@@ -126,10 +138,8 @@ describe('path-optimization-utils', () => {
 
         it('should handle missing lead config values with defaults', () => {
             const path = createTestPath({
-                leadInType: undefined,
-                leadInLength: undefined,
-                leadOutType: undefined,
-                leadOutLength: undefined,
+                leadInConfig: undefined,
+                leadOutConfig: undefined,
             });
             const chain = createTestChain();
 
@@ -145,8 +155,11 @@ describe('path-optimization-utils', () => {
     describe('getPathStartPoint', () => {
         it('should handle lead calculation and return appropriate point', () => {
             const path = createTestPath({
-                leadInType: LeadType.LINE,
-                leadInLength: 5,
+                leadInConfig: {
+                    type: LeadType.ARC,
+                    length: 5,
+                    fit: true,
+                },
             });
             const chain = createTestChain();
 
@@ -164,8 +177,12 @@ describe('path-optimization-utils', () => {
             ];
 
             const path = createTestPath({
-                leadInType: LeadType.NONE,
-                calculatedOffset: {
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 0,
+                    fit: true,
+                },
+                offset: {
                     offsetShapes,
                     originalShapes: [],
                     direction: OffsetDirection.INSET,
@@ -184,7 +201,11 @@ describe('path-optimization-utils', () => {
 
         it('should use original chain start point when no offset and no lead-in', () => {
             const path = createTestPath({
-                leadInType: LeadType.NONE,
+                leadInConfig: {
+                    type: LeadType.NONE,
+                    length: 0,
+                    fit: true,
+                },
             });
             const chain = createTestChain();
 

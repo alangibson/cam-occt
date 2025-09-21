@@ -71,16 +71,20 @@ describe('Operations Store Integration', () => {
             enabled: true,
             order: 1,
             cutDirection: CutDirection.COUNTERCLOCKWISE,
-            leadInType: LeadType.NONE,
-            leadInLength: 5,
-            leadInFlipSide: false,
-            leadInAngle: 0,
-            leadInFit: false,
-            leadOutType: LeadType.NONE,
-            leadOutLength: 5,
-            leadOutFlipSide: false,
-            leadOutAngle: 0,
-            leadOutFit: false,
+            leadInConfig: {
+                type: LeadType.NONE,
+                length: 5,
+                flipSide: false,
+                angle: 0,
+                fit: false,
+            },
+            leadOutConfig: {
+                type: LeadType.NONE,
+                length: 5,
+                flipSide: false,
+                angle: 0,
+                fit: false,
+            },
         });
 
         const operations = get(operationsStore);

@@ -379,7 +379,6 @@ describe('DirectionUtils', () => {
         describe('isValidLeadType', () => {
             it('should validate correct lead types', () => {
                 expect(DirectionUtils.isValidLeadType('arc')).toBe(true);
-                expect(DirectionUtils.isValidLeadType('line')).toBe(true);
                 expect(DirectionUtils.isValidLeadType('none')).toBe(true);
             });
 
@@ -418,7 +417,6 @@ describe('Type Guards', () => {
     describe('isLeadType', () => {
         it('should validate LeadType values', () => {
             expect(isLeadType('arc')).toBe(true);
-            expect(isLeadType('line')).toBe(true);
             expect(isLeadType('none')).toBe(true);
             expect(isLeadType('invalid')).toBe(false);
             expect(isLeadType(null)).toBe(false);
@@ -465,7 +463,6 @@ describe('Enums', () => {
 
     it('should have correct LeadType values', () => {
         expect(LeadType.ARC).toBe('arc');
-        expect(LeadType.LINE).toBe('line');
         expect(LeadType.NONE).toBe('none');
     });
 

@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { Shape } from '$lib/types';
 import { GeometryType } from '$lib/geometry/shape';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Direction and Cut Direction Tangency', () => {
     // Create a simple circular chain for testing
@@ -95,25 +93,22 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         // Test clockwise circle
         const clockwiseCircle = createCircleChain(center, radius, true);
 
-        const leadInConfig: LeadInConfig = { type: LeadType.ARC, length: 10 };
-        const leadOutConfig: LeadOutConfig = { type: LeadType.ARC, length: 10 };
+        const leadInConfig: LeadConfig = { type: LeadType.ARC, length: 10 };
+        const LeadConfig: LeadConfig = { type: LeadType.ARC, length: 10 };
 
         const clockwiseResult = calculateLeads(
             clockwiseCircle,
             leadInConfig,
-            leadOutConfig
+            LeadConfig
         );
 
-        if (
-            clockwiseResult.leadIn &&
-            clockwiseResult.leadIn.points.length >= 2
-        ) {
-            const leadStart = clockwiseResult.leadIn.points[0];
-            const leadEnd =
-                clockwiseResult.leadIn.points[
-                    clockwiseResult.leadIn.points.length - 1
-                ];
-            const _leadDirection = getVectorAngle(leadStart, leadEnd);
+        if (clockwiseResult.leadIn) {
+            const points = convertLeadGeometryToPoints(clockwiseResult.leadIn);
+            if (points.length >= 2) {
+                const leadStart = points[0];
+                const leadEnd = points[points.length - 1];
+                const _leadDirection = getVectorAngle(leadStart, leadEnd);
+            }
         }
 
         // Test counterclockwise circle
@@ -122,19 +117,18 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         const counterclockwiseResult = calculateLeads(
             counterclockwiseCircle,
             leadInConfig,
-            leadOutConfig
+            LeadConfig
         );
 
-        if (
-            counterclockwiseResult.leadIn &&
-            counterclockwiseResult.leadIn.points.length >= 2
-        ) {
-            const leadStart = counterclockwiseResult.leadIn.points[0];
-            const leadEnd =
-                counterclockwiseResult.leadIn.points[
-                    counterclockwiseResult.leadIn.points.length - 1
-                ];
-            const _leadDirection = getVectorAngle(leadStart, leadEnd);
+        if (counterclockwiseResult.leadIn) {
+            const points = convertLeadGeometryToPoints(
+                counterclockwiseResult.leadIn
+            );
+            if (points.length >= 2) {
+                const leadStart = points[0];
+                const leadEnd = points[points.length - 1];
+                const _leadDirection = getVectorAngle(leadStart, leadEnd);
+            }
         }
     });
 
@@ -142,33 +136,27 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         // Create clockwise rectangle
         const clockwiseRect = createRectangleChain(10, 10, 40, 30, true);
 
-        const leadInConfig: LeadInConfig = { type: LeadType.ARC, length: 8 };
-        const leadOutConfig: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+        const leadInConfig: LeadConfig = { type: LeadType.ARC, length: 8 };
+        const LeadConfig: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const clockwiseResult = calculateLeads(
             clockwiseRect,
             leadInConfig,
-            leadOutConfig
+            LeadConfig
         );
 
-        if (
-            clockwiseResult.leadIn &&
-            clockwiseResult.leadIn.points.length >= 2
-        ) {
-            const connectionPoint =
-                clockwiseResult.leadIn.points[
-                    clockwiseResult.leadIn.points.length - 1
-                ];
-            const secondToLast =
-                clockwiseResult.leadIn.points[
-                    clockwiseResult.leadIn.points.length - 2
-                ];
+        if (clockwiseResult.leadIn) {
+            const points = convertLeadGeometryToPoints(clockwiseResult.leadIn);
+            if (points.length >= 2) {
+                const connectionPoint = points[points.length - 1];
+                const secondToLast = points[points.length - 2];
 
-            // The lead should approach the rectangle tangentially
-            const _approachAngle = getVectorAngle(
-                secondToLast,
-                connectionPoint
-            );
+                // The lead should approach the rectangle tangentially
+                const _approachAngle = getVectorAngle(
+                    secondToLast,
+                    connectionPoint
+                );
+            }
         }
 
         // Create counterclockwise rectangle
@@ -183,33 +171,29 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         const counterclockwiseResult = calculateLeads(
             counterclockwiseRect,
             leadInConfig,
-            leadOutConfig
+            LeadConfig
         );
 
-        if (
-            counterclockwiseResult.leadIn &&
-            counterclockwiseResult.leadIn.points.length >= 2
-        ) {
-            const connectionPoint =
-                counterclockwiseResult.leadIn.points[
-                    counterclockwiseResult.leadIn.points.length - 1
-                ];
-            const secondToLast =
-                counterclockwiseResult.leadIn.points[
-                    counterclockwiseResult.leadIn.points.length - 2
-                ];
-
-            // The lead should approach the rectangle tangentially
-            const _approachAngle = getVectorAngle(
-                secondToLast,
-                connectionPoint
+        if (counterclockwiseResult.leadIn) {
+            const points = convertLeadGeometryToPoints(
+                counterclockwiseResult.leadIn
             );
+            if (points.length >= 2) {
+                const connectionPoint = points[points.length - 1];
+                const secondToLast = points[points.length - 2];
+
+                // The lead should approach the rectangle tangentially
+                const _approachAngle = getVectorAngle(
+                    secondToLast,
+                    connectionPoint
+                );
+            }
         }
     });
 
     it('should analyze current algorithm cut direction awareness', () => {
         // The current calculateLeads function signature:
-        // calculateLeads(chain, leadInConfig, leadOutConfig, part?)
+        // calculateLeads(chain, leadInConfig, LeadConfig, part?)
         //
         // MISSING: Cut direction parameter!
 

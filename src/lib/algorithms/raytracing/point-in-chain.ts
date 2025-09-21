@@ -259,6 +259,11 @@ export function isPointInsidePart(
     part: { shell: { chain: Chain }; holes: { chain: Chain }[] },
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
+    // For open chains, there's no meaningful "inside" concept
+    if (!isChainClosed(part.shell.chain, CHAIN_CLOSURE_TOLERANCE)) {
+        return false; // No point can be "inside" an open chain
+    }
+
     // Point must be inside the shell
     if (!isPointInsideChainExact(point, part.shell.chain, config)) {
         return false;
@@ -266,9 +271,13 @@ export function isPointInsidePart(
 
     // Point must NOT be inside any holes
     for (const hole of part.holes) {
-        if (isPointInsideChainExact(point, hole.chain, config)) {
-            return false;
+        // Also check if hole is closed before testing containment
+        if (isChainClosed(hole.chain, CHAIN_CLOSURE_TOLERANCE)) {
+            if (isPointInsideChainExact(point, hole.chain, config)) {
+                return false;
+            }
         }
+        // If hole is open, it can't contain points, so skip the check
     }
 
     return true;

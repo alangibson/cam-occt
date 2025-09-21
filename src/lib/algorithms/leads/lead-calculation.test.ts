@@ -1,15 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import {
-    type LeadInConfig,
-    type LeadOutConfig,
-    calculateLeads,
-} from './lead-calculation';
+import { calculateLeads } from './lead-calculation';
+import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import type { Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
+import { convertLeadGeometryToPoints } from './functions';
 
 describe('calculateLeads', () => {
     // Helper to create a simple line chain
@@ -51,8 +49,8 @@ describe('calculateLeads', () => {
     describe('no leads', () => {
         it('should return empty result when both leads are none', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.NONE, length: 0 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.NONE, length: 0 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
@@ -64,45 +62,46 @@ describe('calculateLeads', () => {
     describe('arc leads', () => {
         it('should calculate arc lead-in for horizontal line', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
             expect(result.leadIn).toBeDefined();
             expect(result.leadIn?.type).toBe('arc');
-            expect(result.leadIn?.points).toBeDefined();
-            expect(result.leadIn?.points.length).toBeGreaterThan(2); // Arc should have multiple points
+
+            const points = convertLeadGeometryToPoints(result.leadIn!);
+            expect(points.length).toBeGreaterThan(2); // Arc should have multiple points
 
             // Lead-in should end at the start of the line
-            const lastPoint =
-                result.leadIn?.points[result.leadIn.points.length - 1];
+            const lastPoint = points[points.length - 1];
             expect(lastPoint?.x).toBeCloseTo(0, 5);
             expect(lastPoint?.y).toBeCloseTo(0, 5);
         });
 
         it('should calculate arc lead-out for horizontal line', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.NONE, length: 0 };
-            const leadOut: LeadOutConfig = { type: LeadType.ARC, length: 5 };
+            const leadIn: LeadConfig = { type: LeadType.NONE, length: 0 };
+            const leadOut: LeadConfig = { type: LeadType.ARC, length: 5 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
             expect(result.leadOut).toBeDefined();
             expect(result.leadOut?.type).toBe('arc');
-            expect(result.leadOut?.points).toBeDefined();
-            expect(result.leadOut?.points.length).toBeGreaterThan(2);
+
+            const points = convertLeadGeometryToPoints(result.leadOut!);
+            expect(points.length).toBeGreaterThan(2);
 
             // Lead-out should start at the end of the line
-            const firstPoint = result.leadOut?.points[0];
+            const firstPoint = points[0];
             expect(firstPoint?.x).toBeCloseTo(10, 5);
             expect(firstPoint?.y).toBeCloseTo(0, 5);
         });
 
         it('should limit arc sweep to 90 degrees', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 100 }; // Very long arc
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 100 }; // Very long arc
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
@@ -113,7 +112,7 @@ describe('calculateLeads', () => {
             // The arc should sweep 90 degrees max
 
             // Check that the arc doesn't extend too far
-            const points = result.leadIn?.points || [];
+            const points = convertLeadGeometryToPoints(result.leadIn!);
             for (const point of points) {
                 // For a 90-degree arc on a horizontal line, lead-in should be below or to the left
                 expect(point.x).toBeLessThanOrEqual(0.1); // Small tolerance
@@ -122,8 +121,8 @@ describe('calculateLeads', () => {
 
         it('should calculate lead for circle', () => {
             const chain = createCircleChain({ x: 5, y: 5 }, 3);
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 4 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 4 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
@@ -131,8 +130,8 @@ describe('calculateLeads', () => {
             expect(result.leadIn?.type).toBe('arc');
 
             // Circle starts at rightmost point (8, 5)
-            const lastPoint =
-                result.leadIn?.points[result.leadIn.points.length - 1];
+            const points = convertLeadGeometryToPoints(result.leadIn!);
+            const lastPoint = points[points.length - 1];
             expect(lastPoint?.x).toBeCloseTo(8, 5);
             expect(lastPoint?.y).toBeCloseTo(5, 5);
         });
@@ -166,8 +165,8 @@ describe('calculateLeads', () => {
                 ],
             };
 
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 2 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 2 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 holeChain,
@@ -181,7 +180,7 @@ describe('calculateLeads', () => {
 
             // For a hole, the lead should be inside the circle
             // The hole starts at (8, 5), and the lead should curve inward
-            const points = result.leadIn?.points || [];
+            const points = convertLeadGeometryToPoints(result.leadIn!);
 
             // Check that lead points are inside the circle (distance from center < radius)
             for (let i: number = 0; i < points.length - 1; i++) {
@@ -209,8 +208,8 @@ describe('calculateLeads', () => {
                 holes: [],
             };
 
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 2 };
-            const leadOut: LeadOutConfig = { type: LeadType.NONE, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 2 };
+            const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
                 shellChain,
@@ -224,7 +223,7 @@ describe('calculateLeads', () => {
 
             // For a shell, the lead should be outside the circle
             // The shell starts at (8, 5), and the lead should curve outward
-            const points = result.leadIn?.points || [];
+            const points = convertLeadGeometryToPoints(result.leadIn!);
 
             // Check that lead points are outside the circle (distance from center > radius)
             for (let i: number = 0; i < points.length - 1; i++) {
@@ -245,8 +244,8 @@ describe('calculateLeads', () => {
                 shapes: [],
             };
 
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 5 };
-            const leadOut: LeadOutConfig = { type: LeadType.ARC, length: 5 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
+            const leadOut: LeadConfig = { type: LeadType.ARC, length: 5 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 
@@ -256,8 +255,8 @@ describe('calculateLeads', () => {
 
         it('should handle zero length leads', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
-            const leadIn: LeadInConfig = { type: LeadType.ARC, length: 0 };
-            const leadOut: LeadOutConfig = { type: LeadType.ARC, length: 0 };
+            const leadIn: LeadConfig = { type: LeadType.ARC, length: 0 };
+            const leadOut: LeadConfig = { type: LeadType.ARC, length: 0 };
 
             const result = calculateLeads(chain, leadIn, leadOut);
 

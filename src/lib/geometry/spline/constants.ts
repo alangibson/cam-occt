@@ -1,3 +1,7 @@
+import { STANDARD_GRID_SPACING } from '$lib/constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import type { SplineTessellationConfig } from './interfaces';
+
 /**
  * Minimum number of control points required for a valid spline
  */
@@ -62,3 +66,14 @@ export const TESSELLATION_SAMPLE_MULTIPLIER = 3;
  * Default retry count for spline intersection operations
  */
 export const DEFAULT_RETRY_COUNT = 3;
+/**
+ * Default tessellation configuration
+ */
+export const DEFAULT_CONFIG: Required<SplineTessellationConfig> = {
+    method: 'verb-nurbs',
+    numSamples: 50,
+    tolerance: CHAIN_CLOSURE_TOLERANCE,
+    maxSamples: MAX_SPLINE_TESSELLATION_SAMPLES,
+    minSamples: STANDARD_GRID_SPACING,
+    timeoutMs: STANDARD_TESSELLATION_TIMEOUT_MS,
+};

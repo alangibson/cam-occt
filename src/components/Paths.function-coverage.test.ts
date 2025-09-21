@@ -58,16 +58,20 @@ describe('Paths Component - Function Coverage', () => {
             enabled: true,
             order: 1,
             cutDirection: CutDirection.COUNTERCLOCKWISE,
-            leadInType: LeadType.NONE,
-            leadInLength: 5,
-            leadInAngle: 0,
-            leadInFlipSide: false,
-            leadInFit: false,
-            leadOutType: LeadType.NONE,
-            leadOutLength: 5,
-            leadOutAngle: 0,
-            leadOutFlipSide: false,
-            leadOutFit: false,
+            leadInConfig: {
+                type: LeadType.NONE,
+                length: 5,
+                angle: 0,
+                flipSide: false,
+                fit: false,
+            },
+            leadOutConfig: {
+                type: LeadType.NONE,
+                length: 5,
+                angle: 0,
+                flipSide: false,
+                fit: false,
+            },
             kerfCompensation: KerfCompensation.PART,
         });
     });
@@ -76,6 +80,7 @@ describe('Paths Component - Function Coverage', () => {
         it('should select path when clicking unselected path', async () => {
             // Add test path using addPath method
             pathStore.addPath({
+                id: 'test-path-1',
                 name: 'Test Path',
                 operationId: 'op-1',
                 chainId: 'chain-1',
@@ -104,6 +109,7 @@ describe('Paths Component - Function Coverage', () => {
         it('should deselect path when clicking already selected path', async () => {
             // Add test path
             pathStore.addPath({
+                id: 'test-path-1',
                 name: 'Test Path',
                 operationId: 'op-1',
                 chainId: 'chain-1',
@@ -132,6 +138,7 @@ describe('Paths Component - Function Coverage', () => {
         it('should handle keyboard navigation', async () => {
             // Add test path
             pathStore.addPath({
+                id: 'test-path-1',
                 name: 'Test Path',
                 operationId: 'op-1',
                 chainId: 'chain-1',
@@ -169,6 +176,7 @@ describe('Paths Component - Function Coverage', () => {
         it('should handle path hover events', async () => {
             // Add test path
             pathStore.addPath({
+                id: 'test-path-1',
                 name: 'Test Path',
                 operationId: 'op-1',
                 chainId: 'chain-1',
@@ -195,6 +203,7 @@ describe('Paths Component - Function Coverage', () => {
         it('should handle drag and drop completely', async () => {
             // Add multiple test paths for drag and drop
             pathStore.addPath({
+                id: 'test-path-drag-1',
                 name: 'Test Path 1',
                 operationId: 'op-1',
                 chainId: 'chain-1',
@@ -205,6 +214,7 @@ describe('Paths Component - Function Coverage', () => {
             });
 
             pathStore.addPath({
+                id: 'test-path-2',
                 name: 'Test Path 2',
                 operationId: 'op-1',
                 chainId: 'chain-2',
@@ -277,6 +287,7 @@ describe('Paths Component - Function Coverage', () => {
 
         it('should handle path store updates', () => {
             pathStore.addPath({
+                id: 'test-path-1',
                 name: 'Test Path',
                 operationId: 'op-1',
                 chainId: 'chain-1',

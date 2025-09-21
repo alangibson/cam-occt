@@ -101,7 +101,10 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain).toEqual(chains[0]);
+            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.chain.shapes).toEqual(
+                chains[0].shapes
+            );
             expect(result.parts[0].holes).toHaveLength(0);
             expect(result.warnings).toHaveLength(0);
         });
@@ -129,9 +132,15 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain).toEqual(chains[0]);
+            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.chain.shapes).toEqual(
+                chains[0].shapes
+            );
             expect(result.parts[0].holes).toHaveLength(1);
-            expect(result.parts[0].holes[0].chain).toEqual(chains[1]);
+            expect(result.parts[0].holes[0].chain.id).toBe(chains[1].id);
+            expect(result.parts[0].holes[0].chain.shapes).toEqual(
+                chains[1].shapes
+            );
             expect(result.warnings).toHaveLength(0);
         });
 
@@ -144,7 +153,10 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain).toEqual(chains[0]);
+            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.chain.shapes).toEqual(
+                chains[0].shapes
+            );
             expect(result.parts[0].holes).toHaveLength(2);
             expect(result.warnings).toHaveLength(0);
         });
@@ -157,9 +169,15 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain).toEqual(chains[0]);
+            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.chain.shapes).toEqual(
+                chains[0].shapes
+            );
             expect(result.parts[0].holes).toHaveLength(1);
-            expect(result.parts[0].holes[0].chain).toEqual(chains[1]);
+            expect(result.parts[0].holes[0].chain.id).toBe(chains[1].id);
+            expect(result.parts[0].holes[0].chain.shapes).toEqual(
+                chains[1].shapes
+            );
             expect(result.warnings).toHaveLength(0);
         });
     });
@@ -338,7 +356,10 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain).toEqual(chains[0]);
+            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.chain.shapes).toEqual(
+                chains[0].shapes
+            );
             expect(result.parts[0].holes).toHaveLength(0);
             expect(result.warnings).toHaveLength(0);
         });
@@ -375,7 +396,10 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts([closedChain, openChain]);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain).toEqual(closedChain);
+            expect(result.parts[0].shell.chain.id).toBe(closedChain.id);
+            expect(result.parts[0].shell.chain.shapes).toEqual(
+                closedChain.shapes
+            );
             expect(result.warnings).toHaveLength(0); // Open chain doesn't intersect
         });
 

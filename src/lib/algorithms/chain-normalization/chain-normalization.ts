@@ -29,6 +29,8 @@ import {
     PRECISION_DECIMAL_PLACES,
     TOLERANCE_RELAXATION_MULTIPLIER,
 } from '$lib/geometry/constants';
+import { detectCutDirection } from '$lib/algorithms/cut-direction/cut-direction';
+import { CutDirection } from '$lib/types/direction';
 
 export interface ChainTraversalIssue {
     type:
@@ -57,21 +59,38 @@ export function normalizeChain(
     chain: Chain,
     params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS
 ): Chain {
-    if (chain.shapes.length <= 1) {
-        return chain;
-    }
-
     const { traversalTolerance }: { traversalTolerance: number } = params;
 
-    // First, try to find a valid traversal order by building the chain step by step
-    const normalizedShapes: Shape[] = buildOptimalTraversalOrder(
-        chain.shapes,
-        traversalTolerance
-    );
+    let normalizedShapes: Shape[];
 
-    return {
+    if (chain.shapes.length <= 1) {
+        // Single shape - no traversal order needed, but still need to normalize
+        normalizedShapes = chain.shapes;
+    } else {
+        // Multiple shapes - find optimal traversal order
+        normalizedShapes = buildOptimalTraversalOrder(
+            chain.shapes,
+            traversalTolerance
+        );
+    }
+
+    // Create the normalized chain with updated shapes
+    const normalizedChain: Chain = {
         ...chain,
         shapes: normalizedShapes,
+    };
+
+    // Set the chain-level clockwise property based on the final geometry
+    const direction = detectCutDirection(normalizedChain, traversalTolerance);
+
+    return {
+        ...normalizedChain,
+        clockwise:
+            direction === CutDirection.CLOCKWISE
+                ? true
+                : direction === CutDirection.COUNTERCLOCKWISE
+                  ? false
+                  : null, // null for open chains
     };
 }
 

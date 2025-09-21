@@ -34,12 +34,12 @@ import {
     getEllipsePointAt,
     calculateEllipsePoint,
 } from '$lib/geometry/ellipse';
-import { sampleNURBS, evaluateNURBS } from '$lib/geometry/spline';
+import { tessellateSpline, getSplinePointAt } from '$lib/geometry/spline';
 
 // Mock the dependencies
 vi.mock('$lib/geometry/spline', () => ({
-    sampleNURBS: vi.fn(),
-    evaluateNURBS: vi.fn(),
+    tessellateSpline: vi.fn(),
+    getSplinePointAt: vi.fn(),
 }));
 
 vi.mock('$lib/geometry/ellipse', () => ({
@@ -196,14 +196,20 @@ describe('getShapePoints', () => {
         expect(points).toBe(mockPoints);
     });
 
-    it('should call sampleNURBS for spline shape', () => {
+    it('should call tessellateSpline for spline shape', () => {
         const mockPoints = [
             { x: 0, y: 0 },
             { x: 3, y: 4 },
             { x: 6, y: 2 },
             { x: 10, y: 0 },
         ];
-        vi.mocked(sampleNURBS).mockReturnValue(mockPoints);
+        vi.mocked(tessellateSpline).mockReturnValue({
+            points: mockPoints,
+            success: true,
+            errors: [],
+            warnings: [],
+            methodUsed: 'test',
+        });
 
         const splineGeometry: Spline = {
             controlPoints: [
@@ -226,12 +232,14 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(shape);
-        expect(sampleNURBS).toHaveBeenCalledWith(splineGeometry, 64);
+        expect(tessellateSpline).toHaveBeenCalledWith(splineGeometry, {
+            numSamples: 64,
+        });
         expect(points).toBe(mockPoints);
     });
 
     it('should fallback to fitPoints when NURBS evaluation fails', () => {
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
 
@@ -264,7 +272,7 @@ describe('getShapePoints', () => {
     });
 
     it('should fallback to controlPoints when NURBS fails and no fitPoints', () => {
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
 
@@ -294,7 +302,7 @@ describe('getShapePoints', () => {
     });
 
     it('should return empty array when NURBS fails and no fallback points', () => {
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
 
@@ -318,7 +326,7 @@ describe('getShapePoints', () => {
     });
 
     it('should return empty array for empty fitPoints array', () => {
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
 
@@ -391,7 +399,7 @@ describe('getShapePoints', () => {
     });
 
     it('should handle spline with only fitPoints', () => {
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
 
@@ -422,7 +430,7 @@ describe('getShapePoints', () => {
     });
 
     it('should handle spline with only controlPoints', () => {
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
 
@@ -936,12 +944,18 @@ describe('getShapeLength', () => {
             },
         };
 
-        // Mock sampleNURBS to return known points
-        vi.mocked(sampleNURBS).mockReturnValue([
-            { x: 0, y: 0 },
-            { x: 5, y: 2.5 },
-            { x: 10, y: 0 },
-        ]);
+        // Mock tessellateSpline to return known points
+        vi.mocked(tessellateSpline).mockReturnValue({
+            points: [
+                { x: 0, y: 0 },
+                { x: 5, y: 2.5 },
+                { x: 10, y: 0 },
+            ],
+            success: true,
+            errors: [],
+            warnings: [],
+            methodUsed: 'test',
+        });
 
         const result = getShapeLength(spline);
         expect(result).toBeGreaterThan(0);
@@ -961,7 +975,7 @@ describe('getShapeLength', () => {
             } as Spline,
         };
 
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS sampling failed');
         });
 
@@ -1494,7 +1508,7 @@ describe('isShapeClosed', () => {
         };
 
         // Mock NURBS evaluation to fail
-        vi.mocked(evaluateNURBS).mockImplementation(() => {
+        vi.mocked(getSplinePointAt).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
 
@@ -1739,7 +1753,7 @@ describe('getShapePoints for native shapes', () => {
             } as Spline,
         };
 
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS failed');
         });
 
@@ -1767,7 +1781,7 @@ describe('getShapePoints for native shapes', () => {
             } as Spline,
         };
 
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS failed');
         });
 
@@ -1792,7 +1806,7 @@ describe('getShapePoints for native shapes', () => {
             } as Spline,
         };
 
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS failed');
         });
 
@@ -1860,7 +1874,7 @@ describe('tessellateShape - spline handling', () => {
             } as Spline,
         };
 
-        vi.mocked(sampleNURBS).mockImplementation(() => {
+        vi.mocked(tessellateSpline).mockImplementation(() => {
             throw new Error('NURBS sampling failed');
         });
 

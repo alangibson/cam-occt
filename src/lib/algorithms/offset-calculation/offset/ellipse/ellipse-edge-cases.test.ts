@@ -26,6 +26,7 @@ vi.mock('$lib/geometry/ellipse', () => ({
 // Mock chain constants
 vi.mock('$lib/geometry/chain', () => ({
     POLYGON_POINTS_MIN: 3,
+    CHAIN_CLOSURE_TOLERANCE: 0.01,
 }));
 
 // Mock NURBS utils

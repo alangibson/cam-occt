@@ -81,8 +81,7 @@ describe('path-optimization-utils - branch coverage', () => {
         it('should handle path with lead-in configuration but no lead result', () => {
             const pathWithLeadIn: Path = {
                 ...mockPath,
-                leadInType: LeadType.LINE,
-                leadInLength: 5.0,
+                leadInConfig: { type: LeadType.ARC, length: 5.0 },
             };
 
             const result = getPathStartPoint(pathWithLeadIn, mockChain);
@@ -97,7 +96,7 @@ describe('path-optimization-utils - branch coverage', () => {
         it('should handle path with calculated offset', () => {
             const pathWithOffset: Path = {
                 ...mockPath,
-                calculatedOffset: {
+                offset: {
                     offsetShapes: [
                         {
                             id: 'offset-shape-1',
@@ -127,7 +126,7 @@ describe('path-optimization-utils - branch coverage', () => {
         it('should use offset shapes when available', () => {
             const pathWithOffset: Path = {
                 ...mockPath,
-                calculatedOffset: {
+                offset: {
                     offsetShapes: [
                         {
                             id: 'offset-shape-1',
@@ -160,7 +159,7 @@ describe('path-optimization-utils - branch coverage', () => {
         it('should use offset shapes when available', () => {
             const pathWithOffset: Path = {
                 ...mockPath,
-                calculatedOffset: {
+                offset: {
                     offsetShapes: [
                         {
                             id: 'offset-shape-1',

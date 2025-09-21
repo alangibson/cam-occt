@@ -132,6 +132,7 @@ When any object is selected in UI panels, it MUST be highlighted on canvas:
 
 - Place next to source files (`foo.ts` → `foo.test.ts`)
 - Run with `npm run test`
+- To run a specific test debug output `npm run test:verbose -- testname.test.ts`
 
 **E2E Tests**:
 
@@ -147,9 +148,8 @@ When any object is selected in UI panels, it MUST be highlighted on canvas:
 ### Available Scripts
 
 ```bash
-npm run dev          # Start development server
 npm run build        # Build for production
-npm run test         # Run unit tests
+npm run test         # Run unit tests with output
 npm run test:e2e     # Run e2e tests
 npm run check        # Svelte type checking
 npm run typecheck    # TypeScript type checking

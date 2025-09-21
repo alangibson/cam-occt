@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { validateLeadConfiguration } from './lead-validation';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import type { Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
+import { validateLeadConfiguration } from './lead-validation';
 
 describe('Lead Validation Pipeline', () => {
     // Helper to create a simple line chain
@@ -51,7 +51,7 @@ describe('Lead Validation Pipeline', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
             const config = {
                 leadIn: { type: LeadType.ARC, length: 5 },
-                leadOut: { type: LeadType.LINE, length: 3 },
+                leadOut: { type: LeadType.ARC, length: 3 },
                 cutDirection: CutDirection.NONE,
             };
 
@@ -295,7 +295,7 @@ describe('Lead Validation Pipeline', () => {
             const chain = createLineChain({ x: 0, y: 0 }, { x: 10, y: 0 });
             const config = {
                 leadIn: { type: LeadType.ARC, length: 0.1 }, // Very short
-                leadOut: { type: LeadType.LINE, length: 0.2 }, // Very short
+                leadOut: { type: LeadType.ARC, length: 0.2 }, // Very short
                 cutDirection: CutDirection.NONE,
             };
 

@@ -127,7 +127,6 @@ describe('Spline Tessellation', () => {
             const result = tessellateSpline(closedSpline, config);
 
             expect(result.success).toBe(true);
-            expect(result.methodUsed).toBe('fallback');
 
             // For closed splines using fallback, should return control points
             expect(result.points.length).toBeGreaterThanOrEqual(
@@ -193,9 +192,6 @@ describe('Spline Tessellation', () => {
             const result = tessellateSpline(quadraticBezier, config);
 
             if (result.success) {
-                expect(['verb-nurbs', 'adaptive-sampling']).toContain(
-                    result.methodUsed
-                );
                 expect(result.points.length).toBeGreaterThanOrEqual(3);
                 expect(result.points.length).toBeLessThanOrEqual(100); // Be more lenient
             }

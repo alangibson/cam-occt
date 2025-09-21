@@ -3,7 +3,7 @@ import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';
 import { GeometryType } from '$lib/geometry/shape';
 import { Unit } from '$lib/utils/units';
 import { CutterCompensation } from '$lib/types/cam';
-import type { ToolPath } from '$lib/types';
+import type { CutPath } from '$lib/types';
 import { generateToolPaths } from '$lib/cam/path-generator/path-generator';
 
 // Mock the modules
@@ -35,11 +35,10 @@ describe('GCodeExport Component Logic', () => {
                 pierceDelay: 0.5,
                 cutHeight: 1.5,
                 kerf: 1.5,
-                leadInLength: 5,
-                leadOutLength: 5,
+                // Lead lengths removed from CuttingParameters
             };
 
-            const mockToolPaths: ToolPath[] = [
+            const mockToolPaths: CutPath[] = [
                 {
                     id: '1',
                     shapeId: '1',
