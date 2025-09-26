@@ -324,14 +324,17 @@ export class RenderingPipeline {
                     // Merge nested object properties
                     // Type-safe way to handle nested object merging
                     const existingValue = this.currentState[stateKey] || {};
-                    (this.currentState as Record<string, unknown>)[stateKey] = {
-                        ...(existingValue as Record<string, unknown>),
+                    (this.currentState as Record<string, object>)[stateKey] = {
+                        ...(existingValue as Record<string, object>),
                         ...value,
                     };
                 } else {
                     // Direct assignment for non-nested properties
-                    (this.currentState as Record<string, unknown>)[stateKey] =
-                        value;
+                    if (value !== null && typeof value === 'object') {
+                        (this.currentState as Record<string, object>)[
+                            stateKey
+                        ] = value;
+                    }
                 }
             }
         }

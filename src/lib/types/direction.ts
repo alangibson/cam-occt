@@ -254,22 +254,22 @@ export class DirectionUtils {
 /**
  * Type guards for runtime type checking
  */
-export const isLeadType: (value: unknown) => value is LeadType = (
-    value: unknown
+export const isLeadType: (value: string) => value is LeadType = (
+    value: string
 ): value is LeadType => {
     return Object.values(LeadType).includes(value as LeadType);
 };
 
-export const isCutDirection: (value: unknown) => value is CutDirection = (
-    value: unknown
+export const isCutDirection: (value: string) => value is CutDirection = (
+    value: string
 ): value is CutDirection => {
     return Object.values(CutDirection).includes(value as CutDirection);
 };
 
 export const isGeometricDirection: (
-    value: unknown
+    value: string
 ) => value is GeometricDirection = (
-    value: unknown
+    value: string
 ): value is GeometricDirection => {
     return Object.values(GeometricDirection).includes(
         value as GeometricDirection

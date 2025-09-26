@@ -9,7 +9,7 @@ export interface Shape {
     geometry: Geometry;
     layer?: string;
     originalType?: string; // Track original DXF entity type for converted shapes
-    metadata?: Record<string, unknown>; // Metadata for additional shape information (e.g., originalLayer)
+    metadata?: Record<string, string | number | boolean | null>; // Metadata for additional shape information (e.g., originalLayer)
 }
 
 export interface Layer {

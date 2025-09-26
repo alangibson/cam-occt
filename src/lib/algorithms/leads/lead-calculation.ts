@@ -835,8 +835,8 @@ function doesArcIntersectChain(
  */
 export function checkLeadCollisions(
     _leadResult: LeadResult,
-    _allPaths: unknown[],
-    _currentPath: unknown
+    _allPaths: object[],
+    _currentPath: object
 ): boolean {
     // TODO: Implement collision detection
     // - Check if lead-in crosses lead-out

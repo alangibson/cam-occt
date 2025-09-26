@@ -22,9 +22,10 @@
     import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
     import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
     import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
 
     // Props from WorkflowContainer for shared canvas
-    export let sharedCanvas: any;
+    export let sharedCanvas: typeof DrawingCanvasContainer;
     export let canvasStage: WorkflowStage;
     export let interactionMode: 'shapes' | 'chains' | 'paths';
     export let onChainClick: ((chainId: string) => void) | null = null;
@@ -105,7 +106,6 @@
         }
     }
 
-
     // Rapid selection functions
     function handleRapidClick(rapidId: string) {
         if (selectedRapidId === rapidId) {
@@ -184,11 +184,16 @@
                                     : ''}"
                                 role="button"
                                 tabindex="0"
-                                onclick={() => onChainClick && onChainClick(chain.id)}
+                                onclick={() =>
+                                    onChainClick && onChainClick(chain.id)}
                                 onkeydown={(e) =>
-                                    e.key === 'Enter' && onChainClick && onChainClick(chain.id)}
-                                onmouseenter={() => onChainHover && onChainHover(chain.id)}
-                                onmouseleave={() => onChainHoverEnd && onChainHoverEnd()}
+                                    e.key === 'Enter' &&
+                                    onChainClick &&
+                                    onChainClick(chain.id)}
+                                onmouseenter={() =>
+                                    onChainHover && onChainHover(chain.id)}
+                                onmouseleave={() =>
+                                    onChainHoverEnd && onChainHoverEnd()}
                             >
                                 <span class="chain-name"
                                     >Chain {chain.id.split('-')[1]}</span
@@ -226,11 +231,16 @@
                                     : ''}"
                                 role="button"
                                 tabindex="0"
-                                onclick={() => onPartClick && onPartClick(part.id)}
+                                onclick={() =>
+                                    onPartClick && onPartClick(part.id)}
                                 onkeydown={(e) =>
-                                    e.key === 'Enter' && onPartClick && onPartClick(part.id)}
-                                onmouseenter={() => onPartHover && onPartHover(part.id)}
-                                onmouseleave={() => onPartHoverEnd && onPartHoverEnd()}
+                                    e.key === 'Enter' &&
+                                    onPartClick &&
+                                    onPartClick(part.id)}
+                                onmouseenter={() =>
+                                    onPartHover && onPartHover(part.id)}
+                                onmouseleave={() =>
+                                    onPartHoverEnd && onPartHoverEnd()}
                             >
                                 <span class="part-name"
                                     >Part {part.id.split('-')[1]}</span
@@ -322,7 +332,8 @@
                     </div>
                 </div>
             </div>
-            <svelte:component this={sharedCanvas}
+            <svelte:component
+                this={sharedCanvas}
                 currentStage={canvasStage}
                 {interactionMode}
                 {onChainClick}

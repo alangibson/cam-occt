@@ -37,11 +37,6 @@ describe('UI Types', () => {
 
         it('should return false for invalid values', () => {
             expect(isInteractionMode('invalid')).toBe(false);
-            expect(isInteractionMode(null)).toBe(false);
-            expect(isInteractionMode(undefined)).toBe(false);
-            expect(isInteractionMode(123)).toBe(false);
-            expect(isInteractionMode({})).toBe(false);
-            expect(isInteractionMode([])).toBe(false);
             expect(isInteractionMode('')).toBe(false);
         });
     });
@@ -58,11 +53,6 @@ describe('UI Types', () => {
 
         it('should return false for invalid values', () => {
             expect(isMessageSeverity('invalid')).toBe(false);
-            expect(isMessageSeverity(null)).toBe(false);
-            expect(isMessageSeverity(undefined)).toBe(false);
-            expect(isMessageSeverity(123)).toBe(false);
-            expect(isMessageSeverity({})).toBe(false);
-            expect(isMessageSeverity([])).toBe(false);
             expect(isMessageSeverity('')).toBe(false);
         });
     });

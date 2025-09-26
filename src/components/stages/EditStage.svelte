@@ -5,6 +5,7 @@
     import ShapeProperties from '../ShapeProperties.svelte';
     import Units from '../Units.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
+    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
@@ -12,15 +13,11 @@
     import { generateShapePoints } from '$lib/stores/overlay/functions';
 
     // Props from WorkflowContainer for shared canvas
-    export let sharedCanvas: any;
+    export let sharedCanvas: typeof DrawingCanvasContainer;
     export let canvasStage: WorkflowStage;
     export let interactionMode: 'shapes' | 'chains' | 'paths';
     export let onChainClick: ((chainId: string) => void) | null = null;
     export let onPartClick: ((partId: string) => void) | null = null;
-    export let onChainHover: ((chainId: string) => void) | null = null;
-    export let onChainHoverEnd: (() => void) | null = null;
-    export let onPartHover: ((partId: string) => void) | null = null;
-    export let onPartHoverEnd: (() => void) | null = null;
 
     function handleNext() {
         workflowStore.completeStage(WorkflowStage.EDIT);
@@ -77,7 +74,8 @@
             <div class="toolbar-container">
                 <ToolBar />
             </div>
-            <svelte:component this={sharedCanvas}
+            <svelte:component
+                this={sharedCanvas}
                 currentStage={canvasStage}
                 {interactionMode}
                 {onChainClick}

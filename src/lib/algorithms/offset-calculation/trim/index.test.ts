@@ -55,9 +55,9 @@ describe('trim/index additional coverage tests', () => {
         it('should handle unsupported shape type (default case)', () => {
             const unsupportedShape: Shape = {
                 id: generateId(),
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 type: 'unsupported' as any,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 geometry: {} as any,
             };
 
@@ -81,7 +81,7 @@ describe('trim/index additional coverage tests', () => {
             const badShape: Shape = {
                 id: generateId(),
                 type: GeometryType.LINE,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 geometry: null as any,
             };
 
@@ -260,7 +260,7 @@ describe('trim/index additional coverage tests', () => {
             const invalidShape: Shape = {
                 id: generateId(),
                 type: GeometryType.LINE,
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
                 geometry: { invalid: 'data' } as any,
             };
 

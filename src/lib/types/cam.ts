@@ -80,7 +80,7 @@ export interface GCodeCommand {
  * Type guard for checking if a value is a valid CutterCompensation
  */
 export function isCutterCompensation(
-    value: unknown
+    value: string
 ): value is CutterCompensation {
     return Object.values(CutterCompensation).includes(
         value as CutterCompensation
@@ -90,6 +90,6 @@ export function isCutterCompensation(
 /**
  * Type guard for checking if a value is a valid TargetType
  */
-export function isTargetType(value: unknown): value is TargetType {
+export function isTargetType(value: string): value is TargetType {
     return Object.values(TargetType).includes(value as TargetType);
 }

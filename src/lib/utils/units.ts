@@ -95,6 +95,6 @@ export function getUnitSymbol(unit: Unit): string {
 /**
  * Type guard for checking if a value is a valid Unit
  */
-export function isUnit(value: unknown): value is Unit {
+export function isUnit(value: string): value is Unit {
     return Object.values(Unit).includes(value as Unit);
 }

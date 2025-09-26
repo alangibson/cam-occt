@@ -22,7 +22,7 @@ export function migrateLegacyData(): void {
         'metalheadcam-prepare-right-column-width',
     ];
 
-    const legacyData: Record<string, unknown> = {};
+    const legacyData: Record<string, object | number> = {};
 
     for (const key of legacyKeys) {
         const data: string | null = localStorage.getItem(key);

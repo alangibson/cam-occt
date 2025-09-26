@@ -57,17 +57,14 @@
     import { LeadType } from '$lib/types/direction';
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
+    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
 
     // Props from WorkflowContainer for shared canvas
-    export let sharedCanvas: any;
+    export let sharedCanvas: typeof DrawingCanvasContainer;
     export let canvasStage: WorkflowStage;
     export let interactionMode: 'shapes' | 'chains' | 'paths';
     export let onChainClick: ((chainId: string) => void) | null = null;
     export let onPartClick: ((partId: string) => void) | null = null;
-    export let onChainHover: ((chainId: string) => void) | null = null;
-    export let onChainHoverEnd: (() => void) | null = null;
-    export let onPartHover: ((partId: string) => void) | null = null;
-    export let onPartHoverEnd: (() => void) | null = null;
 
     // Resizable columns state
     let rightColumnWidth = 280; // Default width in pixels
@@ -1370,7 +1367,8 @@
                 </div>
             </div>
         </div>
-        <svelte:component this={sharedCanvas}
+        <svelte:component
+            this={sharedCanvas}
             currentStage={canvasStage}
             {interactionMode}
             {onChainClick}

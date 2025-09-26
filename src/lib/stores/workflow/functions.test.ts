@@ -155,11 +155,11 @@ describe('Workflow functions', () => {
 
         it('should return false for invalid values', () => {
             expect(isWorkflowStage('invalid-stage')).toBe(false);
-            expect(isWorkflowStage(null)).toBe(false);
-            expect(isWorkflowStage(undefined)).toBe(false);
-            expect(isWorkflowStage(123)).toBe(false);
-            expect(isWorkflowStage({})).toBe(false);
-            expect(isWorkflowStage([])).toBe(false);
+            expect(isWorkflowStage(null as any)).toBe(false);
+            expect(isWorkflowStage(undefined as any)).toBe(false);
+            expect(isWorkflowStage(123 as any)).toBe(false);
+            expect(isWorkflowStage({} as any)).toBe(false);
+            expect(isWorkflowStage([] as any)).toBe(false);
             expect(isWorkflowStage('')).toBe(false);
         });
     });

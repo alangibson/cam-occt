@@ -7,6 +7,7 @@ import eslintPluginSvelte from "eslint-plugin-svelte";
 import svelteParser from "svelte-eslint-parser";
 
 export default [
+  // Globally ignored files
   {
     ignores: [
       ".svelte-kit/**",
@@ -24,10 +25,12 @@ export default [
       "worker/**",
     ],
   },
+  // Prepackaged defaults
   js.configs.recommended,
   ...tseslint.configs.recommended,
   ...eslintPluginSvelte.configs["flat/recommended"],
   eslintConfigPrettier,
+  // Custom (Type/Java)script file treatment
   {
     files: ["src/**/*.js", "src/**/*.ts"],
     plugins: {
@@ -62,18 +65,28 @@ export default [
         varsIgnorePattern: "^_",
       }],
       "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-empty-object-type": "warn",
+      "@typescript-eslint/no-restricted-types": [
+        "error",
+        {
+          "types": {
+            "unknown": {},
+            "never": {},
+            "any": { }
+          },
+        },
+      ],
+      "@typescript-eslint/no-empty-object-type": "error",
       "@typescript-eslint/no-require-imports": "error",
       "no-case-declarations": "off",
       "no-useless-catch": "error",
-      "prefer-const": "warn",
+      "prefer-const": "error",
       "@typescript-eslint/no-inferrable-types": 0,
       "import/no-relative-packages": "error",
       "import/no-unresolved": "error",
       "import/no-duplicates": "error",
       "import/first": "error",
       "import/newline-after-import": "error",
-      "import/no-unused-modules": "warn",
+      "import/no-unused-modules": "error",
       "no-restricted-imports": [
         "error",
         {
@@ -93,8 +106,8 @@ export default [
         },
         {
           "selector": "TSImportType",
-          "message": "Type-only import() expressions are not allowed."
-        }
+          "message": "Type-only import() expressions are not allowed.",
+        },
       ],
       "prettier/prettier": ["error", {}, { "usePrettierrc": true }],
       "sort-imports": "off",
@@ -105,13 +118,17 @@ export default [
       }],
     },
   },
+  // Test file overrides
   {
     files: ["**/*.test.ts", "**/*.test.js"],
     rules: {
       "no-magic-numbers": "off",
       "no-underscore-dangle": "off",
+      "@typescript-eslint/no-restricted-types": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  // Svelte file overrides
   {
     files: ["**/*.svelte"],
     languageOptions: {
@@ -167,16 +184,20 @@ export default [
       "svelte/no-at-debug-tags": "error",
       "svelte/valid-compile": "error",
       "svelte/no-unused-svelte-ignore": "warn",
-      "@typescript-eslint/no-unused-vars": ["error", {
-        argsIgnorePattern: "^_",
-        varsIgnorePattern: "^_|^\\$\\$",
-      }],
+      "@typescript-eslint/no-unused-vars": [
+        "error", {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_|^\\$\\$",
+        }
+      ],
       "@typescript-eslint/no-explicit-any": "error",
       "no-case-declarations": "off",
-      "@typescript-eslint/no-unused-expressions": ["error", {
-        allowShortCircuit: true,
-        allowTernary: true,
-      }],
+      "@typescript-eslint/no-unused-expressions": [
+        "error", {
+          allowShortCircuit: true,
+          allowTernary: true,
+        }
+      ],
       "no-magic-numbers": "off",
     },
   },

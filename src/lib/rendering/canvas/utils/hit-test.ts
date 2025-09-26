@@ -3,6 +3,8 @@
  */
 
 import type { Point2D, Shape } from '$lib/types';
+import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
 
 /**
  * Types of objects that can be hit
@@ -26,8 +28,8 @@ export interface HitTestMetadata {
     shapeType?: 'original' | 'offset';
     pathId?: string;
     endpoint?: 'start' | 'end';
-    rapid?: unknown;
-    part?: unknown;
+    rapid?: Rapid;
+    part?: DetectedPart;
     chainId?: string;
     shapeId?: string;
     leadType?: 'leadIn' | 'leadOut';

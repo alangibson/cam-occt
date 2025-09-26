@@ -654,7 +654,7 @@ function createOffsetResult(
 /**
  * Creates an error result
  */
-function createErrorResult(error: unknown): OffsetResult {
+function createErrorResult(error: Error | string): OffsetResult {
     return {
         success: false,
         shapes: [],
@@ -716,6 +716,8 @@ export function offsetSpline(
 
         return result;
     } catch (error) {
-        return createErrorResult(error);
+        return createErrorResult(
+            error instanceof Error ? error : String(error)
+        );
     }
 }

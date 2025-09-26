@@ -27,11 +27,16 @@
     // Determine canvas properties based on current stage
     $: canvasStage = (() => {
         switch (currentStage) {
-            case 'edit': return WorkflowStage.EDIT;
-            case 'prepare': return WorkflowStage.PREPARE;
-            case 'program': return WorkflowStage.PROGRAM;
-            case 'simulate': return WorkflowStage.SIMULATE;
-            default: return WorkflowStage.EDIT;
+            case 'edit':
+                return WorkflowStage.EDIT;
+            case 'prepare':
+                return WorkflowStage.PREPARE;
+            case 'program':
+                return WorkflowStage.PROGRAM;
+            case 'simulate':
+                return WorkflowStage.SIMULATE;
+            default:
+                return WorkflowStage.EDIT;
         }
     })();
 
@@ -92,10 +97,6 @@
                 {interactionMode}
                 onChainClick={handleChainClick}
                 onPartClick={handlePartClick}
-                onChainHover={handleChainHover}
-                onChainHoverEnd={handleChainHoverEnd}
-                onPartHover={handlePartHover}
-                onPartHoverEnd={handlePartHoverEnd}
             />
         {:else if currentStage === 'prepare'}
             <PrepareStage
@@ -128,10 +129,6 @@
                 {interactionMode}
                 onChainClick={handleChainClick}
                 onPartClick={handlePartClick}
-                onChainHover={handleChainHover}
-                onChainHoverEnd={handleChainHoverEnd}
-                onPartHover={handlePartHover}
-                onPartHoverEnd={handlePartHoverEnd}
             />
         {/if}
     {/if}

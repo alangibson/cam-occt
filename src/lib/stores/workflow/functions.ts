@@ -85,7 +85,7 @@ export function getStageDescription(stage: WorkflowStage): string {
 /**
  * Type guard for checking if a value is a valid WorkflowStage
  */
-export function isWorkflowStage(value: unknown): value is WorkflowStage {
+export function isWorkflowStage(value: string): value is WorkflowStage {
     return Object.values(WorkflowStage).includes(value as WorkflowStage);
 }
 

@@ -419,9 +419,9 @@ describe('Type Guards', () => {
             expect(isLeadType('arc')).toBe(true);
             expect(isLeadType('none')).toBe(true);
             expect(isLeadType('invalid')).toBe(false);
-            expect(isLeadType(null)).toBe(false);
-            expect(isLeadType(undefined)).toBe(false);
-            expect(isLeadType(123)).toBe(false);
+            expect(isLeadType(null as any)).toBe(false);
+            expect(isLeadType(undefined as any)).toBe(false);
+            expect(isLeadType(123 as any)).toBe(false);
         });
     });
 
@@ -431,9 +431,9 @@ describe('Type Guards', () => {
             expect(isCutDirection('counterclockwise')).toBe(true);
             expect(isCutDirection('none')).toBe(true);
             expect(isCutDirection('invalid')).toBe(false);
-            expect(isCutDirection(null)).toBe(false);
-            expect(isCutDirection(undefined)).toBe(false);
-            expect(isCutDirection(123)).toBe(false);
+            expect(isCutDirection(null as any)).toBe(false);
+            expect(isCutDirection(undefined as any)).toBe(false);
+            expect(isCutDirection(123 as any)).toBe(false);
         });
     });
 
@@ -448,8 +448,8 @@ describe('Type Guards', () => {
             expect(isGeometricDirection('forward')).toBe(true);
             expect(isGeometricDirection('backward')).toBe(true);
             expect(isGeometricDirection('invalid')).toBe(false);
-            expect(isGeometricDirection(null)).toBe(false);
-            expect(isGeometricDirection(undefined)).toBe(false);
+            expect(isGeometricDirection(null as any)).toBe(false);
+            expect(isGeometricDirection(undefined as any)).toBe(false);
         });
     });
 });

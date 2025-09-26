@@ -23,14 +23,14 @@ export enum MessageSeverity {
 /**
  * Type guard for checking if a value is a valid InteractionMode
  */
-export function isInteractionMode(value: unknown): value is InteractionMode {
+export function isInteractionMode(value: string): value is InteractionMode {
     return Object.values(InteractionMode).includes(value as InteractionMode);
 }
 
 /**
  * Type guard for checking if a value is a valid MessageSeverity
  */
-export function isMessageSeverity(value: unknown): value is MessageSeverity {
+export function isMessageSeverity(value: string): value is MessageSeverity {
     return Object.values(MessageSeverity).includes(value as MessageSeverity);
 }
 

@@ -99,9 +99,4 @@ describe('BaseRenderer', () => {
         });
     });
 
-    // Helper methods tests removed - functions no longer exist
-    // describe('helper methods', () => {
-    //     hasChanged, hasArrayChanged, hasSetChanged, hasMapChanged
-    //     functionality has been removed from the BaseRenderer class
-    // });
 });

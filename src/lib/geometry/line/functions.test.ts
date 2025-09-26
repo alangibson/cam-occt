@@ -122,7 +122,7 @@ describe('line functions additional coverage tests', () => {
     describe('isParameterValidForSegment - default case', () => {
         it('should handle invalid segment position (default case)', () => {
             const param = 0.5;
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             const position = 'invalid' as any;
 
             const result = isParameterValidForSegment(param, position);
@@ -131,7 +131,7 @@ describe('line functions additional coverage tests', () => {
 
         it('should handle default case with parameter outside bounds', () => {
             const param = 2.0; // Outside [0,1] range
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
             const position = 'invalid' as any;
 
             const result = isParameterValidForSegment(param, position);

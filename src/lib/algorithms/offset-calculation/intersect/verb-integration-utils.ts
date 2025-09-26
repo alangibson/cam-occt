@@ -2,6 +2,9 @@ import type { Point2D } from '$lib/types/geometry';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { CurveCurveIntersection } from 'verb-nurbs';
 
+const EXPECTED_ARRAY_LENGTH = 3;
+const EXPECTED_POINT_LENGTH = 3;
+
 /**
  * Verb-NURBS Integration Utilities
  *
@@ -74,16 +77,18 @@ export function processVerbIntersectionResults(
             param2 = swapParams ? intersection.u0 : intersection.u1;
         } else if (
             'point0' in intersection &&
+            'point1' in intersection &&
+            'u0' in intersection &&
+            'u1' in intersection &&
             Array.isArray(
-                (intersection as unknown as AlternativeIntersectionWithPoints)
-                    .point0
+                (intersection as AlternativeIntersectionWithPoints).point0
             )
         ) {
             // TODO this is only used by tests. remove it
 
             // Alternative structure: { point0: [x, y, z], point1: [x, y, z], u0: param, u1: param }
             const altIntersection =
-                intersection as unknown as AlternativeIntersectionWithPoints;
+                intersection as AlternativeIntersectionWithPoints;
             point = {
                 x: altIntersection.point0[0],
                 y: altIntersection.point0[1],
@@ -93,15 +98,14 @@ export function processVerbIntersectionResults(
         } else if (
             'point' in intersection &&
             Array.isArray(
-                (intersection as unknown as AlternativeIntersectionWithPoint)
-                    .point
+                (intersection as AlternativeIntersectionWithPoint).point
             )
         ) {
             // TODO this is only used by tests. remove it
 
             // Another structure: { point: [x, y, z], u: number, v: number }
             const altIntersection =
-                intersection as unknown as AlternativeIntersectionWithPoint;
+                intersection as AlternativeIntersectionWithPoint;
             point = {
                 x: altIntersection.point[0],
                 y: altIntersection.point[1],
@@ -112,12 +116,19 @@ export function processVerbIntersectionResults(
             param2 = swapParams
                 ? (altIntersection.u ?? altIntersection.u0 ?? 0)
                 : (altIntersection.v ?? altIntersection.u1 ?? 0);
-        } else if (Array.isArray(intersection) && intersection.length >= 2) {
+        } else if (
+            Array.isArray(intersection) &&
+            intersection.length >= EXPECTED_ARRAY_LENGTH &&
+            Array.isArray(intersection[0]) &&
+            intersection[0].length >= EXPECTED_POINT_LENGTH &&
+            typeof intersection[1] === 'number' &&
+            typeof intersection[2] === 'number'
+        ) {
             // TODO this is only used by tests. remove it
 
             // Array structure: [[x, y, z], u, v] or similar array format
-            const arrIntersection =
-                intersection as unknown as ArrayIntersection;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const arrIntersection = intersection as any as ArrayIntersection;
             point = {
                 x: arrIntersection[0][0],
                 y: arrIntersection[0][1],

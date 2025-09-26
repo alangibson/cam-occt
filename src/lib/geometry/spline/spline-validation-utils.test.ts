@@ -64,10 +64,10 @@ describe('spline-validation-utils', () => {
         });
 
         it('should reject spline with non-array control points', () => {
-            const spline: Spline = {
+            const spline = {
                 ...createValidSpline(),
-                controlPoints: 'not-array' as never,
-            };
+                controlPoints: 'not-array',
+            } as unknown as Spline;
 
             const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
@@ -75,10 +75,10 @@ describe('spline-validation-utils', () => {
         });
 
         it('should repair spline with missing knots', () => {
-            const spline: Spline = {
+            const spline = {
                 ...createValidSpline(),
-                knots: undefined as never,
-            };
+                knots: undefined,
+            } as unknown as Spline;
 
             const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
@@ -103,11 +103,11 @@ describe('spline-validation-utils', () => {
         });
 
         it('should use default degree 3 when not specified', () => {
-            const spline: Spline = {
+            const spline = {
                 ...createValidSpline(),
-                degree: undefined as never,
-                knots: undefined as never,
-            };
+                degree: undefined,
+                knots: undefined,
+            } as unknown as Spline;
 
             const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
@@ -144,7 +144,7 @@ describe('spline-validation-utils', () => {
         });
 
         it('should handle spline with different degree', () => {
-            const spline: Spline = {
+            const spline = {
                 ...createValidSpline(),
                 degree: 2,
                 controlPoints: [
@@ -152,8 +152,8 @@ describe('spline-validation-utils', () => {
                     { x: 1, y: 1 },
                     { x: 2, y: 0 },
                 ],
-                knots: undefined as never,
-            };
+                knots: undefined,
+            } as unknown as Spline;
 
             const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
@@ -162,11 +162,11 @@ describe('spline-validation-utils', () => {
         });
 
         it('should preserve existing weights when repairing', () => {
-            const spline: Spline = {
+            const spline = {
                 ...createValidSpline(),
                 weights: [1, 2, 3, 4],
-                knots: undefined as never,
-            };
+                knots: undefined,
+            } as unknown as Spline;
 
             const result = validateSplineGeometry2(spline);
             expect(result.isValid).toBe(false);
@@ -189,10 +189,10 @@ describe('spline-validation-utils', () => {
         });
 
         it('should use default degree 3 when not specified', () => {
-            const spline: Spline = {
+            const spline = {
                 ...createValidSpline(),
-                degree: undefined as never,
-            };
+                degree: undefined,
+            } as unknown as Spline;
 
             const repaired = repairSplineKnotVector(spline);
             expect(repaired.degree).toBe(3);
@@ -209,10 +209,10 @@ describe('spline-validation-utils', () => {
         });
 
         it('should generate default weights when missing', () => {
-            const spline: Spline = {
+            const spline = {
                 ...createValidSpline(),
-                weights: undefined as never,
-            };
+                weights: undefined,
+            } as unknown as Spline;
 
             const repaired = repairSplineKnotVector(spline);
             expect(repaired.weights).toEqual([1, 1, 1, 1]);

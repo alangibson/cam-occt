@@ -32,9 +32,10 @@
     import { CutDirection } from '$lib/types/direction';
     import AccordionPanel from '../AccordionPanel.svelte';
     import LayersInfo from '../LayersInfo.svelte';
+    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
 
     // Props from WorkflowContainer for shared canvas
-    export let sharedCanvas: any;
+    export let sharedCanvas: typeof DrawingCanvasContainer;
     export let canvasStage: WorkflowStage;
     export let interactionMode: 'shapes' | 'chains' | 'paths';
     export let onChainClick: ((chainId: string) => void) | null = null;
@@ -643,7 +644,6 @@
         }
     }
 
-
     function handleDecomposePolylines() {
         const drawing = $drawingStore.drawing;
         if (!drawing || !drawing.shapes || drawing.shapes.length === 0) {
@@ -914,11 +914,16 @@
                                     : ''}"
                                 role="button"
                                 tabindex="0"
-                                onclick={() => onPartClick && onPartClick(part.id)}
+                                onclick={() =>
+                                    onPartClick && onPartClick(part.id)}
                                 onkeydown={(e) =>
-                                    e.key === 'Enter' && onPartClick && onPartClick(part.id)}
-                                onmouseenter={() => onPartHover && onPartHover(part.id)}
-                                onmouseleave={() => onPartHoverEnd && onPartHoverEnd()}
+                                    e.key === 'Enter' &&
+                                    onPartClick &&
+                                    onPartClick(part.id)}
+                                onmouseenter={() =>
+                                    onPartHover && onPartHover(part.id)}
+                                onmouseleave={() =>
+                                    onPartHoverEnd && onPartHoverEnd()}
                             >
                                 <div class="part-header">
                                     <span class="part-name"
@@ -978,11 +983,18 @@
                                     : ''}"
                                 role="button"
                                 tabindex="0"
-                                onclick={() => onChainClick && onChainClick(result.chainId)}
+                                onclick={() =>
+                                    onChainClick &&
+                                    onChainClick(result.chainId)}
                                 onkeydown={(e) =>
-                                    e.key === 'Enter' && onChainClick && onChainClick(result.chainId)}
-                                onmouseenter={() => onChainHover && onChainHover(result.chainId)}
-                                onmouseleave={() => onChainHoverEnd && onChainHoverEnd()}
+                                    e.key === 'Enter' &&
+                                    onChainClick &&
+                                    onChainClick(result.chainId)}
+                                onmouseenter={() =>
+                                    onChainHover &&
+                                    onChainHover(result.chainId)}
+                                onmouseleave={() =>
+                                    onChainHoverEnd && onChainHoverEnd()}
                             >
                                 <div class="chain-header">
                                     <span class="chain-name"
@@ -1064,7 +1076,8 @@
 
         <!-- Center Column -->
         <div class="center-column">
-            <svelte:component this={sharedCanvas}
+            <svelte:component
+                this={sharedCanvas}
                 currentStage={canvasStage}
                 {interactionMode}
                 {onChainClick}

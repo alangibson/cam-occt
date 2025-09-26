@@ -308,6 +308,6 @@ function isPointInBoundingBox(
 /**
  * Type guard for checking if a value is a valid PartType
  */
-export function isPartType(value: unknown): value is PartType {
+export function isPartType(value: string): value is PartType {
     return Object.values(PartType).includes(value as PartType);
 }

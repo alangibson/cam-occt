@@ -49,7 +49,7 @@ export function squashLayers(
                     ? {
                           metadata: {
                               ...shape.metadata,
-                              originalLayer: shape.layer,
+                              originalLayer: shape.layer || null,
                           },
                       }
                     : {}),

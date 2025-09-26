@@ -7,6 +7,12 @@ import type { Point2D } from '$lib/types';
 import { GeometryType } from '$lib/types';
 import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
+import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import type {
+    DetectedPart,
+    PartShell,
+} from '$lib/algorithms/part-detection/part-detection';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 
 // Mock stores
 const mockPartStore = {
@@ -42,12 +48,35 @@ describe('DrawingCanvas Part Highlighting', () => {
         const testPartId = 'test-part-1';
         const clickPoint: Point2D = { x: 100, y: 100 };
 
+        // Create a mock chain for the shell
+        const mockChain: Chain = {
+            id: 'chain-1',
+            shapes: [],
+            clockwise: true,
+        };
+
+        // Create a mock shell
+        const mockShell: PartShell = {
+            id: 'shell-1',
+            chain: mockChain,
+            type: PartType.SHELL,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
+            holes: [],
+        };
+
+        // Create a proper DetectedPart
+        const mockPart: DetectedPart = {
+            id: testPartId,
+            shell: mockShell,
+            holes: [],
+        };
+
         const hitResult: HitTestResult = {
             type: HitTestType.PART,
             id: testPartId,
             distance: 0,
             point: clickPoint,
-            metadata: { part: { id: testPartId } },
+            metadata: { part: mockPart },
         };
 
         // Mock the hit test to return a part hit
@@ -132,12 +161,35 @@ describe('DrawingCanvas Part Highlighting', () => {
         const testPartId = 'test-part-2';
         const clickPoint: Point2D = { x: 150, y: 150 };
 
+        // Create a mock chain for the shell
+        const mockChain2: Chain = {
+            id: 'chain-2',
+            shapes: [],
+            clockwise: true,
+        };
+
+        // Create a mock shell
+        const mockShell2: PartShell = {
+            id: 'shell-2',
+            chain: mockChain2,
+            type: PartType.SHELL,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
+            holes: [],
+        };
+
+        // Create a proper DetectedPart
+        const mockPart2: DetectedPart = {
+            id: testPartId,
+            shell: mockShell2,
+            holes: [],
+        };
+
         const hitResult: HitTestResult = {
             type: HitTestType.PART,
             id: testPartId,
             distance: 0,
             point: clickPoint,
-            metadata: { part: { id: testPartId } },
+            metadata: { part: mockPart2 },
         };
 
         const onPartClick = vi.fn();
