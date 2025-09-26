@@ -289,8 +289,6 @@ function restoreStateToStores(state: PersistedState): void {
         if (state.tools && Array.isArray(state.tools)) {
             toolStore.reorderTools(state.tools);
         }
-
-        console.log('Application state restored successfully');
     } catch (error) {
         console.error('Failed to restore application state:', error);
     }
@@ -365,8 +363,6 @@ export function setupAutoSave(): () => void {
     );
     unsubscribers.push(pathStore.subscribe(() => autoSaveApplicationState()));
     unsubscribers.push(toolStore.subscribe(() => autoSaveApplicationState()));
-
-    console.log('Auto-save subscriptions setup complete');
 
     // Return cleanup function
     return () => {

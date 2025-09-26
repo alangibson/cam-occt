@@ -416,13 +416,18 @@ export function isEllipseClosed(
 }
 
 /**
- * Calculate distance from a point to an ellipse perimeter
- * Returns the minimum distance from the point to the ellipse outline
+ * Transform a point from world coordinates to ellipse local coordinate system
+ * Returns the normalized coordinates relative to the ellipse axes
  */
-export function distanceFromEllipsePerimeter(
+export function transformPointToEllipseCoordinates(
     point: Point2D,
     ellipse: Ellipse
-): number {
+): {
+    normalizedX: number;
+    normalizedY: number;
+    rotatedX: number;
+    rotatedY: number;
+} {
     const { majorAxisLength, minorAxisLength, majorAxisAngle } =
         getEllipseParameters(ellipse);
 
@@ -438,10 +443,30 @@ export function distanceFromEllipsePerimeter(
     const normalizedX = rotatedX / majorAxisLength;
     const normalizedY = rotatedY / minorAxisLength;
 
+    return { normalizedX, normalizedY, rotatedX, rotatedY };
+}
+
+/**
+ * Calculate distance from a point to an ellipse perimeter
+ * Returns the minimum distance from the point to the ellipse outline
+ */
+export function distanceFromEllipsePerimeter(
+    point: Point2D,
+    ellipse: Ellipse
+): number {
+    // Use the shared coordinate transformation function
+    const { normalizedX, normalizedY } = transformPointToEllipseCoordinates(
+        point,
+        ellipse
+    );
+
     // Calculate distance from unit ellipse (where both axes = 1)
     const distanceFromUnit = Math.sqrt(
         normalizedX * normalizedX + normalizedY * normalizedY
     );
+
+    // Get ellipse parameters for axis lengths
+    const { majorAxisLength, minorAxisLength } = getEllipseParameters(ellipse);
 
     // Convert back to actual distance
     // For points on the ellipse perimeter, distanceFromUnit = 1

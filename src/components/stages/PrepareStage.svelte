@@ -30,17 +30,19 @@
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { CutDirection } from '$lib/types/direction';
-    import {
-        handleChainMouseEnter,
-        handleChainMouseLeave,
-        handlePartMouseEnter,
-        handlePartMouseLeave,
-        handleChainClick as sharedHandleChainClick,
-        handlePartClick as sharedHandlePartClick,
-    } from '$lib/algorithms/part-detection/chain-part-interactions';
     import AccordionPanel from '../AccordionPanel.svelte';
-    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import LayersInfo from '../LayersInfo.svelte';
+
+    // Props from WorkflowContainer for shared canvas
+    export let sharedCanvas: any;
+    export let canvasStage: WorkflowStage;
+    export let interactionMode: 'shapes' | 'chains' | 'paths';
+    export let onChainClick: ((chainId: string) => void) | null = null;
+    export let onPartClick: ((partId: string) => void) | null = null;
+    export let onChainHover: ((chainId: string) => void) | null = null;
+    export let onChainHoverEnd: (() => void) | null = null;
+    export let onPartHover: ((partId: string) => void) | null = null;
+    export let onPartHoverEnd: (() => void) | null = null;
 
     // Resizable columns state - initialize from store, update local variables during drag
     let leftColumnWidth = $prepareStageStore.leftColumnWidth;
@@ -641,15 +643,6 @@
         }
     }
 
-    // Part interaction functions using shared handlers
-    function handlePartClick(partId: string) {
-        sharedHandlePartClick(partId, selectedPartId);
-    }
-
-    // Chain interaction functions using shared handlers
-    function handleChainClick(chainId: string) {
-        sharedHandleChainClick(chainId, selectedChainId);
-    }
 
     function handleDecomposePolylines() {
         const drawing = $drawingStore.drawing;
@@ -919,15 +912,13 @@
                                     : ''} {hoveredPartId === part.id
                                     ? 'hovered'
                                     : ''}"
-                                onclick={() => handlePartClick(part.id)}
                                 role="button"
                                 tabindex="0"
+                                onclick={() => onPartClick && onPartClick(part.id)}
                                 onkeydown={(e) =>
-                                    e.key === 'Enter' &&
-                                    handlePartClick(part.id)}
-                                onmouseenter={() =>
-                                    handlePartMouseEnter(part.id)}
-                                onmouseleave={handlePartMouseLeave}
+                                    e.key === 'Enter' && onPartClick && onPartClick(part.id)}
+                                onmouseenter={() => onPartHover && onPartHover(part.id)}
+                                onmouseleave={() => onPartHoverEnd && onPartHoverEnd()}
                             >
                                 <div class="part-header">
                                     <span class="part-name"
@@ -987,13 +978,11 @@
                                     : ''}"
                                 role="button"
                                 tabindex="0"
-                                onclick={() => handleChainClick(result.chainId)}
+                                onclick={() => onChainClick && onChainClick(result.chainId)}
                                 onkeydown={(e) =>
-                                    e.key === 'Enter' &&
-                                    handleChainClick(result.chainId)}
-                                onmouseenter={() =>
-                                    handleChainMouseEnter(result.chainId)}
-                                onmouseleave={handleChainMouseLeave}
+                                    e.key === 'Enter' && onChainClick && onChainClick(result.chainId)}
+                                onmouseenter={() => onChainHover && onChainHover(result.chainId)}
+                                onmouseleave={() => onChainHoverEnd && onChainHoverEnd()}
                             >
                                 <div class="chain-header">
                                     <span class="chain-name"
@@ -1075,12 +1064,11 @@
 
         <!-- Center Column -->
         <div class="center-column">
-            <DrawingCanvasContainer
-                currentStage={WorkflowStage.PREPARE}
-                treatChainsAsEntities={true}
-                interactionMode="chains"
-                onChainClick={handleChainClick}
-                onPartClick={handlePartClick}
+            <svelte:component this={sharedCanvas}
+                currentStage={canvasStage}
+                {interactionMode}
+                {onChainClick}
+                {onPartClick}
             />
         </div>
 

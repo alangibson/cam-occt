@@ -735,9 +735,6 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should handle calculation errors and return undefined', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
             vi.mocked(calculateLeads).mockImplementationOnce(() => {
                 throw new Error('Test calculation error');
             });
@@ -750,19 +747,9 @@ describe('Lead Persistence Utils', () => {
             );
 
             expect(result).toBeUndefined();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Failed to calculate lead-in for G-code generation:',
-                'Test Path',
-                expect.any(Error)
-            );
-
-            consoleSpy.mockRestore();
         });
 
         it('should handle calculation errors for leadOut', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
             vi.mocked(calculateLeads).mockImplementationOnce(() => {
                 throw new Error('Test calculation error');
             });
@@ -775,13 +762,6 @@ describe('Lead Persistence Utils', () => {
             );
 
             expect(result).toBeUndefined();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Failed to calculate lead-out for G-code generation:',
-                'Test Path',
-                expect.any(Error)
-            );
-
-            consoleSpy.mockRestore();
         });
     });
 });

@@ -23,7 +23,6 @@ import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
-    convertLeadGeometryToPoints,
 } from '$lib/algorithms/leads/functions';
 
 /**
@@ -706,14 +705,12 @@ export async function calculatePathLeads(
 
         // Use offset geometry for lead calculation if available
         let leadCalculationChain: Chain = chain;
-        let isUsingOffsetGeometry: boolean = false;
         if (path.offset && path.offset.offsetShapes.length > 0) {
             // Create a temporary chain from offset shapes
             leadCalculationChain = {
                 id: chain.id + '_offset_temp',
                 shapes: path.offset.offsetShapes,
             };
-            isUsingOffsetGeometry = true;
         }
 
         // Calculate leads using the appropriate chain (original or offset)
@@ -757,23 +754,12 @@ export async function calculatePathLeads(
             };
         }
 
-        console.log(`Calculated leads for path ${path.name}:`, {
-            leadInPoints:
-                leadResult && leadResult.leadIn
-                    ? convertLeadGeometryToPoints(leadResult.leadIn).length
-                    : 0,
-            leadOutPoints:
-                leadResult && leadResult.leadOut
-                    ? convertLeadGeometryToPoints(leadResult.leadOut).length
-                    : 0,
-            warnings: (leadResult && leadResult.warnings?.length) || 0,
-            usedOffsetGeometry: isUsingOffsetGeometry,
-            offsetShapeCount: path.offset?.offsetShapes.length || 0,
-        });
-
         return leadGeometry;
     } catch (error) {
-        console.log(`Failed to calculate leads for path ${path.name}:`, error);
+        console.error(
+            `Failed to calculate leads for path ${path.name}:`,
+            error
+        );
 
         // Return error information
         return {
@@ -809,10 +795,6 @@ export async function calculateOperationLeads(
             (p) => p.operationId === operation.id
         );
 
-        console.log(
-            `Calculating leads for ${operationPaths.length} paths in operation ${operation.name}`
-        );
-
         // Calculate leads for each path
         const calculations: Promise<void>[] = operationPaths.map(
             async (path) => {
@@ -833,12 +815,8 @@ export async function calculateOperationLeads(
 
         // Wait for all calculations to complete
         await Promise.all(calculations);
-
-        console.log(
-            `Completed lead calculations for operation ${operation.name}`
-        );
     } catch (error) {
-        console.log(
+        console.error(
             `Failed to calculate leads for operation ${operation.name}:`,
             error
         );

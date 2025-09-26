@@ -20,6 +20,7 @@ export {
     getEllipseParameters,
     isFullEllipse,
     isEllipseClosed,
+    transformPointToEllipseCoordinates,
     distanceFromEllipsePerimeter,
     getEllipseStartPoint,
     getEllipseEndPoint,

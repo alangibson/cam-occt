@@ -444,9 +444,6 @@ function buildOptimalTraversalOrder(
             tolerance * TOLERANCE_RELAXATION_MULTIPLIER,
             1.0
         );
-        console.log(
-            `Trying relaxed tolerance ${relaxedTolerance} for chain normalization`
-        );
 
         for (let startIdx: number = 0; startIdx < shapes.length; startIdx++) {
             const result: Shape[] = buildChainFromStartingShape(
@@ -456,9 +453,6 @@ function buildOptimalTraversalOrder(
             );
 
             if (result.length === shapes.length) {
-                console.log(
-                    `Successfully normalized chain with relaxed tolerance`
-                );
                 return result;
             }
 
@@ -475,15 +469,11 @@ function buildOptimalTraversalOrder(
             (shape) =>
                 !bestResult.some((resultShape) => resultShape.id === shape.id)
         );
-
-        console.log(
-            `Adding ${remainingShapes.length} disconnected shapes to best partial chain`
-        );
         bestResult = [...bestResult, ...remainingShapes];
     }
 
     if (bestScore < shapes.length) {
-        console.log(
+        console.warn(
             `Could not find perfect traversal order: connected ${bestScore}/${shapes.length} shapes`
         );
     }

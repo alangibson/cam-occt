@@ -601,11 +601,6 @@ describe('Optimize Cut Order', () => {
 
             const chains = new Map([['chain-1', chain]]);
 
-            // Mock console.warn to verify error is logged
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
-
             // Mock prepareChainsAndLeadConfigs to throw an error
             vi.spyOn(
                 pathOptUtils,
@@ -617,15 +612,9 @@ describe('Optimize Cut Order', () => {
             const result = optimizeCutOrder([pathWithLeadOut], chains, []);
 
             expect(result.orderedPaths).toHaveLength(1);
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Failed to calculate lead-out for path:',
-                'Path path-1',
-                expect.any(Error)
-            );
 
             // Restore mocks
             vi.mocked(pathOptUtils.prepareChainsAndLeadConfigs).mockRestore();
-            consoleSpy.mockRestore();
         });
 
         it('should use offset chain end point when no lead-out but offset exists', () => {

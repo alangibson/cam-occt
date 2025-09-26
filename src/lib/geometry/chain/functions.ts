@@ -503,15 +503,6 @@ export function isChainContainedInChain(
                 geometryFactory.createLineString(innerCoords);
             const result = RelateOp.contains(outerPolygon, innerLineString);
 
-            if (
-                (innerChain.id === 'chain-2' || innerChain.id === 'chain-4') &&
-                outerChain.id === 'chain-3'
-            ) {
-                console.log(
-                    `  JSTS RelateOp.contains (linestring) result: ${result}`
-                );
-            }
-
             return result;
         }
     } catch (error) {

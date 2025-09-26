@@ -19,16 +19,18 @@
 </script>
 
 <div class="three-column-layout" class:no-select={isDragging}>
-    <!-- Left Column -->
-    <ResizableColumn
-        bind:width={leftColumnWidth}
-        storageKey={leftColumnStorageKey}
-        position="left"
-        on:dragstart={handleDragStart}
-        on:dragend={handleDragEnd}
-    >
-        <slot name="left" />
-    </ResizableColumn>
+    <!-- Left Column - only render if width > 0 -->
+    {#if leftColumnWidth > 0}
+        <ResizableColumn
+            bind:width={leftColumnWidth}
+            storageKey={leftColumnStorageKey}
+            position="left"
+            on:dragstart={handleDragStart}
+            on:dragend={handleDragEnd}
+        >
+            <slot name="left" />
+        </ResizableColumn>
+    {/if}
 
     <!-- Center Column -->
     <div class="center-column">

@@ -2,8 +2,6 @@
     import DrawingCanvas from './DrawingCanvas.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
 
-    export let respectLayerVisibility = true;
-    export let treatChainsAsEntities = false;
     export let onChainClick: ((chainId: string) => void) | null = null;
     export let onPartClick: ((partId: string) => void) | null = null;
     export let disableDragging = false;
@@ -23,8 +21,6 @@
 
     <div class="canvas-container">
         <DrawingCanvas
-            {respectLayerVisibility}
-            {treatChainsAsEntities}
             {onChainClick}
             {onPartClick}
             {disableDragging}

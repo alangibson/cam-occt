@@ -27,7 +27,6 @@ export function saveState(state: PersistedState): void {
         };
 
         localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify(stateWithMeta));
-        console.log('Application state saved to localStorage');
     } catch (error) {
         console.error('Failed to save application state:', error);
 
@@ -44,7 +43,7 @@ export function saveState(state: PersistedState): void {
                         savedAt: new Date().toISOString(),
                     })
                 );
-                console.log('Application state saved after clearing old data');
+                console.warn('Application state saved after clearing old data');
             } catch (retryError) {
                 console.error(
                     'Failed to save state even after clearing:',
@@ -63,7 +62,6 @@ export function loadState(): PersistedState | null {
         const savedData: string | null =
             localStorage.getItem(STATE_STORAGE_KEY);
         if (!savedData) {
-            console.log('No saved state found');
             return null;
         }
 
@@ -72,20 +70,15 @@ export function loadState(): PersistedState | null {
 
         // Version check
         if (parsedState.version !== STATE_VERSION) {
-            console.log(
+            console.warn(
                 `State version mismatch: saved=${parsedState.version}, current=${STATE_VERSION}`
             );
             // Could implement migration logic here in the future
             return null;
         }
-
-        console.log(
-            'Application state loaded from localStorage',
-            parsedState.savedAt
-        );
         return parsedState;
     } catch (error) {
-        console.log('Failed to load application state:', error);
+        console.error('Failed to load application state:', error);
         return null;
     }
 }
@@ -96,7 +89,6 @@ export function loadState(): PersistedState | null {
 export function clearPersistedState(): void {
     try {
         localStorage.removeItem(STATE_STORAGE_KEY);
-        console.log('Persisted state cleared');
     } catch (error) {
         console.error('Failed to clear persisted state:', error);
     }

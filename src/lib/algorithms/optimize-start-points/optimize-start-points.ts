@@ -334,17 +334,5 @@ export function optimizeStartPoints(
         allShapes.push(...chainToUse.shapes);
     }
 
-    // Log summary
-    const modifiedCount: number = results.filter((r) => r.modified).length;
-    console.log(
-        `Optimized start points: ${modifiedCount} of ${chains.length} chains modified`
-    );
-
-    results.forEach((result) => {
-        if (result.modified) {
-            console.log(`  Chain ${result.originalChain.id}: ${result.reason}`);
-        }
-    });
-
     return allShapes;
 }

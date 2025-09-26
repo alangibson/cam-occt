@@ -1,6 +1,5 @@
 <script lang="ts">
     import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
-    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import ToolBar from '../ToolBar.svelte';
     import LayersList from '../LayersList.svelte';
     import ShapeProperties from '../ShapeProperties.svelte';
@@ -11,6 +10,17 @@
     import { drawingStore } from '$lib/stores/drawing/store';
     import { overlayStore } from '$lib/stores/overlay/store';
     import { generateShapePoints } from '$lib/stores/overlay/functions';
+
+    // Props from WorkflowContainer for shared canvas
+    export let sharedCanvas: any;
+    export let canvasStage: WorkflowStage;
+    export let interactionMode: 'shapes' | 'chains' | 'paths';
+    export let onChainClick: ((chainId: string) => void) | null = null;
+    export let onPartClick: ((partId: string) => void) | null = null;
+    export let onChainHover: ((chainId: string) => void) | null = null;
+    export let onChainHoverEnd: (() => void) | null = null;
+    export let onPartHover: ((partId: string) => void) | null = null;
+    export let onPartHoverEnd: (() => void) | null = null;
 
     function handleNext() {
         workflowStore.completeStage(WorkflowStage.EDIT);
@@ -67,7 +77,12 @@
             <div class="toolbar-container">
                 <ToolBar />
             </div>
-            <DrawingCanvasContainer currentStage={WorkflowStage.EDIT} />
+            <svelte:component this={sharedCanvas}
+                currentStage={canvasStage}
+                {interactionMode}
+                {onChainClick}
+                {onPartClick}
+            />
         </svelte:fragment>
 
         <svelte:fragment slot="right">

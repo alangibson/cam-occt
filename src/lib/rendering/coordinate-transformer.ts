@@ -15,11 +15,11 @@ export class CoordinateTransformer {
 
     constructor(
         private canvas: { width: number; height: number },
-        private scale: number,
-        private offset: Point2D,
-        private physicalScale: number = 1
+        private zoomScale: number,
+        private panOffset: Point2D,
+        private unitScale: number = 1
     ) {
-        this.totalScale = scale * physicalScale;
+        this.totalScale = zoomScale * unitScale;
     }
 
     /**
@@ -33,13 +33,13 @@ export class CoordinateTransformer {
     /**
      * Update transformation parameters
      */
-    updateTransform(scale: number, offset: Point2D, physicalScale?: number) {
-        this.scale = scale;
-        this.offset = offset;
-        if (physicalScale !== undefined) {
-            this.physicalScale = physicalScale;
+    updateTransform(zoomScale: number, panOffset: Point2D, unitScale?: number) {
+        this.zoomScale = zoomScale;
+        this.panOffset = panOffset;
+        if (unitScale !== undefined) {
+            this.unitScale = unitScale;
         }
-        this.totalScale = this.scale * this.physicalScale;
+        this.totalScale = this.zoomScale * this.unitScale;
         this.cachedScreenOrigin = null; // Invalidate cache
     }
 
@@ -49,8 +49,10 @@ export class CoordinateTransformer {
     getScreenOrigin(): Point2D {
         if (!this.cachedScreenOrigin) {
             this.cachedScreenOrigin = {
-                x: this.canvas.width * QUARTER_PERCENT + this.offset.x,
-                y: this.canvas.height * THREE_QUARTERS_PERCENT + this.offset.y,
+                x: this.canvas.width * QUARTER_PERCENT + this.panOffset.x,
+                y:
+                    this.canvas.height * THREE_QUARTERS_PERCENT +
+                    this.panOffset.y,
             };
         }
         return this.cachedScreenOrigin;
@@ -114,14 +116,14 @@ export class CoordinateTransformer {
      */
     calculateZoomOffset(
         zoomPoint: Point2D,
-        oldScale: number,
-        newScale: number
+        oldZoomScale: number,
+        newZoomScale: number
     ): Point2D {
         // Get world coordinates of zoom point with current transform
         const worldPoint: Point2D = this.screenToWorld(zoomPoint);
 
         // Calculate where this world point would appear with new scale
-        const newTotalScale: number = newScale * this.physicalScale;
+        const newTotalScale: number = newZoomScale * this.unitScale;
 
         const origin: Point2D = this.getScreenOrigin();
         const newScreenX: number = worldPoint.x * newTotalScale + origin.x;
@@ -129,8 +131,8 @@ export class CoordinateTransformer {
 
         // Calculate offset to keep zoom point at same screen position
         return {
-            x: this.offset.x + (zoomPoint.x - newScreenX),
-            y: this.offset.y + (zoomPoint.y - newScreenY),
+            x: this.panOffset.x + (zoomPoint.x - newScreenX),
+            y: this.panOffset.y + (zoomPoint.y - newScreenY),
         };
     }
 
@@ -142,24 +144,24 @@ export class CoordinateTransformer {
     }
 
     /**
-     * Get the current user scale factor
+     * Get the current zoom scale factor
      */
-    getScale(): number {
-        return this.scale;
+    getZoomScale(): number {
+        return this.zoomScale;
     }
 
     /**
-     * Get the current physical scale factor
+     * Get the current unit scale factor
      */
-    getPhysicalScale(): number {
-        return this.physicalScale;
+    getUnitScale(): number {
+        return this.unitScale;
     }
 
     /**
-     * Get the current offset
+     * Get the current pan offset
      */
-    getOffset(): Point2D {
-        return { ...this.offset };
+    getPanOffset(): Point2D {
+        return { ...this.panOffset };
     }
 
     /**

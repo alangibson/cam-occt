@@ -1,6 +1,5 @@
 <script lang="ts">
     import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
-    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import Operations from '../Operations.svelte';
     import Paths from '../Paths.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
@@ -20,17 +19,20 @@
         highlightRapid,
         clearRapidHighlight,
     } from '$lib/stores/rapids/functions';
-    import {
-        handleChainClick as sharedHandleChainClick,
-        handleChainMouseEnter,
-        handleChainMouseLeave,
-        handlePartClick as sharedHandlePartClick,
-        handlePartMouseEnter,
-        handlePartMouseLeave,
-    } from '$lib/algorithms/part-detection/chain-part-interactions';
     import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
     import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
     import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+
+    // Props from WorkflowContainer for shared canvas
+    export let sharedCanvas: any;
+    export let canvasStage: WorkflowStage;
+    export let interactionMode: 'shapes' | 'chains' | 'paths';
+    export let onChainClick: ((chainId: string) => void) | null = null;
+    export let onPartClick: ((partId: string) => void) | null = null;
+    export let onChainHover: ((chainId: string) => void) | null = null;
+    export let onChainHoverEnd: (() => void) | null = null;
+    export let onPartHover: ((partId: string) => void) | null = null;
+    export let onPartHoverEnd: (() => void) | null = null;
 
     let operationsComponent: Operations;
 
@@ -103,14 +105,6 @@
         }
     }
 
-    // Chain and part interaction functions using shared handlers
-    function handleChainClick(chainId: string) {
-        sharedHandleChainClick(chainId, selectedChainId);
-    }
-
-    function handlePartClick(partId: string) {
-        sharedHandlePartClick(partId, selectedPartId);
-    }
 
     // Rapid selection functions
     function handleRapidClick(rapidId: string) {
@@ -190,13 +184,11 @@
                                     : ''}"
                                 role="button"
                                 tabindex="0"
-                                onclick={() => handleChainClick(chain.id)}
+                                onclick={() => onChainClick && onChainClick(chain.id)}
                                 onkeydown={(e) =>
-                                    e.key === 'Enter' &&
-                                    handleChainClick(chain.id)}
-                                onmouseenter={() =>
-                                    handleChainMouseEnter(chain.id)}
-                                onmouseleave={handleChainMouseLeave}
+                                    e.key === 'Enter' && onChainClick && onChainClick(chain.id)}
+                                onmouseenter={() => onChainHover && onChainHover(chain.id)}
+                                onmouseleave={() => onChainHoverEnd && onChainHoverEnd()}
                             >
                                 <span class="chain-name"
                                     >Chain {chain.id.split('-')[1]}</span
@@ -234,13 +226,11 @@
                                     : ''}"
                                 role="button"
                                 tabindex="0"
-                                onclick={() => handlePartClick(part.id)}
+                                onclick={() => onPartClick && onPartClick(part.id)}
                                 onkeydown={(e) =>
-                                    e.key === 'Enter' &&
-                                    handlePartClick(part.id)}
-                                onmouseenter={() =>
-                                    handlePartMouseEnter(part.id)}
-                                onmouseleave={handlePartMouseLeave}
+                                    e.key === 'Enter' && onPartClick && onPartClick(part.id)}
+                                onmouseenter={() => onPartHover && onPartHover(part.id)}
+                                onmouseleave={() => onPartHoverEnd && onPartHoverEnd()}
                             >
                                 <span class="part-name"
                                     >Part {part.id.split('-')[1]}</span
@@ -332,12 +322,11 @@
                     </div>
                 </div>
             </div>
-            <DrawingCanvasContainer
-                currentStage={WorkflowStage.PROGRAM}
-                treatChainsAsEntities={true}
-                interactionMode="chains"
-                onChainClick={handleChainClick}
-                onPartClick={handlePartClick}
+            <svelte:component this={sharedCanvas}
+                currentStage={canvasStage}
+                {interactionMode}
+                {onChainClick}
+                {onPartClick}
             />
         </svelte:fragment>
 

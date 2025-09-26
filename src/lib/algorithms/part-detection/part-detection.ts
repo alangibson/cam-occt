@@ -123,14 +123,6 @@ export async function detectParts(
         params
     );
 
-    // Debug: log containment hierarchy
-    console.log(
-        `Part detection: ${closedChains.length} closed chains, containment map size: ${containmentMap.size}`
-    );
-    for (const [child, parent] of containmentMap.entries()) {
-        console.log(`  ${child} is contained in ${parent}`);
-    }
-
     // HIERARCHICAL APPROACH: Support true nesting where parts can exist inside holes
     // Level 0: Root shells (no parent) = parts
     // Level 1: Chains inside parts = holes
@@ -141,9 +133,6 @@ export async function detectParts(
     const allPartChains: Chain[] = identifyPartChains(
         closedChains,
         containmentMap
-    );
-    console.log(
-        `Found ${allPartChains.length} part chains: ${allPartChains.map((c) => c.id).join(', ')}`
     );
 
     // Build part structures - each part chain becomes a part

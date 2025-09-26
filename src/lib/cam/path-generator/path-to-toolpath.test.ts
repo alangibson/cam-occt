@@ -412,9 +412,6 @@ describe('pathToToolPath', () => {
 
         it('should exclude lead-in when it does not connect to offset geometry', () => {
             // Real function will handle this case
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
             const path = createMockPath({
                 offset: {
                     offsetShapes: [
@@ -461,13 +458,6 @@ describe('pathToToolPath', () => {
             const result = pathToToolPath(path, originalShapes, []);
 
             expect(result.leadIn).toBeUndefined();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                expect.stringContaining(
-                    "Cached lead-in doesn't connect to offset path"
-                )
-            );
-
-            consoleSpy.mockRestore();
         });
 
         it('should handle empty lead-in points', () => {
@@ -607,9 +597,6 @@ describe('pathToToolPath', () => {
         });
 
         it('should exclude lead-out when it does not connect to offset geometry', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
             const path = createMockPath({
                 offset: {
                     offsetShapes: [
@@ -656,13 +643,6 @@ describe('pathToToolPath', () => {
             const result = pathToToolPath(path, originalShapes, []);
 
             expect(result.leadOut).toBeUndefined();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                expect.stringContaining(
-                    "Cached lead-out doesn't connect to offset path"
-                )
-            );
-
-            consoleSpy.mockRestore();
         });
     });
 

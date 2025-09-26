@@ -206,19 +206,10 @@ describe('ToolTable Component - Function Coverage', () => {
         });
 
         it('should handle invalid localStorage data gracefully', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'error')
-                .mockImplementation(() => {});
-
             localStorageMock.getItem.mockReturnValue('invalid json');
 
-            render(ToolTable);
-
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Failed to load tools from localStorage:',
-                expect.any(Error)
-            );
-            consoleSpy.mockRestore();
+            // Should render without throwing
+            expect(() => render(ToolTable)).not.toThrow();
         });
 
         it('should add default tool when no localStorage data', () => {

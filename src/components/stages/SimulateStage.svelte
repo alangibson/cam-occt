@@ -15,7 +15,7 @@
      * - Automatic fallback to original paths when no offset exists
      */
     import AccordionPanel from '../AccordionPanel.svelte';
-    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
+    import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { pathStore } from '$lib/stores/paths/store';
@@ -57,6 +57,17 @@
     import { LeadType } from '$lib/types/direction';
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
+
+    // Props from WorkflowContainer for shared canvas
+    export let sharedCanvas: any;
+    export let canvasStage: WorkflowStage;
+    export let interactionMode: 'shapes' | 'chains' | 'paths';
+    export let onChainClick: ((chainId: string) => void) | null = null;
+    export let onPartClick: ((partId: string) => void) | null = null;
+    export let onChainHover: ((chainId: string) => void) | null = null;
+    export let onChainHoverEnd: (() => void) | null = null;
+    export let onPartHover: ((partId: string) => void) | null = null;
+    export let onPartHoverEnd: (() => void) | null = null;
 
     // Resizable columns state
     let rightColumnWidth = 280; // Default width in pixels
@@ -1309,170 +1320,142 @@
     }
 </script>
 
-<div class="simulate-stage">
-    <div class="simulate-layout" class:no-select={isDraggingRight}>
-        <!-- Center Column - 3D Simulation Viewport -->
-        <div class="center-column">
-            <div class="simulation-header">
-                <div class="simulation-controls">
-                    <button
-                        class="control-btn"
-                        on:click={playSimulation}
-                        disabled={isPlaying && !isPaused}
-                    >
-                        <span>▶️</span> Play
-                    </button>
-                    <button
-                        class="control-btn"
-                        on:click={pauseSimulation}
-                        disabled={!isPlaying || isPaused}
-                    >
-                        <span>⏸️</span> Pause
-                    </button>
-                    <button
-                        class="control-btn"
-                        on:click={stopSimulation}
-                        disabled={!isPlaying && !isPaused}
-                    >
-                        <span>⏹️</span> Stop
-                    </button>
-                    <div class="speed-control">
-                        <label for="speed-select">Speed:</label>
-                        <select
-                            id="speed-select"
-                            bind:value={simulationSpeed}
-                            class="speed-select"
-                        >
-                            <option value={0.1}>0.1x</option>
-                            <option value={0.5}>0.5x</option>
-                            <option value={1}>1x (Real-time)</option>
-                            <option value={5}>5x</option>
-                            <option value={10}>10x</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+<ThreeColumnLayout
+    leftColumnStorageKey="simulate-left-column"
+    rightColumnStorageKey="simulate-right-column"
+    leftColumnWidth={0}
+    {rightColumnWidth}
+>
+    <!-- Left column empty with 0 width -->
+    <svelte:fragment slot="left"></svelte:fragment>
 
-            <div class="simulation-viewport">
-                <DrawingCanvasContainer
-                    currentStage={WorkflowStage.SIMULATE}
-                    disableDragging={true}
-                    respectLayerVisibility={false}
-                    treatChainsAsEntities={true}
-                    interactionMode="paths"
-                />
-            </div>
-
-            <div class="simulation-progress">
-                <div class="progress-info">
-                    <span
-                        >Progress: <strong>{currentProgress.toFixed(1)}%</strong
-                        ></span
+    <!-- Center Column - 3D Simulation Viewport -->
+    <svelte:fragment slot="center">
+        <div class="simulation-header">
+            <div class="simulation-controls">
+                <button
+                    class="control-btn"
+                    on:click={playSimulation}
+                    disabled={isPlaying && !isPaused}
+                >
+                    <span>▶️</span> Play
+                </button>
+                <button
+                    class="control-btn"
+                    on:click={pauseSimulation}
+                    disabled={!isPlaying || isPaused}
+                >
+                    <span>⏸️</span> Pause
+                </button>
+                <button
+                    class="control-btn"
+                    on:click={stopSimulation}
+                    disabled={!isPlaying && !isPaused}
+                >
+                    <span>⏹️</span> Stop
+                </button>
+                <div class="speed-control">
+                    <label for="speed-select">Speed:</label>
+                    <select
+                        id="speed-select"
+                        bind:value={simulationSpeed}
+                        class="speed-select"
                     >
-                    <span
-                        >Time: <strong
-                            >{formatTime(currentTime)} / {formatTime(
-                                totalTime
-                            )}</strong
-                        ></span
-                    >
-                    <span
-                        >Current Operation: <strong>{currentOperation}</strong
-                        ></span
-                    >
-                </div>
-                <div class="progress-bar">
-                    <div
-                        class="progress-fill"
-                        style="width: {currentProgress}%"
-                    ></div>
+                        <option value={0.1}>0.1x</option>
+                        <option value={0.5}>0.5x</option>
+                        <option value={1}>1x (Real-time)</option>
+                        <option value={5}>5x</option>
+                        <option value={10}>10x</option>
+                    </select>
                 </div>
             </div>
         </div>
-
-        <!-- Right Column - Simulation Stats and Controls -->
-        <div class="right-column" style="width: {rightColumnWidth}px;">
-            <!-- Right resize handle -->
-            <button
-                class="resize-handle resize-handle-left"
-                on:mousedown={handleRightResizeStart}
-                on:keydown={handleRightKeydown}
-                class:dragging={isDraggingRight}
-                aria-label="Resize right panel (Arrow keys to adjust)"
-                type="button"
-            ></button>
-            <AccordionPanel title="Cut Statistics" isExpanded={true}>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span class="stat-label">Total Length:</span>
-                        <span class="stat-value"
-                            >{formattedCutDistance} {displayUnit}</span
-                        >
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Cut Time:</span>
-                        <span class="stat-value"
-                            >{formatTime(estimatedCutTime)}</span
-                        >
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Pierce Count:</span>
-                        <span class="stat-value">{pierceCount}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Rapid Distance:</span>
-                        <span class="stat-value"
-                            >{formattedRapidDistance} {displayUnit}</span
-                        >
-                    </div>
-                </div>
-            </AccordionPanel>
-
-            <AccordionPanel title="Next Stage" isExpanded={true}>
-                <div class="next-stage-content">
-                    <button class="next-button" on:click={handleNext}>
-                        Next: Export G-code
-                    </button>
-                    <p class="next-help">
-                        Simulation complete! Ready to generate and export
-                        G-code.
-                    </p>
-                </div>
-            </AccordionPanel>
+        <svelte:component this={sharedCanvas}
+            currentStage={canvasStage}
+            {interactionMode}
+            {onChainClick}
+            {onPartClick}
+        />
+        <div class="simulation-progress">
+            <div class="progress-info">
+                <span
+                    >Progress: <strong>{currentProgress.toFixed(1)}%</strong
+                    ></span
+                >
+                <span
+                    >Time: <strong
+                        >{formatTime(currentTime)} / {formatTime(
+                            totalTime
+                        )}</strong
+                    ></span
+                >
+                <span
+                    >Current Operation: <strong>{currentOperation}</strong
+                    ></span
+                >
+            </div>
+            <div class="progress-bar">
+                <div
+                    class="progress-fill"
+                    style="width: {currentProgress}%"
+                ></div>
+            </div>
         </div>
-    </div>
-</div>
+    </svelte:fragment>
+
+    <!-- Right Column - Simulation Stats and Controls -->
+    <svelte:fragment slot="right">
+        <!-- Right resize handle -->
+        <button
+            class="resize-handle resize-handle-left"
+            on:mousedown={handleRightResizeStart}
+            on:keydown={handleRightKeydown}
+            class:dragging={isDraggingRight}
+            aria-label="Resize right panel (Arrow keys to adjust)"
+            type="button"
+        ></button>
+        <AccordionPanel title="Cut Statistics" isExpanded={true}>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Total Length:</span>
+                    <span class="stat-value"
+                        >{formattedCutDistance} {displayUnit}</span
+                    >
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Cut Time:</span>
+                    <span class="stat-value"
+                        >{formatTime(estimatedCutTime)}</span
+                    >
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Pierce Count:</span>
+                    <span class="stat-value">{pierceCount}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Rapid Distance:</span>
+                    <span class="stat-value"
+                        >{formattedRapidDistance} {displayUnit}</span
+                    >
+                </div>
+            </div>
+        </AccordionPanel>
+
+        <AccordionPanel title="Next Stage" isExpanded={true}>
+            <div class="next-stage-content">
+                <button class="next-button" on:click={handleNext}>
+                    Next: Export G-code
+                </button>
+                <p class="next-help">
+                    Simulation complete! Ready to generate and export G-code.
+                </p>
+            </div>
+        </AccordionPanel>
+    </svelte:fragment>
+</ThreeColumnLayout>
 
 <style>
-    .simulate-stage {
-        display: flex;
-        flex-direction: column;
-        height: 100%;
-    }
-
-    .simulate-layout {
-        display: flex;
-        flex: 1;
-        overflow: hidden;
-    }
-
-    .center-column {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .right-column {
-        background-color: white;
-        border-left: 1px solid #e5e7eb;
-        padding: 1rem;
-        overflow-y: auto;
-        flex-shrink: 0; /* Prevent column from shrinking */
-        position: relative; /* For resize handle positioning */
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-    }
+    /* Layout handled by ThreeColumnLayout */
 
     .simulation-header {
         padding: 1rem 2rem;
@@ -1526,16 +1509,6 @@
     .control-btn:disabled {
         opacity: 0.6;
         cursor: not-allowed;
-    }
-
-    .simulation-viewport {
-        flex: 1;
-        background: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        position: relative;
     }
 
     .simulation-progress {
@@ -1659,8 +1632,5 @@
         left: -3px; /* Half of width to center on border */
     }
 
-    /* Prevent text selection during resize */
-    .simulate-layout.no-select {
-        user-select: none;
-    }
+    /* Prevent text selection during resize - handled by ThreeColumnLayout */
 </style>

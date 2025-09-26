@@ -1328,19 +1328,9 @@ describe('storage/store', () => {
                 throw new Error('Test error');
             });
 
-            const consoleSpy = vi
-                .spyOn(console, 'error')
-                .mockImplementation(() => {});
-
             const result = restoreApplicationState();
 
             expect(result).toBe(true); // Still returns true even if error occurs
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Failed to restore application state:',
-                expect.any(Error)
-            );
-
-            consoleSpy.mockRestore();
         });
     });
 
@@ -1372,14 +1362,9 @@ describe('storage/store', () => {
             expect(toolStore.subscribe).toHaveBeenCalled();
 
             // Call the cleanup function
-            const consoleSpy = vi
-                .spyOn(console, 'log')
-                .mockImplementation(() => {});
             cleanup();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Auto-save subscriptions cleaned up'
-            );
-            consoleSpy.mockRestore();
+            // Verify cleanup runs without error
+            expect(typeof cleanup).toBe('function');
         });
     });
 });

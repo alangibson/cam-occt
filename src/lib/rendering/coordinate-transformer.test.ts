@@ -295,32 +295,36 @@ describe('CoordinateTransformer', () => {
 
             transformer.updateTransform(newScale, newOffset);
 
-            expect(transformer.getScale()).toBe(newScale);
-            expect(transformer.getOffset()).toEqual(newOffset);
-            expect(transformer.getTotalScale()).toBe(newScale); // physicalScale = 1
+            expect(transformer.getZoomScale()).toBe(newScale);
+            expect(transformer.getPanOffset()).toEqual(newOffset);
+            expect(transformer.getTotalScale()).toBe(newScale); // unitScale = 1
         });
 
-        it('should update physical scale when provided', () => {
-            const newScale = 1.5;
-            const newOffset = { x: 0, y: 0 };
-            const newPhysicalScale = 3.0;
+        it('should update unit scale when provided', () => {
+            const newZoomScale = 1.5;
+            const newPanOffset = { x: 0, y: 0 };
+            const newUnitScale = 3.0;
 
-            transformer.updateTransform(newScale, newOffset, newPhysicalScale);
+            transformer.updateTransform(
+                newZoomScale,
+                newPanOffset,
+                newUnitScale
+            );
 
-            expect(transformer.getScale()).toBe(newScale);
-            expect(transformer.getPhysicalScale()).toBe(newPhysicalScale);
+            expect(transformer.getZoomScale()).toBe(newZoomScale);
+            expect(transformer.getUnitScale()).toBe(newUnitScale);
             expect(transformer.getTotalScale()).toBe(
-                newScale * newPhysicalScale
+                newZoomScale * newUnitScale
             );
         });
 
-        it('should not update physical scale when undefined', () => {
-            const originalPhysicalScale = transformer.getPhysicalScale();
+        it('should not update unit scale when undefined', () => {
+            const originalUnitScale = transformer.getUnitScale();
 
             transformer.updateTransform(2, { x: 0, y: 0 });
 
-            expect(transformer.getPhysicalScale()).toBe(originalPhysicalScale);
-            expect(transformer.getTotalScale()).toBe(2 * originalPhysicalScale);
+            expect(transformer.getUnitScale()).toBe(originalUnitScale);
+            expect(transformer.getTotalScale()).toBe(2 * originalUnitScale);
         });
     });
 
@@ -475,47 +479,47 @@ describe('CoordinateTransformer', () => {
             const scale = 2.7;
             transformer.updateTransform(scale, { x: 0, y: 0 });
 
-            expect(transformer.getScale()).toBe(scale);
+            expect(transformer.getZoomScale()).toBe(scale);
         });
     });
 
-    describe('getPhysicalScale', () => {
-        it('should return current physical scale', () => {
-            const physicalScale = 1.8;
-            const transformerWithPhys = new CoordinateTransformer(
+    describe('getUnitScale', () => {
+        it('should return current unit scale', () => {
+            const unitScale = 1.8;
+            const transformerWithUnit = new CoordinateTransformer(
                 canvas,
                 1,
                 { x: 0, y: 0 },
-                physicalScale
+                unitScale
             );
 
-            expect(transformerWithPhys.getPhysicalScale()).toBe(physicalScale);
+            expect(transformerWithUnit.getUnitScale()).toBe(unitScale);
         });
 
         it('should return 1 when not specified', () => {
-            expect(transformer.getPhysicalScale()).toBe(1);
+            expect(transformer.getUnitScale()).toBe(1);
         });
     });
 
-    describe('getOffset', () => {
-        it('should return a copy of current offset', () => {
-            const offset = { x: 123, y: -456 };
-            transformer.updateTransform(1, offset);
+    describe('getPanOffset', () => {
+        it('should return a copy of current pan offset', () => {
+            const panOffset = { x: 123, y: -456 };
+            transformer.updateTransform(1, panOffset);
 
-            const returnedOffset = transformer.getOffset();
+            const returnedOffset = transformer.getPanOffset();
 
-            expect(returnedOffset).toEqual(offset);
-            expect(returnedOffset).not.toBe(offset); // Should be a copy
+            expect(returnedOffset).toEqual(panOffset);
+            expect(returnedOffset).not.toBe(panOffset); // Should be a copy
         });
 
-        it('should not allow mutation of internal offset', () => {
-            const offset = { x: 10, y: 20 };
-            transformer.updateTransform(1, offset);
+        it('should not allow mutation of internal pan offset', () => {
+            const panOffset = { x: 10, y: 20 };
+            transformer.updateTransform(1, panOffset);
 
-            const returnedOffset = transformer.getOffset();
+            const returnedOffset = transformer.getPanOffset();
             returnedOffset.x = 999;
 
-            expect(transformer.getOffset().x).toBe(10); // Should be unchanged
+            expect(transformer.getPanOffset().x).toBe(10); // Should be unchanged
         });
     });
 

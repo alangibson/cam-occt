@@ -41,7 +41,7 @@ export function calculateDrawingSize(
     }
 
     // If DXF bounds are invalid, calculate using geometry functions
-    console.log(
+    console.warn(
         'DXF bounds are invalid, falling back to custom bounding box calculation'
     );
 

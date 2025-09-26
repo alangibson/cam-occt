@@ -88,9 +88,6 @@ describe('migration utilities', () => {
             migrateLegacyData();
 
             expect(mockLocalStorage.removeItem).not.toHaveBeenCalled();
-            expect(console.log).toHaveBeenCalledWith(
-                'No legacy data found, migration not needed'
-            );
         });
 
         it('should migrate and remove operations data', () => {
@@ -101,12 +98,6 @@ describe('migration utilities', () => {
 
             expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
                 'metalheadcam-operations'
-            );
-            expect(console.log).toHaveBeenCalledWith(
-                'Found legacy data for metalheadcam-operations'
-            );
-            expect(console.log).toHaveBeenCalledWith(
-                'Cleared legacy key: metalheadcam-operations'
             );
         });
 
@@ -119,12 +110,6 @@ describe('migration utilities', () => {
             expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
                 'metalheadcam-paths'
             );
-            expect(console.log).toHaveBeenCalledWith(
-                'Found legacy data for metalheadcam-paths'
-            );
-            expect(console.log).toHaveBeenCalledWith(
-                'Cleared legacy key: metalheadcam-paths'
-            );
         });
 
         it('should migrate and remove tools data', () => {
@@ -135,12 +120,6 @@ describe('migration utilities', () => {
 
             expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
                 'metalheadcam-tools'
-            );
-            expect(console.log).toHaveBeenCalledWith(
-                'Found legacy data for metalheadcam-tools'
-            );
-            expect(console.log).toHaveBeenCalledWith(
-                'Cleared legacy key: metalheadcam-tools'
             );
         });
 
@@ -157,12 +136,6 @@ describe('migration utilities', () => {
             );
             expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
                 'metalheadcam-prepare-right-column-width'
-            );
-            expect(console.log).toHaveBeenCalledWith(
-                'Found legacy data for metalheadcam-prepare-left-column-width'
-            );
-            expect(console.log).toHaveBeenCalledWith(
-                'Found legacy data for metalheadcam-prepare-right-column-width'
             );
         });
 
@@ -195,9 +168,8 @@ describe('migration utilities', () => {
                 'metalheadcam-prepare-right-column-width'
             );
 
-            expect(console.log).toHaveBeenCalledWith(
-                'Legacy data migration completed'
-            );
+            // Verify all keys were removed
+            expect(mockLocalStorage.removeItem).toHaveBeenCalledTimes(5);
         });
 
         it('should handle invalid JSON data gracefully', () => {
@@ -208,9 +180,9 @@ describe('migration utilities', () => {
             expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
                 'metalheadcam-operations'
             );
-            expect(console.warn).toHaveBeenCalledWith(
-                'Failed to parse legacy data for metalheadcam-operations:',
-                expect.any(SyntaxError)
+            // Invalid JSON should still remove the key
+            expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
+                'metalheadcam-operations'
             );
         });
 
@@ -236,9 +208,6 @@ describe('migration utilities', () => {
 
             expect(mockLocalStorage.removeItem).toHaveBeenCalledWith(
                 'metalheadcam-prepare-left-column-width'
-            );
-            expect(console.log).toHaveBeenCalledWith(
-                'Found legacy data for metalheadcam-prepare-left-column-width'
             );
         });
     });

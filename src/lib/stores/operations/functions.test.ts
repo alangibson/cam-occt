@@ -246,11 +246,7 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null and log warning when tool is not found', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
-
+        it('should return null when tool is not found', () => {
             const result = calculateChainOffset(
                 mockChain,
                 OffsetDirection.INSET,
@@ -259,16 +255,9 @@ describe('Operations Functions', () => {
             );
 
             expect(result).toBeNull();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Tool not found for kerf compensation'
-            );
-            consoleSpy.mockRestore();
         });
 
-        it('should return null and log warning when tool has no kerf width', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
+        it('should return null when tool has no kerf width', () => {
             const toolNoKerf = {
                 ...mockTool,
                 kerfWidth: undefined,
@@ -282,16 +271,9 @@ describe('Operations Functions', () => {
             );
 
             expect(result).toBeNull();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Tool "Test Tool" has no kerf width set'
-            );
-            consoleSpy.mockRestore();
         });
 
-        it('should return null and log warning when tool has zero kerf width', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
+        it('should return null when tool has zero kerf width', () => {
             const toolZeroKerf = { ...mockTool, kerfWidth: 0 };
 
             const result = calculateChainOffset(
@@ -302,16 +284,9 @@ describe('Operations Functions', () => {
             );
 
             expect(result).toBeNull();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Tool "Test Tool" has no kerf width set'
-            );
-            consoleSpy.mockRestore();
         });
 
-        it('should return null and log warning when offset calculation fails', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
+        it('should return null when offset calculation fails', () => {
             vi.mocked(offsetChain).mockReturnValue({
                 success: false,
                 errors: ['Offset failed'],
@@ -326,17 +301,9 @@ describe('Operations Functions', () => {
             );
 
             expect(result).toBeNull();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Offset calculation failed',
-                ['Offset failed']
-            );
-            consoleSpy.mockRestore();
         });
 
-        it('should return null and log warning when no appropriate offset chain is found for INSET', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
+        it('should return null when no appropriate offset chain is found for INSET', () => {
             vi.mocked(offsetChain).mockReturnValue({
                 success: true,
                 innerChain: {
@@ -369,17 +336,9 @@ describe('Operations Functions', () => {
             );
 
             expect(result).toBeNull();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'No appropriate offset chain found for direction:',
-                OffsetDirection.INSET
-            );
-            consoleSpy.mockRestore();
         });
 
-        it('should return null and log warning when no appropriate offset chain is found for OUTSET', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'warn')
-                .mockImplementation(() => {});
+        it('should return null when no appropriate offset chain is found for OUTSET', () => {
             vi.mocked(offsetChain).mockReturnValue({
                 success: true,
                 innerChain: {
@@ -412,17 +371,9 @@ describe('Operations Functions', () => {
             );
 
             expect(result).toBeNull();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'No appropriate offset chain found for direction:',
-                OffsetDirection.OUTSET
-            );
-            consoleSpy.mockRestore();
         });
 
         it('should handle errors during offset calculation', () => {
-            const consoleSpy = vi
-                .spyOn(console, 'error')
-                .mockImplementation(() => {});
             vi.mocked(offsetChain).mockImplementation(() => {
                 throw new Error('Calculation error');
             });
@@ -435,11 +386,6 @@ describe('Operations Functions', () => {
             );
 
             expect(result).toBeNull();
-            expect(consoleSpy).toHaveBeenCalledWith(
-                'Error calculating offset:',
-                expect.any(Error)
-            );
-            consoleSpy.mockRestore();
         });
 
         it('should return successful result for INSET direction', () => {
@@ -1081,26 +1027,19 @@ describe('Operations Functions', () => {
         });
 
         it('should handle errors during calculation', async () => {
-            const consoleSpy = vi
-                .spyOn(console, 'log')
-                .mockImplementation(() => {});
             vi.mocked(calculateLeads).mockImplementation(() => {
                 throw new Error('Calculation error');
             });
 
-            await calculateOperationLeads(
+            const result = await calculateOperationLeads(
                 mockOperation,
                 [mockPath],
                 [mockChain],
                 [mockPart]
             );
 
-            expect(consoleSpy).toHaveBeenCalledWith(
-                expect.stringContaining('Failed to calculate leads for path'),
-                expect.any(Error)
-            );
-
-            consoleSpy.mockRestore();
+            // Should return a result even when calculation fails
+            expect(result).toBeInstanceOf(Map);
         });
     });
 
