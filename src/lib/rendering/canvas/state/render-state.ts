@@ -63,6 +63,9 @@ export interface VisibilityState {
     showChains: boolean;
     showParts: boolean;
     showOverlays: boolean;
+    showChainStartPoints: boolean;
+    showChainEndPoints: boolean;
+    showChainTangentLines: boolean;
 }
 
 /**
@@ -128,8 +131,9 @@ export interface RenderState {
 
 /**
  * Create an empty render state
+ * @param stage - Optional workflow stage to initialize with (defaults to 'import')
  */
-export function createEmptyRenderState(): RenderState {
+export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
     return {
         drawing: null,
         transform: {
@@ -168,8 +172,11 @@ export function createEmptyRenderState(): RenderState {
             showChains: true,
             showParts: true,
             showOverlays: true,
+            showChainStartPoints: false,
+            showChainEndPoints: false,
+            showChainTangentLines: false,
         },
-        stage: 'edit' as WorkflowStage,
+        stage: stage || ('import' as WorkflowStage),
         displayUnit: Unit.MM,
         chains: [],
         parts: [],

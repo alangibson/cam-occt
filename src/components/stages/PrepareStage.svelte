@@ -33,6 +33,7 @@
     import AccordionPanel from '../AccordionPanel.svelte';
     import LayersInfo from '../LayersInfo.svelte';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
+    import type { Chain } from '$lib/geometry/chain/interfaces';
 
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;
@@ -168,8 +169,7 @@
         !isNormalizing &&
         detectedChains.length > 0
     ) {
-        const chainEndpoints = generateChainEndpoints(detectedChains);
-        overlayStore.setChainEndpoints(WorkflowStage.PREPARE, chainEndpoints);
+        updateChainOverlays(detectedChains);
     } else if (
         $workflowStore.currentStage === WorkflowStage.PREPARE &&
         !isNormalizing
@@ -200,6 +200,42 @@
 
     // Chain normalization analysis - use store for persistence
     $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
+
+    // Helper function to update overlays based on visualization preferences
+    function updateChainOverlays(chains: Chain[]) {
+        if ($workflowStore.currentStage !== WorkflowStage.PREPARE) return;
+
+        // Generate and filter chain endpoints
+        const allEndpoints = generateChainEndpoints(chains);
+        let filteredEndpoints: typeof allEndpoints = [];
+
+        if (
+            $prepareStageStore.showChainStartPoints ||
+            $prepareStageStore.showChainEndPoints
+        ) {
+            filteredEndpoints = allEndpoints.filter((endpoint) => {
+                if (
+                    endpoint.type === 'start' &&
+                    $prepareStageStore.showChainStartPoints
+                ) {
+                    return true;
+                }
+                if (
+                    endpoint.type === 'end' &&
+                    $prepareStageStore.showChainEndPoints
+                ) {
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        overlayStore.setChainEndpoints(
+            WorkflowStage.PREPARE,
+            filteredEndpoints
+        );
+        // Tangent lines are now handled by the ChainRenderer
+    }
 
     // Chain selection state
     $: selectedChainId = $chainStore.selectedChainId;
@@ -248,6 +284,17 @@
             prepareStageStore.clearChainNormalizationResults();
             chainStore.selectChain(null);
         }
+    }
+
+    // Update overlays when visibility settings change
+    $: if (
+        $workflowStore.currentStage === WorkflowStage.PREPARE &&
+        detectedChains.length > 0 &&
+        ($prepareStageStore.showChainStartPoints !== undefined ||
+            $prepareStageStore.showChainEndPoints !== undefined ||
+            $prepareStageStore.showChainTangentLines !== undefined)
+    ) {
+        updateChainOverlays(detectedChains);
     }
 
     // Collect all issues from chain normalization
@@ -353,13 +400,7 @@
 
                 // Update overlays
                 if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
-                    const chainEndpoints = generateChainEndpoints(
-                        originalState.chains
-                    );
-                    overlayStore.setChainEndpoints(
-                        WorkflowStage.PREPARE,
-                        chainEndpoints
-                    );
+                    updateChainOverlays(originalState.chains);
                 }
 
                 console.log('Restored original chains before normalization');
@@ -410,14 +451,9 @@
             setTimeout(() => {
                 if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
                     if (newChains.length > 0) {
-                        const chainEndpoints =
-                            generateChainEndpoints(newChains);
-                        overlayStore.setChainEndpoints(
-                            WorkflowStage.PREPARE,
-                            chainEndpoints
-                        );
+                        updateChainOverlays(newChains);
                         console.log(
-                            `Updated overlay with ${chainEndpoints.length} chain endpoints after normalization.`
+                            `Updated overlays after normalization for ${newChains.length} chains.`
                         );
                     } else {
                         overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
@@ -452,13 +488,7 @@
 
                 // Update overlays
                 if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
-                    const chainEndpoints = generateChainEndpoints(
-                        originalState.chains
-                    );
-                    overlayStore.setChainEndpoints(
-                        WorkflowStage.PREPARE,
-                        chainEndpoints
-                    );
+                    updateChainOverlays(originalState.chains);
                 }
 
                 console.log('Restored original chains before optimization');
@@ -505,14 +535,9 @@
             setTimeout(() => {
                 if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
                     if (newChains.length > 0) {
-                        const chainEndpoints =
-                            generateChainEndpoints(newChains);
-                        overlayStore.setChainEndpoints(
-                            WorkflowStage.PREPARE,
-                            chainEndpoints
-                        );
+                        updateChainOverlays(newChains);
                         console.log(
-                            `Updated overlay with ${chainEndpoints.length} chain endpoints after optimization.`
+                            `Updated overlays after optimization for ${newChains.length} chains.`
                         );
                     } else {
                         overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
@@ -1777,6 +1802,47 @@
                 </AccordionPanel>
             {/if}
 
+            <AccordionPanel title="Show" isExpanded={true}>
+                <div class="show-panel-content">
+                    <label class="show-checkbox-label">
+                        <input
+                            type="checkbox"
+                            checked={$prepareStageStore.showChainStartPoints}
+                            onchange={(e) =>
+                                prepareStageStore.setShowChainStartPoints(
+                                    e.currentTarget.checked
+                                )}
+                            class="show-checkbox"
+                        />
+                        Chain Start Points
+                    </label>
+                    <label class="show-checkbox-label">
+                        <input
+                            type="checkbox"
+                            checked={$prepareStageStore.showChainEndPoints}
+                            onchange={(e) =>
+                                prepareStageStore.setShowChainEndPoints(
+                                    e.currentTarget.checked
+                                )}
+                            class="show-checkbox"
+                        />
+                        Chain End Points
+                    </label>
+                    <label class="show-checkbox-label">
+                        <input
+                            type="checkbox"
+                            checked={$prepareStageStore.showChainTangentLines}
+                            onchange={(e) =>
+                                prepareStageStore.setShowChainTangentLines(
+                                    e.currentTarget.checked
+                                )}
+                            class="show-checkbox"
+                        />
+                        Chain Tangent Lines
+                    </label>
+                </div>
+            </AccordionPanel>
+
             <!-- Hidden for now -->
             <!-- <div class="panel">
         <h3 class="panel-title">Tool Path Information</h3>
@@ -2563,6 +2629,29 @@
     /* Prevent text selection during resize */
     .program-layout.no-select {
         user-select: none;
+    }
+
+    /* Show panel styles */
+    .show-panel-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .show-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        color: #374151;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .show-checkbox {
+        width: 1rem;
+        height: 1rem;
+        cursor: pointer;
     }
 
     @media (max-width: 1200px) {

@@ -96,8 +96,8 @@ export class OffsetRenderer extends BaseRenderer {
                 state.selection.selectedPathId &&
                 state.selection.selectedPathId === path.id;
             const isPathHighlighted =
-                state.hover.highlightedPathId &&
-                state.hover.highlightedPathId === path.id;
+                state.selection.highlightedPathId &&
+                state.selection.highlightedPathId === path.id;
 
             ctx.save();
 

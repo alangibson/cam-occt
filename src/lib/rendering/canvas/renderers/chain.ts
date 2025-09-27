@@ -6,12 +6,10 @@
  * - Chain endpoint markers
  * - Chain closure indicators
  */
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
-import type { Point2D, Shape } from '$lib/types';
+import type { Point2D } from '$lib/types';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import {
     HitTestType,
@@ -20,12 +18,20 @@ import {
 import { getChainById } from '$lib/stores/chains/functions';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
+import { getChainTangent } from '$lib/geometry/chain/functions';
+import type { Chain } from '$lib/geometry/chain/interfaces';
+import {
+    getShapeStartPoint,
+    getShapeEndPoint,
+} from '$lib/geometry/shape/functions';
 
 // Constants for rendering
 const HIGHLIGHT_LINE_WIDTH = 2.5;
 const SELECTION_LINE_WIDTH = 3;
 const ENDPOINT_SIZE = 6;
 const HIT_TEST_TOLERANCE = 5;
+const TANGENT_LINE_LENGTH = 50; // Length of tangent lines in screen pixels
+const TANGENT_LINE_WIDTH = 2;
 
 export class ChainRenderer extends BaseRenderer {
     constructor(coordinator: CoordinateTransformer) {
@@ -33,37 +39,38 @@ export class ChainRenderer extends BaseRenderer {
     }
 
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        if (
-            !state.visibility.showChains ||
-            !state.chains.length ||
-            !state.drawing
-        ) {
+        // Check basic requirements
+        if (!state.chains.length || !state.drawing) {
             return;
         }
 
-        // Render highlighted chain
-        if (state.selection.highlightedChainId) {
-            this.renderHighlightedChain(
-                ctx,
-                state,
-                state.selection.highlightedChainId
-            );
+        // Render chain highlights only if showChains is true
+        if (state.visibility.showChains) {
+            // Render highlighted chain
+            if (state.selection.highlightedChainId) {
+                this.renderHighlightedChain(
+                    ctx,
+                    state,
+                    state.selection.highlightedChainId
+                );
+            }
+
+            // Render selected chain (if different from highlighted)
+            if (
+                state.selection.selectedChainId &&
+                state.selection.selectedChainId !==
+                    state.selection.highlightedChainId
+            ) {
+                this.renderSelectedChain(
+                    ctx,
+                    state,
+                    state.selection.selectedChainId
+                );
+            }
         }
 
-        // Render selected chain (if different from highlighted)
-        if (
-            state.selection.selectedChainId &&
-            state.selection.selectedChainId !==
-                state.selection.highlightedChainId
-        ) {
-            this.renderSelectedChain(
-                ctx,
-                state,
-                state.selection.selectedChainId
-            );
-        }
-
-        // Render chain endpoints if in prepare stage
+        // Always render chain endpoints and tangents if in prepare stage
+        // (regardless of showChains setting)
         if (state.stage === 'prepare') {
             this.renderChainEndpoints(ctx, state);
         }
@@ -147,17 +154,45 @@ export class ChainRenderer extends BaseRenderer {
             );
 
             if (startShape) {
-                const startPoint = this.getShapeStartPoint(startShape);
+                const startPoint = getShapeStartPoint(startShape);
                 if (startPoint) {
-                    this.drawChainEndpoint(ctx, state, startPoint, 'start');
+                    // Draw start point marker if enabled
+                    if (state.visibility.showChainStartPoints) {
+                        this.drawChainEndpoint(ctx, state, startPoint, 'start');
+                    }
+                    // Draw tangent line at start point if enabled
+                    if (state.visibility.showChainTangentLines) {
+                        this.drawChainTangent(
+                            ctx,
+                            state,
+                            chain,
+                            startPoint,
+                            true
+                        );
+                    }
                 }
             }
 
-            if (endShape && chain.clockwise === null) {
-                // Only draw end point for open chains (clockwise === null)
-                const endPoint = this.getShapeEndPoint(endShape);
+            if (endShape) {
+                const endPoint = getShapeEndPoint(endShape);
                 if (endPoint) {
-                    this.drawChainEndpoint(ctx, state, endPoint, 'end');
+                    // Draw end point marker for open chains if enabled
+                    if (
+                        chain.clockwise === null &&
+                        state.visibility.showChainEndPoints
+                    ) {
+                        this.drawChainEndpoint(ctx, state, endPoint, 'end');
+                    }
+                    // Draw tangent line at end point if enabled
+                    if (state.visibility.showChainTangentLines) {
+                        this.drawChainTangent(
+                            ctx,
+                            state,
+                            chain,
+                            endPoint,
+                            false
+                        );
+                    }
                 }
             }
         }
@@ -200,71 +235,61 @@ export class ChainRenderer extends BaseRenderer {
         ctx.restore();
     }
 
-    private getShapeStartPoint(shape: Shape): Point2D | null {
-        switch (shape.type) {
-            case 'line':
-                return {
-                    x: (shape.geometry as any).start.x,
-                    y: (shape.geometry as any).start.y,
-                };
-            case 'polyline':
-                const polyline = shape.geometry as any;
-                return polyline.points && polyline.points.length > 0
-                    ? { x: polyline.points[0].x, y: polyline.points[0].y }
-                    : null;
-            case 'spline':
-                const spline = shape.geometry as any;
-                return spline.points && spline.points.length > 0
-                    ? { x: spline.points[0].x, y: spline.points[0].y }
-                    : null;
-            case 'circle':
-            case 'arc':
-            case 'ellipse':
-                return {
-                    x: (shape.geometry as any).center.x,
-                    y: (shape.geometry as any).center.y,
-                };
-            default:
-                return null;
-        }
-    }
+    private drawChainTangent(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        chain: Chain,
+        point: Point2D,
+        isStart: boolean
+    ): void {
+        // Get the tangent direction at this point
+        const tangent = getChainTangent(chain, point, isStart);
 
-    private getShapeEndPoint(shape: Shape): Point2D | null {
-        switch (shape.type) {
-            case 'line':
-                return {
-                    x: (shape.geometry as any).end.x,
-                    y: (shape.geometry as any).end.y,
-                };
-            case 'polyline':
-                const polyline = shape.geometry as any;
-                if (!polyline.points || polyline.points.length === 0)
-                    return null;
-                const lastIndex = polyline.points.length - 1;
-                return {
-                    x: polyline.points[lastIndex].x,
-                    y: polyline.points[lastIndex].y,
-                };
-            case 'spline':
-                const spline = shape.geometry as any;
-                if (!spline.points || spline.points.length === 0) return null;
-                const lastSplineIndex = spline.points.length - 1;
-                return lastSplineIndex >= 0
-                    ? {
-                          x: spline.points[lastSplineIndex].x,
-                          y: spline.points[lastSplineIndex].y,
-                      }
-                    : null;
-            case 'circle':
-            case 'arc':
-            case 'ellipse':
-                return {
-                    x: (shape.geometry as any).center.x,
-                    y: (shape.geometry as any).center.y,
-                };
-            default:
-                return null;
-        }
+        // Normalize the tangent vector
+        const magnitude = Math.sqrt(
+            tangent.x * tangent.x + tangent.y * tangent.y
+        );
+        if (magnitude === 0) return; // Skip if zero vector
+
+        const normalizedTangent = {
+            x: tangent.x / magnitude,
+            y: tangent.y / magnitude,
+        };
+
+        // Calculate the length in world coordinates
+        const tangentLength =
+            state.transform.coordinator.screenToWorldDistance(
+                TANGENT_LINE_LENGTH
+            );
+        const lineWidth =
+            state.transform.coordinator.screenToWorldDistance(
+                TANGENT_LINE_WIDTH
+            );
+
+        // Calculate start and end points of the tangent line
+        const startPoint = {
+            x: point.x - normalizedTangent.x * tangentLength,
+            y: point.y - normalizedTangent.y * tangentLength,
+        };
+        const endPoint = {
+            x: point.x + normalizedTangent.x * tangentLength,
+            y: point.y + normalizedTangent.y * tangentLength,
+        };
+
+        ctx.save();
+
+        // Set yellow color and line style
+        ctx.strokeStyle = '#ffff00'; // Yellow
+        ctx.lineWidth = lineWidth;
+        ctx.setLineDash([]);
+
+        // Draw the tangent line
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
+        ctx.lineTo(endPoint.x, endPoint.y);
+        ctx.stroke();
+
+        ctx.restore();
     }
 
     hitWorld(point: Point2D, state: RenderState): HitTestResult | null {
@@ -276,13 +301,21 @@ export class ChainRenderer extends BaseRenderer {
             return null;
         }
 
+        const tolerance =
+            state.transform.coordinator.screenToWorldDistance(
+                HIT_TEST_TOLERANCE
+            );
+
         // Test for chain hit by testing if any shape in any chain is hit
         for (const chain of state.chains) {
             for (const chainShape of chain.shapes) {
                 const shape = state.drawing.shapes.find(
                     (s) => s.id === chainShape.id
                 );
-                if (shape && this.isPointNearShape(point, shape, state)) {
+                if (
+                    shape &&
+                    HitTestUtils.isPointNearShape(point, shape, tolerance)
+                ) {
                     return {
                         type: HitTestType.CHAIN,
                         id: chain.id,
@@ -298,102 +331,5 @@ export class ChainRenderer extends BaseRenderer {
         }
 
         return null;
-    }
-
-    private isPointNearShape(
-        point: Point2D,
-        shape: Shape,
-        state: RenderState
-    ): boolean {
-        const tolerance =
-            state.transform.coordinator.screenToWorldDistance(
-                HIT_TEST_TOLERANCE
-            );
-
-        switch (shape.type) {
-            case 'line':
-                const line = shape.geometry as any;
-                return (
-                    HitTestUtils.distanceToLineSegment(
-                        point,
-                        line.start,
-                        line.end
-                    ) <= tolerance
-                );
-            case 'circle':
-                const circle = shape.geometry as any;
-                const distToCenter = HitTestUtils.distance(
-                    point,
-                    circle.center
-                );
-                return Math.abs(distToCenter - circle.radius) <= tolerance;
-            case 'arc':
-                const arc = shape.geometry as any;
-                const distToCenterArc = HitTestUtils.distance(
-                    point,
-                    arc.center
-                );
-                if (Math.abs(distToCenterArc - arc.radius) > tolerance)
-                    return false;
-
-                const angle = Math.atan2(
-                    point.y - arc.center.y,
-                    point.x - arc.center.x
-                );
-                return this.isAngleInArcRange(
-                    angle,
-                    arc.startAngle,
-                    arc.endAngle,
-                    arc.clockwise
-                );
-            case 'polyline':
-                const polyline = shape.geometry as any;
-                for (let i = 0; i < polyline.points.length - 1; i++) {
-                    if (
-                        HitTestUtils.distanceToLineSegment(
-                            point,
-                            polyline.points[i],
-                            polyline.points[i + 1]
-                        ) <= tolerance
-                    ) {
-                        return true;
-                    }
-                }
-                return false;
-            default:
-                return false;
-        }
-    }
-
-    private isAngleInArcRange(
-        angle: number,
-        startAngle: number,
-        endAngle: number,
-        clockwise: boolean
-    ): boolean {
-        // Normalize angles to [0, 2π]
-        const normalizeAngle = (a: number) => {
-            while (a < 0) a += 2 * Math.PI;
-            while (a >= 2 * Math.PI) a -= 2 * Math.PI;
-            return a;
-        };
-
-        angle = normalizeAngle(angle);
-        startAngle = normalizeAngle(startAngle);
-        endAngle = normalizeAngle(endAngle);
-
-        if (clockwise) {
-            if (startAngle > endAngle) {
-                return angle >= startAngle || angle <= endAngle;
-            } else {
-                return angle >= startAngle && angle <= endAngle;
-            }
-        } else {
-            if (startAngle < endAngle) {
-                return angle >= startAngle && angle <= endAngle;
-            } else {
-                return angle >= startAngle || angle <= endAngle;
-            }
-        }
     }
 }

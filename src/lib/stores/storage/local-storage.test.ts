@@ -141,6 +141,9 @@ describe('State Persistence', () => {
                 originalShapesBeforeOptimization: null,
                 originalChainsBeforeOptimization: null,
                 partsDetected: false,
+                showChainStartPoints: false,
+                showChainEndPoints: false,
+                showChainTangentLines: false,
             },
 
             // Operations, paths, and tools
@@ -329,6 +332,9 @@ describe('State Persistence', () => {
                 originalShapesBeforeOptimization: null,
                 originalChainsBeforeOptimization: null,
                 partsDetected: false,
+                showChainStartPoints: false,
+                showChainEndPoints: false,
+                showChainTangentLines: false,
             },
             operations: [],
             paths: [],

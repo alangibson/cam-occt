@@ -21,7 +21,7 @@ describe('createEmptyRenderState', () => {
         expect(state.selection.hoveredShape).toBeNull();
         expect(state.hover.mousePosition).toBeNull();
         expect(state.visibility.showRapids).toBe(true);
-        expect(state.stage).toBe(WorkflowStage.EDIT);
+        expect(state.stage).toBe(WorkflowStage.IMPORT);
         expect(state.displayUnit).toBe(Unit.MM);
         expect(state.chains).toEqual([]);
         expect(state.parts).toEqual([]);
@@ -44,6 +44,16 @@ describe('createEmptyRenderState', () => {
         expect(state.overlays).toHaveProperty(WorkflowStage.SIMULATE);
         expect(state.overlays).toHaveProperty(WorkflowStage.EXPORT);
         expect(state.currentOverlay).toBeNull();
+    });
+
+    it('should accept a custom stage parameter', () => {
+        const state = createEmptyRenderState(WorkflowStage.PREPARE);
+        expect(state.stage).toBe(WorkflowStage.PREPARE);
+    });
+
+    it('should default to import stage when no stage is provided', () => {
+        const state = createEmptyRenderState();
+        expect(state.stage).toBe(WorkflowStage.IMPORT);
     });
 });
 

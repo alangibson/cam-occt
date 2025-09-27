@@ -8,6 +8,7 @@
     import { tessellationStore } from '$lib/stores/tessellation/store';
     import { overlayStore } from '$lib/stores/overlay/store';
     import { rapidStore } from '$lib/stores/rapids/store';
+    import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import {
         selectRapid,
         clearRapidHighlight,
@@ -86,6 +87,9 @@
     $: showRapids = $rapidStore.showRapids;
     $: selectedRapidId = $rapidStore.selectedRapidId;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
+    $: showChainStartPoints = $prepareStageStore.showChainStartPoints;
+    $: showChainEndPoints = $prepareStageStore.showChainEndPoints;
+    $: showChainTangentLines = $prepareStageStore.showChainTangentLines;
 
     // Calculate unit scale factor for proper unit display
     $: unitScale = drawing
@@ -138,20 +142,9 @@
         });
     }
 
-    // Selection and hover changes
-    $: if (
-        selectedShapes ||
-        hoveredShape ||
-        selectedChainId ||
-        highlightedChainId ||
-        highlightedPartId ||
-        hoveredPartId ||
-        selectedPartId ||
-        selectedPathId ||
-        highlightedPathId ||
-        layerVisibility ||
-        showRapids !== undefined
-    ) {
+    // Selection, hover, and visibility changes
+    // Reactive to all these values to trigger updates when any change
+    $: if (renderingPipeline) {
         renderingPipeline.updateState({
             selection: {
                 selectedShapes,
@@ -169,11 +162,14 @@
             },
             visibility: {
                 layerVisibility: layerVisibility || {},
-                showRapids: showRapids ?? true,
+                showRapids,
                 showPaths: true,
                 showChains: true,
                 showParts: true,
                 showOverlays: true,
+                showChainStartPoints,
+                showChainEndPoints,
+                showChainTangentLines,
             },
         });
     }
@@ -189,10 +185,15 @@
     }
 
     // Overlay and stage changes
-    $: if (tessellationState || currentOverlay) {
+    $: if (
+        tessellationState !== undefined ||
+        currentOverlay !== undefined ||
+        currentStage !== undefined
+    ) {
         renderingPipeline.updateState({
             overlays: overlayState?.overlays || {},
             currentOverlay: currentOverlay,
+            stage: currentStage,
         });
     }
 

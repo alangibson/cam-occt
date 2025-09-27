@@ -21,7 +21,6 @@ import type { CoordinateTransformer } from '$lib/rendering/coordinate-transforme
 
 // Constants for overlay rendering
 const SHAPE_POINT_SIZE = 4;
-const CHAIN_ENDPOINT_SIZE = 6;
 const TOOL_HEAD_SIZE = 8;
 const HIT_TEST_TOLERANCE = 8;
 
@@ -55,23 +54,7 @@ export class OverlayRenderer extends BaseRenderer {
             );
         }
 
-        // Draw chain endpoints (Prepare stage)
-        if (overlay.chainEndpoints && overlay.chainEndpoints.length > 0) {
-            overlay.chainEndpoints.forEach(
-                (endpoint: Point2D & { type?: string }) => {
-                    this.drawChainEndpoint(
-                        ctx,
-                        state,
-                        endpoint.x,
-                        endpoint.y,
-                        endpoint.type || 'default',
-                        state.transform.coordinator.screenToWorldDistance(
-                            CHAIN_ENDPOINT_SIZE
-                        )
-                    );
-                }
-            );
-        }
+        // Chain endpoints are now handled by ChainRenderer
 
         // Draw tessellation points (Program stage)
         if (
@@ -125,41 +108,6 @@ export class OverlayRenderer extends BaseRenderer {
                 break;
             default:
                 ctx.fillStyle = '#888888'; // Gray
-        }
-
-        ctx.beginPath();
-        ctx.arc(x, y, size, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.restore();
-    }
-
-    private drawChainEndpoint(
-        ctx: CanvasRenderingContext2D,
-        state: RenderState,
-        x: number,
-        y: number,
-        type: string,
-        size: number
-    ): void {
-        ctx.save();
-
-        // Draw white border
-        ctx.fillStyle = '#ffffff';
-        ctx.beginPath();
-        ctx.arc(
-            x,
-            y,
-            size + state.transform.coordinator.screenToWorldDistance(1),
-            0,
-            2 * Math.PI
-        );
-        ctx.fill();
-
-        // Draw colored center
-        if (type === 'start') {
-            ctx.fillStyle = 'rgb(0, 133, 84)'; // Emerald green
-        } else {
-            ctx.fillStyle = 'rgb(133, 18, 0)'; // Red
         }
 
         ctx.beginPath();

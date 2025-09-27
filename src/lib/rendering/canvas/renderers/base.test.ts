@@ -98,5 +98,4 @@ describe('BaseRenderer', () => {
             expect(() => renderer.destroy()).not.toThrow();
         });
     });
-
 });

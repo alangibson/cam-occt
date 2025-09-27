@@ -7,7 +7,6 @@ import type { LayerId } from './layers/types';
 import { LayerId as LayerIdEnum } from './layers/types';
 import type { Renderer } from './renderers/base';
 import type { RenderState } from './state/render-state';
-import { createEmptyRenderState } from './state/render-state';
 import type { HitTestResult, HitTestConfig } from './utils/hit-test';
 import { HitTestUtils, DEFAULT_HIT_TEST_PRIORITY } from './utils/hit-test';
 import { DrawingContext } from './utils/context';
@@ -298,46 +297,8 @@ export class RenderingPipeline {
     updateState(newState: Partial<RenderState>): void {
         this.previousState = this.currentState;
 
-        // Initialize currentState with defaults if empty
-        if (Object.keys(this.currentState).length === 0) {
-            this.currentState = createEmptyRenderState();
-        }
-
-        // Deep merge state updates
-        this.currentState = { ...this.currentState };
-
-        for (const [key, value] of Object.entries(newState)) {
-            if (value !== undefined) {
-                const stateKey = key as keyof RenderState;
-
-                // Handle nested objects (transform, selection, hover, visibility)
-                if (
-                    typeof value === 'object' &&
-                    value !== null &&
-                    !Array.isArray(value) &&
-                    !(value instanceof Set) &&
-                    (key === 'transform' ||
-                        key === 'selection' ||
-                        key === 'hover' ||
-                        key === 'visibility')
-                ) {
-                    // Merge nested object properties
-                    // Type-safe way to handle nested object merging
-                    const existingValue = this.currentState[stateKey] || {};
-                    (this.currentState as Record<string, object>)[stateKey] = {
-                        ...(existingValue as Record<string, object>),
-                        ...value,
-                    };
-                } else {
-                    // Direct assignment for non-nested properties
-                    if (value !== null && typeof value === 'object') {
-                        (this.currentState as Record<string, object>)[
-                            stateKey
-                        ] = value;
-                    }
-                }
-            }
-        }
+        // Shallow merge - only copy defined, non-null values
+        Object.assign(this.currentState, newState);
 
         // Always render everything
         this.renderAll();

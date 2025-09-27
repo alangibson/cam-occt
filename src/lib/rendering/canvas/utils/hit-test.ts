@@ -2,7 +2,23 @@
  * Hit testing types and utilities for canvas rendering
  */
 
-import type { Point2D, Shape } from '$lib/types';
+import type {
+    Point2D,
+    Shape,
+    Line,
+    Circle,
+    Arc,
+    Polyline,
+    Ellipse,
+} from '$lib/types';
+import { GeometryType } from '$lib/types';
+import type { Spline } from '$lib/geometry/spline';
+import { tessellateSpline } from '$lib/geometry/spline';
+import {
+    isFullEllipse,
+    distanceFromEllipsePerimeter,
+    transformPointToEllipseCoordinates,
+} from '$lib/geometry/ellipse/index';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
 
@@ -279,5 +295,139 @@ export class HitTestUtils {
         filtered = filtered.filter((r) => r.distance <= config.tolerance);
 
         return filtered;
+    }
+
+    /**
+     * Check if a point is near a shape within tolerance
+     */
+    static isPointNearShape(
+        point: Point2D,
+        shape: Shape,
+        tolerance: number
+    ): boolean {
+        switch (shape.type) {
+            case GeometryType.LINE:
+                const line = shape.geometry as Line;
+                return (
+                    this.distanceToLineSegment(point, line.start, line.end) <
+                    tolerance
+                );
+
+            case GeometryType.CIRCLE:
+                const circle = shape.geometry as Circle;
+                const distToCenter = this.distance(point, circle.center);
+                return Math.abs(distToCenter - circle.radius) < tolerance;
+
+            case GeometryType.ARC:
+                const arc = shape.geometry as Arc;
+                return (
+                    this.distanceToArc(
+                        point,
+                        arc.center,
+                        arc.radius,
+                        arc.startAngle,
+                        arc.endAngle,
+                        arc.clockwise
+                    ) < tolerance
+                );
+
+            case GeometryType.POLYLINE:
+                const polyline = shape.geometry as Polyline;
+                if (!polyline.shapes || polyline.shapes.length === 0)
+                    return false;
+
+                // Check each shape in the polyline
+                for (const polylineShape of polyline.shapes) {
+                    if (
+                        this.isPointNearShape(point, polylineShape, tolerance)
+                    ) {
+                        return true;
+                    }
+                }
+                return false;
+
+            case GeometryType.ELLIPSE:
+                const ellipse = shape.geometry as Ellipse;
+
+                // Calculate distance from point to ellipse perimeter
+                const distanceToPerimeter = distanceFromEllipsePerimeter(
+                    point,
+                    ellipse
+                );
+
+                // Check if within tolerance
+                if (distanceToPerimeter > tolerance) return false;
+
+                // For full ellipses, no additional checks needed
+                if (isFullEllipse(ellipse)) return true;
+
+                // For ellipse arcs, check if point is within angular range
+                // Use the shared coordinate transformation function
+                const { normalizedX, normalizedY } =
+                    transformPointToEllipseCoordinates(point, ellipse);
+                const pointParam = Math.atan2(normalizedY, normalizedX);
+
+                // Check if point parameter is within arc range
+                const startParam = ellipse.startParam!;
+                const endParam = ellipse.endParam!;
+
+                // Normalize parameters to [0, 2π]
+                const normalizeParam = (param: number) => {
+                    while (param < 0) param += 2 * Math.PI;
+                    while (param >= 2 * Math.PI) param -= 2 * Math.PI;
+                    return param;
+                };
+
+                const normStart = normalizeParam(startParam);
+                const normEnd = normalizeParam(endParam);
+                const normPoint = normalizeParam(pointParam);
+
+                if (normStart <= normEnd) {
+                    return normPoint >= normStart && normPoint <= normEnd;
+                } else {
+                    // Arc crosses 0 degrees
+                    return normPoint >= normStart || normPoint <= normEnd;
+                }
+
+            case GeometryType.SPLINE:
+                const spline = shape.geometry as Spline;
+                // For hit testing, use properly evaluated NURBS points
+                const evaluatedPoints = tessellateSpline(spline, {
+                    numSamples: 50,
+                }).points; // Use fewer points for hit testing performance
+
+                if (!evaluatedPoints || evaluatedPoints.length < 2)
+                    return false;
+
+                for (let i = 0; i < evaluatedPoints.length - 1; i++) {
+                    if (
+                        this.distanceToLineSegment(
+                            point,
+                            evaluatedPoints[i],
+                            evaluatedPoints[i + 1]
+                        ) < tolerance
+                    ) {
+                        return true;
+                    }
+                }
+
+                // Check closing segment if spline is closed
+                if (spline.closed && evaluatedPoints.length > 2) {
+                    if (
+                        this.distanceToLineSegment(
+                            point,
+                            evaluatedPoints[evaluatedPoints.length - 1],
+                            evaluatedPoints[0]
+                        ) < tolerance
+                    ) {
+                        return true;
+                    }
+                }
+
+                return false;
+
+            default:
+                return false;
+        }
     }
 }

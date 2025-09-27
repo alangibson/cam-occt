@@ -10,6 +10,14 @@
     import type { Operation } from '$lib/stores/operations/interfaces';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+    import {
+        DEFAULT_LEAD_IN_CONFIG,
+        DEFAULT_LEAD_OUT_CONFIG,
+        DEFAULT_CUT_DIRECTION,
+        DEFAULT_KERF_COMPENSATION,
+        DEFAULT_HOLE_UNDERSPEED,
+        DEFAULT_OPERATION_ENABLED,
+    } from '$lib/constants/operation-defaults';
 
     let operations: Operation[] = [];
     let chains: Chain[] = [];
@@ -103,29 +111,17 @@
             toolId: $toolStore.length > 0 ? $toolStore[0].id : null,
             targetType,
             targetIds,
-            enabled: true,
+            enabled: DEFAULT_OPERATION_ENABLED,
             order: newOrder,
-            cutDirection: CutDirection.COUNTERCLOCKWISE,
-            leadInConfig: {
-                type: LeadType.ARC,
-                length: 5,
-                angle: 0,
-                flipSide: false,
-                fit: true,
-            },
-            leadOutConfig: {
-                type: LeadType.ARC,
-                length: 5,
-                angle: 0,
-                flipSide: false,
-                fit: true,
-            },
+            cutDirection: DEFAULT_CUT_DIRECTION,
+            leadInConfig: DEFAULT_LEAD_IN_CONFIG,
+            leadOutConfig: DEFAULT_LEAD_OUT_CONFIG,
             kerfCompensation:
                 targetType === 'parts'
-                    ? KerfCompensation.PART
-                    : KerfCompensation.NONE,
-            holeUnderspeedEnabled: false,
-            holeUnderspeedPercent: 60,
+                    ? DEFAULT_KERF_COMPENSATION.forParts
+                    : DEFAULT_KERF_COMPENSATION.forChains,
+            holeUnderspeedEnabled: DEFAULT_HOLE_UNDERSPEED.enabled,
+            holeUnderspeedPercent: DEFAULT_HOLE_UNDERSPEED.percent,
         });
     }
 
