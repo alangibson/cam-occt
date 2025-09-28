@@ -231,7 +231,6 @@ describe('State Persistence', () => {
                     toolNumber: 1,
                     toolName: 'Plasma Torch',
                     feedRate: 100,
-                    rapidRate: 1000,
                     pierceHeight: 3,
                     cutHeight: 1.5,
                     pierceDelay: 0.5,

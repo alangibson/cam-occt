@@ -21,6 +21,7 @@ import {
     DEFAULT_KERF_WIDTH_MM,
     DEFAULT_PUDDLE_JUMP_HEIGHT_MM,
     DEFAULT_PLUNGE_RATE_MM,
+    DEFAULT_RAPID_RATE_MM,
 } from '$lib/cam/constants';
 
 export class CamDefaults {
@@ -141,6 +142,16 @@ export class CamDefaults {
     get plungeRate(): number {
         return convertToCurrentSystem(
             DEFAULT_PLUNGE_RATE_MM,
+            this.measurementSystem
+        );
+    }
+
+    /**
+     * Get default rapid rate for plasma cutting (units/min)
+     */
+    get rapidRate(): number {
+        return convertToCurrentSystem(
+            DEFAULT_RAPID_RATE_MM,
             this.measurementSystem
         );
     }

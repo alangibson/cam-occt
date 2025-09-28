@@ -102,7 +102,6 @@ describe('ToolTable Component - Function Coverage', () => {
             const newTool = tools[tools.length - 1];
 
             expect(newTool.feedRate).toBe(1000);
-            expect(newTool.rapidRate).toBe(3000);
             expect(newTool.pierceHeight).toBe(1);
             expect(newTool.pierceDelay).toBe(0.5);
             expect(newTool.arcVoltage).toBe(120);
@@ -122,7 +121,6 @@ describe('ToolTable Component - Function Coverage', () => {
                     toolNumber: 5,
                     toolName: 'Tool 5',
                     feedRate: 100,
-                    rapidRate: 3000,
                     pierceHeight: 3.8,
                     pierceDelay: 0.5,
                     arcVoltage: 120,
@@ -139,7 +137,6 @@ describe('ToolTable Component - Function Coverage', () => {
                     toolNumber: 10,
                     toolName: 'Tool 10',
                     feedRate: 100,
-                    rapidRate: 3000,
                     pierceHeight: 3.8,
                     pierceDelay: 0.5,
                     arcVoltage: 120,
@@ -180,7 +177,6 @@ describe('ToolTable Component - Function Coverage', () => {
                     toolNumber: 1,
                     toolName: 'Saved Tool',
                     feedRate: 200,
-                    rapidRate: 4000,
                     pierceHeight: 4.0,
                     pierceDelay: 0.6,
                     arcVoltage: 130,
@@ -231,7 +227,6 @@ describe('ToolTable Component - Function Coverage', () => {
                     toolNumber: 1,
                     toolName: 'Test Tool',
                     feedRate: 100,
-                    rapidRate: 3000,
                     pierceHeight: 3.8,
                     pierceDelay: 0.5,
                     arcVoltage: 120,
@@ -326,26 +321,11 @@ describe('ToolTable Component - Function Coverage', () => {
             }
         });
 
-        it('should update rapidRate field through numeric input', async () => {
-            const { container } = render(ToolTable);
-
-            const inputs = container.querySelectorAll('input[type="number"]');
-            const rapidRateInput = inputs[2] as HTMLInputElement; // Third numeric input
-            if (rapidRateInput) {
-                await fireEvent.change(rapidRateInput, {
-                    target: { value: '3500' },
-                });
-
-                const tools = get(toolStore);
-                expect(tools[0].rapidRate).toBe(3500);
-            }
-        });
-
         it('should update pierceHeight field through numeric input', async () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const pierceHeightInput = inputs[3] as HTMLInputElement;
+            const pierceHeightInput = inputs[2] as HTMLInputElement;
             if (pierceHeightInput) {
                 await fireEvent.change(pierceHeightInput, {
                     target: { value: '4.2' },
@@ -360,7 +340,7 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const cutHeightInput = inputs[4] as HTMLInputElement;
+            const cutHeightInput = inputs[3] as HTMLInputElement;
             if (cutHeightInput) {
                 await fireEvent.change(cutHeightInput, {
                     target: { value: '2.0' },
@@ -375,7 +355,7 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const pierceDelayInput = inputs[5] as HTMLInputElement;
+            const pierceDelayInput = inputs[4] as HTMLInputElement;
             if (pierceDelayInput) {
                 await fireEvent.change(pierceDelayInput, {
                     target: { value: '0.8' },
@@ -390,7 +370,7 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const arcVoltageInput = inputs[6] as HTMLInputElement;
+            const arcVoltageInput = inputs[5] as HTMLInputElement;
             if (arcVoltageInput) {
                 await fireEvent.change(arcVoltageInput, {
                     target: { value: '135' },
@@ -405,7 +385,7 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const kerfWidthInput = inputs[7] as HTMLInputElement;
+            const kerfWidthInput = inputs[6] as HTMLInputElement;
             if (kerfWidthInput) {
                 await fireEvent.change(kerfWidthInput, {
                     target: { value: '1.8' },
@@ -436,7 +416,7 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const gasPressureInput = inputs[8] as HTMLInputElement;
+            const gasPressureInput = inputs[7] as HTMLInputElement;
             if (gasPressureInput) {
                 await fireEvent.change(gasPressureInput, {
                     target: { value: '5.2' },
@@ -451,7 +431,7 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const pauseAtEndInput = inputs[9] as HTMLInputElement;
+            const pauseAtEndInput = inputs[8] as HTMLInputElement;
             if (pauseAtEndInput) {
                 await fireEvent.change(pauseAtEndInput, {
                     target: { value: '1.5' },
@@ -466,7 +446,7 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const puddleJumpHeightInput = inputs[10] as HTMLInputElement;
+            const puddleJumpHeightInput = inputs[9] as HTMLInputElement;
             if (puddleJumpHeightInput) {
                 await fireEvent.change(puddleJumpHeightInput, {
                     target: { value: '75' },
@@ -481,7 +461,7 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const puddleJumpDelayInput = inputs[11] as HTMLInputElement;
+            const puddleJumpDelayInput = inputs[10] as HTMLInputElement;
             if (puddleJumpDelayInput) {
                 await fireEvent.change(puddleJumpDelayInput, {
                     target: { value: '0.3' },
@@ -496,7 +476,7 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const plungeRateInput = inputs[12] as HTMLInputElement;
+            const plungeRateInput = inputs[11] as HTMLInputElement;
             if (plungeRateInput) {
                 await fireEvent.change(plungeRateInput, {
                     target: { value: '700' },
@@ -516,7 +496,6 @@ describe('ToolTable Component - Function Coverage', () => {
                     toolNumber: 1,
                     toolName: 'Tool 1',
                     feedRate: 100,
-                    rapidRate: 3000,
                     pierceHeight: 3.8,
                     pierceDelay: 0.5,
                     arcVoltage: 120,
@@ -533,7 +512,6 @@ describe('ToolTable Component - Function Coverage', () => {
                     toolNumber: 2,
                     toolName: 'Tool 2',
                     feedRate: 200,
-                    rapidRate: 4000,
                     pierceHeight: 4.0,
                     pierceDelay: 0.6,
                     arcVoltage: 130,

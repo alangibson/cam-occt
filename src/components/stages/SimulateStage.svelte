@@ -52,6 +52,7 @@
     import { polylineToPoints } from '$lib/geometry/polyline';
     import { getShapePointAt } from '$lib/geometry/shape/functions';
     import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+    import { getDefaults } from '$lib/config';
     import { type LeadConfig } from '$lib/algorithms/leads/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import { LeadType } from '$lib/types/direction';
@@ -302,14 +303,9 @@
         totalTime = currentTime;
     }
 
-    // Get rapid rate for a path based on its tool
-    function getRapidRateForPath(path: Path): number {
-        if (!toolStoreState || !path.toolId) {
-            return 3000; // Default rapid rate if no tool specified
-        }
-
-        const tool = toolStoreState.find((t: Tool) => t.id === path.toolId);
-        return tool?.rapidRate || 3000; // Use tool's rapid rate or default
+    // Get rapid rate from DefaultsManager (automatically unit-aware)
+    function getRapidRateForPath(_path: Path): number {
+        return getDefaults().cam.rapidRate;
     }
 
     /**

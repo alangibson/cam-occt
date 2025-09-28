@@ -73,7 +73,6 @@ describe('pathToToolPath', () => {
                     toolNumber: 1,
                     toolName: 'Test Tool',
                     feedRate: 2000,
-                    rapidRate: 5000,
                     pierceHeight: 4.0,
                     cutHeight: 1.5,
                     pierceDelay: 1.0,

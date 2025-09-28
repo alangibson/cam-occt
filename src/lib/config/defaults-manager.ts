@@ -27,11 +27,11 @@ export class DefaultsManager {
     private measurementSystem: MeasurementSystem;
 
     private constructor() {
-        // Get initial measurement system from settings store
-        const settings = get(settingsStore);
-        this.measurementSystem = settings.settings.measurementSystem;
+        // Start with default measurement system to avoid circular dependency
+        // Will be updated when settings store is ready
+        this.measurementSystem = MeasurementSystem.Metric;
 
-        // Initialize all default classes with current measurement system
+        // Initialize all default classes with default measurement system
         this.cam = new CamDefaults(this.measurementSystem);
         this.lead = new LeadDefaults(this.measurementSystem);
         this.chain = new ChainDefaults(this.measurementSystem);
@@ -69,6 +69,22 @@ export class DefaultsManager {
      */
     getMeasurementSystem(): MeasurementSystem {
         return this.measurementSystem;
+    }
+
+    /**
+     * Initialize the measurement system from settings store
+     * This should be called once the settings store is ready
+     */
+    initializeFromSettings(): void {
+        try {
+            const settings = get(settingsStore);
+            this.updateMeasurementSystem(settings.settings.measurementSystem);
+        } catch {
+            // Settings store not ready yet, keep default
+            console.warn(
+                'Settings store not ready during DefaultsManager initialization'
+            );
+        }
     }
 
     /**

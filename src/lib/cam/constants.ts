@@ -38,6 +38,11 @@ export const DEFAULT_PUDDLE_JUMP_HEIGHT_MM = 0.5;
 export const DEFAULT_PLUNGE_RATE_MM = 500;
 
 /**
+ * Default rapid rate for plasma cutting (mm/min)
+ */
+export const DEFAULT_RAPID_RATE_MM = 3000;
+
+/**
  * Imperial feed rate for plasma cutting (mm/min)
  */
 export const IMPERIAL_FEED_RATE_MM = 2540;

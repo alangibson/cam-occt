@@ -4,7 +4,6 @@ import type { Tool } from './interfaces';
 export const DEFAULT_TOOL_VALUES: Omit<Tool, 'id' | 'toolNumber' | 'toolName'> =
     {
         feedRate: 100,
-        rapidRate: 3000,
         pierceHeight: 3.8,
         cutHeight: 1.5,
         pierceDelay: 0.5,

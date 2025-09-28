@@ -66,7 +66,6 @@ describe('Operations Functions', () => {
         toolName: 'Test Tool',
         kerfWidth: 2.0,
         feedRate: 1000,
-        rapidRate: 5000,
         pierceDelay: 0.5,
         pierceHeight: 3.0,
         cutHeight: 1.0,

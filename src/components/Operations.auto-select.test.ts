@@ -22,7 +22,6 @@ describe('Operations Auto-Selection Feature', () => {
             toolNumber: 1,
             toolName: 'Test Tool',
             feedRate: 100,
-            rapidRate: 3000,
             pierceHeight: 3.8,
             cutHeight: 1.5,
             pierceDelay: 0.5,

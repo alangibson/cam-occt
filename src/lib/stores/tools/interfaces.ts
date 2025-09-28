@@ -3,7 +3,6 @@ export interface Tool {
     toolNumber: number;
     toolName: string;
     feedRate: number; // units/min
-    rapidRate: number; // units/min for rapid movements
     pierceHeight: number; // units
     cutHeight: number; // units
     pierceDelay: number; // seconds

@@ -53,7 +53,6 @@
             toolNumber: newToolNumber,
             toolName: `Tool ${newToolNumber}`,
             feedRate: camDefaults.feedRate, // Unit-aware default
-            rapidRate: 3000, // TODO: Add to defaults system
             pierceHeight: camDefaults.pierceHeight, // Unit-aware default
             cutHeight: camDefaults.cutHeight, // Unit-aware default
             pierceDelay: camDefaults.pierceDelay, // No unit conversion needed
@@ -140,7 +139,6 @@
                     <th>Tool #</th>
                     <th>Name</th>
                     <th>Feed Rate<br />({unitSymbol}/min)</th>
-                    <th>Rapid Rate<br />({unitSymbol}/min)</th>
                     <th>Pierce<br />Height<br />({unitSymbol})</th>
                     <th>Cut<br />Height<br />({unitSymbol})</th>
                     <th>Pierce<br />Delay<br />(sec)</th>
@@ -201,20 +199,6 @@
                                     updateToolField(
                                         tool.id,
                                         'feedRate',
-                                        parseFloat(e.currentTarget.value)
-                                    )}
-                                class="input-xs"
-                                step="0.1"
-                            />
-                        </td>
-                        <td>
-                            <input
-                                type="number"
-                                value={tool.rapidRate}
-                                onchange={(e) =>
-                                    updateToolField(
-                                        tool.id,
-                                        'rapidRate',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"
