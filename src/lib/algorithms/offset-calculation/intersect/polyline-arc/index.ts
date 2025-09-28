@@ -7,7 +7,7 @@ import { createExtendedArc } from '$lib/algorithms/offset-calculation/extend/arc
 import { findLineArcIntersections } from '$lib/algorithms/offset-calculation/intersect/line-arc';
 import { isPointOnArc } from '$lib/geometry/arc/functions';
 import { EPSILON, INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
 
 /**
  * Type guard to check if a segment is a Line
@@ -32,7 +32,7 @@ export function findPolylineArcIntersections(
     arc: Arc,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     // First try intersection with original shapes
     const originalResults: IntersectionResult[] =
@@ -121,7 +121,7 @@ function findPolylineArcIntersectionsCore(
     arc: Arc,
     swapParams: boolean = false,
     checkExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM,
     originalPolyline?: Polyline,
     originalArc?: Arc
 ): IntersectionResult[] {

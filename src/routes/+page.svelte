@@ -13,11 +13,12 @@
         saveApplicationState,
         clearApplicationState,
     } from '$lib/stores/storage/store';
-    import { migrateLegacyData } from '$lib/utils/migration';
     import { Unit } from '$lib/utils/units';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
     import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
+    import { settingsStore } from '$lib/stores/settings/store';
+    import { ImportUnitSetting } from '$lib/stores/settings/interfaces';
 
     let cleanupAutoSave: (() => void) | null = null;
     let isMenuOpen = false;
@@ -32,6 +33,10 @@
 
     function clearDrawingState() {
         closeMenu();
+
+        // Reset File Measurement Units to default (Automatic)
+        settingsStore.setImportUnitSetting(ImportUnitSetting.Automatic);
+
         // Reset drawing store to empty state (this also clears chains, parts, paths, operations, rapids, tessellation, overlay)
         drawingStore.setDrawing({
             shapes: [],
@@ -54,7 +59,6 @@
 
     onMount(() => {
         // Migrate any legacy localStorage data
-        migrateLegacyData();
 
         // Restore state from localStorage on app load
         const restored = restoreApplicationState();

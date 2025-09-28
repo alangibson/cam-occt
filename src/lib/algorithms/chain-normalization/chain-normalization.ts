@@ -17,7 +17,7 @@ import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { ChainNormalizationParameters } from '$lib/types/algorithm-parameters';
-import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS } from '$lib/types/algorithm-parameters';
+import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
@@ -57,7 +57,7 @@ export interface ChainNormalizationResult {
  */
 export function normalizeChain(
     chain: Chain,
-    params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS
+    params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM
 ): Chain {
     const { traversalTolerance }: { traversalTolerance: number } = params;
 
@@ -99,7 +99,7 @@ export function normalizeChain(
  */
 export function analyzeChainTraversal(
     chains: Chain[],
-    params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS
+    params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM
 ): ChainNormalizationResult[] {
     return chains.map((chain) => analyzeChainTraversalIssues(chain, params));
 }
@@ -109,7 +109,7 @@ export function analyzeChainTraversal(
  */
 function analyzeChainTraversalIssues(
     chain: Chain,
-    params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS
+    params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM
 ): ChainNormalizationResult {
     const issues: ChainTraversalIssue[] = [];
 

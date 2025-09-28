@@ -20,10 +20,21 @@ import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { pathStore } from '$lib/stores/paths/store';
 import { toolStore } from '$lib/stores/tools/store';
+import { settingsStore } from '$lib/stores/settings/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { Unit } from '$lib/utils/units';
 import type { PersistedState } from './interfaces';
-import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
+import {
+    MeasurementSystem,
+    ImportUnitSetting,
+} from '$lib/stores/settings/interfaces';
+
+// Default application settings for tests
+const defaultApplicationSettings = {
+    measurementSystem: MeasurementSystem.Metric,
+    importUnitSetting: ImportUnitSetting.Automatic,
+};
 
 // Mock localStorage module
 vi.mock('./local-storage', () => ({
@@ -180,6 +191,15 @@ vi.mock('../tools/store', () => ({
     },
 }));
 
+vi.mock('../settings/store', () => ({
+    settingsStore: {
+        subscribe: vi.fn((fn) => {
+            fn({ settings: defaultApplicationSettings });
+            return () => {};
+        }),
+    },
+}));
+
 // Mock get function from svelte/store
 vi.mock('svelte/store', () => ({
     get: vi.fn((store) => {
@@ -253,7 +273,7 @@ vi.mock('svelte/store', () => ({
         }
         if (store === prepareStageStore) {
             return {
-                algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                 chainNormalizationResults: [],
                 leftColumnWidth: 30,
                 rightColumnWidth: 70,
@@ -272,8 +292,16 @@ vi.mock('svelte/store', () => ({
         if (store === toolStore) {
             return [];
         }
+        if (store === settingsStore) {
+            return { settings: defaultApplicationSettings };
+        }
         return {};
     }),
+    writable: vi.fn(() => ({
+        subscribe: vi.fn(),
+        update: vi.fn(),
+        set: vi.fn(),
+    })),
 }));
 
 describe('storage/store', () => {
@@ -295,6 +323,7 @@ describe('storage/store', () => {
                     displayUnit: 'mm',
                     currentStage: WorkflowStage.IMPORT,
                     completedStages: [WorkflowStage.IMPORT],
+                    applicationSettings: defaultApplicationSettings,
                     savedAt: expect.any(String),
                 })
             );
@@ -307,6 +336,7 @@ describe('storage/store', () => {
 
             expect(localStorage.debouncedSave).toHaveBeenCalledWith(
                 expect.objectContaining({
+                    applicationSettings: defaultApplicationSettings,
                     savedAt: expect.any(String),
                 })
             );
@@ -357,7 +387,7 @@ describe('storage/store', () => {
                 overlays: {},
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -376,6 +406,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -421,7 +452,7 @@ describe('storage/store', () => {
                 overlays: {},
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -440,6 +471,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -484,7 +516,7 @@ describe('storage/store', () => {
                 overlays: {},
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -503,6 +535,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -555,7 +588,7 @@ describe('storage/store', () => {
                 overlays: {},
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -574,6 +607,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -619,7 +653,7 @@ describe('storage/store', () => {
                 overlays: {},
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -638,6 +672,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -686,7 +721,7 @@ describe('storage/store', () => {
                 overlays: {},
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -705,6 +740,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -762,7 +798,7 @@ describe('storage/store', () => {
                 },
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -781,6 +817,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -837,7 +874,7 @@ describe('storage/store', () => {
                 },
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -856,6 +893,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -918,7 +956,7 @@ describe('storage/store', () => {
                 },
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -937,6 +975,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -992,7 +1031,7 @@ describe('storage/store', () => {
                 },
                 leadWarnings: [],
                 prepareStageState: {
-                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS,
+                    algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
                     leftColumnWidth: 30,
                     rightColumnWidth: 70,
@@ -1011,6 +1050,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -1060,7 +1100,7 @@ describe('storage/store', () => {
                 leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: {
-                        ...DEFAULT_ALGORITHM_PARAMETERS,
+                        ...DEFAULT_ALGORITHM_PARAMETERS_MM,
                         chainDetection: {
                             tolerance: 0.005,
                         },
@@ -1083,6 +1123,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -1134,9 +1175,9 @@ describe('storage/store', () => {
                 leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: {
-                        ...DEFAULT_ALGORITHM_PARAMETERS,
+                        ...DEFAULT_ALGORITHM_PARAMETERS_MM,
                         chainNormalization: {
-                            ...DEFAULT_ALGORITHM_PARAMETERS.chainNormalization,
+                            ...DEFAULT_ALGORITHM_PARAMETERS_MM.chainNormalization,
                             traversalTolerance: 0.02,
                         },
                     },
@@ -1158,6 +1199,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -1209,9 +1251,9 @@ describe('storage/store', () => {
                 leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: {
-                        ...DEFAULT_ALGORITHM_PARAMETERS,
+                        ...DEFAULT_ALGORITHM_PARAMETERS_MM,
                         partDetection: {
-                            ...DEFAULT_ALGORITHM_PARAMETERS.partDetection,
+                            ...DEFAULT_ALGORITHM_PARAMETERS_MM.partDetection,
                             enableTessellation: false,
                         },
                     },
@@ -1233,6 +1275,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -1284,7 +1327,7 @@ describe('storage/store', () => {
                 leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: {
-                        ...DEFAULT_ALGORITHM_PARAMETERS,
+                        ...DEFAULT_ALGORITHM_PARAMETERS_MM,
                         joinColinearLines: {
                             tolerance: 0.01,
                         },
@@ -1307,6 +1350,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 
@@ -1362,6 +1406,7 @@ describe('storage/store', () => {
                 selectedPathId: null,
                 highlightedPathId: null,
                 tools: [],
+                applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
             };
 

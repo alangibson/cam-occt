@@ -18,11 +18,11 @@ import {
  * Controls how shapes are connected into chains based on point proximity
  */
 export interface ChainDetectionParameters {
-    /** Distance tolerance for connecting shapes. Higher values connect more distant shapes. Range: 0.001-10 */
+    /** Distance tolerance for connecting shapes. Higher values connect more distant shapes. Range: 0.001-10 (mm or inch based on system) */
     tolerance: number;
 }
 
-export const DEFAULT_CHAIN_DETECTION_PARAMETERS: ChainDetectionParameters = {
+export const DEFAULT_CHAIN_DETECTION_PARAMETERS_MM: ChainDetectionParameters = {
     tolerance: 0.05,
 };
 
@@ -31,16 +31,16 @@ export const DEFAULT_CHAIN_DETECTION_PARAMETERS: ChainDetectionParameters = {
  * Controls chain traversal analysis and normalization behavior
  */
 export interface ChainNormalizationParameters {
-    /** Tolerance for floating point comparison in traversal analysis. Range: 0.001-1.0 */
+    /** Tolerance for floating point comparison in traversal analysis. Range: 0.001-1.0 (mm or inch based on system) */
     traversalTolerance: number;
 
     /** Maximum number of traversal attempts per chain. Range: 1-10 */
     maxTraversalAttempts: number;
 }
 
-export const DEFAULT_CHAIN_NORMALIZATION_PARAMETERS: ChainNormalizationParameters =
+export const DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM: ChainNormalizationParameters =
     {
-        traversalTolerance: 0.01,
+        traversalTolerance: 0.05,
         maxTraversalAttempts: 5,
     };
 
@@ -49,11 +49,11 @@ export const DEFAULT_CHAIN_NORMALIZATION_PARAMETERS: ChainNormalizationParameter
  * Controls how collinear line segments are joined together
  */
 export interface JoinColinearLinesParameters {
-    /** Tolerance for determining if lines are collinear. Range: 0.001-1.0 */
+    /** Tolerance for determining if lines are collinear. Range: 0.001-1.0 (mm or inch based on system) */
     tolerance: number;
 }
 
-export const DEFAULT_JOIN_COLINEAR_LINES_PARAMETERS: JoinColinearLinesParameters =
+export const DEFAULT_JOIN_COLINEAR_LINES_PARAMETERS_MM: JoinColinearLinesParameters =
     {
         tolerance: TOLERANCE,
     };
@@ -66,11 +66,11 @@ export interface StartPointOptimizationParameters {
     /** Position along the selected shape where to create the split. */
     splitPosition: 'midpoint';
 
-    /** Tolerance for optimization operations. Range: 0.001-10 */
+    /** Tolerance for optimization operations. Range: 0.001-10 (mm or inch based on system) */
     tolerance: number;
 }
 
-export const DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS: StartPointOptimizationParameters =
+export const DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM: StartPointOptimizationParameters =
     {
         splitPosition: 'midpoint',
         tolerance: 0.05,
@@ -88,10 +88,10 @@ export interface AlgorithmParameters {
     startPointOptimization: StartPointOptimizationParameters;
 }
 
-export const DEFAULT_ALGORITHM_PARAMETERS: AlgorithmParameters = {
-    chainDetection: DEFAULT_CHAIN_DETECTION_PARAMETERS,
-    chainNormalization: DEFAULT_CHAIN_NORMALIZATION_PARAMETERS,
-    partDetection: DEFAULT_PART_DETECTION_PARAMETERS,
-    joinColinearLines: DEFAULT_JOIN_COLINEAR_LINES_PARAMETERS,
-    startPointOptimization: DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS,
+export const DEFAULT_ALGORITHM_PARAMETERS_MM: AlgorithmParameters = {
+    chainDetection: DEFAULT_CHAIN_DETECTION_PARAMETERS_MM,
+    chainNormalization: DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM,
+    partDetection: DEFAULT_PART_DETECTION_PARAMETERS, // No units - counts and ratios
+    joinColinearLines: DEFAULT_JOIN_COLINEAR_LINES_PARAMETERS_MM,
+    startPointOptimization: DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM,
 };

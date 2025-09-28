@@ -11,7 +11,10 @@ import { MAX_ITERATIONS, STANDARD_GRID_SPACING } from '$lib/constants';
 import { FULL_CIRCLE_DEG } from '$lib/geometry/circle';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import type { LeadsConfig, LeadValidationResult } from './interfaces';
-import { MINIMUM_SHELL_DISTANCE, LEAD_PROXIMITY_THRESHOLD } from './constants';
+import {
+    MINIMUM_SHELL_DISTANCE_MM,
+    LEAD_PROXIMITY_THRESHOLD_MM,
+} from './constants';
 
 /**
  * Comprehensive validation pipeline for lead configurations.
@@ -290,8 +293,8 @@ function validatePartContext(
             const minDistanceToShell: number =
                 calculateMinDistanceBetweenBounds(shellBounds, holeBounds);
             if (
-                minDistanceToShell < MINIMUM_SHELL_DISTANCE &&
-                maxLeadLength > LEAD_PROXIMITY_THRESHOLD
+                minDistanceToShell < MINIMUM_SHELL_DISTANCE_MM &&
+                maxLeadLength > LEAD_PROXIMITY_THRESHOLD_MM
             ) {
                 // Only warn for very close holes and very long leads
                 warnings.push(

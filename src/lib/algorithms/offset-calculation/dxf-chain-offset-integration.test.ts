@@ -14,7 +14,11 @@ import { offsetChain } from './chain/offset';
 import type { ChainOffsetResult } from './chain/types';
 
 // Shared function for DXF processing and offset visualization
-async function processDxfFile(filename: string, outputDir: string) {
+async function processDxfFile(
+    filename: string,
+    outputDir: string,
+    displayUnit: Unit = Unit.MM
+) {
     // Load DXF file
     const dxfContent = readFileSync(`tests/dxf/${filename}`, 'utf-8');
 
@@ -24,8 +28,8 @@ async function processDxfFile(filename: string, outputDir: string) {
 
     console.log(`Loaded ${shapes.length} shapes from ${filename}`);
 
-    // Calculate physical scale factor for proper visual display (using mm as display unit)
-    const physicalScale = getPhysicalScaleFactor(drawing.units, Unit.MM);
+    // Calculate physical scale factor for proper visual display
+    const physicalScale = getPhysicalScaleFactor(drawing.units, displayUnit);
 
     // Scale shapes first, then calculate tolerance and detect chains on scaled coordinates
     shapes = shapes.map((shape) =>
@@ -268,4 +272,16 @@ describe('DXF Chain Offset Integration Test', () => {
         expect(shapes.length).toBeGreaterThan(0);
         expect(detectedChains.length).toBeGreaterThan(0);
     });
+
+    it('should load YOUCANMOVEMOUNTAINS.dxf, convert to chains, apply offsets, and render to SVG', async () => {
+        const { shapes, detectedChains } = await processDxfFile(
+            'YOUCANMOVEMOUNTAINS.dxf',
+            outputDir,
+            Unit.INCH
+        );
+
+        // Basic validation
+        expect(shapes.length).toBeGreaterThan(0);
+        expect(detectedChains.length).toBeGreaterThan(0);
+    }, 30000); // 30 second timeout for this complex test
 });

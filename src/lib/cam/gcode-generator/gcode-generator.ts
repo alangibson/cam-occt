@@ -13,12 +13,12 @@ import { GeometryType } from '$lib/geometry/shape';
 import { CutterCompensation } from '$lib/types';
 import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 import {
-    DEFAULT_CUT_HEIGHT,
+    DEFAULT_CUT_HEIGHT_MM,
     DEFAULT_PIERCE_DELAY,
-    DEFAULT_PIERCE_HEIGHT,
+    DEFAULT_PIERCE_HEIGHT_MM,
     GCODE_COORDINATE_PRECISION,
     GCODE_PARAMETER_PRECISION,
-    IMPERIAL_FEED_RATE,
+    IMPERIAL_FEED_RATE_MM,
 } from '$lib/cam/constants';
 
 /**
@@ -282,10 +282,10 @@ function generateTemporaryMaterial(
     // }
 
     // Mandatory parameters
-    magicComment += `, ph=${parameters.pierceHeight || DEFAULT_PIERCE_HEIGHT}`; // Pierce height
+    magicComment += `, ph=${parameters.pierceHeight || DEFAULT_PIERCE_HEIGHT_MM}`; // Pierce height
     magicComment += `, pd=${parameters.pierceDelay || DEFAULT_PIERCE_DELAY}`; // Pierce delay
-    magicComment += `, ch=${parameters.cutHeight || DEFAULT_CUT_HEIGHT}`; // Cut height
-    magicComment += `, fr=${parameters.feedRate || IMPERIAL_FEED_RATE}`; // Feed rate
+    magicComment += `, ch=${parameters.cutHeight || DEFAULT_CUT_HEIGHT_MM}`; // Cut height
+    magicComment += `, fr=${parameters.feedRate || IMPERIAL_FEED_RATE_MM}`; // Feed rate
 
     // Optional parameters
     if (parameters.kerfWidth !== undefined) {

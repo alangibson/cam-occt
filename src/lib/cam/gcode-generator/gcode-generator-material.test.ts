@@ -178,7 +178,7 @@ describe('GCode Generator - Temporary Materials', () => {
         });
 
         // Check for default values
-        expect(gcode).toContain('ph=3.8'); // Default pierce height
+        expect(gcode).toContain('ph=1'); // Default pierce height
         expect(gcode).toContain('pd=0.5'); // Default pierce delay
         expect(gcode).toContain('ch=1.5'); // Default cut height
         expect(gcode).toContain('fr=2540'); // Default feed rate

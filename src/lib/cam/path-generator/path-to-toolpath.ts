@@ -20,11 +20,11 @@ import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { GeometryType } from '$lib/types/geometry';
 import {
-    CAM_CALCULATION_TOLERANCE,
-    DEFAULT_CUT_HEIGHT,
-    DEFAULT_FEED_RATE,
+    CAM_CALCULATION_TOLERANCE_MM,
+    DEFAULT_CUT_HEIGHT_MM,
+    DEFAULT_FEED_RATE_MM,
     DEFAULT_PIERCE_DELAY,
-    DEFAULT_PIERCE_HEIGHT,
+    DEFAULT_PIERCE_HEIGHT_MM,
 } from '$lib/cam/constants';
 import type { LeadResult } from '$lib/algorithms/leads/interfaces';
 
@@ -274,10 +274,10 @@ export function pathToToolPath(
     // Build cutting parameters from tool settings
     const tool = path.toolId ? tools.find((t) => t.id === path.toolId) : null;
     const parameters: CutPath['parameters'] = {
-        feedRate: tool?.feedRate || DEFAULT_FEED_RATE,
-        pierceHeight: tool?.pierceHeight || DEFAULT_PIERCE_HEIGHT,
+        feedRate: tool?.feedRate || DEFAULT_FEED_RATE_MM,
+        pierceHeight: tool?.pierceHeight || DEFAULT_PIERCE_HEIGHT_MM,
         pierceDelay: tool?.pierceDelay || DEFAULT_PIERCE_DELAY,
-        cutHeight: tool?.cutHeight || DEFAULT_CUT_HEIGHT,
+        cutHeight: tool?.cutHeight || DEFAULT_CUT_HEIGHT_MM,
         kerf: tool?.kerfWidth || 0,
         isHole: path.isHole || false,
         holeUnderspeedPercent: path.holeUnderspeedPercent,
@@ -355,7 +355,7 @@ export function pathsToToolPaths(
                     Math.pow(nextStart.y - currentEnd.y, 2)
             );
 
-            if (distance > CAM_CALCULATION_TOLERANCE) {
+            if (distance > CAM_CALCULATION_TOLERANCE_MM) {
                 toolPathsWithRapids.push({
                     id: `rapid-${i}`,
                     shapeId: '',

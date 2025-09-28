@@ -9,7 +9,7 @@ import {
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { SegmentPosition } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
 import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect';
-import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
 // Import intersection functions from intersect module
 import { findIntersectionsByType } from '$lib/algorithms/offset-calculation/intersect';
 // Import line-line intersection from dedicated module
@@ -107,7 +107,7 @@ export function findPolylineIntersections(
                 segmentShape,
                 otherShape,
                 false,
-                DEFAULT_EXTENSION_LENGTH,
+                DEFAULT_EXTENSION_LENGTH_MM,
                 intersectionType
             );
         }

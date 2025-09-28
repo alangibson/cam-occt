@@ -44,7 +44,7 @@ describe('Units Component', () => {
         const { getByText } = render(Units);
 
         expect(getByText('Millimeters (mm)')).toBeDefined();
-        expect(getByText('Inches (in)')).toBeDefined();
+        expect(getByText('Inches (in.)')).toBeDefined();
     });
 
     it('should update reactive selectedUnit when store changes', async () => {

@@ -36,7 +36,7 @@ import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
 import type { LeadWarning } from '$lib/stores/lead-warnings/interfaces';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
-import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
 import { operationsStore } from '$lib/stores/operations/store';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import { pathStore } from '$lib/stores/paths/store';
@@ -44,6 +44,8 @@ import type { PathsState } from '$lib/stores/paths/interfaces';
 import { toolStore } from '$lib/stores/tools/store';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { WarningState } from '$lib/stores/warnings/interfaces';
+import { settingsStore } from '$lib/stores/settings/store';
+import type { SettingsState } from '$lib/stores/settings/interfaces';
 
 /**
  * Collect current state from all stores
@@ -62,6 +64,7 @@ function collectCurrentState(): PersistedState {
     const operations: Operation[] = get(operationsStore);
     const paths: PathsState = get(pathStore);
     const tools: Tool[] = get(toolStore);
+    const settings: SettingsState = get(settingsStore);
 
     return {
         // Drawing state
@@ -72,7 +75,7 @@ function collectCurrentState(): PersistedState {
         offset: drawing.offset,
         fileName: drawing.fileName,
         layerVisibility: drawing.layerVisibility,
-        displayUnit: drawing.displayUnit,
+        displayUnit: drawing.displayUnit as 'mm' | 'inch',
 
         // Workflow state
         currentStage: workflow.currentStage,
@@ -117,6 +120,9 @@ function collectCurrentState(): PersistedState {
         selectedPathId: paths.selectedPathId,
         highlightedPathId: paths.highlightedPathId,
         tools: tools,
+
+        // Application settings
+        applicationSettings: settings.settings,
 
         // Timestamp
         savedAt: new Date().toISOString(),
@@ -236,26 +242,26 @@ function restoreStateToStores(state: PersistedState): void {
         if (state.prepareStageState) {
             // Merge with defaults to ensure all properties exist
             const mergedAlgorithmParams = {
-                ...DEFAULT_ALGORITHM_PARAMETERS,
+                ...DEFAULT_ALGORITHM_PARAMETERS_MM,
                 ...state.prepareStageState.algorithmParams,
                 // Ensure nested objects are also merged properly
                 chainDetection: {
-                    ...DEFAULT_ALGORITHM_PARAMETERS.chainDetection,
+                    ...DEFAULT_ALGORITHM_PARAMETERS_MM.chainDetection,
                     ...(state.prepareStageState.algorithmParams
                         ?.chainDetection || {}),
                 },
                 chainNormalization: {
-                    ...DEFAULT_ALGORITHM_PARAMETERS.chainNormalization,
+                    ...DEFAULT_ALGORITHM_PARAMETERS_MM.chainNormalization,
                     ...(state.prepareStageState.algorithmParams
                         ?.chainNormalization || {}),
                 },
                 partDetection: {
-                    ...DEFAULT_ALGORITHM_PARAMETERS.partDetection,
+                    ...DEFAULT_ALGORITHM_PARAMETERS_MM.partDetection,
                     ...(state.prepareStageState.algorithmParams
                         ?.partDetection || {}),
                 },
                 joinColinearLines: {
-                    ...DEFAULT_ALGORITHM_PARAMETERS.joinColinearLines,
+                    ...DEFAULT_ALGORITHM_PARAMETERS_MM.joinColinearLines,
                     ...(state.prepareStageState.algorithmParams
                         ?.joinColinearLines || {}),
                 },

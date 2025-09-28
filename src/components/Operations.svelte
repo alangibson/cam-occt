@@ -11,13 +11,15 @@
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import {
-        DEFAULT_LEAD_IN_CONFIG,
-        DEFAULT_LEAD_OUT_CONFIG,
+        getDefaultLeadInConfig,
+        getDefaultLeadOutConfig,
         DEFAULT_CUT_DIRECTION,
         DEFAULT_KERF_COMPENSATION,
         DEFAULT_HOLE_UNDERSPEED,
         DEFAULT_OPERATION_ENABLED,
     } from '$lib/constants/operation-defaults';
+    import { settingsStore } from '$lib/stores/settings/store';
+    import { getReactiveUnitSymbol } from '$lib/utils/units';
 
     let operations: Operation[] = [];
     let chains: Chain[] = [];
@@ -114,8 +116,8 @@
             enabled: DEFAULT_OPERATION_ENABLED,
             order: newOrder,
             cutDirection: DEFAULT_CUT_DIRECTION,
-            leadInConfig: DEFAULT_LEAD_IN_CONFIG,
-            leadOutConfig: DEFAULT_LEAD_OUT_CONFIG,
+            leadInConfig: getDefaultLeadInConfig(), // Unit-aware default
+            leadOutConfig: getDefaultLeadOutConfig(), // Unit-aware default
             kerfCompensation:
                 targetType === 'parts'
                     ? DEFAULT_KERF_COMPENSATION.forParts
@@ -730,7 +732,7 @@
                             {#if operation.leadInConfig?.type !== 'none'}
                                 <div class="field-group">
                                     <label for="lead-in-length-{operation.id}"
-                                        >Length (units):</label
+                                        >Length ({getReactiveUnitSymbol($settingsStore.settings.measurementSystem)}):</label
                                     >
                                     <div class="length-with-fit">
                                         <input
@@ -836,7 +838,7 @@
                             {#if operation.leadOutConfig?.type !== 'none'}
                                 <div class="field-group">
                                     <label for="lead-out-length-{operation.id}"
-                                        >Length (units):</label
+                                        >Length ({getReactiveUnitSymbol($settingsStore.settings.measurementSystem)}):</label
                                     >
                                     <div class="length-with-fit">
                                         <input

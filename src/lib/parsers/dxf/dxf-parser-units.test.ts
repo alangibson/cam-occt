@@ -155,7 +155,7 @@ EOF`;
 
             const result = await parseDXF(dxfContent);
 
-            expect(result.units).toBe(Unit.MM); // Default to mm when no INSUNITS
+            expect(result.units).toBe(Unit.NONE); // Default to none when no INSUNITS
             expect(result.shapes).toHaveLength(1);
         });
 

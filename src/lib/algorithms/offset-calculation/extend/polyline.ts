@@ -1,7 +1,7 @@
 import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Polyline } from '$lib/geometry/polyline';
 import { EPSILON } from '$lib/geometry/math';
-import { MAX_EXTENSION } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
 import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import {
     createPolylineFromVertices,
@@ -137,7 +137,7 @@ export function extendPolylineToPoint(
     options: PolylineExtensionOptions = {}
 ): Polyline | null {
     const defaultOptions: Required<PolylineExtensionOptions> = {
-        maxExtension: MAX_EXTENSION,
+        maxExtension: MAX_EXTENSION_MM,
         tolerance: 1e-6,
         direction: 'auto' as PolylineExtensionDirection,
     };

@@ -123,7 +123,7 @@ ENDSEC
 EOF`;
 
             const drawing = await parseDXF(dxfWithoutUnits);
-            expect(drawing.units).toBe('mm');
+            expect(drawing.units).toBe('none');
         });
 
         it('should default to mm for unsupported $INSUNITS values', async () => {

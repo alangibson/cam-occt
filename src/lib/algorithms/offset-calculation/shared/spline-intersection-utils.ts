@@ -4,7 +4,7 @@ import verb, { type CurveCurveIntersection, type VerbCurve } from 'verb-nurbs';
 import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
 import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
 import {
     DEFAULT_RETRY_COUNT,
     DEFAULT_SPLINE_DEGREE,
@@ -77,7 +77,7 @@ export function processSplineIntersection(
     spline2: Spline,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     try {
         // First, try intersection with original splines
@@ -231,7 +231,7 @@ export function processSplineWithCurveIntersection(
     otherCurve: VerbCurve,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     try {
         // First, try intersection with original shapes

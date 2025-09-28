@@ -3,7 +3,7 @@ import type { Line } from '$lib/geometry/line';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect';
 import { EPSILON } from '$lib/geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
 // Import shared line intersection utilities
 import {
     calculateLineIntersection,
@@ -36,7 +36,7 @@ export function findLineLineIntersections(
     line2: Line,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM,
     intersectionType: IntersectionType = 'infinite'
 ): IntersectionResult[] {
     // First try intersection with original shapes
@@ -321,7 +321,7 @@ export function findLineLineIntersectionsSegmentAware(
             line2,
             false,
             false,
-            DEFAULT_EXTENSION_LENGTH,
+            DEFAULT_EXTENSION_LENGTH_MM,
             intersectionType
         );
     }

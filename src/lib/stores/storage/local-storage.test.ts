@@ -15,6 +15,16 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import { Unit } from '$lib/utils/units';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
+import {
+    MeasurementSystem,
+    ImportUnitSetting,
+} from '$lib/stores/settings/interfaces';
+
+// Default application settings for tests
+const defaultApplicationSettings = {
+    measurementSystem: MeasurementSystem.Metric,
+    importUnitSetting: ImportUnitSetting.Automatic,
+};
 
 // Mock localStorage
 const localStorageMock = {
@@ -236,6 +246,9 @@ describe('State Persistence', () => {
                 },
             ],
 
+            // Application settings
+            applicationSettings: defaultApplicationSettings,
+
             // Timestamp
             savedAt: '2023-01-01T00:00:00.000Z',
             selectedPathId: null,
@@ -339,6 +352,7 @@ describe('State Persistence', () => {
             operations: [],
             paths: [],
             tools: [],
+            applicationSettings: defaultApplicationSettings,
             savedAt: '2023-01-01T00:00:00.000Z',
             selectedPathId: null,
             highlightedPathId: null,

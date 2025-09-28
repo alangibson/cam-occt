@@ -7,7 +7,7 @@ import {
     findLineArcIntersections,
     findLineArcIntersectionsSegmentAware,
 } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
-import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
 
 /**
  * Find intersections between a line and a circle
@@ -17,7 +17,7 @@ export function findLineCircleIntersections(
     circle: Circle,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     // Convert circle to full arc and use line-arc intersection
     const arc: Arc = {

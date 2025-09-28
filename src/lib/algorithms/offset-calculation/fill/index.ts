@@ -7,7 +7,7 @@ import type {
     GapContext,
     ShapeExtension,
 } from './types';
-import { MAX_EXTENSION } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
 import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
 import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import {
@@ -32,7 +32,7 @@ import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chai
  */
 
 const DEFAULT_FILL_OPTIONS: FillOptions = {
-    maxExtension: MAX_EXTENSION,
+    maxExtension: MAX_EXTENSION_MM,
     tolerance: HIGH_PRECISION_TOLERANCE,
     extendDirection: 'auto',
 };

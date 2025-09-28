@@ -1,9 +1,13 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { Unit } from '$lib/utils/units';
+    import { Unit, getUnitSymbol } from '$lib/utils/units';
 
     // Get current display unit from store
     $: displayUnit = $drawingStore.displayUnit;
+
+    // Get unit symbols (no need for reactive since these are constants)
+    const mmSymbol = getUnitSymbol(Unit.MM);
+    const inchSymbol = getUnitSymbol(Unit.INCH);
 
     function handleUnitChange(event: Event) {
         const target = event.target as HTMLSelectElement;
@@ -22,8 +26,8 @@
             value={displayUnit}
             on:change={handleUnitChange}
         >
-            <option value="mm">Millimeters (mm)</option>
-            <option value="inch">Inches (in)</option>
+            <option value="mm">Millimeters ({mmSymbol})</option>
+            <option value="inch">Inches ({inchSymbol})</option>
         </select>
     </div>
 

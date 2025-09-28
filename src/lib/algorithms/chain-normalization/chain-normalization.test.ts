@@ -56,7 +56,10 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain]);
+            const results = analyzeChainTraversal([chain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 5,
+            });
 
             expect(results).toHaveLength(1);
             expect(results[0].chainId).toBe('chain-1');
@@ -72,7 +75,10 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain]);
+            const results = analyzeChainTraversal([chain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 5,
+            });
 
             expect(results).toHaveLength(1);
             expect(results[0].canTraverse).toBe(false);
@@ -95,7 +101,10 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain]);
+            const results = analyzeChainTraversal([chain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 5,
+            });
 
             expect(results).toHaveLength(1);
             expect(results[0].canTraverse).toBe(false);
@@ -119,7 +128,10 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain]);
+            const results = analyzeChainTraversal([chain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 5,
+            });
 
             expect(results).toHaveLength(1);
             expect(results[0].issues.length).toBeGreaterThan(0);
@@ -137,7 +149,10 @@ describe('Chain Normalization', () => {
             ];
 
             const chain = createChain('chain-1', shapes);
-            const results = analyzeChainTraversal([chain]);
+            const results = analyzeChainTraversal([chain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 5,
+            });
 
             expect(results).toHaveLength(1);
             expect(results[0].canTraverse).toBe(true);
@@ -146,7 +161,10 @@ describe('Chain Normalization', () => {
 
         it('should handle empty chain', () => {
             const chain = createChain('chain-1', []);
-            const results = analyzeChainTraversal([chain]);
+            const results = analyzeChainTraversal([chain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 5,
+            });
 
             expect(results).toHaveLength(1);
             expect(results[0].canTraverse).toBe(true);
@@ -189,7 +207,10 @@ describe('Chain Normalization', () => {
             );
 
             // Now analyze the normalized chain to detect the issue
-            const results = analyzeChainTraversal([normalizedChain]);
+            const results = analyzeChainTraversal([normalizedChain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 10,
+            });
 
             // Find if there are shapes at indices 1 and 7 with coincident points
             if (normalizedChain.shapes.length >= 8) {
@@ -301,7 +322,10 @@ describe('Chain Normalization', () => {
             expect(isAdjacent || isClosedChain).toBe(true);
 
             // Also verify the chain is traversable
-            const results = analyzeChainTraversal([normalizedChain]);
+            const results = analyzeChainTraversal([normalizedChain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 10,
+            });
             expect(results[0].canTraverse).toBe(true);
 
             // And there should be no broken traversal warnings
@@ -331,7 +355,10 @@ describe('Chain Normalization', () => {
             expect(normalizedChain.shapes[2].id).toBe('line3'); // (10,10) to (0,10)
 
             // Verify the chain can now be traversed
-            const analysis = analyzeChainTraversal([normalizedChain]);
+            const analysis = analyzeChainTraversal([normalizedChain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 10,
+            });
             expect(analysis[0].canTraverse).toBe(true);
             expect(analysis[0].issues).toHaveLength(0);
         });
@@ -359,7 +386,10 @@ describe('Chain Normalization', () => {
             expect(line2Geom.end.y).toBe(10);
 
             // Verify the chain can now be traversed
-            const analysis = analyzeChainTraversal([normalizedChain]);
+            const analysis = analyzeChainTraversal([normalizedChain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 10,
+            });
             expect(analysis[0].canTraverse).toBe(true);
             expect(analysis[0].issues).toHaveLength(0);
         });
@@ -375,14 +405,20 @@ describe('Chain Normalization', () => {
             const chain = createChain('chain-1', shapes);
 
             // Before normalization - should have issues
-            const beforeAnalysis = analyzeChainTraversal([chain]);
+            const beforeAnalysis = analyzeChainTraversal([chain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 10,
+            });
             expect(beforeAnalysis[0].canTraverse).toBe(false);
             expect(beforeAnalysis[0].issues.length).toBeGreaterThan(0);
 
             const normalizedChain = normalizeChain(chain);
 
             // After normalization - should be fixed
-            const afterAnalysis = analyzeChainTraversal([normalizedChain]);
+            const afterAnalysis = analyzeChainTraversal([normalizedChain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 10,
+            });
             expect(afterAnalysis[0].canTraverse).toBe(true);
             expect(afterAnalysis[0].issues).toHaveLength(0);
         });
@@ -458,7 +494,10 @@ describe('Chain Normalization', () => {
             }
 
             // Verify the chain can be traversed properly after normalization
-            const analysis = analyzeChainTraversal([normalizedChain]);
+            const analysis = analyzeChainTraversal([normalizedChain], {
+                traversalTolerance: 0.01,
+                maxTraversalAttempts: 10,
+            });
             expect(analysis[0].canTraverse).toBe(true);
             expect(analysis[0].issues).toHaveLength(0);
         });

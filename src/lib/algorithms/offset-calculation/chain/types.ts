@@ -1,6 +1,6 @@
 import type { Point2D, Shape } from '$lib/types/geometry';
 import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect/index';
-import { MAX_EXTENSION } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
 
 // Re-export Shape type for use by other offset modules
 export type { Shape };
@@ -45,7 +45,7 @@ export interface ChainOffsetParameters {
  */
 export const DEFAULT_CHAIN_OFFSET_PARAMETERS: ChainOffsetParameters = {
     tolerance: 0.05,
-    maxExtension: MAX_EXTENSION,
+    maxExtension: MAX_EXTENSION_MM,
     snapThreshold: 0.1,
     validateInvariants: true,
     maxIterations: 100,

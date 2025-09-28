@@ -9,8 +9,8 @@ import type {
 import { generateId } from '$lib/domain/id';
 import { getShapePoints } from '$lib/geometry/shape';
 import {
-    DEFAULT_LEAD_IN_LENGTH,
-    DEFAULT_LEAD_OUT_LENGTH,
+    DEFAULT_LEAD_IN_LENGTH_MM,
+    DEFAULT_LEAD_OUT_LENGTH_MM,
 } from '$lib/algorithms/leads/constants';
 
 export function generateToolPaths(
@@ -52,8 +52,9 @@ function generateShapeToolPath(
 
     // Generate lead-in and lead-out with configurable lengths
     // Use provided lengths, or defaults, or zero if not specified
-    const leadInLength = leadOptions?.leadInLength ?? DEFAULT_LEAD_IN_LENGTH; // Default 2mm lead-in
-    const leadOutLength = leadOptions?.leadOutLength ?? DEFAULT_LEAD_OUT_LENGTH; // Default 2mm lead-out
+    const leadInLength = leadOptions?.leadInLength ?? DEFAULT_LEAD_IN_LENGTH_MM; // Default 2mm lead-in
+    const leadOutLength =
+        leadOptions?.leadOutLength ?? DEFAULT_LEAD_OUT_LENGTH_MM; // Default 2mm lead-out
     const leadIn: Lead = generateLeadIn(compensatedPoints[0], leadInLength);
     const leadOut: Lead = generateLeadOut(
         compensatedPoints[compensatedPoints.length - 1],

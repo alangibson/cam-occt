@@ -3,9 +3,9 @@
  */
 
 /**
- * Duplicate filtering tolerance for removing nearly identical intersection points
+ * Duplicate filtering tolerance for removing nearly identical intersection points (mm)
  */
-export const DUPLICATE_FILTERING_TOLERANCE: number = 0.01;
+export const DUPLICATE_FILTERING_TOLERANCE_MM: number = 0.01;
 
 /**
  * Area ratio threshold for geometric containment fallback (5%)
@@ -13,6 +13,6 @@ export const DUPLICATE_FILTERING_TOLERANCE: number = 0.01;
 export const AREA_RATIO_THRESHOLD: number = 0.05;
 
 /**
- * Maximum offset gap filling extension length
+ * Maximum offset gap filling extension length (mm)
  */
-export const MAX_EXTENSION: number = 20;
+export const MAX_EXTENSION_MM: number = 20;

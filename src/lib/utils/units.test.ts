@@ -6,7 +6,12 @@ import {
     getPhysicalScaleFactor,
     getPixelsPerUnit,
     getUnitSymbol,
+    getReactiveUnitSymbol,
+    unitToMeasurementSystem,
+    measurementSystemToUnit,
+    convertCoordinates,
 } from './units';
+import { MeasurementSystem } from '$lib/stores/settings/interfaces';
 
 describe('Units utilities', () => {
     describe('getPixelsPerUnit', () => {
@@ -62,16 +67,66 @@ describe('Units utilities', () => {
             expect(formatValue(10, Unit.MM)).toBe('10.0');
         });
 
-        it('should format inch values with 3 decimal places', () => {
-            expect(formatValue(1.2345678, Unit.INCH)).toBe('1.235');
-            expect(formatValue(2, Unit.INCH)).toBe('2.000');
+        it('should format inch values with 4 decimal places (ten-thousandths)', () => {
+            expect(formatValue(1.2345678, Unit.INCH)).toBe('1.2346');
+            expect(formatValue(2, Unit.INCH)).toBe('2.0000');
+            expect(formatValue(0.0001, Unit.INCH)).toBe('0.0001');
         });
     });
 
     describe('getUnitSymbol', () => {
         it('should return correct symbols', () => {
-            expect(getUnitSymbol(Unit.MM)).toBe(Unit.MM);
-            expect(getUnitSymbol(Unit.INCH)).toBe('in');
+            expect(getUnitSymbol(Unit.MM)).toBe('mm');
+            expect(getUnitSymbol(Unit.INCH)).toBe('in.');
+        });
+    });
+
+    describe('getReactiveUnitSymbol', () => {
+        it('should return correct symbols for measurement systems', () => {
+            expect(getReactiveUnitSymbol(MeasurementSystem.Metric)).toBe('mm');
+            expect(getReactiveUnitSymbol(MeasurementSystem.Imperial)).toBe(
+                'in.'
+            );
+        });
+    });
+
+    describe('unitToMeasurementSystem', () => {
+        it('should convert Unit enum to MeasurementSystem', () => {
+            expect(unitToMeasurementSystem(Unit.MM)).toBe(
+                MeasurementSystem.Metric
+            );
+            expect(unitToMeasurementSystem(Unit.INCH)).toBe(
+                MeasurementSystem.Imperial
+            );
+        });
+    });
+
+    describe('measurementSystemToUnit', () => {
+        it('should convert MeasurementSystem to Unit enum', () => {
+            expect(measurementSystemToUnit(MeasurementSystem.Metric)).toBe(
+                Unit.MM
+            );
+            expect(measurementSystemToUnit(MeasurementSystem.Imperial)).toBe(
+                Unit.INCH
+            );
+        });
+    });
+
+    describe('convertCoordinates', () => {
+        it('should convert array of coordinates', () => {
+            const mmCoords = [25.4, 50.8, 76.2]; // 1", 2", 3" in mm
+            const inchCoords = convertCoordinates(mmCoords, Unit.MM, Unit.INCH);
+
+            expect(inchCoords).toHaveLength(3);
+            expect(inchCoords[0]).toBeCloseTo(1.0, 5);
+            expect(inchCoords[1]).toBeCloseTo(2.0, 5);
+            expect(inchCoords[2]).toBeCloseTo(3.0, 5);
+        });
+
+        it('should return same array for same units', () => {
+            const coords = [10, 20, 30];
+            const result = convertCoordinates(coords, Unit.MM, Unit.MM);
+            expect(result).toEqual(coords);
         });
     });
 

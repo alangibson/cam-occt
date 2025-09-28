@@ -1,6 +1,6 @@
 import type { Point2D } from '$lib/types/geometry';
 import type { OperationParams } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
-import { MAX_EXTENSION } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
 import {
     calculateEllipseAngle,
     createEllipticalArcFromEllipse,
@@ -93,7 +93,7 @@ export function extendEllipseToPoint(
     options: EllipseExtensionOptions = {}
 ): EllipticalArcGeometry | null {
     const defaultOptions: OperationOptions = {
-        maxExtension: MAX_EXTENSION,
+        maxExtension: MAX_EXTENSION_MM,
         tolerance: 1e-6,
         direction: 'auto' as EllipseExtensionDirection,
     };

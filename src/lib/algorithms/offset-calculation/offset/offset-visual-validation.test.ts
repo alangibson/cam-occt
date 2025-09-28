@@ -1601,6 +1601,175 @@ describe(
         });
 
         describe('Spline offset visualization', () => {
+            it('should generate SVG for custom degree-3 spline offset', () => {
+                // Custom spline with degree=3, 4 control points
+                const customSpline: Spline = {
+                    controlPoints: [
+                        { x: 38.42, y: 19.33 },
+                        { x: 38.42, y: 18.86 },
+                        { x: 38.3, y: 18.49 },
+                        { x: 38.05, y: 18.22 },
+                    ],
+                    degree: 3,
+                    knots: [0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0], // degree 3, 4 control points: n+p+1 = 4+3+1 = 8 knots
+                    weights: [1.0, 1.0, 1.0, 1.0], // 4 weights for 4 control points
+                    fitPoints: [],
+                    closed: false,
+                };
+
+                const svg = createSVG(400, 300);
+                const offsetDistance = 5;
+
+                // Translate spline to center of canvas
+                const translatedSpline: Spline = {
+                    ...customSpline,
+                    controlPoints: customSpline.controlPoints.map((p) => ({
+                        x: p.x * 5 + 100, // Scale up and center horizontally
+                        y: p.y * 5 + 100, // Scale up and center vertically
+                    })),
+                };
+
+                // Add original spline directly
+                const originalShape: Shape = {
+                    id: 'original-custom-degree3-spline',
+                    type: GeometryType.SPLINE,
+                    geometry: translatedSpline,
+                };
+                svg.addShape(originalShape, '#0077be', 3);
+
+                // Outset offset
+                const outsetResult = offsetSpline(
+                    translatedSpline,
+                    offsetDistance,
+                    OffsetDirection.OUTSET,
+                    0.1,
+                    5
+                );
+
+                if (outsetResult.success && outsetResult.shapes.length > 0) {
+                    const outsetShape: Shape = {
+                        id: 'outset-custom-degree3-spline',
+                        type: GeometryType.SPLINE,
+                        geometry: outsetResult.shapes[0].geometry,
+                    };
+                    svg.addShape(outsetShape, '#2ca02c', 1.5);
+                }
+
+                // Inset offset
+                const insetResult = offsetSpline(
+                    translatedSpline,
+                    offsetDistance,
+                    OffsetDirection.INSET,
+                    0.1,
+                    5
+                );
+
+                if (insetResult.success && insetResult.shapes.length > 0) {
+                    const insetShape: Shape = {
+                        id: 'inset-custom-degree3-spline',
+                        type: GeometryType.SPLINE,
+                        geometry: insetResult.shapes[0].geometry,
+                    };
+                    svg.addShape(insetShape, '#d62728', 1.5);
+                }
+
+                svg.addLegend([
+                    { color: '#0077be', label: 'Original Degree-3 Spline' },
+                    { color: '#2ca02c', label: 'Outer Offset (+5)' },
+                    { color: '#d62728', label: 'Inner Offset (-5)' },
+                ]);
+
+                writeFileSync(
+                    join(outputDir, 'spline-degree-3-offsets.svg'),
+                    svg.toString()
+                );
+                expect(true).toBe(true);
+            });
+
+            it('should generate SVG for custom degree-2 spline offset', () => {
+                // Custom spline with degree=2, 3 control points
+                const customSpline: Spline = {
+                    controlPoints: [
+                        { x: -71.48, y: 86.56 },
+                        { x: -66.52, y: 86.56 },
+                        { x: -63.55, y: 89.17 },
+                    ],
+                    degree: 2,
+                    knots: [0, 0, 0, 1, 1, 1], // degree 2, 3 control points: n+p+1 = 3+2+1 = 6 knots
+                    weights: [1, 1, 1], // 3 weights for 3 control points
+                    fitPoints: [],
+                    closed: false,
+                };
+
+                const svg = createSVG(400, 300);
+                const offsetDistance = 10;
+
+                // Translate spline to center of canvas
+                const translatedSpline: Spline = {
+                    ...customSpline,
+                    controlPoints: customSpline.controlPoints.map((p) => ({
+                        x: p.x + 200, // Center horizontally
+                        y: p.y + 100, // Center vertically
+                    })),
+                };
+
+                // Add original spline directly
+                const originalShape: Shape = {
+                    id: 'original-custom-spline',
+                    type: GeometryType.SPLINE,
+                    geometry: translatedSpline,
+                };
+                svg.addShape(originalShape, '#0077be', 3);
+
+                // Outset offset
+                const outsetResult = offsetSpline(
+                    translatedSpline,
+                    offsetDistance,
+                    OffsetDirection.OUTSET,
+                    0.1,
+                    5
+                );
+
+                if (outsetResult.success && outsetResult.shapes.length > 0) {
+                    const outsetShape: Shape = {
+                        id: 'outset-custom-spline',
+                        type: GeometryType.SPLINE,
+                        geometry: outsetResult.shapes[0].geometry,
+                    };
+                    svg.addShape(outsetShape, '#2ca02c', 1.5);
+                }
+
+                // Inset offset
+                const insetResult = offsetSpline(
+                    translatedSpline,
+                    offsetDistance,
+                    OffsetDirection.INSET,
+                    0.1,
+                    5
+                );
+
+                if (insetResult.success && insetResult.shapes.length > 0) {
+                    const insetShape: Shape = {
+                        id: 'inset-custom-spline',
+                        type: GeometryType.SPLINE,
+                        geometry: insetResult.shapes[0].geometry,
+                    };
+                    svg.addShape(insetShape, '#d62728', 1.5);
+                }
+
+                svg.addLegend([
+                    { color: '#0077be', label: 'Original Degree-2 Spline' },
+                    { color: '#2ca02c', label: 'Outer Offset (+10)' },
+                    { color: '#d62728', label: 'Inner Offset (-10)' },
+                ]);
+
+                writeFileSync(
+                    join(outputDir, 'spline-degree-2-offsets.svg'),
+                    svg.toString()
+                );
+                expect(true).toBe(true);
+            });
+
             it('should generate SVG for spline offsets', () => {
                 // Test both open and closed NURBS curves following the reference example
                 const testSplines: Spline[] = [

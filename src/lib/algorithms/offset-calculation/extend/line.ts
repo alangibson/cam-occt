@@ -1,7 +1,7 @@
 import type { Point2D } from '$lib/types/geometry';
 import type { Line } from '$lib/geometry/line';
 import { EPSILON } from '$lib/geometry/math';
-import { MAX_EXTENSION } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
 import {
     calculateLineParameter,
     pointDistance,
@@ -92,7 +92,7 @@ export function extendLineToPoint(
     options: LineExtensionOptions = {}
 ): Line | null {
     const defaultOptions: LineExtensionOptions = {
-        maxExtension: MAX_EXTENSION,
+        maxExtension: MAX_EXTENSION_MM,
         tolerance: 1e-6,
         direction: 'auto' as LineExtensionDirection,
     };

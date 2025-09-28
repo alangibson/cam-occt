@@ -10,6 +10,7 @@ import type {
 import type { Path } from '$lib/stores/paths/interfaces';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
+import type { ApplicationSettings } from '$lib/stores/settings/interfaces';
 
 export interface PersistedState {
     // Drawing state
@@ -63,6 +64,9 @@ export interface PersistedState {
     operations: Operation[];
     paths: Path[];
     tools: Tool[];
+
+    // Application settings
+    applicationSettings: ApplicationSettings;
 
     // Timestamp for debugging
     savedAt: string;

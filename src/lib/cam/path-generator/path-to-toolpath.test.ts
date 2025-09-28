@@ -184,7 +184,7 @@ describe('pathToToolPath', () => {
 
             expect(result.parameters).toEqual({
                 feedRate: 1000,
-                pierceHeight: 3.8,
+                pierceHeight: 1,
                 pierceDelay: 0.5,
                 cutHeight: 1.5,
                 kerf: 0,

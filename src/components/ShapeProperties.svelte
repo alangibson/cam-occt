@@ -294,6 +294,26 @@
                             >{splineGeometry.knots.length}</span
                         >
                     </div>
+                    <div class="spline-knots">
+                        {#each splineGeometry.knots.slice(0, 10) as knot, index (index)}
+                            <div class="property-row small">
+                                <span class="property-label">
+                                    K {index + 1}:</span
+                                >
+                                <span class="property-value"
+                                    >{knot.toFixed(3)}</span
+                                >
+                            </div>
+                        {/each}
+                        {#if splineGeometry.knots.length > 10}
+                            <div class="property-row small">
+                                <span class="property-label"> ...</span>
+                                <span class="property-value"
+                                    >+{splineGeometry.knots.length - 10} more</span
+                                >
+                            </div>
+                        {/if}
+                    </div>
                 {/if}
 
                 {#if splineGeometry.weights && splineGeometry.weights.length > 0}
@@ -302,6 +322,26 @@
                         <span class="property-value"
                             >{splineGeometry.weights.length}</span
                         >
+                    </div>
+                    <div class="spline-weights">
+                        {#each splineGeometry.weights.slice(0, 10) as weight, index (index)}
+                            <div class="property-row small">
+                                <span class="property-label">
+                                    W {index + 1}:</span
+                                >
+                                <span class="property-value"
+                                    >{weight.toFixed(3)}</span
+                                >
+                            </div>
+                        {/each}
+                        {#if splineGeometry.weights.length > 10}
+                            <div class="property-row small">
+                                <span class="property-label"> ...</span>
+                                <span class="property-value"
+                                    >+{splineGeometry.weights.length - 10} more</span
+                                >
+                            </div>
+                        {/if}
                     </div>
                 {/if}
 
@@ -373,7 +413,9 @@
         margin-left: 0.5rem;
     }
 
-    .spline-points {
+    .spline-points,
+    .spline-knots,
+    .spline-weights {
         margin-top: 0.5rem;
     }
 

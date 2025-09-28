@@ -113,9 +113,14 @@ export const PRECISION_TOLERANCE_MULTIPLIER = 10;
 // Algorithm switching thresholds
 
 /**
- * Default extension length for shape intersection calculations
+ * Default extension length for shape intersection calculations (mm)
  */
-export const DEFAULT_EXTENSION_LENGTH = 1000;
+export const DEFAULT_EXTENSION_LENGTH_MM = 1000;
+
+/**
+ * Default origin cross size for canvas background rendering (mm)
+ */
+export const DEFAULT_ORIGIN_CROSS_SIZE_MM = 10;
 /**
  * Parametric t value for midpoint (0.5)
  */

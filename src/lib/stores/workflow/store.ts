@@ -3,10 +3,12 @@
  * Manages the 6-stage workflow: Import → Edit → Prepare → Program → Simulate → Export
  */
 
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { WorkflowStage } from './enums';
 import type { WorkflowState, WorkflowStore } from './interfaces';
 import { validateStageAdvancement, WORKFLOW_ORDER } from './functions';
+import { DefaultsManager } from '$lib/config/defaults-manager';
+import { settingsStore } from '$lib/stores/settings/store';
 
 function createWorkflowStore(): WorkflowStore {
     const initialState: WorkflowState = {
@@ -26,6 +28,14 @@ function createWorkflowStore(): WorkflowStore {
         setStage: (stage: WorkflowStage) => {
             update((state) => {
                 if (state.canAdvanceTo(stage)) {
+                    // Sync DefaultsManager with current measurement system when transitioning stages
+                    // This ensures unit-aware defaults are properly updated, especially when transitioning
+                    // from Import to Edit stage where the unit system becomes active
+                    const currentSettings = get(settingsStore);
+                    DefaultsManager.getInstance().updateMeasurementSystem(
+                        currentSettings.settings.measurementSystem
+                    );
+
                     return { ...state, currentStage: stage };
                 }
                 return state;

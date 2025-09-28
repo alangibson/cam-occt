@@ -1,6 +1,6 @@
 import type { Point2D } from '$lib/types/geometry';
 import type { Arc } from '$lib/geometry/arc';
-import { MAX_EXTENSION } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
 import {
     DECIMAL_PRECISION,
     HIGH_PRECISION_TOLERANCE,
@@ -113,7 +113,7 @@ export function extendArcToPoint(
     options: ArcExtensionOptions = {}
 ): Arc | null {
     const defaultOptions: ArcExtensionOptions = {
-        maxExtension: MAX_EXTENSION,
+        maxExtension: MAX_EXTENSION_MM,
         tolerance: 1e-6,
         direction: 'auto' as ArcExtensionDirection,
     };

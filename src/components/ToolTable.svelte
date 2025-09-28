@@ -1,18 +1,18 @@
 <script lang="ts">
     import { toolStore, type Tool } from '$lib/stores/tools/store';
-    import { drawingStore } from '$lib/stores/drawing/store';
+    import { settingsStore } from '$lib/stores/settings/store';
     import { flip } from 'svelte/animate';
     import { onMount } from 'svelte';
+    import { getReactiveUnitSymbol } from '$lib/utils/units';
+    import { getDefaults } from '$lib/config';
 
     let tools: Tool[] = [];
     let draggedTool: Tool | null = null;
     let dragOverIndex: number | null = null;
-    let displayUnit: 'mm' | 'inch' = 'mm';
 
-    // Subscribe to drawing store for display unit
-    drawingStore.subscribe((state) => {
-        displayUnit = state.displayUnit;
-    });
+    // Get reactive unit symbol from application settings
+    $: settings = $settingsStore.settings;
+    $: unitSymbol = getReactiveUnitSymbol(settings.measurementSystem);
 
     // Load tools from localStorage on mount
     onMount(() => {
@@ -45,22 +45,26 @@
                 ? Math.max(...tools.map((t) => t.toolNumber)) + 1
                 : 1;
 
+        // Get defaults from DefaultsManager based on current measurement system
+        const defaults = getDefaults();
+        const camDefaults = defaults.cam;
+
         toolStore.addTool({
             toolNumber: newToolNumber,
             toolName: `Tool ${newToolNumber}`,
-            feedRate: 100,
-            rapidRate: 3000,
-            pierceHeight: 3.8,
-            cutHeight: 1.5,
-            pierceDelay: 0.5,
-            arcVoltage: 120,
-            kerfWidth: 1.5,
+            feedRate: camDefaults.feedRate, // Unit-aware default
+            rapidRate: 3000, // TODO: Add to defaults system
+            pierceHeight: camDefaults.pierceHeight, // Unit-aware default
+            cutHeight: camDefaults.cutHeight, // Unit-aware default
+            pierceDelay: camDefaults.pierceDelay, // No unit conversion needed
+            arcVoltage: 120, // TODO: Add to defaults system
+            kerfWidth: camDefaults.kerfWidth, // Unit-aware default
             thcEnable: true,
             gasPressure: 4.5,
             pauseAtEnd: 0,
-            puddleJumpHeight: 50,
+            puddleJumpHeight: camDefaults.puddleJumpHeight, // Unit-aware default
             puddleJumpDelay: 0,
-            plungeRate: 500,
+            plungeRate: camDefaults.plungeRate, // Unit-aware default
         });
     }
 
@@ -135,19 +139,19 @@
                     <th></th>
                     <th>Tool #</th>
                     <th>Name</th>
-                    <th>Feed Rate<br />({displayUnit}/min)</th>
-                    <th>Rapid Rate<br />({displayUnit}/min)</th>
-                    <th>Pierce<br />Height<br />({displayUnit})</th>
-                    <th>Cut<br />Height<br />({displayUnit})</th>
+                    <th>Feed Rate<br />({unitSymbol}/min)</th>
+                    <th>Rapid Rate<br />({unitSymbol}/min)</th>
+                    <th>Pierce<br />Height<br />({unitSymbol})</th>
+                    <th>Cut<br />Height<br />({unitSymbol})</th>
                     <th>Pierce<br />Delay<br />(sec)</th>
                     <th>Arc<br />Voltage<br />(V)</th>
-                    <th>Kerf<br />Width<br />({displayUnit})</th>
+                    <th>Kerf<br />Width<br />({unitSymbol})</th>
                     <th>THC</th>
                     <th>Gas<br />Press.<br />(bar)</th>
                     <th>Pause<br />End<br />(sec)</th>
-                    <th>Puddle<br />Jump Ht<br />({displayUnit})</th>
+                    <th>Puddle<br />Jump Ht<br />({unitSymbol})</th>
                     <th>Puddle<br />Jump Dly<br />(sec)</th>
-                    <th>Plunge<br />Rate<br />({displayUnit}/min)</th>
+                    <th>Plunge<br />Rate<br />({unitSymbol}/min)</th>
                     <th>Actions</th>
                 </tr>
             </thead>

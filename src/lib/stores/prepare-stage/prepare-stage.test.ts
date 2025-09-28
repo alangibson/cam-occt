@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { prepareStageStore } from './store';
-import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
 import { GeometryType } from '$lib/geometry/shape';
 import type { Shape } from '$lib/types/geometry';
 
@@ -17,7 +17,7 @@ describe('Prepare Stage Store', () => {
     it('should initialize with default values', () => {
         const state = get(prepareStageStore);
 
-        expect(state.algorithmParams).toEqual(DEFAULT_ALGORITHM_PARAMETERS);
+        expect(state.algorithmParams).toEqual(DEFAULT_ALGORITHM_PARAMETERS_MM);
         expect(state.chainNormalizationResults).toEqual([]);
         expect(state.leftColumnWidth).toBe(280);
         expect(state.rightColumnWidth).toBe(280);
@@ -26,7 +26,7 @@ describe('Prepare Stage Store', () => {
 
     it('should update algorithm parameters', () => {
         const newParams = {
-            ...DEFAULT_ALGORITHM_PARAMETERS,
+            ...DEFAULT_ALGORITHM_PARAMETERS_MM,
             chainDetection: { tolerance: 0.1 },
         };
 
@@ -44,7 +44,7 @@ describe('Prepare Stage Store', () => {
         const state = get(prepareStageStore);
         expect(state.algorithmParams.chainDetection.tolerance).toBe(0.2);
         expect(state.algorithmParams.chainNormalization).toEqual(
-            DEFAULT_ALGORITHM_PARAMETERS.chainNormalization
+            DEFAULT_ALGORITHM_PARAMETERS_MM.chainNormalization
         );
     });
 
@@ -135,7 +135,7 @@ describe('Prepare Stage Store', () => {
 
         // Verify reset to defaults
         state = get(prepareStageStore);
-        expect(state.algorithmParams).toEqual(DEFAULT_ALGORITHM_PARAMETERS);
+        expect(state.algorithmParams).toEqual(DEFAULT_ALGORITHM_PARAMETERS_MM);
         expect(state.chainNormalizationResults).toEqual([]);
         expect(state.leftColumnWidth).toBe(280);
         expect(state.rightColumnWidth).toBe(280);

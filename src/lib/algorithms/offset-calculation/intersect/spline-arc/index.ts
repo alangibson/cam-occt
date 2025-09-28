@@ -6,7 +6,7 @@ import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculati
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
 import { createVerbCurveFromArc } from '$lib/geometry/arc/nurbs';
 import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
 import { createExtendedArc } from '$lib/algorithms/offset-calculation/extend/arc';
 import { createExtendedSplineVerb } from '$lib/algorithms/offset-calculation/extend/spline';
 import { processSplineWithCurveIntersection } from '$lib/algorithms/offset-calculation/shared/spline-intersection-utils';
@@ -22,7 +22,7 @@ export function findSplineArcIntersectionsVerb(
     arcShape: Shape,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     const spline = splineShape.geometry as Spline;
     const arc = arcShape.geometry as Arc;

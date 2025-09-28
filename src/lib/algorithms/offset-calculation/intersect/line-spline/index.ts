@@ -6,7 +6,7 @@ import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculati
 import { createVerbCurveFromLine } from '$lib/geometry/line/nurbs.js';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs.js';
 import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
-import { DEFAULT_EXTENSION_LENGTH } from '$lib/geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
 import { DEFAULT_RETRY_COUNT } from '$lib/geometry/spline';
 import {
     selectBestIntersectionResult,
@@ -24,7 +24,7 @@ export function findSplineLineIntersectionsVerb(
     lineShape: Shape,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     const spline: Spline = splineShape.geometry as Spline;
     const line: Line = lineShape.geometry as Line;

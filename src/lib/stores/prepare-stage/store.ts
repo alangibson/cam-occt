@@ -5,17 +5,33 @@
  * chain normalization results, and UI layout preferences.
  */
 
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import type { AlgorithmParameters } from '$lib/types/algorithm-parameters';
-import { DEFAULT_ALGORITHM_PARAMETERS } from '$lib/types/algorithm-parameters';
 import type { ChainNormalizationResult } from '$lib/algorithms/chain-normalization/chain-normalization';
 import type { Shape } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { PrepareStageState, PrepareStageStore } from './interfaces';
+import { getDefaults } from '$lib/config';
+import { settingsStore } from '$lib/stores/settings/store';
+
+/**
+ * Get algorithm parameters with unit-aware defaults
+ */
+function getUnitAwareAlgorithmParameters(): AlgorithmParameters {
+    const defaults = getDefaults();
+    return {
+        chainDetection: defaults.chain.detectionParameters,
+        chainNormalization: defaults.chain.normalizationParameters,
+        partDetection: defaults.algorithm.partDetectionParameters,
+        joinColinearLines: defaults.algorithm.joinColinearLinesParameters,
+        startPointOptimization:
+            defaults.algorithm.startPointOptimizationParameters,
+    };
+}
 
 function createPrepareStageStore(): PrepareStageStore {
     const { subscribe, set, update } = writable<PrepareStageState>({
-        algorithmParams: { ...DEFAULT_ALGORITHM_PARAMETERS },
+        algorithmParams: getUnitAwareAlgorithmParameters(),
         chainNormalizationResults: [],
         leftColumnWidth: 280,
         rightColumnWidth: 280,
@@ -28,6 +44,21 @@ function createPrepareStageStore(): PrepareStageStore {
         showChainStartPoints: false,
         showChainEndPoints: false,
         showChainTangentLines: false,
+    });
+
+    // Listen for measurement system changes and refresh algorithm parameters
+    let currentMeasurementSystem =
+        get(settingsStore).settings.measurementSystem;
+    settingsStore.subscribe((settingsState) => {
+        const newMeasurementSystem = settingsState.settings.measurementSystem;
+        if (newMeasurementSystem !== currentMeasurementSystem) {
+            currentMeasurementSystem = newMeasurementSystem;
+            // Refresh algorithm parameters with new unit conversions
+            update((state) => ({
+                ...state,
+                algorithmParams: getUnitAwareAlgorithmParameters(),
+            }));
+        }
     });
 
     return {
@@ -100,7 +131,7 @@ function createPrepareStageStore(): PrepareStageStore {
          */
         reset: () => {
             set({
-                algorithmParams: { ...DEFAULT_ALGORITHM_PARAMETERS },
+                algorithmParams: getUnitAwareAlgorithmParameters(),
                 chainNormalizationResults: [],
                 leftColumnWidth: 280,
                 rightColumnWidth: 280,

@@ -101,16 +101,16 @@ describe('ToolTable Component - Function Coverage', () => {
             const tools = get(toolStore);
             const newTool = tools[tools.length - 1];
 
-            expect(newTool.feedRate).toBe(100);
+            expect(newTool.feedRate).toBe(1000);
             expect(newTool.rapidRate).toBe(3000);
-            expect(newTool.pierceHeight).toBe(3.8);
+            expect(newTool.pierceHeight).toBe(1);
             expect(newTool.pierceDelay).toBe(0.5);
             expect(newTool.arcVoltage).toBe(120);
             expect(newTool.kerfWidth).toBe(1.5);
             expect(newTool.thcEnable).toBe(true);
             expect(newTool.gasPressure).toBe(4.5);
             expect(newTool.pauseAtEnd).toBe(0);
-            expect(newTool.puddleJumpHeight).toBe(50);
+            expect(newTool.puddleJumpHeight).toBe(0.5);
             expect(newTool.puddleJumpDelay).toBe(0);
             expect(newTool.plungeRate).toBe(500);
         });

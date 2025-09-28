@@ -4,7 +4,7 @@ import type { Arc } from '$lib/geometry/arc';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { EPSILON, INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 import {
-    DEFAULT_EXTENSION_LENGTH,
+    DEFAULT_EXTENSION_LENGTH_MM,
     PRECISION_TOLERANCE_MULTIPLIER,
 } from '$lib/geometry/constants';
 import { createExtendedLine } from '$lib/algorithms/offset-calculation/extend/line';
@@ -164,7 +164,7 @@ function processArcIntersectionResults(
     checkExtensions: boolean = false,
     originalLine?: Line,
     originalArc?: Arc,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     const results: IntersectionResult[] = [];
     const { start, end } = line;
@@ -222,7 +222,7 @@ export function findLineArcIntersections(
     arc: Arc,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     // First try intersection with original shapes
     const originalResults: IntersectionResult[] = findLineArcIntersectionsCore(
@@ -304,7 +304,7 @@ function findLineArcIntersectionsCore(
     arc: Arc,
     swapParams: boolean = false,
     checkExtensions: boolean = false,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM,
     originalLine?: Line,
     originalArc?: Arc
 ): IntersectionResult[] {
@@ -337,7 +337,7 @@ function isIntersectionOnExtension(
     arcParam: number,
     originalLine?: Line,
     originalArc?: Arc,
-    extensionLength: number = DEFAULT_EXTENSION_LENGTH,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM,
     currentLine?: Line,
     currentArc?: Arc,
     intersectionPoint?: { x: number; y: number }

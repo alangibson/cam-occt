@@ -1,1 +1,1 @@
-export { parseDXF } from './functions';
+export { parseDXF, applyImportUnitConversion } from './functions';

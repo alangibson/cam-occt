@@ -8,9 +8,9 @@ import { screenToWorldDistance } from '$lib/rendering/canvas/state/render-state'
 import { LayerId } from '$lib/rendering/canvas/layers/types';
 import type { Point2D } from '$lib/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
+import { getDefaults } from '$lib/config';
 
 // Constants for background rendering
-const ORIGIN_CROSS_SIZE = 10; // World units
 const ORIGIN_CROSS_COLOR = '#888888'; // Gray color as specified in CLAUDE.md
 const ORIGIN_CROSS_LINE_WIDTH = 1; // 1px line width
 
@@ -36,6 +36,10 @@ export class BackgroundRenderer extends BaseRenderer {
     ): void {
         const worldOrigin: Point2D = { x: 0, y: 0 };
 
+        // Get unit-aware origin cross size from DefaultsManager
+        const defaults = getDefaults();
+        const originCrossSize = defaults.geometry.originCrossSize;
+
         // Set origin cross styling
         ctx.strokeStyle = ORIGIN_CROSS_COLOR;
         // Convert screen pixels to world units using utility function
@@ -44,14 +48,14 @@ export class BackgroundRenderer extends BaseRenderer {
 
         // Draw horizontal line of the cross
         ctx.beginPath();
-        ctx.moveTo(worldOrigin.x - ORIGIN_CROSS_SIZE, worldOrigin.y);
-        ctx.lineTo(worldOrigin.x + ORIGIN_CROSS_SIZE, worldOrigin.y);
+        ctx.moveTo(worldOrigin.x - originCrossSize, worldOrigin.y);
+        ctx.lineTo(worldOrigin.x + originCrossSize, worldOrigin.y);
         ctx.stroke();
 
         // Draw vertical line of the cross
         ctx.beginPath();
-        ctx.moveTo(worldOrigin.x, worldOrigin.y - ORIGIN_CROSS_SIZE);
-        ctx.lineTo(worldOrigin.x, worldOrigin.y + ORIGIN_CROSS_SIZE);
+        ctx.moveTo(worldOrigin.x, worldOrigin.y - originCrossSize);
+        ctx.lineTo(worldOrigin.x, worldOrigin.y + originCrossSize);
         ctx.stroke();
     }
 }

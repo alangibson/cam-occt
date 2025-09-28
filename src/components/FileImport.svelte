@@ -1,14 +1,23 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
-    import { parseDXF } from '$lib/parsers/dxf';
+    import { parseDXF, applyImportUnitConversion } from '$lib/parsers/dxf';
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { settingsStore } from '$lib/stores/settings/store';
+    import { Unit, getUnitSymbol } from '$lib/utils/units';
 
     const dispatch = createEventDispatcher();
 
     let fileInput: HTMLInputElement;
     let isDragging = false;
+    let originalUnits: Unit | null = null;
 
     $: fileName = $drawingStore.fileName;
+    $: settings = $settingsStore.settings;
+
+    // Reset originalUnits when no file is loaded
+    $: if (!fileName) {
+        originalUnits = null;
+    }
 
     async function handleFiles(files: FileList | null) {
         if (!files || files.length === 0) return;
@@ -23,14 +32,28 @@
                 let drawing;
 
                 if (file.name.toLowerCase().endsWith('.dxf')) {
-                    drawing = await parseDXF(content);
+                    // Parse DXF file
+                    const parsedDrawing = await parseDXF(content);
+
+                    // Store original units before conversion
+                    originalUnits = parsedDrawing.units;
+
+                    // Apply unit conversion based on application settings
+                    drawing = applyImportUnitConversion(
+                        parsedDrawing,
+                        settings
+                    );
+
+                    drawingStore.setDrawing(drawing, file.name);
+                    dispatch('fileImported', {
+                        drawing,
+                        fileName: file.name,
+                        originalUnits,
+                    });
                 } else {
                     alert('Unsupported file format. Please use DXF files.');
                     return;
                 }
-
-                drawingStore.setDrawing(drawing, file.name);
-                dispatch('fileImported', { drawing, fileName: file.name });
             } catch (error) {
                 console.error('Error parsing file:', error);
                 alert('Error parsing file. Please check the file format.');
@@ -73,16 +96,17 @@
         style="display: none;"
     />
 
-    <p class="import-description">
-        Upload your DXF drawing file to begin the CAM workflow.
-    </p>
-
     <button class="import-button" on:click={() => fileInput.click()}>
-        Import DXF
+        Open DXF
     </button>
 
     {#if fileName}
-        <p class="filename">Loaded: {fileName}</p>
+        <p class="filename">
+            Loaded: {fileName}
+            {#if originalUnits}
+                <span class="units">({getUnitSymbol(originalUnits)})</span>
+            {/if}
+        </p>
     {:else}
         <p class="hint">or drag and drop a file here</p>
     {/if}
@@ -127,10 +151,9 @@
         font-weight: 500;
     }
 
-    .import-description {
-        margin: 0 0 1rem 0;
+    .units {
         color: #6b7280;
-        font-size: 1rem;
-        line-height: 1.5;
+        font-weight: 400;
+        margin-left: 0.5rem;
     }
 </style>

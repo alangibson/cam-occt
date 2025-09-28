@@ -1,4 +1,4 @@
-import { DUPLICATE_FILTERING_TOLERANCE } from '$lib/algorithms/constants';
+import { DUPLICATE_FILTERING_TOLERANCE_MM } from '$lib/algorithms/constants';
 import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
 import verb from 'verb-nurbs';
@@ -240,7 +240,7 @@ export function calculateIntersectionScore(
  */
 function filterDuplicateIntersections(
     intersections: IntersectionResult[],
-    tolerance: number = DUPLICATE_FILTERING_TOLERANCE
+    tolerance: number = DUPLICATE_FILTERING_TOLERANCE_MM
 ): IntersectionResult[] {
     const filtered: IntersectionResult[] = [];
 

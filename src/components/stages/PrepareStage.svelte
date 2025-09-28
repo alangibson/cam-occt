@@ -28,6 +28,8 @@
     import { tessellationStore } from '$lib/stores/tessellation/store';
     import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
     import { workflowStore } from '$lib/stores/workflow/store';
+    import { settingsStore } from '$lib/stores/settings/store';
+    import { getReactiveUnitSymbol } from '$lib/utils/units';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { CutDirection } from '$lib/types/direction';
     import AccordionPanel from '../AccordionPanel.svelte';
@@ -1189,20 +1191,28 @@
                         </div>
                         <label class="param-label">
                             Collinearity Tolerance:
-                            <input
-                                type="number"
-                                value={algorithmParams.joinColinearLines
-                                    .tolerance}
-                                oninput={(e) =>
-                                    updateJoinColinearLinesTolerance(
-                                        parseFloat(e.currentTarget.value)
+                            <div class="param-input-with-units">
+                                <input
+                                    type="number"
+                                    value={algorithmParams.joinColinearLines
+                                        .tolerance}
+                                    oninput={(e) =>
+                                        updateJoinColinearLinesTolerance(
+                                            parseFloat(e.currentTarget.value)
+                                        )}
+                                    min="0.001"
+                                    max="1.0"
+                                    step="0.001"
+                                    class="param-input"
+                                    title="Tolerance for determining if lines are collinear."
+                                />
+                                <span class="param-units">
+                                    {getReactiveUnitSymbol(
+                                        $settingsStore.settings
+                                            .measurementSystem
                                     )}
-                                min="0.001"
-                                max="1.0"
-                                step="0.001"
-                                class="param-input"
-                                title="Tolerance for determining if lines are collinear."
-                            />
+                                </span>
+                            </div>
                             <div class="param-description">
                                 Maximum deviation from perfect collinearity for
                                 lines to be considered joinable. Smaller values
@@ -1265,19 +1275,28 @@
                         </div>
                         <label class="param-label">
                             Connection Tolerance:
-                            <input
-                                type="number"
-                                value={algorithmParams.chainDetection.tolerance}
-                                oninput={(e) =>
-                                    updateChainDetectionTolerance(
-                                        parseFloat(e.currentTarget.value)
+                            <div class="param-input-with-units">
+                                <input
+                                    type="number"
+                                    value={algorithmParams.chainDetection
+                                        .tolerance}
+                                    oninput={(e) =>
+                                        updateChainDetectionTolerance(
+                                            parseFloat(e.currentTarget.value)
+                                        )}
+                                    min="0.001"
+                                    max="10"
+                                    step="0.001"
+                                    class="param-input"
+                                    title="Distance tolerance for connecting shapes into chains."
+                                />
+                                <span class="param-units">
+                                    {getReactiveUnitSymbol(
+                                        $settingsStore.settings
+                                            .measurementSystem
                                     )}
-                                min="0.001"
-                                max="10"
-                                step="0.001"
-                                class="param-input"
-                                title="Distance tolerance for connecting shapes into chains."
-                            />
+                                </span>
+                            </div>
                             <div class="param-description">
                                 Maximum distance between shape endpoints to be
                                 considered connected. Higher values will connect
@@ -1318,20 +1337,28 @@
                         </div>
                         <label class="param-label">
                             Traversal Tolerance:
-                            <input
-                                type="number"
-                                value={algorithmParams.chainNormalization
-                                    .traversalTolerance}
-                                oninput={(e) =>
-                                    updateNormalizationTraversalTolerance(
-                                        parseFloat(e.currentTarget.value)
+                            <div class="param-input-with-units">
+                                <input
+                                    type="number"
+                                    value={algorithmParams.chainNormalization
+                                        .traversalTolerance}
+                                    oninput={(e) =>
+                                        updateNormalizationTraversalTolerance(
+                                            parseFloat(e.currentTarget.value)
+                                        )}
+                                    min="0.001"
+                                    max="1.0"
+                                    step="0.001"
+                                    class="param-input"
+                                    title="Tolerance for floating point comparison in traversal analysis."
+                                />
+                                <span class="param-units">
+                                    {getReactiveUnitSymbol(
+                                        $settingsStore.settings
+                                            .measurementSystem
                                     )}
-                                min="0.001"
-                                max="1.0"
-                                step="0.001"
-                                class="param-input"
-                                title="Tolerance for floating point comparison in traversal analysis."
-                            />
+                                </span>
+                            </div>
                             <div class="param-description">
                                 Precision tolerance for checking if shape
                                 endpoints align during chain traversal analysis.
@@ -1420,20 +1447,28 @@
 
                         <label class="param-label">
                             Optimization Tolerance:
-                            <input
-                                type="number"
-                                value={algorithmParams.startPointOptimization
-                                    .tolerance}
-                                oninput={(e) =>
-                                    updateStartPointOptimizationTolerance(
-                                        parseFloat(e.currentTarget.value)
+                            <div class="param-input-with-units">
+                                <input
+                                    type="number"
+                                    value={algorithmParams
+                                        .startPointOptimization.tolerance}
+                                    oninput={(e) =>
+                                        updateStartPointOptimizationTolerance(
+                                            parseFloat(e.currentTarget.value)
+                                        )}
+                                    min="0.001"
+                                    max="10"
+                                    step="0.001"
+                                    class="param-input"
+                                    title="Tolerance for optimization operations including chain closure detection."
+                                />
+                                <span class="param-units">
+                                    {getReactiveUnitSymbol(
+                                        $settingsStore.settings
+                                            .measurementSystem
                                     )}
-                                min="0.001"
-                                max="10"
-                                step="0.001"
-                                class="param-input"
-                                title="Tolerance for optimization operations including chain closure detection."
-                            />
+                                </span>
+                            </div>
                             <div class="param-description">
                                 Distance tolerance used for determining chain
                                 closure and optimization operations. Higher
@@ -1686,18 +1721,14 @@
                                                 >Start:</span
                                             >
                                             <span class="point-coords"
-                                                >({startPoint.x.toFixed(2)}, {startPoint.y.toFixed(
-                                                    2
-                                                )})</span
+                                                >({startPoint.x}, {startPoint.y})</span
                                             >
                                         </div>
                                         <div class="point-info">
                                             <span class="point-label">End:</span
                                             >
                                             <span class="point-coords"
-                                                >({endPoint.x.toFixed(2)}, {endPoint.y.toFixed(
-                                                    2
-                                                )})</span
+                                                >({endPoint.x}, {endPoint.y})</span
                                             >
                                         </div>
                                     </div>
@@ -2551,6 +2582,23 @@
         line-height: 1.3;
         margin-top: 0.25rem;
         font-style: italic;
+    }
+
+    .param-input-with-units {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .param-input-with-units .param-input {
+        flex: 1;
+    }
+
+    .param-units {
+        font-size: 0.75rem;
+        color: #6b7280;
+        font-weight: 500;
+        min-width: 2rem;
     }
 
     /* Header action button styles */

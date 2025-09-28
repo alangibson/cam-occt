@@ -3,11 +3,11 @@ import { optimizeStartPoints } from './optimize-start-points';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS } from '$lib/types/algorithm-parameters';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
 
 describe('optimizeStartPoints - closed polylines', () => {
     const optimizationParams = {
-        ...DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS,
+        ...DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM,
         tolerance: 0.1,
     };
 
