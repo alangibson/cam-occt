@@ -770,14 +770,14 @@
 
         if (currentStep.type === 'rapid' && currentStep.rapid) {
             const rapidRate = currentStep.rapidRate || 3000;
-            currentOperation = `Rapid Movement (${rapidRate} units/min)`;
+            currentOperation = `Rapid Movement (${rapidRate} ${displayUnit}/min)`;
             const rapid = currentStep.rapid;
             toolHeadPosition = {
                 x: rapid.start.x + (rapid.end.x - rapid.start.x) * stepProgress,
                 y: rapid.start.y + (rapid.end.y - rapid.start.y) * stepProgress,
             };
         } else if (currentStep.type === 'cut' && currentStep.path) {
-            currentOperation = `Cutting (${getFeedRateForPath(currentStep.path)} units/min)`;
+            currentOperation = `Cutting (${getFeedRateForPath(currentStep.path)} ${displayUnit}/min)`;
             updateToolHeadOnPath(currentStep.path, stepProgress);
         }
     }
