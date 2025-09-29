@@ -25,6 +25,7 @@ import {
     getShapeEndPoint,
     getShapeNormal,
 } from '$lib/geometry/shape/functions';
+import { drawNormalLine } from './normal-renderer-utils';
 
 // Constants for rendering
 const HIGHLIGHT_LINE_WIDTH = 2.5;
@@ -33,8 +34,6 @@ const ENDPOINT_SIZE = 6;
 const HIT_TEST_TOLERANCE = 5;
 const TANGENT_LINE_LENGTH = 50; // Length of tangent lines in screen pixels
 const TANGENT_LINE_WIDTH = 2;
-const NORMAL_LINE_LENGTH = 30; // Length of normal lines in screen pixels
-const NORMAL_INDICATOR_RADIUS = 3; // Radius of the circle at normal line start
 
 export class ChainRenderer extends BaseRenderer {
     constructor(coordinator: CoordinateTransformer) {
@@ -320,55 +319,16 @@ export class ChainRenderer extends BaseRenderer {
                 if (startPoint) {
                     // Calculate normal at start point (t = 0)
                     const normal = getShapeNormal(startShape, 0);
-                    this.drawNormalLine(ctx, state, startPoint, normal);
+                    drawNormalLine(
+                        ctx,
+                        state,
+                        startPoint,
+                        normal,
+                        'rgba(255, 165, 0, 0.6)' // Light orange
+                    );
                 }
             }
         }
-    }
-
-    private drawNormalLine(
-        ctx: CanvasRenderingContext2D,
-        state: RenderState,
-        connectionPoint: Point2D,
-        normalDirection: Point2D
-    ): void {
-        // Calculate normal line length in world coordinates
-        const normalWorldLength =
-            state.transform.coordinator.screenToWorldDistance(
-                NORMAL_LINE_LENGTH
-            );
-
-        // Calculate end point of normal line
-        const endX = connectionPoint.x + normalDirection.x * normalWorldLength;
-        const endY = connectionPoint.y + normalDirection.y * normalWorldLength;
-
-        // Draw the normal line
-        ctx.save();
-        ctx.strokeStyle = 'rgba(255, 165, 0, 0.6)'; // Light orange
-        ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(1);
-        ctx.setLineDash([]);
-
-        ctx.beginPath();
-        ctx.moveTo(connectionPoint.x, connectionPoint.y);
-        ctx.lineTo(endX, endY);
-        ctx.stroke();
-
-        // Draw a small circle at the start point for clarity
-        ctx.fillStyle = 'rgba(255, 165, 0, 0.6)'; // Light orange
-        const circleRadius = state.transform.coordinator.screenToWorldDistance(
-            NORMAL_INDICATOR_RADIUS
-        );
-        ctx.beginPath();
-        ctx.arc(
-            connectionPoint.x,
-            connectionPoint.y,
-            circleRadius,
-            0,
-            2 * Math.PI
-        );
-        ctx.fill();
-
-        ctx.restore();
     }
 
     hitWorld(point: Point2D, state: RenderState): HitTestResult | null {

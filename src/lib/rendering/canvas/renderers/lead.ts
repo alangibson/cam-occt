@@ -34,6 +34,7 @@ import type { CoordinateTransformer } from '$lib/rendering/coordinate-transforme
 // Constants for lead rendering
 const HIT_TEST_TOLERANCE = 5;
 const NORMAL_INDICATOR_RADIUS = 3; // Radius of the circle at normal line start
+const DEFAULT_NORMAL_LINE_LENGTH = 30; // Length in screen pixels
 
 export class LeadRenderer extends BaseRenderer {
     // Lead visualization settings
@@ -45,7 +46,7 @@ export class LeadRenderer extends BaseRenderer {
     private leadOutOpacity: number = 1.0;
     private leadLineWidth: number = 1;
     private normalLineColor: string = 'rgba(255, 165, 0, 0.6)'; // Light orange
-    private normalLineLength: number = 30; // Length in screen pixels, adjust as needed
+    private normalLineLength: number = DEFAULT_NORMAL_LINE_LENGTH;
 
     constructor(coordinator: CoordinateTransformer) {
         super('lead-renderer', LayerId.LEADS, coordinator);
@@ -137,8 +138,8 @@ export class LeadRenderer extends BaseRenderer {
             // First check if we have valid cached lead geometry
             if (hasValidCachedLeads(path)) {
                 // For cached leads, we need to add normal and connection point if missing
-                let leadIn = path.leadIn ? { ...path.leadIn } : undefined;
-                let leadOut = path.leadOut ? { ...path.leadOut } : undefined;
+                const leadIn = path.leadIn ? { ...path.leadIn } : undefined;
+                const leadOut = path.leadOut ? { ...path.leadOut } : undefined;
 
                 // Add normal and connection point to cached leads if missing
                 if (leadIn && (!leadIn.normal || !leadIn.connectionPoint)) {
@@ -221,7 +222,7 @@ export class LeadRenderer extends BaseRenderer {
 
             return leadResult;
         } catch (error) {
-            console.warn('Error calculating leads for path:', path.id, error);
+            console.error('Error calculating leads for path:', path.id, error);
             return { warnings: [`Error calculating leads: ${error}`] };
         }
     }

@@ -581,8 +581,8 @@ describe('Lead Persistence Utils', () => {
             mockPartMap.set('chain-1', { id: 'part-1', shells: [], holes: [] });
         });
 
-        it('should return undefined when chainMap is undefined', () => {
-            const result = calculateLeadPoints(
+        it('should return undefined when chainMap is undefined', async () => {
+            const result = await calculateLeadPoints(
                 mockPath,
                 undefined,
                 mockPartMap,
@@ -591,8 +591,8 @@ describe('Lead Persistence Utils', () => {
             expect(result).toBeUndefined();
         });
 
-        it('should return undefined when partMap is undefined', () => {
-            const result = calculateLeadPoints(
+        it('should return undefined when partMap is undefined', async () => {
+            const result = await calculateLeadPoints(
                 mockPath,
                 mockChainMap,
                 undefined,
@@ -601,12 +601,12 @@ describe('Lead Persistence Utils', () => {
             expect(result).toBeUndefined();
         });
 
-        it('should return undefined when chain is not found', () => {
+        it('should return undefined when chain is not found', async () => {
             const pathWithUnknownChain = {
                 ...mockPath,
                 chainId: 'unknown-chain',
             };
-            const result = calculateLeadPoints(
+            const result = await calculateLeadPoints(
                 pathWithUnknownChain,
                 mockChainMap,
                 mockPartMap,
@@ -615,8 +615,8 @@ describe('Lead Persistence Utils', () => {
             expect(result).toBeUndefined();
         });
 
-        it('should calculate and return leadIn points', () => {
-            const result = calculateLeadPoints(
+        it('should calculate and return leadIn points', async () => {
+            const result = await calculateLeadPoints(
                 mockPath,
                 mockChainMap,
                 mockPartMap,
@@ -629,8 +629,8 @@ describe('Lead Persistence Utils', () => {
             expect(calculateLeads).toHaveBeenCalled();
         });
 
-        it('should calculate and return leadOut points', () => {
-            const result = calculateLeadPoints(
+        it('should calculate and return leadOut points', async () => {
+            const result = await calculateLeadPoints(
                 mockPath,
                 mockChainMap,
                 mockPartMap,
@@ -643,7 +643,7 @@ describe('Lead Persistence Utils', () => {
             expect(calculateLeads).toHaveBeenCalled();
         });
 
-        it('should return undefined when lead has no points', () => {
+        it('should return undefined when lead has no points', async () => {
             vi.mocked(calculateLeads).mockReturnValueOnce({
                 leadIn: {
                     geometry: {
@@ -668,7 +668,7 @@ describe('Lead Persistence Utils', () => {
                 warnings: [],
             });
 
-            const result = calculateLeadPoints(
+            const result = await calculateLeadPoints(
                 mockPath,
                 mockChainMap,
                 mockPartMap,
@@ -677,14 +677,14 @@ describe('Lead Persistence Utils', () => {
             expect(result).toBeUndefined();
         });
 
-        it('should return undefined when lead is null', () => {
+        it('should return undefined when lead is null', async () => {
             vi.mocked(calculateLeads).mockReturnValueOnce({
                 leadIn: undefined,
                 leadOut: undefined,
                 warnings: [],
             });
 
-            const result = calculateLeadPoints(
+            const result = await calculateLeadPoints(
                 mockPath,
                 mockChainMap,
                 mockPartMap,
@@ -693,7 +693,7 @@ describe('Lead Persistence Utils', () => {
             expect(result).toBeUndefined();
         });
 
-        it('should use offset shapes when available', () => {
+        it('should use offset shapes when available', async () => {
             const pathWithOffset: Path = {
                 ...mockPath,
                 offset: {
@@ -715,7 +715,7 @@ describe('Lead Persistence Utils', () => {
                 },
             };
 
-            const result = calculateLeadPoints(
+            const result = await calculateLeadPoints(
                 pathWithOffset,
                 mockChainMap,
                 mockPartMap,
@@ -734,12 +734,12 @@ describe('Lead Persistence Utils', () => {
             expect(result).toBeDefined();
         });
 
-        it('should handle calculation errors and return undefined', () => {
+        it('should handle calculation errors and return undefined', async () => {
             vi.mocked(calculateLeads).mockImplementationOnce(() => {
                 throw new Error('Test calculation error');
             });
 
-            const result = calculateLeadPoints(
+            const result = await calculateLeadPoints(
                 mockPath,
                 mockChainMap,
                 mockPartMap,
@@ -749,12 +749,12 @@ describe('Lead Persistence Utils', () => {
             expect(result).toBeUndefined();
         });
 
-        it('should handle calculation errors for leadOut', () => {
+        it('should handle calculation errors for leadOut', async () => {
             vi.mocked(calculateLeads).mockImplementationOnce(() => {
                 throw new Error('Test calculation error');
             });
 
-            const result = calculateLeadPoints(
+            const result = await calculateLeadPoints(
                 mockPath,
                 mockChainMap,
                 mockPartMap,

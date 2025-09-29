@@ -79,9 +79,14 @@ export function prepareChainsAndLeadConfigs(
     let leadCalculationChain: Chain = chain;
     if (path.offset && path.offset.offsetShapes.length > 0) {
         // Create a temporary chain from offset shapes
+        // IMPORTANT: Preserve the clockwise property from the original chain
+        // to maintain consistent normal direction calculation
+        // Also preserve originalChainId for part context lookup
         leadCalculationChain = {
             id: chain.id + '_offset_temp',
             shapes: path.offset.offsetShapes,
+            clockwise: chain.clockwise,
+            originalChainId: chain.id,
         };
     }
 
@@ -139,6 +144,8 @@ export function getPathStartPoint(
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
             shapes: path.offset.offsetShapes,
+            clockwise: chain.clockwise,
+            originalChainId: chain.id,
         };
         return getChainStartPoint(offsetChain);
     }
@@ -154,6 +161,8 @@ export function getPathChainStartPoint(path: Path, chain: Chain): Point2D {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
             shapes: path.offset.offsetShapes,
+            clockwise: chain.clockwise,
+            originalChainId: chain.id,
         };
         return getChainStartPoint(offsetChain);
     }
@@ -169,6 +178,8 @@ export function getPathChainEndPoint(path: Path, chain: Chain): Point2D {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
             shapes: path.offset.offsetShapes,
+            clockwise: chain.clockwise,
+            originalChainId: chain.id,
         };
         return getChainEndPoint(offsetChain);
     }

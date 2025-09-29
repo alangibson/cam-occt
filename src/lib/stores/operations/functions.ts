@@ -707,9 +707,14 @@ export async function calculatePathLeads(
         let leadCalculationChain: Chain = chain;
         if (path.offset && path.offset.offsetShapes.length > 0) {
             // Create a temporary chain from offset shapes
+            // IMPORTANT: Preserve the clockwise property from the original chain
+            // to maintain consistent normal direction calculation
+            // Also preserve originalChainId for part context lookup
             leadCalculationChain = {
                 id: chain.id + '_offset_temp',
                 shapes: path.offset.offsetShapes,
+                clockwise: chain.clockwise,
+                originalChainId: chain.id,
             };
         }
 

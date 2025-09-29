@@ -34,7 +34,8 @@
     import AccordionPanel from '../AccordionPanel.svelte';
     import LayersInfo from '../LayersInfo.svelte';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
-    import type { Chain } from '$lib/geometry/chain/interfaces';
+    // Chain type used in comments
+    // import type { Chain } from '$lib/geometry/chain/interfaces';
 
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;
@@ -171,7 +172,7 @@
         $tessellationStore.points.length > 0
     ) {
         // Convert tessellation store points to overlay format
-        const tessellationPoints = $tessellationStore.points.map((point) => ({
+        const _tessellationPoints = $tessellationStore.points.map((point) => ({
             x: point.x,
             y: point.y,
             shapeId: point.shapeId, // Use existing shapeId from tessellation store

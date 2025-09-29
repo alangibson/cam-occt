@@ -5,6 +5,8 @@ import type { Spline } from '$lib/geometry/spline';
 import { SVGBuilder } from '$lib/test/svg-builder';
 import { join } from 'path';
 import { writeFileSync, mkdirSync } from 'fs';
+import type { Shape } from '$lib/algorithms/offset-calculation/chain/types';
+import { GeometryType } from '$lib/types/geometry';
 
 describe('Visual output of offset splines', () => {
     const outputDir = join(
@@ -86,7 +88,7 @@ describe('Visual output of offset splines', () => {
     it('should render original and offset splines to SVG', () => {
         try {
             mkdirSync(outputDir, { recursive: true });
-        } catch (error) {
+        } catch {
             // Directory might already exist
         }
 
@@ -96,16 +98,17 @@ describe('Visual output of offset splines', () => {
             const svgBuilder = new SVGBuilder(); // Use auto-sizing for larger splines
 
             // Draw original spline in blue
-            svgBuilder.addSpline(spline, 'blue', 2);
+            const splineShape = {
+                id: 'spline',
+                type: GeometryType.SPLINE,
+                geometry: spline,
+                layer: 'test',
+            } as Shape;
+            svgBuilder.addShape(splineShape, 'blue', 2);
 
             // Draw control points of original spline
             for (const cp of spline.controlPoints) {
-                svgBuilder.addCircle(
-                    { center: cp, radius: 2 },
-                    'darkblue',
-                    1,
-                    'blue'
-                );
+                svgBuilder.addIntersectionPoint(cp, 'blue', 2);
             }
 
             // Generate and draw outset offset (scaled up 10x)
@@ -118,17 +121,18 @@ describe('Visual output of offset splines', () => {
             if (outsetResult.success && outsetResult.shapes.length > 0) {
                 const outsetGeometry = outsetResult.shapes[0]
                     .geometry as Spline;
-                svgBuilder.addSpline(outsetGeometry, 'red', 2);
+                const outsetSplineShape = {
+                    id: 'outset',
+                    type: GeometryType.SPLINE,
+                    geometry: outsetGeometry,
+                    layer: 'test',
+                } as Shape;
+                svgBuilder.addShape(outsetSplineShape, 'red', 2);
 
                 // Draw control points only if using control point approach (few points)
                 if (outsetGeometry.controlPoints.length <= 10) {
                     for (const cp of outsetGeometry.controlPoints) {
-                        svgBuilder.addCircle(
-                            { center: cp, radius: 1.5 },
-                            'darkred',
-                            1,
-                            'red'
-                        );
+                        svgBuilder.addIntersectionPoint(cp, 'red', 1.5);
                     }
                 }
 
@@ -146,17 +150,18 @@ describe('Visual output of offset splines', () => {
             );
             if (insetResult.success && insetResult.shapes.length > 0) {
                 const insetGeometry = insetResult.shapes[0].geometry as Spline;
-                svgBuilder.addSpline(insetGeometry, 'green', 2);
+                const insetSplineShape = {
+                    id: 'inset',
+                    type: GeometryType.SPLINE,
+                    geometry: insetGeometry,
+                    layer: 'test',
+                } as Shape;
+                svgBuilder.addShape(insetSplineShape, 'green', 2);
 
                 // Draw control points only if using control point approach (few points)
                 if (insetGeometry.controlPoints.length <= 10) {
                     for (const cp of insetGeometry.controlPoints) {
-                        svgBuilder.addCircle(
-                            { center: cp, radius: 1 },
-                            'darkgreen',
-                            1,
-                            'green'
-                        );
+                        svgBuilder.addIntersectionPoint(cp, 'green', 1);
                     }
                 }
 

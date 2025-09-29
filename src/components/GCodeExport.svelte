@@ -32,7 +32,7 @@
     let generatedGCode = '';
     let isGenerating = false;
 
-    function handleGenerateGCode() {
+    async function handleGenerateGCode() {
         if (!drawing) {
             console.log('No drawing available for G-code generation');
             return;
@@ -60,7 +60,7 @@
 
             // Convert paths to tool paths using simulation's validated approach
             // This handles empty paths array gracefully
-            const toolPaths = pathsToToolPaths(
+            const toolPaths = await pathsToToolPaths(
                 paths,
                 chainShapes,
                 tools,

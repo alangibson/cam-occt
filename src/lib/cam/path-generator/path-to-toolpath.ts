@@ -35,13 +35,13 @@ import type { LeadResult } from '$lib/algorithms/leads/interfaces';
  * 2. path.calculatedOffset?.offsetShapes (fallback - offset geometry)
  * 3. originalShapes (final fallback)
  */
-export function pathToToolPath(
+export async function pathToToolPath(
     path: Path,
     originalShapes: Shape[],
     tools: Tool[],
     chainMap?: Map<string, Chain>,
     partMap?: Map<string, DetectedPart>
-): CutPath {
+): Promise<CutPath> {
     // Use simulation's validated geometry resolution approach
     // Priority: cutChain > calculatedOffset > original shapes
     let shapesToUse: Shape[];
@@ -172,7 +172,7 @@ export function pathToToolPath(
 
         // Fallback to calculating if no valid cache (simulation's approach)
         if (!leadIn) {
-            const leadInPoints = calculateLeadPoints(
+            const leadInPoints = await calculateLeadPoints(
                 path,
                 chainMap,
                 partMap,
@@ -259,7 +259,7 @@ export function pathToToolPath(
 
         // Fallback to calculating if no valid cache (simulation's approach)
         if (!leadOut) {
-            const leadOutPoints = calculateLeadPoints(
+            const leadOutPoints = await calculateLeadPoints(
                 path,
                 chainMap,
                 partMap,
@@ -305,13 +305,13 @@ export function pathToToolPath(
  * Convert multiple Paths to ToolPaths, preserving cut order
  * Uses simulation's validated approach for geometry resolution
  */
-export function pathsToToolPaths(
+export async function pathsToToolPaths(
     paths: Path[],
     chainShapes: Map<string, Shape[]>,
     tools: Tool[],
     chainMap?: Map<string, Chain>,
     partMap?: Map<string, DetectedPart>
-): CutPath[] {
+): Promise<CutPath[]> {
     const toolPaths: CutPath[] = [];
 
     // Sort paths by their order field
@@ -325,7 +325,7 @@ export function pathsToToolPaths(
         );
         if (!originalShapes) continue;
 
-        const toolPath: CutPath = pathToToolPath(
+        const toolPath: CutPath = await pathToToolPath(
             path,
             originalShapes,
             tools,

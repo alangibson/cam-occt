@@ -172,7 +172,7 @@ describe('degree 3 spline offset issue reproduction', () => {
             // Should have both positive and negative Y displacements to maintain S-shape
             // Note: With control point approach, the shape might be simplified
             const hasPositiveY = controlPointYs.some((y) => y > 0.5);
-            const hasNegativeY = controlPointYs.some((y) => y < -0.5);
+            const _hasNegativeY = controlPointYs.some((y) => y < -0.5);
 
             expect(hasPositiveY).toBe(true);
             // Note: S-curve test is complex - control point approach might not perfectly preserve alternating curvature

@@ -21,6 +21,7 @@ import {
     createLeadOutConfig,
     convertLeadGeometryToPoints,
 } from '$lib/algorithms/leads/functions';
+import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 
 /**
  * Check if path has valid cached lead geometry
@@ -73,12 +74,12 @@ export function getCachedLeadGeometry(path: Path): LeadResult {
  * Calculate lead points for a path using the fallback approach
  * This function encapsulates the common lead calculation logic used in multiple places
  */
-export function calculateLeadPoints(
+export async function calculateLeadPoints(
     path: Path,
     chainMap: Map<string, Chain> | undefined,
     partMap: Map<string, DetectedPart> | undefined,
     leadType: 'leadIn' | 'leadOut'
-): Point2D[] | undefined {
+): Promise<Point2D[] | undefined> {
     if (!chainMap || !partMap) {
         return undefined;
     }
@@ -90,15 +91,18 @@ export function calculateLeadPoints(
         }
 
         const part = partMap.get(path.chainId); // Part lookup for lead fitting
-        const { chainForLeads, leadInConfig, leadOutConfig } =
-            prepareLeadCalculation(path, chain);
+        const { chainForLeads, leadInConfig, leadOutConfig, offsetPart } =
+            await prepareLeadCalculation(path, chain);
+
+        // Use offset-based part context if available, otherwise fall back to original part context
+        const effectivePart = offsetPart || part;
 
         const leadResult = calculateLeads(
             chainForLeads,
             leadInConfig,
             leadOutConfig,
             path.cutDirection,
-            part
+            effectivePart
         );
 
         const lead =
@@ -127,22 +131,49 @@ export function calculateLeadPoints(
  * Helper function to prepare chain and configs for lead calculation
  * Moved here to be shared across different modules
  */
-function prepareLeadCalculation(
+async function prepareLeadCalculation(
     path: Path,
     chain: Chain
-): {
+): Promise<{
     chainForLeads: Chain;
     leadInConfig: LeadConfig;
     leadOutConfig: LeadConfig;
-} {
+    offsetPart?: DetectedPart;
+}> {
     // Use offset shapes for lead calculation if available
     const chainForLeads = path.offset
-        ? { ...chain, shapes: path.offset.offsetShapes }
+        ? {
+              ...chain,
+              shapes: path.offset.offsetShapes,
+              clockwise: chain.clockwise,
+              originalChainId: chain.id,
+          }
         : chain;
 
     // Create lead configurations based on path properties
     const leadInConfig = createLeadInConfig(path);
     const leadOutConfig = createLeadOutConfig(path);
 
-    return { chainForLeads, leadInConfig, leadOutConfig };
+    // If using offset geometry, create a DetectedPart from offset geometry for proper material avoidance
+    let offsetPart: DetectedPart | undefined;
+    if (path.offset) {
+        try {
+            // Create a single-chain array for part detection on offset geometry
+            const offsetChains = [chainForLeads];
+            const partDetectionResult = await detectParts(offsetChains);
+
+            // Use the first detected part (there should only be one for a single chain)
+            if (partDetectionResult.parts.length > 0) {
+                offsetPart = partDetectionResult.parts[0];
+            }
+        } catch (error) {
+            console.warn(
+                'Failed to create offset-based part context for lead calculation:',
+                error
+            );
+            // Continue without offset part context - will fall back to original part context
+        }
+    }
+
+    return { chainForLeads, leadInConfig, leadOutConfig, offsetPart };
 }

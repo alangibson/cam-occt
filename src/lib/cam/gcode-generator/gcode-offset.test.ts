@@ -63,7 +63,7 @@ describe('G-code generation with offset paths', () => {
         units: Unit.MM,
     };
 
-    it('should generate G-code using original geometry when no offset is available', () => {
+    it('should generate G-code using original geometry when no offset is available', async () => {
         const testPath: Path = {
             id: 'test-path',
             name: 'Test Path',
@@ -80,7 +80,7 @@ describe('G-code generation with offset paths', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = pathsToToolPaths([testPath], chainShapes, []);
+        const toolPaths = await pathsToToolPaths([testPath], chainShapes, []);
 
         expect(toolPaths).toHaveLength(1);
         expect(toolPaths[0].points).toEqual([
@@ -106,7 +106,7 @@ describe('G-code generation with offset paths', () => {
         expect(gcode).toContain('X0 Y10');
     });
 
-    it('should generate G-code using offset geometry when available', () => {
+    it('should generate G-code using offset geometry when available', async () => {
         const testPath: Path = {
             id: 'test-path',
             name: 'Test Path',
@@ -132,7 +132,7 @@ describe('G-code generation with offset paths', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = pathsToToolPaths([testPath], chainShapes, []);
+        const toolPaths = await pathsToToolPaths([testPath], chainShapes, []);
 
         expect(toolPaths).toHaveLength(1);
         // Should use offset geometry
@@ -163,7 +163,7 @@ describe('G-code generation with offset paths', () => {
         expect(gcode).not.toMatch(/G1.*X10 Y0/);
     });
 
-    it('should handle lead-in/out with offset paths', () => {
+    it('should handle lead-in/out with offset paths', async () => {
         const testPath: Path = {
             id: 'test-path',
             name: 'Test Path',
@@ -214,7 +214,7 @@ describe('G-code generation with offset paths', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = pathsToToolPaths([testPath], chainShapes, []);
+        const toolPaths = await pathsToToolPaths([testPath], chainShapes, []);
 
         expect(toolPaths).toHaveLength(1);
 
@@ -250,7 +250,7 @@ describe('G-code generation with offset paths', () => {
         expect(gcode).toMatch(/G1/); // Contains linear interpolation commands
     });
 
-    it('should generate proper coordinate precision in G-code', () => {
+    it('should generate proper coordinate precision in G-code', async () => {
         const testPath: Path = {
             id: 'test-path',
             name: 'Test Path',
@@ -282,7 +282,7 @@ describe('G-code generation with offset paths', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = pathsToToolPaths([testPath], chainShapes, []);
+        const toolPaths = await pathsToToolPaths([testPath], chainShapes, []);
 
         const gcode = generateGCode(toolPaths, testDrawing, {
             units: Unit.MM,

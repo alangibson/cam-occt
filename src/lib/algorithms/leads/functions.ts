@@ -97,8 +97,10 @@ export function extractLeadNormalAndConnection(
     const arc = lead.geometry as Arc;
 
     // Get arc endpoints
-    const startAngleRad = (arc.startAngle * Math.PI) / 180;
-    const endAngleRad = (arc.endAngle * Math.PI) / 180;
+    const DEGREES_IN_HALF_CIRCLE = 180;
+    const DEG_TO_RAD = Math.PI / DEGREES_IN_HALF_CIRCLE;
+    const startAngleRad = arc.startAngle * DEG_TO_RAD;
+    const endAngleRad = arc.endAngle * DEG_TO_RAD;
 
     const arcStart: Point2D = {
         x: arc.center.x + arc.radius * Math.cos(startAngleRad),

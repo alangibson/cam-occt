@@ -91,8 +91,16 @@ describe('UI visibility debug for offset splines', () => {
         const offsetGeometry = result.shapes[0].geometry as Spline;
 
         // Check that the offset actually changed the geometry
+        // Note: offset spline may have different number of control points
         let hasSignificantChange = false;
-        for (let i = 0; i < offsetGeometry.controlPoints.length; i++) {
+
+        // Compare using the minimum number of control points
+        const minControlPoints = Math.min(
+            spline.controlPoints.length,
+            offsetGeometry.controlPoints.length
+        );
+
+        for (let i = 0; i < minControlPoints; i++) {
             const originalCP = spline.controlPoints[i];
             const offsetCP = offsetGeometry.controlPoints[i];
 
@@ -107,6 +115,14 @@ describe('UI visibility debug for offset splines', () => {
                     `Control point ${i} moved by ${distance.toFixed(3)}`
                 );
             }
+        }
+
+        // If offset has different number of control points, that's also a change
+        if (spline.controlPoints.length !== offsetGeometry.controlPoints.length) {
+            hasSignificantChange = true;
+            console.log(
+                `Control point count changed from ${spline.controlPoints.length} to ${offsetGeometry.controlPoints.length}`
+            );
         }
 
         expect(hasSignificantChange).toBe(true);
