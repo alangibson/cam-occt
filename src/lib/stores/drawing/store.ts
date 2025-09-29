@@ -5,14 +5,52 @@ import {
     type Shape,
     WorkflowStage,
 } from '$lib/types';
-import { Unit } from '$lib/utils/units';
+import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
 import {
     moveShape,
     rotateShape,
     scaleShape,
 } from '$lib/geometry/shape/functions';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box';
+import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { DrawingState, DrawingStore } from './interfaces';
 import { resetDownstreamStages } from './functions';
+
+const ZOOM_TO_FIT_MARGIN = 0.1; // 10% margin for zoom-to-fit
+
+/**
+ * Helper function to calculate zoom-to-fit settings for a drawing
+ */
+function calculateZoomToFitForDrawing(
+    drawing: Drawing,
+    canvasDimensions: { width: number; height: number } | null,
+    displayUnit: Unit
+): { scale: number; offset: Point2D } {
+    // If no canvas dimensions available, use default zoom settings
+    if (!canvasDimensions || drawing.shapes.length === 0) {
+        return { scale: 1, offset: { x: 0, y: 0 } };
+    }
+
+    try {
+        // Get bounding box for all shapes in the drawing
+        const boundingBox = getBoundingBoxForShapes(drawing.shapes);
+
+        // Get unit scale factor for proper display
+        const unitScale = getPhysicalScaleFactor(drawing.units, displayUnit);
+
+        // Calculate zoom-to-fit with 10% margin
+        return CoordinateTransformer.calculateZoomToFit(
+            boundingBox,
+            canvasDimensions.width,
+            canvasDimensions.height,
+            unitScale,
+            ZOOM_TO_FIT_MARGIN
+        );
+    } catch (error) {
+        console.warn('Failed to calculate zoom-to-fit:', error);
+        return { scale: 1, offset: { x: 0, y: 0 } };
+    }
+}
 
 function createDrawingStore(): DrawingStore {
     const { subscribe, update } = writable<DrawingState>({
@@ -27,6 +65,7 @@ function createDrawingStore(): DrawingStore {
         fileName: null,
         layerVisibility: {},
         displayUnit: Unit.MM,
+        canvasDimensions: null,
     });
 
     return {
@@ -35,18 +74,29 @@ function createDrawingStore(): DrawingStore {
             // Reset all application state when importing a new file
             resetDownstreamStages('edit');
 
-            return update((state) => ({
-                ...state,
-                drawing,
-                fileName: fileName || null,
-                displayUnit: drawing.units, // Set display unit from drawing's detected units
-                scale: 1, // Always start at 100% zoom
-                offset: { x: 0, y: 0 }, // Reset offset
-                selectedShapes: new Set(), // Clear selection
-                hoveredShape: null, // Clear hover state
-                isDragging: false, // Reset drag state
-                dragStart: null, // Reset drag start
-            }));
+            return update((state) => {
+                const displayUnit = drawing.units; // Set display unit from drawing's detected units
+
+                // Calculate zoom-to-fit if canvas dimensions are available
+                const zoomToFit = calculateZoomToFitForDrawing(
+                    drawing,
+                    state.canvasDimensions,
+                    displayUnit
+                );
+
+                return {
+                    ...state,
+                    drawing,
+                    fileName: fileName || null,
+                    displayUnit,
+                    scale: zoomToFit.scale,
+                    offset: zoomToFit.offset,
+                    selectedShapes: new Set(), // Clear selection
+                    hoveredShape: null, // Clear hover state
+                    isDragging: false, // Reset drag state
+                    dragStart: null, // Reset drag start
+                };
+            });
         },
 
         selectShape: (shapeId: string, multi = false) =>
@@ -161,6 +211,54 @@ function createDrawingStore(): DrawingStore {
                 scale,
                 offset,
             })),
+
+        setCanvasDimensions: (width: number, height: number) =>
+            update((state) => {
+                const canvasDimensions = { width, height };
+
+                // If we have a drawing and this is the first time setting canvas dimensions,
+                // automatically calculate zoom-to-fit
+                if (state.drawing && !state.canvasDimensions) {
+                    const zoomToFit = calculateZoomToFitForDrawing(
+                        state.drawing,
+                        canvasDimensions,
+                        state.displayUnit
+                    );
+
+                    return {
+                        ...state,
+                        canvasDimensions,
+                        scale: zoomToFit.scale,
+                        offset: zoomToFit.offset,
+                    };
+                }
+
+                return {
+                    ...state,
+                    canvasDimensions,
+                };
+            }),
+
+        zoomToFit: () =>
+            update((state) => {
+                // Only calculate zoom-to-fit if we have a drawing and canvas dimensions
+                if (state.drawing && state.canvasDimensions) {
+                    const zoomToFit = calculateZoomToFitForDrawing(
+                        state.drawing,
+                        state.canvasDimensions,
+                        state.displayUnit
+                    );
+
+                    return {
+                        ...state,
+                        scale: zoomToFit.scale,
+                        offset: zoomToFit.offset,
+                    };
+                }
+
+                // No changes if conditions aren't met
+                return state;
+            }),
 
         setLayerVisibility: (layerName: string, visible: boolean) =>
             update((state) => ({

@@ -218,6 +218,9 @@
         const width = rect.width;
         const height = rect.height;
 
+        // Update drawing store with canvas dimensions
+        drawingStore.setCanvasDimensions(width, height);
+
         // Initialize rendering pipeline with multi-canvas support
         renderingPipeline.initialize(canvasContainer, width, height, {
             zoomScale,

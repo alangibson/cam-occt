@@ -19,6 +19,7 @@ export interface DrawingState {
     fileName: string | null;
     layerVisibility: { [layerName: string]: boolean };
     displayUnit: Unit;
+    canvasDimensions: { width: number; height: number } | null;
 }
 
 export interface DrawingStore {
@@ -36,6 +37,8 @@ export interface DrawingStore {
     ) => void;
     rotateShapes: (shapeIds: string[], angle: number, origin: Point2D) => void;
     setViewTransform: (scale: number, offset: Point2D) => void;
+    setCanvasDimensions: (width: number, height: number) => void;
+    zoomToFit: () => void;
     setLayerVisibility: (layerName: string, visible: boolean) => void;
     setHoveredShape: (shapeId: string | null) => void;
     setDisplayUnit: (unit: Unit) => void;

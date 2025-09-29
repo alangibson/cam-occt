@@ -36,6 +36,10 @@
     function formatZoom(scale: number): string {
         return `${(scale * 100).toFixed(0)}%`;
     }
+
+    function handleFitClick() {
+        drawingStore.zoomToFit();
+    }
 </script>
 
 <footer class="footer">
@@ -56,7 +60,17 @@
             <span class="no-drawing">No drawing loaded</span>
         {/if}
 
-        <span class="zoom-info">Zoom: {formatZoom(scale)}</span>
+        <div class="zoom-controls">
+            <span class="zoom-info">Zoom: {formatZoom(scale)}</span>
+            <button
+                class="fit-button"
+                on:click={handleFitClick}
+                disabled={!drawing}
+                title="Zoom to fit"
+            >
+                Fit
+            </button>
+        </div>
     </div>
 </footer>
 
@@ -94,9 +108,41 @@
         color: #999;
     }
 
+    .zoom-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
     .zoom-info {
         font-family: 'Courier New', monospace;
         font-weight: 500;
         color: #333;
+    }
+
+    .fit-button {
+        padding: 0.25rem 0.75rem;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        color: #333;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .fit-button:hover:not(:disabled) {
+        background-color: #f0f0f0;
+        border-color: #999;
+    }
+
+    .fit-button:active:not(:disabled) {
+        background-color: #e0e0e0;
+    }
+
+    .fit-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
     }
 </style>
