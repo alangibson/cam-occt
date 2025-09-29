@@ -5,7 +5,10 @@
  */
 
 import { writable } from 'svelte/store';
-import type { ShapeVisualizationState, ShapeVisualizationStore } from './interfaces';
+import type {
+    ShapeVisualizationState,
+    ShapeVisualizationStore,
+} from './interfaces';
 
 function createShapeVisualizationStore(): ShapeVisualizationStore {
     const { subscribe, set, update } = writable<ShapeVisualizationState>({
@@ -48,5 +51,6 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
     };
 }
 
-export const shapeVisualizationStore: ReturnType<typeof createShapeVisualizationStore> =
-    createShapeVisualizationStore();
+export const shapeVisualizationStore: ReturnType<
+    typeof createShapeVisualizationStore
+> = createShapeVisualizationStore();

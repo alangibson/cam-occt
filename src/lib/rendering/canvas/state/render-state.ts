@@ -68,6 +68,7 @@ export interface VisibilityState {
     showChainStartPoints: boolean;
     showChainEndPoints: boolean;
     showChainTangentLines: boolean;
+    showLeadNormals: boolean;
 }
 
 /**
@@ -179,6 +180,7 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showChainStartPoints: false,
             showChainEndPoints: false,
             showChainTangentLines: false,
+            showLeadNormals: false,
         },
         stage: stage || ('import' as WorkflowStage),
         displayUnit: Unit.MM,

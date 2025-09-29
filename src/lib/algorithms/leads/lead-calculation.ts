@@ -3,6 +3,7 @@ import type { Arc } from '$lib/geometry/arc';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { CutDirection, LeadType } from '$lib/types/direction';
+import { normalizeVector } from '$lib/geometry/math/functions';
 import { validateLeadConfiguration } from './lead-validation';
 import {
     createTangentArc,
@@ -286,6 +287,8 @@ function calculateArcLead(
                 return {
                     geometry: arc,
                     type: LeadType.ARC,
+                    normal: normalizeVector(curveDirection),
+                    connectionPoint: point,
                 };
             }
 
@@ -300,6 +303,8 @@ function calculateArcLead(
                 return {
                     geometry: arc,
                     type: LeadType.ARC,
+                    normal: normalizeVector(curveDirection),
+                    connectionPoint: point,
                 };
             }
         }
@@ -327,6 +332,8 @@ function calculateArcLead(
     return {
         geometry: arc,
         type: LeadType.ARC,
+        normal: normalizeVector(baseCurveDirection),
+        connectionPoint: point,
     };
 }
 
@@ -343,7 +350,7 @@ function getLeadCurveDirection(
     _chain: Chain,
     point: Point2D,
     part?: DetectedPart,
-    leadLength?: number,
+    _leadLength?: number,
     flipSide: boolean = false,
     isLeadIn: boolean = true
 ): Point2D {

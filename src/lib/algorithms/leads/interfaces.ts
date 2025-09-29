@@ -1,4 +1,4 @@
-import type { CutDirection, LeadType } from '$lib/types';
+import type { CutDirection, LeadType, Point2D } from '$lib/types';
 import type { LeadGeometryType } from './types';
 
 export interface LeadConfig {
@@ -12,6 +12,8 @@ export interface LeadConfig {
 export interface Lead {
     geometry: LeadGeometryType;
     type: LeadType;
+    normal?: Point2D; // Unit vector pointing in the normal direction (perpendicular to lead tangent)
+    connectionPoint?: Point2D; // Where the lead connects to the chain/shape
 }
 
 export interface LeadResult {

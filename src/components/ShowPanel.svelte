@@ -2,6 +2,7 @@
     import AccordionPanel from './AccordionPanel.svelte';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
     import { chainStore } from '$lib/stores/chains/store';
+    import { showLeadNormals } from '$lib/stores/leads';
 
     // Subscribe to the stores
     $: shapeVisualization = $shapeVisualizationStore;
@@ -39,9 +40,7 @@
                 type="checkbox"
                 checked={chainVisualization.showChainStartPoints}
                 onchange={(e) =>
-                    chainStore.setShowChainStartPoints(
-                        e.currentTarget.checked
-                    )}
+                    chainStore.setShowChainStartPoints(e.currentTarget.checked)}
                 class="show-checkbox"
             />
             Chain Start Points
@@ -51,9 +50,7 @@
                 type="checkbox"
                 checked={chainVisualization.showChainEndPoints}
                 onchange={(e) =>
-                    chainStore.setShowChainEndPoints(
-                        e.currentTarget.checked
-                    )}
+                    chainStore.setShowChainEndPoints(e.currentTarget.checked)}
                 class="show-checkbox"
             />
             Chain End Points
@@ -69,6 +66,14 @@
                 class="show-checkbox"
             />
             Chain Tangent Lines
+        </label>
+        <label class="show-checkbox-label">
+            <input
+                type="checkbox"
+                bind:checked={$showLeadNormals}
+                class="show-checkbox"
+            />
+            Lead Normal Lines
         </label>
     </div>
 </AccordionPanel>

@@ -164,7 +164,6 @@
     $: detectedParts = $partStore.parts;
     $: partWarnings = $partStore.warnings;
 
-
     // Update Prepare stage overlay when tessellation changes (only when on prepare stage)
     $: if (
         $workflowStore.currentStage === WorkflowStage.PREPARE &&
@@ -185,7 +184,6 @@
 
     // Chain normalization analysis - use store for persistence
     $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
-
 
     // Chain selection state
     $: selectedChainId = $chainStore.selectedChainId;
@@ -235,7 +233,6 @@
             chainStore.selectChain(null);
         }
     }
-
 
     // Collect all issues from chain normalization
     $: chainTraversalIssues = chainNormalizationResults.flatMap((result) =>

@@ -70,9 +70,11 @@ export class ChainRenderer extends BaseRenderer {
         }
 
         // Render chain endpoints and tangents based on visibility settings (all stages)
-        if (state.visibility.showChainStartPoints ||
+        if (
+            state.visibility.showChainStartPoints ||
             state.visibility.showChainEndPoints ||
-            state.visibility.showChainTangentLines) {
+            state.visibility.showChainTangentLines
+        ) {
             this.renderChainEndpoints(ctx, state);
         }
     }

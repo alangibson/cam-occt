@@ -25,11 +25,15 @@ import type { LeadConfig, LeadResult } from '$lib/algorithms/leads/interfaces';
 import { LeadType } from '$lib/types/direction';
 import { hasValidCachedLeads } from '$lib/utils/lead-persistence-utils';
 import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
-import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
+import {
+    convertLeadGeometryToPoints,
+    extractLeadNormalAndConnection,
+} from '$lib/algorithms/leads/functions';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 
 // Constants for lead rendering
 const HIT_TEST_TOLERANCE = 5;
+const NORMAL_INDICATOR_RADIUS = 3; // Radius of the circle at normal line start
 
 export class LeadRenderer extends BaseRenderer {
     // Lead visualization settings
@@ -40,6 +44,8 @@ export class LeadRenderer extends BaseRenderer {
     private leadInOpacity: number = 1.0;
     private leadOutOpacity: number = 1.0;
     private leadLineWidth: number = 1;
+    private normalLineColor: string = 'rgba(255, 165, 0, 0.6)'; // Light orange
+    private normalLineLength: number = 30; // Length in screen pixels, adjust as needed
 
     constructor(coordinator: CoordinateTransformer) {
         super('lead-renderer', LayerId.LEADS, coordinator);
@@ -66,6 +72,11 @@ export class LeadRenderer extends BaseRenderer {
             }
 
             this.drawPathLeads(ctx, state, path, operation);
+
+            // Draw lead normals if enabled
+            if (state.visibility?.showLeadNormals) {
+                this.drawLeadNormals(ctx, state, path, operation);
+            }
         });
     }
 
@@ -125,9 +136,36 @@ export class LeadRenderer extends BaseRenderer {
         try {
             // First check if we have valid cached lead geometry
             if (hasValidCachedLeads(path)) {
+                // For cached leads, we need to add normal and connection point if missing
+                let leadIn = path.leadIn ? { ...path.leadIn } : undefined;
+                let leadOut = path.leadOut ? { ...path.leadOut } : undefined;
+
+                // Add normal and connection point to cached leads if missing
+                if (leadIn && (!leadIn.normal || !leadIn.connectionPoint)) {
+                    const extracted = extractLeadNormalAndConnection(
+                        leadIn,
+                        true
+                    );
+                    if (extracted) {
+                        leadIn.normal = extracted.normal;
+                        leadIn.connectionPoint = extracted.connectionPoint;
+                    }
+                }
+
+                if (leadOut && (!leadOut.normal || !leadOut.connectionPoint)) {
+                    const extracted = extractLeadNormalAndConnection(
+                        leadOut,
+                        false
+                    );
+                    if (extracted) {
+                        leadOut.normal = extracted.normal;
+                        leadOut.connectionPoint = extracted.connectionPoint;
+                    }
+                }
+
                 return {
-                    leadIn: path.leadIn || undefined,
-                    leadOut: path.leadOut || undefined,
+                    leadIn,
+                    leadOut,
                     warnings: path.leadValidation?.warnings || [],
                 };
             }
@@ -219,7 +257,7 @@ export class LeadRenderer extends BaseRenderer {
     }
 
     private shouldHideLeadDuringSimulation(
-        path: Path,
+        _path: Path,
         state: RenderState
     ): boolean {
         if (state.stage !== 'simulate') return false;
@@ -231,7 +269,7 @@ export class LeadRenderer extends BaseRenderer {
     }
 
     private getLeadOpacity(
-        path: Path,
+        _path: Path,
         leadType: 'leadIn' | 'leadOut',
         state: RenderState
     ): number {
@@ -329,6 +367,90 @@ export class LeadRenderer extends BaseRenderer {
         }
 
         return false;
+    }
+
+    private drawLeadNormals(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        path: Path,
+        operation: Operation
+    ): void {
+        const leadResult = this.calculatePathLeads(path, operation, state);
+        if (!leadResult) return;
+
+        // Draw normal for lead-in (normal starts at connection point)
+        if (
+            leadResult.leadIn &&
+            leadResult.leadIn.normal &&
+            leadResult.leadIn.connectionPoint
+        ) {
+            this.drawNormalLine(
+                ctx,
+                state,
+                leadResult.leadIn.connectionPoint,
+                leadResult.leadIn.normal
+            );
+        }
+
+        // Draw normal for lead-out (normal starts at connection point)
+        if (
+            leadResult.leadOut &&
+            leadResult.leadOut.normal &&
+            leadResult.leadOut.connectionPoint
+        ) {
+            this.drawNormalLine(
+                ctx,
+                state,
+                leadResult.leadOut.connectionPoint,
+                leadResult.leadOut.normal
+            );
+        }
+    }
+
+    private drawNormalLine(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        connectionPoint: Point2D,
+        normalDirection: Point2D
+    ): void {
+        // normalDirection is already a unit vector from the lead calculation
+        // Calculate normal line length in world coordinates
+        const normalWorldLength =
+            state.transform.coordinator.screenToWorldDistance(
+                this.normalLineLength
+            );
+
+        // Calculate end point of normal line
+        const endX = connectionPoint.x + normalDirection.x * normalWorldLength;
+        const endY = connectionPoint.y + normalDirection.y * normalWorldLength;
+
+        // Draw the normal line
+        ctx.save();
+        ctx.strokeStyle = this.normalLineColor;
+        ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(1);
+        ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.moveTo(connectionPoint.x, connectionPoint.y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Draw a small circle at the start point for clarity
+        ctx.fillStyle = this.normalLineColor;
+        const circleRadius = state.transform.coordinator.screenToWorldDistance(
+            NORMAL_INDICATOR_RADIUS
+        );
+        ctx.beginPath();
+        ctx.arc(
+            connectionPoint.x,
+            connectionPoint.y,
+            circleRadius,
+            0,
+            2 * Math.PI
+        );
+        ctx.fill();
+
+        ctx.restore();
     }
 
     /**

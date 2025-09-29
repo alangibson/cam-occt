@@ -3,6 +3,7 @@ import type { Point2D, Arc } from '$lib/types/geometry';
 import { generateArcPoints } from '$lib/geometry/arc/functions';
 import type { Lead, LeadConfig } from './interfaces';
 import type { Path } from '$lib/stores/paths/interfaces';
+import { normalizeVector } from '$lib/geometry/math/functions';
 
 /**
  * Convert LeadGeometry (Arc) to Point2D array for testing
@@ -77,5 +78,61 @@ export function createLeadConfigs(path: Path): {
     return {
         leadIn: createLeadInConfig(path),
         leadOut: createLeadOutConfig(path),
+    };
+}
+
+/**
+ * Extract normal and connection point from an arc lead
+ * For lead-in: connection point is at the arc end, normal points outward from arc center at start
+ * For lead-out: connection point is at the arc start, normal points outward from arc center at start
+ */
+export function extractLeadNormalAndConnection(
+    lead: Lead,
+    isLeadIn: boolean
+): { normal: Point2D; connectionPoint: Point2D } | undefined {
+    if (lead.type !== LeadType.ARC || !lead.geometry) {
+        return undefined;
+    }
+
+    const arc = lead.geometry as Arc;
+
+    // Get arc endpoints
+    const startAngleRad = (arc.startAngle * Math.PI) / 180;
+    const endAngleRad = (arc.endAngle * Math.PI) / 180;
+
+    const arcStart: Point2D = {
+        x: arc.center.x + arc.radius * Math.cos(startAngleRad),
+        y: arc.center.y + arc.radius * Math.sin(startAngleRad),
+    };
+
+    const arcEnd: Point2D = {
+        x: arc.center.x + arc.radius * Math.cos(endAngleRad),
+        y: arc.center.y + arc.radius * Math.sin(endAngleRad),
+    };
+
+    let connectionPoint: Point2D;
+    let normalAngleRad: number;
+
+    if (isLeadIn) {
+        // For lead-in: arc ends at the connection point
+        connectionPoint = arcEnd;
+        // Normal at the start of the arc (outward from center)
+        normalAngleRad = startAngleRad;
+    } else {
+        // For lead-out: arc starts at the connection point
+        connectionPoint = arcStart;
+        // Normal at the start of the arc (outward from center)
+        normalAngleRad = startAngleRad;
+    }
+
+    // Calculate normal vector (pointing outward from arc center)
+    const normal = normalizeVector({
+        x: Math.cos(normalAngleRad),
+        y: Math.sin(normalAngleRad),
+    });
+
+    return {
+        normal,
+        connectionPoint,
     };
 }

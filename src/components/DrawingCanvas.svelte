@@ -9,6 +9,7 @@
     import { overlayStore } from '$lib/stores/overlay/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
+    import { showLeadNormals } from '$lib/stores/leads';
     import { generateChainEndpoints } from '$lib/stores/chains/functions';
     import { generateShapePoints } from '$lib/stores/shape/functions';
     import {
@@ -96,6 +97,7 @@
     $: showChainStartPoints = chainVisualization.showChainStartPoints;
     $: showChainEndPoints = chainVisualization.showChainEndPoints;
     $: showChainTangentLines = chainVisualization.showChainTangentLines;
+    $: leadNormals = $showLeadNormals;
 
     // Calculate unit scale factor for proper unit display
     $: unitScale = drawing
@@ -105,11 +107,9 @@
     // Universal overlay management - works for all stages
     $: {
         // This will trigger whenever any of these reactive values change
-        const shouldUpdate = currentStage && (
-            shapeVisualization ||
-            chainVisualization ||
-            chains
-        );
+        const shouldUpdate =
+            currentStage &&
+            (shapeVisualization || chainVisualization || chains);
         if (shouldUpdate) {
             updateOverlaysForCurrentStage();
         }
@@ -124,7 +124,7 @@
             const allShapes = drawing.shapes;
             const allShapePoints = generateShapePoints(
                 allShapes,
-                new Set(allShapes.map(s => s.id))
+                new Set(allShapes.map((s) => s.id))
             );
             let filteredShapePoints: typeof allShapePoints = [];
 
@@ -163,21 +163,25 @@
                 chainVisualization.showChainStartPoints ||
                 chainVisualization.showChainEndPoints
             ) {
-                filteredEndpoints = allEndpoints.filter((endpoint: import('$lib/stores/overlay/interfaces').ChainEndpoint) => {
-                    if (
-                        endpoint.type === 'start' &&
-                        chainVisualization.showChainStartPoints
-                    ) {
-                        return true;
+                filteredEndpoints = allEndpoints.filter(
+                    (
+                        endpoint: import('$lib/stores/overlay/interfaces').ChainEndpoint
+                    ) => {
+                        if (
+                            endpoint.type === 'start' &&
+                            chainVisualization.showChainStartPoints
+                        ) {
+                            return true;
+                        }
+                        if (
+                            endpoint.type === 'end' &&
+                            chainVisualization.showChainEndPoints
+                        ) {
+                            return true;
+                        }
+                        return false;
                     }
-                    if (
-                        endpoint.type === 'end' &&
-                        chainVisualization.showChainEndPoints
-                    ) {
-                        return true;
-                    }
-                    return false;
-                });
+                );
             }
 
             overlayStore.setChainEndpoints(currentStage, filteredEndpoints);
@@ -262,6 +266,7 @@
                 showChainStartPoints,
                 showChainEndPoints,
                 showChainTangentLines,
+                showLeadNormals: leadNormals,
             },
         });
     }
