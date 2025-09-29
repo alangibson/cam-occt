@@ -63,6 +63,8 @@ export interface VisibilityState {
     showChains: boolean;
     showParts: boolean;
     showOverlays: boolean;
+    showShapeStartPoints: boolean;
+    showShapeEndPoints: boolean;
     showChainStartPoints: boolean;
     showChainEndPoints: boolean;
     showChainTangentLines: boolean;
@@ -172,6 +174,8 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showChains: true,
             showParts: true,
             showOverlays: true,
+            showShapeStartPoints: false,
+            showShapeEndPoints: false,
             showChainStartPoints: false,
             showChainEndPoints: false,
             showChainTangentLines: false,

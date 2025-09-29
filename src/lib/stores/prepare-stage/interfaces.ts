@@ -29,11 +29,6 @@ export interface PrepareStageState {
     originalShapesBeforeOptimization: Shape[] | null;
     originalChainsBeforeOptimization: Chain[] | null;
     partsDetected: boolean;
-
-    // Chain visualization options
-    showChainStartPoints: boolean;
-    showChainEndPoints: boolean;
-    showChainTangentLines: boolean;
 }
 
 export interface PrepareStageStore {
@@ -69,7 +64,4 @@ export interface PrepareStageStore {
     } | null;
     clearOriginalOptimizationState: () => void;
     setPartsDetected: (detected: boolean) => void;
-    setShowChainStartPoints: (show: boolean) => void;
-    setShowChainEndPoints: (show: boolean) => void;
-    setShowChainTangentLines: (show: boolean) => void;
 }

@@ -10,7 +10,7 @@
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { overlayStore } from '$lib/stores/overlay/store';
-    import { generateShapePoints } from '$lib/stores/overlay/functions';
+    import { generateShapePoints } from '$lib/stores/shape/functions';
 
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;

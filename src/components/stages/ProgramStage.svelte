@@ -23,6 +23,7 @@
     import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
     import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
+    import ShowPanel from '../ShowPanel.svelte';
 
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;
@@ -419,6 +420,8 @@
                     </div>
                 </AccordionPanel>
             {/if}
+
+            <ShowPanel />
         </svelte:fragment>
     </ThreeColumnLayout>
 </div>

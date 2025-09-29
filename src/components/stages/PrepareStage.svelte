@@ -21,8 +21,7 @@
     } from '$lib/geometry/shape/functions';
     import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { overlayStore } from '$lib/stores/overlay/store';
-    import { generateChainEndpoints } from '$lib/stores/overlay/functions';
+    import ShowPanel from '../ShowPanel.svelte';
     import { partStore } from '$lib/stores/parts/store';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { tessellationStore } from '$lib/stores/tessellation/store';
@@ -165,19 +164,6 @@
     $: detectedParts = $partStore.parts;
     $: partWarnings = $partStore.warnings;
 
-    // Update Prepare stage overlay when chains are detected (but not during normalization, and only when on prepare stage)
-    $: if (
-        $workflowStore.currentStage === WorkflowStage.PREPARE &&
-        !isNormalizing &&
-        detectedChains.length > 0
-    ) {
-        updateChainOverlays(detectedChains);
-    } else if (
-        $workflowStore.currentStage === WorkflowStage.PREPARE &&
-        !isNormalizing
-    ) {
-        overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
-    }
 
     // Update Prepare stage overlay when tessellation changes (only when on prepare stage)
     $: if (
@@ -192,52 +178,14 @@
             shapeId: point.shapeId, // Use existing shapeId from tessellation store
             chainId: point.chainId,
         }));
-        overlayStore.setTessellationPoints(
-            WorkflowStage.PREPARE,
-            tessellationPoints
-        );
+        // Tessellation points will be automatically displayed by DrawingCanvas reactivity
     } else if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
-        overlayStore.clearTessellationPoints(WorkflowStage.PREPARE);
+        // Tessellation points clearing handled by DrawingCanvas reactivity
     }
 
     // Chain normalization analysis - use store for persistence
     $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
 
-    // Helper function to update overlays based on visualization preferences
-    function updateChainOverlays(chains: Chain[]) {
-        if ($workflowStore.currentStage !== WorkflowStage.PREPARE) return;
-
-        // Generate and filter chain endpoints
-        const allEndpoints = generateChainEndpoints(chains);
-        let filteredEndpoints: typeof allEndpoints = [];
-
-        if (
-            $prepareStageStore.showChainStartPoints ||
-            $prepareStageStore.showChainEndPoints
-        ) {
-            filteredEndpoints = allEndpoints.filter((endpoint) => {
-                if (
-                    endpoint.type === 'start' &&
-                    $prepareStageStore.showChainStartPoints
-                ) {
-                    return true;
-                }
-                if (
-                    endpoint.type === 'end' &&
-                    $prepareStageStore.showChainEndPoints
-                ) {
-                    return true;
-                }
-                return false;
-            });
-        }
-
-        overlayStore.setChainEndpoints(
-            WorkflowStage.PREPARE,
-            filteredEndpoints
-        );
-        // Tangent lines are now handled by the ChainRenderer
-    }
 
     // Chain selection state
     $: selectedChainId = $chainStore.selectedChainId;
@@ -288,16 +236,6 @@
         }
     }
 
-    // Update overlays when visibility settings change
-    $: if (
-        $workflowStore.currentStage === WorkflowStage.PREPARE &&
-        detectedChains.length > 0 &&
-        ($prepareStageStore.showChainStartPoints !== undefined ||
-            $prepareStageStore.showChainEndPoints !== undefined ||
-            $prepareStageStore.showChainTangentLines !== undefined)
-    ) {
-        updateChainOverlays(detectedChains);
-    }
 
     // Collect all issues from chain normalization
     $: chainTraversalIssues = chainNormalizationResults.flatMap((result) =>
@@ -347,8 +285,7 @@
             prepareStageStore.clearOriginalNormalizationState();
             prepareStageStore.clearOriginalOptimizationState();
             prepareStageStore.setPartsDetected(false);
-            overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
-            overlayStore.clearTessellationPoints(WorkflowStage.PREPARE);
+            // Chain endpoints and tessellation points clearing handled by DrawingCanvas reactivity
             chainStore.selectChain(null);
             console.log('Cleared all chains and dependent state');
             return;
@@ -400,10 +337,7 @@
                 // Clear the saved original state
                 prepareStageStore.clearOriginalNormalizationState();
 
-                // Update overlays
-                if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
-                    updateChainOverlays(originalState.chains);
-                }
+                // Overlays will be automatically updated by DrawingCanvas reactivity
 
                 console.log('Restored original chains before normalization');
                 return;
@@ -450,19 +384,8 @@
             chainStore.setChains(newChains);
 
             // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
-            setTimeout(() => {
-                if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
-                    if (newChains.length > 0) {
-                        updateChainOverlays(newChains);
-                        console.log(
-                            `Updated overlays after normalization for ${newChains.length} chains.`
-                        );
-                    } else {
-                        overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
-                    }
-                }
-                isNormalizing = false; // Reset flag after overlay is updated
-            }, 50); // Small delay to ensure all stores are updated
+            // Overlays will be automatically updated by DrawingCanvas reactivity
+            isNormalizing = false; // Reset flag
 
             console.log(
                 `Normalized chains. Re-detected ${newChains.length} chains.`
@@ -488,10 +411,7 @@
                 // Clear the saved original state
                 prepareStageStore.clearOriginalOptimizationState();
 
-                // Update overlays
-                if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
-                    updateChainOverlays(originalState.chains);
-                }
+                // Overlays will be automatically updated by DrawingCanvas reactivity
 
                 console.log('Restored original chains before optimization');
                 return;
@@ -534,19 +454,8 @@
             chainStore.setChains(newChains);
 
             // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
-            setTimeout(() => {
-                if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
-                    if (newChains.length > 0) {
-                        updateChainOverlays(newChains);
-                        console.log(
-                            `Updated overlays after optimization for ${newChains.length} chains.`
-                        );
-                    } else {
-                        overlayStore.clearChainEndpoints(WorkflowStage.PREPARE);
-                    }
-                }
-                isOptimizingStarts = false; // Reset flag after overlay is updated
-            }, 50); // Small delay to ensure all stores are updated
+            // Overlays will be automatically updated by DrawingCanvas reactivity
+            isOptimizingStarts = false; // Reset flag
 
             console.log(
                 `Optimized start points. Re-detected ${newChains.length} chains.`
@@ -1833,46 +1742,7 @@
                 </AccordionPanel>
             {/if}
 
-            <AccordionPanel title="Show" isExpanded={true}>
-                <div class="show-panel-content">
-                    <label class="show-checkbox-label">
-                        <input
-                            type="checkbox"
-                            checked={$prepareStageStore.showChainStartPoints}
-                            onchange={(e) =>
-                                prepareStageStore.setShowChainStartPoints(
-                                    e.currentTarget.checked
-                                )}
-                            class="show-checkbox"
-                        />
-                        Chain Start Points
-                    </label>
-                    <label class="show-checkbox-label">
-                        <input
-                            type="checkbox"
-                            checked={$prepareStageStore.showChainEndPoints}
-                            onchange={(e) =>
-                                prepareStageStore.setShowChainEndPoints(
-                                    e.currentTarget.checked
-                                )}
-                            class="show-checkbox"
-                        />
-                        Chain End Points
-                    </label>
-                    <label class="show-checkbox-label">
-                        <input
-                            type="checkbox"
-                            checked={$prepareStageStore.showChainTangentLines}
-                            onchange={(e) =>
-                                prepareStageStore.setShowChainTangentLines(
-                                    e.currentTarget.checked
-                                )}
-                            class="show-checkbox"
-                        />
-                        Chain Tangent Lines
-                    </label>
-                </div>
-            </AccordionPanel>
+            <ShowPanel />
 
             <!-- Hidden for now -->
             <!-- <div class="panel">

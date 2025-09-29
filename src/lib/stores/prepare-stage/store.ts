@@ -41,9 +41,6 @@ function createPrepareStageStore(): PrepareStageStore {
         originalShapesBeforeOptimization: null,
         originalChainsBeforeOptimization: null,
         partsDetected: false,
-        showChainStartPoints: false,
-        showChainEndPoints: false,
-        showChainTangentLines: false,
     });
 
     // Listen for measurement system changes and refresh algorithm parameters
@@ -141,9 +138,6 @@ function createPrepareStageStore(): PrepareStageStore {
                 originalShapesBeforeOptimization: null,
                 originalChainsBeforeOptimization: null,
                 partsDetected: false,
-                showChainStartPoints: false,
-                showChainEndPoints: false,
-                showChainTangentLines: false,
             });
         },
 
@@ -291,36 +285,6 @@ function createPrepareStageStore(): PrepareStageStore {
             update((state) => ({
                 ...state,
                 partsDetected: detected,
-            }));
-        },
-
-        /**
-         * Set chain start points visibility
-         */
-        setShowChainStartPoints: (show: boolean) => {
-            update((state) => ({
-                ...state,
-                showChainStartPoints: show,
-            }));
-        },
-
-        /**
-         * Set chain end points visibility
-         */
-        setShowChainEndPoints: (show: boolean) => {
-            update((state) => ({
-                ...state,
-                showChainEndPoints: show,
-            }));
-        },
-
-        /**
-         * Set chain tangent lines visibility
-         */
-        setShowChainTangentLines: (show: boolean) => {
-            update((state) => ({
-                ...state,
-                showChainTangentLines: show,
             }));
         },
     };

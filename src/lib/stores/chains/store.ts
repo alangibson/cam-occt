@@ -9,6 +9,9 @@ function createChainStore() {
         tolerance: 0.1,
         selectedChainId: null,
         highlightedChainId: null,
+        showChainStartPoints: false,
+        showChainEndPoints: false,
+        showChainTangentLines: false,
     };
 
     const { subscribe, update } = writable<ChainStore>(initialState);
@@ -72,6 +75,28 @@ function createChainStore() {
         }));
     }
 
+    // Chain visualization functions
+    function setShowChainStartPoints(show: boolean) {
+        update((state) => ({
+            ...state,
+            showChainStartPoints: show,
+        }));
+    }
+
+    function setShowChainEndPoints(show: boolean) {
+        update((state) => ({
+            ...state,
+            showChainEndPoints: show,
+        }));
+    }
+
+    function setShowChainTangentLines(show: boolean) {
+        update((state) => ({
+            ...state,
+            showChainTangentLines: show,
+        }));
+    }
+
     return {
         subscribe,
         setChains,
@@ -81,6 +106,9 @@ function createChainStore() {
         clearChainSelection,
         highlightChain,
         clearChainHighlight,
+        setShowChainStartPoints,
+        setShowChainEndPoints,
+        setShowChainTangentLines,
     };
 }
 

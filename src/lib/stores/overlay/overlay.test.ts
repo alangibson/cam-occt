@@ -5,7 +5,8 @@ import type {
     ShapePoint,
     TessellationPoint,
 } from './interfaces';
-import { generateChainEndpoints, generateShapePoints } from './functions';
+import { generateChainEndpoints } from '$lib/stores/chains/functions';
+import { generateShapePoints } from '$lib/stores/shape/functions';
 import { overlayStore } from './store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Point2D, Shape } from '$lib/types';

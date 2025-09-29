@@ -5,4 +5,9 @@ export interface ChainStore {
     tolerance: number;
     selectedChainId: string | null;
     highlightedChainId: string | null;
+
+    // Chain visualization options
+    showChainStartPoints: boolean;
+    showChainEndPoints: boolean;
+    showChainTangentLines: boolean;
 }

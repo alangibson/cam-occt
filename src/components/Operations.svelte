@@ -732,7 +732,10 @@
                             {#if operation.leadInConfig?.type !== 'none'}
                                 <div class="field-group">
                                     <label for="lead-in-length-{operation.id}"
-                                        >Length ({getReactiveUnitSymbol($settingsStore.settings.measurementSystem)}):</label
+                                        >Length ({getReactiveUnitSymbol(
+                                            $settingsStore.settings
+                                                .measurementSystem
+                                        )}):</label
                                     >
                                     <div class="length-with-fit">
                                         <input
@@ -838,7 +841,10 @@
                             {#if operation.leadOutConfig?.type !== 'none'}
                                 <div class="field-group">
                                     <label for="lead-out-length-{operation.id}"
-                                        >Length ({getReactiveUnitSymbol($settingsStore.settings.measurementSystem)}):</label
+                                        >Length ({getReactiveUnitSymbol(
+                                            $settingsStore.settings
+                                                .measurementSystem
+                                        )}):</label
                                     >
                                     <div class="length-with-fit">
                                         <input

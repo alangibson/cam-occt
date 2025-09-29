@@ -8,7 +8,9 @@
     import { tessellationStore } from '$lib/stores/tessellation/store';
     import { overlayStore } from '$lib/stores/overlay/store';
     import { rapidStore } from '$lib/stores/rapids/store';
-    import { prepareStageStore } from '$lib/stores/prepare-stage/store';
+    import { shapeVisualizationStore } from '$lib/stores/shape/store';
+    import { generateChainEndpoints } from '$lib/stores/chains/functions';
+    import { generateShapePoints } from '$lib/stores/shape/functions';
     import {
         selectRapid,
         clearRapidHighlight,
@@ -87,14 +89,102 @@
     $: showRapids = $rapidStore.showRapids;
     $: selectedRapidId = $rapidStore.selectedRapidId;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
-    $: showChainStartPoints = $prepareStageStore.showChainStartPoints;
-    $: showChainEndPoints = $prepareStageStore.showChainEndPoints;
-    $: showChainTangentLines = $prepareStageStore.showChainTangentLines;
+    $: shapeVisualization = $shapeVisualizationStore;
+    $: showShapeStartPoints = shapeVisualization.showShapeStartPoints;
+    $: showShapeEndPoints = shapeVisualization.showShapeEndPoints;
+    $: chainVisualization = $chainStore;
+    $: showChainStartPoints = chainVisualization.showChainStartPoints;
+    $: showChainEndPoints = chainVisualization.showChainEndPoints;
+    $: showChainTangentLines = chainVisualization.showChainTangentLines;
 
     // Calculate unit scale factor for proper unit display
     $: unitScale = drawing
         ? getPhysicalScaleFactor(drawing.units, displayUnit)
         : 1;
+
+    // Universal overlay management - works for all stages
+    $: {
+        // This will trigger whenever any of these reactive values change
+        const shouldUpdate = currentStage && (
+            shapeVisualization ||
+            chainVisualization ||
+            chains
+        );
+        if (shouldUpdate) {
+            updateOverlaysForCurrentStage();
+        }
+    }
+
+    // Universal overlay update function for any stage
+    function updateOverlaysForCurrentStage() {
+        if (!currentStage) return;
+
+        // Handle shape points
+        if (drawing && drawing.shapes) {
+            const allShapes = drawing.shapes;
+            const allShapePoints = generateShapePoints(
+                allShapes,
+                new Set(allShapes.map(s => s.id))
+            );
+            let filteredShapePoints: typeof allShapePoints = [];
+
+            if (
+                shapeVisualization.showShapeStartPoints ||
+                shapeVisualization.showShapeEndPoints
+            ) {
+                filteredShapePoints = allShapePoints.filter((point) => {
+                    if (
+                        point.type === 'start' &&
+                        shapeVisualization.showShapeStartPoints
+                    ) {
+                        return true;
+                    }
+                    if (
+                        point.type === 'end' &&
+                        shapeVisualization.showShapeEndPoints
+                    ) {
+                        return true;
+                    }
+                    return false;
+                });
+            }
+
+            overlayStore.setShapePoints(currentStage, filteredShapePoints);
+        } else {
+            overlayStore.clearShapePoints(currentStage);
+        }
+
+        // Handle chain endpoints
+        if (chains.length > 0) {
+            const allEndpoints = generateChainEndpoints(chains);
+            let filteredEndpoints: typeof allEndpoints = [];
+
+            if (
+                chainVisualization.showChainStartPoints ||
+                chainVisualization.showChainEndPoints
+            ) {
+                filteredEndpoints = allEndpoints.filter((endpoint: import('$lib/stores/overlay/interfaces').ChainEndpoint) => {
+                    if (
+                        endpoint.type === 'start' &&
+                        chainVisualization.showChainStartPoints
+                    ) {
+                        return true;
+                    }
+                    if (
+                        endpoint.type === 'end' &&
+                        chainVisualization.showChainEndPoints
+                    ) {
+                        return true;
+                    }
+                    return false;
+                });
+            }
+
+            overlayStore.setChainEndpoints(currentStage, filteredEndpoints);
+        } else {
+            overlayStore.clearChainEndpoints(currentStage);
+        }
+    }
 
     // Update coordinate transformer when parameters change
     $: if (coordinator) {
@@ -167,6 +257,8 @@
                 showChains: true,
                 showParts: true,
                 showOverlays: true,
+                showShapeStartPoints,
+                showShapeEndPoints,
                 showChainStartPoints,
                 showChainEndPoints,
                 showChainTangentLines,

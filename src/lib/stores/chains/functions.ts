@@ -1,4 +1,37 @@
+import type { Point2D, Shape } from '$lib/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
+import {
+    getShapeEndPoint,
+    getShapeStartPoint,
+} from '$lib/geometry/shape/functions';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import type { ChainEndpoint } from '$lib/stores/overlay/interfaces';
+
+// Helper functions to generate chain overlay data
+export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {
+    const endpoints: ChainEndpoint[] = [];
+
+    chains.forEach((chain) => {
+        if (chain.shapes.length === 0) return;
+
+        const firstShape: Shape = chain.shapes[0];
+        const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
+
+        const start: Point2D = getShapeStartPoint(firstShape);
+        const end: Point2D = getShapeEndPoint(lastShape);
+
+        endpoints.push({ ...start, type: 'start', chainId: chain.id });
+
+        if (
+            Math.abs(end.x - start.x) > CHAIN_CLOSURE_TOLERANCE ||
+            Math.abs(end.y - start.y) > CHAIN_CLOSURE_TOLERANCE
+        ) {
+            endpoints.push({ ...end, type: 'end', chainId: chain.id });
+        }
+    });
+
+    return endpoints;
+}
 
 // Helper to check if a shape is part of any chain
 export function getShapeChainId(
