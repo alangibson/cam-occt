@@ -8,11 +8,13 @@ export interface ShapeVisualizationState {
     // Shape visualization options
     showShapeStartPoints: boolean;
     showShapeEndPoints: boolean;
+    showShapeNormals: boolean;
 }
 
 export interface ShapeVisualizationStore {
     subscribe: (run: (value: ShapeVisualizationState) => void) => () => void;
     setShowShapeStartPoints: (show: boolean) => void;
     setShowShapeEndPoints: (show: boolean) => void;
+    setShowShapeNormals: (show: boolean) => void;
     reset: () => void;
 }

@@ -23,6 +23,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
     getShapeStartPoint,
     getShapeEndPoint,
+    getShapeNormal,
 } from '$lib/geometry/shape/functions';
 
 // Constants for rendering
@@ -32,6 +33,8 @@ const ENDPOINT_SIZE = 6;
 const HIT_TEST_TOLERANCE = 5;
 const TANGENT_LINE_LENGTH = 50; // Length of tangent lines in screen pixels
 const TANGENT_LINE_WIDTH = 2;
+const NORMAL_LINE_LENGTH = 30; // Length of normal lines in screen pixels
+const NORMAL_INDICATOR_RADIUS = 3; // Radius of the circle at normal line start
 
 export class ChainRenderer extends BaseRenderer {
     constructor(coordinator: CoordinateTransformer) {
@@ -76,6 +79,11 @@ export class ChainRenderer extends BaseRenderer {
             state.visibility.showChainTangentLines
         ) {
             this.renderChainEndpoints(ctx, state);
+        }
+
+        // Render chain normals if enabled
+        if (state.visibility.showChainNormals) {
+            this.drawChainNormals(ctx, state);
         }
     }
 
@@ -291,6 +299,74 @@ export class ChainRenderer extends BaseRenderer {
         ctx.moveTo(startPoint.x, startPoint.y);
         ctx.lineTo(endPoint.x, endPoint.y);
         ctx.stroke();
+
+        ctx.restore();
+    }
+
+    private drawChainNormals(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState
+    ): void {
+        for (const chain of state.chains) {
+            if (chain.shapes.length === 0) continue;
+
+            // Get the first shape of the chain to draw normal at start point
+            const startShape = state.drawing?.shapes.find(
+                (s) => s.id === chain.shapes[0].id
+            );
+
+            if (startShape) {
+                const startPoint = getShapeStartPoint(startShape);
+                if (startPoint) {
+                    // Calculate normal at start point (t = 0)
+                    const normal = getShapeNormal(startShape, 0);
+                    this.drawNormalLine(ctx, state, startPoint, normal);
+                }
+            }
+        }
+    }
+
+    private drawNormalLine(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        connectionPoint: Point2D,
+        normalDirection: Point2D
+    ): void {
+        // Calculate normal line length in world coordinates
+        const normalWorldLength =
+            state.transform.coordinator.screenToWorldDistance(
+                NORMAL_LINE_LENGTH
+            );
+
+        // Calculate end point of normal line
+        const endX = connectionPoint.x + normalDirection.x * normalWorldLength;
+        const endY = connectionPoint.y + normalDirection.y * normalWorldLength;
+
+        // Draw the normal line
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 165, 0, 0.6)'; // Light orange
+        ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(1);
+        ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.moveTo(connectionPoint.x, connectionPoint.y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Draw a small circle at the start point for clarity
+        ctx.fillStyle = 'rgba(255, 165, 0, 0.6)'; // Light orange
+        const circleRadius = state.transform.coordinator.screenToWorldDistance(
+            NORMAL_INDICATOR_RADIUS
+        );
+        ctx.beginPath();
+        ctx.arc(
+            connectionPoint.x,
+            connectionPoint.y,
+            circleRadius,
+            0,
+            2 * Math.PI
+        );
+        ctx.fill();
 
         ctx.restore();
     }

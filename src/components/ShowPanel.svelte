@@ -70,6 +70,28 @@
         <label class="show-checkbox-label">
             <input
                 type="checkbox"
+                checked={chainVisualization.showChainNormals}
+                onchange={(e) =>
+                    chainStore.setShowChainNormals(e.currentTarget.checked)}
+                class="show-checkbox"
+            />
+            Chain Normal Lines
+        </label>
+        <label class="show-checkbox-label">
+            <input
+                type="checkbox"
+                checked={shapeVisualization.showShapeNormals}
+                onchange={(e) =>
+                    shapeVisualizationStore.setShowShapeNormals(
+                        e.currentTarget.checked
+                    )}
+                class="show-checkbox"
+            />
+            Shape Normal Lines
+        </label>
+        <label class="show-checkbox-label">
+            <input
+                type="checkbox"
                 bind:checked={$showLeadNormals}
                 class="show-checkbox"
             />

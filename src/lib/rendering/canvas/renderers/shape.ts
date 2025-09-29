@@ -29,7 +29,7 @@ import { getChainPartType, getPartChainIds } from '$lib/stores/parts/functions';
 import { tessellateSpline } from '$lib/geometry/spline';
 import { distanceFromEllipsePerimeter } from '$lib/geometry/ellipse/index';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
-// Removed unused imports getShapeStartPoint, getShapeEndPoint
+import { getShapeNormal, getShapeMidpoint } from '$lib/geometry/shape/functions';
 import {
     calculateViewportBounds,
     cullShapesToViewport,
@@ -58,6 +58,8 @@ const PART_SHELL_LINE_WIDTH = 1.5;
 const PART_HOLE_LINE_WIDTH = 1.5;
 const CHAIN_FALLBACK_LINE_WIDTH = 1.5;
 const DEFAULT_LINE_WIDTH = 1;
+const NORMAL_LINE_LENGTH = 30; // Length of normal lines in screen pixels
+const NORMAL_INDICATOR_RADIUS = 3; // Radius of the circle at normal line start
 
 /**
  * Shape renderer that handles all basic geometry rendering
@@ -133,6 +135,80 @@ export class ShapeRenderer extends BaseRenderer {
                 drawingContext
             );
         });
+
+        // Render shape normals if enabled
+        if (state.visibility.showShapeNormals) {
+            this.drawShapeNormals(ctx, state, shapesToRender);
+        }
+    }
+
+    private drawShapeNormals(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        shapes: Shape[]
+    ): void {
+        for (const shape of shapes) {
+            // Check if layer is visible
+            if (state.respectLayerVisibility) {
+                const shapeLayer = shape.layer || '0';
+                const isVisible =
+                    state.visibility.layerVisibility[shapeLayer] !== false;
+                if (!isVisible) continue;
+            }
+
+            // Get midpoint of the shape
+            const midpoint = getShapeMidpoint(shape, 0.5);
+            if (midpoint) {
+                // Calculate normal at midpoint (t = 0.5)
+                const normal = getShapeNormal(shape, 0.5);
+                this.drawNormalLine(ctx, state, midpoint, normal);
+            }
+        }
+    }
+
+    private drawNormalLine(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        connectionPoint: Point2D,
+        normalDirection: Point2D
+    ): void {
+        // Calculate normal line length in world coordinates
+        const normalWorldLength =
+            state.transform.coordinator.screenToWorldDistance(
+                NORMAL_LINE_LENGTH
+            );
+
+        // Calculate end point of normal line
+        const endX = connectionPoint.x + normalDirection.x * normalWorldLength;
+        const endY = connectionPoint.y + normalDirection.y * normalWorldLength;
+
+        // Draw the normal line
+        ctx.save();
+        ctx.strokeStyle = 'rgba(0, 150, 255, 0.7)'; // Light blue
+        ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(1);
+        ctx.setLineDash([]);
+
+        ctx.beginPath();
+        ctx.moveTo(connectionPoint.x, connectionPoint.y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Draw a small circle at the start point for clarity
+        ctx.fillStyle = 'rgba(0, 150, 255, 0.7)'; // Light blue
+        const circleRadius = state.transform.coordinator.screenToWorldDistance(
+            NORMAL_INDICATOR_RADIUS
+        );
+        ctx.beginPath();
+        ctx.arc(
+            connectionPoint.x,
+            connectionPoint.y,
+            circleRadius,
+            0,
+            2 * Math.PI
+        );
+        ctx.fill();
+
+        ctx.restore();
     }
 
     /**

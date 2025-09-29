@@ -12,6 +12,7 @@ function createChainStore() {
         showChainStartPoints: false,
         showChainEndPoints: false,
         showChainTangentLines: false,
+        showChainNormals: false,
     };
 
     const { subscribe, update } = writable<ChainStore>(initialState);
@@ -97,6 +98,13 @@ function createChainStore() {
         }));
     }
 
+    function setShowChainNormals(show: boolean) {
+        update((state) => ({
+            ...state,
+            showChainNormals: show,
+        }));
+    }
+
     return {
         subscribe,
         setChains,
@@ -109,6 +117,7 @@ function createChainStore() {
         setShowChainStartPoints,
         setShowChainEndPoints,
         setShowChainTangentLines,
+        setShowChainNormals,
     };
 }
 

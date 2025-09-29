@@ -93,10 +93,12 @@
     $: shapeVisualization = $shapeVisualizationStore;
     $: showShapeStartPoints = shapeVisualization.showShapeStartPoints;
     $: showShapeEndPoints = shapeVisualization.showShapeEndPoints;
+    $: showShapeNormals = shapeVisualization.showShapeNormals;
     $: chainVisualization = $chainStore;
     $: showChainStartPoints = chainVisualization.showChainStartPoints;
     $: showChainEndPoints = chainVisualization.showChainEndPoints;
     $: showChainTangentLines = chainVisualization.showChainTangentLines;
+    $: showChainNormals = chainVisualization.showChainNormals;
     $: leadNormals = $showLeadNormals;
 
     // Calculate unit scale factor for proper unit display
@@ -263,9 +265,11 @@
                 showOverlays: true,
                 showShapeStartPoints,
                 showShapeEndPoints,
+                showShapeNormals,
                 showChainStartPoints,
                 showChainEndPoints,
                 showChainTangentLines,
+                showChainNormals,
                 showLeadNormals: leadNormals,
             },
         });

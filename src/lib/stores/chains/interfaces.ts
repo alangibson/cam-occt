@@ -10,4 +10,5 @@ export interface ChainStore {
     showChainStartPoints: boolean;
     showChainEndPoints: boolean;
     showChainTangentLines: boolean;
+    showChainNormals: boolean;
 }

@@ -14,6 +14,7 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
     const { subscribe, set, update } = writable<ShapeVisualizationState>({
         showShapeStartPoints: false,
         showShapeEndPoints: false,
+        showShapeNormals: false,
     });
 
     return {
@@ -40,12 +41,23 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
         },
 
         /**
+         * Set shape normals visibility
+         */
+        setShowShapeNormals: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showShapeNormals: show,
+            }));
+        },
+
+        /**
          * Reset to defaults
          */
         reset: () => {
             set({
                 showShapeStartPoints: false,
                 showShapeEndPoints: false,
+                showShapeNormals: false,
             });
         },
     };
