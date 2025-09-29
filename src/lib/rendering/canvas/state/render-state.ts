@@ -70,6 +70,8 @@ export interface VisibilityState {
     showChainTangentLines: boolean;
     showChainNormals: boolean;
     showShapeNormals: boolean;
+    showShapeWindingDirection: boolean;
+    showShapeTangentLines: boolean;
     showLeadNormals: boolean;
 }
 
@@ -184,6 +186,8 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showChainTangentLines: false,
             showChainNormals: false,
             showShapeNormals: false,
+            showShapeWindingDirection: false,
+            showShapeTangentLines: false,
             showLeadNormals: false,
         },
         stage: stage || ('import' as WorkflowStage),

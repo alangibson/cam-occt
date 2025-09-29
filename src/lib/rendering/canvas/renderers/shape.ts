@@ -33,6 +33,7 @@ import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import {
     getShapeNormal,
     getShapeMidpoint,
+    getShapePointAt,
 } from '$lib/geometry/shape/functions';
 import {
     calculateViewportBounds,
@@ -62,6 +63,17 @@ const PART_SHELL_LINE_WIDTH = 1.5;
 const PART_HOLE_LINE_WIDTH = 1.5;
 const CHAIN_FALLBACK_LINE_WIDTH = 1.5;
 const DEFAULT_LINE_WIDTH = 1;
+
+// Constants for shape winding direction and tangent lines
+const SHAPE_CHEVRON_SIZE_PX = 8;
+const SHAPE_CHEVRON_LINE_WIDTH = 1.5;
+const WING_LENGTH_RATIO = 0.7;
+const BACK_OFFSET_RATIO = 0.3;
+const TIP_OFFSET_RATIO = 0.4;
+const PI_DIVISOR = 4;
+const QUARTER_PI = Math.PI / PI_DIVISOR;
+const SHAPE_TANGENT_LINE_LENGTH = 50; // Length of tangent lines in screen pixels
+const SHAPE_TANGENT_LINE_WIDTH = 2;
 
 /**
  * Shape renderer that handles all basic geometry rendering
@@ -142,6 +154,16 @@ export class ShapeRenderer extends BaseRenderer {
         if (state.visibility.showShapeNormals) {
             this.drawShapeNormals(ctx, state, shapesToRender);
         }
+
+        // Render shape winding direction if enabled
+        if (state.visibility.showShapeWindingDirection) {
+            this.drawShapeWindingDirections(ctx, state, shapesToRender);
+        }
+
+        // Render shape tangent lines if enabled
+        if (state.visibility.showShapeTangentLines) {
+            this.drawShapeTangentLines(ctx, state, shapesToRender);
+        }
     }
 
     private drawShapeNormals(
@@ -173,6 +195,213 @@ export class ShapeRenderer extends BaseRenderer {
                 );
             }
         }
+    }
+
+    private drawShapeWindingDirections(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        shapes: Shape[]
+    ): void {
+        for (const shape of shapes) {
+            // Check if layer is visible
+            if (state.respectLayerVisibility) {
+                const shapeLayer = shape.layer || '0';
+                const isVisible =
+                    state.visibility.layerVisibility[shapeLayer] !== false;
+                if (!isVisible) continue;
+            }
+
+            // Get midpoint and direction of the shape
+            const MIDPOINT_PARAM = 0.5;
+            const midpoint = getShapeMidpoint(shape, MIDPOINT_PARAM);
+            if (midpoint) {
+                // Calculate direction at midpoint by sampling nearby points
+                const direction = this.getShapeDirectionAtMidpoint(shape);
+                if (direction) {
+                    // Calculate perpendicular vector for chevron wings
+                    const perpX = -direction.y;
+                    const perpY = direction.x;
+
+                    // Get chevron size in world units
+                    const chevronSize =
+                        state.transform.coordinator.screenToWorldDistance(
+                            SHAPE_CHEVRON_SIZE_PX
+                        );
+
+                    this.drawChevronArrow(
+                        ctx,
+                        state,
+                        midpoint,
+                        direction.x,
+                        direction.y,
+                        perpX,
+                        perpY,
+                        chevronSize
+                    );
+                }
+            }
+        }
+    }
+
+    private drawShapeTangentLines(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        shapes: Shape[]
+    ): void {
+        for (const shape of shapes) {
+            // Check if layer is visible
+            if (state.respectLayerVisibility) {
+                const shapeLayer = shape.layer || '0';
+                const isVisible =
+                    state.visibility.layerVisibility[shapeLayer] !== false;
+                if (!isVisible) continue;
+            }
+
+            // Get midpoint and direction of the shape
+            const MIDPOINT_PARAM = 0.5;
+            const midpoint = getShapeMidpoint(shape, MIDPOINT_PARAM);
+            if (midpoint) {
+                // Calculate tangent direction at midpoint
+                const direction = this.getShapeDirectionAtMidpoint(shape);
+                if (direction) {
+                    this.drawShapeTangent(ctx, state, midpoint, direction);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get the direction vector at the midpoint of a shape
+     */
+    private getShapeDirectionAtMidpoint(shape: Shape): Point2D | null {
+        const MIDPOINT_PARAM = 0.5;
+        const DELTA = 0.01; // Small offset for direction calculation
+
+        // Get points slightly before and after midpoint
+        const t1 = Math.max(0, MIDPOINT_PARAM - DELTA);
+        const t2 = Math.min(1, MIDPOINT_PARAM + DELTA);
+
+        const p1 = getShapePointAt(shape, t1);
+        const p2 = getShapePointAt(shape, t2);
+
+        if (!p1 || !p2) return null;
+
+        // Calculate direction vector
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+
+        // Normalize
+        const magnitude = Math.sqrt(dx * dx + dy * dy);
+        if (magnitude === 0) return null;
+
+        return {
+            x: dx / magnitude,
+            y: dy / magnitude,
+        };
+    }
+
+    /**
+     * Draw a chevron arrow at the specified location (reused from ChevronRenderer)
+     */
+    private drawChevronArrow(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        center: Point2D,
+        dirX: number,
+        dirY: number,
+        perpX: number,
+        perpY: number,
+        size: number
+    ): void {
+        ctx.save();
+        ctx.strokeStyle = 'rgb(0, 133, 84)'; // Green color to match path color
+        ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(
+            SHAPE_CHEVRON_LINE_WIDTH
+        );
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+
+        // Calculate chevron wing points (90 degree angle between wings)
+        const wingLength = size * WING_LENGTH_RATIO;
+        const backOffset = size * BACK_OFFSET_RATIO;
+
+        // Wing points: 45 degrees on each side of the direction vector
+        const wing1X =
+            center.x -
+            backOffset * dirX +
+            wingLength *
+                (dirX * Math.cos(QUARTER_PI) + perpX * Math.sin(QUARTER_PI));
+        const wing1Y =
+            center.y -
+            backOffset * dirY +
+            wingLength *
+                (dirY * Math.cos(QUARTER_PI) + perpY * Math.sin(QUARTER_PI));
+
+        const wing2X =
+            center.x -
+            backOffset * dirX +
+            wingLength *
+                (dirX * Math.cos(QUARTER_PI) - perpX * Math.sin(QUARTER_PI));
+        const wing2Y =
+            center.y -
+            backOffset * dirY +
+            wingLength *
+                (dirY * Math.cos(QUARTER_PI) - perpY * Math.sin(QUARTER_PI));
+
+        const tipX = center.x + size * TIP_OFFSET_RATIO * dirX;
+        const tipY = center.y + size * TIP_OFFSET_RATIO * dirY;
+
+        // Draw the chevron (two lines forming arrow shape)
+        ctx.beginPath();
+        ctx.moveTo(wing1X, wing1Y);
+        ctx.lineTo(tipX, tipY);
+        ctx.lineTo(wing2X, wing2Y);
+        ctx.stroke();
+
+        ctx.restore();
+    }
+
+    /**
+     * Draw a tangent line at the specified location (adapted from ChainRenderer)
+     */
+    private drawShapeTangent(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        point: Point2D,
+        direction: Point2D
+    ): void {
+        // Calculate the length in world coordinates
+        const tangentLength = state.transform.coordinator.screenToWorldDistance(
+            SHAPE_TANGENT_LINE_LENGTH
+        );
+        const lineWidth = state.transform.coordinator.screenToWorldDistance(
+            SHAPE_TANGENT_LINE_WIDTH
+        );
+
+        // Calculate start and end points of the tangent line
+        const startPoint = {
+            x: point.x - direction.x * tangentLength,
+            y: point.y - direction.y * tangentLength,
+        };
+        const endPoint = {
+            x: point.x + direction.x * tangentLength,
+            y: point.y + direction.y * tangentLength,
+        };
+
+        ctx.save();
+
+        // Set yellow color and line style (same as chain tangents)
+        ctx.strokeStyle = '#ffff00'; // Yellow
+        ctx.lineWidth = lineWidth;
+        ctx.setLineDash([]);
+
+        // Draw the tangent line
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
+        ctx.lineTo(endPoint.x, endPoint.y);
+        ctx.stroke();
+
+        ctx.restore();
     }
 
     /**

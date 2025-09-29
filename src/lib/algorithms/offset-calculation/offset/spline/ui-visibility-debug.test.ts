@@ -118,7 +118,9 @@ describe('UI visibility debug for offset splines', () => {
         }
 
         // If offset has different number of control points, that's also a change
-        if (spline.controlPoints.length !== offsetGeometry.controlPoints.length) {
+        if (
+            spline.controlPoints.length !== offsetGeometry.controlPoints.length
+        ) {
             hasSignificantChange = true;
             console.log(
                 `Control point count changed from ${spline.controlPoints.length} to ${offsetGeometry.controlPoints.length}`

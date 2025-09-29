@@ -94,6 +94,8 @@
     $: showShapeStartPoints = shapeVisualization.showShapeStartPoints;
     $: showShapeEndPoints = shapeVisualization.showShapeEndPoints;
     $: showShapeNormals = shapeVisualization.showShapeNormals;
+    $: showShapeWindingDirection = shapeVisualization.showShapeWindingDirection;
+    $: showShapeTangentLines = shapeVisualization.showShapeTangentLines;
     $: chainVisualization = $chainStore;
     $: showChainStartPoints = chainVisualization.showChainStartPoints;
     $: showChainEndPoints = chainVisualization.showChainEndPoints;
@@ -266,6 +268,8 @@
                 showShapeStartPoints,
                 showShapeEndPoints,
                 showShapeNormals,
+                showShapeWindingDirection,
+                showShapeTangentLines,
                 showChainStartPoints,
                 showChainEndPoints,
                 showChainTangentLines,

@@ -15,6 +15,8 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
         showShapeStartPoints: false,
         showShapeEndPoints: false,
         showShapeNormals: false,
+        showShapeWindingDirection: false,
+        showShapeTangentLines: false,
     });
 
     return {
@@ -51,6 +53,26 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
         },
 
         /**
+         * Set shape winding direction visibility
+         */
+        setShowShapeWindingDirection: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showShapeWindingDirection: show,
+            }));
+        },
+
+        /**
+         * Set shape tangent lines visibility
+         */
+        setShowShapeTangentLines: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showShapeTangentLines: show,
+            }));
+        },
+
+        /**
          * Reset to defaults
          */
         reset: () => {
@@ -58,6 +80,8 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
                 showShapeStartPoints: false,
                 showShapeEndPoints: false,
                 showShapeNormals: false,
+                showShapeWindingDirection: false,
+                showShapeTangentLines: false,
             });
         },
     };

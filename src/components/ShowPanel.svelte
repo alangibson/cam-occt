@@ -92,6 +92,30 @@
         <label class="show-checkbox-label">
             <input
                 type="checkbox"
+                checked={shapeVisualization.showShapeWindingDirection}
+                onchange={(e) =>
+                    shapeVisualizationStore.setShowShapeWindingDirection(
+                        e.currentTarget.checked
+                    )}
+                class="show-checkbox"
+            />
+            Shape Winding Direction
+        </label>
+        <label class="show-checkbox-label">
+            <input
+                type="checkbox"
+                checked={shapeVisualization.showShapeTangentLines}
+                onchange={(e) =>
+                    shapeVisualizationStore.setShowShapeTangentLines(
+                        e.currentTarget.checked
+                    )}
+                class="show-checkbox"
+            />
+            Shape Tangent Line
+        </label>
+        <label class="show-checkbox-label">
+            <input
+                type="checkbox"
                 bind:checked={$showLeadNormals}
                 class="show-checkbox"
             />

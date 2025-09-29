@@ -9,6 +9,8 @@ export interface ShapeVisualizationState {
     showShapeStartPoints: boolean;
     showShapeEndPoints: boolean;
     showShapeNormals: boolean;
+    showShapeWindingDirection: boolean;
+    showShapeTangentLines: boolean;
 }
 
 export interface ShapeVisualizationStore {
@@ -16,5 +18,7 @@ export interface ShapeVisualizationStore {
     setShowShapeStartPoints: (show: boolean) => void;
     setShowShapeEndPoints: (show: boolean) => void;
     setShowShapeNormals: (show: boolean) => void;
+    setShowShapeWindingDirection: (show: boolean) => void;
+    setShowShapeTangentLines: (show: boolean) => void;
     reset: () => void;
 }

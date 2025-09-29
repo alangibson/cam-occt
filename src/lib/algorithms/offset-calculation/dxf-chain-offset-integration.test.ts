@@ -10,6 +10,7 @@ import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { offsetChain } from './chain/offset';
 import type { ChainOffsetResult } from './chain/types';
 
@@ -35,6 +36,10 @@ async function processDxfFile(
     shapes = shapes.map((shape) =>
         scaleShape(shape, physicalScale, { x: 0, y: 0 })
     );
+
+    // Decompose polylines into individual line and arc segments
+    shapes = decomposePolylines(shapes);
+    console.log(`After decomposition: ${shapes.length} shapes`);
 
     // Calculate dynamic tolerance based on scaled drawing size
     const tolerance = calculateDynamicTolerance(shapes, 0.1);
@@ -74,7 +79,7 @@ async function processDxfFile(
         // let normalizedChain: Chain = chain;
 
         // Scale the offset distance to match the scaled coordinates
-        const offsetDistance = 1 * physicalScale;
+        const offsetDistance = 0.25 * physicalScale;
         const maxExtension = 5 * physicalScale;
         const snapThreshold = 0.5 * physicalScale;
 
