@@ -186,11 +186,8 @@ export class ChainRenderer extends BaseRenderer {
             if (endShape) {
                 const endPoint = getShapeEndPoint(endShape);
                 if (endPoint) {
-                    // Draw end point marker for open chains if enabled
-                    if (
-                        chain.clockwise === null &&
-                        state.visibility.showChainEndPoints
-                    ) {
+                    // Draw end point marker if enabled
+                    if (state.visibility.showChainEndPoints) {
                         this.drawChainEndpoint(ctx, state, endPoint, 'end');
                     }
                     // Draw tangent line at end point if enabled
