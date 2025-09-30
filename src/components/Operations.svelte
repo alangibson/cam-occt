@@ -154,6 +154,24 @@
         updateOperationField(operationId, 'targetIds', newTargetIds);
     }
 
+    function selectAllTargets(operationId: string, targetType: 'parts' | 'chains') {
+        const operation = operations.find((op) => op.id === operationId);
+        if (!operation) return;
+
+        // Get all available target IDs based on target type
+        const availableTargets = targetType === 'parts'
+            ? parts.filter(p => !isTargetAssignedToOther(p.id, 'parts', operationId))
+            : chains.filter(c => !isTargetAssignedToOther(c.id, 'chains', operationId));
+
+        const allTargetIds = availableTargets.map(t => t.id);
+
+        updateOperationField(operationId, 'targetIds', allTargetIds);
+    }
+
+    function clearAllTargets(operationId: string) {
+        updateOperationField(operationId, 'targetIds', []);
+    }
+
     // Drag and drop functions
     function handleDragStart(event: DragEvent, operation: Operation) {
         draggedOperation = operation;
@@ -574,6 +592,22 @@
                                         </div>
 
                                         <div class="target-options">
+                                            <div class="select-all-container">
+                                                <button
+                                                    type="button"
+                                                    class="select-all-button"
+                                                    onclick={() => selectAllTargets(operation.id, operation.targetType)}
+                                                >
+                                                    Select All
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    class="clear-all-button"
+                                                    onclick={() => clearAllTargets(operation.id)}
+                                                >
+                                                    Clear All
+                                                </button>
+                                            </div>
                                             {#if operation.targetType === 'parts'}
                                                 {#each parts as part (part.id)}
                                                     {@const isAssigned =
@@ -1232,6 +1266,44 @@
     .tool-options,
     .target-options {
         padding: 0.25rem 0;
+    }
+
+    .select-all-container {
+        padding: 0.5rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .select-all-button,
+    .clear-all-button {
+        flex: 1;
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        background: white;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .select-all-button {
+        color: rgb(0, 83, 135);
+    }
+
+    .select-all-button:hover {
+        background: #e6f2ff;
+        border-color: rgb(0, 83, 135);
+    }
+
+    .clear-all-button {
+        color: #6b7280;
+    }
+
+    .clear-all-button:hover {
+        background: #f3f4f6;
+        border-color: #6b7280;
     }
 
     .tool-option {
