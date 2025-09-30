@@ -44,7 +44,6 @@ export interface SelectionState {
  * Hover state for interactive feedback
  */
 export interface HoverState {
-    hoveredShape: string | null;
     hoveredChain: string | null;
     hoveredPart: string | null;
     hoveredPath: string | null;
@@ -134,6 +133,7 @@ export interface RenderState {
     treatChainsAsEntities: boolean;
     disableDragging: boolean;
     interactionMode: 'shapes' | 'chains' | 'paths';
+    selectionMode: 'auto' | 'chain' | 'shape' | 'part';
 }
 
 /**
@@ -164,7 +164,6 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             highlightedRapidId: null,
         },
         hover: {
-            hoveredShape: null,
             hoveredChain: null,
             hoveredPart: null,
             hoveredPath: null,
@@ -212,6 +211,7 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
         treatChainsAsEntities: false,
         disableDragging: false,
         interactionMode: 'shapes',
+        selectionMode: 'auto',
     };
 }
 

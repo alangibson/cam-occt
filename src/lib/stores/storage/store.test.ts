@@ -28,12 +28,14 @@ import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters
 import {
     MeasurementSystem,
     ImportUnitSetting,
+    SelectionMode,
 } from '$lib/stores/settings/interfaces';
 
 // Default application settings for tests
 const defaultApplicationSettings = {
     measurementSystem: MeasurementSystem.Metric,
     importUnitSetting: ImportUnitSetting.Automatic,
+    selectionMode: SelectionMode.Auto,
 };
 
 // Mock localStorage module

@@ -12,10 +12,12 @@ import type {
     SettingsStore,
     MeasurementSystem,
     ImportUnitSetting,
+    SelectionMode,
 } from './interfaces';
 import {
     MeasurementSystem as MS,
     ImportUnitSetting as IUS,
+    SelectionMode as SM,
 } from './interfaces';
 import { DefaultsManager } from '$lib/config/defaults-manager';
 
@@ -23,6 +25,7 @@ import { DefaultsManager } from '$lib/config/defaults-manager';
 const DEFAULT_SETTINGS: ApplicationSettings = {
     measurementSystem: MS.Metric,
     importUnitSetting: IUS.Automatic,
+    selectionMode: SM.Auto,
 };
 
 // localStorage key for settings persistence
@@ -50,6 +53,11 @@ function loadSettings(): ApplicationSettings {
                     )
                         ? parsed.importUnitSetting
                         : DEFAULT_SETTINGS.importUnitSetting,
+                    selectionMode: Object.values(SM).includes(
+                        parsed.selectionMode
+                    )
+                        ? parsed.selectionMode
+                        : DEFAULT_SETTINGS.selectionMode,
                 };
             }
         }
@@ -107,6 +115,20 @@ function createSettingsStore(): SettingsStore {
                 const newSettings = {
                     ...state.settings,
                     importUnitSetting: setting,
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setSelectionMode(mode: SelectionMode) {
+            update((state) => {
+                const newSettings = {
+                    ...state.settings,
+                    selectionMode: mode,
                 };
                 saveSettings(newSettings);
                 return {

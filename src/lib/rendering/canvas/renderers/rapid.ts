@@ -47,6 +47,7 @@ export class RapidRenderer extends BaseRenderer {
             const isSelected = state.selection.selectedRapidId === rapid.id;
             const isHighlighted =
                 state.selection.highlightedRapidId === rapid.id;
+            const isHovered = state.hover?.hoveredRapid === rapid.id;
 
             // Set styling based on state
             if (isSelected) {
@@ -56,6 +57,17 @@ export class RapidRenderer extends BaseRenderer {
                         SELECTED_LINE_WIDTH
                     ); // Thicker line
                 ctx.setLineDash([]); // Solid line for selected
+            } else if (isHovered) {
+                ctx.strokeStyle = '#ff6600'; // Orange for hovered
+                ctx.lineWidth =
+                    state.transform.coordinator.screenToWorldDistance(
+                        HIGHLIGHTED_LINE_WIDTH
+                    ); // Medium thickness
+                const dashSize =
+                    state.transform.coordinator.screenToWorldDistance(
+                        HIGHLIGHTED_DASH_SIZE
+                    );
+                ctx.setLineDash([dashSize, dashSize]); // Shorter dashes
             } else if (isHighlighted) {
                 ctx.strokeStyle = '#ff6600'; // Orange for highlighted
                 ctx.lineWidth =

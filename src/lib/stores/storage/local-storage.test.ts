@@ -18,12 +18,14 @@ import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {
     MeasurementSystem,
     ImportUnitSetting,
+    SelectionMode,
 } from '$lib/stores/settings/interfaces';
 
 // Default application settings for tests
 const defaultApplicationSettings = {
     measurementSystem: MeasurementSystem.Metric,
     importUnitSetting: ImportUnitSetting.Automatic,
+    selectionMode: SelectionMode.Auto,
 };
 
 // Mock localStorage

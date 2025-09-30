@@ -18,6 +18,7 @@
     import SimulateStage from './stages/SimulateStage.svelte';
     import ExportStage from './stages/ExportStage.svelte';
     import DrawingCanvasContainer from './DrawingCanvasContainer.svelte';
+    import { settingsStore } from '$lib/stores/settings/store';
 
     // Get current stage and related state
     $: currentStage = $workflowStore.currentStage;
@@ -40,19 +41,32 @@
         }
     })();
 
-    // Determine interaction mode based on current stage
+    // Subscribe to selection mode
+    $: selectionMode = $settingsStore.settings.selectionMode;
+
+    // Determine interaction mode based on selection mode and current stage
     let interactionMode: 'shapes' | 'chains' | 'paths';
     $: {
-        switch (currentStage) {
-            case 'prepare':
-                interactionMode = 'chains';
-                break;
-            case 'program':
-                interactionMode = 'chains';
-                break;
-            default:
-                interactionMode = 'shapes';
-                break;
+        // If selection mode is explicit (not auto), use it to override stage-based interaction
+        if (selectionMode === 'chain') {
+            interactionMode = 'chains';
+        } else if (selectionMode === 'shape') {
+            interactionMode = 'shapes';
+        } else if (selectionMode === 'part') {
+            interactionMode = 'chains'; // Parts use chain interaction
+        } else {
+            // Auto mode: use stage-based interaction
+            switch (currentStage) {
+                case 'prepare':
+                    interactionMode = 'chains';
+                    break;
+                case 'program':
+                    interactionMode = 'chains';
+                    break;
+                default:
+                    interactionMode = 'shapes';
+                    break;
+            }
         }
     }
 

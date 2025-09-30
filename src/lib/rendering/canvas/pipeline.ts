@@ -8,7 +8,11 @@ import { LayerId as LayerIdEnum } from './layers/types';
 import type { Renderer } from './renderers/base';
 import type { RenderState } from './state/render-state';
 import type { HitTestResult, HitTestConfig } from './utils/hit-test';
-import { HitTestUtils, DEFAULT_HIT_TEST_PRIORITY } from './utils/hit-test';
+import {
+    HitTestUtils,
+    DEFAULT_HIT_TEST_PRIORITY,
+    HitTestType,
+} from './utils/hit-test';
 import { DrawingContext } from './utils/context';
 import type { Point2D } from '$lib/types';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
@@ -29,8 +33,6 @@ import { LeadRenderer } from './renderers/lead';
 import { RapidRenderer } from './renderers/rapid';
 import { ChevronRenderer } from './renderers/chevron';
 import { OverlayRenderer } from './renderers/overlay';
-import { SelectionRenderer } from './renderers/selection';
-import { HoverRenderer } from './renderers/hover';
 
 /**
  * Render request for scheduling
@@ -102,8 +104,6 @@ export class RenderingPipeline {
         this.addRenderer(new RapidRenderer(coordinator));
         this.addRenderer(new ChevronRenderer(coordinator));
         this.addRenderer(new OverlayRenderer(coordinator));
-        this.addRenderer(new SelectionRenderer(coordinator));
-        this.addRenderer(new HoverRenderer(coordinator));
     }
 
     /**
@@ -509,8 +509,8 @@ export class RenderingPipeline {
                 }
             }
 
-            // If we found hits of this priority level, stop searching
-            if (results.length > 0) break;
+            // Continue collecting hits from all priority levels
+            // Selection mode filtering will determine which hit is returned
         }
 
         // Filter and sort results
@@ -523,7 +523,36 @@ export class RenderingPipeline {
             priorityOrder
         );
 
-        return sortedResults.length > 0 ? sortedResults[0] : null;
+        // Apply selection mode filtering
+        const finalResults = this.filterBySelectionMode(sortedResults);
+
+        return finalResults.length > 0 ? finalResults[0] : null;
+    }
+
+    /**
+     * Filter hit results based on selection mode
+     */
+    private filterBySelectionMode(results: HitTestResult[]): HitTestResult[] {
+        const state = this.currentState as RenderState;
+        if (!state.selectionMode || state.selectionMode === 'auto') {
+            return results; // No filtering for auto mode
+        }
+
+        return results.filter((result) => {
+            switch (state.selectionMode) {
+                case 'shape':
+                    // Only allow shape hits
+                    return result.type === HitTestType.SHAPE;
+                case 'chain':
+                    // Only allow chain hits
+                    return result.type === HitTestType.CHAIN;
+                case 'part':
+                    // Only allow part hits
+                    return result.type === HitTestType.PART;
+                default:
+                    return true;
+            }
+        });
     }
 
     /**

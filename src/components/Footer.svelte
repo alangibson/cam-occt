@@ -1,5 +1,7 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { settingsStore } from '$lib/stores/settings/store';
+    import { SelectionMode } from '$lib/stores/settings/interfaces';
     import {
         calculateDrawingSize,
         type DrawingSize,
@@ -7,6 +9,7 @@
 
     $: drawing = $drawingStore.drawing;
     $: scale = $drawingStore.scale;
+    $: selectionMode = $settingsStore.settings.selectionMode;
     let drawingSize: DrawingSize | null = null;
 
     // Watch for drawing changes
@@ -40,6 +43,11 @@
     function handleFitClick() {
         drawingStore.zoomToFit();
     }
+
+    function handleSelectionModeChange(event: Event) {
+        const select = event.target as HTMLSelectElement;
+        settingsStore.setSelectionMode(select.value as SelectionMode);
+    }
 </script>
 
 <footer class="footer">
@@ -59,6 +67,21 @@
         {:else}
             <span class="no-drawing">No drawing loaded</span>
         {/if}
+
+        <div class="selection-controls">
+            <label for="selection-mode" class="selection-label">Selection:</label>
+            <select
+                id="selection-mode"
+                class="selection-dropdown"
+                value={selectionMode}
+                on:change={handleSelectionModeChange}
+            >
+                <option value={SelectionMode.Auto}>Auto</option>
+                <option value={SelectionMode.Chain}>Chain</option>
+                <option value={SelectionMode.Shape}>Shape</option>
+                <option value={SelectionMode.Part}>Part</option>
+            </select>
+        </div>
 
         <div class="zoom-controls">
             <span class="zoom-info">Zoom: {formatZoom(scale)}</span>
@@ -106,6 +129,41 @@
 
     .no-drawing {
         color: #999;
+    }
+
+    .selection-controls {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .selection-label {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .selection-dropdown {
+        padding: 0.25rem 0.5rem;
+        background-color: #fff;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        color: #333;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .selection-dropdown:hover {
+        background-color: #f0f0f0;
+        border-color: #999;
+    }
+
+    .selection-dropdown:focus {
+        outline: none;
+        border-color: #666;
+        box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
     }
 
     .zoom-controls {

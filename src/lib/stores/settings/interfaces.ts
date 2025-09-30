@@ -23,6 +23,16 @@ export enum ImportUnitSetting {
 }
 
 /**
+ * Selection mode options for canvas interaction
+ */
+export enum SelectionMode {
+    Auto = 'auto', // Stage-dependent selection (default)
+    Chain = 'chain', // Only chains can be selected/hovered
+    Shape = 'shape', // Only individual shapes can be selected/hovered
+    Part = 'part', // Only parts can be selected/hovered
+}
+
+/**
  * Application settings interface
  */
 export interface ApplicationSettings {
@@ -31,6 +41,9 @@ export interface ApplicationSettings {
 
     /** Default behavior for import unit handling */
     importUnitSetting: ImportUnitSetting;
+
+    /** Selection mode for canvas interaction */
+    selectionMode: SelectionMode;
 }
 
 /**
@@ -51,6 +64,9 @@ export interface SettingsStore {
 
     /** Update the import unit setting */
     setImportUnitSetting: (setting: ImportUnitSetting) => void;
+
+    /** Update the selection mode */
+    setSelectionMode: (mode: SelectionMode) => void;
 
     /** Update all settings at once */
     updateSettings: (settings: Partial<ApplicationSettings>) => void;

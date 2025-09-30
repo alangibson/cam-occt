@@ -10,6 +10,7 @@
     import { rapidStore } from '$lib/stores/rapids/store';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
     import { showLeadNormals } from '$lib/stores/leads';
+    import { settingsStore } from '$lib/stores/settings/store';
     import { generateChainEndpoints } from '$lib/stores/chains/functions';
     import { generateShapePoints } from '$lib/stores/shape/functions';
     import {
@@ -102,6 +103,7 @@
     $: showChainTangentLines = chainVisualization.showChainTangentLines;
     $: showChainNormals = chainVisualization.showChainNormals;
     $: leadNormals = $showLeadNormals;
+    $: selectionMode = $settingsStore.settings.selectionMode;
 
     // Calculate unit scale factor for proper unit display
     $: unitScale = drawing
@@ -221,6 +223,7 @@
         clearTessellationCache();
         renderingPipeline.updateState({
             drawing: drawing,
+            selectionMode: selectionMode,
         });
     }
 
@@ -623,17 +626,22 @@
                     const metadata = hitResult.metadata;
                     const shape = metadata?.shape;
                     if (shape) {
-                        if (interactionMode === 'shapes') {
-                            // Edit mode - show hover for individual shapes
-                            hoveredShapeId = shape.id;
-                        } else if (interactionMode === 'chains') {
-                            // Program mode - show hover for chains (set to actual shape, rendering handles chain highlighting)
-                            hoveredShapeId = shape.id;
-                        } else if (interactionMode === 'paths') {
-                            // Simulation mode - only hover shapes that are part of selectable paths
-                            const chainId = getShapeChainId(shape.id, chains);
-                            if (chainId && chainsWithPaths.includes(chainId)) {
+                        // Filter hover based on selection mode
+                        const allowHover =
+                            selectionMode === 'auto' || selectionMode === 'shape';
+                        if (allowHover) {
+                            if (interactionMode === 'shapes') {
+                                // Edit mode - show hover for individual shapes
                                 hoveredShapeId = shape.id;
+                            } else if (interactionMode === 'chains') {
+                                // Program mode - show hover for chains (set to actual shape, rendering handles chain highlighting)
+                                hoveredShapeId = shape.id;
+                            } else if (interactionMode === 'paths') {
+                                // Simulation mode - only hover shapes that are part of selectable paths
+                                const chainId = getShapeChainId(shape.id, chains);
+                                if (chainId && chainsWithPaths.includes(chainId)) {
+                                    hoveredShapeId = shape.id;
+                                }
                             }
                         }
                     }
