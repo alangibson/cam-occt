@@ -17,9 +17,6 @@ import {
 /**
  * Constants for offset rendering
  */
-const DASH_LENGTH = 5;
-const DASH_GAP = 3;
-const ORIGINAL_LINE_WIDTH = 1;
 const OFFSET_LINE_WIDTH = 2;
 const SELECTED_OFFSET_LINE_WIDTH = 2;
 const SELECTED_PATH_LINE_WIDTH = 3;
@@ -63,31 +60,24 @@ export class OffsetRenderer extends BaseRenderer {
                 return;
             }
 
-            // Comprehensive validation of offset geometry before rendering
-            if (!path.offset.originalShapes || !path.offset.offsetShapes) {
+            // Validate offset geometry before rendering
+            if (!path.offset.offsetShapes) {
                 console.warn(
-                    `Invalid offset geometry for path ${path.id}: missing shape arrays`
+                    `Invalid offset geometry for path ${path.id}: missing offsetShapes`
                 );
                 return;
             }
 
-            if (
-                !Array.isArray(path.offset.originalShapes) ||
-                !Array.isArray(path.offset.offsetShapes)
-            ) {
+            if (!Array.isArray(path.offset.offsetShapes)) {
                 console.warn(
-                    `Invalid offset geometry for path ${path.id}: shape arrays are not arrays`
+                    `Invalid offset geometry for path ${path.id}: offsetShapes is not an array`
                 );
                 return;
             }
 
-            // Validate that shapes have required properties
-            if (
-                path.offset.originalShapes.length === 0 ||
-                path.offset.offsetShapes.length === 0
-            ) {
+            if (path.offset.offsetShapes.length === 0) {
                 console.warn(
-                    `Invalid offset geometry for path ${path.id}: empty shape arrays`
+                    `Invalid offset geometry for path ${path.id}: empty offsetShapes array`
                 );
                 return;
             }
@@ -104,34 +94,12 @@ export class OffsetRenderer extends BaseRenderer {
             try {
                 // Define color constants for visual consistency
                 const pathColors = {
-                    originalLightGreen: 'rgba(0, 133, 84, 0.6)', // Light green for original paths when offset exists
-                    offsetGreen: 'rgb(0, 133, 84)', // Green for offset paths (same as original normal)
+                    offsetGreen: 'rgb(0, 133, 84)', // Green for offset paths
                     selectedDark: 'rgb(0, 133, 84)', // Dark green for selected
                     highlighted: 'rgb(0, 133, 84)', // Dark green for highlighted
                 };
 
-                // Draw original shapes as dashed light green lines FIRST (background layer)
-                ctx.setLineDash([DASH_LENGTH, DASH_GAP]); // Standardized dash pattern in screen pixels
-                ctx.strokeStyle = pathColors.originalLightGreen;
-                ctx.lineWidth =
-                    state.transform.coordinator.screenToWorldDistance(
-                        ORIGINAL_LINE_WIDTH
-                    ); // 1px original paths
-                ctx.lineCap = 'round'; // Professional appearance
-                ctx.lineJoin = 'round'; // Professional appearance
-
-                path.offset.originalShapes.forEach((shape, index) => {
-                    try {
-                        drawShape(ctx, shape);
-                    } catch (error) {
-                        console.warn(
-                            `Error rendering original shape ${index} for path ${path.id}:`,
-                            error
-                        );
-                    }
-                });
-
-                // Draw offset shapes as solid green lines SECOND (foreground layer)
+                // Draw offset shapes as solid green lines
                 ctx.setLineDash([]); // Solid line pattern
                 ctx.shadowColor = 'transparent'; // Reset shadow
                 ctx.shadowBlur = 0;
@@ -266,7 +234,7 @@ export class OffsetRenderer extends BaseRenderer {
             // Only test if path has offset geometry
             if (!path.offset || !path.offset.offsetShapes) continue;
 
-            // Test offset shapes first (higher priority)
+            // Test offset shapes
             for (const shape of path.offset.offsetShapes) {
                 if (this.isPointNearShape(point, shape, hitTolerance)) {
                     const distance = calculatePointToShapeDistance(
@@ -280,24 +248,6 @@ export class OffsetRenderer extends BaseRenderer {
                         distance,
                         point,
                         metadata: { pathId: path.id, shapeType: 'offset' },
-                    };
-                }
-            }
-
-            // Test original shapes
-            for (const shape of path.offset.originalShapes) {
-                if (this.isPointNearShape(point, shape, hitTolerance)) {
-                    const distance = calculatePointToShapeDistance(
-                        point,
-                        shape
-                    );
-
-                    return {
-                        type: HitTestType.OFFSET,
-                        id: shape.id,
-                        distance,
-                        point,
-                        metadata: { pathId: path.id, shapeType: 'original' },
                     };
                 }
             }
