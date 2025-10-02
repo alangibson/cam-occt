@@ -76,6 +76,17 @@
         return shape.type.toUpperCase();
     }
 
+    async function copyShapeToClipboard() {
+        if (!displayShape) return;
+
+        try {
+            const json = JSON.stringify(displayShape, null, 2);
+            await navigator.clipboard.writeText(json);
+        } catch (err) {
+            console.error('Failed to copy to clipboard:', err);
+        }
+    }
+
     // Helper function to calculate a point on an ellipse at a given parameter
     // Uses the ezdxf approach: calculating minor axis using counterclockwise perpendicular
     function _getEllipsePointAtParameter(
@@ -133,6 +144,9 @@
 
 <div class="shape-properties">
     {#if displayShape}
+        <button class="copy-button" onclick={copyShapeToClipboard} title="Copy shape JSON to clipboard">
+            Copy
+        </button>
         <div class="property-group">
             <div class="property-row">
                 <span class="property-label">Type:</span>
@@ -383,6 +397,32 @@
         background-color: #f9f9f9;
         border-radius: 4px;
         min-height: 200px;
+        position: relative;
+    }
+
+    .copy-button {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        background-color: #fff;
+        color: #374151;
+        border: 1px solid #d1d5db;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+
+    .copy-button:hover {
+        background-color: #f9fafb;
+        border-color: #9ca3af;
+    }
+
+    .copy-button:active {
+        background-color: #f3f4f6;
     }
 
     /* h3 header removed - title now handled by AccordionPanel */
