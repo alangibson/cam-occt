@@ -28,7 +28,6 @@ import { ShapeRenderer } from './renderers/shape';
 import { ChainRenderer } from './renderers/chain';
 import { PartRenderer } from './renderers/part';
 import { PathRenderer } from './renderers/path';
-import { OffsetRenderer } from './renderers/offset';
 import { LeadRenderer } from './renderers/lead';
 import { RapidRenderer } from './renderers/rapid';
 import { ChevronRenderer } from './renderers/chevron';
@@ -99,7 +98,6 @@ export class RenderingPipeline {
         this.addRenderer(new ChainRenderer(coordinator));
         this.addRenderer(new PartRenderer(coordinator));
         this.addRenderer(new PathRenderer(coordinator));
-        this.addRenderer(new OffsetRenderer(coordinator));
         this.addRenderer(new LeadRenderer(coordinator));
         this.addRenderer(new RapidRenderer(coordinator));
         this.addRenderer(new ChevronRenderer(coordinator));
