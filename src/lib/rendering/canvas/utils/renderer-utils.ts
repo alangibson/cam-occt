@@ -14,6 +14,8 @@ const DEFAULT_HIT_TOLERANCE_PX = 5;
 
 /**
  * Calculate distance from a point to a shape
+ * Note: This is a simplified distance calculation. For proper hit detection,
+ * use HitTestUtils.isPointNearShape() which handles all shape types correctly.
  */
 export function calculatePointToShapeDistance(
     point: Point2D,
@@ -70,7 +72,10 @@ export function calculatePointToShapeDistance(
         const dy = point.y - line.start.y;
         return Math.sqrt(dx * dx + dy * dy);
     }
-    return 0;
+
+    // For other shape types (arc, polyline, spline, ellipse), return Infinity
+    // This prevents false hits. Proper distance calculation should use HitTestUtils.
+    return Infinity;
 }
 
 /**

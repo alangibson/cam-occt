@@ -15,7 +15,6 @@
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;
     export let canvasStage: WorkflowStage;
-    export let interactionMode: 'shapes' | 'chains' | 'paths';
     export let onChainClick: ((chainId: string) => void) | null = null;
     export let onPartClick: ((partId: string) => void) | null = null;
 
@@ -77,7 +76,6 @@
             <svelte:component
                 this={sharedCanvas}
                 currentStage={canvasStage}
-                {interactionMode}
                 {onChainClick}
                 {onPartClick}
             />

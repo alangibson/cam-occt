@@ -17,7 +17,6 @@ describe('HitTestType enum', () => {
         expect(HitTestType.PART).toBe('part');
         expect(HitTestType.PATH).toBe('path');
         expect(HitTestType.RAPID).toBe('rapid');
-        expect(HitTestType.OFFSET).toBe('offset');
         expect(HitTestType.LEAD).toBe('lead');
         expect(HitTestType.OVERLAY).toBe('overlay');
     });

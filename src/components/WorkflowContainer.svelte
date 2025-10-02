@@ -41,35 +41,6 @@
         }
     })();
 
-    // Subscribe to selection mode
-    $: selectionMode = $settingsStore.settings.selectionMode;
-
-    // Determine interaction mode based on selection mode and current stage
-    let interactionMode: 'shapes' | 'chains' | 'paths';
-    $: {
-        // If selection mode is explicit (not auto), use it to override stage-based interaction
-        if (selectionMode === 'chain') {
-            interactionMode = 'chains';
-        } else if (selectionMode === 'shape') {
-            interactionMode = 'shapes';
-        } else if (selectionMode === 'part') {
-            interactionMode = 'chains'; // Parts use chain interaction
-        } else {
-            // Auto mode: use stage-based interaction
-            switch (currentStage) {
-                case 'prepare':
-                    interactionMode = 'chains';
-                    break;
-                case 'program':
-                    interactionMode = 'chains';
-                    break;
-                default:
-                    interactionMode = 'shapes';
-                    break;
-            }
-        }
-    }
-
     // Chain and part interaction functions using shared handlers
     function handleChainClick(chainId: string) {
         sharedHandleChainClick(chainId, selectedChainId);
@@ -108,7 +79,6 @@
             <EditStage
                 sharedCanvas={DrawingCanvasContainer}
                 {canvasStage}
-                {interactionMode}
                 onChainClick={handleChainClick}
                 onPartClick={handlePartClick}
             />
@@ -116,7 +86,6 @@
             <PrepareStage
                 sharedCanvas={DrawingCanvasContainer}
                 {canvasStage}
-                {interactionMode}
                 onChainClick={handleChainClick}
                 onPartClick={handlePartClick}
                 onChainHover={handleChainHover}
@@ -128,7 +97,6 @@
             <ProgramStage
                 sharedCanvas={DrawingCanvasContainer}
                 {canvasStage}
-                {interactionMode}
                 onChainClick={handleChainClick}
                 onPartClick={handlePartClick}
                 onChainHover={handleChainHover}
@@ -140,7 +108,6 @@
             <SimulateStage
                 sharedCanvas={DrawingCanvasContainer}
                 {canvasStage}
-                {interactionMode}
                 onChainClick={handleChainClick}
                 onPartClick={handlePartClick}
             />

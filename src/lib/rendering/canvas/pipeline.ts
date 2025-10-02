@@ -94,7 +94,47 @@ export class RenderingPipeline {
 
         // Add renderers in rendering order (back to front)
         this.addRenderer(new BackgroundRenderer(coordinator));
-        this.addRenderer(new ShapeRenderer(coordinator));
+
+        // Add original shapes renderer
+        this.addRenderer(
+            new ShapeRenderer(
+                'shape-renderer-original',
+                coordinator,
+                (state) => state.drawing?.shapes || []
+            )
+        );
+
+        // Add offset shapes renderer
+        this.addRenderer(
+            new ShapeRenderer(
+                'shape-renderer-offset',
+                coordinator,
+                (state) => {
+                    // Extract offset shapes from all enabled paths
+                    const offsetShapes: any[] = [];
+
+                    if (state.pathsState?.paths) {
+                        for (const path of state.pathsState.paths) {
+                            // Only include offset shapes from paths with enabled operations
+                            if (!path.operationId) continue;
+
+                            const operation = state.operations.find(
+                                (op) => op.id === path.operationId
+                            );
+                            if (!operation || !operation.enabled) continue;
+
+                            // Add offset shapes if they exist
+                            if (path.offset?.offsetShapes) {
+                                offsetShapes.push(...path.offset.offsetShapes);
+                            }
+                        }
+                    }
+
+                    return offsetShapes;
+                }
+            )
+        );
+
         this.addRenderer(new ChainRenderer(coordinator));
         this.addRenderer(new PartRenderer(coordinator));
         this.addRenderer(new PathRenderer(coordinator));
@@ -547,6 +587,9 @@ export class RenderingPipeline {
                 case 'part':
                     // Only allow part hits
                     return result.type === HitTestType.PART;
+                case 'path':
+                    // Only allow path hits
+                    return result.type === HitTestType.PATH;
                 default:
                     return true;
             }

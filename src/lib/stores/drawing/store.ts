@@ -99,13 +99,44 @@ function createDrawingStore(): DrawingStore {
             });
         },
 
-        selectShape: (shapeId: string, multi = false) =>
+        selectShape: (shapeIdOrShape: string | Shape, multi = false) =>
             update((state) => {
-                const selectedShapes: Set<string> = new Set(
-                    multi ? state.selectedShapes : []
+                if (!state.drawing) return state;
+
+                // Extract ID and full shape object
+                const shapeId =
+                    typeof shapeIdOrShape === 'string'
+                        ? shapeIdOrShape
+                        : shapeIdOrShape.id;
+                const shapeObj =
+                    typeof shapeIdOrShape === 'object'
+                        ? shapeIdOrShape
+                        : state.drawing.shapes.find((s) => s.id === shapeId);
+
+                // Check if this is an original shape (in drawing.shapes)
+                const isOriginalShape = state.drawing.shapes.some(
+                    (s) => s.id === shapeId
                 );
-                selectedShapes.add(shapeId);
-                return { ...state, selectedShapes };
+
+                if (isOriginalShape) {
+                    // Existing logic for original shapes
+                    const selectedShapes = new Set(
+                        multi ? state.selectedShapes : []
+                    );
+                    selectedShapes.add(shapeId);
+                    return {
+                        ...state,
+                        selectedShapes,
+                        selectedOffsetShape: null, // Clear offset selection
+                    };
+                } else {
+                    // This is an offset shape - use existing selectOffsetShape logic
+                    return {
+                        ...state,
+                        selectedOffsetShape: shapeObj || null,
+                        selectedShapes: new Set(), // Clear regular shape selection
+                    };
+                }
             }),
 
         deselectShape: (shapeId: string) =>

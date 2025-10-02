@@ -25,7 +25,7 @@ export interface DrawingState {
 export interface DrawingStore {
     subscribe: (run: (value: DrawingState) => void) => () => void;
     setDrawing: (drawing: Drawing, fileName?: string) => void;
-    selectShape: (shapeId: string, multi?: boolean) => void;
+    selectShape: (shapeIdOrShape: string | Shape, multi?: boolean) => void;
     deselectShape: (shapeId: string) => void;
     clearSelection: () => void;
     deleteSelected: () => void;

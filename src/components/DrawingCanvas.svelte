@@ -33,7 +33,6 @@
     export let onPartClick: ((partId: string) => void) | null = null; // Callback for part clicks
     export let disableDragging = false; // Default to false, true to disable dragging
     export let currentStage: WorkflowStage; // Current workflow stage for overlay rendering
-    export let interactionMode: 'shapes' | 'chains' | 'paths' = 'shapes'; // What type of objects can be selected
 
     // Canvas elements are now managed by RenderingPipeline/LayerManager
     let coordinator: CoordinateTransformer;
@@ -104,6 +103,32 @@
     $: showChainNormals = chainVisualization.showChainNormals;
     $: leadNormals = $showLeadNormals;
     $: selectionMode = $settingsStore.settings.selectionMode;
+
+    // Compute effective interaction mode based on selection mode and current stage
+    $: interactionMode = (() => {
+        // If selection mode is explicit (not auto), use it
+        if (selectionMode === 'shape') {
+            return 'shapes';
+        } else if (selectionMode === 'chain') {
+            return 'chains';
+        } else if (selectionMode === 'part') {
+            return 'chains'; // Parts use chain interaction
+        } else if (selectionMode === 'path') {
+            return 'paths';
+        } else {
+            // Auto mode: use stage-based interaction
+            switch (currentStage) {
+                case WorkflowStage.PREPARE:
+                case WorkflowStage.PROGRAM:
+                    return 'chains';
+                case WorkflowStage.SIMULATE:
+                    return 'paths';
+                case WorkflowStage.EDIT:
+                default:
+                    return 'shapes';
+            }
+        }
+    })();
 
     // Calculate unit scale factor for proper unit display
     $: unitScale = drawing
@@ -396,24 +421,6 @@
                         }
                         return; // Don't process other selections
 
-                    case HitTestType.OFFSET:
-                        // Handle offset shape selection in Program stage
-                        if (
-                            interactionMode === 'chains' &&
-                            currentStage === 'program'
-                        ) {
-                            const metadata = hitResult.metadata;
-                            const offsetShape =
-                                metadata?.shapeType === 'offset'
-                                    ? metadata.shape
-                                    : null;
-                            if (offsetShape) {
-                                drawingStore.selectOffsetShape(offsetShape);
-                                return; // Don't process regular shape selection
-                            }
-                        }
-                        break;
-
                     case HitTestType.SHAPE:
                         const metadata = hitResult.metadata;
                         shape = metadata?.shape;
@@ -470,6 +477,16 @@
 
                     case HitTestType.PATH:
                         // Handle path endpoint selection
+                        if (interactionMode === 'paths') {
+                            const pathId = hitResult.id;
+                            // Toggle path selection
+                            if (selectedPathId === pathId) {
+                                pathStore.selectPath(null); // Deselect if already selected
+                            } else {
+                                pathStore.selectPath(pathId);
+                            }
+                            return;
+                        }
                         break;
                 }
             } else {
@@ -489,10 +506,14 @@
                     if (!e.ctrlKey && !selectedShapes.has(shape.id)) {
                         drawingStore.clearSelection();
                     }
-                    drawingStore.selectShape(shape.id, e.ctrlKey);
+                    drawingStore.selectShape(shape, e.ctrlKey);
                 } else if (interactionMode === 'chains') {
                     // Program mode - allow chain and part selection
-                    const chainId = getShapeChainId(shape.id, chains);
+                    const chainId = getShapeChainId(
+                        shape.id,
+                        chains,
+                        pathsState.paths
+                    );
                     if (chainId) {
                         // When clicking on a shape outline, always prefer chain selection
                         if (onChainClick) {
@@ -524,7 +545,11 @@
                     }
                 } else if (interactionMode === 'paths') {
                     // Simulation mode - only allow path/rapid selection
-                    const chainId = getShapeChainId(shape.id, chains);
+                    const chainId = getShapeChainId(
+                        shape.id,
+                        chains,
+                        pathsState.paths
+                    );
 
                     // Check if this chain has a path and handle path selection
                     if (chainId && chainsWithPaths.includes(chainId)) {

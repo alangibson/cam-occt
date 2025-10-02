@@ -36,13 +36,30 @@ export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {
 // Helper to check if a shape is part of any chain
 export function getShapeChainId(
     shapeId: string,
-    chains: Chain[]
+    chains: Chain[],
+    paths?: any[] // Optional paths parameter for searching offset shapes
 ): string | null {
+    // First search original chains (existing logic)
     for (const chain of chains) {
         if (chain.shapes.some((shape) => shape.id === shapeId)) {
             return chain.id;
         }
     }
+
+    // If not found in original chains, search offset shapes in paths
+    if (paths) {
+        for (const path of paths) {
+            if (path.offset?.offsetShapes) {
+                const found = path.offset.offsetShapes.some(
+                    (s: any) => s.id === shapeId
+                );
+                if (found) {
+                    return path.chainId; // Return the chain that this path is based on
+                }
+            }
+        }
+    }
+
     return null;
 }
 

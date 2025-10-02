@@ -13,11 +13,11 @@ import {
     getShapeEndPoint,
 } from '$lib/geometry/shape/functions';
 import {
-    calculatePointToShapeDistance,
     isPathEnabledForRendering,
     applyPathStyling,
     setupHitTest,
 } from '$lib/rendering/canvas/utils/renderer-utils';
+import { HitTestUtils } from '$lib/rendering/canvas/utils/hit-test';
 
 /**
  * Constants for path rendering
@@ -106,8 +106,8 @@ export class PathRenderer extends BaseRenderer {
                 // Define color constants for visual consistency
                 const pathColors = {
                     offsetGreen: 'rgb(0, 133, 84)', // Green for offset paths
-                    selectedDark: 'rgb(0, 133, 84)', // Dark green for selected
-                    highlighted: 'rgb(0, 133, 84)', // Dark green for highlighted
+                    selectedDark: '#ff9933', // Light orange for selected
+                    highlighted: '#ff9933', // Light orange for highlighted
                 };
 
                 // Draw offset shapes as solid green lines
@@ -302,25 +302,20 @@ export class PathRenderer extends BaseRenderer {
 
         const { hitTolerance, enabledPaths } = hitSetup;
 
-        // First test for offset shape hits (higher priority)
+        // First test for path geometry hits (offset shapes)
         for (const path of enabledPaths) {
             // Only test if path has offset geometry
             if (!path.offset || !path.offset.offsetShapes) continue;
 
-            // Test offset shapes
+            // Test offset shapes for path hit
             for (const shape of path.offset.offsetShapes) {
-                if (this.isPointNearShape(point, shape, hitTolerance)) {
-                    const distance = calculatePointToShapeDistance(
-                        point,
-                        shape
-                    );
-
+                if (HitTestUtils.isPointNearShape(point, shape, hitTolerance)) {
                     return {
-                        type: HitTestType.OFFSET,
-                        id: shape.id,
-                        distance,
+                        type: HitTestType.PATH,
+                        id: path.id,
+                        distance: hitTolerance,
                         point,
-                        metadata: { pathId: path.id, shapeType: 'offset' },
+                        metadata: { pathId: path.id },
                     };
                 }
             }
@@ -382,14 +377,4 @@ export class PathRenderer extends BaseRenderer {
         return null;
     }
 
-    /**
-     * Check if a point is near a shape within tolerance using proper shape hit testing
-     */
-    private isPointNearShape(
-        point: Point2D,
-        shape: Shape,
-        tolerance: number
-    ): boolean {
-        return calculatePointToShapeDistance(point, shape) <= tolerance;
-    }
 }

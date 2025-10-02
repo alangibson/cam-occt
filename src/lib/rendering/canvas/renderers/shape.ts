@@ -79,15 +79,24 @@ const SHAPE_TANGENT_LINE_WIDTH = 2;
  * Shape renderer that handles all basic geometry rendering
  */
 export class ShapeRenderer extends BaseRenderer {
-    constructor(coordinator: CoordinateTransformer) {
-        super('shape-renderer', LayerId.SHAPES, coordinator);
+    private getShapes: (state: RenderState) => Shape[];
+
+    constructor(
+        id: string,
+        coordinator: CoordinateTransformer,
+        getShapes: (state: RenderState) => Shape[]
+    ) {
+        super(id, LayerId.SHAPES, coordinator);
+        this.getShapes = getShapes;
     }
 
     /**
      * Render all visible shapes
      */
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        if (!state.drawing) return;
+        // Get shapes from the configured data source
+        const shapes = this.getShapes(state);
+        if (!shapes || shapes.length === 0) return;
 
         // Create drawing context for coordinate transformation
         const drawingContext = new DrawingContext(ctx, state.transform);
@@ -102,15 +111,14 @@ export class ShapeRenderer extends BaseRenderer {
         );
 
         // Use viewport culling for large drawings
-        const shouldCull =
-            state.drawing.shapes.length > VIEWPORT_CULLING_THRESHOLD;
+        const shouldCull = shapes.length > VIEWPORT_CULLING_THRESHOLD;
         const shapesToRender = shouldCull
             ? cullShapesToViewport(
-                  state.drawing.shapes,
+                  shapes,
                   viewportBounds,
                   VIEWPORT_CULLING_BUFFER
               ).visibleShapes
-            : state.drawing.shapes;
+            : shapes;
 
         // Render each visible shape
         shapesToRender.forEach((shape) => {
@@ -408,7 +416,9 @@ export class ShapeRenderer extends BaseRenderer {
      * Test if a point hits any shape
      */
     hitWorld(point: Point2D, state: RenderState): HitTestResult | null {
-        if (!state.drawing) return null;
+        // Get shapes from the configured data source
+        const shapes = this.getShapes(state);
+        if (!shapes || shapes.length === 0) return null;
 
         // For hit testing, we can use a simple tolerance calculation without full drawing context
         // since we only need the tolerance value, not actual drawing operations
@@ -416,7 +426,7 @@ export class ShapeRenderer extends BaseRenderer {
             state.transform.zoomScale * state.transform.unitScale;
         const tolerance = HIT_TEST_TOLERANCE_PIXELS / totalScale; // Screen pixels in world units
 
-        for (const shape of state.drawing.shapes) {
+        for (const shape of shapes) {
             // Check if layer is visible before hit testing
             if (state.respectLayerVisibility) {
                 const shapeLayer = shape.layer || '0';

@@ -133,7 +133,7 @@ export interface RenderState {
     treatChainsAsEntities: boolean;
     disableDragging: boolean;
     interactionMode: 'shapes' | 'chains' | 'paths';
-    selectionMode: 'auto' | 'chain' | 'shape' | 'part';
+    selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'path';
 }
 
 /**

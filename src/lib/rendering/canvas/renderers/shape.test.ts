@@ -76,7 +76,11 @@ describe('ShapeRenderer', () => {
             1
         );
 
-        renderer = new ShapeRenderer(mockCoordinator);
+        renderer = new ShapeRenderer(
+            'shape-renderer',
+            mockCoordinator,
+            (state) => state.drawing?.shapes || []
+        );
 
         // Create mock context
         mockCtx = new MockCanvasRenderingContext2D();

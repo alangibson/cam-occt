@@ -31,7 +31,6 @@ export enum HitTestType {
     PART = 'part',
     PATH = 'path',
     RAPID = 'rapid',
-    OFFSET = 'offset',
     LEAD = 'lead',
     OVERLAY = 'overlay',
 }
@@ -90,7 +89,6 @@ export interface HitTestConfig {
  */
 export const DEFAULT_HIT_TEST_PRIORITY: HitTestType[] = [
     HitTestType.RAPID,
-    HitTestType.OFFSET,
     HitTestType.PATH,
     HitTestType.OVERLAY,
     HitTestType.LEAD,
