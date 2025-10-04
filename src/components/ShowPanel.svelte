@@ -9,118 +9,129 @@
     $: chainVisualization = $chainStore;
 </script>
 
-<AccordionPanel title="Show" isExpanded={true}>
+<AccordionPanel title="Show" isExpanded={false}>
     <div class="show-panel-content">
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                checked={shapeVisualization.showShapeStartPoints}
-                onchange={(e) =>
-                    shapeVisualizationStore.setShowShapeStartPoints(
-                        e.currentTarget.checked
-                    )}
-                class="show-checkbox"
-            />
-            Shape Start Points
-        </label>
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                checked={shapeVisualization.showShapeEndPoints}
-                onchange={(e) =>
-                    shapeVisualizationStore.setShowShapeEndPoints(
-                        e.currentTarget.checked
-                    )}
-                class="show-checkbox"
-            />
-            Shape End Points
-        </label>
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                checked={chainVisualization.showChainStartPoints}
-                onchange={(e) =>
-                    chainStore.setShowChainStartPoints(e.currentTarget.checked)}
-                class="show-checkbox"
-            />
-            Chain Start Points
-        </label>
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                checked={chainVisualization.showChainEndPoints}
-                onchange={(e) =>
-                    chainStore.setShowChainEndPoints(e.currentTarget.checked)}
-                class="show-checkbox"
-            />
-            Chain End Points
-        </label>
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                checked={chainVisualization.showChainTangentLines}
-                onchange={(e) =>
-                    chainStore.setShowChainTangentLines(
-                        e.currentTarget.checked
-                    )}
-                class="show-checkbox"
-            />
-            Chain Tangent Lines
-        </label>
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                checked={chainVisualization.showChainNormals}
-                onchange={(e) =>
-                    chainStore.setShowChainNormals(e.currentTarget.checked)}
-                class="show-checkbox"
-            />
-            Chain Normal Lines
-        </label>
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                checked={shapeVisualization.showShapeNormals}
-                onchange={(e) =>
-                    shapeVisualizationStore.setShowShapeNormals(
-                        e.currentTarget.checked
-                    )}
-                class="show-checkbox"
-            />
-            Shape Normal Lines
-        </label>
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                checked={shapeVisualization.showShapeWindingDirection}
-                onchange={(e) =>
-                    shapeVisualizationStore.setShowShapeWindingDirection(
-                        e.currentTarget.checked
-                    )}
-                class="show-checkbox"
-            />
-            Shape Winding Direction
-        </label>
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                checked={shapeVisualization.showShapeTangentLines}
-                onchange={(e) =>
-                    shapeVisualizationStore.setShowShapeTangentLines(
-                        e.currentTarget.checked
-                    )}
-                class="show-checkbox"
-            />
-            Shape Tangent Line
-        </label>
-        <label class="show-checkbox-label">
-            <input
-                type="checkbox"
-                bind:checked={$showLeadNormals}
-                class="show-checkbox"
-            />
-            Lead Normal Lines
-        </label>
+        <div class="show-section">
+            <h3 class="section-header">Shapes</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={shapeVisualization.showShapeStartPoints}
+                    onchange={(e) =>
+                        shapeVisualizationStore.setShowShapeStartPoints(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Start Points
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={shapeVisualization.showShapeEndPoints}
+                    onchange={(e) =>
+                        shapeVisualizationStore.setShowShapeEndPoints(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                End Points
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={shapeVisualization.showShapeNormals}
+                    onchange={(e) =>
+                        shapeVisualizationStore.setShowShapeNormals(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Normal Lines
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={shapeVisualization.showShapeTangentLines}
+                    onchange={(e) =>
+                        shapeVisualizationStore.setShowShapeTangentLines(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Tangent Lines
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={shapeVisualization.showShapeWindingDirection}
+                    onchange={(e) =>
+                        shapeVisualizationStore.setShowShapeWindingDirection(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Winding Direction
+            </label>
+        </div>
+
+        <div class="show-section">
+            <h3 class="section-header">Chains</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={chainVisualization.showChainStartPoints}
+                    onchange={(e) =>
+                        chainStore.setShowChainStartPoints(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Start Points
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={chainVisualization.showChainEndPoints}
+                    onchange={(e) =>
+                        chainStore.setShowChainEndPoints(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                End Points
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={chainVisualization.showChainNormals}
+                    onchange={(e) =>
+                        chainStore.setShowChainNormals(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Normal Lines
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={chainVisualization.showChainTangentLines}
+                    onchange={(e) =>
+                        chainStore.setShowChainTangentLines(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Tangent Lines
+            </label>
+        </div>
+
+        <div class="show-section">
+            <h3 class="section-header">Leads</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    bind:checked={$showLeadNormals}
+                    class="show-checkbox"
+                />
+                Normal Lines
+            </label>
+        </div>
     </div>
 </AccordionPanel>
 
@@ -128,7 +139,29 @@
     .show-panel-content {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 1rem;
+    }
+
+    .show-section {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .show-section:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .section-header {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
     }
 
     .show-checkbox-label {
@@ -139,11 +172,17 @@
         color: #374151;
         cursor: pointer;
         user-select: none;
+        padding-left: 0.25rem;
+    }
+
+    .show-checkbox-label:hover {
+        color: #111827;
     }
 
     .show-checkbox {
         width: 1rem;
         height: 1rem;
         cursor: pointer;
+        flex-shrink: 0;
     }
 </style>

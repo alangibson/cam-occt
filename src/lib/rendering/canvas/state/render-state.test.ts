@@ -29,8 +29,6 @@ describe('createEmptyRenderState', () => {
         expect(state.operations).toEqual([]);
         expect(state.rapids).toEqual([]);
         expect(state.respectLayerVisibility).toBe(true);
-        expect(state.treatChainsAsEntities).toBe(false);
-        expect(state.disableDragging).toBe(false);
         expect(state.interactionMode).toBe('shapes');
     });
 

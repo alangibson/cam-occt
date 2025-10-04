@@ -28,10 +28,10 @@
     import { getPhysicalScaleFactor } from '$lib/utils/units';
     import { RenderingPipeline } from '$lib/rendering/canvas/pipeline';
     import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
+    import { getCanvasConfigForStage } from '$lib/canvas-config';
 
     export let onChainClick: ((chainId: string) => void) | null = null; // Callback for chain clicks
     export let onPartClick: ((partId: string) => void) | null = null; // Callback for part clicks
-    export let disableDragging = false; // Default to false, true to disable dragging
     export let currentStage: WorkflowStage; // Current workflow stage for overlay rendering
 
     // Canvas elements are now managed by RenderingPipeline/LayerManager
@@ -134,6 +134,12 @@
     $: unitScale = drawing
         ? getPhysicalScaleFactor(drawing.units, displayUnit)
         : 1;
+
+    // Get canvas configuration for current stage
+    $: canvasConfig = getCanvasConfigForStage(currentStage, {
+        onChainClick,
+        onPartClick,
+    });
 
     // Universal overlay management - works for all stages
     $: {
@@ -304,6 +310,7 @@
                 showChainNormals,
                 showLeadNormals: leadNormals,
             },
+            respectLayerVisibility: canvasConfig.respectLayerVisibility,
         });
     }
 
@@ -599,12 +606,8 @@
         const newMousePos = { x: e.offsetX, y: e.offsetY };
 
         if (isMouseDown && dragStart) {
-            if (
-                mouseButton === 0 &&
-                selectedShapes.size > 0 &&
-                !disableDragging
-            ) {
-                // Move selected shapes with left mouse button (only if dragging is enabled)
+            if (mouseButton === 0 && selectedShapes.size > 0) {
+                // Move selected shapes with left mouse button
                 const worldDelta = {
                     x: coordinator.screenToWorldDistance(
                         newMousePos.x - mousePos.x
@@ -653,7 +656,8 @@
                     if (shape) {
                         // Filter hover based on selection mode
                         const allowHover =
-                            selectionMode === 'auto' || selectionMode === 'shape';
+                            selectionMode === 'auto' ||
+                            selectionMode === 'shape';
                         if (allowHover) {
                             if (interactionMode === 'shapes') {
                                 // Edit mode - show hover for individual shapes
@@ -663,8 +667,14 @@
                                 hoveredShapeId = shape.id;
                             } else if (interactionMode === 'paths') {
                                 // Simulation mode - only hover shapes that are part of selectable paths
-                                const chainId = getShapeChainId(shape.id, chains);
-                                if (chainId && chainsWithPaths.includes(chainId)) {
+                                const chainId = getShapeChainId(
+                                    shape.id,
+                                    chains
+                                );
+                                if (
+                                    chainId &&
+                                    chainsWithPaths.includes(chainId)
+                                ) {
                                     hoveredShapeId = shape.id;
                                 }
                             }

@@ -16,7 +16,6 @@
 
     // Get current settings
     $: settings = $settingsStore.settings;
-    $: hasDrawing = $drawingStore.drawing !== null;
 
     function handleFileImported(event: CustomEvent) {
         // Reset all application state when a new file is imported
@@ -91,7 +90,10 @@
 
         <div class="import-content">
             <div class="file-import-section">
-                <FileImport on:fileImported={handleFileImported} />
+                <FileImport
+                    on:fileImported={handleFileImported}
+                    on:importAdvance={handleImportAdvance}
+                />
             </div>
 
             <div class="settings-section">
@@ -148,17 +150,6 @@
                     </p>
                 </div>
             </div>
-
-            {#if hasDrawing}
-                <div class="import-advance">
-                    <button
-                        class="advance-button"
-                        on:click={handleImportAdvance}
-                    >
-                        Import >
-                    </button>
-                </div>
-            {/if}
         </div>
     </div>
 </div>
@@ -246,32 +237,6 @@
         color: #6b7280;
         margin: 0.5rem 0;
         line-height: 1.4;
-    }
-
-    .import-advance {
-        margin-top: 1.5rem;
-        text-align: center;
-    }
-
-    .advance-button {
-        background-color: rgb(0, 83, 135);
-        color: white;
-        border: none;
-        padding: 0.75rem 2rem;
-        border-radius: 0.375rem;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: 500;
-        transition: background-color 0.2s ease;
-    }
-
-    .advance-button:hover {
-        background-color: rgb(0, 65, 105);
-    }
-
-    .advance-button:focus {
-        outline: none;
-        box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.3);
     }
 
     /* Responsive design */

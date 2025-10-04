@@ -14,7 +14,7 @@ import {
     HitTestType,
 } from './utils/hit-test';
 import { DrawingContext } from './utils/context';
-import type { Point2D } from '$lib/types';
+import type { Point2D, Shape } from '$lib/types';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import {
     InteractionManager,
@@ -106,33 +106,29 @@ export class RenderingPipeline {
 
         // Add offset shapes renderer
         this.addRenderer(
-            new ShapeRenderer(
-                'shape-renderer-offset',
-                coordinator,
-                (state) => {
-                    // Extract offset shapes from all enabled paths
-                    const offsetShapes: any[] = [];
+            new ShapeRenderer('shape-renderer-offset', coordinator, (state) => {
+                // Extract offset shapes from all enabled paths
+                const offsetShapes: Shape[] = [];
 
-                    if (state.pathsState?.paths) {
-                        for (const path of state.pathsState.paths) {
-                            // Only include offset shapes from paths with enabled operations
-                            if (!path.operationId) continue;
+                if (state.pathsState?.paths) {
+                    for (const path of state.pathsState.paths) {
+                        // Only include offset shapes from paths with enabled operations
+                        if (!path.operationId) continue;
 
-                            const operation = state.operations.find(
-                                (op) => op.id === path.operationId
-                            );
-                            if (!operation || !operation.enabled) continue;
+                        const operation = state.operations.find(
+                            (op) => op.id === path.operationId
+                        );
+                        if (!operation || !operation.enabled) continue;
 
-                            // Add offset shapes if they exist
-                            if (path.offset?.offsetShapes) {
-                                offsetShapes.push(...path.offset.offsetShapes);
-                            }
+                        // Add offset shapes if they exist
+                        if (path.offset?.offsetShapes) {
+                            offsetShapes.push(...path.offset.offsetShapes);
                         }
                     }
-
-                    return offsetShapes;
                 }
-            )
+
+                return offsetShapes;
+            })
         );
 
         this.addRenderer(new ChainRenderer(coordinator));

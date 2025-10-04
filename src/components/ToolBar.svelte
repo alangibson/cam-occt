@@ -2,7 +2,6 @@
     import { drawingStore } from '$lib/stores/drawing/store';
 
     $: selectedCount = $drawingStore.selectedShapes.size;
-    $: fileName = $drawingStore.fileName;
 
     function handleScale() {
         const factor = parseFloat(prompt('Enter scale factor:', '1.5') || '1');
@@ -50,12 +49,6 @@
             </button>
         </div>
     </div>
-
-    <div class="toolbar-right">
-        {#if fileName}
-            <span class="file-name">{fileName}</span>
-        {/if}
-    </div>
 </div>
 
 <style>
@@ -76,16 +69,6 @@
     .button-group {
         display: flex;
         gap: 0.5rem;
-    }
-
-    .toolbar-right {
-        flex-shrink: 0;
-    }
-
-    .file-name {
-        font-size: 0.9rem;
-        color: #666;
-        font-weight: 500;
     }
 
     button {

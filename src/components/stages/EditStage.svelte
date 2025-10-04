@@ -1,9 +1,8 @@
 <script lang="ts">
     import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
     import ToolBar from '../ToolBar.svelte';
-    import LayersList from '../LayersList.svelte';
-    import ShapeProperties from '../ShapeProperties.svelte';
-    import Units from '../Units.svelte';
+    import LayersPanel from '../LayersPanel.svelte';
+    import InspectPanel from '../InspectPanel.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
@@ -48,9 +47,7 @@
         rightColumnStorageKey="metalheadcam-edit-right-column-width"
     >
         <svelte:fragment slot="left">
-            <AccordionPanel title="Layers" isExpanded={true}>
-                <LayersList />
-            </AccordionPanel>
+            <LayersPanel />
 
             <AccordionPanel title="Next Stage" isExpanded={true}>
                 <div class="next-stage-content">
@@ -82,13 +79,7 @@
         </svelte:fragment>
 
         <svelte:fragment slot="right">
-            <AccordionPanel title="Display Units" isExpanded={true}>
-                <Units />
-            </AccordionPanel>
-
-            <AccordionPanel title="Shape" isExpanded={true}>
-                <ShapeProperties />
-            </AccordionPanel>
+            <InspectPanel />
         </svelte:fragment>
     </ThreeColumnLayout>
 </div>

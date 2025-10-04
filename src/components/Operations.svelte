@@ -154,16 +154,26 @@
         updateOperationField(operationId, 'targetIds', newTargetIds);
     }
 
-    function selectAllTargets(operationId: string, targetType: 'parts' | 'chains') {
+    function selectAllTargets(
+        operationId: string,
+        targetType: 'parts' | 'chains'
+    ) {
         const operation = operations.find((op) => op.id === operationId);
         if (!operation) return;
 
         // Get all available target IDs based on target type
-        const availableTargets = targetType === 'parts'
-            ? parts.filter(p => !isTargetAssignedToOther(p.id, 'parts', operationId))
-            : chains.filter(c => !isTargetAssignedToOther(c.id, 'chains', operationId));
+        const availableTargets =
+            targetType === 'parts'
+                ? parts.filter(
+                      (p) =>
+                          !isTargetAssignedToOther(p.id, 'parts', operationId)
+                  )
+                : chains.filter(
+                      (c) =>
+                          !isTargetAssignedToOther(c.id, 'chains', operationId)
+                  );
 
-        const allTargetIds = availableTargets.map(t => t.id);
+        const allTargetIds = availableTargets.map((t) => t.id);
 
         updateOperationField(operationId, 'targetIds', allTargetIds);
     }
@@ -509,28 +519,6 @@
                                 {/if}
                             </div>
                         </div>
-
-                        <div class="field-group">
-                            <label for="cut-direction-{operation.id}"
-                                >Cut Direction:</label
-                            >
-                            <select
-                                id="cut-direction-{operation.id}"
-                                value={operation.cutDirection}
-                                onchange={(e) =>
-                                    updateOperationField(
-                                        operation.id,
-                                        'cutDirection',
-                                        e.currentTarget.value as CutDirection
-                                    )}
-                                class="cut-direction-select"
-                            >
-                                <option value="counterclockwise"
-                                    >Counterclockwise</option
-                                >
-                                <option value="clockwise">Clockwise</option>
-                            </select>
-                        </div>
                     </div>
 
                     <!-- Apply to section on its own row -->
@@ -596,14 +584,21 @@
                                                 <button
                                                     type="button"
                                                     class="select-all-button"
-                                                    onclick={() => selectAllTargets(operation.id, operation.targetType)}
+                                                    onclick={() =>
+                                                        selectAllTargets(
+                                                            operation.id,
+                                                            operation.targetType
+                                                        )}
                                                 >
                                                     Select All
                                                 </button>
                                                 <button
                                                     type="button"
                                                     class="clear-all-button"
-                                                    onclick={() => clearAllTargets(operation.id)}
+                                                    onclick={() =>
+                                                        clearAllTargets(
+                                                            operation.id
+                                                        )}
                                                 >
                                                     Clear All
                                                 </button>
@@ -736,266 +731,37 @@
                         </div>
                     </div>
 
-                    <!-- Lead-in and Lead-out Settings -->
-                    <div class="lead-settings">
-                        <div class="lead-group">
-                            <div class="field-group">
-                                <label for="lead-in-type-{operation.id}"
-                                    >Lead-in:</label
-                                >
-                                <select
-                                    id="lead-in-type-{operation.id}"
-                                    value={operation.leadInConfig?.type ||
-                                        LeadType.NONE}
-                                    onchange={(e) =>
-                                        updateOperationField(
-                                            operation.id,
-                                            'leadInConfig',
-                                            {
-                                                ...operation.leadInConfig,
-                                                type: e.currentTarget
-                                                    .value as LeadType,
-                                            }
-                                        )}
-                                    class="lead-select"
-                                >
-                                    <option value="none">None</option>
-                                    <option value="arc">Arc</option>
-                                </select>
-                            </div>
-                            {#if operation.leadInConfig?.type !== 'none'}
-                                <div class="field-group">
-                                    <label for="lead-in-length-{operation.id}"
-                                        >Length ({getReactiveUnitSymbol(
-                                            $settingsStore.settings
-                                                .measurementSystem
-                                        )}):</label
-                                    >
-                                    <div class="length-with-fit">
-                                        <input
-                                            id="lead-in-length-{operation.id}"
-                                            type="number"
-                                            min="0"
-                                            step="0.1"
-                                            value={operation.leadInConfig
-                                                ?.length || 0}
-                                            onchange={(e) =>
-                                                updateOperationField(
-                                                    operation.id,
-                                                    'leadInConfig',
-                                                    {
-                                                        ...operation.leadInConfig,
-                                                        length:
-                                                            parseFloat(
-                                                                e.currentTarget
-                                                                    .value
-                                                            ) || 0,
-                                                    }
-                                                )}
-                                            class="lead-input"
-                                        />
-                                        <label class="fit-checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={operation.leadInConfig
-                                                    ?.fit || false}
-                                                onchange={(e) =>
-                                                    updateOperationField(
-                                                        operation.id,
-                                                        'leadInConfig',
-                                                        {
-                                                            ...operation.leadInConfig,
-                                                            fit: e.currentTarget
-                                                                .checked,
-                                                        }
-                                                    )}
-                                                class="fit-checkbox"
-                                            />
-                                            Fit
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="field-group">
-                                    <label for="lead-in-angle-{operation.id}"
-                                        >Angle (degrees):</label
-                                    >
-                                    <input
-                                        id="lead-in-angle-{operation.id}"
-                                        type="number"
-                                        min="0"
-                                        max="360"
-                                        step="1"
-                                        value={operation.leadInConfig?.angle ||
-                                            0}
-                                        onchange={(e) =>
-                                            updateOperationField(
-                                                operation.id,
-                                                'leadInConfig',
-                                                {
-                                                    ...operation.leadInConfig,
-                                                    angle:
-                                                        parseFloat(
-                                                            e.currentTarget
-                                                                .value
-                                                        ) || 0,
-                                                }
-                                            )}
-                                        class="lead-input"
-                                        placeholder="Auto"
-                                    />
-                                </div>
-                            {/if}
-                        </div>
+                    <!-- Divider -->
+                    <div class="operation-divider"></div>
 
-                        <div class="lead-group">
-                            <div class="field-group">
-                                <label for="lead-out-type-{operation.id}"
-                                    >Lead-out:</label
-                                >
-                                <select
-                                    id="lead-out-type-{operation.id}"
-                                    value={operation.leadOutConfig?.type ||
-                                        LeadType.NONE}
-                                    onchange={(e) =>
-                                        updateOperationField(
-                                            operation.id,
-                                            'leadOutConfig',
-                                            {
-                                                ...operation.leadOutConfig,
-                                                type: e.currentTarget
-                                                    .value as LeadType,
-                                            }
-                                        )}
-                                    class="lead-select"
-                                >
-                                    <option value="none">None</option>
-                                    <option value="arc">Arc</option>
-                                </select>
-                            </div>
-                            {#if operation.leadOutConfig?.type !== 'none'}
-                                <div class="field-group">
-                                    <label for="lead-out-length-{operation.id}"
-                                        >Length ({getReactiveUnitSymbol(
-                                            $settingsStore.settings
-                                                .measurementSystem
-                                        )}):</label
-                                    >
-                                    <div class="length-with-fit">
-                                        <input
-                                            id="lead-out-length-{operation.id}"
-                                            type="number"
-                                            min="0"
-                                            step="0.1"
-                                            value={operation.leadOutConfig
-                                                ?.length || 0}
-                                            onchange={(e) =>
-                                                updateOperationField(
-                                                    operation.id,
-                                                    'leadOutConfig',
-                                                    {
-                                                        ...operation.leadOutConfig,
-                                                        length:
-                                                            parseFloat(
-                                                                e.currentTarget
-                                                                    .value
-                                                            ) || 0,
-                                                    }
-                                                )}
-                                            class="lead-input"
-                                        />
-                                        <label class="fit-checkbox-label">
-                                            <input
-                                                type="checkbox"
-                                                checked={operation.leadOutConfig
-                                                    ?.fit || false}
-                                                onchange={(e) =>
-                                                    updateOperationField(
-                                                        operation.id,
-                                                        'leadOutConfig',
-                                                        {
-                                                            ...operation.leadOutConfig,
-                                                            fit: e.currentTarget
-                                                                .checked,
-                                                        }
-                                                    )}
-                                                class="fit-checkbox"
-                                            />
-                                            Fit
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="field-group">
-                                    <label for="lead-out-angle-{operation.id}"
-                                        >Angle (degrees):</label
-                                    >
-                                    <input
-                                        id="lead-out-angle-{operation.id}"
-                                        type="number"
-                                        min="0"
-                                        max="360"
-                                        step="1"
-                                        value={operation.leadOutConfig?.angle ||
-                                            0}
-                                        onchange={(e) =>
-                                            updateOperationField(
-                                                operation.id,
-                                                'leadOutConfig',
-                                                {
-                                                    ...operation.leadOutConfig,
-                                                    angle:
-                                                        parseFloat(
-                                                            e.currentTarget
-                                                                .value
-                                                        ) || 0,
-                                                }
-                                            )}
-                                        class="lead-input"
-                                        placeholder="Auto"
-                                    />
-                                </div>
-                            {/if}
-                        </div>
-                    </div>
-
-                    <!-- Kerf Compensation Settings -->
-                    <div class="kerf-compensation-row">
+                    <!-- Cut Direction -->
+                    <div class="operation-row">
                         <div class="field-group">
-                            <label for="kerf-compensation-{operation.id}"
-                                >Kerf Compensation:</label
+                            <label for="cut-direction-{operation.id}"
+                                >Cut Direction:</label
                             >
                             <select
-                                id="kerf-compensation-{operation.id}"
-                                value={operation.kerfCompensation ||
-                                    KerfCompensation.NONE}
+                                id="cut-direction-{operation.id}"
+                                value={operation.cutDirection}
                                 onchange={(e) =>
                                     updateOperationField(
                                         operation.id,
-                                        'kerfCompensation',
-                                        e.currentTarget.value as
-                                            | KerfCompensation
-                                            | undefined
+                                        'cutDirection',
+                                        e.currentTarget.value as CutDirection
                                     )}
-                                class="lead-select"
+                                class="cut-direction-select"
                             >
-                                <option value={KerfCompensation.NONE}
-                                    >None</option
+                                <option value="counterclockwise"
+                                    >Counterclockwise</option
                                 >
-                                <option value={KerfCompensation.INNER}
-                                    >Inner</option
-                                >
-                                <option value={KerfCompensation.OUTER}
-                                    >Outer</option
-                                >
-                                <option value={KerfCompensation.PART}
-                                    >Part</option
-                                >
+                                <option value="clockwise">Clockwise</option>
                             </select>
                         </div>
                     </div>
 
                     <!-- Hole Cutting Settings (only for part operations) -->
                     {#if operation.targetType === 'parts'}
-                        <div class="hole-cutting-settings">
+                        <div class="operation-row">
                             <div class="field-group">
                                 <label class="hole-underspeed-label">
                                     <input
@@ -1048,6 +814,161 @@
                         </div>
                     {/if}
 
+                    <!-- Lead-in and Lead-out Settings -->
+                    <div class="lead-settings">
+                        <div class="field-group">
+                            <label for="lead-in-type-{operation.id}"
+                                >Lead-in:</label
+                            >
+                            <select
+                                id="lead-in-type-{operation.id}"
+                                value={operation.leadInConfig?.type ||
+                                    LeadType.NONE}
+                                onchange={(e) =>
+                                    updateOperationField(
+                                        operation.id,
+                                        'leadInConfig',
+                                        {
+                                            ...operation.leadInConfig,
+                                            type: e.currentTarget
+                                                .value as LeadType,
+                                        }
+                                    )}
+                                class="lead-select"
+                            >
+                                <option value="none">None</option>
+                                <option value="arc">Arc</option>
+                            </select>
+                        </div>
+
+                        <div class="field-group">
+                            <label for="lead-out-type-{operation.id}"
+                                >Lead-out:</label
+                            >
+                            <select
+                                id="lead-out-type-{operation.id}"
+                                value={operation.leadOutConfig?.type ||
+                                    LeadType.NONE}
+                                onchange={(e) =>
+                                    updateOperationField(
+                                        operation.id,
+                                        'leadOutConfig',
+                                        {
+                                            ...operation.leadOutConfig,
+                                            type: e.currentTarget
+                                                .value as LeadType,
+                                        }
+                                    )}
+                                class="lead-select"
+                            >
+                                <option value="none">None</option>
+                                <option value="arc">Arc</option>
+                            </select>
+                        </div>
+
+                        {#if operation.leadInConfig?.type !== 'none'}
+                            <div class="field-group">
+                                <label for="lead-in-length-{operation.id}"
+                                    >Length ({getReactiveUnitSymbol(
+                                        $settingsStore.settings
+                                            .measurementSystem
+                                    )}):</label
+                                >
+                                <input
+                                    id="lead-in-length-{operation.id}"
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    value={operation.leadInConfig?.length || 0}
+                                    onchange={(e) =>
+                                        updateOperationField(
+                                            operation.id,
+                                            'leadInConfig',
+                                            {
+                                                ...operation.leadInConfig,
+                                                length:
+                                                    parseFloat(
+                                                        e.currentTarget.value
+                                                    ) || 0,
+                                            }
+                                        )}
+                                    class="lead-input"
+                                />
+                            </div>
+                        {:else}
+                            <div class="field-group"></div>
+                        {/if}
+
+                        {#if operation.leadOutConfig?.type !== 'none'}
+                            <div class="field-group">
+                                <label for="lead-out-length-{operation.id}"
+                                    >Length ({getReactiveUnitSymbol(
+                                        $settingsStore.settings
+                                            .measurementSystem
+                                    )}):</label
+                                >
+                                <input
+                                    id="lead-out-length-{operation.id}"
+                                    type="number"
+                                    min="0"
+                                    step="0.1"
+                                    value={operation.leadOutConfig?.length || 0}
+                                    onchange={(e) =>
+                                        updateOperationField(
+                                            operation.id,
+                                            'leadOutConfig',
+                                            {
+                                                ...operation.leadOutConfig,
+                                                length:
+                                                    parseFloat(
+                                                        e.currentTarget.value
+                                                    ) || 0,
+                                            }
+                                        )}
+                                    class="lead-input"
+                                />
+                            </div>
+                        {:else}
+                            <div class="field-group"></div>
+                        {/if}
+                    </div>
+
+                    <!-- Kerf Compensation Settings -->
+                    <div class="kerf-compensation-row">
+                        <div class="field-group">
+                            <label for="kerf-compensation-{operation.id}"
+                                >Kerf Compensation:</label
+                            >
+                            <select
+                                id="kerf-compensation-{operation.id}"
+                                value={operation.kerfCompensation ||
+                                    KerfCompensation.NONE}
+                                onchange={(e) =>
+                                    updateOperationField(
+                                        operation.id,
+                                        'kerfCompensation',
+                                        e.currentTarget.value as
+                                            | KerfCompensation
+                                            | undefined
+                                    )}
+                                class="lead-select"
+                            >
+                                <option value={KerfCompensation.NONE}
+                                    >None</option
+                                >
+                                <option value={KerfCompensation.INNER}
+                                    >Inner</option
+                                >
+                                <option value={KerfCompensation.OUTER}
+                                    >Outer</option
+                                >
+                                <option value={KerfCompensation.PART}
+                                    >Part</option
+                                >
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="operation-actions">
                         <button
                             onclick={() => duplicateOperation(operation.id)}
@@ -1080,12 +1001,6 @@
 </div>
 
 <style>
-    .operations-container {
-        background: #f9f9f9;
-        border-radius: 4px;
-        padding: 1rem;
-    }
-
     .operations-list {
         display: flex;
         flex-direction: column;
@@ -1163,9 +1078,6 @@
     }
 
     .operation-details {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem;
         margin-bottom: 0.75rem;
     }
 
@@ -1460,16 +1372,10 @@
     .lead-settings {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        gap: 0.75rem 1rem;
         margin-top: 0.75rem;
         padding-top: 0.75rem;
         border-top: 1px solid #e5e7eb;
-    }
-
-    .lead-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
     }
 
     .lead-select {
@@ -1494,7 +1400,6 @@
     }
 
     .lead-input {
-        width: 100%;
         padding: 0.25rem 0.5rem;
         border: 1px solid #d1d5db;
         border-radius: 0.25rem;
@@ -1526,6 +1431,12 @@
         margin-top: 0.75rem;
     }
 
+    .operation-divider {
+        height: 1px;
+        background-color: #e5e7eb;
+        margin: 0.75rem 0;
+    }
+
     /* Kerf compensation row styling */
     .kerf-compensation-row {
         margin-top: 0.75rem;
@@ -1537,46 +1448,7 @@
         max-width: 200px;
     }
 
-    /* Length with fit checkbox styling */
-    .length-with-fit {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .length-with-fit .lead-input {
-        flex: 1;
-    }
-
-    .fit-checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.75rem;
-        color: #6b7280;
-        cursor: pointer;
-        white-space: nowrap;
-    }
-
-    .fit-checkbox {
-        margin: 0;
-        cursor: pointer;
-    }
-
-    .fit-checkbox-label:hover {
-        color: #374151;
-    }
-
-    /* Hole cutting settings styling */
-    .hole-cutting-settings {
-        margin-top: 0.75rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid #e5e7eb;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-
+    /* Hole underspeed styling */
     .hole-underspeed-label {
         display: flex;
         align-items: center;
@@ -1589,12 +1461,6 @@
     .hole-checkbox {
         margin: 0;
         cursor: pointer;
-    }
-
-    .hole-cutting-settings .field-group {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
     }
 
     .hole-input {

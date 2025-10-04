@@ -161,9 +161,6 @@
 
 <style>
     .paths-container {
-        background: #f9f9f9;
-        border-radius: 4px;
-        padding: 1rem;
     }
 
     .paths-list {

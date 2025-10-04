@@ -35,6 +35,7 @@ import type { CoordinateTransformer } from '$lib/rendering/coordinate-transforme
 const HIT_TEST_TOLERANCE = 5;
 const NORMAL_INDICATOR_RADIUS = 3; // Radius of the circle at normal line start
 const DEFAULT_NORMAL_LINE_LENGTH = 30; // Length in screen pixels
+const LEAD_NORMAL_LINE_WIDTH = 2; // Width in screen pixels
 
 export class LeadRenderer extends BaseRenderer {
     // Lead visualization settings
@@ -428,7 +429,9 @@ export class LeadRenderer extends BaseRenderer {
         // Draw the normal line
         ctx.save();
         ctx.strokeStyle = this.normalLineColor;
-        ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(1);
+        ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(
+            LEAD_NORMAL_LINE_WIDTH
+        );
         ctx.setLineDash([]);
 
         ctx.beginPath();

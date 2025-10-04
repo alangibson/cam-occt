@@ -130,8 +130,6 @@ export interface RenderState {
 
     // Interaction settings
     respectLayerVisibility: boolean;
-    treatChainsAsEntities: boolean;
-    disableDragging: boolean;
     interactionMode: 'shapes' | 'chains' | 'paths';
     selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'path';
 }
@@ -208,8 +206,6 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
         } as Record<WorkflowStage, OverlayState>,
         currentOverlay: null,
         respectLayerVisibility: true,
-        treatChainsAsEntities: false,
-        disableDragging: false,
         interactionMode: 'shapes',
         selectionMode: 'auto',
     };

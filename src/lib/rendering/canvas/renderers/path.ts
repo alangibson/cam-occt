@@ -2,8 +2,11 @@ import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import { screenToWorldDistance } from '$lib/rendering/canvas/state/render-state';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
-import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
-import type { Point2D, Shape } from '$lib/types';
+import {
+    HitTestType,
+    HitTestUtils,
+} from '$lib/rendering/canvas/utils/hit-test';
+import type { Point2D } from '$lib/types';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { Path } from '$lib/stores/paths/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
@@ -17,7 +20,6 @@ import {
     applyPathStyling,
     setupHitTest,
 } from '$lib/rendering/canvas/utils/renderer-utils';
-import { HitTestUtils } from '$lib/rendering/canvas/utils/hit-test';
 
 /**
  * Constants for path rendering
@@ -376,5 +378,4 @@ export class PathRenderer extends BaseRenderer {
 
         return null;
     }
-
 }

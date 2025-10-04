@@ -18,7 +18,6 @@
     import SimulateStage from './stages/SimulateStage.svelte';
     import ExportStage from './stages/ExportStage.svelte';
     import DrawingCanvasContainer from './DrawingCanvasContainer.svelte';
-    import { settingsStore } from '$lib/stores/settings/store';
 
     // Get current stage and related state
     $: currentStage = $workflowStore.currentStage;

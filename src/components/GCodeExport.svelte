@@ -159,7 +159,6 @@
         <div class="gcode-section">
             <div class="gcode-header">
                 <div class="gcode-info">
-                    <h4>Generated G-Code</h4>
                     <span class="gcode-stats">
                         {generatedGCode.split('\n').length} lines • {(
                             new Blob([generatedGCode]).size / 1024

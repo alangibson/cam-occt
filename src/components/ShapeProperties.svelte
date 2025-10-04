@@ -144,10 +144,12 @@
 
 <div class="shape-properties">
     {#if displayShape}
-        <button class="copy-button" onclick={copyShapeToClipboard} title="Copy shape JSON to clipboard">
-            Copy
-        </button>
         <div class="property-group">
+            <div class="property-row">
+                <span class="property-label">Name:</span>
+                <span class="property-value">{displayShape.id}</span>
+            </div>
+
             <div class="property-row">
                 <span class="property-label">Type:</span>
                 <span class="property-value"
@@ -386,24 +388,33 @@
                 {selectedShapes.size} shapes selected (showing first)
             </p>
         {/if}
-    {:else}
-        <p class="no-selection">No shape selected</p>
+
+        <div class="button-row">
+            <button
+                class="copy-button"
+                onclick={copyShapeToClipboard}
+                title="Copy shape JSON to clipboard"
+            >
+                Copy
+            </button>
+        </div>
     {/if}
 </div>
 
 <style>
     .shape-properties {
-        padding: 1rem;
-        background-color: #f9f9f9;
-        border-radius: 4px;
         min-height: 200px;
-        position: relative;
+    }
+
+    .button-row {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
     }
 
     .copy-button {
-        position: absolute;
-        top: 0.5rem;
-        right: 0.5rem;
         padding: 0.25rem 0.75rem;
         background-color: #fff;
         color: #374151;
@@ -413,7 +424,6 @@
         font-weight: 500;
         cursor: pointer;
         transition: all 0.2s ease;
-        z-index: 10;
     }
 
     .copy-button:hover {
@@ -430,7 +440,7 @@
     .property-group {
         display: flex;
         flex-direction: column;
-        gap: 0.75rem;
+        gap: 0.5rem;
     }
 
     .property-row {
@@ -438,18 +448,13 @@
         justify-content: space-between;
         align-items: flex-start;
         gap: 0.5rem;
-        padding: 0.5rem;
-        background-color: #fff;
-        border-radius: 4px;
-        border: 1px solid #ddd;
+        padding: 0.25rem 0;
         min-width: 0;
     }
 
     .property-row.small {
-        padding: 0.25rem 0.5rem;
+        padding: 0.125rem 0;
         font-size: 0.9rem;
-        background-color: #f8f8f8;
-        border: none;
         margin-left: 0.5rem;
     }
 
@@ -475,13 +480,6 @@
         text-overflow: ellipsis;
         min-width: 0;
         flex-shrink: 1;
-    }
-
-    .no-selection {
-        color: #666;
-        font-style: italic;
-        margin: 0;
-        text-align: center;
     }
 
     .multi-selection {

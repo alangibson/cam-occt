@@ -3,13 +3,14 @@
     import Operations from '../Operations.svelte';
     import Paths from '../Paths.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
-    import ShapeProperties from '../ShapeProperties.svelte';
+    import InspectPanel from '../InspectPanel.svelte';
+    import PartsPanel from '../PartsPanel.svelte';
+    import ChainsPanel from '../ChainsPanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
-    import { isChainClosed } from '$lib/geometry/chain/functions';
     import { SvelteMap } from 'svelte/reactivity';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import { pathStore } from '$lib/stores/paths/store';
@@ -172,93 +173,11 @@
         rightColumnStorageKey="metalheadcam-program-right-column-width"
     >
         <svelte:fragment slot="left">
-            {#if chains.length > 0}
-                <AccordionPanel title="Chains" isExpanded={true}>
-                    <div class="chain-list">
-                        {#each chains as chain (chain.id)}
-                            <div
-                                class="chain-item {selectedChainId === chain.id
-                                    ? 'selected'
-                                    : ''} {highlightedChainId === chain.id
-                                    ? 'highlighted'
-                                    : ''}"
-                                role="button"
-                                tabindex="0"
-                                onclick={() =>
-                                    onChainClick && onChainClick(chain.id)}
-                                onkeydown={(e) =>
-                                    e.key === 'Enter' &&
-                                    onChainClick &&
-                                    onChainClick(chain.id)}
-                                onmouseenter={() =>
-                                    onChainHover && onChainHover(chain.id)}
-                                onmouseleave={() =>
-                                    onChainHoverEnd && onChainHoverEnd()}
-                            >
-                                <span class="chain-name"
-                                    >Chain {chain.id.split('-')[1]}</span
-                                >
-                                <span
-                                    class="chain-status {isChainClosed(
-                                        chain,
-                                        0.1
-                                    )
-                                        ? 'closed'
-                                        : 'open'}"
-                                >
-                                    {isChainClosed(chain, 0.1)
-                                        ? 'Closed'
-                                        : 'Open'}
-                                </span>
-                            </div>
-                        {/each}
-                    </div>
-                </AccordionPanel>
-            {/if}
-
-            {#if parts.length > 0}
-                <AccordionPanel
-                    title="Parts ({parts.length})"
-                    isExpanded={true}
-                >
-                    <div class="parts-list">
-                        {#each parts as part (part.id)}
-                            <div
-                                class="part-item {selectedPartId === part.id
-                                    ? 'selected'
-                                    : ''} {hoveredPartId === part.id
-                                    ? 'hovered'
-                                    : ''}"
-                                role="button"
-                                tabindex="0"
-                                onclick={() =>
-                                    onPartClick && onPartClick(part.id)}
-                                onkeydown={(e) =>
-                                    e.key === 'Enter' &&
-                                    onPartClick &&
-                                    onPartClick(part.id)}
-                                onmouseenter={() =>
-                                    onPartHover && onPartHover(part.id)}
-                                onmouseleave={() =>
-                                    onPartHoverEnd && onPartHoverEnd()}
-                            >
-                                <span class="part-name"
-                                    >Part {part.id.split('-')[1]}</span
-                                >
-                                <span class="part-info"
-                                    >{part.holes.length} holes</span
-                                >
-                            </div>
-                        {/each}
-                    </div>
-                </AccordionPanel>
-            {/if}
-
-            <AccordionPanel title="Paths" isExpanded={true}>
+            <AccordionPanel title="Paths ({paths.length})" isExpanded={false}>
                 <Paths />
             </AccordionPanel>
 
-            <AccordionPanel title="Cut Order" isExpanded={true}>
+            <AccordionPanel title="Rapids ({rapids.length})" isExpanded={false}>
                 <div class="cut-order-list">
                     {#if rapids.length > 0}
                         {#each rapids as rapid, index (rapid.id)}
@@ -292,6 +211,14 @@
                 </div>
             </AccordionPanel>
 
+            {#if parts.length > 0}
+                <PartsPanel {onPartClick} {onPartHover} {onPartHoverEnd} />
+            {/if}
+
+            {#if chains.length > 0}
+                <ChainsPanel {onChainClick} {onChainHover} {onChainHoverEnd} />
+            {/if}
+
             <AccordionPanel title="Next Stage" isExpanded={true}>
                 <div class="next-stage-content">
                     <button
@@ -320,18 +247,6 @@
         </svelte:fragment>
 
         <svelte:fragment slot="center">
-            <div class="toolbar-container">
-                <div class="toolbar">
-                    <div class="toolbar-left"></div>
-                    <div class="toolbar-right">
-                        {#if drawing && $drawingStore.fileName}
-                            <span class="file-name"
-                                >{$drawingStore.fileName}</span
-                            >
-                        {/if}
-                    </div>
-                </div>
-            </div>
             <svelte:component
                 this={sharedCanvas}
                 currentStage={canvasStage}
@@ -352,13 +267,11 @@
                 <Operations bind:this={operationsComponent} />
             </AccordionPanel>
 
-            <AccordionPanel title="Shape" isExpanded={true}>
-                <ShapeProperties />
-            </AccordionPanel>
+            <InspectPanel />
 
             <AccordionPanel
                 title="Problems ({offsetWarnings.length})"
-                isExpanded={true}
+                isExpanded={false}
             >
                 <div class="offset-warnings-list">
                     {#if offsetWarnings.length > 0}
@@ -431,76 +344,6 @@
         height: 100%;
     }
 
-    /* .parts-list has no special styling - shows all parts without scrollbar */
-
-    /* .chain-list has no special styling - shows all chains without scrollbar */
-
-    .chain-item,
-    .part-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem;
-        margin: 0.25rem 0;
-        border: 1px solid transparent;
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .chain-item:hover,
-    .part-item:hover {
-        background-color: #f3f4f6;
-    }
-
-    .chain-item.selected {
-        background-color: #fef3c7;
-        border-color: #f59e0b;
-    }
-
-    .chain-item.highlighted {
-        background-color: #fef9e7;
-        border-color: #fbbf24;
-    }
-
-    .part-item.selected {
-        background-color: #fef3c7;
-        border-color: #f59e0b;
-    }
-
-    .part-item.hovered {
-        background-color: #fef9e7;
-        border-color: #fbbf24;
-    }
-
-    .chain-name,
-    .part-name {
-        font-weight: 500;
-        color: #374151;
-    }
-
-    .part-info {
-        color: #6b7280;
-        font-size: 0.75rem;
-    }
-
-    .chain-status {
-        font-size: 0.75rem;
-        padding: 0.125rem 0.375rem;
-        border-radius: 0.25rem;
-        font-weight: 500;
-    }
-
-    .chain-status.closed {
-        background-color: #e6f2f0;
-        color: #166534;
-    }
-
-    .chain-status.open {
-        background-color: #fef3c7;
-        color: #92400e;
-    }
 
     .next-stage-content {
         background: linear-gradient(
@@ -544,56 +387,6 @@
     }
 
     /* Removed .panel-title styles - now handled by AccordionPanel component */
-
-    /* Toolbar styles */
-    .toolbar-container {
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .toolbar {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem 1rem;
-        background-color: #f5f5f5;
-    }
-
-    .toolbar-left {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .toolbar-right {
-        flex-shrink: 0;
-    }
-
-    .toolbar-button {
-        padding: 0.5rem 1rem;
-        border: 1px solid #d1d5db;
-        background-color: white;
-        color: #374151;
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .toolbar-button:hover:not(:disabled) {
-        background-color: #f9fafb;
-        border-color: #9ca3af;
-    }
-
-    .toolbar-button:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .file-name {
-        font-size: 0.875rem;
-        color: #6b7280;
-        font-weight: 500;
-    }
 
     /* Cut Order section styles */
     .cut-order-list {

@@ -6,6 +6,7 @@ import {
 } from '$lib/geometry/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import type { ChainEndpoint } from '$lib/stores/overlay/interfaces';
+import type { Path } from '$lib/stores/paths/interfaces';
 
 // Helper functions to generate chain overlay data
 export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {
@@ -37,7 +38,7 @@ export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {
 export function getShapeChainId(
     shapeId: string,
     chains: Chain[],
-    paths?: any[] // Optional paths parameter for searching offset shapes
+    paths?: Path[] // Optional paths parameter for searching offset shapes
 ): string | null {
     // First search original chains (existing logic)
     for (const chain of chains) {
@@ -51,7 +52,7 @@ export function getShapeChainId(
         for (const path of paths) {
             if (path.offset?.offsetShapes) {
                 const found = path.offset.offsetShapes.some(
-                    (s: any) => s.id === shapeId
+                    (s: Shape) => s.id === shapeId
                 );
                 if (found) {
                     return path.chainId; // Return the chain that this path is based on

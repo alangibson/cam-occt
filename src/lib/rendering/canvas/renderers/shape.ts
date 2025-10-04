@@ -30,6 +30,7 @@ import { tessellateSpline } from '$lib/geometry/spline';
 import { distanceFromEllipsePerimeter } from '$lib/geometry/ellipse/index';
 import { drawNormalLine } from './normal-renderer-utils';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
+import { drawChevronArrow } from '$lib/rendering/canvas/utils/chevron-drawing';
 import {
     getShapeNormal,
     getShapeMidpoint,
@@ -66,12 +67,6 @@ const DEFAULT_LINE_WIDTH = 1;
 
 // Constants for shape winding direction and tangent lines
 const SHAPE_CHEVRON_SIZE_PX = 8;
-const SHAPE_CHEVRON_LINE_WIDTH = 1.5;
-const WING_LENGTH_RATIO = 0.7;
-const BACK_OFFSET_RATIO = 0.3;
-const TIP_OFFSET_RATIO = 0.4;
-const PI_DIVISOR = 4;
-const QUARTER_PI = Math.PI / PI_DIVISOR;
 const SHAPE_TANGENT_LINE_LENGTH = 50; // Length of tangent lines in screen pixels
 const SHAPE_TANGENT_LINE_WIDTH = 2;
 
@@ -135,8 +130,12 @@ export class ShapeRenderer extends BaseRenderer {
             let isSelected = state.selection.selectedShapes.has(shape.id);
             let isHovered = state.selection.hoveredShape === shape.id;
 
-            // If treating chains as entities, check if any shape in the chain is selected/hovered
-            if (state.treatChainsAsEntities && chainId) {
+            // If selection mode is chain or part, check if any shape in the chain is selected/hovered
+            if (
+                (state.selectionMode === 'chain' ||
+                    state.selectionMode === 'part') &&
+                chainId
+            ) {
                 const chainShapeIds = getChainShapeIds(shape.id, state.chains);
                 isSelected = chainShapeIds.some((id) =>
                     state.selection.selectedShapes.has(id)
@@ -205,10 +204,13 @@ export class ShapeRenderer extends BaseRenderer {
         }
     }
 
-    private drawShapeWindingDirections(
-        ctx: CanvasRenderingContext2D,
+    /**
+     * Helper to iterate shapes and apply a callback with midpoint and direction
+     */
+    private forEachShapeWithDirection(
         state: RenderState,
-        shapes: Shape[]
+        shapes: Shape[],
+        callback: (shape: Shape, midpoint: Point2D, direction: Point2D) => void
     ): void {
         for (const shape of shapes) {
             // Check if layer is visible
@@ -223,32 +225,45 @@ export class ShapeRenderer extends BaseRenderer {
             const MIDPOINT_PARAM = 0.5;
             const midpoint = getShapeMidpoint(shape, MIDPOINT_PARAM);
             if (midpoint) {
-                // Calculate direction at midpoint by sampling nearby points
                 const direction = this.getShapeDirectionAtMidpoint(shape);
                 if (direction) {
-                    // Calculate perpendicular vector for chevron wings
-                    const perpX = -direction.y;
-                    const perpY = direction.x;
-
-                    // Get chevron size in world units
-                    const chevronSize =
-                        state.transform.coordinator.screenToWorldDistance(
-                            SHAPE_CHEVRON_SIZE_PX
-                        );
-
-                    this.drawChevronArrow(
-                        ctx,
-                        state,
-                        midpoint,
-                        direction.x,
-                        direction.y,
-                        perpX,
-                        perpY,
-                        chevronSize
-                    );
+                    callback(shape, midpoint, direction);
                 }
             }
         }
+    }
+
+    private drawShapeWindingDirections(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        shapes: Shape[]
+    ): void {
+        this.forEachShapeWithDirection(
+            state,
+            shapes,
+            (_, midpoint, direction) => {
+                // Calculate perpendicular vector for chevron wings
+                const perpX = -direction.y;
+                const perpY = direction.x;
+
+                // Get chevron size in world units
+                const chevronSize =
+                    state.transform.coordinator.screenToWorldDistance(
+                        SHAPE_CHEVRON_SIZE_PX
+                    );
+
+                drawChevronArrow(
+                    ctx,
+                    state,
+                    midpoint,
+                    direction.x,
+                    direction.y,
+                    perpX,
+                    perpY,
+                    chevronSize
+                );
+            }
+        );
     }
 
     private drawShapeTangentLines(
@@ -256,26 +271,13 @@ export class ShapeRenderer extends BaseRenderer {
         state: RenderState,
         shapes: Shape[]
     ): void {
-        for (const shape of shapes) {
-            // Check if layer is visible
-            if (state.respectLayerVisibility) {
-                const shapeLayer = shape.layer || '0';
-                const isVisible =
-                    state.visibility.layerVisibility[shapeLayer] !== false;
-                if (!isVisible) continue;
+        this.forEachShapeWithDirection(
+            state,
+            shapes,
+            (_, midpoint, direction) => {
+                this.drawShapeTangent(ctx, state, midpoint, direction);
             }
-
-            // Get midpoint and direction of the shape
-            const MIDPOINT_PARAM = 0.5;
-            const midpoint = getShapeMidpoint(shape, MIDPOINT_PARAM);
-            if (midpoint) {
-                // Calculate tangent direction at midpoint
-                const direction = this.getShapeDirectionAtMidpoint(shape);
-                if (direction) {
-                    this.drawShapeTangent(ctx, state, midpoint, direction);
-                }
-            }
-        }
+        );
     }
 
     /**
@@ -306,67 +308,6 @@ export class ShapeRenderer extends BaseRenderer {
             x: dx / magnitude,
             y: dy / magnitude,
         };
-    }
-
-    /**
-     * Draw a chevron arrow at the specified location (reused from ChevronRenderer)
-     */
-    private drawChevronArrow(
-        ctx: CanvasRenderingContext2D,
-        state: RenderState,
-        center: Point2D,
-        dirX: number,
-        dirY: number,
-        perpX: number,
-        perpY: number,
-        size: number
-    ): void {
-        ctx.save();
-        ctx.strokeStyle = 'rgb(0, 133, 84)'; // Green color to match path color
-        ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(
-            SHAPE_CHEVRON_LINE_WIDTH
-        );
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-
-        // Calculate chevron wing points (90 degree angle between wings)
-        const wingLength = size * WING_LENGTH_RATIO;
-        const backOffset = size * BACK_OFFSET_RATIO;
-
-        // Wing points: 45 degrees on each side of the direction vector
-        const wing1X =
-            center.x -
-            backOffset * dirX +
-            wingLength *
-                (dirX * Math.cos(QUARTER_PI) + perpX * Math.sin(QUARTER_PI));
-        const wing1Y =
-            center.y -
-            backOffset * dirY +
-            wingLength *
-                (dirY * Math.cos(QUARTER_PI) + perpY * Math.sin(QUARTER_PI));
-
-        const wing2X =
-            center.x -
-            backOffset * dirX +
-            wingLength *
-                (dirX * Math.cos(QUARTER_PI) - perpX * Math.sin(QUARTER_PI));
-        const wing2Y =
-            center.y -
-            backOffset * dirY +
-            wingLength *
-                (dirY * Math.cos(QUARTER_PI) - perpY * Math.sin(QUARTER_PI));
-
-        const tipX = center.x + size * TIP_OFFSET_RATIO * dirX;
-        const tipY = center.y + size * TIP_OFFSET_RATIO * dirY;
-
-        // Draw the chevron (two lines forming arrow shape)
-        ctx.beginPath();
-        ctx.moveTo(wing1X, wing1Y);
-        ctx.lineTo(tipX, tipY);
-        ctx.lineTo(wing2X, wing2Y);
-        ctx.stroke();
-
-        ctx.restore();
     }
 
     /**

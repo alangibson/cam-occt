@@ -7,6 +7,10 @@
 
     const dispatch = createEventDispatcher();
 
+    function handleImportClick() {
+        dispatch('importAdvance');
+    }
+
     let fileInput: HTMLInputElement;
     let isDragging = false;
     let originalUnits: Unit | null = null;
@@ -96,9 +100,18 @@
         style="display: none;"
     />
 
-    <button class="import-button" on:click={() => fileInput.click()}>
-        Open DXF
-    </button>
+    <div class="button-container">
+        <button class="import-button" on:click={() => fileInput.click()}>
+            Open DXF
+        </button>
+        <button
+            class="advance-button"
+            disabled={!fileName}
+            on:click={handleImportClick}
+        >
+            Import >
+        </button>
+    </div>
 
     {#if fileName}
         <p class="filename">
@@ -126,6 +139,13 @@
         background-color: #e6f2ff;
     }
 
+    .button-container {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        align-items: center;
+    }
+
     .import-button {
         background-color: rgb(0, 83, 135);
         color: white;
@@ -138,6 +158,33 @@
 
     .import-button:hover {
         background-color: rgb(0, 83, 135);
+    }
+
+    .advance-button {
+        background-color: #dc2626;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: 500;
+        transition: background-color 0.2s ease;
+    }
+
+    .advance-button:hover:not(:disabled) {
+        background-color: #b91c1c;
+    }
+
+    .advance-button:disabled {
+        background-color: #9ca3af;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .advance-button:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.3);
     }
 
     .hint {

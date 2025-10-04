@@ -9,6 +9,7 @@
 
     $: drawing = $drawingStore.drawing;
     $: scale = $drawingStore.scale;
+    $: fileName = $drawingStore.fileName;
     $: selectionMode = $settingsStore.settings.selectionMode;
     let drawingSize: DrawingSize | null = null;
 
@@ -52,24 +53,31 @@
 
 <footer class="footer">
     <div class="drawing-info">
-        {#if drawingSize}
-            <span class="size-info">
-                Size: {formatSize(drawingSize.width, drawingSize.units)} × {formatSize(
-                    drawingSize.height,
-                    drawingSize.units
-                )}
-                {#if drawingSize.source === 'calculated'}
-                    <span class="source-note">(calculated)</span>
-                {/if}
-            </span>
-        {:else if drawing}
-            <span class="no-size">Unable to calculate size</span>
-        {:else}
-            <span class="no-drawing">No drawing loaded</span>
-        {/if}
+        <div class="left-info">
+            {#if fileName}
+                <span class="file-name">{fileName}</span>
+            {/if}
+            {#if drawingSize}
+                <span class="size-info">
+                    Size: {formatSize(drawingSize.width, drawingSize.units)} × {formatSize(
+                        drawingSize.height,
+                        drawingSize.units
+                    )}
+                    {#if drawingSize.source === 'calculated'}
+                        <span class="source-note">(calculated)</span>
+                    {/if}
+                </span>
+            {:else if drawing}
+                <span class="no-size">Unable to calculate size</span>
+            {:else}
+                <span class="no-drawing">No drawing loaded</span>
+            {/if}
+        </div>
 
         <div class="selection-controls">
-            <label for="selection-mode" class="selection-label">Selection:</label>
+            <label for="selection-mode" class="selection-label"
+                >Selection:</label
+            >
             <select
                 id="selection-mode"
                 class="selection-dropdown"
@@ -111,6 +119,17 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+    }
+
+    .left-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .file-name {
+        font-weight: 600;
+        color: #333;
     }
 
     .size-info {

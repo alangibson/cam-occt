@@ -90,12 +90,6 @@
 </div>
 
 <style>
-    .layers-list {
-        padding: 1rem;
-        background-color: #f9f9f9;
-        border-radius: 4px;
-    }
-
     /* h3 header removed - title now handled by AccordionPanel */
 
     .layers {
@@ -108,10 +102,7 @@
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding: 0.5rem;
-        background-color: #fff;
-        border-radius: 4px;
-        border: 1px solid #ddd;
+        padding: 0.5rem 0;
     }
 
     .visibility-toggle {

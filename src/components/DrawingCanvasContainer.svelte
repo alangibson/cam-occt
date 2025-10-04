@@ -4,11 +4,9 @@
 
     export let onChainClick: ((chainId: string) => void) | null = null;
     export let onPartClick: ((partId: string) => void) | null = null;
-    export let disableDragging = false;
     export let currentStage: WorkflowStage;
     export let showToolbar = false;
     export let toolbarContent: string | null = null;
-    export let interactionMode: 'shapes' | 'chains' | 'paths' = 'shapes';
 </script>
 
 <div class="canvas-container-wrapper">
@@ -20,13 +18,7 @@
     {/if}
 
     <div class="canvas-container">
-        <DrawingCanvas
-            {onChainClick}
-            {onPartClick}
-            {disableDragging}
-            {currentStage}
-            {interactionMode}
-        />
+        <DrawingCanvas {onChainClick} {onPartClick} {currentStage} />
     </div>
 </div>
 
