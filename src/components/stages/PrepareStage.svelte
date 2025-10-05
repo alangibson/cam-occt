@@ -186,10 +186,10 @@
     $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
 
     // Chain selection state
-    $: selectedChainId = $chainStore.selectedChainId;
-    $: highlightedChainId = $chainStore.highlightedChainId;
-    $: hoveredPartId = $partStore.hoveredPartId;
-    $: selectedPartId = $partStore.selectedPartId;
+    $: _selectedChainId = $chainStore.selectedChainId;
+    $: _highlightedChainId = $chainStore.highlightedChainId;
+    $: _hoveredPartId = $partStore.hoveredPartId;
+    $: _selectedPartId = $partStore.selectedPartId;
 
     // Tessellation state
 
@@ -1702,7 +1702,6 @@
         color: rgb(133, 18, 0);
     }
 
-
     /* Algorithm parameters styles - panel styles now handled by AccordionPanel component */
 
     .param-group-details {
@@ -1898,29 +1897,6 @@
     /* Prevent text selection during resize */
     .program-layout.no-select {
         user-select: none;
-    }
-
-    /* Show panel styles */
-    .show-panel-content {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .show-checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        color: #374151;
-        cursor: pointer;
-        user-select: none;
-    }
-
-    .show-checkbox {
-        width: 1rem;
-        height: 1rem;
-        cursor: pointer;
     }
 
     @media (max-width: 1200px) {

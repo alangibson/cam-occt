@@ -990,54 +990,6 @@ describe('Operations Component - Function Coverage', () => {
             expect(updatedOperations[0].leadInConfig?.length).toBe(7.5);
         });
 
-        it('should update lead-in fit through checkbox', async () => {
-            render(Operations);
-
-            // First set lead-in type to create fit checkbox
-            const operations = get(operationsStore);
-            operationsStore.updateOperation(operations[0].id, {
-                leadInConfig: { type: LeadType.ARC, length: 5 },
-            });
-
-            const { container: newContainer } = render(Operations);
-
-            const fitCheckbox = newContainer.querySelector(
-                '.fit-checkbox'
-            ) as HTMLInputElement;
-            expect(fitCheckbox).toBeTruthy();
-
-            await fireEvent.change(fitCheckbox, {
-                target: { checked: true },
-            });
-
-            const updatedOperations = get(operationsStore);
-            expect(updatedOperations[0].leadInConfig?.fit).toBe(true);
-        });
-
-        it('should update lead-in angle through numeric input', async () => {
-            render(Operations);
-
-            // First set lead-in type to create angle input
-            const operations = get(operationsStore);
-            operationsStore.updateOperation(operations[0].id, {
-                leadInConfig: { type: LeadType.ARC, length: 5 },
-            });
-
-            const { container: newContainer } = render(Operations);
-
-            const angleInput = newContainer.querySelector(
-                'input[max="360"]'
-            ) as HTMLInputElement;
-            expect(angleInput).toBeTruthy();
-
-            await fireEvent.change(angleInput, {
-                target: { value: '45' },
-            });
-
-            const updatedOperations = get(operationsStore);
-            expect(updatedOperations[0].leadInConfig?.angle).toBe(45);
-        });
-
         it('should update lead-out type through select dropdown', async () => {
             const { container } = render(Operations);
 

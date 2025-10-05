@@ -22,7 +22,8 @@
         <div class="chain-summary">
             {#each chainNormalizationResults as result (result.chainId)}
                 <div
-                    class="chain-summary-item {selectedChainId === result.chainId
+                    class="chain-summary-item {selectedChainId ===
+                    result.chainId
                         ? 'selected'
                         : ''} {highlightedChainId === result.chainId
                         ? 'highlighted'

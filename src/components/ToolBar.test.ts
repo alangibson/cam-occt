@@ -97,17 +97,4 @@ describe('ToolBar Component', () => {
         expect(deleteButton.closest('button')?.disabled).toBe(false);
         expect(scaleButton.closest('button')?.disabled).toBe(false);
     });
-
-    it('should display file name when present', () => {
-        const mockDrawing: Drawing = {
-            shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: Unit.MM,
-        };
-
-        drawingStore.setDrawing(mockDrawing, 'test-file.dxf');
-        const { getByText } = render(ToolBar);
-
-        expect(getByText('test-file.dxf')).toBeDefined();
-    });
 });

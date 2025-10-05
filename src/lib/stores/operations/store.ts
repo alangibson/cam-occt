@@ -10,7 +10,6 @@ import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
 import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { PATH_UPDATE_DELAY_MS } from './constants';
 import type { Operation, OperationsStore } from './interfaces';
 import { createPathsFromOperation } from './functions';
 

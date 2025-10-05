@@ -160,9 +160,6 @@
 </div>
 
 <style>
-    .paths-container {
-    }
-
     .paths-list {
         display: flex;
         flex-direction: column;

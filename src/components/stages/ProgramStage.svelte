@@ -42,11 +42,11 @@
     $: drawing = $drawingStore.drawing;
     $: chains = $chainStore.chains;
     $: parts = $partStore.parts;
-    $: selectedChainId = $chainStore.selectedChainId;
-    $: highlightedChainId = $chainStore.highlightedChainId;
+    $: _selectedChainId = $chainStore.selectedChainId;
+    $: _highlightedChainId = $chainStore.highlightedChainId;
     $: _highlightedPartId = $partStore.highlightedPartId;
-    $: hoveredPartId = $partStore.hoveredPartId;
-    $: selectedPartId = $partStore.selectedPartId;
+    $: _hoveredPartId = $partStore.hoveredPartId;
+    $: _selectedPartId = $partStore.selectedPartId;
     $: paths = $pathStore.paths;
     $: rapids = $rapidStore.rapids;
     $: selectedRapidId = $rapidStore.selectedRapidId;
@@ -343,7 +343,6 @@
         flex-direction: column;
         height: 100%;
     }
-
 
     .next-stage-content {
         background: linear-gradient(

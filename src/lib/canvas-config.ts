@@ -8,8 +8,8 @@ export interface CanvasConfiguration {
 }
 
 export interface StageEventHandlers {
-    onChainClick?: (chainId: string) => void;
-    onPartClick?: (partId: string) => void;
+    onChainClick?: ((chainId: string) => void) | null;
+    onPartClick?: ((partId: string) => void) | null;
 }
 
 /**

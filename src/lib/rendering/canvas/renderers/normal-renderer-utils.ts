@@ -26,9 +26,8 @@ export function drawNormalLine(
     // Draw the normal line
     ctx.save();
     ctx.strokeStyle = color;
-    ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(
-        NORMAL_LINE_WIDTH
-    );
+    ctx.lineWidth =
+        state.transform.coordinator.screenToWorldDistance(NORMAL_LINE_WIDTH);
     ctx.setLineDash([DASH_SIZE, DASH_SIZE]);
 
     ctx.beginPath();

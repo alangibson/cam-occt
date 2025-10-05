@@ -92,7 +92,8 @@
 
             <div class="property-row">
                 <span class="property-label">Shapes:</span>
-                <span class="property-value">{selectedChain.shapes.length}</span>
+                <span class="property-value">{selectedChain.shapes.length}</span
+                >
             </div>
 
             <div class="property-row">
@@ -122,17 +123,17 @@
                                 <div class="point-info">
                                     <span class="point-label">Start:</span>
                                     <span class="point-coords"
-                                        >({startPoint.x.toFixed(
+                                        >({startPoint.x.toFixed(2)}, {startPoint.y.toFixed(
                                             2
-                                        )}, {startPoint.y.toFixed(2)})</span
+                                        )})</span
                                     >
                                 </div>
                                 <div class="point-info">
                                     <span class="point-label">End:</span>
                                     <span class="point-coords"
-                                        >({endPoint.x.toFixed(
+                                        >({endPoint.x.toFixed(2)}, {endPoint.y.toFixed(
                                             2
-                                        )}, {endPoint.y.toFixed(2)})</span
+                                        )})</span
                                     >
                                 </div>
                             </div>
@@ -150,7 +151,8 @@
                         <span class="issue-type"
                             >{issue.type.replace('_', ' ')}</span
                         >
-                        <span class="issue-description">{issue.description}</span
+                        <span class="issue-description"
+                            >{issue.description}</span
                         >
                     </div>
                 {/each}

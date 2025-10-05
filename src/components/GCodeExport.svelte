@@ -272,13 +272,6 @@
         gap: 1rem;
     }
 
-    .gcode-info h4 {
-        margin: 0;
-        font-size: 1.125rem;
-        font-weight: 600;
-        color: #374151;
-    }
-
     .gcode-stats {
         font-size: 0.875rem;
         color: #6b7280;

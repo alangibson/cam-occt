@@ -55,7 +55,11 @@
 
             <div class="property-row">
                 <span class="property-label">Enabled:</span>
-                <span class="property-value {selectedPath.enabled ? 'enabled' : 'disabled'}">
+                <span
+                    class="property-value {selectedPath.enabled
+                        ? 'enabled'
+                        : 'disabled'}"
+                >
                     {selectedPath.enabled ? 'Yes' : 'No'}
                 </span>
             </div>
@@ -167,7 +171,7 @@
         {#if selectedPath.leadValidation && selectedPath.leadValidation.warnings.length > 0}
             <div class="lead-warnings">
                 <h4 class="warnings-title">Lead Warnings:</h4>
-                {#each selectedPath.leadValidation.warnings as warning}
+                {#each selectedPath.leadValidation.warnings as warning, i (i)}
                     <div class="warning-item">
                         <span class="warning-text">{warning}</span>
                     </div>

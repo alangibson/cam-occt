@@ -82,7 +82,9 @@
                     type="checkbox"
                     checked={chainVisualization.showChainStartPoints}
                     onchange={(e) =>
-                        chainStore.setShowChainStartPoints(e.currentTarget.checked)}
+                        chainStore.setShowChainStartPoints(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Start Points
@@ -92,7 +94,9 @@
                     type="checkbox"
                     checked={chainVisualization.showChainEndPoints}
                     onchange={(e) =>
-                        chainStore.setShowChainEndPoints(e.currentTarget.checked)}
+                        chainStore.setShowChainEndPoints(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 End Points

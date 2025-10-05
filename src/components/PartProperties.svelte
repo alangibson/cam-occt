@@ -34,7 +34,8 @@
 
             <div class="property-row">
                 <span class="property-label">Shell Chain:</span>
-                <span class="property-value">{selectedPart.shell.chain.id}</span>
+                <span class="property-value">{selectedPart.shell.chain.id}</span
+                >
             </div>
 
             <div class="property-row">
@@ -83,21 +84,25 @@
                             </div>
                             <div class="hole-details">
                                 <div class="hole-detail-row">
-                                    <span class="hole-detail-label">Chain:</span>
+                                    <span class="hole-detail-label">Chain:</span
+                                    >
                                     <span class="hole-detail-value"
                                         >{hole.chain.id}</span
                                     >
                                 </div>
                                 <div class="hole-detail-row">
-                                    <span class="hole-detail-label">Winding:</span
+                                    <span class="hole-detail-label"
+                                        >Winding:</span
                                     >
                                     <span class="hole-detail-value">
                                         {(() => {
-                                            const direction = detectCutDirection(
-                                                hole.chain,
-                                                algorithmParams.chainDetection
-                                                    .tolerance
-                                            );
+                                            const direction =
+                                                detectCutDirection(
+                                                    hole.chain,
+                                                    algorithmParams
+                                                        .chainDetection
+                                                        .tolerance
+                                                );
                                             return direction ===
                                                 CutDirection.CLOCKWISE
                                                 ? 'CW'

@@ -82,10 +82,13 @@ export function drawPolyline(
 export function drawEllipse(
     ctx: CanvasRenderingContext2D,
     ellipse: Ellipse,
-    shape: Shape
+    _shape: Shape
 ): void {
     // Tessellate ellipse directly
-    const tessellatedPoints = tessellateEllipse(ellipse, ELLIPSE_TESSELLATION_POINTS);
+    const tessellatedPoints = tessellateEllipse(
+        ellipse,
+        ELLIPSE_TESSELLATION_POINTS
+    );
 
     if (tessellatedPoints.length < 2) return;
 
@@ -115,7 +118,7 @@ export function drawEllipse(
 export function drawSpline(
     ctx: CanvasRenderingContext2D,
     spline: Spline,
-    shape: Shape
+    _shape: Shape
 ): void {
     // Tessellate spline directly
     const result = tessellateSpline(spline, {

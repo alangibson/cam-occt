@@ -20,9 +20,7 @@
                 <div
                     class="part-item {selectedPartId === part.id
                         ? 'selected'
-                        : ''} {hoveredPartId === part.id
-                        ? 'hovered'
-                        : ''}"
+                        : ''} {hoveredPartId === part.id ? 'hovered' : ''}"
                     role="button"
                     tabindex="0"
                     onclick={() => onPartClick && onPartClick(part.id)}
@@ -35,9 +33,7 @@
                 >
                     <div class="part-header">
                         <span class="part-name">Part {index + 1}</span>
-                        <span class="part-info"
-                            >{part.holes.length} holes</span
-                        >
+                        <span class="part-info">{part.holes.length} holes</span>
                     </div>
                     <div class="part-details">
                         <div class="shell-info">
