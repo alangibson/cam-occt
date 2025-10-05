@@ -21,45 +21,37 @@ function createOperationsStore(): OperationsStore {
         subscribe,
 
         addOperation: (operation: Omit<Operation, 'id'>) => {
-            update((operations) => {
-                const newOperation: Operation = {
-                    ...operation,
-                    id: crypto.randomUUID(),
-                };
+            const newOperation: Operation = {
+                ...operation,
+                id: crypto.randomUUID(),
+            };
 
-                // Generate paths for the new operation if it has targets and is enabled
-                if (newOperation.enabled && newOperation.targetIds.length > 0) {
-                    setTimeout(
-                        () => operationsStore.applyOperation(newOperation.id),
-                        0
-                    );
-                }
+            // Add operation to store synchronously
+            update((operations) => [...operations, newOperation]);
 
-                return [...operations, newOperation];
-            });
+            // Generate paths for the new operation if it has targets and is enabled
+            if (newOperation.enabled && newOperation.targetIds.length > 0) {
+                operationsStore.applyOperation(newOperation.id);
+            }
         },
 
         updateOperation: (id: string, updates: Partial<Operation>) => {
-            update((operations) => {
-                const newOperations: Operation[] = operations.map((op) =>
-                    op.id === id ? { ...op, ...updates } : op
-                );
+            // Update store synchronously
+            const newOperations: Operation[] = get({ subscribe }).map((op) =>
+                op.id === id ? { ...op, ...updates } : op
+            );
+            set(newOperations);
 
-                // Always regenerate paths when operation changes
-                const operation: Operation | undefined = newOperations.find(
-                    (op) => op.id === id
-                );
-                if (operation) {
-                    // Clear existing warnings for this operation before regenerating
-                    leadWarningsStore.clearWarningsForOperation(id);
-                    offsetWarningsStore.clearWarningsForOperation(id);
-                    setTimeout(() => {
-                        operationsStore.applyOperation(operation.id);
-                    }, 0);
-                }
-
-                return newOperations;
-            });
+            // Always regenerate paths when operation changes
+            const operation: Operation | undefined = newOperations.find(
+                (op) => op.id === id
+            );
+            if (operation) {
+                // Clear existing warnings for this operation before regenerating
+                leadWarningsStore.clearWarningsForOperation(id);
+                offsetWarningsStore.clearWarningsForOperation(id);
+                operationsStore.applyOperation(operation.id);
+            }
         },
 
         deleteOperation: (id: string) => {
@@ -76,29 +68,26 @@ function createOperationsStore(): OperationsStore {
         },
 
         duplicateOperation: (id: string) => {
-            update((operations) => {
-                const operation: Operation | undefined = operations.find(
-                    (op) => op.id === id
-                );
-                if (!operation) return operations;
+            const operations = get({ subscribe });
+            const operation: Operation | undefined = operations.find(
+                (op) => op.id === id
+            );
+            if (!operation) return;
 
-                const newOperation: Operation = {
-                    ...operation,
-                    id: crypto.randomUUID(),
-                    name: `${operation.name} (Copy)`,
-                    order: Math.max(...operations.map((op) => op.order)) + 1,
-                };
+            const newOperation: Operation = {
+                ...operation,
+                id: crypto.randomUUID(),
+                name: `${operation.name} (Copy)`,
+                order: Math.max(...operations.map((op) => op.order)) + 1,
+            };
 
-                // Generate paths for the duplicated operation if it has targets and is enabled
-                if (newOperation.enabled && newOperation.targetIds.length > 0) {
-                    setTimeout(
-                        () => operationsStore.applyOperation(newOperation.id),
-                        0
-                    );
-                }
+            // Add duplicated operation to store synchronously
+            update((ops) => [...ops, newOperation]);
 
-                return [...operations, newOperation];
-            });
+            // Generate paths for the duplicated operation if it has targets and is enabled
+            if (newOperation.enabled && newOperation.targetIds.length > 0) {
+                operationsStore.applyOperation(newOperation.id);
+            }
         },
 
         applyOperation: async (operationId: string) => {
@@ -145,12 +134,10 @@ function createOperationsStore(): OperationsStore {
                 });
 
                 // Check if any paths exist and mark program stage as complete
-                setTimeout(() => {
-                    const pathsState: { paths: Path[] } = get(pathStore);
-                    if (pathsState.paths.length > 0) {
-                        workflowStore.completeStage(WorkflowStage.PROGRAM);
-                    }
-                }, PATH_UPDATE_DELAY_MS); // Small delay to ensure path store is updated
+                const pathsState: { paths: Path[] } = get(pathStore);
+                if (pathsState.paths.length > 0) {
+                    workflowStore.completeStage(WorkflowStage.PROGRAM);
+                }
             }
         },
 

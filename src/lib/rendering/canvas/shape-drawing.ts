@@ -15,7 +15,6 @@ import {
     tessellateEllipse,
     ELLIPSE_TESSELLATION_POINTS,
 } from '$lib/geometry/ellipse/index';
-import { getCachedTessellation } from '$lib/rendering/tessellation-cache';
 
 /**
  * Draw a line shape
@@ -85,10 +84,8 @@ export function drawEllipse(
     ellipse: Ellipse,
     shape: Shape
 ): void {
-    // Try to get cached tessellation first
-    const cachedPoints = getCachedTessellation(shape);
-    const tessellatedPoints =
-        cachedPoints || tessellateEllipse(ellipse, ELLIPSE_TESSELLATION_POINTS);
+    // Tessellate ellipse directly
+    const tessellatedPoints = tessellateEllipse(ellipse, ELLIPSE_TESSELLATION_POINTS);
 
     if (tessellatedPoints.length < 2) return;
 
@@ -120,21 +117,15 @@ export function drawSpline(
     spline: Spline,
     shape: Shape
 ): void {
-    // Try to get cached tessellation first
-    const cachedPoints = getCachedTessellation(shape);
-    let tessellatedPoints = cachedPoints;
+    // Tessellate spline directly
+    const result = tessellateSpline(spline, {
+        method: 'verb-nurbs',
+        tolerance: SPLINE_TESSELLATION_TOLERANCE,
+    });
 
-    if (!tessellatedPoints) {
-        // Use comprehensive tessellation system with knot vector conversion
-        const result = tessellateSpline(spline, {
-            method: 'verb-nurbs',
-            tolerance: SPLINE_TESSELLATION_TOLERANCE,
-        });
+    if (!result.success || result.points.length < 2) return;
 
-        if (!result.success || result.points.length < 2) return;
-        tessellatedPoints = result.points;
-    }
-
+    const tessellatedPoints = result.points;
     if (tessellatedPoints.length < 2) return;
 
     ctx.beginPath();

@@ -22,7 +22,6 @@
         getChainShapeIds,
     } from '$lib/stores/chains/functions';
     import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-    import { clearTessellationCache } from '$lib/rendering/tessellation-cache';
     import { type Shape } from '$lib/types';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { getPhysicalScaleFactor } from '$lib/utils/units';
@@ -250,8 +249,6 @@
 
     // Geometry changes (shapes, drawing structure)
     $: if (drawing) {
-        // Clear cache when geometry changes
-        clearTessellationCache();
         renderingPipeline.updateState({
             drawing: drawing,
             selectionMode: selectionMode,
