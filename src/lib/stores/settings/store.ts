@@ -181,10 +181,5 @@ function createSettingsStore(): SettingsStore {
 // Export the settings store instance
 export const settingsStore = createSettingsStore();
 
-// Initialize DefaultsManager with the current settings after store creation
-// This ensures DefaultsManager gets the correct measurement system from the store
-try {
-    DefaultsManager.getInstance().initializeFromSettings();
-} catch {
-    // Store might not be fully ready yet, DefaultsManager will use its default values
-}
+// Note: DefaultsManager initializes itself from settingsStore in its constructor
+// No need for explicit initialization here

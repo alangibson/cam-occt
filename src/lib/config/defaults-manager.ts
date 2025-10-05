@@ -27,16 +27,20 @@ export class DefaultsManager {
     private measurementSystem: MeasurementSystem;
 
     private constructor() {
-        // Start with default measurement system to avoid circular dependency
-        // Will be updated when settings store is ready
+        // Initialize with Metric first to have valid defaults
         this.measurementSystem = MeasurementSystem.Metric;
 
-        // Initialize all default classes with default measurement system
+        // Initialize all default classes
         this.cam = new CamDefaults(this.measurementSystem);
         this.lead = new LeadDefaults(this.measurementSystem);
         this.chain = new ChainDefaults(this.measurementSystem);
         this.geometry = new GeometryDefaults(this.measurementSystem);
         this.algorithm = new AlgorithmDefaults(this.measurementSystem);
+
+        // Immediately sync with settingsStore to get actual measurement system
+        // This prevents race conditions during HMR where defaults might return
+        // wrong unit values before external sync completes
+        this.initializeFromSettings();
     }
 
     /**

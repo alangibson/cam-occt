@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';
 import { DefaultsManager } from './defaults-manager';
 import { THOUSANDTHS_PRECISION_FACTOR } from '$lib/utils/units';
+import { settingsStore } from '$lib/stores/settings/store';
 
 describe('DefaultsManager', () => {
     let defaults: DefaultsManager;
@@ -212,6 +213,44 @@ describe('DefaultsManager', () => {
             // Feed rate should be reasonable for plasma cutting in inches
             expect(defaults.cam.feedRate).toBeGreaterThan(4);
             expect(defaults.cam.feedRate).toBeLessThan(200);
+        });
+    });
+
+    describe('HMR Reload Scenario', () => {
+        it('should immediately sync with settingsStore on construction to prevent race conditions', () => {
+            // This test verifies the fix for lead arc length reset during Vite HMR
+            // When HMR reloads modules, DefaultsManager singleton gets reset
+            // It should immediately sync with settingsStore to avoid returning
+            // metric defaults when the user has imperial units selected
+
+            // 1. User has imperial units set in settings
+            settingsStore.setMeasurementSystem(MeasurementSystem.Imperial);
+
+            // 2. Simulate HMR reload - singleton gets reset
+            DefaultsManager.reset();
+
+            // 3. Get new instance - constructor should immediately sync with settingsStore
+            const newInstance = DefaultsManager.getInstance();
+
+            // 4. Verify it has imperial values immediately, not metric defaults
+            expect(newInstance.getMeasurementSystem()).toBe(
+                MeasurementSystem.Imperial
+            );
+
+            // Lead lengths should be in imperial units (2mm converted to inches)
+            const expectedImperialLeadLength =
+                Math.round((2 / 25.4) * THOUSANDTHS_PRECISION_FACTOR) /
+                THOUSANDTHS_PRECISION_FACTOR;
+
+            expect(newInstance.lead.leadInLength).toBe(
+                expectedImperialLeadLength
+            );
+            expect(newInstance.lead.leadOutLength).toBe(
+                expectedImperialLeadLength
+            );
+
+            // Clean up - reset back to metric for other tests
+            settingsStore.setMeasurementSystem(MeasurementSystem.Metric);
         });
     });
 });
