@@ -120,7 +120,8 @@ export function getCutStartPoint(
                 leadInConfig,
                 leadOutConfig,
                 cut.cutDirection,
-                part
+                part,
+                cut.normal
             );
 
             if (leadResult.leadIn) {

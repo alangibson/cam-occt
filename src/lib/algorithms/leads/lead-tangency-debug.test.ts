@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
-import { LeadType } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
@@ -31,7 +31,14 @@ describe('Lead Tangency Debug', () => {
         const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
-        const result = calculateLeads(chain, leadIn, leadOut);
+        const result = calculateLeads(
+            chain,
+            leadIn,
+            leadOut,
+            CutDirection.CLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
+        );
 
         if (result.leadIn) {
             const points = convertLeadGeometryToPoints(result.leadIn);

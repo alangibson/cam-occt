@@ -89,14 +89,18 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResult = calculateLeads(
                 offsetChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log('Original lead result:', originalResult.leadIn);
@@ -134,14 +138,18 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
                     originalChain,
                     baseLeadConfig,
                     { type: LeadType.NONE, length: 0 },
-                    cutDirection
+                    cutDirection,
+                    undefined,
+                    { x: 1, y: 0 }
                 );
 
                 const offsetResult = calculateLeads(
                     offsetChain,
                     baseLeadConfig,
                     { type: LeadType.NONE, length: 0 },
-                    cutDirection
+                    cutDirection,
+                    undefined,
+                    { x: 1, y: 0 }
                 );
 
                 console.log(`Cut direction ${cutDirection}:`);
@@ -184,14 +192,18 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const modifiedResult = calculateLeads(
                 modifiedChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log(
@@ -219,14 +231,18 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.NONE // No cut direction to isolate material avoidance logic
+                CutDirection.NONE, // No cut direction to isolate material avoidance logic
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResult = calculateLeads(
                 offsetChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log(
@@ -269,14 +285,18 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
                 cwChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const ccwResult = calculateLeads(
                 ccwChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log('CW chain normal:', cwResult.leadIn?.normal);

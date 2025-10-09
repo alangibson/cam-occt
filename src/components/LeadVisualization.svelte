@@ -153,7 +153,8 @@
                 leadInConfig,
                 leadOutConfig,
                 cut.cutDirection,
-                part || undefined
+                part || undefined,
+                cut.normal
             );
 
             return leadResult;

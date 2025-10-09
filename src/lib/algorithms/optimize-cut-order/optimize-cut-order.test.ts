@@ -43,6 +43,8 @@ describe('Optimize Cut Order', () => {
         enabled: true,
         order: 1,
         cutDirection: CutDirection.COUNTERCLOCKWISE,
+        normal: { x: 1, y: 0 },
+        normalConnectionPoint: { x: 0, y: 0 },
         ...options,
     });
 
@@ -935,6 +937,8 @@ describe('Optimize Cut Order', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
             };
 
             // Create a map of chains
@@ -990,6 +994,8 @@ describe('Optimize Cut Order', () => {
                 enabled: true,
                 order: 1,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
             };
 
             // Create a map of chains
@@ -1105,6 +1111,8 @@ describe('Optimize Cut Order', () => {
                     enabled: true,
                     order: index + 1,
                     cutDirection: CutDirection.COUNTERCLOCKWISE,
+                    normal: { x: 1, y: 0 },
+                    normalConnectionPoint: { x: 0, y: 0 },
                 });
             });
 

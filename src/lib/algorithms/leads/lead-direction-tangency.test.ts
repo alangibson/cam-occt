@@ -99,7 +99,10 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         const clockwiseResult = calculateLeads(
             clockwiseCircle,
             leadInConfig,
-            LeadConfig
+            LeadConfig,
+            CutDirection.CLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
         );
 
         if (clockwiseResult.leadIn) {
@@ -117,7 +120,10 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         const counterclockwiseResult = calculateLeads(
             counterclockwiseCircle,
             leadInConfig,
-            LeadConfig
+            LeadConfig,
+            CutDirection.COUNTERCLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
         );
 
         if (counterclockwiseResult.leadIn) {
@@ -142,7 +148,10 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         const clockwiseResult = calculateLeads(
             clockwiseRect,
             leadInConfig,
-            LeadConfig
+            LeadConfig,
+            CutDirection.CLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
         );
 
         if (clockwiseResult.leadIn) {
@@ -171,7 +180,10 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         const counterclockwiseResult = calculateLeads(
             counterclockwiseRect,
             leadInConfig,
-            LeadConfig
+            LeadConfig,
+            CutDirection.COUNTERCLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
         );
 
         if (counterclockwiseResult.leadIn) {

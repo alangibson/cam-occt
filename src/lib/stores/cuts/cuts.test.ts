@@ -60,6 +60,8 @@ describe('cutStore', () => {
             fit: true,
         },
         kerfCompensation: OffsetDirection.NONE,
+        normal: { x: 1, y: 0 },
+        normalConnectionPoint: { x: 0, y: 0 },
     });
 
     describe('addCut', () => {
@@ -523,10 +525,13 @@ describe('cutStore', () => {
                         enabled: true,
                         order: 1,
                         cutDirection: CutDirection.CLOCKWISE,
+                        normal: { x: 1, y: 0 },
+                        normalConnectionPoint: { x: 0, y: 0 },
                     },
                 ],
                 selectedCutId: 'restored-cut',
                 highlightedCutId: null,
+                showCutNormals: false,
             };
 
             cutStore.restore(cutsState);

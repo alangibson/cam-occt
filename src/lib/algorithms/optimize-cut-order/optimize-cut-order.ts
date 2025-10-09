@@ -86,7 +86,8 @@ function getCutEndPoint(cut: Cut, chain: Chain, part?: DetectedPart): Point2D {
                 leadInConfig,
                 leadOutConfig,
                 cut.cutDirection,
-                part
+                part,
+                cut.normal
             );
 
             if (leadResult.leadOut) {

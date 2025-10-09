@@ -192,6 +192,8 @@ describe('State Persistence', () => {
                     cutDirection: CutDirection.CLOCKWISE,
                     enabled: true,
                     order: 1,
+                    normal: { x: 1, y: 0 },
+                    normalConnectionPoint: { x: 0, y: 0 },
                     leadIn: {
                         geometry: {
                             center: { x: 2.5, y: 2.5 },
@@ -251,6 +253,7 @@ describe('State Persistence', () => {
             savedAt: '2023-01-01T00:00:00.000Z',
             selectedCutId: null,
             highlightedCutId: null,
+            showCutNormals: false,
         };
 
         // Save state
@@ -351,6 +354,7 @@ describe('State Persistence', () => {
             savedAt: '2023-01-01T00:00:00.000Z',
             selectedCutId: null,
             highlightedCutId: null,
+            showCutNormals: false,
         };
 
         saveState(testState);

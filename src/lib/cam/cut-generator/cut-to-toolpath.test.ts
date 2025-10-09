@@ -43,6 +43,8 @@ describe('cutToToolPath', () => {
         kerfWidth: 1.5,
         leadInConfig: { type: LeadType.ARC, length: 5.0 },
         leadOutConfig: { type: LeadType.ARC, length: 5.0 },
+        normal: { x: 1, y: 0 },
+        normalConnectionPoint: { x: 0, y: 0 },
         ...overrides,
     });
 
@@ -686,6 +688,8 @@ describe('cutsToToolPaths', () => {
         kerfWidth: 1.5,
         leadInConfig: { type: LeadType.ARC, length: 5.0 },
         leadOutConfig: { type: LeadType.ARC, length: 5.0 },
+        normal: { x: 1, y: 0 },
+        normalConnectionPoint: { x: 0, y: 0 },
         ...overrides,
     });
 

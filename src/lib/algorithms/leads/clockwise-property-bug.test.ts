@@ -1,6 +1,4 @@
 import { describe, expect, it } from 'vitest';
-// Point2D used in comments only
-// import type { Point2D } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateLeads } from './lead-calculation';
@@ -67,14 +65,18 @@ describe('Clockwise Property Bug in Offset Chains', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResult = calculateLeads(
                 offsetChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log(
@@ -141,14 +143,18 @@ describe('Clockwise Property Bug in Offset Chains', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResultFixed = calculateLeads(
                 offsetChainFixed,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log(
@@ -193,14 +199,18 @@ describe('Clockwise Property Bug in Offset Chains', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResultFixed = calculateLeads(
                 offsetChainFixed,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             if (
@@ -234,14 +244,18 @@ describe('Clockwise Property Bug in Offset Chains', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResultFixed = calculateLeads(
                 offsetChainFixed,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             if (

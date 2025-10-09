@@ -12,6 +12,7 @@ import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { PartShell } from '$lib/algorithms/part-detection/part-detection';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
+import { GeometryType } from '$lib/types/geometry';
 
 // Mock DragEvent for jsdom
 interface MockDragEventInit extends EventInit {
@@ -108,8 +109,23 @@ describe('Operations Component - Function Coverage', () => {
             const { component: comp } = render(Operations);
             component = comp;
 
-            // Add chain to store first
-            chainStore.setChains([{ id: 'chain-1', shapes: [] }]);
+            // Add chain to store first with at least one shape (required for normal calculation)
+            chainStore.setChains([
+                {
+                    id: 'chain-1',
+                    shapes: [
+                        {
+                            type: GeometryType.LINE,
+                            id: 'line-1',
+                            geometry: {
+                                start: { x: 0, y: 0 },
+                                end: { x: 100, y: 0 },
+                            },
+                            layer: 'layer1',
+                        },
+                    ],
+                },
+            ]);
             chainStore.selectChain('chain-1');
 
             comp.addNewOperation();

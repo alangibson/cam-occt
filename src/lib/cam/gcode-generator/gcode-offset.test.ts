@@ -77,6 +77,8 @@ describe('G-code generation with offset cuts', () => {
             pierceHeight: 3.8,
             pierceDelay: 0.5,
             kerfWidth: 1.5,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
@@ -120,6 +122,8 @@ describe('G-code generation with offset cuts', () => {
             pierceHeight: 3.8,
             pierceDelay: 0.5,
             kerfWidth: 1.5,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
             // Add calculated offset
             offset: {
                 offsetShapes,
@@ -177,6 +181,8 @@ describe('G-code generation with offset cuts', () => {
             pierceHeight: 3.8,
             pierceDelay: 0.5,
             kerfWidth: 1.5,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
             // Lead lengths are now handled via cut configurations, not CuttingParameters
             // Calculated lead-in connecting to offset cut
             leadIn: {
@@ -262,6 +268,8 @@ describe('G-code generation with offset cuts', () => {
             cutDirection: CutDirection.CLOCKWISE,
             feedRate: 1000.12345,
             pierceHeight: 3.87654,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
             offset: {
                 offsetShapes: [
                     {

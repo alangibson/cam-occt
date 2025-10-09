@@ -1,7 +1,7 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { describe, it } from 'vitest';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import type { Chain } from '$lib/geometry/chain/interfaces';
@@ -93,18 +93,23 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         };
 
         // Calculate leads for both spline chains
+        const cutNormal: Point2D = { x: 1, y: 0 };
         const leadResult1 = calculateLeads(
             chain1,
             leadInConfig,
             leadOutConfig,
-            CutDirection.CLOCKWISE
+            CutDirection.CLOCKWISE,
+            undefined,
+            cutNormal
         );
 
         const leadResult2 = calculateLeads(
             chain2,
             leadInConfig,
             leadOutConfig,
-            CutDirection.CLOCKWISE
+            CutDirection.CLOCKWISE,
+            undefined,
+            cutNormal
         );
 
         // Create SVG builder

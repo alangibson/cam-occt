@@ -39,6 +39,8 @@ describe('cut-optimization-utils - branch coverage', () => {
         enabled: true,
         order: 1,
         cutDirection: CutDirection.CLOCKWISE,
+        normal: { x: 1, y: 0 },
+        normalConnectionPoint: { x: 0, y: 0 },
     };
 
     describe('findNearestCut uncovered branches', () => {

@@ -87,6 +87,8 @@ describe('Cuts Component - Function Coverage', () => {
                 order: 1,
                 enabled: true,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
             });
 
             const { container } = render(Cuts);
@@ -116,6 +118,8 @@ describe('Cuts Component - Function Coverage', () => {
                 order: 1,
                 enabled: true,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
             });
 
             const { container } = render(Cuts);
@@ -145,6 +149,8 @@ describe('Cuts Component - Function Coverage', () => {
                 order: 1,
                 enabled: true,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
             });
 
             const { container } = render(Cuts);
@@ -183,6 +189,8 @@ describe('Cuts Component - Function Coverage', () => {
                 order: 1,
                 enabled: true,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
             });
 
             const { container } = render(Cuts);
@@ -210,6 +218,8 @@ describe('Cuts Component - Function Coverage', () => {
                 order: 1,
                 enabled: true,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
             });
 
             cutStore.addCut({
@@ -221,6 +231,8 @@ describe('Cuts Component - Function Coverage', () => {
                 order: 2,
                 enabled: true,
                 cutDirection: CutDirection.CLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
             });
 
             const { container } = render(Cuts);
@@ -294,6 +306,8 @@ describe('Cuts Component - Function Coverage', () => {
                 order: 1,
                 enabled: true,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
             });
 
             const { container } = render(Cuts);

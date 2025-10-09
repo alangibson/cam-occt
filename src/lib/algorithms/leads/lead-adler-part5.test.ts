@@ -4,7 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
-import type { Line, Polyline } from '$lib/types/geometry';
+import type { Line, Point2D, Polyline } from '$lib/types/geometry';
 import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
@@ -94,12 +94,14 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         const leadIn: LeadConfig = { type: LeadType.ARC, length: 10 }; // Moderate lead length
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
+        const cutNormal: Point2D = { x: 1, y: 0 };
         const result = calculateLeads(
             part5.shell.chain,
             leadIn,
             leadOut,
             CutDirection.NONE,
-            part5
+            part5,
+            cutNormal
         );
 
         expect(result.leadIn).toBeDefined();
@@ -166,12 +168,14 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
 
         for (const length of leadLengths) {
             const leadIn: LeadConfig = { type: LeadType.ARC, length };
+            const cutNormal: Point2D = { x: 1, y: 0 };
             const result = calculateLeads(
                 part5.shell.chain,
                 leadIn,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.NONE,
-                part5
+                part5,
+                cutNormal
             );
 
             if (!result.leadIn) continue;

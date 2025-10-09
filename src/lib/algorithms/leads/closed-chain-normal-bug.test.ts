@@ -96,14 +96,18 @@ describe('Closed Chain Normal Direction Bug', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                cutDirection
+                cutDirection,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResult = calculateLeads(
                 offsetChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                cutDirection
+                cutDirection,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log(
@@ -187,14 +191,18 @@ describe('Closed Chain Normal Direction Bug', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                cutDirection
+                cutDirection,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResultFixed = calculateLeads(
                 offsetChainFixed,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                cutDirection
+                cutDirection,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log(
@@ -240,14 +248,18 @@ describe('Closed Chain Normal Direction Bug', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                cutDirection
+                cutDirection,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResult = calculateLeads(
                 offsetChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                cutDirection
+                cutDirection,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log(
@@ -320,14 +332,18 @@ describe('Closed Chain Normal Direction Bug', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                cutDirection
+                cutDirection,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const offsetResult = calculateLeads(
                 offsetChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                cutDirection
+                cutDirection,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             if (originalResult.leadIn && offsetResult.leadIn) {

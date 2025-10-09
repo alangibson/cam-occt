@@ -70,7 +70,8 @@ describe('Cut Direction Respect Test', () => {
             { type: LeadType.ARC, length: 10 },
             { type: LeadType.ARC, length: 10 },
             CutDirection.CLOCKWISE,
-            part
+            part,
+            { x: 1, y: 0 }
         );
 
         // Test counterclockwise cut
@@ -79,7 +80,8 @@ describe('Cut Direction Respect Test', () => {
             { type: LeadType.ARC, length: 10 },
             { type: LeadType.ARC, length: 10 },
             CutDirection.COUNTERCLOCKWISE,
-            part
+            part,
+            { x: 1, y: 0 }
         );
 
         // Both should have leads
@@ -132,7 +134,8 @@ describe('Cut Direction Respect Test', () => {
             { type: LeadType.ARC, length: 10 },
             { type: LeadType.ARC, length: 10 },
             CutDirection.CLOCKWISE,
-            part
+            part,
+            { x: 1, y: 0 }
         );
 
         // Test counterclockwise cut
@@ -141,7 +144,8 @@ describe('Cut Direction Respect Test', () => {
             { type: LeadType.ARC, length: 10 },
             { type: LeadType.ARC, length: 10 },
             CutDirection.COUNTERCLOCKWISE,
-            part
+            part,
+            { x: 1, y: 0 }
         );
 
         // Get the first few points to determine sweep direction

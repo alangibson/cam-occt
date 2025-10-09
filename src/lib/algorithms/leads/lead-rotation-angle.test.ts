@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
-import { LeadType } from '$lib/types/direction';
+import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape';
 import { convertLeadGeometryToPoints } from './functions';
@@ -38,7 +38,10 @@ describe('Lead Rotation Angle', () => {
             const result = calculateLeads(
                 horizontalLine,
                 leadInConfig,
-                LeadConfig
+                LeadConfig,
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -71,7 +74,10 @@ describe('Lead Rotation Angle', () => {
             const result = calculateLeads(
                 horizontalLine,
                 leadInConfig,
-                LeadConfig
+                LeadConfig,
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -102,7 +108,10 @@ describe('Lead Rotation Angle', () => {
             const result = calculateLeads(
                 horizontalLine,
                 leadInConfig,
-                LeadConfig
+                LeadConfig,
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -132,7 +141,10 @@ describe('Lead Rotation Angle', () => {
             const result = calculateLeads(
                 horizontalLine,
                 leadInConfig,
-                LeadConfig
+                LeadConfig,
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -164,7 +176,10 @@ describe('Lead Rotation Angle', () => {
             const result = calculateLeads(
                 horizontalLine,
                 leadInConfig,
-                LeadConfig
+                LeadConfig,
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadOut).toBeDefined();
@@ -196,7 +211,10 @@ describe('Lead Rotation Angle', () => {
             const result = calculateLeads(
                 horizontalLine,
                 leadInConfig,
-                LeadConfig
+                LeadConfig,
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();

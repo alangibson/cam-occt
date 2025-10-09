@@ -9,6 +9,7 @@ import { GeometryType } from '$lib/types/geometry';
 import type { Shape, Line, Circle } from '$lib/types';
 import { isArc } from '$lib/geometry/arc';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
 
 // Since getLeadCurveDirection is not exported, we test it indirectly
 // through calculateLeads and verify the resulting curve direction
@@ -153,6 +154,16 @@ describe('getLeadCurveDirection (indirect testing)', () => {
         fit: false,
     };
 
+    // Helper to get cut normal for a chain
+    function getCutNormal(
+        chain: Chain,
+        cutDirection: CutDirection,
+        part?: DetectedPart
+    ): Point2D {
+        const result = calculateCutNormal(chain, cutDirection, part);
+        return result.normal;
+    }
+
     describe('normal direction calculation', () => {
         it('should calculate left and right normals to tangent correctly', () => {
             // For a horizontal line going right, tangent is (1, 0)
@@ -166,14 +177,18 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const ccwResult = calculateLeads(
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(cwResult.leadIn).toBeDefined();
@@ -208,14 +223,18 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const ccwResult = calculateLeads(
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(cwResult.leadIn).toBeDefined();
@@ -248,7 +267,8 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             // Test hole lead placement - should stay inside the hole
@@ -257,7 +277,8 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             expect(shellResult.leadIn).toBeDefined();
@@ -321,7 +342,8 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -342,14 +364,18 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const ccwResult = calculateLeads(
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(cwResult.leadIn).toBeDefined();
@@ -378,7 +404,9 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -405,14 +433,18 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 cwChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const ccwChainResult = calculateLeads(
                 ccwChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(cwChainResult.leadIn).toBeDefined();
@@ -450,19 +482,24 @@ describe('getLeadCurveDirection (indirect testing)', () => {
     describe('flipSide parameter', () => {
         it('should flip curve direction when flipSide is true', () => {
             const chain = createHorizontalLineChain();
+            const cutNormal = getCutNormal(chain, CutDirection.CLOCKWISE);
 
             const normalResult = calculateLeads(
                 chain,
                 { ...baseLeadConfig, flipSide: false },
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                cutNormal
             );
 
             const flippedResult = calculateLeads(
                 chain,
                 { ...baseLeadConfig, flipSide: true },
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                cutNormal
             );
 
             expect(normalResult.leadIn).toBeDefined();
@@ -498,7 +535,9 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(cwResult.leadIn).toBeDefined();
@@ -524,7 +563,9 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 chain,
                 baseLeadConfig,
                 baseLeadConfig, // Both lead-in and lead-out
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -551,13 +592,16 @@ describe('getLeadCurveDirection (indirect testing)', () => {
     describe('specific direction logic tests', () => {
         it('should consistently choose left normal for simple horizontal line with no constraints', () => {
             const chain = createHorizontalLineChain();
+            const cutNormal = getCutNormal(chain, CutDirection.NONE);
 
             // Test with no cut direction and no part - should default to left normal
             const result = calculateLeads(
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                cutNormal
             );
 
             expect(result.leadIn).toBeDefined();
@@ -579,18 +623,28 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 { x: 20, y: 10 }
             );
 
+            const cwNormal = getCutNormal(chain, CutDirection.CLOCKWISE);
+            const ccwNormal = getCutNormal(
+                chain,
+                CutDirection.COUNTERCLOCKWISE
+            );
+
             const cwResult = calculateLeads(
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                cwNormal
             );
 
             const ccwResult = calculateLeads(
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                ccwNormal
             );
 
             expect(cwResult.leadIn).toBeDefined();
@@ -625,7 +679,9 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 chain,
                 manualAngleConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -649,14 +705,18 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 horizontalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const vResult = calculateLeads(
                 verticalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(hResult.leadIn).toBeDefined();
@@ -691,7 +751,9 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 shortChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // Should either generate a valid lead or fail gracefully
@@ -734,7 +796,9 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 closedChain,
                 baseLeadConfig,
                 baseLeadConfig,
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // Should handle closed chains appropriately

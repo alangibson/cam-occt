@@ -12,7 +12,7 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Line, Polyline } from '$lib/types/geometry';
+import type { Line, Point2D, Polyline } from '$lib/types/geometry';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('ADLER Part 5 Cut Direction Analysis', () => {
@@ -114,12 +114,14 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
             }> = [];
 
             for (const cutDirection of cutDirections) {
+                const cutNormal: Point2D = { x: 1, y: 0 };
                 const result = calculateLeads(
                     part5.shell.chain,
                     leadIn,
                     leadOut,
                     cutDirection,
-                    part5
+                    part5,
+                    cutNormal
                 );
 
                 let solidPoints = 0;
@@ -146,12 +148,14 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         }
 
         // Test with very short leads
+        const cutNormal: Point2D = { x: 1, y: 0 };
         const shortResult = calculateLeads(
             part5.shell.chain,
             { type: LeadType.ARC, length: 1 },
             { type: LeadType.NONE, length: 0 },
             CutDirection.COUNTERCLOCKWISE,
-            part5
+            part5,
+            cutNormal
         );
 
         if (shortResult.leadIn) {

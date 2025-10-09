@@ -146,7 +146,8 @@ describe('Hole Lead Direction Fix', () => {
             leadConfig,
             leadConfig,
             CutDirection.CLOCKWISE,
-            offsetPart
+            offsetPart,
+            { x: 1, y: 0 }
         );
 
         expect(leadResult.leadIn).toBeDefined();
@@ -267,7 +268,8 @@ describe('Hole Lead Direction Fix', () => {
             leadConfig,
             leadConfig,
             CutDirection.CLOCKWISE,
-            originalPartResult.parts[0]
+            originalPartResult.parts[0],
+            { x: 1, y: 0 }
         );
 
         const offsetLeadResult = calculateLeads(
@@ -275,7 +277,8 @@ describe('Hole Lead Direction Fix', () => {
             leadConfig,
             leadConfig,
             CutDirection.CLOCKWISE,
-            offsetPartResult.parts[0]
+            offsetPartResult.parts[0],
+            { x: 1, y: 0 }
         );
 
         // Both should succeed without warnings

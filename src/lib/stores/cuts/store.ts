@@ -10,6 +10,7 @@ function createCutsStore(): CutsStore {
         cuts: [],
         selectedCutId: null,
         highlightedCutId: null,
+        showCutNormals: false,
     };
 
     const { subscribe, set, update } = writable<CutsState>(initialState);
@@ -249,6 +250,13 @@ function createCutsStore(): CutsStore {
                           }
                         : cut
                 ),
+            }));
+        },
+
+        setShowCutNormals: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showCutNormals: show,
             }));
         },
 

@@ -167,7 +167,8 @@ describe('Lead Solid Area Avoidance', () => {
                 leadIn,
                 leadOut,
                 CutDirection.NONE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -246,7 +247,8 @@ describe('Lead Solid Area Avoidance', () => {
                 leadIn,
                 leadOut,
                 CutDirection.NONE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             expect(result.leadIn).toBeDefined();
@@ -332,14 +334,16 @@ describe('Lead Solid Area Avoidance', () => {
                 leadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.NONE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
             const result2 = calculateLeads(
                 hole2Chain,
                 leadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.NONE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             expect(result1.leadIn).toBeDefined();
@@ -401,10 +405,17 @@ describe('Lead Solid Area Avoidance', () => {
             const leadIn: LeadConfig = { type: LeadType.ARC, length: 10 };
 
             // Generate leads with default direction
-            const result1 = calculateLeads(shellChain, leadIn, {
-                type: LeadType.NONE,
-                length: 0,
-            });
+            const result1 = calculateLeads(
+                shellChain,
+                leadIn,
+                {
+                    type: LeadType.NONE,
+                    length: 0,
+                },
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
+            );
             expect(result1.leadIn).toBeDefined();
 
             const points1 = convertLeadGeometryToPoints(result1.leadIn!);

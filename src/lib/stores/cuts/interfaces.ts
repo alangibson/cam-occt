@@ -4,7 +4,7 @@
  * Type definitions for cuts and cut-related data.
  */
 
-import type { Shape } from '$lib/types';
+import type { Shape, Point2D } from '$lib/types';
 import { CutDirection } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
@@ -42,6 +42,13 @@ export interface Cut {
     // Execution direction (independent of underlying chain's natural winding)
     // true=clockwise execution, false=counterclockwise, null=no direction (open chains)
     executionClockwise?: boolean | null;
+
+    // Cut Normal
+    //
+    // Normal direction for this cut (perpendicular to cut path, accounting for part context and cut direction)
+    // This is the source of truth used by both visualization and lead calculation
+    normal: Point2D; // Normalized normal vector
+    normalConnectionPoint: Point2D; // Point where normal is calculated (cut start point)
 
     // Hole
     //
@@ -85,6 +92,7 @@ export interface CutsState {
     cuts: Cut[];
     selectedCutId: string | null;
     highlightedCutId: string | null;
+    showCutNormals: boolean;
 }
 
 export interface CutsStore {
@@ -111,6 +119,7 @@ export interface CutsStore {
         }
     ) => void;
     clearCutOffsetGeometry: (cutId: string) => void;
+    setShowCutNormals: (show: boolean) => void;
     reset: () => void;
     restore: (cutsState: CutsState) => void;
 }

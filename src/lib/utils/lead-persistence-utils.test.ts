@@ -89,6 +89,8 @@ describe('Lead Persistence Utils', () => {
         enabled: true,
         order: 1,
         cutDirection: CutDirection.CLOCKWISE,
+        normal: { x: 1, y: 0 },
+        normalConnectionPoint: { x: 0, y: 0 },
         leadInConfig: {
             type: LeadType.ARC,
             length: 5,
@@ -467,7 +469,8 @@ describe('Lead Persistence Utils', () => {
                 expect.any(Object), // leadInConfig
                 expect.any(Object), // leadOutConfig
                 CutDirection.CLOCKWISE,
-                undefined
+                undefined,
+                expect.any(Object) // cutNormal
             );
 
             // Verify result was returned
@@ -511,7 +514,8 @@ describe('Lead Persistence Utils', () => {
                 expect.any(Object), // leadInConfig
                 expect.any(Object), // leadOutConfig
                 CutDirection.CLOCKWISE,
-                undefined
+                undefined,
+                expect.any(Object) // cutNormal
             );
 
             // Verify result was returned
@@ -729,7 +733,8 @@ describe('Lead Persistence Utils', () => {
                 expect.any(Object),
                 expect.any(Object),
                 CutDirection.CLOCKWISE,
-                expect.any(Object)
+                expect.any(Object),
+                expect.any(Object) // cutNormal
             );
             expect(result).toBeDefined();
         });

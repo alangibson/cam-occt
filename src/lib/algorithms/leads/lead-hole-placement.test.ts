@@ -169,7 +169,8 @@ describe('Lead Hole Placement Fix', () => {
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
-            part5
+            part5,
+            { x: 1, y: 0 }
         );
 
         expect(result.leadIn).toBeDefined();
@@ -214,7 +215,8 @@ describe('Lead Hole Placement Fix', () => {
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
-            part5
+            part5,
+            { x: 1, y: 0 }
         );
         expect(warningResult.leadIn).toBeDefined(); // Should still generate a lead despite constraints
     });
@@ -238,7 +240,8 @@ describe('Lead Hole Placement Fix', () => {
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
-            part5
+            part5,
+            { x: 1, y: 0 }
         );
 
         expect(result.leadIn).toBeDefined();

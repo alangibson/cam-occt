@@ -384,7 +384,8 @@
                     leadInConfig,
                     leadOutConfig,
                     cut.cutDirection,
-                    part
+                    part,
+                    cut.normal
                 );
 
                 if (leadResult.leadIn) {
@@ -515,7 +516,8 @@
                             leadInConfig,
                             leadOutConfig,
                             cut.cutDirection,
-                            part
+                            part,
+                            cut.normal
                         );
 
                         if (leadResult.leadIn) {
@@ -873,7 +875,8 @@
                             leadInConfig,
                             leadOutConfig,
                             cut.cutDirection,
-                            part
+                            part,
+                            cut.normal
                         );
 
                         if (leadResult.leadIn) {

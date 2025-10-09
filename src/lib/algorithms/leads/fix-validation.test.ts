@@ -84,6 +84,8 @@ describe('Clockwise Property Fix Validation', () => {
             leadInConfig: baseLeadConfig,
             leadOutConfig: { type: LeadType.NONE, length: 0 },
             cutDirection: CutDirection.CLOCKWISE,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
             offset: {
                 offsetShapes,
                 originalShapes: originalChain.shapes,
@@ -229,7 +231,9 @@ describe('Clockwise Property Fix Validation', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // Create cut with offset and use the fixed function
@@ -244,7 +248,9 @@ describe('Clockwise Property Fix Validation', () => {
                 leadCalculationChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log('Original chain clockwise:', originalChain.clockwise);

@@ -144,7 +144,8 @@ describe('Lead Cut Direction Fix', () => {
             leadIn,
             leadOut,
             CutDirection.NONE,
-            part5
+            part5,
+            { x: 1, y: 0 }
         );
 
         // Test with clockwise cut direction
@@ -153,7 +154,8 @@ describe('Lead Cut Direction Fix', () => {
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
-            part5
+            part5,
+            { x: 1, y: 0 }
         );
 
         // Test with counterclockwise cut direction
@@ -162,7 +164,8 @@ describe('Lead Cut Direction Fix', () => {
             leadIn,
             leadOut,
             CutDirection.COUNTERCLOCKWISE,
-            part5
+            part5,
+            { x: 1, y: 0 }
         );
 
         let noCutDirSolid = 0,
@@ -238,13 +241,17 @@ describe('Lead Cut Direction Fix', () => {
             squareChain,
             leadConfig,
             noLeadOut,
-            CutDirection.CLOCKWISE
+            CutDirection.CLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
         );
         const counterclockwiseResult = calculateLeads(
             squareChain,
             leadConfig,
             noLeadOut,
-            CutDirection.COUNTERCLOCKWISE
+            CutDirection.COUNTERCLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
         );
 
         if (clockwiseResult.leadIn && counterclockwiseResult.leadIn) {

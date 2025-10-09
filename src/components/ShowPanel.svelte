@@ -3,10 +3,12 @@
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
     import { chainStore } from '$lib/stores/chains/store';
     import { showLeadNormals } from '$lib/stores/leads';
+    import { cutStore } from '$lib/stores/cuts/store';
 
     // Subscribe to the stores
     $: shapeVisualization = $shapeVisualizationStore;
     $: chainVisualization = $chainStore;
+    $: cutsVisualization = $cutStore;
 </script>
 
 <AccordionPanel title="Show" isExpanded={false}>
@@ -122,6 +124,20 @@
                     class="show-checkbox"
                 />
                 Tangent Lines
+            </label>
+        </div>
+
+        <div class="show-section">
+            <h3 class="section-header">Cuts</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={cutsVisualization.showCutNormals}
+                    onchange={(e) =>
+                        cutStore.setShowCutNormals(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Normal Lines
             </label>
         </div>
 

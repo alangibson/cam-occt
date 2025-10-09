@@ -87,6 +87,8 @@ describe('SimulateStage store subscription cleanup', () => {
             order: 1,
             feedRate: 1000,
             cutDirection: CutDirection.COUNTERCLOCKWISE,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
         });
 
         rapidStore.setRapids([

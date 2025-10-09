@@ -70,6 +70,7 @@ export interface VisibilityState {
     showShapeNormals: boolean;
     showShapeWindingDirection: boolean;
     showShapeTangentLines: boolean;
+    showCutNormals: boolean;
     showLeadNormals: boolean;
 }
 
@@ -183,6 +184,7 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showShapeNormals: false,
             showShapeWindingDirection: false,
             showShapeTangentLines: false,
+            showCutNormals: false,
             showLeadNormals: false,
         },
         stage: stage || ('import' as WorkflowStage),
@@ -252,6 +254,7 @@ export function cloneRenderState(state: RenderState): RenderState {
                   cuts: [...state.cutsState.cuts],
                   selectedCutId: state.cutsState.selectedCutId,
                   highlightedCutId: state.cutsState.highlightedCutId,
+                  showCutNormals: state.cutsState.showCutNormals,
               }
             : null,
         chainsWithCuts: [...state.chainsWithCuts],

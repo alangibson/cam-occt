@@ -44,6 +44,8 @@ describe('SimulateStage Cut Direction', () => {
             order: 1,
             cutDirection: CutDirection.CLOCKWISE,
             feedRate: 1000,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
         });
 
         cutStore.addCut({
@@ -56,6 +58,8 @@ describe('SimulateStage Cut Direction', () => {
             order: 2,
             cutDirection: CutDirection.COUNTERCLOCKWISE,
             feedRate: 1000,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
         });
 
         // Access the internal getPositionOnShape function from the SimulateStage component
@@ -114,6 +118,8 @@ describe('SimulateStage Cut Direction', () => {
             order: 3,
             cutDirection: CutDirection.CLOCKWISE,
             feedRate: 1000,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
         });
 
         cutStore.addCut({
@@ -126,6 +132,8 @@ describe('SimulateStage Cut Direction', () => {
             order: 4,
             cutDirection: CutDirection.COUNTERCLOCKWISE,
             feedRate: 1000,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
         });
 
         // TODO: Once getPositionOnShape is updated to accept cut direction,
@@ -163,6 +171,8 @@ describe('SimulateStage Cut Direction', () => {
             order: 5,
             cutDirection: CutDirection.NONE,
             feedRate: 1000,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
         });
 
         // Open chains should always trace from start to end regardless of cut direction

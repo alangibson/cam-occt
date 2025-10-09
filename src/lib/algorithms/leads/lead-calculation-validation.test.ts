@@ -55,7 +55,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 chain,
                 leadIn,
                 leadOut,
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation).toBeDefined();
@@ -75,7 +77,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 chain,
                 leadIn,
                 leadOut,
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation).toBeDefined();
@@ -96,7 +100,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 smallChain,
                 leadIn,
                 leadOut,
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation).toBeDefined();
@@ -121,7 +127,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 emptyChain,
                 leadIn,
                 leadOut,
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation).toBeDefined();
@@ -142,7 +150,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 chain,
                 leadIn,
                 leadOut,
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation).toBeDefined();
@@ -193,7 +203,8 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 leadIn,
                 leadOut,
                 CutDirection.CLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation).toBeDefined();
@@ -214,7 +225,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 chain,
                 leadIn,
                 leadOut,
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.warnings).toBeDefined();
@@ -240,7 +253,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 chain,
                 leadIn,
                 leadOut,
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation).toBeDefined();
@@ -261,7 +276,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 closedChain,
                 leadIn,
                 leadOut,
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation!.severity).toBe('info');
@@ -277,7 +294,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 chain,
                 leadIn,
                 leadOut,
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation!.severity).toBe('warning');
@@ -293,7 +312,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                 chain,
                 leadIn,
                 leadOut,
-                CutDirection.NONE
+                CutDirection.NONE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             expect(result.validation!.severity).toBe('error');

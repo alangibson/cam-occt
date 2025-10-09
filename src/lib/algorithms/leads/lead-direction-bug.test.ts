@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { SVGBuilder } from '$lib/test/svg-builder';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape, Point2D } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import type { Line, Arc, Circle } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
@@ -12,6 +12,8 @@ import { calculateLeads } from './lead-calculation';
 import { isArc } from '$lib/geometry/arc';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
+import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 
 describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     let outputDir: string;
@@ -153,6 +155,16 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
         };
     }
 
+    // Helper to get cut normal for a chain
+    function getCutNormal(
+        chain: Chain,
+        cutDirection: CutDirection,
+        part?: DetectedPart
+    ): Point2D {
+        const result = calculateCutNormal(chain, cutDirection, part);
+        return result.normal;
+    }
+
     describe('Rectangle with Circle Hole - Arc Leads', () => {
         it('should place arc leads correctly on rectangle with center circle', async () => {
             const rectangleChain = createRectangleChain();
@@ -206,7 +218,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             // Calculate leads for shell - COUNTERCLOCKWISE
@@ -215,7 +228,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             // Calculate leads for hole - CLOCKWISE
@@ -224,7 +238,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             // Calculate leads for hole - COUNTERCLOCKWISE
@@ -233,7 +248,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             // All should have leads
@@ -604,7 +620,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // Calculate leads for COUNTERCLOCKWISE
@@ -612,7 +630,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // Both should have leads
@@ -967,7 +987,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // Calculate leads for COUNTERCLOCKWISE
@@ -975,7 +997,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // Both should have leads
@@ -1234,7 +1258,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             // Calculate leads for COUNTERCLOCKWISE on the detected part
@@ -1243,7 +1268,8 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             // Both should have leads
@@ -1468,7 +1494,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // Calculate leads for COUNTERCLOCKWISE
@@ -1476,7 +1504,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // Both should have leads
@@ -1728,12 +1758,20 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 fit: false,
             };
 
+            const cwNormal = getCutNormal(chain, CutDirection.CLOCKWISE);
+            const ccwNormal = getCutNormal(
+                chain,
+                CutDirection.COUNTERCLOCKWISE
+            );
+
             // Calculate leads for CLOCKWISE
             const cwResult = calculateLeads(
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                cwNormal
             );
 
             // Calculate leads for COUNTERCLOCKWISE
@@ -1741,7 +1779,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                ccwNormal
             );
 
             // Get lead geometries
@@ -1789,14 +1829,18 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 chain,
                 leadConfig,
                 leadConfig,
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             const ccwResult = calculateLeads(
                 chain,
                 leadConfig,
                 leadConfig,
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             // This is the core invariant test

@@ -95,7 +95,8 @@ describe('Lead Concave Area Fix', () => {
             leadIn,
             leadOut,
             CutDirection.NONE,
-            part
+            part,
+            { x: 1, y: 0 }
         );
 
         expect(result.leadIn).toBeDefined();
@@ -191,7 +192,8 @@ describe('Lead Concave Area Fix', () => {
             leadIn,
             { type: LeadType.NONE, length: 0 },
             CutDirection.NONE,
-            part
+            part,
+            { x: 1, y: 0 }
         );
 
         expect(result.leadIn).toBeDefined();

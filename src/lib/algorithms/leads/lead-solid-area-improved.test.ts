@@ -39,7 +39,8 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE, // Use proper cut direction instead of NONE
-            part5
+            part5,
+            { x: 1, y: 0 }
         );
 
         expect(result.leadIn).toBeDefined();
@@ -85,7 +86,8 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
             leadIn,
             leadOut,
             CutDirection.NONE,
-            part5
+            part5,
+            { x: 1, y: 0 }
         );
 
         if (result.warnings && result.warnings.length > 0) {
@@ -132,7 +134,8 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE, // Use proper cut direction instead of NONE
-            part5
+            part5,
+            { x: 1, y: 0 }
         );
 
         // Should still generate lead-in geometry despite constraints

@@ -24,6 +24,8 @@ import {
     createLeadInConfig,
     createLeadOutConfig,
 } from '$lib/algorithms/leads/functions';
+import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
+import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
 
 /**
  * Get CutDirection from chain's stored clockwise property.
@@ -194,6 +196,8 @@ export function createCutChain(
     const cutChain: Chain = {
         id: `${originalChain.id}-cut`,
         shapes: executionShapes,
+        originalChainId: originalChain.id, // Preserve reference to original chain for part lookup
+        clockwise: executionClockwise, // Use execution winding direction (accounts for shape reversal)
     };
 
     return { cutChain, executionClockwise };
@@ -292,6 +296,13 @@ export async function generateCutsForChainWithOperation(
         executionClockwise = cutChainResult.executionClockwise;
     }
 
+    // Calculate cut normal (must happen before creating the cut object)
+    if (!cutChain) {
+        throw new Error('Cannot create cut: cutChain is undefined');
+    }
+    const part = findPartContainingChain(targetId, parts);
+    const cutNormalResult = calculateCutNormal(cutChain, cutDirection, part);
+
     // Create the cut object
     const cutToReturn: Cut = {
         id: crypto.randomUUID(),
@@ -310,6 +321,8 @@ export async function generateCutsForChainWithOperation(
         cutChain: cutChain,
         isHole: false,
         holeUnderspeedPercent: undefined,
+        normal: cutNormalResult.normal,
+        normalConnectionPoint: cutNormalResult.connectionPoint,
     };
 
     // Calculate leads for the cut
@@ -452,6 +465,18 @@ export async function generateCutsForPartTargetWithOperation(
         shellExecutionClockwise = shellCutChainResult.executionClockwise;
     }
 
+    // Calculate cut normal for shell
+    if (!shellExecutionChain) {
+        throw new Error(
+            'Cannot create shell cut: shellExecutionChain is undefined'
+        );
+    }
+    const shellCutNormalResult = calculateCutNormal(
+        shellExecutionChain,
+        shellCutDirection,
+        part
+    );
+
     // Create shell cut
     const shellCut: Cut = {
         id: crypto.randomUUID(),
@@ -472,6 +497,8 @@ export async function generateCutsForPartTargetWithOperation(
         holeUnderspeedPercent: operation.holeUnderspeedEnabled
             ? operation.holeUnderspeedPercent
             : undefined,
+        normal: shellCutNormalResult.normal,
+        normalConnectionPoint: shellCutNormalResult.connectionPoint,
     };
 
     // Calculate leads for shell cut
@@ -595,6 +622,18 @@ export async function generateCutsForPartTargetWithOperation(
                 holeExecutionClockwise = holeCutChainResult.executionClockwise;
             }
 
+            // Calculate cut normal for hole
+            if (!holeExecutionChain) {
+                throw new Error(
+                    'Cannot create hole cut: holeExecutionChain is undefined'
+                );
+            }
+            const holeCutNormalResult = calculateCutNormal(
+                holeExecutionChain,
+                holeCutDirection,
+                part
+            );
+
             // Create hole cut
             const holeCut: Cut = {
                 id: crypto.randomUUID(),
@@ -615,6 +654,8 @@ export async function generateCutsForPartTargetWithOperation(
                 holeUnderspeedPercent: operation.holeUnderspeedEnabled
                     ? operation.holeUnderspeedPercent
                     : undefined,
+                normal: holeCutNormalResult.normal,
+                normalConnectionPoint: holeCutNormalResult.connectionPoint,
             };
 
             // Calculate leads for hole cut
@@ -719,12 +760,14 @@ export async function calculateCutLeads(
         }
 
         // Calculate leads using the appropriate chain (original or offset)
+        // Pass the cut's pre-calculated normal for consistency
         const leadResult: ReturnType<typeof calculateLeads> = calculateLeads(
             leadCalculationChain,
             leadInConfig,
             leadOutConfig,
             cut.cutDirection,
-            part
+            part,
+            cut.normal
         );
 
         // Build the lead geometry result

@@ -43,13 +43,16 @@ import type {
  * Calculate lead-in and lead-out geometry for a chain.
  * Leads must be placed appropriately based on the context (inside holes, outside shells).
  * Lead direction respects the cut direction for proper tangency.
+ *
+ * @param cutNormal - Pre-calculated normal direction from the cut (required for consistency)
  */
 export function calculateLeads(
     chain: Chain,
     leadInConfig: LeadConfig,
     leadOutConfig: LeadConfig,
     cutDirection: CutDirection = CutDirection.NONE,
-    part?: DetectedPart
+    part: DetectedPart | undefined,
+    cutNormal: Point2D
 ): LeadResult {
     const result: LeadResult = {};
     const warnings: string[] = [];
@@ -103,7 +106,8 @@ export function calculateLeads(
             isShell,
             cutDirection,
             part,
-            warnings
+            warnings,
+            cutNormal
         );
     }
 
@@ -118,7 +122,8 @@ export function calculateLeads(
             isShell,
             cutDirection,
             part,
-            warnings
+            warnings,
+            cutNormal
         );
     }
 
@@ -141,8 +146,9 @@ function calculateLead(
     isHole: boolean,
     isShell: boolean,
     cutDirection: CutDirection,
-    part?: DetectedPart,
-    warnings: string[] = []
+    part: DetectedPart | undefined,
+    warnings: string[],
+    cutNormal: Point2D
 ): Lead | undefined {
     if (config.type === LeadType.ARC) {
         return calculateArcLead(
@@ -155,9 +161,10 @@ function calculateLead(
             cutDirection,
             part,
             warnings,
-            config.flipSide,
+            config.flipSide ?? false,
             config.angle,
-            config.fit
+            config.fit ?? true,
+            cutNormal
         );
     }
     return undefined;
@@ -166,7 +173,7 @@ function calculateLead(
 /**
  * Calculate an arc lead that is tangent to the chain at the connection point.
  * Arc length is configurable and determines the sweep angle.
- * Lead direction depends on cut direction, hole vs shell context.
+ * Lead direction uses the pre-calculated cut normal for consistency.
  * If the lead intersects solid areas of the part, rotate it in 5-degree increments to find a clear path.
  * If no clear path is found after 360 degrees of rotation, adds a warning.
  */
@@ -178,28 +185,25 @@ function calculateArcLead(
     isHole: boolean,
     isShell: boolean,
     cutDirection: CutDirection,
-    part?: DetectedPart,
-    warnings: string[] = [],
-    flipSide: boolean = false,
-    manualAngle?: number,
-    fit: boolean = true
+    part: DetectedPart | undefined,
+    warnings: string[],
+    flipSide: boolean,
+    manualAngle: number | undefined,
+    fit: boolean,
+    cutNormal: Point2D
 ): Lead {
     // Get the tangent direction at the point
     const tangent: Point2D = getChainTangent(chain, point, isLeadIn);
 
-    // Calculate the base normal direction considering cut direction
-    const baseCurveDirection: Point2D = getLeadCurveDirection(
-        tangent,
-        isHole,
-        isShell,
-        cutDirection,
-        chain,
-        point,
-        part,
-        arcLength,
-        flipSide,
-        isLeadIn
-    );
+    // Use pre-calculated cut normal for lead direction
+    // Apply flipSide if requested (lead-specific configuration)
+    let baseCurveDirection: Point2D = cutNormal;
+    if (flipSide) {
+        baseCurveDirection = {
+            x: -cutNormal.x,
+            y: -cutNormal.y,
+        };
+    }
 
     // Determine desired arc sweep direction based on cut direction and shell/hole context
     // The key insight: for shells, we want arcs that curve AWAY from the solid material
@@ -333,103 +337,6 @@ function calculateArcLead(
         normal: normalizeVector(baseCurveDirection),
         connectionPoint: point,
     };
-}
-
-/**
- * Calculate the curve direction for lead placement.
- * This determines which side of the tangent line the arc curves to.
- * Uses cut direction and hole/shell context for proper tangency.
- */
-function getLeadCurveDirection(
-    tangent: Point2D,
-    isHole: boolean,
-    isShell: boolean,
-    cutDirection: CutDirection,
-    _chain: Chain,
-    point: Point2D,
-    part?: DetectedPart,
-    _leadLength?: number,
-    flipSide: boolean = false,
-    isLeadIn: boolean = true
-): Point2D {
-    // Base normal directions (perpendicular to tangent)
-    const leftNormal: Point2D = { x: -tangent.y, y: tangent.x }; // 90° counterclockwise
-    const rightNormal: Point2D = { x: tangent.y, y: -tangent.x }; // 90° clockwise
-
-    // Use unified material avoidance logic first
-    const materialAvoidance = getMaterialAvoidanceDirection(
-        _chain,
-        point,
-        leftNormal,
-        rightNormal,
-        part
-    );
-    let selectedDirection: Point2D = materialAvoidance.direction;
-
-    // If material avoidance has low confidence, apply cut direction logic as enhancement
-    if (
-        materialAvoidance.confidence === 'low' &&
-        cutDirection !== CutDirection.NONE
-    ) {
-        // Use cut direction to help choose between normals when material avoidance is unclear
-        const chainIsShell = part ? isShell : (_chain.clockwise ?? true);
-
-        // Calculate cross product for arc sweep determination
-        const leftCross = tangent.x * leftNormal.y - tangent.y * leftNormal.x;
-
-        // Determine desired arc sweep based on cut direction and chain type
-        let wantClockwiseArcSweep: boolean;
-        if (cutDirection === CutDirection.CLOCKWISE) {
-            // For clockwise cuts: shells want CCW sweep (outward), holes want CW sweep (inward)
-            wantClockwiseArcSweep = !chainIsShell;
-        } else {
-            // For counterclockwise cuts: shells want CW sweep (outward), holes want CCW sweep (inward)
-            wantClockwiseArcSweep = chainIsShell;
-        }
-
-        // Choose direction that produces desired sweep
-        const leftGivesClockwiseSweep = leftCross < 0;
-        if (wantClockwiseArcSweep === leftGivesClockwiseSweep) {
-            selectedDirection = leftNormal;
-        } else {
-            selectedDirection = rightNormal;
-        }
-    }
-
-    // For open chains without part context, use specific cut direction logic
-    if (!part && !isChainClosed(_chain, CHAIN_CLOSURE_TOLERANCE)) {
-        if (cutDirection === CutDirection.CLOCKWISE) {
-            const leftCross =
-                tangent.x * leftNormal.y - tangent.y * leftNormal.x;
-            selectedDirection = isLeadIn
-                ? leftCross < 0
-                    ? leftNormal
-                    : rightNormal
-                : leftCross < 0
-                  ? rightNormal
-                  : leftNormal;
-        } else if (cutDirection === CutDirection.COUNTERCLOCKWISE) {
-            const leftCross =
-                tangent.x * leftNormal.y - tangent.y * leftNormal.x;
-            selectedDirection = isLeadIn
-                ? leftCross > 0
-                    ? leftNormal
-                    : rightNormal
-                : leftCross > 0
-                  ? rightNormal
-                  : leftNormal;
-        }
-    }
-
-    // Apply flip if requested
-    if (flipSide) {
-        selectedDirection = {
-            x: -selectedDirection.x,
-            y: -selectedDirection.y,
-        };
-    }
-
-    return selectedDirection;
 }
 
 /**
@@ -598,108 +505,6 @@ function doesArcIntersectChain(
     }
 
     return false;
-}
-
-/**
- * Unified material avoidance direction calculation that works consistently
- * for both original chains and offset chains.
- *
- * This function determines which normal direction (left or right) best avoids
- * solid material, using the same logic regardless of chain type.
- */
-function getMaterialAvoidanceDirection(
-    chain: Chain,
-    point: Point2D,
-    leftNormal: Point2D,
-    rightNormal: Point2D,
-    part?: DetectedPart
-): { direction: Point2D; confidence: 'high' | 'medium' | 'low' } {
-    // Test distances for material detection
-    const CLOSE_DISTANCE = 1.0;
-    const MEDIUM_DISTANCE = 5.0;
-    const FAR_DISTANCE = 20.0;
-    const distances = [CLOSE_DISTANCE, MEDIUM_DISTANCE, FAR_DISTANCE]; // Close, medium, far
-
-    let leftAvoidanceScore = 0;
-    let rightAvoidanceScore = 0;
-
-    // If no part provided but chain has originalChainId, try to find part context
-    // This helps offset chains get proper part context automatically
-    const effectivePart = part;
-    if (!effectivePart && chain.originalChainId) {
-        // Note: This would require access to parts array, which we don't have here
-        // This could be improved by passing parts array or using a context system
-    }
-
-    // Test each distance to build confidence in material avoidance
-    for (let i = 0; i < distances.length; i++) {
-        const testDistance = distances[i];
-        const weight = distances.length - i; // Closer tests have higher weight
-
-        const leftTest: Point2D = {
-            x: point.x + leftNormal.x * testDistance,
-            y: point.y + leftNormal.y * testDistance,
-        };
-        const rightTest: Point2D = {
-            x: point.x + rightNormal.x * testDistance,
-            y: point.y + rightNormal.y * testDistance,
-        };
-
-        let leftInSolid = false;
-        let rightInSolid = false;
-
-        if (effectivePart) {
-            // Use part-based material detection (most accurate)
-            // This works for both original chains and offset chains
-            leftInSolid = isPointInsidePart(leftTest, effectivePart);
-            rightInSolid = isPointInsidePart(rightTest, effectivePart);
-        } else if (isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
-            // Fall back to chain-based detection for closed chains
-            // For offset chains, this tests against the offset geometry
-            // For original chains, this tests against the original geometry
-            leftInSolid = isPointInsideChainExact(leftTest, chain);
-            rightInSolid = isPointInsideChainExact(rightTest, chain);
-        }
-        // For open chains without part context, we can't meaningfully test material avoidance
-
-        // Award points for avoiding material
-        if (!leftInSolid) leftAvoidanceScore += weight;
-        if (!rightInSolid) rightAvoidanceScore += weight;
-    }
-
-    // Determine best direction and confidence level
-    let selectedDirection: Point2D;
-    let confidence: 'high' | 'medium' | 'low';
-
-    const totalScore = leftAvoidanceScore + rightAvoidanceScore;
-    const scoreDifference = Math.abs(leftAvoidanceScore - rightAvoidanceScore);
-
-    if (leftAvoidanceScore > rightAvoidanceScore) {
-        selectedDirection = leftNormal;
-    } else if (rightAvoidanceScore > leftAvoidanceScore) {
-        selectedDirection = rightNormal;
-    } else {
-        // Tie or no material information - fall back to leftNormal for backward compatibility
-        // This maintains the original behavior when there's no clear material preference
-        selectedDirection = leftNormal;
-    }
-
-    // Calculate confidence based on score difference and total coverage
-    const HIGH_CONFIDENCE_THRESHOLD = 4;
-    const MEDIUM_CONFIDENCE_THRESHOLD = 2;
-
-    if (scoreDifference >= HIGH_CONFIDENCE_THRESHOLD && totalScore > 0) {
-        confidence = 'high'; // Clear winner with good coverage
-    } else if (
-        scoreDifference >= MEDIUM_CONFIDENCE_THRESHOLD ||
-        totalScore > 0
-    ) {
-        confidence = 'medium'; // Some differentiation or partial coverage
-    } else {
-        confidence = 'low'; // No clear winner or no material detection possible
-    }
-
-    return { direction: selectedDirection, confidence };
 }
 
 /**

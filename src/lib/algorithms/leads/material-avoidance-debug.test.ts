@@ -138,7 +138,9 @@ describe('Material Avoidance Logic Debug', () => {
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             if (leadResult.leadIn && leadResult.leadIn.normal) {
@@ -185,7 +187,9 @@ describe('Material Avoidance Logic Debug', () => {
                 ccwChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.COUNTERCLOCKWISE
+                CutDirection.COUNTERCLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log('CCW chain lead normal:', leadResult.leadIn?.normal);
@@ -203,7 +207,9 @@ describe('Material Avoidance Logic Debug', () => {
                 chain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.NONE // No cut direction preference
+                CutDirection.NONE, // No cut direction preference
+                undefined,
+                { x: 1, y: 0 }
             );
 
             console.log(

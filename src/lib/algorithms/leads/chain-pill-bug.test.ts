@@ -90,7 +90,8 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             // Calculate leads for COUNTERCLOCKWISE
@@ -99,7 +100,8 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             // Check lead-in
@@ -262,7 +264,8 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.CLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             const ccwResult = calculateLeads(
@@ -270,7 +273,8 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 leadConfig,
                 leadConfig,
                 CutDirection.COUNTERCLOCKWISE,
-                part
+                part,
+                { x: 1, y: 0 }
             );
 
             if (cwResult.leadIn && ccwResult.leadIn) {
@@ -309,16 +313,18 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                     chain,
                     leadConfig,
                     leadConfig,
-                    CutDirection.CLOCKWISE
-                    // Note: no part parameter
+                    CutDirection.CLOCKWISE,
+                    undefined,
+                    { x: 1, y: 0 }
                 );
 
                 const ccwResult = calculateLeads(
                     chain,
                     leadConfig,
                     leadConfig,
-                    CutDirection.COUNTERCLOCKWISE
-                    // Note: no part parameter
+                    CutDirection.COUNTERCLOCKWISE,
+                    undefined,
+                    { x: 1, y: 0 }
                 );
 
                 if (cwResult.leadIn && ccwResult.leadIn) {

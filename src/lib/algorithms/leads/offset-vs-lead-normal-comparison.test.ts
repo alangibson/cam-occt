@@ -107,7 +107,9 @@ describe('Offset vs Lead Normal Direction Comparison', () => {
                     originalChain,
                     baseLeadConfig,
                     { type: LeadType.NONE, length: 0 },
-                    CutDirection.CLOCKWISE
+                    CutDirection.CLOCKWISE,
+                    undefined,
+                    { x: 1, y: 0 }
                 );
 
                 console.log(
@@ -121,7 +123,9 @@ describe('Offset vs Lead Normal Direction Comparison', () => {
                     offsetChain,
                     baseLeadConfig,
                     { type: LeadType.NONE, length: 0 },
-                    CutDirection.CLOCKWISE
+                    CutDirection.CLOCKWISE,
+                    undefined,
+                    { x: 1, y: 0 }
                 );
 
                 console.log(
@@ -202,14 +206,18 @@ describe('Offset vs Lead Normal Direction Comparison', () => {
                             originalChain,
                             baseLeadConfig,
                             { type: LeadType.NONE, length: 0 },
-                            CutDirection.CLOCKWISE
+                            CutDirection.CLOCKWISE,
+                            undefined,
+                            { x: 1, y: 0 }
                         );
 
                         const offsetLeadResult = calculateLeads(
                             offsetChain,
                             baseLeadConfig,
                             { type: LeadType.NONE, length: 0 },
-                            CutDirection.CLOCKWISE
+                            CutDirection.CLOCKWISE,
+                            undefined,
+                            { x: 1, y: 0 }
                         );
 
                         if (
@@ -263,7 +271,9 @@ describe('Offset vs Lead Normal Direction Comparison', () => {
                 originalChain,
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
-                CutDirection.CLOCKWISE
+                CutDirection.CLOCKWISE,
+                undefined,
+                { x: 1, y: 0 }
             );
 
             if (leadResult.leadIn && leadResult.leadIn.normal) {

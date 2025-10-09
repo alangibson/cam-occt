@@ -32,6 +32,8 @@ const createTestCut = (overrides: Partial<Cut> = {}): Cut => ({
         fit: true,
     },
     cutDirection: CutDirection.CLOCKWISE,
+    normal: { x: 1, y: 0 },
+    normalConnectionPoint: { x: 0, y: 0 },
     ...overrides,
 });
 

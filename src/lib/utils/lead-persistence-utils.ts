@@ -102,7 +102,8 @@ export async function calculateLeadPoints(
             leadInConfig,
             leadOutConfig,
             cut.cutDirection,
-            effectivePart
+            effectivePart,
+            cut.normal
         );
 
         const lead =

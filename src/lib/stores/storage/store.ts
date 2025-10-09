@@ -119,6 +119,7 @@ function collectCurrentState(): PersistedState {
         cuts: cuts.cuts, // Just the cuts array
         selectedCutId: cuts.selectedCutId, // Cut selection state
         highlightedCutId: cuts.highlightedCutId, // Cut highlight state
+        showCutNormals: cuts.showCutNormals, // Cut normals visibility state
         tools: tools,
 
         // Application settings
@@ -288,6 +289,7 @@ function restoreStateToStores(state: PersistedState): void {
                 cuts: state.cuts,
                 selectedCutId: state.selectedCutId || null,
                 highlightedCutId: state.highlightedCutId || null,
+                showCutNormals: state.showCutNormals || false,
             };
             cutStore.restore(cutsState);
         }

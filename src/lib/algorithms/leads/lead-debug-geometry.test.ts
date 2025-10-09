@@ -50,10 +50,17 @@ describe('Lead Geometry Debug', () => {
 
         // No part context - should generate a basic lead
         const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
-        const result = calculateLeads(shellChain, leadIn, {
-            type: LeadType.NONE,
-            length: 0,
-        });
+        const result = calculateLeads(
+            shellChain,
+            leadIn,
+            {
+                type: LeadType.NONE,
+                length: 0,
+            },
+            CutDirection.CLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
+        );
 
         expect(result.leadIn).toBeDefined();
         const points = convertLeadGeometryToPoints(result.leadIn!);
@@ -117,7 +124,8 @@ describe('Lead Geometry Debug', () => {
             leadIn,
             { type: LeadType.NONE, length: 0 },
             CutDirection.NONE,
-            part
+            part,
+            { x: 1, y: 0 }
         );
 
         expect(result.leadIn).toBeDefined();

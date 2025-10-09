@@ -100,6 +100,7 @@
     $: showChainEndPoints = chainVisualization.showChainEndPoints;
     $: showChainTangentLines = chainVisualization.showChainTangentLines;
     $: showChainNormals = chainVisualization.showChainNormals;
+    $: showCutNormals = cutsState.showCutNormals;
     $: leadNormals = $showLeadNormals;
     $: selectionMode = $settingsStore.settings.selectionMode;
 
@@ -305,6 +306,7 @@
                 showChainEndPoints,
                 showChainTangentLines,
                 showChainNormals,
+                showCutNormals,
                 showLeadNormals: leadNormals,
             },
             respectLayerVisibility: canvasConfig.respectLayerVisibility,

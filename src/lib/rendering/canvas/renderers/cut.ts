@@ -20,6 +20,7 @@ import {
     applyCutStyling,
     setupHitTest,
 } from '$lib/rendering/canvas/utils/renderer-utils';
+import { drawNormalLine } from './normal-renderer-utils';
 
 /**
  * Constants for cut rendering
@@ -51,6 +52,11 @@ export class CutRenderer extends BaseRenderer {
 
         // Then render endpoints on top
         this.drawCutEndpoints(ctx, state);
+
+        // Render cut normals if enabled
+        if (state.visibility.showCutNormals) {
+            this.drawCutNormals(ctx, state);
+        }
     }
 
     /**
@@ -284,6 +290,32 @@ export class CutRenderer extends BaseRenderer {
                 ctx.arc(endPoint.x, endPoint.y, pointRadius, 0, 2 * Math.PI);
                 ctx.fill();
                 ctx.restore();
+            }
+        });
+    }
+
+    /**
+     * Draw cut normals (perpendicular direction lines)
+     */
+    private drawCutNormals(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState
+    ): void {
+        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+
+        state.cutsState.cuts.forEach((cut: Cut) => {
+            // Only draw normals for enabled cuts with enabled operations
+            if (!isCutEnabledForRendering(cut, state)) return;
+
+            // Draw the normal using the stored normal and connection point
+            if (cut.normal && cut.normalConnectionPoint) {
+                drawNormalLine(
+                    ctx,
+                    state,
+                    cut.normalConnectionPoint,
+                    cut.normal,
+                    'rgba(0, 255, 255, 0.6)' // Cyan color to distinguish from lead normals (orange)
+                );
             }
         });
     }

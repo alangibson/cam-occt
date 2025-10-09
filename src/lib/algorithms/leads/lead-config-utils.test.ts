@@ -18,6 +18,8 @@ function createTestCut(overrides: Partial<Cut> = {}): Cut {
         enabled: true,
         order: 1,
         cutDirection: CutDirection.COUNTERCLOCKWISE,
+        normal: { x: 1, y: 0 },
+        normalConnectionPoint: { x: 0, y: 0 },
         leadInConfig: {
             type: LeadType.ARC,
             length: 5,

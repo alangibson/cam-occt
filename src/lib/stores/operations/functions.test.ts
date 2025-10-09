@@ -131,6 +131,8 @@ describe('Operations Functions', () => {
         },
         kerfCompensation: OffsetDirection.NONE,
         isHole: false,
+        normal: { x: 1, y: 0 },
+        normalConnectionPoint: { x: 0, y: 0 },
     };
 
     const mockPart: DetectedPart = {
@@ -852,7 +854,8 @@ describe('Operations Functions', () => {
                     fit: false,
                 }),
                 mockCut.cutDirection,
-                mockPart
+                mockPart,
+                expect.any(Object) // cutNormal
             );
 
             expect(result.leadIn).toBeDefined();
@@ -884,7 +887,8 @@ describe('Operations Functions', () => {
                 expect.anything(),
                 expect.anything(),
                 mockCut.cutDirection,
-                undefined
+                undefined,
+                expect.any(Object) // cutNormal
             );
 
             expect(result.leadIn).toBeDefined();

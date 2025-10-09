@@ -75,6 +75,8 @@ describe('SimulateStage offset cut detection', () => {
             feedRate: 1000,
             kerfCompensation: OffsetDirection.OUTSET,
             offset: undefined,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
         };
     });
 

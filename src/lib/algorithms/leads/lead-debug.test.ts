@@ -44,7 +44,8 @@ describe('Lead Direction Debug', () => {
             leadConfig,
             noLeadOut,
             CutDirection.NONE,
-            simplePart
+            simplePart,
+            { x: 1, y: 0 }
         );
         if (noneResult.leadIn) {
             const points = convertLeadGeometryToPoints(noneResult.leadIn);
@@ -57,7 +58,8 @@ describe('Lead Direction Debug', () => {
             leadConfig,
             noLeadOut,
             CutDirection.CLOCKWISE,
-            simplePart
+            simplePart,
+            { x: 1, y: 0 }
         );
         if (clockwiseResult.leadIn) {
             const points = convertLeadGeometryToPoints(clockwiseResult.leadIn);
@@ -70,7 +72,8 @@ describe('Lead Direction Debug', () => {
             leadConfig,
             noLeadOut,
             CutDirection.COUNTERCLOCKWISE,
-            simplePart
+            simplePart,
+            { x: 1, y: 0 }
         );
         if (counterclockwiseResult.leadIn) {
             const points = convertLeadGeometryToPoints(
@@ -122,19 +125,25 @@ describe('Lead Direction Debug', () => {
             squareChain,
             leadConfig,
             noLeadOut,
-            CutDirection.NONE
+            CutDirection.NONE,
+            undefined,
+            { x: 1, y: 0 }
         );
         const clockwiseResult = calculateLeads(
             squareChain,
             leadConfig,
             noLeadOut,
-            CutDirection.CLOCKWISE
+            CutDirection.CLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
         );
         const counterclockwiseResult = calculateLeads(
             squareChain,
             leadConfig,
             noLeadOut,
-            CutDirection.COUNTERCLOCKWISE
+            CutDirection.COUNTERCLOCKWISE,
+            undefined,
+            { x: 1, y: 0 }
         );
 
         const positions = [
@@ -188,7 +197,9 @@ describe('Lead Direction Debug', () => {
             originalChain,
             leadConfig,
             noLeadOut,
-            CutDirection.NONE
+            CutDirection.NONE,
+            undefined,
+            { x: 1, y: 0 }
         );
 
         // This test documents that leads should be generated even with validation warnings

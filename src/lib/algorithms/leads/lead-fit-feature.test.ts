@@ -86,7 +86,8 @@ describe('Lead Fit Feature', () => {
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
-            testPart
+            testPart,
+            { x: 1, y: 0 }
         );
 
         // When fit=false, leads should maintain their specified length
@@ -121,7 +122,8 @@ describe('Lead Fit Feature', () => {
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
-            testPart
+            testPart,
+            { x: 1, y: 0 }
         );
 
         // When fit=true, leads can adjust their length to avoid solid areas
@@ -155,7 +157,8 @@ describe('Lead Fit Feature', () => {
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
-            testPart
+            testPart,
+            { x: 1, y: 0 }
         );
 
         // Should work with default fit behavior
@@ -181,7 +184,8 @@ describe('Lead Fit Feature', () => {
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
-            testPart
+            testPart,
+            { x: 1, y: 0 }
         );
 
         // Both leads should be generated successfully
