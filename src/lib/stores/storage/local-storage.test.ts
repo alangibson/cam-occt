@@ -155,7 +155,7 @@ describe('State Persistence', () => {
                 partsDetected: false,
             },
 
-            // Operations, paths, and tools
+            // Operations, cuts, and tools
             operations: [
                 {
                     id: 'op1',
@@ -182,10 +182,10 @@ describe('State Persistence', () => {
                     },
                 },
             ],
-            paths: [
+            cuts: [
                 {
                     id: 'path1',
-                    name: 'Cut Path',
+                    name: 'Cut Cut',
                     operationId: 'op1',
                     chainId: 'chain1',
                     toolId: 'tool1',
@@ -249,8 +249,8 @@ describe('State Persistence', () => {
 
             // Timestamp
             savedAt: '2023-01-01T00:00:00.000Z',
-            selectedPathId: null,
-            highlightedPathId: null,
+            selectedCutId: null,
+            highlightedCutId: null,
         };
 
         // Save state
@@ -276,7 +276,7 @@ describe('State Persistence', () => {
         ).toBe(0.1);
         expect(loadedState?.operations?.length).toBe(1);
         expect(loadedState?.operations?.[0]?.name).toBe('Cut Part');
-        expect(loadedState?.paths?.length).toBe(1);
+        expect(loadedState?.cuts?.length).toBe(1);
         expect(loadedState?.tools?.length).toBe(1);
     });
 
@@ -345,12 +345,12 @@ describe('State Persistence', () => {
                 partsDetected: false,
             },
             operations: [],
-            paths: [],
+            cuts: [],
             tools: [],
             applicationSettings: defaultApplicationSettings,
             savedAt: '2023-01-01T00:00:00.000Z',
-            selectedPathId: null,
-            highlightedPathId: null,
+            selectedCutId: null,
+            highlightedCutId: null,
         };
 
         saveState(testState);

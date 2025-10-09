@@ -9,7 +9,7 @@ import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 import { overlayStore } from '$lib/stores/overlay/store';
 import { tessellationStore } from '$lib/stores/tessellation/store';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { rapidStore } from '$lib/stores/rapids/store';
 import { workflowStore } from '$lib/stores/workflow/store';
@@ -39,7 +39,7 @@ export const resetDownstreamStages = (
     tessellationStore.clearTessellation();
 
     // Clear program-specific stores
-    pathStore.reset();
+    cutStore.reset();
     operationsStore.reset();
     rapidStore.reset();
 

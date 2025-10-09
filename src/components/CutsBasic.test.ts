@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 
 // Import component for basic function testing
-describe('Paths Component Basic Function Coverage', () => {
+describe('Cuts Component Basic Function Coverage', () => {
     it('should cover getCutDirectionDisplay function branches', () => {
         // Create a simple test for the function logic
         function getCutDirectionDisplay(cutDirection: string): string {

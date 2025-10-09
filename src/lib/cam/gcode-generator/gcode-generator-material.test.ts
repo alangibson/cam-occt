@@ -11,7 +11,7 @@ describe('GCode Generator - Temporary Materials', () => {
     };
 
     it('should generate temporary material with magic comments', () => {
-        const mockPath: CutPath = {
+        const mockCut: CutPath = {
             id: 'path1',
             shapeId: 'shape1',
             points: [
@@ -37,7 +37,7 @@ describe('GCode Generator - Temporary Materials', () => {
             },
         };
 
-        const gcode = generateGCode([mockPath], mockDrawing, {
+        const gcode = generateGCode([mockCut], mockDrawing, {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -61,8 +61,8 @@ describe('GCode Generator - Temporary Materials', () => {
         expect(gcode).toContain('F#<_hal[plasmac.cut-feed-rate]>');
     });
 
-    it('should generate multiple temporary materials for multiple paths', () => {
-        const mockPaths: CutPath[] = [
+    it('should generate multiple temporary materials for multiple cuts', () => {
+        const mockCuts: CutPath[] = [
             {
                 id: 'path1',
                 shapeId: 'shape1',
@@ -101,7 +101,7 @@ describe('GCode Generator - Temporary Materials', () => {
             },
         ];
 
-        const gcode = generateGCode(mockPaths, mockDrawing, {
+        const gcode = generateGCode(mockCuts, mockDrawing, {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -125,8 +125,8 @@ describe('GCode Generator - Temporary Materials', () => {
         // M190 commands are not used with o=0 format
     });
 
-    it('should handle paths without parameters', () => {
-        const mockPath: CutPath = {
+    it('should handle cuts without parameters', () => {
+        const mockCut: CutPath = {
             id: 'rapid1',
             shapeId: 'shape1',
             points: [
@@ -137,7 +137,7 @@ describe('GCode Generator - Temporary Materials', () => {
             // No parameters - this is a rapid move
         };
 
-        const gcode = generateGCode([mockPath], mockDrawing, {
+        const gcode = generateGCode([mockCut], mockDrawing, {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,
@@ -151,7 +151,7 @@ describe('GCode Generator - Temporary Materials', () => {
     });
 
     it('should use default values for missing parameters', () => {
-        const mockPath: CutPath = {
+        const mockCut: CutPath = {
             id: 'path1',
             shapeId: 'shape1',
             points: [
@@ -169,7 +169,7 @@ describe('GCode Generator - Temporary Materials', () => {
             },
         };
 
-        const gcode = generateGCode([mockPath], mockDrawing, {
+        const gcode = generateGCode([mockCut], mockDrawing, {
             units: Unit.MM,
             safeZ: 10,
             rapidFeedRate: 5000,

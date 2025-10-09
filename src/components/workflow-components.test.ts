@@ -70,7 +70,7 @@ describe('Workflow Components', () => {
                 'Analyze chains'
             );
             expect(getStageDescription(WorkflowStage.PROGRAM)).toContain(
-                'Build tool paths'
+                'Build cuts'
             );
             expect(getStageDescription(WorkflowStage.SIMULATE)).toContain(
                 'Simulate cutting'

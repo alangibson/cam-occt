@@ -1,18 +1,18 @@
 <script lang="ts">
-    import { pathStore } from '$lib/stores/paths/store';
+    import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { CutDirection } from '$lib/types/direction';
 
-    // Reactive path data
-    $: paths = $pathStore.paths;
-    $: selectedPathId = $pathStore.selectedPathId;
-    $: selectedPath = selectedPathId
-        ? paths.find((path) => path.id === selectedPathId)
+    // Reactive cut data
+    $: cuts = $cutStore.cuts;
+    $: selectedCutId = $cutStore.selectedCutId;
+    $: selectedCut = selectedCutId
+        ? cuts.find((cut) => cut.id === selectedCutId)
         : null;
     $: operations = $operationsStore;
     $: selectedOperation =
-        selectedPath && operations && operations.length > 0
-            ? operations.find((op) => op.id === selectedPath.operationId)
+        selectedCut && operations && operations.length > 0
+            ? operations.find((op) => op.id === selectedCut.operationId)
             : null;
 
     function getCutDirectionLabel(direction: CutDirection): string {
@@ -33,11 +33,11 @@
         return `${config.type.charAt(0).toUpperCase() + config.type.slice(1)}${config.length ? ` (${config.length.toFixed(2)})` : ''}`;
     }
 
-    async function copyPathToClipboard() {
-        if (!selectedPath) return;
+    async function copyCutToClipboard() {
+        if (!selectedCut) return;
 
         try {
-            const json = JSON.stringify(selectedPath, null, 2);
+            const json = JSON.stringify(selectedCut, null, 2);
             await navigator.clipboard.writeText(json);
         } catch (err) {
             console.error('Failed to copy to clipboard:', err);
@@ -45,28 +45,28 @@
     }
 </script>
 
-<div class="path-properties">
-    {#if selectedPath}
+<div class="cut-properties">
+    {#if selectedCut}
         <div class="property-group">
             <div class="property-row">
                 <span class="property-label">Name:</span>
-                <span class="property-value">{selectedPath.name}</span>
+                <span class="property-value">{selectedCut.name}</span>
             </div>
 
             <div class="property-row">
                 <span class="property-label">Enabled:</span>
                 <span
-                    class="property-value {selectedPath.enabled
+                    class="property-value {selectedCut.enabled
                         ? 'enabled'
                         : 'disabled'}"
                 >
-                    {selectedPath.enabled ? 'Yes' : 'No'}
+                    {selectedCut.enabled ? 'Yes' : 'No'}
                 </span>
             </div>
 
             <div class="property-row">
                 <span class="property-label">Order:</span>
-                <span class="property-value">{selectedPath.order}</span>
+                <span class="property-value">{selectedCut.order}</span>
             </div>
 
             {#if selectedOperation}
@@ -78,100 +78,100 @@
 
             <div class="property-row">
                 <span class="property-label">Chain ID:</span>
-                <span class="property-value">{selectedPath.chainId}</span>
+                <span class="property-value">{selectedCut.chainId}</span>
             </div>
 
             <div class="property-row">
                 <span class="property-label">Cut Direction:</span>
                 <span class="property-value"
-                    >{getCutDirectionLabel(selectedPath.cutDirection)}</span
+                    >{getCutDirectionLabel(selectedCut.cutDirection)}</span
                 >
             </div>
 
-            {#if selectedPath.isHole !== undefined}
+            {#if selectedCut.isHole !== undefined}
                 <div class="property-row">
                     <span class="property-label">Is Hole:</span>
                     <span class="property-value"
-                        >{selectedPath.isHole ? 'Yes' : 'No'}</span
+                        >{selectedCut.isHole ? 'Yes' : 'No'}</span
                     >
                 </div>
             {/if}
 
-            {#if selectedPath.holeUnderspeedPercent !== undefined}
+            {#if selectedCut.holeUnderspeedPercent !== undefined}
                 <div class="property-row">
                     <span class="property-label">Hole Speed:</span>
                     <span class="property-value"
-                        >{selectedPath.holeUnderspeedPercent}%</span
+                        >{selectedCut.holeUnderspeedPercent}%</span
                     >
                 </div>
             {/if}
 
-            {#if selectedPath.feedRate !== undefined}
+            {#if selectedCut.feedRate !== undefined}
                 <div class="property-row">
                     <span class="property-label">Feed Rate:</span>
-                    <span class="property-value">{selectedPath.feedRate}</span>
+                    <span class="property-value">{selectedCut.feedRate}</span>
                 </div>
             {/if}
 
-            {#if selectedPath.kerfWidth !== undefined}
+            {#if selectedCut.kerfWidth !== undefined}
                 <div class="property-row">
                     <span class="property-label">Kerf Width:</span>
                     <span class="property-value"
-                        >{selectedPath.kerfWidth.toFixed(3)}</span
+                        >{selectedCut.kerfWidth.toFixed(3)}</span
                     >
                 </div>
             {/if}
 
-            {#if selectedPath.kerfCompensation !== undefined}
+            {#if selectedCut.kerfCompensation !== undefined}
                 <div class="property-row">
                     <span class="property-label">Kerf Comp:</span>
                     <span class="property-value"
-                        >{selectedPath.kerfCompensation}</span
+                        >{selectedCut.kerfCompensation}</span
                     >
                 </div>
             {/if}
 
-            {#if selectedPath.leadInConfig}
+            {#if selectedCut.leadInConfig}
                 <div class="property-row">
                     <span class="property-label">Lead In:</span>
                     <span class="property-value"
-                        >{getLeadConfigLabel(selectedPath.leadInConfig)}</span
+                        >{getLeadConfigLabel(selectedCut.leadInConfig)}</span
                     >
                 </div>
             {/if}
 
-            {#if selectedPath.leadOutConfig}
+            {#if selectedCut.leadOutConfig}
                 <div class="property-row">
                     <span class="property-label">Lead Out:</span>
                     <span class="property-value"
-                        >{getLeadConfigLabel(selectedPath.leadOutConfig)}</span
+                        >{getLeadConfigLabel(selectedCut.leadOutConfig)}</span
                     >
                 </div>
             {/if}
 
-            {#if selectedPath.pierceHeight !== undefined}
+            {#if selectedCut.pierceHeight !== undefined}
                 <div class="property-row">
                     <span class="property-label">Pierce Height:</span>
                     <span class="property-value"
-                        >{selectedPath.pierceHeight.toFixed(2)}</span
+                        >{selectedCut.pierceHeight.toFixed(2)}</span
                     >
                 </div>
             {/if}
 
-            {#if selectedPath.pierceDelay !== undefined}
+            {#if selectedCut.pierceDelay !== undefined}
                 <div class="property-row">
                     <span class="property-label">Pierce Delay:</span>
                     <span class="property-value"
-                        >{selectedPath.pierceDelay.toFixed(2)}s</span
+                        >{selectedCut.pierceDelay.toFixed(2)}s</span
                     >
                 </div>
             {/if}
         </div>
 
-        {#if selectedPath.leadValidation && selectedPath.leadValidation.warnings.length > 0}
+        {#if selectedCut.leadValidation && selectedCut.leadValidation.warnings.length > 0}
             <div class="lead-warnings">
                 <h4 class="warnings-title">Lead Warnings:</h4>
-                {#each selectedPath.leadValidation.warnings as warning, i (i)}
+                {#each selectedCut.leadValidation.warnings as warning, i (i)}
                     <div class="warning-item">
                         <span class="warning-text">{warning}</span>
                     </div>
@@ -182,8 +182,8 @@
         <div class="button-row">
             <button
                 class="copy-button"
-                onclick={copyPathToClipboard}
-                title="Copy path JSON to clipboard"
+                onclick={copyCutToClipboard}
+                title="Copy cut JSON to clipboard"
             >
                 Copy
             </button>
@@ -192,7 +192,7 @@
 </div>
 
 <style>
-    .path-properties {
+    .cut-properties {
         min-height: 200px;
     }
 

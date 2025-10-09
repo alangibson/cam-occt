@@ -1,20 +1,20 @@
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import {
     calculateDistance,
-    findNearestPath,
-    getPathStartPoint,
+    findNearestCut,
+    getCutStartPoint,
     prepareChainsAndLeadConfigs,
-} from '$lib/algorithms/optimize-start-points/path-optimization-utils';
+} from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
 import { getChainEndPoint } from '$lib/geometry/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
 
 /**
- * Rapids are the non-cutting paths that connect cut paths.
+ * Rapids are the non-cutting movements that connect cuts.
  * They represent tool movement without cutting.
  */
 export interface Rapid {
@@ -28,68 +28,64 @@ export interface Rapid {
  * Result of the cut order optimization
  */
 export interface OptimizationResult {
-    orderedPaths: Path[];
+    orderedCuts: Cut[];
     rapids: Rapid[];
     totalDistance: number;
 }
 
 /**
- * Process nearest path by adding rapid and updating tracking state
+ * Process nearest cut by adding rapid and updating tracking state
  */
-function processNearestPath(
-    nearestResult: { path: Path; distance: number },
+function processNearestCut(
+    nearestResult: { cut: Cut; distance: number },
     chains: Map<string, Chain>,
     currentPoint: Point2D,
     findPartForChain: (chainId: string) => DetectedPart | undefined,
     rapids: Rapid[],
-    orderedPaths: Path[],
-    unvisited: Set<Path>
+    orderedCuts: Cut[],
+    unvisited: Set<Cut>
 ): { updatedPoint: Point2D; totalDistance: number } {
-    const chain = chains.get(nearestResult.path.chainId)!;
-    const part = findPartForChain(nearestResult.path.chainId);
-    const pathStart = getPathStartPoint(nearestResult.path, chain, part);
+    const chain = chains.get(nearestResult.cut.chainId)!;
+    const part = findPartForChain(nearestResult.cut.chainId);
+    const cutStart = getCutStartPoint(nearestResult.cut, chain, part);
 
     rapids.push({
         id: crypto.randomUUID(),
         start: currentPoint,
-        end: pathStart,
+        end: cutStart,
         type: 'rapid',
     });
 
     const totalDistance = nearestResult.distance;
-    orderedPaths.push(nearestResult.path);
-    unvisited.delete(nearestResult.path);
+    orderedCuts.push(nearestResult.cut);
+    unvisited.delete(nearestResult.cut);
 
-    const updatedPoint = getPathEndPoint(nearestResult.path, chain, part);
+    const updatedPoint = getCutEndPoint(nearestResult.cut, chain, part);
 
     return { updatedPoint, totalDistance };
 }
 
 /**
- * Get the effective end point of a path, accounting for lead-out geometry and offset.
- * If the path has a lead-out, returns the lead-out end point.
+ * Get the effective end point of a cut, accounting for lead-out geometry and offset.
+ * If the cut has a lead-out, returns the lead-out end point.
  * Otherwise, returns the chain end point.
  */
-function getPathEndPoint(
-    path: Path,
-    chain: Chain,
-    part?: DetectedPart
-): Point2D {
-    // Check if path has lead-out
+function getCutEndPoint(cut: Cut, chain: Chain, part?: DetectedPart): Point2D {
+    // Check if cut has lead-out
     if (
-        path.leadOutConfig &&
-        path.leadOutConfig.type !== 'none' &&
-        path.leadOutConfig.length > 0
+        cut.leadOutConfig &&
+        cut.leadOutConfig.type !== 'none' &&
+        cut.leadOutConfig.length > 0
     ) {
         try {
             const { leadCalculationChain, leadInConfig, leadOutConfig } =
-                prepareChainsAndLeadConfigs(path, chain);
+                prepareChainsAndLeadConfigs(cut, chain);
 
             const leadResult = calculateLeads(
                 leadCalculationChain,
                 leadInConfig,
                 leadOutConfig,
-                path.cutDirection,
+                cut.cutDirection,
                 part
             );
 
@@ -104,18 +100,18 @@ function getPathEndPoint(
             }
         } catch (error) {
             console.warn(
-                'Failed to calculate lead-out for path:',
-                path.name,
+                'Failed to calculate lead-out for cut:',
+                cut.name,
                 error
             );
         }
     }
 
     // Fallback to chain end point (use offset if available)
-    if (path.offset && path.offset.offsetShapes.length > 0) {
+    if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
-            shapes: path.offset.offsetShapes,
+            shapes: cut.offset.offsetShapes,
         };
         return getChainEndPoint(offsetChain);
     }
@@ -128,7 +124,7 @@ function getPathEndPoint(
  * This is a greedy approximation that works well for many practical cases
  */
 function nearestNeighborTSP(
-    paths: Path[],
+    cuts: Cut[],
     chains: Map<string, Chain>,
     parts: DetectedPart[],
     startPoint: Point2D
@@ -153,29 +149,29 @@ function nearestNeighborTSP(
         }
         return undefined;
     }
-    const orderedPaths: Path[] = [];
+    const orderedCuts: Cut[] = [];
     const rapids: Rapid[] = [];
-    const unvisited: Set<Path> = new Set(paths);
+    const unvisited: Set<Cut> = new Set(cuts);
     let currentPoint: Point2D = startPoint;
     let totalDistance: number = 0;
 
-    // Group paths by part
-    const pathsByPart: Map<string, Path[]> = new Map<string, Path[]>();
-    const pathsWithoutPart: Path[] = [];
+    // Group cuts by part
+    const cutsByPart: Map<string, Cut[]> = new Map<string, Cut[]>();
+    const cutsWithoutPart: Cut[] = [];
 
-    // Find which part each path belongs to
-    for (const path of paths) {
-        const chain: Chain | undefined = chains.get(path.chainId);
+    // Find which part each cut belongs to
+    for (const cut of cuts) {
+        const chain: Chain | undefined = chains.get(cut.chainId);
         if (!chain) continue;
 
         let belongsToPart: boolean = false;
         for (const part of parts) {
             // Check if chain is shell
             if (part.shell.chain.id === chain.id) {
-                if (!pathsByPart.has(part.id)) {
-                    pathsByPart.set(part.id, []);
+                if (!cutsByPart.has(part.id)) {
+                    cutsByPart.set(part.id, []);
                 }
-                pathsByPart.get(part.id)!.push(path);
+                cutsByPart.get(part.id)!.push(cut);
                 belongsToPart = true;
                 break;
             }
@@ -183,10 +179,10 @@ function nearestNeighborTSP(
             // Check if chain is a hole
             for (const hole of part.holes) {
                 if (hole.chain.id === chain.id) {
-                    if (!pathsByPart.has(part.id)) {
-                        pathsByPart.set(part.id, []);
+                    if (!cutsByPart.has(part.id)) {
+                        cutsByPart.set(part.id, []);
                     }
-                    pathsByPart.get(part.id)!.push(path);
+                    cutsByPart.get(part.id)!.push(cut);
                     belongsToPart = true;
                     break;
                 }
@@ -196,161 +192,157 @@ function nearestNeighborTSP(
         }
 
         if (!belongsToPart) {
-            pathsWithoutPart.push(path);
+            cutsWithoutPart.push(cut);
         }
     }
 
-    // Process paths not belonging to any part first
-    while (pathsWithoutPart.length > 0 && unvisited.size > 0) {
-        const nearestResult = findNearestPath(
+    // Process cuts not belonging to any part first
+    while (cutsWithoutPart.length > 0 && unvisited.size > 0) {
+        const nearestResult = findNearestCut(
             currentPoint,
-            pathsWithoutPart,
+            cutsWithoutPart,
             chains,
             unvisited,
             findPartForChain
         );
 
-        if (!nearestResult.path) break;
+        if (!nearestResult.cut) break;
 
-        // Add rapid from current point to path start
-        const result = processNearestPath(
-            { path: nearestResult.path, distance: nearestResult.distance },
+        // Add rapid from current point to cut start
+        const result = processNearestCut(
+            { cut: nearestResult.cut, distance: nearestResult.distance },
             chains,
             currentPoint,
             findPartForChain,
             rapids,
-            orderedPaths,
+            orderedCuts,
             unvisited
         );
         totalDistance += result.totalDistance;
         currentPoint = result.updatedPoint;
 
         // Remove from unprocessed list
-        const index = pathsWithoutPart.indexOf(nearestResult.path);
+        const index = cutsWithoutPart.indexOf(nearestResult.cut);
         if (index > DEFAULT_ARRAY_NOT_FOUND_INDEX) {
-            pathsWithoutPart.splice(index, 1);
+            cutsWithoutPart.splice(index, 1);
         }
     }
 
     // Process parts - shell must be last within each part
-    for (const [partId, partPaths] of pathsByPart) {
+    for (const [partId, partCuts] of cutsByPart) {
         const part: DetectedPart | undefined = parts.find(
             (p) => p.id === partId
         );
         if (!part) continue;
 
-        // Separate shell path and hole paths
-        let shellPath: Path | null = null;
-        const holePaths: Path[] = [];
+        // Separate shell cut and hole cuts
+        let shellCut: Cut | null = null;
+        const holeCuts: Cut[] = [];
 
-        for (const path of partPaths) {
-            if (!unvisited.has(path)) continue;
+        for (const cut of partCuts) {
+            if (!unvisited.has(cut)) continue;
 
-            const chain: Chain | undefined = chains.get(path.chainId);
+            const chain: Chain | undefined = chains.get(cut.chainId);
             if (!chain) continue;
 
             if (chain.id === part.shell.chain.id) {
-                shellPath = path;
+                shellCut = cut;
             } else {
-                holePaths.push(path);
+                holeCuts.push(cut);
             }
         }
 
         // Process holes first
-        while (holePaths.length > 0 && unvisited.size > 0) {
-            const nearestResult = findNearestPath(
+        while (holeCuts.length > 0 && unvisited.size > 0) {
+            const nearestResult = findNearestCut(
                 currentPoint,
-                holePaths,
+                holeCuts,
                 chains,
                 unvisited,
                 findPartForChain
             );
 
-            if (!nearestResult.path) break;
+            if (!nearestResult.cut) break;
 
-            // Add rapid and path
-            const result = processNearestPath(
-                { path: nearestResult.path, distance: nearestResult.distance },
+            // Add rapid and cut
+            const result = processNearestCut(
+                { cut: nearestResult.cut, distance: nearestResult.distance },
                 chains,
                 currentPoint,
                 findPartForChain,
                 rapids,
-                orderedPaths,
+                orderedCuts,
                 unvisited
             );
             totalDistance += result.totalDistance;
             currentPoint = result.updatedPoint;
 
             // Remove from holes list
-            const index = holePaths.indexOf(nearestResult.path);
+            const index = holeCuts.indexOf(nearestResult.cut);
             if (index > DEFAULT_ARRAY_NOT_FOUND_INDEX) {
-                holePaths.splice(index, 1);
+                holeCuts.splice(index, 1);
             }
         }
 
         // Process shell last
-        if (shellPath && unvisited.has(shellPath)) {
-            const chain: Chain = chains.get(shellPath.chainId)!;
+        if (shellCut && unvisited.has(shellCut)) {
+            const chain: Chain = chains.get(shellCut.chainId)!;
             const part: DetectedPart | undefined = findPartForChain(
-                shellPath.chainId
+                shellCut.chainId
             );
-            const pathStart: Point2D = getPathStartPoint(
-                shellPath,
-                chain,
-                part
-            );
-            const dist: number = calculateDistance(currentPoint, pathStart);
+            const cutStart: Point2D = getCutStartPoint(shellCut, chain, part);
+            const dist: number = calculateDistance(currentPoint, cutStart);
 
             rapids.push({
                 id: crypto.randomUUID(),
                 start: currentPoint,
-                end: pathStart,
+                end: cutStart,
                 type: 'rapid',
             });
 
             totalDistance += dist;
-            orderedPaths.push(shellPath);
-            unvisited.delete(shellPath);
-            currentPoint = getPathEndPoint(shellPath, chain, part);
+            orderedCuts.push(shellCut);
+            unvisited.delete(shellCut);
+            currentPoint = getCutEndPoint(shellCut, chain, part);
         }
     }
 
     return {
-        orderedPaths,
+        orderedCuts,
         rapids,
         totalDistance,
     };
 }
 
 /**
- * Optimize the cutting order of paths using a traveling salesman algorithm
+ * Optimize the cutting order of cuts using a traveling salesman algorithm
  *
- * @param paths - Array of paths to optimize
+ * @param cuts - Array of cuts to optimize
  * @param chains - Map of chain IDs to chains
  * @param parts - Array of detected parts (for shell/hole ordering)
  * @param origin - Starting point (usually drawing origin 0,0)
- * @returns Optimized path order with rapids
+ * @returns Optimized cut order with rapids
  */
 export function optimizeCutOrder(
-    paths: Path[],
+    cuts: Cut[],
     chains: Map<string, Chain>,
     parts: DetectedPart[],
     origin: Point2D = { x: 0, y: 0 }
 ): OptimizationResult {
-    if (paths.length === 0) {
+    if (cuts.length === 0) {
         return {
-            orderedPaths: [],
+            orderedCuts: [],
             rapids: [],
             totalDistance: 0,
         };
     }
 
-    // Filter out paths that don't have corresponding chains
-    const validPaths: Path[] = paths.filter((path) => chains.has(path.chainId));
+    // Filter out cuts that don't have corresponding chains
+    const validCuts: Cut[] = cuts.filter((cut) => chains.has(cut.chainId));
 
-    if (validPaths.length === 0) {
+    if (validCuts.length === 0) {
         return {
-            orderedPaths: [],
+            orderedCuts: [],
             rapids: [],
             totalDistance: 0,
         };
@@ -358,5 +350,5 @@ export function optimizeCutOrder(
 
     // Use nearest neighbor algorithm for now
     // This can be replaced with more sophisticated algorithms if needed
-    return nearestNeighborTSP(validPaths, chains, parts, origin);
+    return nearestNeighborTSP(validCuts, chains, parts, origin);
 }

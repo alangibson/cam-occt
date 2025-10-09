@@ -31,21 +31,21 @@ describe('Operations Final Integration Test', () => {
         expect(clearedState.highlightedPartId).toBe(null);
     });
 
-    it('should complete full path hover workflow like Operations component', () => {
+    it('should complete full cut hover workflow like Operations component', () => {
         const testChainId = 'chain-final-456';
 
         // Step 1: Verify initial state
         const initialState = get(chainStore);
         expect(initialState.selectedChainId).toBe(null);
 
-        // Step 2: Simulate mouseenter on path in Operations apply-to menu
+        // Step 2: Simulate mouseenter on cut in Operations apply-to menu
         chainStore.selectChain(testChainId);
 
         // Step 3: Verify store is updated (this should trigger DrawingCanvas re-render)
         const selectedState = get(chainStore);
         expect(selectedState.selectedChainId).toBe(testChainId);
 
-        // Step 4: Simulate hover over different path
+        // Step 4: Simulate hover over different cut
         const secondChainId = 'chain-final-789';
         chainStore.selectChain(secondChainId);
 
@@ -53,7 +53,7 @@ describe('Operations Final Integration Test', () => {
         const changedState = get(chainStore);
         expect(changedState.selectedChainId).toBe(secondChainId);
 
-        // Step 6: Simulate mouseleave from path (hovering away)
+        // Step 6: Simulate mouseleave from cut (hovering away)
         chainStore.selectChain(null);
 
         // Step 7: Verify selection is cleared
@@ -70,17 +70,17 @@ describe('Operations Final Integration Test', () => {
         expect(get(partStore).highlightedPartId).toBe(partId);
         expect(get(chainStore).selectedChainId).toBe(null);
 
-        // User then hovers over path in Operations menu (part should stay highlighted)
+        // User then hovers over cut in Operations menu (part should stay highlighted)
         chainStore.selectChain(chainId);
         expect(get(partStore).highlightedPartId).toBe(partId);
         expect(get(chainStore).selectedChainId).toBe(chainId);
 
-        // User hovers away from part but stays on path
+        // User hovers away from part but stays on cut
         partStore.clearHighlight();
         expect(get(partStore).highlightedPartId).toBe(null);
         expect(get(chainStore).selectedChainId).toBe(chainId);
 
-        // User hovers away from path
+        // User hovers away from cut
         chainStore.selectChain(null);
         expect(get(partStore).highlightedPartId).toBe(null);
         expect(get(chainStore).selectedChainId).toBe(null);
@@ -99,7 +99,7 @@ describe('Operations Final Integration Test', () => {
         partStoreValue = get(partStore);
         expect(partStoreValue.highlightedPartId).toBe(testPartId);
 
-        // Select chain (like Operations component does on path hover)
+        // Select chain (like Operations component does on cut hover)
         chainStore.selectChain(testChainId);
         chainStoreValue = get(chainStore);
         expect(chainStoreValue.selectedChainId).toBe(testChainId);

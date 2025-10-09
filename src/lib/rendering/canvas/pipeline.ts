@@ -27,7 +27,7 @@ import { BackgroundRenderer } from './renderers/background';
 import { ShapeRenderer } from './renderers/shape';
 import { ChainRenderer } from './renderers/chain';
 import { PartRenderer } from './renderers/part';
-import { PathRenderer } from './renderers/path';
+import { CutRenderer } from './renderers/cut';
 import { LeadRenderer } from './renderers/lead';
 import { RapidRenderer } from './renderers/rapid';
 import { ChevronRenderer } from './renderers/chevron';
@@ -107,22 +107,22 @@ export class RenderingPipeline {
         // Add offset shapes renderer
         this.addRenderer(
             new ShapeRenderer('shape-renderer-offset', coordinator, (state) => {
-                // Extract offset shapes from all enabled paths
+                // Extract offset shapes from all enabled cuts
                 const offsetShapes: Shape[] = [];
 
-                if (state.pathsState?.paths) {
-                    for (const path of state.pathsState.paths) {
-                        // Only include offset shapes from paths with enabled operations
-                        if (!path.operationId) continue;
+                if (state.cutsState?.cuts) {
+                    for (const cut of state.cutsState.cuts) {
+                        // Only include offset shapes from cuts with enabled operations
+                        if (!cut.operationId) continue;
 
                         const operation = state.operations.find(
-                            (op) => op.id === path.operationId
+                            (op) => op.id === cut.operationId
                         );
                         if (!operation || !operation.enabled) continue;
 
                         // Add offset shapes if they exist
-                        if (path.offset?.offsetShapes) {
-                            offsetShapes.push(...path.offset.offsetShapes);
+                        if (cut.offset?.offsetShapes) {
+                            offsetShapes.push(...cut.offset.offsetShapes);
                         }
                     }
                 }
@@ -133,7 +133,7 @@ export class RenderingPipeline {
 
         this.addRenderer(new ChainRenderer(coordinator));
         this.addRenderer(new PartRenderer(coordinator));
-        this.addRenderer(new PathRenderer(coordinator));
+        this.addRenderer(new CutRenderer(coordinator));
         this.addRenderer(new LeadRenderer(coordinator));
         this.addRenderer(new RapidRenderer(coordinator));
         this.addRenderer(new ChevronRenderer(coordinator));
@@ -583,9 +583,9 @@ export class RenderingPipeline {
                 case 'part':
                     // Only allow part hits
                     return result.type === HitTestType.PART;
-                case 'path':
-                    // Only allow path hits
-                    return result.type === HitTestType.PATH;
+                case 'cut':
+                    // Only allow cut hits
+                    return result.type === HitTestType.CUT;
                 default:
                     return true;
             }

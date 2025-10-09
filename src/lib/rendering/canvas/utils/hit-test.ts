@@ -29,7 +29,7 @@ export enum HitTestType {
     SHAPE = 'shape',
     CHAIN = 'chain',
     PART = 'part',
-    PATH = 'path',
+    CUT = 'cut',
     RAPID = 'rapid',
     LEAD = 'lead',
     OVERLAY = 'overlay',
@@ -41,7 +41,7 @@ export enum HitTestType {
 export interface HitTestMetadata {
     shape?: Shape;
     shapeType?: 'original' | 'offset';
-    pathId?: string;
+    cutId?: string;
     endpoint?: 'start' | 'end';
     rapid?: Rapid;
     part?: DetectedPart;
@@ -89,7 +89,7 @@ export interface HitTestConfig {
  */
 export const DEFAULT_HIT_TEST_PRIORITY: HitTestType[] = [
     HitTestType.RAPID,
-    HitTestType.PATH,
+    HitTestType.CUT,
     HitTestType.OVERLAY,
     HitTestType.LEAD,
     HitTestType.PART,

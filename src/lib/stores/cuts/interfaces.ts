@@ -1,7 +1,7 @@
 /**
- * Path Store Interfaces
+ * Cut Store Interfaces
  *
- * Type definitions for paths and path-related data.
+ * Type definitions for cuts and cut-related data.
  */
 
 import type { Shape } from '$lib/types';
@@ -9,20 +9,20 @@ import { CutDirection } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { PathLeadResult } from '$lib/stores/operations/interfaces';
+import type { CutLeadResult } from '$lib/stores/operations/interfaces';
 import type {
     CacheableLead,
     LeadConfig,
     LeadValidationResult,
 } from '$lib/algorithms/leads/interfaces';
 
-export interface Path {
+export interface Cut {
     id: string;
     name: string;
     enabled: boolean;
     order: number; // Execution order within operation
 
-    operationId: string; // Reference to the operation that created this path
+    operationId: string; // Reference to the operation that created this cut
     chainId: string; // Reference to the source chain
     toolId: string | null; // Reference to the tool used
 
@@ -45,7 +45,7 @@ export interface Path {
 
     // Hole
     //
-    // Whether this path is a hole (for velocity reduction)
+    // Whether this cut is a hole (for velocity reduction)
     isHole?: boolean;
     // Velocity percentage for hole cutting (10-100)
     holeUnderspeedPercent?: number;
@@ -81,31 +81,28 @@ export interface Path {
     };
 }
 
-export interface PathsState {
-    paths: Path[];
-    selectedPathId: string | null;
-    highlightedPathId: string | null;
+export interface CutsState {
+    cuts: Cut[];
+    selectedCutId: string | null;
+    highlightedCutId: string | null;
 }
 
-export interface PathsStore {
-    subscribe: (run: (value: PathsState) => void) => () => void;
-    addPath: (path: Path) => void;
-    updatePath: (id: string, updates: Partial<Path>) => void;
-    deletePath: (id: string) => void;
-    deletePathsByOperation: (operationId: string) => void;
-    selectPath: (pathId: string | null) => void;
-    highlightPath: (pathId: string | null) => void;
+export interface CutsStore {
+    subscribe: (run: (value: CutsState) => void) => () => void;
+    addCut: (cut: Cut) => void;
+    updateCut: (id: string, updates: Partial<Cut>) => void;
+    deleteCut: (id: string) => void;
+    deleteCutsByOperation: (operationId: string) => void;
+    selectCut: (cutId: string | null) => void;
+    highlightCut: (cutId: string | null) => void;
     clearHighlight: () => void;
-    reorderPaths: (newPaths: Path[]) => void;
-    getPathsByChain: (chainId: string) => Path[];
-    getChainsWithPaths: () => string[];
-    updatePathLeadGeometry: (
-        pathId: string,
-        leadGeometry: PathLeadResult
-    ) => void;
-    clearPathLeadGeometry: (pathId: string) => void;
-    updatePathOffsetGeometry: (
-        pathId: string,
+    reorderCuts: (newCuts: Cut[]) => void;
+    getCutsByChain: (chainId: string) => Cut[];
+    getChainsWithCuts: () => string[];
+    updateCutLeadGeometry: (cutId: string, leadGeometry: CutLeadResult) => void;
+    clearCutLeadGeometry: (cutId: string) => void;
+    updateCutOffsetGeometry: (
+        cutId: string,
         offsetGeometry: {
             offsetShapes: Shape[];
             originalShapes: Shape[];
@@ -113,7 +110,7 @@ export interface PathsStore {
             kerfWidth: number;
         }
     ) => void;
-    clearPathOffsetGeometry: (pathId: string) => void;
+    clearCutOffsetGeometry: (cutId: string) => void;
     reset: () => void;
-    restore: (pathsState: PathsState) => void;
+    restore: (cutsState: CutsState) => void;
 }

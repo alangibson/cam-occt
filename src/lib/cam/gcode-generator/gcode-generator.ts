@@ -44,7 +44,7 @@ export interface GCodeOptions {
 }
 
 export function generateGCode(
-    paths: CutPath[],
+    cuts: CutPath[],
     drawing: Drawing,
     options: GCodeOptions
 ): string {
@@ -57,12 +57,12 @@ export function generateGCode(
     const temporaryMaterialBase = 1000000;
     let currentMaterialNumber = temporaryMaterialBase;
 
-    // Process each tool path
-    paths.forEach((path, index) => {
-        // Create/update temporary material if path has cutting parameters
-        if (path.parameters) {
+    // Process each tool cut
+    cuts.forEach((cut, index) => {
+        // Create/update temporary material if cut has cutting parameters
+        if (cut.parameters) {
             const materialCommands = generateTemporaryMaterial(
-                path.parameters,
+                cut.parameters,
                 currentMaterialNumber,
                 options
             );
@@ -70,7 +70,7 @@ export function generateGCode(
             currentMaterialNumber++;
         }
 
-        commands.push(...generatePathCommands(path, options, index));
+        commands.push(...generateCutCommands(cut, options, index));
     });
 
     // Footer
@@ -358,8 +358,8 @@ function generateTemporaryMaterial(
     return commands;
 }
 
-function generatePathCommands(
-    path: CutPath,
+function generateCutCommands(
+    cut: CutPath,
     options: GCodeOptions,
     index: number
 ): GCodeCommand[] {
@@ -369,7 +369,7 @@ function generatePathCommands(
         commands.push({
             code: '',
             parameters: {},
-            comment: `Path ${index + 1}`,
+            comment: `Cut ${index + 1}`,
         });
     }
 
@@ -381,8 +381,8 @@ function generatePathCommands(
     });
 
     // Lead-in if present
-    if (path.leadIn && path.leadIn.length > 0) {
-        const leadInPoints = path.leadIn;
+    if (cut.leadIn && cut.leadIn.length > 0) {
+        const leadInPoints = cut.leadIn;
         if (leadInPoints.length > 0) {
             // Rapid to lead-in start
             const leadInStart: { x: number; y: number } = leadInPoints[0];
@@ -393,8 +393,8 @@ function generatePathCommands(
             });
 
             // Pierce (always in plasma mode)
-            if (path.parameters) {
-                commands.push(...generatePierceCommands(path.parameters));
+            if (cut.parameters) {
+                commands.push(...generatePierceCommands(cut.parameters));
             }
 
             // Cut lead-in
@@ -412,24 +412,24 @@ function generatePathCommands(
             });
         }
     } else {
-        // Direct move to path start
-        const pathPoints: { x: number; y: number }[] = path.points || [];
-        const start: { x: number; y: number } = pathPoints[0];
+        // Direct move to cut start
+        const cutPoints: { x: number; y: number }[] = cut.points || [];
+        const start: { x: number; y: number } = cutPoints[0];
         commands.push({
             code: 'G0',
             parameters: { X: start.x, Y: start.y },
-            comment: 'Move to path start',
+            comment: 'Move to cut start',
         });
 
-        if (path.parameters) {
-            commands.push(...generatePierceCommands(path.parameters));
+        if (cut.parameters) {
+            commands.push(...generatePierceCommands(cut.parameters));
         }
     }
 
-    // Apply velocity reduction for hole cutting based on path parameters
-    const isHole: boolean = path.parameters?.isHole || false;
+    // Apply velocity reduction for hole cutting based on cut parameters
+    const isHole: boolean = cut.parameters?.isHole || false;
     const underspeedPercent: number | undefined =
-        path.parameters?.holeUnderspeedPercent;
+        cut.parameters?.holeUnderspeedPercent;
 
     if (
         isHole &&
@@ -445,15 +445,15 @@ function generatePathCommands(
         });
     }
 
-    // Cut path - use native splines if enabled and available
-    if (options.useNativeSplines && path.originalShape) {
+    // Cut the cut - use native splines if enabled and available
+    if (options.useNativeSplines && cut.originalShape) {
         commands.push(
-            ...generateNativeSplineCommands(path.originalShape, options, path)
+            ...generateNativeSplineCommands(cut.originalShape, options, cut)
         );
     } else {
         // Fallback to linear interpolation
-        const pathPoints: { x: number; y: number }[] = path.points || [];
-        pathPoints.forEach((point, i) => {
+        const cutPoints: { x: number; y: number }[] = cut.points || [];
+        cutPoints.forEach((point, i) => {
             if (i > 0) {
                 commands.push({
                     code: 'G1',
@@ -483,8 +483,8 @@ function generatePathCommands(
     }
 
     // Lead-out if present
-    if (path.leadOut && path.leadOut.length > 0) {
-        const leadOutPoints = path.leadOut;
+    if (cut.leadOut && cut.leadOut.length > 0) {
+        const leadOutPoints = cut.leadOut;
         if (leadOutPoints.length > 0) {
             leadOutPoints.forEach((point, i) => {
                 if (i > 0) {
@@ -593,7 +593,7 @@ function generateFooter(options: GCodeOptions): GCodeCommand[] {
 function generateNativeSplineCommands(
     shape: Shape,
     options: GCodeOptions,
-    toolPath?: CutPath
+    toolCut?: CutPath
 ): GCodeCommand[] {
     const commands: GCodeCommand[] = [];
 
@@ -717,14 +717,14 @@ function generateNativeSplineCommands(
             }
 
             // Determine circle direction from the operation's execution direction
-            // Use the executionClockwise from the toolPath if available
+            // Use the executionClockwise from the toolCut if available
             let circleCode = 'G3'; // Default to counterclockwise
             let directionComment = 'counterclockwise (default)';
 
-            if (toolPath?.executionClockwise === true) {
+            if (toolCut?.executionClockwise === true) {
                 circleCode = 'G2';
                 directionComment = 'clockwise';
-            } else if (toolPath?.executionClockwise === false) {
+            } else if (toolCut?.executionClockwise === false) {
                 circleCode = 'G3';
                 directionComment = 'counterclockwise';
             }

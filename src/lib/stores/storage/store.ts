@@ -39,8 +39,8 @@ import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
 import { operationsStore } from '$lib/stores/operations/store';
 import type { Operation } from '$lib/stores/operations/interfaces';
-import { pathStore } from '$lib/stores/paths/store';
-import type { PathsState } from '$lib/stores/paths/interfaces';
+import { cutStore } from '$lib/stores/cuts/store';
+import type { CutsState } from '$lib/stores/cuts/interfaces';
 import { toolStore } from '$lib/stores/tools/store';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { WarningState } from '$lib/stores/warnings/interfaces';
@@ -62,7 +62,7 @@ function collectCurrentState(): PersistedState {
     const leadWarnings: WarningState<LeadWarning> = get(leadWarningsStore);
     const prepareStage: PrepareStageState = get(prepareStageStore);
     const operations: Operation[] = get(operationsStore);
-    const paths: PathsState = get(pathStore);
+    const cuts: CutsState = get(cutStore);
     const tools: Tool[] = get(toolStore);
     const settings: SettingsState = get(settingsStore);
 
@@ -114,11 +114,11 @@ function collectCurrentState(): PersistedState {
         // Prepare stage state
         prepareStageState: prepareStage,
 
-        // Operations, paths, and tools
+        // Operations, cuts, and tools
         operations: operations,
-        paths: paths.paths, // Just the paths array
-        selectedPathId: paths.selectedPathId,
-        highlightedPathId: paths.highlightedPathId,
+        cuts: cuts.cuts, // Just the cuts array
+        selectedCutId: cuts.selectedCutId, // Cut selection state
+        highlightedCutId: cuts.highlightedCutId, // Cut highlight state
         tools: tools,
 
         // Application settings
@@ -277,19 +277,19 @@ function restoreStateToStores(state: PersistedState): void {
             );
         }
 
-        // Restore operations and paths using reorder methods to avoid side effects
+        // Restore operations and cuts using reorder methods to avoid side effects
         if (state.operations && Array.isArray(state.operations)) {
             operationsStore.reorderOperations(state.operations);
         }
 
-        if (state.paths && Array.isArray(state.paths)) {
-            // Restore paths with their original IDs and lead geometry
-            const pathsState: PathsState = {
-                paths: state.paths,
-                selectedPathId: state.selectedPathId || null,
-                highlightedPathId: state.highlightedPathId || null,
+        if (state.cuts && Array.isArray(state.cuts)) {
+            // Restore cuts with their original IDs and lead geometry
+            const cutsState: CutsState = {
+                cuts: state.cuts,
+                selectedCutId: state.selectedCutId || null,
+                highlightedCutId: state.highlightedCutId || null,
             };
-            pathStore.restore(pathsState);
+            cutStore.restore(cutsState);
         }
 
         if (state.tools && Array.isArray(state.tools)) {
@@ -367,7 +367,7 @@ export function setupAutoSave(): () => void {
     unsubscribers.push(
         operationsStore.subscribe(() => autoSaveApplicationState())
     );
-    unsubscribers.push(pathStore.subscribe(() => autoSaveApplicationState()));
+    unsubscribers.push(cutStore.subscribe(() => autoSaveApplicationState()));
     unsubscribers.push(toolStore.subscribe(() => autoSaveApplicationState()));
 
     // Return cleanup function

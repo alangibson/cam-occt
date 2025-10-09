@@ -5,7 +5,7 @@ import type { Drawing, Line, Point2D, Shape } from '$lib/types';
 import { Unit } from '$lib/utils/units';
 import { GeometryType } from '$lib/geometry/shape';
 import { overlayStore } from '$lib/stores/overlay/store';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -62,8 +62,8 @@ vi.mock('../tessellation/store', () => ({
     },
 }));
 
-vi.mock('../paths/store', () => ({
-    pathStore: {
+vi.mock('../cuts/store', () => ({
+    cutStore: {
         reset: vi.fn(),
     },
 }));
@@ -165,7 +165,7 @@ describe('drawingStore', () => {
             expect(overlayStore.clearStageOverlay).toHaveBeenCalledWith(
                 WorkflowStage.PROGRAM
             );
-            expect(pathStore.reset).toHaveBeenCalled();
+            expect(cutStore.reset).toHaveBeenCalled();
             expect(operationsStore.reset).toHaveBeenCalled();
             expect(
                 workflowStore.invalidateDownstreamStages

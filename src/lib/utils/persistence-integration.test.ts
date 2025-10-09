@@ -8,12 +8,12 @@ import {
     saveApplicationState,
 } from '$lib/stores/storage/store';
 import { drawingStore } from '$lib/stores/drawing/store';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { GeometryType } from '$lib/types/geometry';
-import type { PathsState } from '$lib/stores/paths/interfaces';
+import type { CutsState } from '$lib/stores/cuts/interfaces';
 import { Unit } from './units';
 import type { Operation } from '$lib/stores/operations/interfaces';
 
@@ -67,12 +67,12 @@ describe('Persistence Integration - Lead Geometry', () => {
         localStorageMock.clear();
 
         // Reset stores that support reset
-        pathStore.reset();
+        cutStore.reset();
         operationsStore.reset();
         // Note: chainStore doesn't have reset method, so we'll set chains manually in test
     });
 
-    it('should persist and restore paths with lead geometry', async () => {
+    it('should persist and restore cuts with lead geometry', async () => {
         // Setup test data - create a drawing with chains
         const testDrawing = {
             id: 'test-drawing-1',
@@ -111,7 +111,7 @@ describe('Persistence Integration - Lead Geometry', () => {
         drawingStore.setDrawing(testDrawing, 'test.dxf');
         chainStore.setChains([testChain]);
 
-        // Create operation that will generate paths
+        // Create operation that will generate cuts
         const testOperation: Omit<Operation, 'id'> = {
             name: 'Test Cut',
             toolId: 'tool-1',
@@ -136,26 +136,26 @@ describe('Persistence Integration - Lead Geometry', () => {
             },
         };
 
-        // Add the operation (this should generate paths)
+        // Add the operation (this should generate cuts)
         operationsStore.addOperation(testOperation);
 
-        // Wait for path generation and lead calculation to complete
+        // Wait for cut generation and lead calculation to complete
         await new Promise((resolve) => setTimeout(resolve, 200));
 
-        // Verify paths were created
-        let pathsState: PathsState | null = null;
-        const unsubscribe = pathStore.subscribe((state) => {
-            pathsState = state;
+        // Verify cuts were created
+        let cutsState: CutsState | null = null;
+        const unsubscribe = cutStore.subscribe((state) => {
+            cutsState = state;
         });
         unsubscribe();
-        expect(pathsState!.paths.length).toBe(1);
+        expect(cutsState!.cuts.length).toBe(1);
 
-        const createdPath = pathsState!.paths[0];
-        expect(createdPath.operationId).toBeDefined();
-        expect(createdPath.chainId).toBe('chain-1');
+        const createdCut = cutsState!.cuts[0];
+        expect(createdCut.operationId).toBeDefined();
+        expect(createdCut.chainId).toBe('chain-1');
 
         // Manually add lead geometry to simulate calculated leads
-        pathStore.updatePathLeadGeometry(createdPath.id, {
+        cutStore.updateCutLeadGeometry(createdCut.id, {
             leadIn: {
                 geometry: {
                     center: { x: 2.5, y: 2.5 },
@@ -184,83 +184,81 @@ describe('Persistence Integration - Lead Geometry', () => {
             },
         });
 
-        // Get updated path with lead geometry
-        const unsubscribe2 = pathStore.subscribe((state) => {
-            pathsState = state;
+        // Get updated cut with lead geometry
+        const unsubscribe2 = cutStore.subscribe((state) => {
+            cutsState = state;
         });
         unsubscribe2();
-        const pathWithLeads = pathsState!.paths[0];
+        const cutWithLeads = cutsState!.cuts[0];
 
         // Verify lead geometry was added
-        expect(pathWithLeads.leadIn).toBeDefined();
-        expect(pathWithLeads.leadIn?.geometry).toBeDefined();
-        expect(pathWithLeads.leadIn?.type).toBe(LeadType.ARC);
-        expect(pathWithLeads.leadOut).toBeDefined();
-        expect(pathWithLeads.leadOut?.geometry).toBeDefined();
-        expect(pathWithLeads.leadOut?.type).toBe(LeadType.ARC);
-        expect(pathWithLeads.leadValidation?.warnings).toContain(
-            'Test warning'
-        );
+        expect(cutWithLeads.leadIn).toBeDefined();
+        expect(cutWithLeads.leadIn?.geometry).toBeDefined();
+        expect(cutWithLeads.leadIn?.type).toBe(LeadType.ARC);
+        expect(cutWithLeads.leadOut).toBeDefined();
+        expect(cutWithLeads.leadOut?.geometry).toBeDefined();
+        expect(cutWithLeads.leadOut?.type).toBe(LeadType.ARC);
+        expect(cutWithLeads.leadValidation?.warnings).toContain('Test warning');
 
         // Save application state
         await saveApplicationState();
 
         // Clear stores to simulate fresh app load
-        pathStore.reset();
+        cutStore.reset();
         operationsStore.reset();
 
         // Verify stores are empty
-        let emptyState: PathsState | null = null;
-        const unsubscribe3 = pathStore.subscribe((state) => {
+        let emptyState: CutsState | null = null;
+        const unsubscribe3 = cutStore.subscribe((state) => {
             emptyState = state;
         });
         unsubscribe3();
-        expect(emptyState!.paths).toHaveLength(0);
+        expect(emptyState!.cuts).toHaveLength(0);
 
         // Restore application state
         await restoreApplicationState();
 
         // Verify that lead data was restored
-        let restoredState: PathsState | null = null;
-        const unsubscribe4 = pathStore.subscribe((state) => {
+        let restoredState: CutsState | null = null;
+        const unsubscribe4 = cutStore.subscribe((state) => {
             restoredState = state;
         });
         unsubscribe4();
-        expect(restoredState!.paths).toHaveLength(1);
+        expect(restoredState!.cuts).toHaveLength(1);
 
-        const restoredPath = restoredState!.paths[0];
-        expect(restoredPath.operationId).toBe(pathWithLeads.operationId);
-        expect(restoredPath.chainId).toBe('chain-1');
+        const restoredCut = restoredState!.cuts[0];
+        expect(restoredCut.operationId).toBe(cutWithLeads.operationId);
+        expect(restoredCut.chainId).toBe('chain-1');
 
         // Most importantly - verify lead geometry was persisted and restored
-        expect(restoredPath.leadIn).toBeDefined();
-        expect(restoredPath.leadIn?.geometry).toEqual({
+        expect(restoredCut.leadIn).toBeDefined();
+        expect(restoredCut.leadIn?.geometry).toEqual({
             center: { x: 2.5, y: 2.5 },
             radius: 3.54,
             startAngle: Math.PI / 4,
             endAngle: (5 * Math.PI) / 4,
             clockwise: false,
         });
-        expect(restoredPath.leadIn?.type).toBe(LeadType.ARC);
-        expect(restoredPath.leadIn?.version).toBe('1.0.0');
-        expect(restoredPath.leadIn?.generatedAt).toBeDefined();
+        expect(restoredCut.leadIn?.type).toBe(LeadType.ARC);
+        expect(restoredCut.leadIn?.version).toBe('1.0.0');
+        expect(restoredCut.leadIn?.generatedAt).toBeDefined();
 
-        expect(restoredPath.leadOut).toBeDefined();
-        expect(restoredPath.leadOut?.geometry).toEqual({
+        expect(restoredCut.leadOut).toBeDefined();
+        expect(restoredCut.leadOut?.geometry).toEqual({
             center: { x: 12.5, y: 12.5 },
             radius: 3.536,
             startAngle: 225,
             endAngle: 45,
             clockwise: false,
         });
-        expect(restoredPath.leadOut?.type).toBe(LeadType.ARC);
-        expect(restoredPath.leadOut?.version).toBe('1.0.0');
-        expect(restoredPath.leadOut?.generatedAt).toBeDefined();
+        expect(restoredCut.leadOut?.type).toBe(LeadType.ARC);
+        expect(restoredCut.leadOut?.version).toBe('1.0.0');
+        expect(restoredCut.leadOut?.generatedAt).toBeDefined();
 
-        expect(restoredPath.leadValidation).toBeDefined();
-        expect(restoredPath.leadValidation?.isValid).toBe(true);
-        expect(restoredPath.leadValidation?.warnings).toContain('Test warning');
-        expect(restoredPath.leadValidation?.severity).toBe('warning');
-        expect(restoredPath.leadValidation?.validatedAt).toBeDefined();
+        expect(restoredCut.leadValidation).toBeDefined();
+        expect(restoredCut.leadValidation?.isValid).toBe(true);
+        expect(restoredCut.leadValidation?.warnings).toContain('Test warning');
+        expect(restoredCut.leadValidation?.severity).toBe('warning');
+        expect(restoredCut.leadValidation?.validatedAt).toBeDefined();
     }, 10000); // 10 second timeout for async operations
 });

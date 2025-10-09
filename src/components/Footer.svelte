@@ -88,7 +88,7 @@
                 <option value={SelectionMode.Chain}>Chain</option>
                 <option value={SelectionMode.Shape}>Shape</option>
                 <option value={SelectionMode.Part}>Part</option>
-                <option value={SelectionMode.Path}>Path</option>
+                <option value={SelectionMode.Cut}>Cut</option>
             </select>
         </div>
 

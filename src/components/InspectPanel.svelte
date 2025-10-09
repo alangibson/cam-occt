@@ -3,15 +3,15 @@
     import ShapeProperties from './ShapeProperties.svelte';
     import ChainProperties from './ChainProperties.svelte';
     import PartProperties from './PartProperties.svelte';
-    import PathProperties from './PathProperties.svelte';
+    import CutProperties from './CutProperties.svelte';
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
-    import { pathStore } from '$lib/stores/paths/store';
+    import { cutStore } from '$lib/stores/cuts/store';
     import { drawingStore } from '$lib/stores/drawing/store';
 
     $: selectedChainId = $chainStore.selectedChainId;
     $: selectedPartId = $partStore.selectedPartId;
-    $: selectedPathId = $pathStore.selectedPathId;
+    $: selectedCutId = $cutStore.selectedCutId;
     $: selectedShapes = $drawingStore.selectedShapes;
     $: hoveredShape = $drawingStore.hoveredShape;
     $: selectedOffsetShape = $drawingStore.selectedOffsetShape;
@@ -21,7 +21,7 @@
         selectedOffsetShape
     );
     $: hasSelection = !!(
-        selectedPathId ||
+        selectedCutId ||
         selectedPartId ||
         selectedChainId ||
         hasShapeSelection
@@ -29,8 +29,8 @@
 </script>
 
 <AccordionPanel title="Inspect" isExpanded={hasSelection}>
-    {#if selectedPathId}
-        <PathProperties />
+    {#if selectedCutId}
+        <CutProperties />
     {:else if selectedPartId}
         <PartProperties />
     {:else if selectedChainId}

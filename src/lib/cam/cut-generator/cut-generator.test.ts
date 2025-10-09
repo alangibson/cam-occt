@@ -10,7 +10,7 @@ import {
 } from '$lib/types';
 
 import { GeometryType, getShapePoints } from '$lib/geometry/shape';
-import { generateToolPaths } from './path-generator';
+import { generateToolPaths } from './cut-generator';
 
 // Mock getShapePoints function
 vi.mock('$lib/geometry/shape', async () => {
@@ -58,7 +58,7 @@ describe('generateToolPaths', () => {
         vi.clearAllMocks();
     });
 
-    it('should generate tool paths for a simple drawing', () => {
+    it('should generate cuts for a simple drawing', () => {
         const drawing: Drawing = {
             shapes: [
                 createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
@@ -83,11 +83,11 @@ describe('generateToolPaths', () => {
                 { x: 50, y: 25 },
             ]);
 
-        const paths = generateToolPaths(drawing, mockParameters);
+        const cuts = generateToolPaths(drawing, mockParameters);
 
-        expect(paths).toHaveLength(2);
-        expect(paths[0].shapeId).toBe('shape1');
-        expect(paths[1].shapeId).toBe('shape2');
+        expect(cuts).toHaveLength(2);
+        expect(cuts[0].shapeId).toBe('shape1');
+        expect(cuts[1].shapeId).toBe('shape2');
     });
 
     it('should apply kerf compensation', () => {
@@ -99,22 +99,22 @@ describe('generateToolPaths', () => {
             units: Unit.MM,
         };
 
-        // Use a 3-point path to avoid edge cases in the kerf compensation algorithm
+        // Use a 3-point cut to avoid edge cases in the kerf compensation algorithm
         mockGetShapePoints.mockReturnValueOnce([
             { x: 0, y: 0 },
             { x: 50, y: 0 },
             { x: 100, y: 0 },
         ]);
 
-        const paths = generateToolPaths(drawing, mockParameters);
+        const cuts = generateToolPaths(drawing, mockParameters);
 
-        expect(paths[0].points).toHaveLength(3);
+        expect(cuts[0].points).toHaveLength(3);
         // Points should be offset by kerf compensation (perpendicular to horizontal line)
         // Middle point should definitely be offset since it has proper neighboring points
-        expect(paths[0].points[1].y).not.toBe(0);
+        expect(cuts[0].points[1].y).not.toBe(0);
     });
 
-    it('should generate lead-in and lead-out paths', () => {
+    it('should generate lead-in and lead-out for cuts', () => {
         const drawing: Drawing = {
             shapes: [
                 createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
@@ -128,28 +128,28 @@ describe('generateToolPaths', () => {
             { x: 100, y: 0 },
         ]);
 
-        const paths = generateToolPaths(drawing, mockParameters);
+        const cuts = generateToolPaths(drawing, mockParameters);
 
-        expect(paths[0].leadIn).toBeDefined();
-        expect(paths[0].leadOut).toBeDefined();
+        expect(cuts[0].leadIn).toBeDefined();
+        expect(cuts[0].leadOut).toBeDefined();
 
         // Lead points are already converted to point arrays
-        const leadInPoints = paths[0].leadIn!;
-        const leadOutPoints = paths[0].leadOut!;
+        const leadInPoints = cuts[0].leadIn!;
+        const leadOutPoints = cuts[0].leadOut!;
 
         expect(leadInPoints).toHaveLength(2);
         expect(leadOutPoints).toHaveLength(2);
 
-        // Lead-in should start before the path
-        expect(leadInPoints[0].x).toBeLessThan(paths[0].points[0].x);
-        // Lead-out should end after the path
+        // Lead-in should start before the cut
+        expect(leadInPoints[0].x).toBeLessThan(cuts[0].points[0].x);
+        // Lead-out should end after the cut
         expect(leadOutPoints[1].x).toBeGreaterThan(
-            paths[0].points[paths[0].points.length - 1].x
+            cuts[0].points[cuts[0].points.length - 1].x
         );
     });
 
     describe('toolpath optimization algorithms', () => {
-        it('should return single path unchanged', () => {
+        it('should return single cut unchanged', () => {
             const drawing: Drawing = {
                 shapes: [
                     createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
@@ -163,10 +163,10 @@ describe('generateToolPaths', () => {
                 { x: 100, y: 0 },
             ]);
 
-            const paths = generateToolPaths(drawing, mockParameters);
+            const cuts = generateToolPaths(drawing, mockParameters);
 
-            expect(paths).toHaveLength(1);
-            expect(paths[0].shapeId).toBe('shape1');
+            expect(cuts).toHaveLength(1);
+            expect(cuts[0].shapeId).toBe('shape1');
         });
 
         it('should optimize cut sequence using nearest neighbor algorithm', () => {
@@ -198,13 +198,13 @@ describe('generateToolPaths', () => {
                     { x: 25, y: 0 },
                 ]);
 
-            const paths = generateToolPaths(drawing, mockParameters);
+            const cuts = generateToolPaths(drawing, mockParameters);
 
-            expect(paths).toHaveLength(3);
+            expect(cuts).toHaveLength(3);
             // Should keep shape1 first, then shape3 (closer), then shape2 (furthest)
-            expect(paths[0].shapeId).toBe('shape1');
-            expect(paths[1].shapeId).toBe('shape3');
-            expect(paths[2].shapeId).toBe('shape2');
+            expect(cuts[0].shapeId).toBe('shape1');
+            expect(cuts[1].shapeId).toBe('shape3');
+            expect(cuts[2].shapeId).toBe('shape2');
         });
 
         it('should handle empty drawing', () => {
@@ -214,9 +214,9 @@ describe('generateToolPaths', () => {
                 units: Unit.MM,
             };
 
-            const paths = generateToolPaths(drawing, mockParameters);
+            const cuts = generateToolPaths(drawing, mockParameters);
 
-            expect(paths).toHaveLength(0);
+            expect(cuts).toHaveLength(0);
         });
 
         it('should skip shapes with insufficient points', () => {
@@ -236,10 +236,10 @@ describe('generateToolPaths', () => {
                     { x: 30, y: 0 },
                 ]);
 
-            const paths = generateToolPaths(drawing, mockParameters);
+            const cuts = generateToolPaths(drawing, mockParameters);
 
-            expect(paths).toHaveLength(1);
-            expect(paths[0].shapeId).toBe('shape2');
+            expect(cuts).toHaveLength(1);
+            expect(cuts[0].shapeId).toBe('shape2');
         });
 
         it('should calculate travel distances accurately', () => {
@@ -267,15 +267,15 @@ describe('generateToolPaths', () => {
                     { x: 25, y: 5 },
                 ]);
 
-            const paths = generateToolPaths(drawing, mockParameters);
+            const cuts = generateToolPaths(drawing, mockParameters);
 
             // Should select 'near' before 'far' due to shorter travel distance
-            expect(paths[0].shapeId).toBe('start');
-            expect(paths[1].shapeId).toBe('near');
-            expect(paths[2].shapeId).toBe('far');
+            expect(cuts[0].shapeId).toBe('start');
+            expect(cuts[1].shapeId).toBe('near');
+            expect(cuts[2].shapeId).toBe('far');
         });
 
-        it('should preserve shape parameters in tool paths', () => {
+        it('should preserve shape parameters in cuts', () => {
             const drawing: Drawing = {
                 shapes: [
                     createMockLine('shape1', { x: 0, y: 0 }, { x: 100, y: 0 }),
@@ -289,11 +289,11 @@ describe('generateToolPaths', () => {
                 { x: 100, y: 0 },
             ]);
 
-            const paths = generateToolPaths(drawing, mockParameters);
+            const cuts = generateToolPaths(drawing, mockParameters);
 
-            expect(paths[0].parameters).toEqual(mockParameters);
-            expect(paths[0].originalShape).toEqual(drawing.shapes[0]);
-            expect(paths[0].isRapid).toBe(false);
+            expect(cuts[0].parameters).toEqual(mockParameters);
+            expect(cuts[0].originalShape).toEqual(drawing.shapes[0]);
+            expect(cuts[0].isRapid).toBe(false);
         });
     });
 
@@ -313,21 +313,21 @@ describe('generateToolPaths', () => {
             ]);
 
             const zeroKerfParams = { ...mockParameters, kerf: 0 };
-            const paths = generateToolPaths(drawing, zeroKerfParams);
+            const cuts = generateToolPaths(drawing, zeroKerfParams);
 
             // Points should not be modified when kerf is 0
-            expect(paths[0].points[0]).toEqual({ x: 0, y: 0 });
-            expect(paths[0].points[1]).toEqual({ x: 100, y: 0 });
+            expect(cuts[0].points[0]).toEqual({ x: 0, y: 0 });
+            expect(cuts[0].points[1]).toEqual({ x: 100, y: 0 });
         });
 
-        it('should handle closed paths with kerf compensation', () => {
+        it('should handle closed cuts with kerf compensation', () => {
             const drawing: Drawing = {
                 shapes: [createMockCircle('circle1', { x: 50, y: 50 }, 25)],
                 bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
                 units: Unit.MM,
             };
 
-            // Mock a closed square path
+            // Mock a closed square cut
             mockGetShapePoints.mockReturnValueOnce([
                 { x: 40, y: 40 },
                 { x: 60, y: 40 },
@@ -336,11 +336,11 @@ describe('generateToolPaths', () => {
                 { x: 40, y: 40 },
             ]);
 
-            const paths = generateToolPaths(drawing, mockParameters);
+            const cuts = generateToolPaths(drawing, mockParameters);
 
-            expect(paths[0].points).toHaveLength(5);
+            expect(cuts[0].points).toHaveLength(5);
             // All points should be offset inward for an inside cut
-            paths[0].points.forEach((point, i) => {
+            cuts[0].points.forEach((point, i) => {
                 if (i < 4) {
                     // Skip the duplicate closing point
                     expect(point.x).not.toBe([40, 60, 60, 40][i]);
@@ -360,10 +360,10 @@ describe('generateToolPaths', () => {
 
             mockGetShapePoints.mockReturnValueOnce([{ x: 50, y: 50 }]);
 
-            const paths = generateToolPaths(drawing, mockParameters);
+            const cuts = generateToolPaths(drawing, mockParameters);
 
             // Should skip shapes with insufficient points
-            expect(paths).toHaveLength(0);
+            expect(cuts).toHaveLength(0);
         });
     });
 
@@ -390,14 +390,14 @@ describe('generateToolPaths', () => {
                 ...mockParameters,
                 // Lead lengths removed from CuttingParameters
             };
-            const paths = generateToolPaths(drawing, customParams, {
+            const cuts = generateToolPaths(drawing, customParams, {
                 leadInLength: 10,
                 leadOutLength: 15,
             });
 
             // Lead points are already converted to point arrays
-            const leadInPoints = paths[0].leadIn!;
-            const leadOutPoints = paths[0].leadOut!;
+            const leadInPoints = cuts[0].leadIn!;
+            const leadOutPoints = cuts[0].leadOut!;
 
             // Lead-in should be 10mm to the left
             expect(leadInPoints[0].x).toBeCloseTo(40, 3); // 50 - 10
@@ -426,14 +426,14 @@ describe('generateToolPaths', () => {
                 ...mockParameters,
                 // Lead lengths removed from CuttingParameters
             };
-            const paths = generateToolPaths(drawing, zeroLeadParams, {
+            const cuts = generateToolPaths(drawing, zeroLeadParams, {
                 leadInLength: 0,
                 leadOutLength: 0,
             });
 
             // Lead points are already converted to point arrays
-            const leadInPoints = paths[0].leadIn!;
-            const leadOutPoints = paths[0].leadOut!;
+            const leadInPoints = cuts[0].leadIn!;
+            const leadOutPoints = cuts[0].leadOut!;
 
             // Should still generate lead arrays but with zero offset
             expect(leadInPoints).toHaveLength(2);

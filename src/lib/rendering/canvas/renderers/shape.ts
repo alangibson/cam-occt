@@ -49,9 +49,9 @@ const VIEWPORT_CULLING_BUFFER = 50;
 const HIT_TEST_TOLERANCE_PIXELS = 5;
 const SELECTED_LINE_WIDTH = 2;
 const HOVERED_LINE_WIDTH = 1.5;
-const PATH_SELECTED_LINE_WIDTH = 3;
-const PATH_HIGHLIGHTED_LINE_WIDTH = 3;
-const PATH_HIGHLIGHTED_SHADOW_BLUR = 4;
+const CUT_SELECTED_LINE_WIDTH = 3;
+const CUT_HIGHLIGHTED_LINE_WIDTH = 3;
+const CUT_HIGHLIGHTED_SHADOW_BLUR = 4;
 const CHAIN_SELECTED_LINE_WIDTH = 2;
 const PART_SELECTED_LINE_WIDTH = 2.5;
 const PART_SELECTED_SHADOW_BLUR = 2;
@@ -59,7 +59,7 @@ const CHAIN_HIGHLIGHTED_LINE_WIDTH = 2;
 const PART_HIGHLIGHTED_LINE_WIDTH = 2.5;
 const PART_HIGHLIGHTED_SHADOW_BLUR = 3;
 const PART_HOVERED_LINE_WIDTH = 2;
-const PATH_LINE_WIDTH = 2;
+const CUT_LINE_WIDTH = 2;
 const PART_SHELL_LINE_WIDTH = 1.5;
 const PART_HOLE_LINE_WIDTH = 1.5;
 const CHAIN_FALLBACK_LINE_WIDTH = 1.5;
@@ -428,25 +428,25 @@ export class ShapeRenderer extends BaseRenderer {
 
         const isChainHighlighted =
             chainId && state.selection.highlightedChainId === chainId;
-        const hasPath = chainId && state.chainsWithPaths.includes(chainId);
+        const hasCut = chainId && state.chainsWithCuts.includes(chainId);
 
-        // Check if this path is selected or highlighted
-        const isPathSelected =
-            state.selection.selectedPathId &&
-            state.paths.some(
-                (p) =>
-                    p.id === state.selection.selectedPathId &&
-                    p.chainId === chainId
+        // Check if this cut is selected or highlighted
+        const isCutSelected =
+            state.selection.selectedCutId &&
+            state.cuts.some(
+                (cut) =>
+                    cut.id === state.selection.selectedCutId &&
+                    cut.chainId === chainId
             );
-        const isPathHighlighted =
-            state.selection.highlightedPathId &&
-            state.paths.some(
-                (p) =>
-                    p.id === state.selection.highlightedPathId &&
-                    p.chainId === chainId
+        const isCutHighlighted =
+            state.selection.highlightedCutId &&
+            state.cuts.some(
+                (cut) =>
+                    cut.id === state.selection.highlightedCutId &&
+                    cut.chainId === chainId
             );
 
-        // Apply styling based on priority: selected > hovered > path selected > path highlighted > etc.
+        // Apply styling based on priority: selected > hovered > cut selected > cut highlighted > etc.
         if (isSelected) {
             ctx.strokeStyle = '#ff6600';
             ctx.lineWidth =
@@ -455,19 +455,19 @@ export class ShapeRenderer extends BaseRenderer {
             ctx.strokeStyle = '#ff6600';
             ctx.lineWidth =
                 drawingContext.screenToWorldDistance(HOVERED_LINE_WIDTH);
-        } else if (isPathSelected) {
-            ctx.strokeStyle = 'rgb(0, 133, 84)'; // Dark green color for selected path
+        } else if (isCutSelected) {
+            ctx.strokeStyle = 'rgb(0, 133, 84)'; // Dark green color for selected cut
             ctx.lineWidth = drawingContext.screenToWorldDistance(
-                PATH_SELECTED_LINE_WIDTH
+                CUT_SELECTED_LINE_WIDTH
             );
-        } else if (isPathHighlighted) {
-            ctx.strokeStyle = '#15803d'; // Dark green color for highlighted path
+        } else if (isCutHighlighted) {
+            ctx.strokeStyle = '#15803d'; // Dark green color for highlighted cut
             ctx.lineWidth = drawingContext.screenToWorldDistance(
-                PATH_HIGHLIGHTED_LINE_WIDTH
+                CUT_HIGHLIGHTED_LINE_WIDTH
             );
             ctx.shadowColor = '#15803d';
             ctx.shadowBlur = drawingContext.screenToWorldDistance(
-                PATH_HIGHLIGHTED_SHADOW_BLUR
+                CUT_HIGHLIGHTED_SHADOW_BLUR
             );
         } else if (isChainSelected) {
             ctx.strokeStyle = '#f59e0b'; // Dark amber color for selected chain
@@ -502,10 +502,10 @@ export class ShapeRenderer extends BaseRenderer {
             ctx.lineWidth = drawingContext.screenToWorldDistance(
                 PART_HOVERED_LINE_WIDTH
             );
-        } else if (hasPath) {
-            ctx.strokeStyle = 'rgb(0, 133, 84)'; // Green color for chains with paths
+        } else if (hasCut) {
+            ctx.strokeStyle = 'rgb(0, 133, 84)'; // Green color for chains with cuts
             ctx.lineWidth =
-                drawingContext.screenToWorldDistance(PATH_LINE_WIDTH);
+                drawingContext.screenToWorldDistance(CUT_LINE_WIDTH);
         } else if (partType === 'shell') {
             ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for part shells
             ctx.lineWidth = drawingContext.screenToWorldDistance(

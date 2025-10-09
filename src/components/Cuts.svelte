@@ -1,46 +1,46 @@
 <script lang="ts">
-    import { pathStore } from '$lib/stores/paths/store';
+    import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { flip } from 'svelte/animate';
-    import type { Path } from '$lib/stores/paths/interfaces';
+    import type { Cut } from '$lib/stores/cuts/interfaces';
 
-    let paths: Path[] = [];
-    let selectedPathId: string | null = null;
-    let highlightedPathId: string | null = null;
-    let draggedPath: Path | null = null;
+    let cuts: Cut[] = [];
+    let selectedCutId: string | null = null;
+    let highlightedCutId: string | null = null;
+    let draggedCut: Cut | null = null;
     let dragOverIndex: number | null = null;
 
     // Subscribe to stores
-    pathStore.subscribe((state) => {
-        paths = state.paths;
-        selectedPathId = state.selectedPathId;
-        highlightedPathId = state.highlightedPathId;
+    cutStore.subscribe((state) => {
+        cuts = state.cuts;
+        selectedCutId = state.selectedCutId;
+        highlightedCutId = state.highlightedCutId;
     });
 
-    // Paths are now handled by the main persistence system
+    // Cuts are now handled by the main persistence system
     // No need for component-level localStorage anymore
 
-    function handlePathClick(pathId: string) {
-        if (selectedPathId === pathId) {
-            pathStore.selectPath(null); // Deselect if already selected
+    function handleCutClick(cutId: string) {
+        if (selectedCutId === cutId) {
+            cutStore.selectCut(null); // Deselect if already selected
         } else {
-            pathStore.selectPath(pathId);
+            cutStore.selectCut(cutId);
         }
     }
 
-    function handlePathHover(pathId: string | null) {
-        highlightedPathId = pathId;
-        if (pathId) {
-            pathStore.highlightPath(pathId);
+    function handleCutHover(cutId: string | null) {
+        highlightedCutId = cutId;
+        if (cutId) {
+            cutStore.highlightCut(cutId);
         } else {
-            pathStore.clearHighlight();
+            cutStore.clearHighlight();
         }
     }
 
     // Drag and drop functions
-    function handleDragStart(event: DragEvent, path: Path) {
-        draggedPath = path;
+    function handleDragStart(event: DragEvent, cut: Cut) {
+        draggedCut = cut;
         if (event.dataTransfer) {
             event.dataTransfer.effectAllowed = 'move';
         }
@@ -57,22 +57,22 @@
 
     function handleDrop(event: DragEvent, dropIndex: number) {
         event.preventDefault();
-        if (!draggedPath) return;
+        if (!draggedCut) return;
 
-        const draggedIndex = paths.findIndex((p) => p.id === draggedPath!.id);
+        const draggedIndex = cuts.findIndex((c) => c.id === draggedCut!.id);
         if (draggedIndex === -1) return;
 
-        const newPaths = [...paths];
-        newPaths.splice(draggedIndex, 1);
-        newPaths.splice(dropIndex, 0, draggedPath);
+        const newCuts = [...cuts];
+        newCuts.splice(draggedIndex, 1);
+        newCuts.splice(dropIndex, 0, draggedCut);
 
         // Update order values
-        newPaths.forEach((path, index) => {
-            path.order = index + 1;
+        newCuts.forEach((cut, index) => {
+            cut.order = index + 1;
         });
 
-        pathStore.reorderPaths(newPaths);
-        draggedPath = null;
+        cutStore.reorderCuts(newCuts);
+        draggedCut = null;
         dragOverIndex = null;
     }
 
@@ -102,57 +102,56 @@
     }
 </script>
 
-<div class="paths-container">
-    <div class="paths-list">
-        {#each paths as path, index (path.id)}
+<div class="cuts-container">
+    <div class="cuts-list">
+        {#each cuts as cut, index (cut.id)}
             <div
-                class="path-item {dragOverIndex === index
+                class="cut-item {dragOverIndex === index
                     ? 'drag-over'
-                    : ''} {selectedPathId === path.id
+                    : ''} {selectedCutId === cut.id
                     ? 'selected'
-                    : ''} {highlightedPathId === path.id ? 'highlighted' : ''}"
+                    : ''} {highlightedCutId === cut.id ? 'highlighted' : ''}"
                 role="button"
-                data-path-id={path.id}
+                data-cut-id={cut.id}
                 draggable="true"
-                ondragstart={(e) => handleDragStart(e, path)}
+                ondragstart={(e) => handleDragStart(e, cut)}
                 ondragover={(e) => handleDragOver(e, index)}
                 ondragleave={handleDragLeave}
                 ondrop={(e) => handleDrop(e, index)}
-                onmouseenter={() => handlePathHover(path.id)}
-                onmouseleave={() => handlePathHover(null)}
-                onclick={() => handlePathClick(path.id)}
+                onmouseenter={() => handleCutHover(cut.id)}
+                onmouseleave={() => handleCutHover(null)}
+                onclick={() => handleCutClick(cut.id)}
                 onkeydown={(e) =>
                     (e.key === 'Enter' || e.key === ' ') &&
-                    handlePathClick(path.id)}
+                    handleCutClick(cut.id)}
                 tabindex="0"
                 animate:flip={{ duration: 200 }}
             >
-                <div class="path-header">
+                <div class="cut-header">
                     <span class="drag-handle">☰</span>
-                    <span class="path-name">{path.name}</span>
+                    <span class="cut-name">{cut.name}</span>
                 </div>
 
-                <div class="path-details">
-                    <div class="path-info">
+                <div class="cut-details">
+                    <div class="cut-info">
                         <span class="operation-name"
-                            >{getOperationName(path.operationId)}</span
+                            >{getOperationName(cut.operationId)}</span
                         >
-                        <span class="tool-name">{getToolName(path.toolId)}</span
-                        >
-                        <span class="cut-direction {path.cutDirection}"
-                            >{getCutDirectionDisplay(path.cutDirection)}</span
+                        <span class="tool-name">{getToolName(cut.toolId)}</span>
+                        <span class="cut-direction {cut.cutDirection}"
+                            >{getCutDirectionDisplay(cut.cutDirection)}</span
                         >
                     </div>
-                    <div class="path-order">#{path.order}</div>
+                    <div class="cut-order">#{cut.order}</div>
                 </div>
             </div>
         {/each}
 
-        {#if paths.length === 0}
-            <div class="no-paths">
-                <p>No paths generated yet.</p>
+        {#if cuts.length === 0}
+            <div class="no-cuts">
+                <p>No cuts generated yet.</p>
                 <p>
-                    Apply operations to chains or parts to generate tool paths.
+                    Apply operations to chains or parts to generate tool cuts.
                 </p>
             </div>
         {/if}
@@ -160,7 +159,7 @@
 </div>
 
 <style>
-    .paths-list {
+    .cuts-list {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
@@ -168,7 +167,7 @@
         overflow-y: auto;
     }
 
-    .path-item {
+    .cut-item {
         background: white;
         border: 1px solid #e5e7eb;
         border-radius: 0.375rem;
@@ -177,27 +176,27 @@
         transition: all 0.2s;
     }
 
-    .path-item:hover {
+    .cut-item:hover {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .path-item.drag-over {
+    .cut-item.drag-over {
         background: #e6f2ff;
         border-color: rgb(0, 83, 135);
     }
 
-    .path-item.selected {
+    .cut-item.selected {
         background: #e6f2ff;
         border-color: rgb(0, 83, 135);
         box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
     }
 
-    .path-item.highlighted {
+    .cut-item.highlighted {
         background: #e6f2f0;
         border-color: rgb(0, 133, 84);
     }
 
-    .path-header {
+    .cut-header {
         display: flex;
         align-items: center;
         gap: 0.5rem;
@@ -210,21 +209,21 @@
         font-size: 1rem;
     }
 
-    .path-name {
+    .cut-name {
         flex: 1;
         font-size: 0.875rem;
         font-weight: 500;
         color: #374151;
     }
 
-    .path-details {
+    .cut-details {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 0.5rem;
     }
 
-    .path-info {
+    .cut-info {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
@@ -264,7 +263,7 @@
         color: #6b7280;
     }
 
-    .path-order {
+    .cut-order {
         font-size: 0.75rem;
         color: #6b7280;
         font-weight: 600;
@@ -273,14 +272,14 @@
         border-radius: 0.25rem;
     }
 
-    .no-paths {
+    .no-cuts {
         text-align: center;
         color: #6b7280;
         font-size: 0.875rem;
         padding: 2rem;
     }
 
-    .no-paths p {
+    .no-cuts p {
         margin: 0.5rem 0;
     }
 </style>

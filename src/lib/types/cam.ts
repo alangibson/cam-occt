@@ -52,11 +52,11 @@ export interface CutPath {
     isRapid: boolean;
     parameters?: CuttingParameters;
     originalShape?: Shape; // Preserve original shape for native G-code generation
-    executionClockwise?: boolean | null; // Execution direction from path (true=CW, false=CCW, null=no direction)
+    executionClockwise?: boolean | null; // Execution direction from cut (true=CW, false=CCW, null=no direction)
 }
 
 export interface CutSequence {
-    paths: CutPath[];
+    cuts: CutPath[];
     totalLength: number;
     rapidLength: number;
     cutLength: number;

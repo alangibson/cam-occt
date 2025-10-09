@@ -4,7 +4,7 @@ export interface CanvasConfiguration {
     respectLayerVisibility: boolean;
     onChainClick: ((chainId: string) => void) | null;
     onPartClick: ((partId: string) => void) | null;
-    interactionMode: 'shapes' | 'chains' | 'paths';
+    interactionMode: 'shapes' | 'chains' | 'cuts';
 }
 
 export interface StageEventHandlers {
@@ -57,7 +57,7 @@ export function getCanvasConfigForStage(
                 respectLayerVisibility: false, // Show all layers in simulate
                 onChainClick: null,
                 onPartClick: null,
-                interactionMode: 'paths',
+                interactionMode: 'cuts',
             };
 
         case 'export':
@@ -65,7 +65,7 @@ export function getCanvasConfigForStage(
                 respectLayerVisibility: false, // Show all layers in export
                 onChainClick: null,
                 onPartClick: null,
-                interactionMode: 'paths',
+                interactionMode: 'cuts',
             };
 
         default:

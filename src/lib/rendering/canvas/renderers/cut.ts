@@ -8,7 +8,7 @@ import {
 } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D } from '$lib/types';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import {
@@ -16,98 +16,98 @@ import {
     getShapeEndPoint,
 } from '$lib/geometry/shape/functions';
 import {
-    isPathEnabledForRendering,
-    applyPathStyling,
+    isCutEnabledForRendering,
+    applyCutStyling,
     setupHitTest,
 } from '$lib/rendering/canvas/utils/renderer-utils';
 
 /**
- * Constants for path rendering
+ * Constants for cut rendering
  */
 const OFFSET_LINE_WIDTH = 2;
 const SELECTED_OFFSET_LINE_WIDTH = 2;
-const SELECTED_PATH_LINE_WIDTH = 3;
-const HIGHLIGHTED_PATH_LINE_WIDTH = 2.5;
+const SELECTED_CUT_LINE_WIDTH = 3;
+const HIGHLIGHTED_CUT_LINE_WIDTH = 2.5;
 const GAP_FILL_LINE_WIDTH = 2;
 const ENDPOINT_RADIUS_PX = 3;
 const HIT_TOLERANCE_PX = 5;
 
 /**
- * PathRenderer handles rendering of paths including:
- * - Offset path geometry (green lines)
+ * CutRenderer handles rendering of cuts including:
+ * - Offset cut geometry (green lines)
  * - Gap fills
- * - Path start/end point markers
+ * - Cut start/end point markers
  */
-export class PathRenderer extends BaseRenderer {
+export class CutRenderer extends BaseRenderer {
     constructor(coordinator: CoordinateTransformer) {
-        super('path', LayerIdEnum.OFFSETS, coordinator);
+        super('cut', LayerIdEnum.OFFSETS, coordinator);
     }
 
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        if (!state.pathsState || state.pathsState.paths.length === 0) return;
+        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
 
-        // First render path geometry (offset shapes)
-        this.drawOffsetPaths(ctx, state);
+        // First render cut geometry (offset shapes)
+        this.drawOffsetCuts(ctx, state);
 
         // Then render endpoints on top
-        this.drawPathEndpoints(ctx, state);
+        this.drawCutEndpoints(ctx, state);
     }
 
     /**
-     * Draw offset paths with offset shapes as solid green lines
+     * Draw offset cuts with offset shapes as solid green lines
      */
-    private drawOffsetPaths(
+    private drawOffsetCuts(
         ctx: CanvasRenderingContext2D,
         state: RenderState
     ): void {
-        if (!state.pathsState || state.pathsState.paths.length === 0) return;
+        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
 
-        state.pathsState.paths.forEach((path: Path) => {
-            // Only draw offset paths for enabled paths with enabled operations
-            if (!isPathEnabledForRendering(path, state)) {
+        state.cutsState.cuts.forEach((cut: Cut) => {
+            // Only draw offset cuts for enabled cuts with enabled operations
+            if (!isCutEnabledForRendering(cut, state)) {
                 return;
             }
 
-            // Only draw if path has calculated offset
-            if (!path.offset) {
+            // Only draw if cut has calculated offset
+            if (!cut.offset) {
                 return;
             }
 
             // Validate offset geometry before rendering
-            if (!path.offset.offsetShapes) {
+            if (!cut.offset.offsetShapes) {
                 console.warn(
-                    `Invalid offset geometry for path ${path.id}: missing offsetShapes`
+                    `Invalid offset geometry for cut ${cut.id}: missing offsetShapes`
                 );
                 return;
             }
 
-            if (!Array.isArray(path.offset.offsetShapes)) {
+            if (!Array.isArray(cut.offset.offsetShapes)) {
                 console.warn(
-                    `Invalid offset geometry for path ${path.id}: offsetShapes is not an array`
+                    `Invalid offset geometry for cut ${cut.id}: offsetShapes is not an array`
                 );
                 return;
             }
 
-            if (path.offset.offsetShapes.length === 0) {
+            if (cut.offset.offsetShapes.length === 0) {
                 console.warn(
-                    `Invalid offset geometry for path ${path.id}: empty offsetShapes array`
+                    `Invalid offset geometry for cut ${cut.id}: empty offsetShapes array`
                 );
                 return;
             }
 
-            const isPathSelected =
-                state.selection.selectedPathId &&
-                state.selection.selectedPathId === path.id;
-            const isPathHighlighted =
-                state.selection.highlightedPathId &&
-                state.selection.highlightedPathId === path.id;
+            const isCutSelected =
+                state.selection.selectedCutId &&
+                state.selection.selectedCutId === cut.id;
+            const isCutHighlighted =
+                state.selection.highlightedCutId &&
+                state.selection.highlightedCutId === cut.id;
 
             ctx.save();
 
             try {
                 // Define color constants for visual consistency
-                const pathColors = {
-                    offsetGreen: 'rgb(0, 133, 84)', // Green for offset paths
+                const cutColors = {
+                    offsetGreen: 'rgb(0, 133, 84)', // Green for offset cuts
                     selectedDark: '#ff9933', // Light orange for selected
                     highlighted: '#ff9933', // Light orange for highlighted
                 };
@@ -121,7 +121,7 @@ export class PathRenderer extends BaseRenderer {
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
 
-                path.offset.offsetShapes.forEach((shape, index) => {
+                cut.offset.offsetShapes.forEach((shape, index) => {
                     try {
                         // Check if this specific offset shape is selected
                         const isOffsetShapeSelected =
@@ -136,19 +136,19 @@ export class PathRenderer extends BaseRenderer {
                                     SELECTED_OFFSET_LINE_WIDTH
                                 ); // 2px selected offset shape
                         } else {
-                            applyPathStyling(
+                            applyCutStyling(
                                 ctx,
                                 state,
-                                !!isPathSelected,
-                                !!isPathHighlighted,
+                                !!isCutSelected,
+                                !!isCutHighlighted,
                                 {
-                                    selectedDark: pathColors.selectedDark,
-                                    highlighted: pathColors.highlighted,
-                                    normal: pathColors.offsetGreen,
+                                    selectedDark: cutColors.selectedDark,
+                                    highlighted: cutColors.highlighted,
+                                    normal: cutColors.offsetGreen,
                                 },
                                 {
-                                    selected: SELECTED_PATH_LINE_WIDTH,
-                                    highlighted: HIGHLIGHTED_PATH_LINE_WIDTH,
+                                    selected: SELECTED_CUT_LINE_WIDTH,
+                                    highlighted: HIGHLIGHTED_CUT_LINE_WIDTH,
                                     normal: OFFSET_LINE_WIDTH,
                                 }
                             );
@@ -157,49 +157,49 @@ export class PathRenderer extends BaseRenderer {
                         drawShape(ctx, shape);
 
                         // Reset shadow after each shape if it was applied
-                        if (isPathHighlighted && !isOffsetShapeSelected) {
+                        if (isCutHighlighted && !isOffsetShapeSelected) {
                             ctx.shadowColor = 'transparent';
                             ctx.shadowBlur = 0;
                         }
                     } catch (error) {
                         console.warn(
-                            `Error rendering offset shape ${index} for path ${path.id}:`,
+                            `Error rendering offset shape ${index} for cut ${cut.id}:`,
                             error
                         );
                     }
                 });
 
                 // Render gap fills if they exist (filler shapes and modified shapes)
-                if (path.offset.gapFills && path.offset.gapFills.length > 0) {
+                if (cut.offset.gapFills && cut.offset.gapFills.length > 0) {
                     ctx.save();
 
                     // Use same color logic as offset shapes for consistency
-                    applyPathStyling(
+                    applyCutStyling(
                         ctx,
                         state,
-                        !!isPathSelected,
-                        !!isPathHighlighted,
+                        !!isCutSelected,
+                        !!isCutHighlighted,
                         {
-                            selectedDark: pathColors.selectedDark,
-                            highlighted: pathColors.highlighted,
-                            normal: pathColors.offsetGreen,
+                            selectedDark: cutColors.selectedDark,
+                            highlighted: cutColors.highlighted,
+                            normal: cutColors.offsetGreen,
                         },
                         {
-                            selected: SELECTED_PATH_LINE_WIDTH,
-                            highlighted: HIGHLIGHTED_PATH_LINE_WIDTH,
+                            selected: SELECTED_CUT_LINE_WIDTH,
+                            highlighted: HIGHLIGHTED_CUT_LINE_WIDTH,
                             normal: GAP_FILL_LINE_WIDTH,
                         }
                     );
                     ctx.setLineDash([]); // Solid line
 
-                    for (const gapFill of path.offset.gapFills) {
+                    for (const gapFill of cut.offset.gapFills) {
                         // Render filler shape if it exists
                         if (gapFill.fillerShape) {
                             try {
                                 drawShape(ctx, gapFill.fillerShape);
                             } catch (error) {
                                 console.warn(
-                                    `Error rendering gap filler shape for path ${path.id}:`,
+                                    `Error rendering gap filler shape for cut ${cut.id}:`,
                                     error
                                 );
                             }
@@ -212,7 +212,7 @@ export class PathRenderer extends BaseRenderer {
                     }
 
                     // Reset shadow after gap fills if it was applied
-                    if (isPathHighlighted) {
+                    if (isCutHighlighted) {
                         ctx.shadowColor = 'transparent';
                         ctx.shadowBlur = 0;
                     }
@@ -220,7 +220,7 @@ export class PathRenderer extends BaseRenderer {
                     ctx.restore();
                 }
             } catch (error) {
-                console.error(`Error rendering offset path ${path.id}:`, error);
+                console.error(`Error rendering offset cut ${cut.id}:`, error);
             } finally {
                 ctx.restore();
             }
@@ -228,28 +228,28 @@ export class PathRenderer extends BaseRenderer {
     }
 
     /**
-     * Draw path start/end points as colored circles
+     * Draw cut start/end points as colored circles
      */
-    private drawPathEndpoints(
+    private drawCutEndpoints(
         ctx: CanvasRenderingContext2D,
         state: RenderState
     ): void {
-        if (!state.pathsState || state.pathsState.paths.length === 0) return;
+        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
 
         const pointRadius = screenToWorldDistance(state, ENDPOINT_RADIUS_PX); // Fixed size regardless of zoom
 
-        state.pathsState.paths.forEach((path: Path) => {
-            // Only draw endpoints for enabled paths with enabled operations
-            if (!isPathEnabledForRendering(path, state)) return;
+        state.cutsState.cuts.forEach((cut: Cut) => {
+            // Only draw endpoints for enabled cuts with enabled operations
+            if (!isCutEnabledForRendering(cut, state)) return;
 
-            // Get the chain for this path to find start/end points
-            const chain = state.chains.find((c) => c.id === path.chainId);
+            // Get the chain for this cut to find start/end points
+            const chain = state.chains.find((c) => c.id === cut.chainId);
             if (!chain || chain.shapes.length === 0) return;
 
             // Use offset shapes if they exist, otherwise use original chain shapes
             const shapesToUse =
-                path.offset && path.offset.offsetShapes.length > 0
-                    ? path.offset.offsetShapes
+                cut.offset && cut.offset.offsetShapes.length > 0
+                    ? cut.offset.offsetShapes
                     : chain.shapes;
 
             // Get first and last shape
@@ -295,47 +295,47 @@ export class PathRenderer extends BaseRenderer {
             typeof point.x !== 'number' ||
             typeof point.y !== 'number'
         ) {
-            console.error('PathRenderer.hitWorld: invalid point', point);
+            console.error('CutRenderer.hitWorld: invalid point', point);
             return null;
         }
 
         const hitSetup = setupHitTest(state, HIT_TOLERANCE_PX);
         if (!hitSetup) return null;
 
-        const { hitTolerance, enabledPaths } = hitSetup;
+        const { hitTolerance, enabledCuts } = hitSetup;
 
-        // First test for path geometry hits (offset shapes)
-        for (const path of enabledPaths) {
-            // Only test if path has offset geometry
-            if (!path.offset || !path.offset.offsetShapes) continue;
+        // First test for cut geometry hits (offset shapes)
+        for (const cut of enabledCuts) {
+            // Only test if cut has offset geometry
+            if (!cut.offset || !cut.offset.offsetShapes) continue;
 
-            // Test offset shapes for path hit
-            for (const shape of path.offset.offsetShapes) {
+            // Test offset shapes for cut hit
+            for (const shape of cut.offset.offsetShapes) {
                 if (HitTestUtils.isPointNearShape(point, shape, hitTolerance)) {
                     return {
-                        type: HitTestType.PATH,
-                        id: path.id,
+                        type: HitTestType.CUT,
+                        id: cut.id,
                         distance: hitTolerance,
                         point,
-                        metadata: { pathId: path.id },
+                        metadata: { cutId: cut.id },
                     };
                 }
             }
         }
 
         // Then test for endpoint hits
-        for (const path of enabledPaths) {
-            // Get the chain for this path
-            const chain = state.chains.find((c) => c.id === path.chainId);
+        for (const cut of enabledCuts) {
+            // Get the chain for this cut
+            const chain = state.chains.find((c) => c.id === cut.chainId);
             if (!chain || chain.shapes.length === 0) continue;
 
             // Use offset shapes if they exist, otherwise use original chain shapes
             const shapesToUse =
-                path.offset && path.offset.offsetShapes.length > 0
-                    ? path.offset.offsetShapes
+                cut.offset && cut.offset.offsetShapes.length > 0
+                    ? cut.offset.offsetShapes
                     : chain.shapes;
 
-            // Check if point is near path endpoint
+            // Check if point is near cut endpoint
             const firstShape = shapesToUse[0];
             const lastShape = shapesToUse[shapesToUse.length - 1];
 
@@ -347,8 +347,8 @@ export class PathRenderer extends BaseRenderer {
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance <= hitTolerance) {
                         return {
-                            type: HitTestType.PATH,
-                            id: path.id,
+                            type: HitTestType.CUT,
+                            id: cut.id,
                             distance,
                             point: startPoint,
                             metadata: { endpoint: 'start' },
@@ -365,8 +365,8 @@ export class PathRenderer extends BaseRenderer {
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     if (distance <= hitTolerance) {
                         return {
-                            type: HitTestType.PATH,
-                            id: path.id,
+                            type: HitTestType.CUT,
+                            id: cut.id,
                             distance,
                             point: endPoint,
                             metadata: { endpoint: 'end' },

@@ -6,7 +6,7 @@ import {
     type Lead,
 } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import { getShapePoints } from '$lib/geometry/shape';
 import {
@@ -29,14 +29,14 @@ import {
 import type { LeadResult } from '$lib/algorithms/leads/interfaces';
 
 /**
- * Convert a Path from the path store to a ToolPath for G-code generation.
+ * Convert a Cut from the cut store to a ToolPath for G-code generation.
  * Uses simulation's validated geometry resolution approach:
- * 1. path.cutChain?.shapes (preferred - execution-ordered shapes)
- * 2. path.calculatedOffset?.offsetShapes (fallback - offset geometry)
+ * 1. cut.cutChain?.shapes (preferred - execution-ordered shapes)
+ * 2. cut.calculatedOffset?.offsetShapes (fallback - offset geometry)
  * 3. originalShapes (final fallback)
  */
-export async function pathToToolPath(
-    path: Path,
+export async function cutToToolPath(
+    cut: Cut,
     originalShapes: Shape[],
     tools: Tool[],
     chainMap?: Map<string, Chain>,
@@ -47,11 +47,11 @@ export async function pathToToolPath(
     let shapesToUse: Shape[];
 
     // First priority: Use execution chain if available (contains shapes in correct execution order)
-    if (path.cutChain && path.cutChain.shapes.length > 0) {
-        shapesToUse = path.cutChain.shapes;
+    if (cut.cutChain && cut.cutChain.shapes.length > 0) {
+        shapesToUse = cut.cutChain.shapes;
     } else {
         // Second priority: Use offset shapes if available, otherwise fall back to original
-        shapesToUse = path.offset?.offsetShapes || originalShapes;
+        shapesToUse = cut.offset?.offsetShapes || originalShapes;
     }
 
     // Determine if we can use native shape commands early
@@ -99,8 +99,8 @@ export async function pathToToolPath(
     let leadIn: Lead | undefined;
 
     // First check for existing calculatedLeadIn (backward compatibility)
-    if (path.leadIn) {
-        const cachedLeadInPoints = convertLeadGeometryToPoints(path.leadIn);
+    if (cut.leadIn) {
+        const cachedLeadInPoints = convertLeadGeometryToPoints(cut.leadIn);
         // Check if lead is valid (not zero-length line)
         const isZeroLengthLine =
             cachedLeadInPoints.length === 2 &&
@@ -111,34 +111,34 @@ export async function pathToToolPath(
                 // Using offset geometry - verify lead connects to first point
                 const leadEnd: Point2D =
                     cachedLeadInPoints[cachedLeadInPoints.length - 1];
-                const pathStart: Point2D = points[0];
+                const cutStart: Point2D = points[0];
                 const tolerance: number = 0.1; // Allow small tolerance for connection
 
                 if (
-                    Math.abs(leadEnd.x - pathStart.x) <= tolerance &&
-                    Math.abs(leadEnd.y - pathStart.y) <= tolerance
+                    Math.abs(leadEnd.x - cutStart.x) <= tolerance &&
+                    Math.abs(leadEnd.y - cutStart.y) <= tolerance
                 ) {
-                    leadIn = convertLeadGeometryToPoints(path.leadIn);
+                    leadIn = convertLeadGeometryToPoints(cut.leadIn);
                 } else {
                     console.warn(
-                        `Cached lead-in doesn't connect to offset path for path ${path.id}. Lead connects to (${leadEnd.x}, ${leadEnd.y}) but path starts at (${pathStart.x}, ${pathStart.y})`
+                        `Cached lead-in doesn't connect to offset cut for cut ${cut.id}. Lead connects to (${leadEnd.x}, ${leadEnd.y}) but cut starts at (${cutStart.x}, ${cutStart.y})`
                     );
                     leadIn = undefined; // Don't use disconnected lead
                 }
             } else {
-                leadIn = convertLeadGeometryToPoints(path.leadIn);
+                leadIn = convertLeadGeometryToPoints(cut.leadIn);
             }
         }
     }
     // If no calculatedLeadIn, try simulation's approach with leadInConfig
     else if (
-        path.leadInConfig &&
-        path.leadInConfig.type !== LeadType.NONE &&
-        path.leadInConfig.length > 0
+        cut.leadInConfig &&
+        cut.leadInConfig.type !== LeadType.NONE &&
+        cut.leadInConfig.length > 0
     ) {
         // First try to use cached lead geometry (simulation's approach)
-        if (hasValidCachedLeads(path)) {
-            const cached: LeadResult = getCachedLeadGeometry(path);
+        if (hasValidCachedLeads(cut)) {
+            const cached: LeadResult = getCachedLeadGeometry(cut);
             if (cached.leadIn) {
                 const cachedLeadInPoints = convertLeadGeometryToPoints(
                     cached.leadIn
@@ -152,17 +152,17 @@ export async function pathToToolPath(
                     // Verify cached lead connects properly to current geometry
                     const leadEnd: Point2D =
                         cachedLeadInPoints[cachedLeadInPoints.length - 1];
-                    const pathStart: Point2D = points[0];
+                    const cutStart: Point2D = points[0];
                     const tolerance: number = 0.1;
 
                     if (
-                        Math.abs(leadEnd.x - pathStart.x) <= tolerance &&
-                        Math.abs(leadEnd.y - pathStart.y) <= tolerance
+                        Math.abs(leadEnd.x - cutStart.x) <= tolerance &&
+                        Math.abs(leadEnd.y - cutStart.y) <= tolerance
                     ) {
                         leadIn = convertLeadGeometryToPoints(cached.leadIn);
                     } else {
                         console.warn(
-                            `Cached lead-in doesn't connect to current geometry for path ${path.id}`
+                            `Cached lead-in doesn't connect to current geometry for cut ${cut.id}`
                         );
                         leadIn = undefined; // Will trigger recalculation below
                     }
@@ -173,7 +173,7 @@ export async function pathToToolPath(
         // Fallback to calculating if no valid cache (simulation's approach)
         if (!leadIn) {
             const leadInPoints = await calculateLeadPoints(
-                path,
+                cut,
                 chainMap,
                 partMap,
                 'leadIn'
@@ -188,8 +188,8 @@ export async function pathToToolPath(
     let leadOut: Lead | undefined;
 
     // First check for existing calculatedLeadOut (backward compatibility)
-    if (path.leadOut) {
-        const cachedLeadOutPoints = convertLeadGeometryToPoints(path.leadOut);
+    if (cut.leadOut) {
+        const cachedLeadOutPoints = convertLeadGeometryToPoints(cut.leadOut);
         // Check if lead is valid (not zero-length line)
         const isZeroLengthLine =
             cachedLeadOutPoints.length === 2 &&
@@ -199,34 +199,34 @@ export async function pathToToolPath(
             if (shapesToUse !== originalShapes && points.length > 0) {
                 // Using offset geometry - verify lead connects to last point
                 const leadStart: Point2D = cachedLeadOutPoints[0];
-                const pathEnd: Point2D = points[points.length - 1];
+                const cutEnd: Point2D = points[points.length - 1];
                 const tolerance: number = 0.1; // Allow small tolerance for connection
 
                 if (
-                    Math.abs(leadStart.x - pathEnd.x) <= tolerance &&
-                    Math.abs(leadStart.y - pathEnd.y) <= tolerance
+                    Math.abs(leadStart.x - cutEnd.x) <= tolerance &&
+                    Math.abs(leadStart.y - cutEnd.y) <= tolerance
                 ) {
-                    leadOut = convertLeadGeometryToPoints(path.leadOut);
+                    leadOut = convertLeadGeometryToPoints(cut.leadOut);
                 } else {
                     console.warn(
-                        `Cached lead-out doesn't connect to offset path for path ${path.id}. Lead connects to (${leadStart.x}, ${leadStart.y}) but path ends at (${pathEnd.x}, ${pathEnd.y})`
+                        `Cached lead-out doesn't connect to offset cut for cut ${cut.id}. Lead connects to (${leadStart.x}, ${leadStart.y}) but cut ends at (${cutEnd.x}, ${cutEnd.y})`
                     );
                     leadOut = undefined; // Don't use disconnected lead
                 }
             } else {
-                leadOut = convertLeadGeometryToPoints(path.leadOut);
+                leadOut = convertLeadGeometryToPoints(cut.leadOut);
             }
         }
     }
     // If no calculatedLeadOut, try simulation's approach with leadOutConfig
     else if (
-        path.leadOutConfig &&
-        path.leadOutConfig.type !== LeadType.NONE &&
-        path.leadOutConfig.length > 0
+        cut.leadOutConfig &&
+        cut.leadOutConfig.type !== LeadType.NONE &&
+        cut.leadOutConfig.length > 0
     ) {
         // First try to use cached lead geometry (simulation's approach)
-        if (hasValidCachedLeads(path)) {
-            const cached = getCachedLeadGeometry(path);
+        if (hasValidCachedLeads(cut)) {
+            const cached = getCachedLeadGeometry(cut);
             if (cached.leadOut) {
                 const cachedLeadOutPoints = convertLeadGeometryToPoints(
                     cached.leadOut
@@ -239,17 +239,17 @@ export async function pathToToolPath(
                 if (cachedLeadOutPoints.length > 0 && !isZeroLengthLine) {
                     // Verify cached lead connects properly to current geometry
                     const leadStart: Point2D = cachedLeadOutPoints[0];
-                    const pathEnd: Point2D = points[points.length - 1];
+                    const cutEnd: Point2D = points[points.length - 1];
                     const tolerance: number = 0.1;
 
                     if (
-                        Math.abs(leadStart.x - pathEnd.x) <= tolerance &&
-                        Math.abs(leadStart.y - pathEnd.y) <= tolerance
+                        Math.abs(leadStart.x - cutEnd.x) <= tolerance &&
+                        Math.abs(leadStart.y - cutEnd.y) <= tolerance
                     ) {
                         leadOut = convertLeadGeometryToPoints(cached.leadOut);
                     } else {
                         console.warn(
-                            `Cached lead-out doesn't connect to current geometry for path ${path.id}`
+                            `Cached lead-out doesn't connect to current geometry for cut ${cut.id}`
                         );
                         leadOut = undefined; // Will trigger recalculation below
                     }
@@ -260,7 +260,7 @@ export async function pathToToolPath(
         // Fallback to calculating if no valid cache (simulation's approach)
         if (!leadOut) {
             const leadOutPoints = await calculateLeadPoints(
-                path,
+                cut,
                 chainMap,
                 partMap,
                 'leadOut'
@@ -272,15 +272,15 @@ export async function pathToToolPath(
     }
 
     // Build cutting parameters from tool settings
-    const tool = path.toolId ? tools.find((t) => t.id === path.toolId) : null;
+    const tool = cut.toolId ? tools.find((t) => t.id === cut.toolId) : null;
     const parameters: CutPath['parameters'] = {
         feedRate: tool?.feedRate || DEFAULT_FEED_RATE_MM,
         pierceHeight: tool?.pierceHeight || DEFAULT_PIERCE_HEIGHT_MM,
         pierceDelay: tool?.pierceDelay || DEFAULT_PIERCE_DELAY,
         cutHeight: tool?.cutHeight || DEFAULT_CUT_HEIGHT_MM,
         kerf: tool?.kerfWidth || 0,
-        isHole: path.isHole || false,
-        holeUnderspeedPercent: path.holeUnderspeedPercent,
+        isHole: cut.isHole || false,
+        holeUnderspeedPercent: cut.holeUnderspeedPercent,
     };
 
     // Set originalShape for native command generation
@@ -289,24 +289,24 @@ export async function pathToToolPath(
         : undefined;
 
     return {
-        id: path.id,
-        shapeId: path.chainId, // Use chainId as the shape reference
+        id: cut.id,
+        shapeId: cut.chainId, // Use chainId as the shape reference
         points,
         leadIn,
         leadOut,
         isRapid: false,
         parameters,
         originalShape,
-        executionClockwise: path.executionClockwise,
+        executionClockwise: cut.executionClockwise,
     };
 }
 
 /**
- * Convert multiple Paths to ToolPaths, preserving cut order
+ * Convert multiple Cuts to ToolPaths, preserving cut order
  * Uses simulation's validated approach for geometry resolution
  */
-export async function pathsToToolPaths(
-    paths: Path[],
+export async function cutsToToolPaths(
+    cuts: Cut[],
     chainShapes: Map<string, Shape[]>,
     tools: Tool[],
     chainMap?: Map<string, Chain>,
@@ -314,19 +314,19 @@ export async function pathsToToolPaths(
 ): Promise<CutPath[]> {
     const toolPaths: CutPath[] = [];
 
-    // Sort paths by their order field
-    const sortedPaths: Path[] = [...paths].sort((a, b) => a.order - b.order);
+    // Sort cuts by their order field
+    const sortedCuts: Cut[] = [...cuts].sort((a, b) => a.order - b.order);
 
-    for (const path of sortedPaths) {
-        if (!path.enabled) continue;
+    for (const cut of sortedCuts) {
+        if (!cut.enabled) continue;
 
         const originalShapes: Shape[] | undefined = chainShapes.get(
-            path.chainId
+            cut.chainId
         );
         if (!originalShapes) continue;
 
-        const toolPath: CutPath = await pathToToolPath(
-            path,
+        const toolPath: CutPath = await cutToToolPath(
+            cut,
             originalShapes,
             tools,
             chainMap,
@@ -340,7 +340,7 @@ export async function pathsToToolPaths(
     for (let i: number = 0; i < toolPaths.length; i++) {
         toolPathsWithRapids.push(toolPaths[i]);
 
-        // Add rapid to next path start if not the last path
+        // Add rapid to next cut start if not the last cut
         if (i < toolPaths.length - 1) {
             const currentEnd: Point2D =
                 toolPaths[i].points[toolPaths[i].points.length - 1];
@@ -362,10 +362,12 @@ export async function pathsToToolPaths(
                     points: [currentEnd, nextStart],
                     isRapid: true,
                     parameters: undefined,
-                });
+                } as CutPath);
             }
         }
     }
 
     return toolPathsWithRapids;
 }
+
+// Removed backward compatibility exports - use cutToToolPath and cutsToToolPaths directly

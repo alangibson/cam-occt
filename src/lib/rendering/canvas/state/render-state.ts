@@ -6,7 +6,7 @@ import type { Drawing, Shape, Point2D } from '$lib/types';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut, CutsState } from '$lib/stores/cuts/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
 import { Unit } from '$lib/utils/units';
@@ -34,8 +34,8 @@ export interface SelectionState {
     selectedPartId: string | null;
     highlightedPartId: string | null;
     hoveredPartId: string | null;
-    selectedPathId: string | null;
-    highlightedPathId: string | null;
+    selectedCutId: string | null;
+    highlightedCutId: string | null;
     selectedRapidId: string | null;
     highlightedRapidId: string | null;
 }
@@ -46,9 +46,8 @@ export interface SelectionState {
 export interface HoverState {
     hoveredChain: string | null;
     hoveredPart: string | null;
-    hoveredPath: string | null;
+    hoveredCut: string | null;
     hoveredRapid: string | null;
-    highlightedPathId: string | null;
     mousePosition: Point2D | null;
 }
 
@@ -58,7 +57,7 @@ export interface HoverState {
 export interface VisibilityState {
     layerVisibility: Record<string, boolean>;
     showRapids: boolean;
-    showPaths: boolean;
+    showCuts: boolean;
     showChains: boolean;
     showParts: boolean;
     showOverlays: boolean;
@@ -113,10 +112,10 @@ export interface RenderState {
     // Part detection results
     parts: DetectedPart[];
 
-    // Path data
-    paths: Path[];
-    pathsState: { paths: Path[] } | null;
-    chainsWithPaths: string[]; // Chain IDs that have paths
+    // Cut data
+    cuts: Cut[];
+    cutsState: CutsState | null;
+    chainsWithCuts: string[]; // Chain IDs that have cuts
 
     // Operations
     operations: Operation[];
@@ -130,8 +129,8 @@ export interface RenderState {
 
     // Interaction settings
     respectLayerVisibility: boolean;
-    interactionMode: 'shapes' | 'chains' | 'paths';
-    selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'path';
+    interactionMode: 'shapes' | 'chains' | 'cuts';
+    selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'cut';
 }
 
 /**
@@ -156,23 +155,22 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             selectedPartId: null,
             highlightedPartId: null,
             hoveredPartId: null,
-            selectedPathId: null,
-            highlightedPathId: null,
+            selectedCutId: null,
+            highlightedCutId: null,
             selectedRapidId: null,
             highlightedRapidId: null,
         },
         hover: {
             hoveredChain: null,
             hoveredPart: null,
-            hoveredPath: null,
+            hoveredCut: null,
             hoveredRapid: null,
-            highlightedPathId: null,
             mousePosition: null,
         },
         visibility: {
             layerVisibility: {},
             showRapids: true,
-            showPaths: true,
+            showCuts: true,
             showChains: true,
             showParts: true,
             showOverlays: true,
@@ -191,9 +189,9 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
         displayUnit: Unit.MM,
         chains: [],
         parts: [],
-        paths: [],
-        pathsState: null,
-        chainsWithPaths: [],
+        cuts: [],
+        cutsState: null,
+        chainsWithCuts: [],
         operations: [],
         rapids: [],
         overlays: {
@@ -248,11 +246,15 @@ export function cloneRenderState(state: RenderState): RenderState {
         },
         chains: [...state.chains],
         parts: [...state.parts],
-        paths: [...state.paths],
-        pathsState: state.pathsState
-            ? { paths: [...state.pathsState.paths] }
+        cuts: [...state.cuts],
+        cutsState: state.cutsState
+            ? {
+                  cuts: [...state.cutsState.cuts],
+                  selectedCutId: state.cutsState.selectedCutId,
+                  highlightedCutId: state.cutsState.highlightedCutId,
+              }
             : null,
-        chainsWithPaths: [...state.chainsWithPaths],
+        chainsWithCuts: [...state.chainsWithCuts],
         operations: [...state.operations],
         rapids: [...state.rapids],
         overlays: Object.keys(state.overlays).reduce(

@@ -2,11 +2,11 @@ import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D, Shape } from '$lib/types';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
-import { isPathEnabledForRendering } from '$lib/rendering/canvas/utils/renderer-utils';
+import { sampleShapesAtDistanceIntervals } from '$lib/geometry/shape/functions';
+import { isCutEnabledForRendering } from '$lib/rendering/canvas/utils/renderer-utils';
 import { drawChevronArrow } from '$lib/rendering/canvas/utils/chevron-drawing';
 
 /**
@@ -20,7 +20,7 @@ const CHEVRON_SPACING_UNITS: number = 10;
 const CHEVRON_SIZE_PX = 8;
 
 /**
- * ChevronRenderer handles rendering of direction arrows along paths
+ * ChevronRenderer handles rendering of direction arrows along cuts
  */
 export class ChevronRenderer extends BaseRenderer {
     constructor(coordinator: CoordinateTransformer) {
@@ -28,46 +28,46 @@ export class ChevronRenderer extends BaseRenderer {
     }
 
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        if (!state.pathsState || state.pathsState.paths.length === 0) {
+        if (!state.cutsState || state.cutsState.cuts.length === 0) {
             return;
         }
 
-        this.drawPathChevrons(ctx, state);
+        this.drawCutChevrons(ctx, state);
     }
 
     /**
-     * Draw chevron arrows along paths to show cut direction
+     * Draw chevron arrows along cuts to show cut direction
      */
-    private drawPathChevrons(
+    private drawCutChevrons(
         ctx: CanvasRenderingContext2D,
         state: RenderState
     ): void {
-        if (!state.pathsState || state.pathsState.paths.length === 0) return;
+        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
 
-        state.pathsState.paths.forEach((path: Path) => {
-            // Only draw chevrons for enabled paths with enabled operations
-            if (!isPathEnabledForRendering(path, state)) {
+        state.cutsState.cuts.forEach((cut: Cut) => {
+            // Only draw chevrons for enabled cuts with enabled operations
+            if (!isCutEnabledForRendering(cut, state)) {
                 return;
             }
 
             let shapesToSample: Shape[] = [];
 
             // Use execution chain if available (contains shapes in correct execution order)
-            if (path.cutChain && path.cutChain.shapes.length > 0) {
-                shapesToSample = path.cutChain.shapes;
+            if (cut.cutChain && cut.cutChain.shapes.length > 0) {
+                shapesToSample = cut.cutChain.shapes;
             } else {
                 // Fallback to original shapes for backward compatibility
                 // IMPORTANT: Don't manually apply cut direction here - it conflicts with stored chain direction
                 if (
-                    path.offset &&
-                    path.offset.offsetShapes &&
-                    path.offset.offsetShapes.length > 0
+                    cut.offset &&
+                    cut.offset.offsetShapes &&
+                    cut.offset.offsetShapes.length > 0
                 ) {
-                    shapesToSample = path.offset.offsetShapes;
+                    shapesToSample = cut.offset.offsetShapes;
                 } else {
-                    // Get the chain for this path and use original shapes
+                    // Get the chain for this cut and use original shapes
                     const chain = state.chains.find(
-                        (c) => c.id === path.chainId
+                        (c) => c.id === cut.chainId
                     );
                     if (!chain || chain.shapes.length === 0) {
                         return;
@@ -78,7 +78,7 @@ export class ChevronRenderer extends BaseRenderer {
             }
 
             // Use the new utility to sample at regular distance intervals
-            const chevronSamples = samplePathAtDistanceIntervals(
+            const chevronSamples = sampleShapesAtDistanceIntervals(
                 shapesToSample,
                 CHEVRON_SPACING_UNITS
             );

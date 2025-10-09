@@ -8,7 +8,7 @@
 export enum InteractionMode {
     SHAPES = 'shapes',
     CHAINS = 'chains',
-    PATHS = 'paths',
+    CUTS = 'cuts',
 }
 
 /**
@@ -43,8 +43,8 @@ export function getInteractionModeLabel(mode: InteractionMode): string {
             return 'Shapes';
         case InteractionMode.CHAINS:
             return 'Chains';
-        case InteractionMode.PATHS:
-            return 'Paths';
+        case InteractionMode.CUTS:
+            return 'Cuts';
         default:
             return mode;
     }

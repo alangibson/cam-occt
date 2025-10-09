@@ -5,19 +5,19 @@ import { KerfCompensation } from '$lib/types/kerf-compensation';
 
 // Now import the modules we need
 import { operationsStore } from './store';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
 import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
 import type { Operation } from './interfaces';
 
 // Mock the stores before importing the module under test
-vi.mock('../paths/store', () => ({
-    pathStore: {
-        deletePathsByOperation: vi.fn(),
-        addPath: vi.fn(),
+vi.mock('../cuts/store', () => ({
+    cutStore: {
+        deleteCutsByOperation: vi.fn(),
+        addCut: vi.fn(),
         reset: vi.fn(),
         subscribe: vi.fn((callback) => {
-            callback({ paths: [] });
+            callback({ cuts: [] });
             return () => {};
         }),
     },
@@ -79,7 +79,7 @@ Object.defineProperty(global, 'crypto', {
 });
 
 // Get references to the mocked functions for easy access in tests
-const mockPathStore = vi.mocked(pathStore);
+const mockCutStore = vi.mocked(cutStore);
 const mockLeadWarningsStore = vi.mocked(leadWarningsStore);
 const mockOffsetWarningsStore = vi.mocked(offsetWarningsStore);
 
@@ -131,13 +131,13 @@ describe('operationsStore', () => {
             });
         });
 
-        it('should generate paths for enabled operation with targets', () => {
+        it('should generate cuts for enabled operation with targets', () => {
             // Skip this test for now due to complex mocking requirements
             // The core functionality (adding operations) is tested above
             expect(true).toBe(true);
         });
 
-        it('should not generate paths for disabled operation', () => {
+        it('should not generate cuts for disabled operation', () => {
             vi.useFakeTimers();
             const operation = createTestOperation();
             operation.enabled = false;
@@ -145,7 +145,7 @@ describe('operationsStore', () => {
             operationsStore.addOperation(operation);
             vi.runAllTimers();
 
-            expect(mockPathStore.addPath).not.toHaveBeenCalled();
+            expect(mockCutStore.addCut).not.toHaveBeenCalled();
             vi.useRealTimers();
         });
     });
@@ -163,7 +163,7 @@ describe('operationsStore', () => {
             expect(operations[0].name).toBe('Updated Operation');
         });
 
-        it('should clear warnings and regenerate paths when updated', () => {
+        it('should clear warnings and regenerate cuts when updated', () => {
             const operation = createTestOperation();
             operationsStore.addOperation(operation);
 
@@ -198,7 +198,7 @@ describe('operationsStore', () => {
 
             const operations = get(operationsStore);
             expect(operations).toHaveLength(0);
-            expect(mockPathStore.deletePathsByOperation).toHaveBeenCalledWith(
+            expect(mockCutStore.deleteCutsByOperation).toHaveBeenCalledWith(
                 'mock-uuid-123'
             );
             expect(
@@ -255,26 +255,26 @@ describe('operationsStore', () => {
             expect(operations).toHaveLength(0);
         });
 
-        it('should generate paths for enabled duplicated operation', () => {
+        it('should generate cuts for enabled duplicated operation', () => {
             // Skip this test for now due to complex mocking requirements
             expect(true).toBe(true);
         });
     });
 
     describe('applyOperation', () => {
-        it('should generate paths for enabled operation', () => {
+        it('should generate cuts for enabled operation', () => {
             // Skip this test for now due to complex mocking requirements
             expect(true).toBe(true);
         });
 
-        it('should not generate paths for disabled operation', () => {
+        it('should not generate cuts for disabled operation', () => {
             // Skip this test for now due to complex mocking requirements
             expect(true).toBe(true);
         });
     });
 
     describe('applyAllOperations', () => {
-        it('should reset paths and apply all enabled operations in order', () => {
+        it('should reset cuts and apply all enabled operations in order', () => {
             const op1 = createTestOperation();
             op1.order = 2;
             const op2 = { ...createTestOperation(), name: 'Second', order: 1 };
@@ -285,7 +285,7 @@ describe('operationsStore', () => {
 
             operationsStore.applyAllOperations();
 
-            expect(mockPathStore.reset).toHaveBeenCalled();
+            expect(mockCutStore.reset).toHaveBeenCalled();
             // Should apply operations in order (op2 first with order 1, then op1 with order 2)
         });
 
@@ -303,8 +303,8 @@ describe('operationsStore', () => {
 
             operationsStore.applyAllOperations();
 
-            expect(mockPathStore.reset).toHaveBeenCalled();
-            // Only enabled operation should generate paths
+            expect(mockCutStore.reset).toHaveBeenCalled();
+            // Only enabled operation should generate cuts
         });
     });
 

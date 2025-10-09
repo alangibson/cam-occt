@@ -72,7 +72,7 @@ export function getStageDescription(stage: WorkflowStage): string {
         case WorkflowStage.PREPARE:
             return 'Analyze chains and detect parts';
         case WorkflowStage.PROGRAM:
-            return 'Build tool paths with cut parameters';
+            return 'Build cuts with cut parameters';
         case WorkflowStage.SIMULATE:
             return 'Simulate cutting process';
         case WorkflowStage.EXPORT:

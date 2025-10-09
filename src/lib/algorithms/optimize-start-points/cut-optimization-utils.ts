@@ -1,4 +1,4 @@
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
     type Arc,
@@ -24,36 +24,36 @@ import { calculateMidpoint } from '$lib/geometry/point/functions';
 import { calculateArcMidpointAngle } from '$lib/geometry/arc/functions';
 
 /**
- * Find the nearest path from a current point
+ * Find the nearest cut from a current point
  * Extracted from optimize-cut-order.ts to eliminate duplication
  */
-export function findNearestPath(
+export function findNearestCut(
     currentPoint: Point2D,
-    pathsToSearch: Path[],
+    cutsToSearch: Cut[],
     chains: Map<string, Chain>,
-    unvisited: Set<Path>,
+    unvisited: Set<Cut>,
     findPartForChain: (chainId: string) => DetectedPart | undefined
-): { path: Path | null; distance: number } {
-    let nearestPath: Path | null = null;
+): { cut: Cut | null; distance: number } {
+    let nearestCut: Cut | null = null;
     let nearestDistance = Infinity;
 
-    for (const path of pathsToSearch) {
-        if (!unvisited.has(path)) continue;
+    for (const cut of cutsToSearch) {
+        if (!unvisited.has(cut)) continue;
 
-        const chain = chains.get(path.chainId);
+        const chain = chains.get(cut.chainId);
         if (!chain) continue;
 
-        const part = findPartForChain(path.chainId);
-        const startPoint = getPathStartPoint(path, chain, part);
+        const part = findPartForChain(cut.chainId);
+        const startPoint = getCutStartPoint(cut, chain, part);
         const dist = calculateDistance(currentPoint, startPoint);
 
         if (dist < nearestDistance) {
             nearestDistance = dist;
-            nearestPath = path;
+            nearestCut = cut;
         }
     }
 
-    return { path: nearestPath, distance: nearestDistance };
+    return { cut: nearestCut, distance: nearestDistance };
 }
 
 /**
@@ -68,7 +68,7 @@ export function calculateDistance(p1: Point2D, p2: Point2D): number {
  * Helper function to prepare lead calculation chain and configs
  */
 export function prepareChainsAndLeadConfigs(
-    path: Path,
+    cut: Cut,
     chain: Chain
 ): {
     leadCalculationChain: Chain;
@@ -77,49 +77,49 @@ export function prepareChainsAndLeadConfigs(
 } {
     // Use offset geometry for lead calculation if available
     let leadCalculationChain: Chain = chain;
-    if (path.offset && path.offset.offsetShapes.length > 0) {
+    if (cut.offset && cut.offset.offsetShapes.length > 0) {
         // Create a temporary chain from offset shapes
         // IMPORTANT: Preserve the clockwise property from the original chain
         // to maintain consistent normal direction calculation
         // Also preserve originalChainId for part context lookup
         leadCalculationChain = {
             id: chain.id + '_offset_temp',
-            shapes: path.offset.offsetShapes,
+            shapes: cut.offset.offsetShapes,
             clockwise: chain.clockwise,
             originalChainId: chain.id,
         };
     }
 
-    const leadInConfig = createLeadInConfig(path);
-    const leadOutConfig = createLeadOutConfig(path);
+    const leadInConfig = createLeadInConfig(cut);
+    const leadOutConfig = createLeadOutConfig(cut);
 
     return { leadCalculationChain, leadInConfig, leadOutConfig };
 }
 
 /**
- * Get the effective start point of a path, accounting for lead-in geometry and offset
+ * Get the effective start point of a cut, accounting for lead-in geometry and offset
  * Extracted from optimize-cut-order.ts to eliminate duplication
  */
-export function getPathStartPoint(
-    path: Path,
+export function getCutStartPoint(
+    cut: Cut,
     chain: Chain,
     part?: DetectedPart
 ): Point2D {
-    // Check if path has lead-in
+    // Check if cut has lead-in
     if (
-        path.leadInConfig &&
-        path.leadInConfig.type !== 'none' &&
-        path.leadInConfig.length > 0
+        cut.leadInConfig &&
+        cut.leadInConfig.type !== 'none' &&
+        cut.leadInConfig.length > 0
     ) {
         try {
             const { leadCalculationChain, leadInConfig, leadOutConfig } =
-                prepareChainsAndLeadConfigs(path, chain);
+                prepareChainsAndLeadConfigs(cut, chain);
 
             const leadResult = calculateLeads(
                 leadCalculationChain,
                 leadInConfig,
                 leadOutConfig,
-                path.cutDirection,
+                cut.cutDirection,
                 part
             );
 
@@ -132,18 +132,18 @@ export function getPathStartPoint(
             }
         } catch (error) {
             console.warn(
-                'Failed to calculate lead-in for path:',
-                path.name,
+                'Failed to calculate lead-in for cut:',
+                cut.name,
                 error
             );
         }
     }
 
     // Fallback to chain start point (use offset if available)
-    if (path.offset && path.offset.offsetShapes.length > 0) {
+    if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
-            shapes: path.offset.offsetShapes,
+            shapes: cut.offset.offsetShapes,
             clockwise: chain.clockwise,
             originalChainId: chain.id,
         };
@@ -154,13 +154,13 @@ export function getPathStartPoint(
 }
 
 /**
- * Get the effective start point of a path's chain, using offset geometry if available
+ * Get the effective start point of a cut's chain, using offset geometry if available
  */
-export function getPathChainStartPoint(path: Path, chain: Chain): Point2D {
-    if (path.offset && path.offset.offsetShapes.length > 0) {
+export function getCutChainStartPoint(cut: Cut, chain: Chain): Point2D {
+    if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
-            shapes: path.offset.offsetShapes,
+            shapes: cut.offset.offsetShapes,
             clockwise: chain.clockwise,
             originalChainId: chain.id,
         };
@@ -171,13 +171,13 @@ export function getPathChainStartPoint(path: Path, chain: Chain): Point2D {
 }
 
 /**
- * Get the effective end point of a path's chain, using offset geometry if available
+ * Get the effective end point of a cut's chain, using offset geometry if available
  */
-export function getPathChainEndPoint(path: Path, chain: Chain): Point2D {
-    if (path.offset && path.offset.offsetShapes.length > 0) {
+export function getCutChainEndPoint(cut: Cut, chain: Chain): Point2D {
+    if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
             id: chain.id + '_offset_temp',
-            shapes: path.offset.offsetShapes,
+            shapes: cut.offset.offsetShapes,
             clockwise: chain.clockwise,
             originalChainId: chain.id,
         };

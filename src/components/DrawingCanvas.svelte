@@ -3,7 +3,7 @@
     import { drawingStore } from '$lib/stores/drawing/store';
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
-    import { pathStore } from '$lib/stores/paths/store';
+    import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { tessellationStore } from '$lib/stores/tessellation/store';
     import { overlayStore } from '$lib/stores/overlay/store';
@@ -58,30 +58,30 @@
     $: highlightedPartId = $partStore.highlightedPartId;
     $: hoveredPartId = $partStore.hoveredPartId;
     $: selectedPartId = $partStore.selectedPartId;
-    $: pathsState = $pathStore;
+    $: cutsState = $cutStore;
     $: operations = $operationsStore;
-    // Only show chains as having paths if their associated operations are enabled
-    $: chainsWithPaths =
-        pathsState && operations
+    // Only show chains as having cuts if their associated operations are enabled
+    $: chainsWithCuts =
+        cutsState && operations
             ? [
                   ...new Set(
-                      pathsState.paths
-                          .filter((path) => {
-                              // Find the operation for this path
+                      cutsState.cuts
+                          .filter((cut) => {
+                              // Find the operation for this cut
                               const operation = operations.find(
-                                  (op) => op.id === path.operationId
+                                  (op) => op.id === cut.operationId
                               );
-                              // Only include path if operation exists and is enabled
+                              // Only include cut if operation exists and is enabled
                               return (
-                                  operation && operation.enabled && path.enabled
+                                  operation && operation.enabled && cut.enabled
                               );
                           })
-                          .map((p) => p.chainId)
+                          .map((c) => c.chainId)
                   ),
               ]
             : [];
-    $: selectedPathId = pathsState?.selectedPathId;
-    $: highlightedPathId = pathsState?.highlightedPathId;
+    $: selectedCutId = cutsState?.selectedCutId;
+    $: highlightedCutId = cutsState?.highlightedCutId;
     $: tessellationState = $tessellationStore;
     $: overlayState = $overlayStore;
     $: currentOverlay = overlayState.overlays[currentStage];
@@ -112,8 +112,8 @@
             return 'chains';
         } else if (selectionMode === 'part') {
             return 'chains'; // Parts use chain interaction
-        } else if (selectionMode === 'path') {
-            return 'paths';
+        } else if (selectionMode === 'cut') {
+            return 'cuts';
         } else {
             // Auto mode: use stage-based interaction
             switch (currentStage) {
@@ -121,7 +121,7 @@
                 case WorkflowStage.PROGRAM:
                     return 'chains';
                 case WorkflowStage.SIMULATE:
-                    return 'paths';
+                    return 'cuts';
                 case WorkflowStage.EDIT:
                 default:
                     return 'shapes';
@@ -232,14 +232,14 @@
     }
 
     // Track offset calculation state changes
-    $: offsetCalculationHash = pathsState?.paths
-        ? pathsState.paths
-              .map((path) => ({
-                  id: path.id,
-                  hasOffset: !!path.offset,
-                  offsetHash: path.offset
+    $: offsetCalculationHash = cutsState?.cuts
+        ? cutsState.cuts
+              .map((cut) => ({
+                  id: cut.id,
+                  hasOffset: !!cut.offset,
+                  offsetHash: cut.offset
                       ? JSON.stringify(
-                            path.offset.offsetShapes?.map((s: Shape) => s.id) ||
+                            cut.offset.offsetShapes?.map((s: Shape) => s.id) ||
                                 []
                         )
                       : null,
@@ -281,8 +281,8 @@
                 highlightedChainId,
                 highlightedPartId,
                 selectedPartId,
-                selectedPathId,
-                highlightedPathId,
+                selectedCutId: selectedCutId,
+                highlightedCutId: highlightedCutId,
                 selectedRapidId,
                 highlightedRapidId,
                 selectedOffsetShape,
@@ -292,7 +292,7 @@
             visibility: {
                 layerVisibility: layerVisibility || {},
                 showRapids,
-                showPaths: true,
+                showCuts: true,
                 showChains: true,
                 showParts: true,
                 showOverlays: true,
@@ -311,13 +311,13 @@
         });
     }
 
-    // Path and operation changes
-    $: if (pathsState || operations || offsetCalculationHash) {
+    // Cut and operation changes
+    $: if (cutsState || operations || offsetCalculationHash) {
         renderingPipeline.updateState({
-            paths: pathsState?.paths || [],
-            pathsState: pathsState,
+            cuts: cutsState?.cuts || [],
+            cutsState: cutsState,
             operations: operations,
-            chainsWithPaths: chainsWithPaths,
+            chainsWithCuts: chainsWithCuts,
         });
     }
 
@@ -479,15 +479,15 @@
                         }
                         break;
 
-                    case HitTestType.PATH:
-                        // Handle path endpoint selection
-                        if (interactionMode === 'paths') {
-                            const pathId = hitResult.id;
-                            // Toggle path selection
-                            if (selectedPathId === pathId) {
-                                pathStore.selectPath(null); // Deselect if already selected
+                    case HitTestType.CUT:
+                        // Handle cut endpoint selection
+                        if (interactionMode === 'cuts') {
+                            const cutId = hitResult.id;
+                            // Toggle cut selection
+                            if (selectedCutId === cutId) {
+                                cutStore.selectCut(null); // Deselect if already selected
                             } else {
-                                pathStore.selectPath(pathId);
+                                cutStore.selectCut(cutId);
                             }
                             return;
                         }
@@ -516,7 +516,7 @@
                     const chainId = getShapeChainId(
                         shape.id,
                         chains,
-                        pathsState.paths
+                        cutsState.cuts
                     );
                     if (chainId) {
                         // When clicking on a shape outline, always prefer chain selection
@@ -547,30 +547,30 @@
                             onChainClick(chainId);
                         }
                     }
-                } else if (interactionMode === 'paths') {
-                    // Simulation mode - only allow path/rapid selection
+                } else if (interactionMode === 'cuts') {
+                    // Simulation mode - only allow cut/rapid selection
                     const chainId = getShapeChainId(
                         shape.id,
                         chains,
-                        pathsState.paths
+                        cutsState.cuts
                     );
 
-                    // Check if this chain has a path and handle path selection
-                    if (chainId && chainsWithPaths.includes(chainId)) {
-                        // Find the path for this chain
-                        const pathForChain = pathsState.paths.find(
-                            (p) => p.chainId === chainId
+                    // Check if this chain has a cut and handle cut selection
+                    if (chainId && chainsWithCuts.includes(chainId)) {
+                        // Find the cut for this chain
+                        const cutForChain = cutsState.cuts.find(
+                            (c) => c.chainId === chainId
                         );
-                        if (pathForChain) {
-                            // Handle path selection - don't select individual shapes
-                            if (selectedPathId === pathForChain.id) {
-                                pathStore.selectPath(null); // Deselect if already selected
+                        if (cutForChain) {
+                            // Handle cut selection - don't select individual shapes
+                            if (selectedCutId === cutForChain.id) {
+                                cutStore.selectCut(null); // Deselect if already selected
                             } else {
-                                pathStore.selectPath(pathForChain.id);
+                                cutStore.selectCut(cutForChain.id);
                             }
                         }
                     }
-                    // Don't select individual shapes in paths mode
+                    // Don't select individual shapes in cuts mode
                 }
             } else {
                 // Clicked in empty space - check for part selection in Program stage
@@ -585,8 +585,8 @@
                     chainStore.clearChainSelection();
                     partStore.clearHighlight();
                     partStore.selectPart(null);
-                    pathStore.selectPath(null);
-                    pathStore.clearHighlight();
+                    cutStore.selectCut(null);
+                    cutStore.clearHighlight();
                     selectRapid(null);
                     clearRapidHighlight();
                 }
@@ -662,15 +662,15 @@
                             } else if (interactionMode === 'chains') {
                                 // Program mode - show hover for chains (set to actual shape, rendering handles chain highlighting)
                                 hoveredShapeId = shape.id;
-                            } else if (interactionMode === 'paths') {
-                                // Simulation mode - only hover shapes that are part of selectable paths
+                            } else if (interactionMode === 'cuts') {
+                                // Simulation mode - only hover shapes that are part of selectable cuts
                                 const chainId = getShapeChainId(
                                     shape.id,
                                     chains
                                 );
                                 if (
                                     chainId &&
-                                    chainsWithPaths.includes(chainId)
+                                    chainsWithCuts.includes(chainId)
                                 ) {
                                     hoveredShapeId = shape.id;
                                 }

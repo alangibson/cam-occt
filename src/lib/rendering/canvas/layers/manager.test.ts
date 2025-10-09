@@ -56,7 +56,7 @@ describe('LayerManager', () => {
     it('should create layers from custom configurations', () => {
         const customConfigs = [
             { id: LayerId.SHAPES, zIndex: 1, visible: true },
-            { id: LayerId.PATHS, zIndex: 2, visible: false },
+            { id: LayerId.CUTS, zIndex: 2, visible: false },
         ];
 
         const customManager = new LayerManager(customConfigs);
@@ -64,7 +64,7 @@ describe('LayerManager', () => {
 
         expect(layers).toHaveLength(2);
         expect(customManager.getLayer(LayerId.SHAPES)).toBeDefined();
-        expect(customManager.getLayer(LayerId.PATHS)).toBeDefined();
+        expect(customManager.getLayer(LayerId.CUTS)).toBeDefined();
         expect(customManager.getLayer(LayerId.BACKGROUND)).toBeUndefined();
     });
 
@@ -138,15 +138,15 @@ describe('LayerManager', () => {
 
     describe('clearLayers', () => {
         it('should clear only specified layers', () => {
-            const layersToUdate = [LayerId.SHAPES, LayerId.PATHS];
+            const layersToUdate = [LayerId.SHAPES, LayerId.CUTS];
             layerManager.clearLayers(layersToUdate);
 
             const shapesLayer = layerManager.getLayer(LayerId.SHAPES);
-            const pathsLayer = layerManager.getLayer(LayerId.PATHS);
+            const cutsLayer = layerManager.getLayer(LayerId.CUTS);
             const backgroundLayer = layerManager.getLayer(LayerId.BACKGROUND);
 
             expect(shapesLayer!.clear).toHaveBeenCalled();
-            expect(pathsLayer!.clear).toHaveBeenCalled();
+            expect(cutsLayer!.clear).toHaveBeenCalled();
             expect(backgroundLayer!.clear).not.toHaveBeenCalled();
         });
     });

@@ -1,9 +1,9 @@
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { Arc, Line, Point2D, Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { pathToToolPath, pathsToToolPaths } from './path-to-toolpath';
+import { cutToToolPath, cutsToToolPaths } from './cut-to-toolpath';
 import { GeometryType, getShapePoints } from '$lib/geometry/shape';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
@@ -27,10 +27,10 @@ vi.mock('$lib/utils/lead-persistence-utils', () => ({
 
 const mockGetShapePoints = vi.mocked(getShapePoints);
 
-describe('pathToToolPath', () => {
-    const createMockPath = (overrides: Partial<Path> = {}): Path => ({
-        id: 'test-path',
-        name: 'Test Path',
+describe('cutToToolPath', () => {
+    const createMockCut = (overrides: Partial<Cut> = {}): Cut => ({
+        id: 'test-cut',
+        name: 'Test Cut',
         operationId: 'test-operation',
         chainId: 'test-chain',
         toolId: null,
@@ -61,9 +61,9 @@ describe('pathToToolPath', () => {
         vi.clearAllMocks();
     });
 
-    describe('basic path conversion', () => {
-        it('should convert path with original shapes', async () => {
-            const path = createMockPath({ toolId: 'test-tool-1' });
+    describe('basic cut conversion', () => {
+        it('should convert cut with original shapes', async () => {
+            const cut = createMockCut({ toolId: 'test-tool-1' });
             const shapes: Shape[] = [
                 createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
@@ -92,10 +92,10 @@ describe('pathToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathToToolPath(path, shapes, tools);
+            const result = await cutToToolPath(cut, shapes, tools);
 
             expect(result).toEqual({
-                id: 'test-path',
+                id: 'test-cut',
                 shapeId: 'test-chain',
                 points: [
                     { x: 0, y: 0 },
@@ -110,7 +110,7 @@ describe('pathToToolPath', () => {
                     pierceDelay: 1.0,
                     cutHeight: 1.5,
                     kerf: 1.5,
-                    // Lead lengths now come from path configs, not parameters
+                    // Lead lengths now come from cut configs, not parameters
                     isHole: false,
                     holeUnderspeedPercent: undefined,
                 },
@@ -119,7 +119,7 @@ describe('pathToToolPath', () => {
         });
 
         it('should use offset shapes when available', async () => {
-            const path = createMockPath({
+            const cut = createMockCut({
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -150,25 +150,25 @@ describe('pathToToolPath', () => {
                 { x: 11, y: 1 },
             ]);
 
-            const result = await pathToToolPath(path, originalShapes, []);
+            const result = await cutToToolPath(cut, originalShapes, []);
 
             expect(result.points).toEqual([
                 { x: 1, y: 1 },
                 { x: 11, y: 1 },
             ]);
             expect(mockGetShapePoints).toHaveBeenCalledWith(
-                path.offset!.offsetShapes[0],
+                cut.offset!.offsetShapes[0],
                 false
             );
         });
 
-        it('should use default parameters when path values are undefined', async () => {
-            const path = createMockPath({
+        it('should use default parameters when cut values are undefined', async () => {
+            const cut = createMockCut({
                 feedRate: undefined,
                 pierceHeight: undefined,
                 pierceDelay: undefined,
                 kerfWidth: undefined,
-                // Lead lengths now come from path configs, not parameters
+                // Lead lengths now come from cut configs, not parameters
             });
             const shapes: Shape[] = [
                 createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
@@ -179,7 +179,7 @@ describe('pathToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
             expect(result.parameters).toEqual({
                 feedRate: 1000,
@@ -187,7 +187,7 @@ describe('pathToToolPath', () => {
                 pierceDelay: 0.5,
                 cutHeight: 1.5,
                 kerf: 0,
-                // Lead lengths now come from path configs, not parameters
+                // Lead lengths now come from cut configs, not parameters
                 isHole: false,
                 holeUnderspeedPercent: undefined,
             });
@@ -196,7 +196,7 @@ describe('pathToToolPath', () => {
 
     describe('multiple shapes handling', () => {
         it('should combine points from multiple shapes', async () => {
-            const path = createMockPath();
+            const cut = createMockCut();
             const shapes: Shape[] = [
                 createMockLine('line1', { x: 0, y: 0 }, { x: 5, y: 0 }),
                 createMockLine('line2', { x: 5, y: 0 }, { x: 10, y: 0 }),
@@ -212,7 +212,7 @@ describe('pathToToolPath', () => {
                     { x: 10, y: 0 },
                 ]);
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
             expect(result.points).toEqual([
                 { x: 0, y: 0 },
@@ -222,7 +222,7 @@ describe('pathToToolPath', () => {
         });
 
         it('should skip duplicate points when shapes connect', async () => {
-            const path = createMockPath();
+            const cut = createMockCut();
             const shapes: Shape[] = [
                 createMockLine('line1', { x: 0, y: 0 }, { x: 5, y: 0 }),
                 createMockLine('line2', { x: 5, y: 0 }, { x: 10, y: 0 }),
@@ -238,7 +238,7 @@ describe('pathToToolPath', () => {
                     { x: 10, y: 0 },
                 ]);
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
             // Should skip the duplicate point at (5, 0)
             expect(result.points).toEqual([
@@ -249,7 +249,7 @@ describe('pathToToolPath', () => {
         });
 
         it('should include all points when shapes do not connect', async () => {
-            const path = createMockPath();
+            const cut = createMockCut();
             const shapes: Shape[] = [
                 createMockLine('line1', { x: 0, y: 0 }, { x: 5, y: 0 }),
                 createMockLine('line2', { x: 6, y: 0 }, { x: 10, y: 0 }), // Gap at x=5 to x=6
@@ -265,7 +265,7 @@ describe('pathToToolPath', () => {
                     { x: 10, y: 0 },
                 ]);
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
             expect(result.points).toEqual([
                 { x: 0, y: 0 },
@@ -276,7 +276,7 @@ describe('pathToToolPath', () => {
         });
 
         it('should handle tolerance for point matching', async () => {
-            const path = createMockPath();
+            const cut = createMockCut();
             const shapes: Shape[] = [
                 createMockLine('line1', { x: 0, y: 0 }, { x: 5, y: 0 }),
                 createMockLine('line2', { x: 5.0005, y: 0 }, { x: 10, y: 0 }), // Within tolerance
@@ -292,7 +292,7 @@ describe('pathToToolPath', () => {
                     { x: 10, y: 0 },
                 ]);
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
             // Should skip duplicate point since within tolerance
             expect(result.points).toEqual([
@@ -308,7 +308,7 @@ describe('pathToToolPath', () => {
             // Arc will be tessellated into multiple points, just check start and end
             const expectedStart = { x: -5, y: 0 };
             const expectedEnd = { x: 0, y: 0 };
-            const path = createMockPath({
+            const cut = createMockCut({
                 leadIn: {
                     geometry: {
                         center: { x: -2.5, y: 0 },
@@ -333,7 +333,7 @@ describe('pathToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
             // Check that leadIn exists and has correct start/end points
             expect(result.leadIn).toBeDefined();
@@ -351,7 +351,7 @@ describe('pathToToolPath', () => {
 
         it('should include lead-in when it connects to offset geometry', async () => {
             // Arc leads will be tessellated, no longer hardcoded line points
-            const path = createMockPath({
+            const cut = createMockCut({
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -396,7 +396,7 @@ describe('pathToToolPath', () => {
 
             // Using real convertLeadGeometryToPoints function
 
-            const result = await pathToToolPath(path, originalShapes, []);
+            const result = await cutToToolPath(cut, originalShapes, []);
 
             // Arc lead may be undefined if it doesn't connect properly to offset geometry
             if (result.leadIn) {
@@ -411,7 +411,7 @@ describe('pathToToolPath', () => {
 
         it('should exclude lead-in when it does not connect to offset geometry', async () => {
             // Real function will handle this case
-            const path = createMockPath({
+            const cut = createMockCut({
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -454,14 +454,14 @@ describe('pathToToolPath', () => {
                 { x: 11, y: 1 },
             ]);
 
-            const result = await pathToToolPath(path, originalShapes, []);
+            const result = await cutToToolPath(cut, originalShapes, []);
 
             expect(result.leadIn).toBeUndefined();
         });
 
         it('should handle empty lead-in points', async () => {
             // Real function will handle zero-length leads
-            const path = createMockPath({
+            const cut = createMockCut({
                 leadIn: {
                     geometry: {
                         center: { x: -2.5, y: 0 },
@@ -484,9 +484,9 @@ describe('pathToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
-            // Lead may be undefined if it doesn't connect properly to the path
+            // Lead may be undefined if it doesn't connect properly to the cut
             // or may be defined if it connects - both are acceptable outcomes
             if (result.leadIn) {
                 // If lead is present, it should be valid arc tessellation
@@ -499,7 +499,7 @@ describe('pathToToolPath', () => {
     describe('lead-out handling', () => {
         it('should include lead-out when using original geometry', async () => {
             // Arc leads will be tessellated, no longer hardcoded line points
-            const path = createMockPath({
+            const cut = createMockCut({
                 leadOut: {
                     geometry: {
                         center: { x: 12.5, y: 0 },
@@ -522,7 +522,7 @@ describe('pathToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
             // Arc lead should be tessellated into multiple points
             expect(result.leadOut).toBeDefined();
@@ -537,7 +537,7 @@ describe('pathToToolPath', () => {
 
         it('should include lead-out when it connects to offset geometry', async () => {
             // Arc leads will be tessellated, no longer hardcoded line points
-            const path = createMockPath({
+            const cut = createMockCut({
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -580,14 +580,14 @@ describe('pathToToolPath', () => {
                 { x: 11, y: 1 },
             ]);
 
-            const result = await pathToToolPath(path, originalShapes, []);
+            const result = await cutToToolPath(cut, originalShapes, []);
 
             // Lead may be undefined if it doesn't connect properly to offset geometry
             if (result.leadOut) {
                 // If lead is present, it should be valid arc tessellation
                 expect(result.leadOut.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
 
-                // Verify arc lead starts from offset path end at (11,1)
+                // Verify arc lead starts from offset cut end at (11,1)
                 const leadOutStart = result.leadOut[0];
                 expect(leadOutStart.x).toBeCloseTo(11, 1);
                 expect(leadOutStart.y).toBeCloseTo(1, 1);
@@ -596,7 +596,7 @@ describe('pathToToolPath', () => {
         });
 
         it('should exclude lead-out when it does not connect to offset geometry', async () => {
-            const path = createMockPath({
+            const cut = createMockCut({
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -639,7 +639,7 @@ describe('pathToToolPath', () => {
                 { x: 11, y: 1 },
             ]);
 
-            const result = await pathToToolPath(path, originalShapes, []);
+            const result = await cutToToolPath(cut, originalShapes, []);
 
             expect(result.leadOut).toBeUndefined();
         });
@@ -647,33 +647,33 @@ describe('pathToToolPath', () => {
 
     describe('edge cases', () => {
         it('should handle empty shapes array', async () => {
-            const path = createMockPath();
+            const cut = createMockCut();
             const shapes: Shape[] = [];
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
             expect(result.points).toEqual([]);
         });
 
         it('should handle single point shapes', async () => {
-            const path = createMockPath();
+            const cut = createMockCut();
             const shapes: Shape[] = [
                 createMockLine('point', { x: 5, y: 5 }, { x: 5, y: 5 }),
             ];
 
             mockGetShapePoints.mockReturnValueOnce([{ x: 5, y: 5 }]);
 
-            const result = await pathToToolPath(path, shapes, []);
+            const result = await cutToToolPath(cut, shapes, []);
 
             expect(result.points).toEqual([{ x: 5, y: 5 }]);
         });
     });
 });
 
-describe('pathsToToolPaths', () => {
-    const createMockPath = (overrides: Partial<Path> = {}): Path => ({
-        id: 'test-path',
-        name: 'Test Path',
+describe('cutsToToolPaths', () => {
+    const createMockCut = (overrides: Partial<Cut> = {}): Cut => ({
+        id: 'test-cut',
+        name: 'Test Cut',
         operationId: 'test-operation',
         chainId: 'test-chain',
         toolId: null,
@@ -705,11 +705,11 @@ describe('pathsToToolPaths', () => {
     });
 
     describe('basic conversion', () => {
-        it('should convert multiple paths in order', async () => {
-            const paths: Path[] = [
-                createMockPath({ id: 'path-2', order: 2 }),
-                createMockPath({ id: 'path-1', order: 1 }),
-                createMockPath({ id: 'path-3', order: 3 }),
+        it('should convert multiple cuts in order', async () => {
+            const cuts: Cut[] = [
+                createMockCut({ id: 'cut-2', order: 2 }),
+                createMockCut({ id: 'cut-1', order: 1 }),
+                createMockCut({ id: 'cut-3', order: 3 }),
             ];
 
             const chainShapes = new Map<string, Shape[]>([
@@ -724,21 +724,21 @@ describe('pathsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathsToToolPaths(paths, chainShapes, []);
+            const result = await cutsToToolPaths(cuts, chainShapes, []);
 
-            expect(result).toHaveLength(5); // 3 paths + 2 rapids
-            expect(result[0].id).toBe('path-1');
+            expect(result).toHaveLength(5); // 3 cuts + 2 rapids
+            expect(result[0].id).toBe('cut-1');
             expect(result[1].id).toBe('rapid-0');
-            expect(result[2].id).toBe('path-2');
+            expect(result[2].id).toBe('cut-2');
             expect(result[3].id).toBe('rapid-1');
-            expect(result[4].id).toBe('path-3');
+            expect(result[4].id).toBe('cut-3');
         });
 
-        it('should skip disabled paths', async () => {
-            const paths: Path[] = [
-                createMockPath({ id: 'path-1', order: 1, enabled: true }),
-                createMockPath({ id: 'path-2', order: 2, enabled: false }),
-                createMockPath({ id: 'path-3', order: 3, enabled: true }),
+        it('should skip disabled cuts', async () => {
+            const cuts: Cut[] = [
+                createMockCut({ id: 'cut-1', order: 1, enabled: true }),
+                createMockCut({ id: 'cut-2', order: 2, enabled: false }),
+                createMockCut({ id: 'cut-3', order: 3, enabled: true }),
             ];
 
             const chainShapes = new Map<string, Shape[]>([
@@ -753,18 +753,18 @@ describe('pathsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathsToToolPaths(paths, chainShapes, []);
+            const result = await cutsToToolPaths(cuts, chainShapes, []);
 
-            expect(result).toHaveLength(3); // 2 enabled paths + 1 rapid
-            expect(result[0].id).toBe('path-1');
+            expect(result).toHaveLength(3); // 2 enabled cuts + 1 rapid
+            expect(result[0].id).toBe('cut-1');
             expect(result[1].id).toBe('rapid-0');
-            expect(result[2].id).toBe('path-3');
+            expect(result[2].id).toBe('cut-3');
         });
 
-        it('should skip paths with missing chain shapes', async () => {
-            const paths: Path[] = [
-                createMockPath({ id: 'path-1', chainId: 'existing-chain' }),
-                createMockPath({ id: 'path-2', chainId: 'missing-chain' }),
+        it('should skip cuts with missing chain shapes', async () => {
+            const cuts: Cut[] = [
+                createMockCut({ id: 'cut-1', chainId: 'existing-chain' }),
+                createMockCut({ id: 'cut-2', chainId: 'missing-chain' }),
             ];
 
             const chainShapes = new Map<string, Shape[]>([
@@ -779,18 +779,18 @@ describe('pathsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathsToToolPaths(paths, chainShapes, []);
+            const result = await cutsToToolPaths(cuts, chainShapes, []);
 
             expect(result).toHaveLength(1);
-            expect(result[0].id).toBe('path-1');
+            expect(result[0].id).toBe('cut-1');
         });
     });
 
     describe('rapid generation', () => {
-        it('should generate rapids between tool paths', async () => {
-            const paths: Path[] = [
-                createMockPath({ id: 'path-1', order: 1 }),
-                createMockPath({ id: 'path-2', order: 2 }),
+        it('should generate rapids between tool cuts', async () => {
+            const cuts: Cut[] = [
+                createMockCut({ id: 'cut-1', order: 1 }),
+                createMockCut({ id: 'cut-2', order: 2 }),
             ];
 
             const chainShapes = new Map<string, Shape[]>([
@@ -805,9 +805,9 @@ describe('pathsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathsToToolPaths(paths, chainShapes, []);
+            const result = await cutsToToolPaths(cuts, chainShapes, []);
 
-            expect(result).toHaveLength(3); // 2 paths + 1 rapid
+            expect(result).toHaveLength(3); // 2 cuts + 1 rapid
 
             const rapid = result[1];
             expect(rapid.id).toBe('rapid-0');
@@ -815,16 +815,16 @@ describe('pathsToToolPaths', () => {
             expect(rapid.shapeId).toBe('');
             expect(rapid.parameters).toBeUndefined();
             expect(rapid.points).toEqual([
-                { x: 10, y: 0 }, // End of first path
-                { x: 0, y: 0 }, // Start of second path
+                { x: 10, y: 0 }, // End of first cut
+                { x: 0, y: 0 }, // Start of second cut
             ]);
         });
 
         it('should use lead-in start point for rapid destination', async () => {
-            const paths: Path[] = [
-                createMockPath({ id: 'path-1', order: 1 }),
-                createMockPath({
-                    id: 'path-2',
+            const cuts: Cut[] = [
+                createMockCut({ id: 'cut-1', order: 1 }),
+                createMockCut({
+                    id: 'cut-2',
                     order: 2,
                     leadIn: {
                         geometry: {
@@ -853,19 +853,19 @@ describe('pathsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await pathsToToolPaths(paths, chainShapes, []);
+            const result = await cutsToToolPaths(cuts, chainShapes, []);
 
             const rapid = result[1];
             expect(rapid.points).toEqual([
-                { x: 10, y: 0 }, // End of first path
-                { x: -5, y: 5 }, // Start of lead-in for second path
+                { x: 10, y: 0 }, // End of first cut
+                { x: -5, y: 5 }, // Start of lead-in for second cut
             ]);
         });
 
         it('should not generate rapid for zero distance moves', async () => {
-            const paths: Path[] = [
-                createMockPath({ id: 'path-1', order: 1 }),
-                createMockPath({ id: 'path-2', order: 2 }),
+            const cuts: Cut[] = [
+                createMockCut({ id: 'cut-1', order: 1 }),
+                createMockCut({ id: 'cut-2', order: 2 }),
             ];
 
             const chainShapes = new Map<string, Shape[]>([
@@ -877,16 +877,16 @@ describe('pathsToToolPaths', () => {
 
             mockGetShapePoints.mockReturnValue([{ x: 0, y: 0 }]);
 
-            const result = await pathsToToolPaths(paths, chainShapes, []);
+            const result = await cutsToToolPaths(cuts, chainShapes, []);
 
-            expect(result).toHaveLength(2); // Only 2 paths, no rapid
+            expect(result).toHaveLength(2); // Only 2 cuts, no rapid
             expect(result.every((tp) => !tp.isRapid)).toBe(true);
         });
 
         it('should not generate rapid for very small movements', async () => {
-            const paths: Path[] = [
-                createMockPath({ id: 'path-1', order: 1 }),
-                createMockPath({ id: 'path-2', order: 2 }),
+            const cuts: Cut[] = [
+                createMockCut({ id: 'cut-1', order: 1 }),
+                createMockCut({ id: 'cut-2', order: 2 }),
             ];
 
             const chainShapes = new Map<string, Shape[]>([
@@ -912,27 +912,27 @@ describe('pathsToToolPaths', () => {
                     { x: 0.0005, y: 0 },
                 ]);
 
-            const result = await pathsToToolPaths(paths, chainShapes, []);
+            const result = await cutsToToolPaths(cuts, chainShapes, []);
 
-            expect(result).toHaveLength(2); // Only 2 paths, no rapid due to small distance
+            expect(result).toHaveLength(2); // Only 2 cuts, no rapid due to small distance
         });
     });
 
     describe('empty input handling', () => {
-        it('should handle empty paths array', async () => {
-            const paths: Path[] = [];
+        it('should handle empty cuts array', async () => {
+            const cuts: Cut[] = [];
             const chainShapes = new Map<string, Shape[]>();
 
-            const result = await pathsToToolPaths(paths, chainShapes, []);
+            const result = await cutsToToolPaths(cuts, chainShapes, []);
 
             expect(result).toEqual([]);
         });
 
         it('should handle empty chainShapes map', async () => {
-            const paths: Path[] = [createMockPath()];
+            const cuts: Cut[] = [createMockCut()];
             const chainShapes = new Map<string, Shape[]>();
 
-            const result = await pathsToToolPaths(paths, chainShapes, []);
+            const result = await cutsToToolPaths(cuts, chainShapes, []);
 
             expect(result).toEqual([]);
         });

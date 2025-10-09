@@ -1,28 +1,28 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { operationsStore } from '$lib/stores/operations/store';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
-import { samplePathAtDistanceIntervals } from '$lib/geometry/shape/functions';
+import { sampleShapesAtDistanceIntervals } from '$lib/geometry/shape/functions';
 import { GeometryType } from '$lib/geometry/shape';
 import type { Operation } from '$lib/stores/operations/interfaces';
 
-// Helper to wait for async path generation
-async function waitForPaths(expectedCount: number, timeout = 200) {
+// Helper to wait for async cut generation
+async function waitForCuts(expectedCount: number, timeout = 200) {
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const pathsState = get(pathStore);
-            if (pathsState.paths.length === expectedCount) {
+            const cutsState = get(cutStore);
+            if (cutsState.cuts.length === expectedCount) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
                 reject(
                     new Error(
-                        `Expected ${expectedCount} paths, got ${pathsState.paths.length} after ${timeout}ms`
+                        `Expected ${expectedCount} cuts, got ${cutsState.cuts.length} after ${timeout}ms`
                     )
                 );
             } else {
@@ -33,24 +33,24 @@ async function waitForPaths(expectedCount: number, timeout = 200) {
     });
 }
 
-// Helper to wait for path with specific cut direction
-async function waitForPathWithDirection(
+// Helper to wait for cut with specific cut direction
+async function waitForCutWithDirection(
     expectedDirection: CutDirection,
     timeout = 200
 ) {
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const pathsState = get(pathStore);
+            const cutsState = get(cutStore);
             if (
-                pathsState.paths.length > 0 &&
-                pathsState.paths[0].cutDirection === expectedDirection
+                cutsState.cuts.length > 0 &&
+                cutsState.cuts[0].cutDirection === expectedDirection
             ) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
                 reject(
                     new Error(
-                        `Expected path with direction ${expectedDirection}, got ${pathsState.paths[0]?.cutDirection} after ${timeout}ms`
+                        `Expected cut with direction ${expectedDirection}, got ${cutsState.cuts[0]?.cutDirection} after ${timeout}ms`
                     )
                 );
             } else {
@@ -64,7 +64,7 @@ async function waitForPathWithDirection(
 describe('Cut Direction End-to-End Integration', () => {
     beforeEach(() => {
         operationsStore.reset();
-        pathStore.reset();
+        cutStore.reset();
         chainStore.clearChains();
     });
 
@@ -127,25 +127,28 @@ describe('Cut Direction End-to-End Integration', () => {
         };
 
         operationsStore.addOperation(operation);
-        await waitForPaths(1);
+        await waitForCuts(1);
 
-        const pathsState = get(pathStore);
-        const path = pathsState.paths[0];
+        const cutsState = get(cutStore);
+        const cut = cutsState.cuts[0];
 
-        // Verify: Path should have user's desired cut direction
-        expect(path.cutDirection).toBe(CutDirection.COUNTERCLOCKWISE);
+        // Verify: Cut should have user's desired cut direction
+        expect(cut.cutDirection).toBe(CutDirection.COUNTERCLOCKWISE);
 
         // Verify: cutChain should have shapes in reversed order (to achieve counterclockwise)
-        expect(path.cutChain).toBeDefined();
-        expect(path.cutChain!.shapes[0].id).toBe('line4'); // Should start with last shape (reversed)
-        expect(path.cutChain!.shapes[1].id).toBe('line3');
-        expect(path.cutChain!.shapes[2].id).toBe('line2');
-        expect(path.cutChain!.shapes[3].id).toBe('line1');
+        expect(cut.cutChain).toBeDefined();
+        expect(cut.cutChain!.shapes[0].id).toBe('line4'); // Should start with last shape (reversed)
+        expect(cut.cutChain!.shapes[1].id).toBe('line3');
+        expect(cut.cutChain!.shapes[2].id).toBe('line2');
+        expect(cut.cutChain!.shapes[3].id).toBe('line1');
 
         // Verify: DrawingCanvas would use cutChain.shapes for rendering arrows
         // This simulates what DrawingCanvas.svelte does for chevron rendering
-        const shapesToRender = path.cutChain!.shapes;
-        const chevronSamples = samplePathAtDistanceIntervals(shapesToRender, 5); // 5 unit spacing
+        const shapesToRender = cut.cutChain!.shapes;
+        const chevronSamples = sampleShapesAtDistanceIntervals(
+            shapesToRender,
+            5
+        ); // 5 unit spacing
 
         // Should sample points in the COUNTERCLOCKWISE direction as requested by user
         expect(chevronSamples.length).toBeGreaterThan(0);
@@ -220,21 +223,21 @@ describe('Cut Direction End-to-End Integration', () => {
         };
 
         operationsStore.addOperation(operation);
-        await waitForPaths(1);
+        await waitForCuts(1);
 
-        const pathsState = get(pathStore);
-        const path = pathsState.paths[0];
+        const cutsState = get(cutStore);
+        const cut = cutsState.cuts[0];
 
-        // Verify: Path should have user's desired cut direction
-        expect(path.cutDirection).toBe(CutDirection.CLOCKWISE);
+        // Verify: Cut should have user's desired cut direction
+        expect(cut.cutDirection).toBe(CutDirection.CLOCKWISE);
 
         // Verify: cutChain should have shapes in reversed order (to achieve clockwise)
-        expect(path.cutChain).toBeDefined();
-        expect(path.cutChain!.shapes[0].id).toBe('line4'); // Should start with last shape (reversed)
+        expect(cut.cutChain).toBeDefined();
+        expect(cut.cutChain!.shapes[0].id).toBe('line4'); // Should start with last shape (reversed)
 
         // Verify: Simulation stage would use cutChain.shapes
         // This simulates what SimulateStage.svelte does
-        const shapesForSimulation = path.cutChain!.shapes;
+        const shapesForSimulation = cut.cutChain!.shapes;
         expect(shapesForSimulation).toBeDefined();
         expect(shapesForSimulation.length).toBe(4);
 
@@ -300,36 +303,36 @@ describe('Cut Direction End-to-End Integration', () => {
         };
 
         operationsStore.addOperation(operation);
-        await waitForPaths(1);
+        await waitForCuts(1);
 
         const operations = get(operationsStore);
         const operationId = operations[0].id;
 
         // Initial state: clockwise (natural = clockwise, desired = clockwise → original order)
-        let pathsState = get(pathStore);
-        expect(pathsState.paths[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
+        let cutsState = get(cutStore);
+        expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
 
         // Change to counterclockwise: should reverse the cutChain
         operationsStore.updateOperation(operationId, {
             cutDirection: CutDirection.COUNTERCLOCKWISE,
         });
-        await waitForPathWithDirection(CutDirection.COUNTERCLOCKWISE);
+        await waitForCutWithDirection(CutDirection.COUNTERCLOCKWISE);
 
-        pathsState = get(pathStore);
-        expect(pathsState.paths[0].cutDirection).toBe(
+        cutsState = get(cutStore);
+        expect(cutsState.cuts[0].cutDirection).toBe(
             CutDirection.COUNTERCLOCKWISE
         );
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
 
         // Change back to clockwise: should restore original order
         operationsStore.updateOperation(operationId, {
             cutDirection: CutDirection.CLOCKWISE,
         });
-        await waitForPathWithDirection(CutDirection.CLOCKWISE);
+        await waitForCutWithDirection(CutDirection.CLOCKWISE);
 
-        pathsState = get(pathStore);
-        expect(pathsState.paths[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
+        cutsState = get(cutStore);
+        expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
     });
 });

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
     prepareChainsAndLeadConfigs,
-    getPathStartPoint,
-} from './path-optimization-utils';
-import type { Path } from '$lib/stores/paths/interfaces';
+    getCutStartPoint,
+} from './cut-optimization-utils';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
@@ -11,9 +11,9 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 // Test data setup
-const createTestPath = (overrides: Partial<Path> = {}): Path => ({
-    id: 'test-path',
-    name: 'Test Path',
+const createTestCut = (overrides: Partial<Cut> = {}): Cut => ({
+    id: 'test-cut',
+    name: 'Test Cut',
     operationId: 'test-operation',
     chainId: 'test-chain',
     toolId: 'test-tool',
@@ -59,13 +59,13 @@ const createTestShape = (start: Point2D, end: Point2D): Shape => ({
     } as Line,
 });
 
-describe('path-optimization-utils', () => {
+describe('cut-optimization-utils', () => {
     describe('prepareChainsAndLeadConfigs', () => {
         it('should use original chain when no offset shapes available', () => {
-            const path = createTestPath();
+            const cut = createTestCut();
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(path, chain);
+            const result = prepareChainsAndLeadConfigs(cut, chain);
 
             expect(result.leadCalculationChain).toBe(chain);
             expect(result.leadCalculationChain.id).toBe('test-chain');
@@ -76,7 +76,7 @@ describe('path-optimization-utils', () => {
                 createTestShape({ x: 1, y: 1 }, { x: 11, y: 1 }),
             ];
 
-            const path = createTestPath({
+            const cut = createTestCut({
                 offset: {
                     offsetShapes,
                     originalShapes: [],
@@ -88,7 +88,7 @@ describe('path-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(path, chain);
+            const result = prepareChainsAndLeadConfigs(cut, chain);
 
             expect(result.leadCalculationChain.id).toBe(
                 'test-chain_offset_temp'
@@ -97,7 +97,7 @@ describe('path-optimization-utils', () => {
         });
 
         it('should create correct lead-in config', () => {
-            const path = createTestPath({
+            const cut = createTestCut({
                 leadInConfig: {
                     type: LeadType.ARC,
                     length: 10,
@@ -108,7 +108,7 @@ describe('path-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(path, chain);
+            const result = prepareChainsAndLeadConfigs(cut, chain);
 
             expect(result.leadInConfig.type).toBe(LeadType.ARC);
             expect(result.leadInConfig.length).toBe(10);
@@ -117,7 +117,7 @@ describe('path-optimization-utils', () => {
         });
 
         it('should create correct lead-out config', () => {
-            const path = createTestPath({
+            const cut = createTestCut({
                 leadOutConfig: {
                     type: LeadType.ARC,
                     length: 15,
@@ -128,7 +128,7 @@ describe('path-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(path, chain);
+            const result = prepareChainsAndLeadConfigs(cut, chain);
 
             expect(result.leadOutConfig.type).toBe(LeadType.ARC);
             expect(result.leadOutConfig.length).toBe(15);
@@ -137,13 +137,13 @@ describe('path-optimization-utils', () => {
         });
 
         it('should handle missing lead config values with defaults', () => {
-            const path = createTestPath({
+            const cut = createTestCut({
                 leadInConfig: undefined,
                 leadOutConfig: undefined,
             });
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(path, chain);
+            const result = prepareChainsAndLeadConfigs(cut, chain);
 
             expect(result.leadInConfig.type).toBe(LeadType.NONE);
             expect(result.leadInConfig.length).toBe(0);
@@ -152,9 +152,9 @@ describe('path-optimization-utils', () => {
         });
     });
 
-    describe('getPathStartPoint', () => {
+    describe('getCutStartPoint', () => {
         it('should handle lead calculation and return appropriate point', () => {
-            const path = createTestPath({
+            const cut = createTestCut({
                 leadInConfig: {
                     type: LeadType.ARC,
                     length: 5,
@@ -164,7 +164,7 @@ describe('path-optimization-utils', () => {
             const chain = createTestChain();
 
             // This tests that the function works with valid inputs
-            const result = getPathStartPoint(path, chain);
+            const result = getCutStartPoint(cut, chain);
 
             // Just verify the function returns a valid point
             expect(typeof result.x).toBe('number');
@@ -176,7 +176,7 @@ describe('path-optimization-utils', () => {
                 createTestShape({ x: 5, y: 5 }, { x: 15, y: 5 }),
             ];
 
-            const path = createTestPath({
+            const cut = createTestCut({
                 leadInConfig: {
                     type: LeadType.NONE,
                     length: 0,
@@ -193,14 +193,14 @@ describe('path-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = getPathStartPoint(path, chain);
+            const result = getCutStartPoint(cut, chain);
 
             // Should use offset chain start point
             expect(result).toEqual({ x: 5, y: 5 });
         });
 
         it('should use original chain start point when no offset and no lead-in', () => {
-            const path = createTestPath({
+            const cut = createTestCut({
                 leadInConfig: {
                     type: LeadType.NONE,
                     length: 0,
@@ -209,7 +209,7 @@ describe('path-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = getPathStartPoint(path, chain);
+            const result = getCutStartPoint(cut, chain);
 
             // Should use original chain start point
             expect(result).toEqual({ x: 0, y: 0 });

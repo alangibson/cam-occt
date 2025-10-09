@@ -1,20 +1,20 @@
 import { describe, it, expect, vi } from 'vitest';
 import {
-    findNearestPath,
-    getPathStartPoint,
-    getPathChainStartPoint,
-    getPathChainEndPoint,
+    findNearestCut,
+    getCutStartPoint,
+    getCutChainStartPoint,
+    getCutChainEndPoint,
     createSplitShape,
     splitLineAtMidpoint,
     splitArcAtMidpoint,
-} from './path-optimization-utils';
-import type { Path } from '$lib/stores/paths/interfaces';
+} from './cut-optimization-utils';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType, type Shape } from '$lib/types/geometry';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 
-describe('path-optimization-utils - branch coverage', () => {
+describe('cut-optimization-utils - branch coverage', () => {
     // Mock data
     const mockChain: Chain = {
         id: 'test-chain',
@@ -30,10 +30,10 @@ describe('path-optimization-utils - branch coverage', () => {
         ],
     };
 
-    const mockPath: Path = {
-        id: 'test-path',
+    const mockCut: Cut = {
+        id: 'test-cut',
         chainId: 'test-chain',
-        name: 'Test Path',
+        name: 'Test Cut',
         operationId: 'test-op',
         toolId: null,
         enabled: true,
@@ -41,50 +41,50 @@ describe('path-optimization-utils - branch coverage', () => {
         cutDirection: CutDirection.CLOCKWISE,
     };
 
-    describe('findNearestPath uncovered branches', () => {
-        it('should skip paths not in unvisited set', () => {
-            const unvisited = new Set<Path>();
+    describe('findNearestCut uncovered branches', () => {
+        it('should skip cuts not in unvisited set', () => {
+            const unvisited = new Set<Cut>();
             const chains = new Map([['test-chain', mockChain]]);
             const findPartForChain = vi.fn().mockReturnValue(undefined);
 
-            const result = findNearestPath(
+            const result = findNearestCut(
                 { x: 0, y: 0 },
-                [mockPath],
+                [mockCut],
                 chains,
                 unvisited,
                 findPartForChain
             );
 
-            expect(result.path).toBeNull();
+            expect(result.cut).toBeNull();
             expect(result.distance).toBe(Infinity);
         });
 
-        it('should skip paths with missing chains', () => {
-            const unvisited = new Set([mockPath]);
+        it('should skip cuts with missing chains', () => {
+            const unvisited = new Set([mockCut]);
             const chains = new Map<string, Chain>(); // Empty map
             const findPartForChain = vi.fn().mockReturnValue(undefined);
 
-            const result = findNearestPath(
+            const result = findNearestCut(
                 { x: 0, y: 0 },
-                [mockPath],
+                [mockCut],
                 chains,
                 unvisited,
                 findPartForChain
             );
 
-            expect(result.path).toBeNull();
+            expect(result.cut).toBeNull();
             expect(result.distance).toBe(Infinity);
         });
     });
 
-    describe('getPathStartPoint uncovered branches', () => {
-        it('should handle path with lead-in configuration but no lead result', () => {
-            const pathWithLeadIn: Path = {
-                ...mockPath,
+    describe('getCutStartPoint uncovered branches', () => {
+        it('should handle cut with lead-in configuration but no lead result', () => {
+            const cutWithLeadIn: Cut = {
+                ...mockCut,
                 leadInConfig: { type: LeadType.ARC, length: 5.0 },
             };
 
-            const result = getPathStartPoint(pathWithLeadIn, mockChain);
+            const result = getCutStartPoint(cutWithLeadIn, mockChain);
 
             // Should fall back to chain start point when no lead-in is calculated
             // The actual result depends on the implementation - we just need to test the branch
@@ -93,9 +93,9 @@ describe('path-optimization-utils - branch coverage', () => {
             expect(typeof result.y).toBe('number');
         });
 
-        it('should handle path with calculated offset', () => {
-            const pathWithOffset: Path = {
-                ...mockPath,
+        it('should handle cut with calculated offset', () => {
+            const cutWithOffset: Cut = {
+                ...mockCut,
                 offset: {
                     offsetShapes: [
                         {
@@ -115,17 +115,17 @@ describe('path-optimization-utils - branch coverage', () => {
                 },
             };
 
-            const result = getPathStartPoint(pathWithOffset, mockChain);
+            const result = getCutStartPoint(cutWithOffset, mockChain);
 
             // Should use offset shapes start point
             expect(result).toEqual({ x: 1, y: 1 });
         });
     });
 
-    describe('getPathChainStartPoint uncovered branches', () => {
+    describe('getCutChainStartPoint uncovered branches', () => {
         it('should use offset shapes when available', () => {
-            const pathWithOffset: Path = {
-                ...mockPath,
+            const cutWithOffset: Cut = {
+                ...mockCut,
                 offset: {
                     offsetShapes: [
                         {
@@ -145,20 +145,20 @@ describe('path-optimization-utils - branch coverage', () => {
                 },
             };
 
-            const result = getPathChainStartPoint(pathWithOffset, mockChain);
+            const result = getCutChainStartPoint(cutWithOffset, mockChain);
             expect(result).toEqual({ x: 2, y: 2 });
         });
 
         it('should fallback to chain start point when no offset', () => {
-            const result = getPathChainStartPoint(mockPath, mockChain);
+            const result = getCutChainStartPoint(mockCut, mockChain);
             expect(result).toEqual({ x: 0, y: 0 });
         });
     });
 
-    describe('getPathChainEndPoint uncovered branches', () => {
+    describe('getCutChainEndPoint uncovered branches', () => {
         it('should use offset shapes when available', () => {
-            const pathWithOffset: Path = {
-                ...mockPath,
+            const cutWithOffset: Cut = {
+                ...mockCut,
                 offset: {
                     offsetShapes: [
                         {
@@ -178,12 +178,12 @@ describe('path-optimization-utils - branch coverage', () => {
                 },
             };
 
-            const result = getPathChainEndPoint(pathWithOffset, mockChain);
+            const result = getCutChainEndPoint(cutWithOffset, mockChain);
             expect(result).toEqual({ x: 13, y: 3 });
         });
 
         it('should fallback to chain end point when no offset', () => {
-            const result = getPathChainEndPoint(mockPath, mockChain);
+            const result = getCutChainEndPoint(mockCut, mockChain);
             expect(result).toEqual({ x: 10, y: 0 });
         });
     });

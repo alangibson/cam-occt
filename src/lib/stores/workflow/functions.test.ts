@@ -127,7 +127,7 @@ describe('Workflow functions', () => {
                 'Analyze chains and detect parts'
             );
             expect(getStageDescription(WorkflowStage.PROGRAM)).toBe(
-                'Build tool paths with cut parameters'
+                'Build cuts with cut parameters'
             );
             expect(getStageDescription(WorkflowStage.SIMULATE)).toBe(
                 'Simulate cutting process'

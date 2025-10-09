@@ -13,7 +13,7 @@ describe('UI Types', () => {
         it('should have correct values', () => {
             expect(InteractionMode.SHAPES).toBe('shapes');
             expect(InteractionMode.CHAINS).toBe('chains');
-            expect(InteractionMode.PATHS).toBe('paths');
+            expect(InteractionMode.CUTS).toBe('cuts');
         });
     });
 
@@ -29,10 +29,10 @@ describe('UI Types', () => {
         it('should return true for valid InteractionMode values', () => {
             expect(isInteractionMode(InteractionMode.SHAPES)).toBe(true);
             expect(isInteractionMode(InteractionMode.CHAINS)).toBe(true);
-            expect(isInteractionMode(InteractionMode.PATHS)).toBe(true);
+            expect(isInteractionMode(InteractionMode.CUTS)).toBe(true);
             expect(isInteractionMode('shapes')).toBe(true);
             expect(isInteractionMode('chains')).toBe(true);
-            expect(isInteractionMode('paths')).toBe(true);
+            expect(isInteractionMode('cuts')).toBe(true);
         });
 
         it('should return false for invalid values', () => {
@@ -65,9 +65,7 @@ describe('UI Types', () => {
             expect(getInteractionModeLabel(InteractionMode.CHAINS)).toBe(
                 'Chains'
             );
-            expect(getInteractionModeLabel(InteractionMode.PATHS)).toBe(
-                'Paths'
-            );
+            expect(getInteractionModeLabel(InteractionMode.CUTS)).toBe('Cuts');
         });
 
         it('should return the input value for unknown modes (default case)', () => {

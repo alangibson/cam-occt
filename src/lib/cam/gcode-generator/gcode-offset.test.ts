@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { CutterCompensation } from '$lib/types/cam';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import { type Drawing, type Shape, Unit } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { GeometryType } from '$lib/geometry/shape';
-import { pathsToToolPaths } from '$lib/cam/path-generator/path-to-toolpath';
+import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
 import { generateGCode } from './gcode-generator';
 
-describe('G-code generation with offset paths', () => {
+describe('G-code generation with offset cuts', () => {
     // Create test shapes for a simple rectangle
     const testShapes: Shape[] = [
         {
@@ -64,9 +64,9 @@ describe('G-code generation with offset paths', () => {
     };
 
     it('should generate G-code using original geometry when no offset is available', async () => {
-        const testPath: Path = {
-            id: 'test-path',
-            name: 'Test Path',
+        const testCut: Cut = {
+            id: 'test-cut',
+            name: 'Test Cut',
             operationId: 'op-1',
             chainId: 'chain-1',
             toolId: 'tool-1',
@@ -80,7 +80,7 @@ describe('G-code generation with offset paths', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = await pathsToToolPaths([testPath], chainShapes, []);
+        const toolPaths = await cutsToToolPaths([testCut], chainShapes, []);
 
         expect(toolPaths).toHaveLength(1);
         expect(toolPaths[0].points).toEqual([
@@ -107,9 +107,9 @@ describe('G-code generation with offset paths', () => {
     });
 
     it('should generate G-code using offset geometry when available', async () => {
-        const testPath: Path = {
-            id: 'test-path',
-            name: 'Test Path',
+        const testCut: Cut = {
+            id: 'test-cut',
+            name: 'Test Cut',
             operationId: 'op-1',
             chainId: 'chain-1',
             toolId: 'tool-1',
@@ -132,7 +132,7 @@ describe('G-code generation with offset paths', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = await pathsToToolPaths([testPath], chainShapes, []);
+        const toolPaths = await cutsToToolPaths([testCut], chainShapes, []);
 
         expect(toolPaths).toHaveLength(1);
         // Should use offset geometry
@@ -163,10 +163,10 @@ describe('G-code generation with offset paths', () => {
         expect(gcode).not.toMatch(/G1.*X10 Y0/);
     });
 
-    it('should handle lead-in/out with offset paths', async () => {
-        const testPath: Path = {
-            id: 'test-path',
-            name: 'Test Path',
+    it('should handle lead-in/out with offset cuts', async () => {
+        const testCut: Cut = {
+            id: 'test-cut',
+            name: 'Test Cut',
             operationId: 'op-1',
             chainId: 'chain-1',
             toolId: 'tool-1',
@@ -177,8 +177,8 @@ describe('G-code generation with offset paths', () => {
             pierceHeight: 3.8,
             pierceDelay: 0.5,
             kerfWidth: 1.5,
-            // Lead lengths are now handled via path configurations, not CuttingParameters
-            // Calculated lead-in connecting to offset path
+            // Lead lengths are now handled via cut configurations, not CuttingParameters
+            // Calculated lead-in connecting to offset cut
             leadIn: {
                 geometry: {
                     center: { x: -1.5, y: 1 },
@@ -214,15 +214,15 @@ describe('G-code generation with offset paths', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = await pathsToToolPaths([testPath], chainShapes, []);
+        const toolPaths = await cutsToToolPaths([testCut], chainShapes, []);
 
         expect(toolPaths).toHaveLength(1);
 
-        // Arc leads may be undefined if they don't connect properly to offset paths
+        // Arc leads may be undefined if they don't connect properly to offset cuts
         if (toolPaths[0].leadIn) {
             expect(toolPaths[0].leadIn.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
 
-            // Verify lead-in ends at path start (connection point should be close to (1,1))
+            // Verify lead-in ends at cut start (connection point should be close to (1,1))
             const leadInEnd =
                 toolPaths[0].leadIn[toolPaths[0].leadIn.length - 1];
             expect(leadInEnd.x).toBeCloseTo(1, 1);
@@ -232,7 +232,7 @@ describe('G-code generation with offset paths', () => {
         if (toolPaths[0].leadOut) {
             expect(toolPaths[0].leadOut.length).toBeGreaterThan(2); // Arc tessellation creates multiple points
 
-            // Verify lead-out starts from path end (connection point should be close to (1,1))
+            // Verify lead-out starts from cut end (connection point should be close to (1,1))
             const leadOutStart = toolPaths[0].leadOut[0];
             expect(leadOutStart.x).toBeCloseTo(1, 1);
             expect(leadOutStart.y).toBeCloseTo(1, 1);
@@ -251,9 +251,9 @@ describe('G-code generation with offset paths', () => {
     });
 
     it('should generate proper coordinate precision in G-code', async () => {
-        const testPath: Path = {
-            id: 'test-path',
-            name: 'Test Path',
+        const testCut: Cut = {
+            id: 'test-cut',
+            name: 'Test Cut',
             operationId: 'op-1',
             chainId: 'chain-1',
             toolId: 'tool-1',
@@ -282,7 +282,7 @@ describe('G-code generation with offset paths', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = await pathsToToolPaths([testPath], chainShapes, []);
+        const toolPaths = await cutsToToolPaths([testCut], chainShapes, []);
 
         const gcode = generateGCode(toolPaths, testDrawing, {
             units: Unit.MM,

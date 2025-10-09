@@ -5,13 +5,13 @@ import {
     createLeadOutConfig,
 } from '$lib/algorithms/leads/functions';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 
-// Helper function to create test path
-function createTestPath(overrides: Partial<Path> = {}): Path {
-    const defaultPath: Path = {
-        id: 'test-path',
-        name: 'Test Path',
+// Helper function to create test cut
+function createTestCut(overrides: Partial<Cut> = {}): Cut {
+    const defaultCut: Cut = {
+        id: 'test-cut',
+        name: 'Test Cut',
         chainId: 'test-chain',
         operationId: 'test-operation',
         toolId: null,
@@ -34,12 +34,12 @@ function createTestPath(overrides: Partial<Path> = {}): Path {
         },
     };
 
-    return { ...defaultPath, ...overrides };
+    return { ...defaultCut, ...overrides };
 }
 
 describe('createLeadInConfig', () => {
-    it('should create lead-in config with all properties from path', () => {
-        const path = createTestPath({
+    it('should create lead-in config with all properties from cut', () => {
+        const cut = createTestCut({
             leadInConfig: {
                 type: LeadType.ARC,
                 length: 7.5,
@@ -49,7 +49,7 @@ describe('createLeadInConfig', () => {
             },
         });
 
-        const config = createLeadInConfig(path);
+        const config = createLeadInConfig(cut);
 
         expect(config.type).toBe(LeadType.ARC);
         expect(config.length).toBe(7.5);
@@ -57,12 +57,12 @@ describe('createLeadInConfig', () => {
         expect(config.angle).toBe(135);
     });
 
-    it('should handle path with undefined lead-in properties', () => {
-        const path = createTestPath({
+    it('should handle cut with undefined lead-in properties', () => {
+        const cut = createTestCut({
             leadInConfig: undefined,
         });
 
-        const config = createLeadInConfig(path);
+        const config = createLeadInConfig(cut);
 
         expect(config.type).toBe(LeadType.NONE);
         expect(config.length).toBe(0);
@@ -70,8 +70,8 @@ describe('createLeadInConfig', () => {
         expect(config.angle).toBeUndefined();
     });
 
-    it('should handle path with mixed defined/undefined lead-in properties', () => {
-        const path = createTestPath({
+    it('should handle cut with mixed defined/undefined lead-in properties', () => {
+        const cut = createTestCut({
             leadInConfig: {
                 type: LeadType.ARC,
                 length: 3.14,
@@ -81,7 +81,7 @@ describe('createLeadInConfig', () => {
             },
         });
 
-        const config = createLeadInConfig(path);
+        const config = createLeadInConfig(cut);
 
         expect(config.type).toBe(LeadType.ARC);
         expect(config.length).toBe(3.14);
@@ -90,38 +90,38 @@ describe('createLeadInConfig', () => {
     });
 
     it('should handle different lead types', () => {
-        const lineConfig = createLeadInConfig(
-            createTestPath({
+        const arcConfig1 = createLeadInConfig(
+            createTestCut({
                 leadInConfig: { type: LeadType.ARC, length: 5, fit: true },
             })
         );
-        expect(lineConfig.type).toBe(LeadType.ARC);
+        expect(arcConfig1.type).toBe(LeadType.ARC);
 
-        const arcConfig = createLeadInConfig(
-            createTestPath({
+        const arcConfig2 = createLeadInConfig(
+            createTestCut({
                 leadInConfig: { type: LeadType.ARC, length: 5, fit: true },
             })
         );
-        expect(arcConfig.type).toBe(LeadType.ARC);
+        expect(arcConfig2.type).toBe(LeadType.ARC);
 
-        const noneConfig = createLeadInConfig(
-            createTestPath({
+        const arcConfig3 = createLeadInConfig(
+            createTestCut({
                 leadInConfig: { type: LeadType.NONE, length: 0, fit: true },
             })
         );
-        expect(noneConfig.type).toBe(LeadType.NONE);
+        expect(arcConfig3.type).toBe(LeadType.NONE);
     });
 
     it('should handle zero and negative lengths', () => {
         const zeroConfig = createLeadInConfig(
-            createTestPath({
+            createTestCut({
                 leadInConfig: { type: LeadType.ARC, length: 0, fit: true },
             })
         );
         expect(zeroConfig.length).toBe(0);
 
         const negativeConfig = createLeadInConfig(
-            createTestPath({
+            createTestCut({
                 leadInConfig: { type: LeadType.ARC, length: -5, fit: true },
             })
         );
@@ -130,7 +130,7 @@ describe('createLeadInConfig', () => {
 
     it('should handle extreme angle values', () => {
         const config360 = createLeadInConfig(
-            createTestPath({
+            createTestCut({
                 leadInConfig: {
                     type: LeadType.ARC,
                     length: 5,
@@ -142,7 +142,7 @@ describe('createLeadInConfig', () => {
         expect(config360.angle).toBe(360);
 
         const configNegative = createLeadInConfig(
-            createTestPath({
+            createTestCut({
                 leadInConfig: {
                     type: LeadType.ARC,
                     length: 5,
@@ -154,7 +154,7 @@ describe('createLeadInConfig', () => {
         expect(configNegative.angle).toBe(-90);
 
         const configLarge = createLeadInConfig(
-            createTestPath({
+            createTestCut({
                 leadInConfig: {
                     type: LeadType.ARC,
                     length: 5,
@@ -168,8 +168,8 @@ describe('createLeadInConfig', () => {
 });
 
 describe('createLeadOutConfig', () => {
-    it('should create lead-out config with all properties from path', () => {
-        const path = createTestPath({
+    it('should create lead-out config with all properties from cut', () => {
+        const cut = createTestCut({
             leadOutConfig: {
                 type: LeadType.ARC,
                 length: 12.5,
@@ -179,7 +179,7 @@ describe('createLeadOutConfig', () => {
             },
         });
 
-        const config = createLeadOutConfig(path);
+        const config = createLeadOutConfig(cut);
 
         expect(config.type).toBe(LeadType.ARC);
         expect(config.length).toBe(12.5);
@@ -187,12 +187,12 @@ describe('createLeadOutConfig', () => {
         expect(config.angle).toBe(180);
     });
 
-    it('should handle path with undefined lead-out properties', () => {
-        const path = createTestPath({
+    it('should handle cut with undefined lead-out properties', () => {
+        const cut = createTestCut({
             leadOutConfig: undefined,
         });
 
-        const config = createLeadOutConfig(path);
+        const config = createLeadOutConfig(cut);
 
         expect(config.type).toBe(LeadType.NONE);
         expect(config.length).toBe(0);
@@ -200,8 +200,8 @@ describe('createLeadOutConfig', () => {
         expect(config.angle).toBeUndefined();
     });
 
-    it('should handle path with mixed defined/undefined lead-out properties', () => {
-        const path = createTestPath({
+    it('should handle cut with mixed defined/undefined lead-out properties', () => {
+        const cut = createTestCut({
             leadOutConfig: {
                 type: LeadType.ARC,
                 length: 0, // Use valid value since length is required
@@ -211,7 +211,7 @@ describe('createLeadOutConfig', () => {
             },
         });
 
-        const config = createLeadOutConfig(path);
+        const config = createLeadOutConfig(cut);
 
         expect(config.type).toBe(LeadType.ARC);
         expect(config.length).toBe(0);
@@ -220,38 +220,38 @@ describe('createLeadOutConfig', () => {
     });
 
     it('should handle different lead types', () => {
-        const lineConfig = createLeadOutConfig(
-            createTestPath({
+        const arcConfig1 = createLeadOutConfig(
+            createTestCut({
                 leadOutConfig: { type: LeadType.ARC, length: 5, fit: true },
             })
         );
-        expect(lineConfig.type).toBe(LeadType.ARC);
+        expect(arcConfig1.type).toBe(LeadType.ARC);
 
-        const arcConfig = createLeadOutConfig(
-            createTestPath({
+        const arcConfig2 = createLeadOutConfig(
+            createTestCut({
                 leadOutConfig: { type: LeadType.ARC, length: 5, fit: true },
             })
         );
-        expect(arcConfig.type).toBe(LeadType.ARC);
+        expect(arcConfig2.type).toBe(LeadType.ARC);
 
-        const noneConfig = createLeadOutConfig(
-            createTestPath({
+        const arcConfig3 = createLeadOutConfig(
+            createTestCut({
                 leadOutConfig: { type: LeadType.NONE, length: 0, fit: true },
             })
         );
-        expect(noneConfig.type).toBe(LeadType.NONE);
+        expect(arcConfig3.type).toBe(LeadType.NONE);
     });
 
     it('should handle zero and negative lengths', () => {
         const zeroConfig = createLeadOutConfig(
-            createTestPath({
+            createTestCut({
                 leadOutConfig: { type: LeadType.ARC, length: 0, fit: true },
             })
         );
         expect(zeroConfig.length).toBe(0);
 
         const negativeConfig = createLeadOutConfig(
-            createTestPath({
+            createTestCut({
                 leadOutConfig: { type: LeadType.ARC, length: -3.5, fit: true },
             })
         );
@@ -260,7 +260,7 @@ describe('createLeadOutConfig', () => {
 
     it('should handle extreme angle values', () => {
         const config360 = createLeadOutConfig(
-            createTestPath({
+            createTestCut({
                 leadOutConfig: {
                     type: LeadType.ARC,
                     length: 5,
@@ -272,7 +272,7 @@ describe('createLeadOutConfig', () => {
         expect(config360.angle).toBe(360);
 
         const configNegative = createLeadOutConfig(
-            createTestPath({
+            createTestCut({
                 leadOutConfig: {
                     type: LeadType.ARC,
                     length: 5,
@@ -284,7 +284,7 @@ describe('createLeadOutConfig', () => {
         expect(configNegative.angle).toBe(-45);
 
         const configLarge = createLeadOutConfig(
-            createTestPath({
+            createTestCut({
                 leadOutConfig: {
                     type: LeadType.ARC,
                     length: 5,
@@ -298,8 +298,8 @@ describe('createLeadOutConfig', () => {
 });
 
 describe('createLeadConfigs', () => {
-    it('should create both lead-in and lead-out configs from path', () => {
-        const path = createTestPath({
+    it('should create both lead-in and lead-out configs from cut', () => {
+        const cut = createTestCut({
             leadInConfig: {
                 type: LeadType.ARC,
                 length: 8,
@@ -316,7 +316,7 @@ describe('createLeadConfigs', () => {
             },
         });
 
-        const configs = createLeadConfigs(path);
+        const configs = createLeadConfigs(cut);
 
         // Check lead-in config
         expect(configs.leadIn.type).toBe(LeadType.ARC);
@@ -331,13 +331,13 @@ describe('createLeadConfigs', () => {
         expect(configs.leadOut.angle).toBe(270);
     });
 
-    it('should handle path with no lead configurations', () => {
-        const path = createTestPath({
+    it('should handle cut with no lead configurations', () => {
+        const cut = createTestCut({
             leadInConfig: undefined,
             leadOutConfig: undefined,
         });
 
-        const configs = createLeadConfigs(path);
+        const configs = createLeadConfigs(cut);
 
         // Check lead-in defaults
         expect(configs.leadIn.type).toBe(LeadType.NONE);
@@ -352,8 +352,8 @@ describe('createLeadConfigs', () => {
         expect(configs.leadOut.angle).toBeUndefined();
     });
 
-    it('should handle path with only lead-in configuration', () => {
-        const path = createTestPath({
+    it('should handle cut with only lead-in configuration', () => {
+        const cut = createTestCut({
             leadInConfig: {
                 type: LeadType.ARC,
                 length: 6,
@@ -364,7 +364,7 @@ describe('createLeadConfigs', () => {
             leadOutConfig: undefined,
         });
 
-        const configs = createLeadConfigs(path);
+        const configs = createLeadConfigs(cut);
 
         // Check lead-in config
         expect(configs.leadIn.type).toBe(LeadType.ARC);
@@ -379,8 +379,8 @@ describe('createLeadConfigs', () => {
         expect(configs.leadOut.angle).toBeUndefined();
     });
 
-    it('should handle path with only lead-out configuration', () => {
-        const path = createTestPath({
+    it('should handle cut with only lead-out configuration', () => {
+        const cut = createTestCut({
             leadInConfig: undefined,
             leadOutConfig: {
                 type: LeadType.ARC,
@@ -391,7 +391,7 @@ describe('createLeadConfigs', () => {
             },
         });
 
-        const configs = createLeadConfigs(path);
+        const configs = createLeadConfigs(cut);
 
         // Check lead-in defaults
         expect(configs.leadIn.type).toBe(LeadType.NONE);
@@ -407,7 +407,7 @@ describe('createLeadConfigs', () => {
     });
 
     it('should produce same results as individual functions', () => {
-        const path = createTestPath({
+        const cut = createTestCut({
             leadInConfig: {
                 type: LeadType.ARC,
                 length: 4.2,
@@ -424,9 +424,9 @@ describe('createLeadConfigs', () => {
             },
         });
 
-        const combinedConfigs = createLeadConfigs(path);
-        const separateLeadIn = createLeadInConfig(path);
-        const separateLeadOut = createLeadOutConfig(path);
+        const combinedConfigs = createLeadConfigs(cut);
+        const separateLeadIn = createLeadInConfig(cut);
+        const separateLeadOut = createLeadOutConfig(cut);
 
         // Verify lead-in configs match
         expect(combinedConfigs.leadIn).toEqual(separateLeadIn);
@@ -449,12 +449,12 @@ describe('createLeadConfigs', () => {
         ];
 
         testCases.forEach(({ in: inType, out: outType }) => {
-            const path = createTestPath({
+            const cut = createTestCut({
                 leadInConfig: { type: inType, length: 5, fit: true },
                 leadOutConfig: { type: outType, length: 5, fit: true },
             });
 
-            const configs = createLeadConfigs(path);
+            const configs = createLeadConfigs(cut);
 
             expect(configs.leadIn.type).toBe(inType);
             expect(configs.leadOut.type).toBe(outType);

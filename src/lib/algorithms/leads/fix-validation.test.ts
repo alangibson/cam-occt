@@ -5,12 +5,12 @@ import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/types/geometry';
 import type { Shape, Line } from '$lib/types';
-import type { Path } from '$lib/stores/paths/interfaces';
-import { prepareChainsAndLeadConfigs } from '$lib/algorithms/optimize-start-points/path-optimization-utils';
+import type { Cut } from '$lib/stores/cuts/interfaces';
+import { prepareChainsAndLeadConfigs } from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 /**
- * Test to validate that the clockwise property fix works in the actual code paths
+ * Test to validate that the clockwise property fix works in the actual code cuts
  */
 describe('Clockwise Property Fix Validation', () => {
     const baseLeadConfig: LeadConfig = {
@@ -68,14 +68,14 @@ describe('Clockwise Property Fix Validation', () => {
         };
     }
 
-    // Helper to create a path with offset data
-    function createPathWithOffset(
+    // Helper to create a cut with offset data
+    function createCutWithOffset(
         originalChain: Chain,
         offsetShapes: Shape[]
-    ): Path {
+    ): Cut {
         return {
-            id: 'test-path',
-            name: 'Test Path',
+            id: 'test-cut',
+            name: 'Test Cut',
             operationId: 'test-operation',
             chainId: originalChain.id,
             toolId: 'test-tool',
@@ -113,11 +113,11 @@ describe('Clockwise Property Fix Validation', () => {
                 },
             ];
 
-            // Create path with offset data
-            const path = createPathWithOffset(originalChain, offsetShapes);
+            // Create cut with offset data
+            const cut = createCutWithOffset(originalChain, offsetShapes);
 
             // Use the fixed prepareChainsAndLeadConfigs function
-            const result = prepareChainsAndLeadConfigs(path, originalChain);
+            const result = prepareChainsAndLeadConfigs(cut, originalChain);
 
             console.log('Original chain clockwise:', originalChain.clockwise);
             console.log(
@@ -152,8 +152,8 @@ describe('Clockwise Property Fix Validation', () => {
                 },
             ];
 
-            const path = createPathWithOffset(originalChain, offsetShapes);
-            const result = prepareChainsAndLeadConfigs(path, originalChain);
+            const cut = createCutWithOffset(originalChain, offsetShapes);
+            const result = prepareChainsAndLeadConfigs(cut, originalChain);
 
             expect(result.leadCalculationChain.clockwise).toBe(true);
         });
@@ -172,8 +172,8 @@ describe('Clockwise Property Fix Validation', () => {
                 },
             ];
 
-            const path = createPathWithOffset(originalChain, offsetShapes);
-            const result = prepareChainsAndLeadConfigs(path, originalChain);
+            const cut = createCutWithOffset(originalChain, offsetShapes);
+            const result = prepareChainsAndLeadConfigs(cut, originalChain);
 
             expect(result.leadCalculationChain.clockwise).toBeUndefined();
         });
@@ -232,10 +232,10 @@ describe('Clockwise Property Fix Validation', () => {
                 CutDirection.CLOCKWISE
             );
 
-            // Create path with offset and use the fixed function
-            const path = createPathWithOffset(originalChain, offsetShapes);
+            // Create cut with offset and use the fixed function
+            const cut = createCutWithOffset(originalChain, offsetShapes);
             const { leadCalculationChain } = prepareChainsAndLeadConfigs(
-                path,
+                cut,
                 originalChain
             );
 

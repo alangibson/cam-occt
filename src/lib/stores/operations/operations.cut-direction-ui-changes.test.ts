@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { operationsStore } from './store';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
@@ -10,18 +10,18 @@ import { KerfCompensation } from '$lib/types/kerf-compensation';
 import { GeometryType } from '$lib/geometry/shape';
 import type { Operation } from './interfaces';
 
-// Helper to wait for async path generation
-async function waitForPaths(expectedCount: number, timeout = 200) {
+// Helper to wait for async cut generation
+async function waitForCuts(expectedCount: number, timeout = 200) {
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const pathsState = get(pathStore);
-            if (pathsState.paths.length === expectedCount) {
+            const cutsState = get(cutStore);
+            if (cutsState.cuts.length === expectedCount) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
                 reject(
                     new Error(
-                        `Expected ${expectedCount} paths, got ${pathsState.paths.length} after ${timeout}ms`
+                        `Expected ${expectedCount} cuts, got ${cutsState.cuts.length} after ${timeout}ms`
                     )
                 );
             } else {
@@ -32,24 +32,24 @@ async function waitForPaths(expectedCount: number, timeout = 200) {
     });
 }
 
-// Helper to wait for path with specific cut direction
-async function waitForPathWithDirection(
+// Helper to wait for cut with specific cut direction
+async function waitForCutWithDirection(
     expectedDirection: CutDirection,
     timeout = 200
 ) {
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const pathsState = get(pathStore);
+            const cutsState = get(cutStore);
             if (
-                pathsState.paths.length > 0 &&
-                pathsState.paths[0].cutDirection === expectedDirection
+                cutsState.cuts.length > 0 &&
+                cutsState.cuts[0].cutDirection === expectedDirection
             ) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
                 reject(
                     new Error(
-                        `Expected path with direction ${expectedDirection}, got ${pathsState.paths[0]?.cutDirection} after ${timeout}ms`
+                        `Expected cut with direction ${expectedDirection}, got ${cutsState.cuts[0]?.cutDirection} after ${timeout}ms`
                     )
                 );
             } else {
@@ -64,7 +64,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
     beforeEach(() => {
         // Reset all stores
         operationsStore.reset();
-        pathStore.reset();
+        cutStore.reset();
         chainStore.clearChains();
     });
 
@@ -128,7 +128,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         };
 
         operationsStore.addOperation(operation);
-        await waitForPaths(1);
+        await waitForCuts(1);
 
         // Get the operation ID for updates
         const operations = get(operationsStore);
@@ -136,58 +136,58 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
 
         // Test 1: Initial clockwise direction
         // Natural = clockwise, desired = clockwise → no reversal
-        let pathsState = get(pathStore);
-        expect(pathsState.paths).toHaveLength(1);
-        expect(pathsState.paths[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
+        let cutsState = get(cutStore);
+        expect(cutsState.cuts).toHaveLength(1);
+        expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
 
         // Test 2: Change to counterclockwise
         // Natural = clockwise, desired = counterclockwise → reversal needed
         operationsStore.updateOperation(operationId, {
             cutDirection: CutDirection.COUNTERCLOCKWISE,
         });
-        await waitForPathWithDirection(CutDirection.COUNTERCLOCKWISE);
+        await waitForCutWithDirection(CutDirection.COUNTERCLOCKWISE);
 
-        pathsState = get(pathStore);
-        expect(pathsState.paths[0].cutDirection).toBe(
+        cutsState = get(cutStore);
+        expect(cutsState.cuts[0].cutDirection).toBe(
             CutDirection.COUNTERCLOCKWISE
         );
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
 
         // Test 3: Change back to clockwise
         // Natural = clockwise, desired = clockwise → no reversal (should be back to original)
         operationsStore.updateOperation(operationId, {
             cutDirection: CutDirection.CLOCKWISE,
         });
-        await waitForPathWithDirection(CutDirection.CLOCKWISE);
+        await waitForCutWithDirection(CutDirection.CLOCKWISE);
 
-        pathsState = get(pathStore);
-        expect(pathsState.paths[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
+        cutsState = get(cutStore);
+        expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
 
         // Test 4: Change to counterclockwise again
         // Natural = clockwise, desired = counterclockwise → reversal needed (should be consistent)
         operationsStore.updateOperation(operationId, {
             cutDirection: CutDirection.COUNTERCLOCKWISE,
         });
-        await waitForPathWithDirection(CutDirection.COUNTERCLOCKWISE);
+        await waitForCutWithDirection(CutDirection.COUNTERCLOCKWISE);
 
-        pathsState = get(pathStore);
-        expect(pathsState.paths[0].cutDirection).toBe(
+        cutsState = get(cutStore);
+        expect(cutsState.cuts[0].cutDirection).toBe(
             CutDirection.COUNTERCLOCKWISE
         );
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order again
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order again
 
         // Test 5: Final change back to clockwise
         // Natural = clockwise, desired = clockwise → no reversal (should be consistent)
         operationsStore.updateOperation(operationId, {
             cutDirection: CutDirection.CLOCKWISE,
         });
-        await waitForPathWithDirection(CutDirection.CLOCKWISE);
+        await waitForCutWithDirection(CutDirection.CLOCKWISE);
 
-        pathsState = get(pathStore);
-        expect(pathsState.paths[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
+        cutsState = get(cutStore);
+        expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
     });
 
     it('should work correctly with counterclockwise natural chains', async () => {
@@ -250,7 +250,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         };
 
         operationsStore.addOperation(operation);
-        await waitForPaths(1);
+        await waitForCuts(1);
 
         // Get the operation ID for updates
         const operations = get(operationsStore);
@@ -258,36 +258,36 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
 
         // Test 1: Initial counterclockwise direction
         // Natural = counterclockwise, desired = counterclockwise → no reversal
-        let pathsState = get(pathStore);
-        expect(pathsState.paths).toHaveLength(1);
-        expect(pathsState.paths[0].cutDirection).toBe(
+        let cutsState = get(cutStore);
+        expect(cutsState.cuts).toHaveLength(1);
+        expect(cutsState.cuts[0].cutDirection).toBe(
             CutDirection.COUNTERCLOCKWISE
         );
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
 
         // Test 2: Change to clockwise
         // Natural = counterclockwise, desired = clockwise → reversal needed
         operationsStore.updateOperation(operationId, {
             cutDirection: CutDirection.CLOCKWISE,
         });
-        await waitForPathWithDirection(CutDirection.CLOCKWISE);
+        await waitForCutWithDirection(CutDirection.CLOCKWISE);
 
-        pathsState = get(pathStore);
-        expect(pathsState.paths[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
+        cutsState = get(cutStore);
+        expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
 
         // Test 3: Change back to counterclockwise
         // Natural = counterclockwise, desired = counterclockwise → no reversal (should be back to original)
         operationsStore.updateOperation(operationId, {
             cutDirection: CutDirection.COUNTERCLOCKWISE,
         });
-        await waitForPathWithDirection(CutDirection.COUNTERCLOCKWISE);
+        await waitForCutWithDirection(CutDirection.COUNTERCLOCKWISE);
 
-        pathsState = get(pathStore);
-        expect(pathsState.paths[0].cutDirection).toBe(
+        cutsState = get(cutStore);
+        expect(cutsState.cuts[0].cutDirection).toBe(
             CutDirection.COUNTERCLOCKWISE
         );
-        expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
     });
 
     it('should work correctly with multiple rapid direction changes', async () => {
@@ -348,7 +348,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         };
 
         operationsStore.addOperation(operation);
-        await waitForPaths(1);
+        await waitForCuts(1);
 
         const operations = get(operationsStore);
         const operationId = operations[0].id;
@@ -367,21 +367,17 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
             operationsStore.updateOperation(operationId, {
                 cutDirection: direction,
             });
-            await waitForPathWithDirection(direction);
+            await waitForCutWithDirection(direction);
 
-            const pathsState = get(pathStore);
-            expect(pathsState.paths[0].cutDirection).toBe(direction);
+            const cutsState = get(cutStore);
+            expect(cutsState.cuts[0].cutDirection).toBe(direction);
 
             if (direction === CutDirection.CLOCKWISE) {
                 // Natural = clockwise, desired = clockwise → original order
-                expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe(
-                    'line1'
-                );
+                expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1');
             } else {
                 // Natural = clockwise, desired = counterclockwise → reversed order
-                expect(pathsState.paths[0].cutChain!.shapes[0].id).toBe(
-                    'line4'
-                );
+                expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line4');
             }
         }
     });

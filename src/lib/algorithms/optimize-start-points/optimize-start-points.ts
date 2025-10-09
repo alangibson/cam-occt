@@ -10,7 +10,7 @@ import {
 import {
     createSplitShape,
     reconstructChainFromSplit,
-} from './path-optimization-utils';
+} from './cut-optimization-utils';
 import { splitShapeAtMidpoint } from '$lib/geometry/shape/functions';
 import type { StartPointOptimizationParameters } from '$lib/types/algorithm-parameters';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';

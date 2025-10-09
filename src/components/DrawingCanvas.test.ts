@@ -195,7 +195,7 @@ describe('DrawingCanvas Part Highlighting', () => {
         const onPartClick = vi.fn();
 
         // Act - simulate clicking on part but in wrong interaction mode
-        const interactionMode = 'shapes' as 'shapes' | 'chains' | 'paths'; // Edit stage uses 'shapes' mode
+        const interactionMode = 'shapes' as 'shapes' | 'chains' | 'cuts'; // Edit stage uses 'shapes' mode
 
         if (hitResult && hitResult.type === HitTestType.PART) {
             if (interactionMode === 'chains' && onPartClick) {

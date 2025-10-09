@@ -10,7 +10,7 @@ import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Shape } from '$lib/types';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 
 export interface OffsetCalculation {
     offsetShapes: Shape[];
@@ -61,8 +61,8 @@ export interface OperationsStore {
         parts: Set<string>;
     };
 }
-export interface PathGenerationResult {
-    paths: Path[];
+export interface CutGenerationResult {
+    cuts: Cut[];
     warnings: {
         chainId: string;
         operationId: string;
@@ -75,7 +75,7 @@ export interface PathGenerationResult {
  * Calculated lead geometry data structure
  */
 
-export interface PathLeadResult {
+export interface CutLeadResult {
     leadIn?: Lead;
     leadOut?: Lead;
     validation?: {

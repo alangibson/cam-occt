@@ -1,7 +1,7 @@
 import { test, expect, type Page } from '@playwright/test';
 import { STANDARD_TIMEOUT_MS } from '../../src/lib/constants/index.js';
 
-test.describe('Simulation with offset paths', () => {
+test.describe('Simulation with offset cuts', () => {
     test.beforeEach(async ({ page }) => {
         await page.goto('/');
 
@@ -70,7 +70,7 @@ test.describe('Simulation with offset paths', () => {
         }
     }
 
-    test('should detect and use offset paths when available', async ({
+    test('should detect and use offset cuts when available', async ({
         page,
     }) => {
         // Check that simulation stage is visible
@@ -101,15 +101,15 @@ test.describe('Simulation with offset paths', () => {
         await stopButton.click();
     });
 
-    test('should show both offset and original paths in canvas', async ({
+    test('should show both offset and original cuts in canvas', async ({
         page,
     }) => {
-        // The canvas should show both solid (offset) and dashed (original) paths
+        // The canvas should show both solid (offset) and dashed (original) cuts
         // This is a visual test that would need screenshot comparison in practice
 
         // Take a screenshot for visual regression testing
         await page.screenshot({
-            path: 'test-output/simulation-offset-paths.png',
+            path: 'test-output/simulation-offset-cuts.png',
         });
 
         // Check that canvas exists and has content
@@ -123,7 +123,7 @@ test.describe('Simulation with offset paths', () => {
         expect(canvasBox!.height).toBeGreaterThan(0);
     });
 
-    test('should fall back to original paths when no offset exists', async ({
+    test('should fall back to original cuts when no offset exists', async ({
         page,
     }) => {
         // Navigate back to Program stage
@@ -177,7 +177,7 @@ test.describe('Simulation with offset paths', () => {
         await stopButton.click();
     });
 
-    test('should update timing calculations with offset path lengths', async ({
+    test('should update timing calculations with offset cut lengths', async ({
         page,
     }) => {
         // Check that time display is present
@@ -200,7 +200,7 @@ test.describe('Simulation with offset paths', () => {
         await pauseButton.click();
     });
 
-    test('should maintain tool head position along offset paths', async ({
+    test('should maintain tool head position along offset cuts', async ({
         page,
     }) => {
         // Start simulation
@@ -231,7 +231,7 @@ test.describe('Simulation with offset paths', () => {
         await stopButton.click();
     });
 
-    test('should reset properly with offset paths', async ({ page }) => {
+    test('should reset properly with offset cuts', async ({ page }) => {
         // Start simulation
         let playButton = page.locator('button:has-text("Play")');
         await playButton.click();

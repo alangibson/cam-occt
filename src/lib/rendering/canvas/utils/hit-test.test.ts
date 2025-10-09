@@ -15,7 +15,7 @@ describe('HitTestType enum', () => {
         expect(HitTestType.SHAPE).toBe('shape');
         expect(HitTestType.CHAIN).toBe('chain');
         expect(HitTestType.PART).toBe('part');
-        expect(HitTestType.PATH).toBe('path');
+        expect(HitTestType.CUT).toBe('cut');
         expect(HitTestType.RAPID).toBe('rapid');
         expect(HitTestType.LEAD).toBe('lead');
         expect(HitTestType.OVERLAY).toBe('overlay');
@@ -266,7 +266,7 @@ describe('HitTestUtils', () => {
                     point: { x: 0, y: 0 },
                 },
                 {
-                    type: HitTestType.PATH,
+                    type: HitTestType.CUT,
                     id: 'path1',
                     distance: 2,
                     point: { x: 0, y: 0 },
@@ -276,7 +276,7 @@ describe('HitTestUtils', () => {
             const sorted = HitTestUtils.sortHitResults(results);
 
             expect(sorted[0].type).toBe(HitTestType.RAPID); // Highest priority
-            expect(sorted[1].type).toBe(HitTestType.PATH);
+            expect(sorted[1].type).toBe(HitTestType.CUT);
             expect(sorted[2].type).toBe(HitTestType.SHAPE); // Lowest priority
         });
 
@@ -325,7 +325,7 @@ describe('HitTestUtils', () => {
                 point: { x: 0, y: 0 },
             },
             {
-                type: HitTestType.PATH,
+                type: HitTestType.CUT,
                 id: 'path1',
                 distance: 4,
                 point: { x: 0, y: 0 },
@@ -344,7 +344,7 @@ describe('HitTestUtils', () => {
         it('should filter by excluded types', () => {
             const config: HitTestConfig = {
                 tolerance: 10,
-                excludeTypes: [HitTestType.RAPID, HitTestType.PATH],
+                excludeTypes: [HitTestType.RAPID, HitTestType.CUT],
             };
 
             const filtered = HitTestUtils.filterHitResults(results, config);

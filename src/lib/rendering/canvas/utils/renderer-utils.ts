@@ -4,7 +4,7 @@
 
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import type { Point2D, Shape, Line, Circle } from '$lib/types';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 
 /**
  * Constants for renderer utilities
@@ -79,25 +79,25 @@ export function calculatePointToShapeDistance(
 }
 
 /**
- * Check if a path is enabled and should be rendered
+ * Check if a cut is enabled and should be rendered
  */
-export function isPathEnabledForRendering(
-    path: Path,
+export function isCutEnabledForRendering(
+    cut: Cut,
     state: RenderState
 ): boolean {
-    const operation = state.operations.find((op) => op.id === path.operationId);
-    return !!(operation && operation.enabled && path.enabled);
+    const operation = state.operations.find((op) => op.id === cut.operationId);
+    return !!(operation && operation.enabled && cut.enabled);
 }
 
 /**
- * Apply common path styling based on selection and hover state
+ * Apply common cut styling based on selection and hover state
  */
-export function applyPathStyling(
+export function applyCutStyling(
     ctx: CanvasRenderingContext2D,
     state: RenderState,
     isSelected: boolean,
     isHighlighted: boolean,
-    pathColors: {
+    cutColors: {
         selectedDark: string;
         highlighted: string;
         normal: string;
@@ -110,24 +110,24 @@ export function applyPathStyling(
     enableShadow: boolean = true
 ): void {
     if (isSelected) {
-        ctx.strokeStyle = pathColors.selectedDark;
+        ctx.strokeStyle = cutColors.selectedDark;
         ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(
             lineWidths.selected
         );
     } else if (isHighlighted) {
-        ctx.strokeStyle = pathColors.highlighted;
+        ctx.strokeStyle = cutColors.highlighted;
         ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(
             lineWidths.highlighted
         );
         if (enableShadow) {
-            ctx.shadowColor = pathColors.highlighted;
+            ctx.shadowColor = cutColors.highlighted;
             ctx.shadowBlur =
                 state.transform.coordinator.screenToWorldDistance(
                     SHADOW_BLUR_PX
                 );
         }
     } else {
-        ctx.strokeStyle = pathColors.normal;
+        ctx.strokeStyle = cutColors.normal;
         ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(
             lineWidths.normal
         );
@@ -136,19 +136,19 @@ export function applyPathStyling(
 
 /**
  * Common hitTest setup and validation
- * Returns null if no paths to test, otherwise returns the hit tolerance and enabled paths
+ * Returns null if no cuts to test, otherwise returns the hit tolerance and enabled cuts
  */
 export function setupHitTest(
     state: RenderState,
     hitTolerancePx: number = DEFAULT_HIT_TOLERANCE_PX
-): { hitTolerance: number; enabledPaths: Path[] } | null {
-    if (!state.pathsState || state.pathsState.paths.length === 0) return null;
+): { hitTolerance: number; enabledCuts: Cut[] } | null {
+    if (!state.cutsState || state.cutsState.cuts.length === 0) return null;
 
     const hitTolerance =
         state.transform.coordinator.screenToWorldDistance(hitTolerancePx);
-    const enabledPaths = state.pathsState.paths.filter((path) =>
-        isPathEnabledForRendering(path, state)
+    const enabledCuts = state.cutsState.cuts.filter((cut) =>
+        isCutEnabledForRendering(cut, state)
     );
 
-    return { hitTolerance, enabledPaths };
+    return { hitTolerance, enabledCuts };
 }

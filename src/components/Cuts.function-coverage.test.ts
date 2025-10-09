@@ -2,8 +2,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
-import Paths from './Paths.svelte';
-import { pathStore } from '$lib/stores/paths/store';
+import Cuts from './Cuts.svelte';
+import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
@@ -24,12 +24,12 @@ class MockDragEvent extends Event {
 
 global.DragEvent = MockDragEvent as unknown as typeof DragEvent;
 
-describe('Paths Component - Function Coverage', () => {
+describe('Cuts Component - Function Coverage', () => {
     beforeEach(() => {
         // Reset stores
         operationsStore.reset();
         toolStore.reset();
-        pathStore.reset();
+        cutStore.reset();
 
         // Add test data
         toolStore.addTool({
@@ -75,12 +75,12 @@ describe('Paths Component - Function Coverage', () => {
         });
     });
 
-    describe('handlePathClick function', () => {
-        it('should select path when clicking unselected path', async () => {
-            // Add test path using addPath method
-            pathStore.addPath({
-                id: 'test-path-1',
-                name: 'Test Path',
+    describe('handleCutClick function', () => {
+        it('should select cut when clicking unselected cut', async () => {
+            // Add test cut using addCut method
+            cutStore.addCut({
+                id: 'test-cut-1',
+                name: 'Test Cut',
                 operationId: 'op-1',
                 chainId: 'chain-1',
                 toolId: null,
@@ -89,27 +89,27 @@ describe('Paths Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
             });
 
-            const { container } = render(Paths);
+            const { container } = render(Cuts);
 
-            const pathState = get(pathStore);
-            const pathId = pathState.paths[0]?.id;
-            expect(pathId).toBeTruthy();
+            const cutState = get(cutStore);
+            const cutId = cutState.cuts[0]?.id;
+            expect(cutId).toBeTruthy();
 
-            // Trigger the actual handlePathClick function by clicking on the path item
-            const pathItem = container.querySelector('.path-item');
-            expect(pathItem).toBeTruthy();
+            // Trigger the actual handleCutClick function by clicking on the cut item
+            const cutItem = container.querySelector('.cut-item');
+            expect(cutItem).toBeTruthy();
 
-            await fireEvent.click(pathItem!);
+            await fireEvent.click(cutItem!);
 
-            const updatedState = get(pathStore);
-            expect(updatedState.selectedPathId).toBe(pathId);
+            const updatedState = get(cutStore);
+            expect(updatedState.selectedCutId).toBe(cutId);
         });
 
-        it('should deselect path when clicking already selected path', async () => {
-            // Add test path
-            pathStore.addPath({
-                id: 'test-path-1',
-                name: 'Test Path',
+        it('should deselect cut when clicking already selected cut', async () => {
+            // Add test cut
+            cutStore.addCut({
+                id: 'test-cut-1',
+                name: 'Test Cut',
                 operationId: 'op-1',
                 chainId: 'chain-1',
                 toolId: null,
@@ -118,27 +118,27 @@ describe('Paths Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
             });
 
-            const { container } = render(Paths);
+            const { container } = render(Cuts);
 
-            const pathState = get(pathStore);
-            const pathId = pathState.paths[0]?.id;
+            const cutState = get(cutStore);
+            const cutId = cutState.cuts[0]?.id;
 
-            // First select the path using pathStore method
-            pathStore.selectPath(pathId!);
+            // First select the cut using cutStore method
+            cutStore.selectCut(cutId!);
 
             // Then click it again to deselect
-            const pathItem = container.querySelector('.path-item');
-            await fireEvent.click(pathItem!);
+            const cutItem = container.querySelector('.cut-item');
+            await fireEvent.click(cutItem!);
 
-            const finalState = get(pathStore);
-            expect(finalState.selectedPathId).toBe(null);
+            const finalState = get(cutStore);
+            expect(finalState.selectedCutId).toBe(null);
         });
 
         it('should handle keyboard navigation', async () => {
-            // Add test path
-            pathStore.addPath({
-                id: 'test-path-1',
-                name: 'Test Path',
+            // Add test cut
+            cutStore.addCut({
+                id: 'test-cut-1',
+                name: 'Test Cut',
                 operationId: 'op-1',
                 chainId: 'chain-1',
                 toolId: null,
@@ -147,36 +147,36 @@ describe('Paths Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
             });
 
-            const { container } = render(Paths);
+            const { container } = render(Cuts);
 
-            const pathItem = container.querySelector('.path-item');
-            expect(pathItem).toBeTruthy();
+            const cutItem = container.querySelector('.cut-item');
+            expect(cutItem).toBeTruthy();
 
             // Test Enter key
-            await fireEvent.keyDown(pathItem!, { key: 'Enter' });
+            await fireEvent.keyDown(cutItem!, { key: 'Enter' });
 
             // Test Space key
-            await fireEvent.keyDown(pathItem!, { key: ' ' });
+            await fireEvent.keyDown(cutItem!, { key: ' ' });
 
             // Verify component responds to keyboard events
-            expect(pathItem).toBeDefined();
+            expect(cutItem).toBeDefined();
         });
     });
 
     describe('hover and utility functions', () => {
         it('should test highlight functions', () => {
-            // Test highlightPath function directly
-            pathStore.highlightPath('path-1');
+            // Test highlightCut function directly
+            cutStore.highlightCut('cut-1');
 
-            const pathState = get(pathStore);
-            expect(pathState.highlightedPathId).toBe('path-1');
+            const cutState = get(cutStore);
+            expect(cutState.highlightedCutId).toBe('cut-1');
         });
 
-        it('should handle path hover events', async () => {
-            // Add test path
-            pathStore.addPath({
-                id: 'test-path-1',
-                name: 'Test Path',
+        it('should handle cut hover events', async () => {
+            // Add test cut
+            cutStore.addCut({
+                id: 'test-cut-1',
+                name: 'Test Cut',
                 operationId: 'op-1',
                 chainId: 'chain-1',
                 toolId: null,
@@ -185,25 +185,25 @@ describe('Paths Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
             });
 
-            const { container } = render(Paths);
+            const { container } = render(Cuts);
 
-            const pathItem = container.querySelector('.path-item');
-            expect(pathItem).toBeTruthy();
+            const cutItem = container.querySelector('.cut-item');
+            expect(cutItem).toBeTruthy();
 
-            // Test mouse enter to trigger handlePathHover
-            await fireEvent.mouseEnter(pathItem!);
+            // Test mouse enter to trigger handleCutHover
+            await fireEvent.mouseEnter(cutItem!);
 
-            // Test mouse leave to trigger handlePathHover with null
-            await fireEvent.mouseLeave(pathItem!);
+            // Test mouse leave to trigger handleCutHover with null
+            await fireEvent.mouseLeave(cutItem!);
 
-            expect(pathItem).toBeDefined();
+            expect(cutItem).toBeDefined();
         });
 
         it('should handle drag and drop completely', async () => {
-            // Add multiple test paths for drag and drop
-            pathStore.addPath({
-                id: 'test-path-drag-1',
-                name: 'Test Path 1',
+            // Add multiple test cuts for drag and drop
+            cutStore.addCut({
+                id: 'test-cut-drag-1',
+                name: 'Test Cut 1',
                 operationId: 'op-1',
                 chainId: 'chain-1',
                 toolId: null,
@@ -212,9 +212,9 @@ describe('Paths Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
             });
 
-            pathStore.addPath({
-                id: 'test-path-2',
-                name: 'Test Path 2',
+            cutStore.addCut({
+                id: 'test-cut-2',
+                name: 'Test Cut 2',
                 operationId: 'op-1',
                 chainId: 'chain-2',
                 toolId: null,
@@ -223,13 +223,13 @@ describe('Paths Component - Function Coverage', () => {
                 cutDirection: CutDirection.CLOCKWISE,
             });
 
-            const { container } = render(Paths);
+            const { container } = render(Cuts);
 
-            const pathItems = container.querySelectorAll('.path-item');
-            expect(pathItems.length).toBe(2);
+            const cutItems = container.querySelectorAll('.cut-item');
+            expect(cutItems.length).toBe(2);
 
-            const firstPath = pathItems[0];
-            const secondPath = pathItems[1];
+            const firstCut = cutItems[0];
+            const secondCut = cutItems[1];
 
             // Create proper drag events with dataTransfer
             const mockDataTransfer = {
@@ -246,7 +246,7 @@ describe('Paths Component - Function Coverage', () => {
                 value: mockDataTransfer,
                 writable: true,
             });
-            await fireEvent(firstPath, dragStartEvent);
+            await fireEvent(firstCut, dragStartEvent);
             expect(mockDataTransfer.effectAllowed).toBe('move');
 
             // Test handleDragOver
@@ -256,11 +256,11 @@ describe('Paths Component - Function Coverage', () => {
                 value: preventDefault,
                 writable: true,
             });
-            await fireEvent(secondPath, dragOverEvent);
+            await fireEvent(secondCut, dragOverEvent);
             expect(preventDefault).toHaveBeenCalled();
 
             // Test handleDragLeave
-            await fireEvent.dragLeave(firstPath);
+            await fireEvent.dragLeave(firstCut);
 
             // Test handleDrop with proper setup
             const dropEvent = new DragEvent('drop', { bubbles: true });
@@ -272,22 +272,22 @@ describe('Paths Component - Function Coverage', () => {
                 value: mockDataTransfer,
                 writable: true,
             });
-            await fireEvent(secondPath, dropEvent);
+            await fireEvent(secondCut, dropEvent);
 
             expect(container).toBeDefined();
         });
 
         it('should render component without errors', () => {
-            const { container } = render(Paths);
+            const { container } = render(Cuts);
 
             // Verify component renders successfully
             expect(container).toBeDefined();
         });
 
-        it('should handle path store updates', () => {
-            pathStore.addPath({
-                id: 'test-path-1',
-                name: 'Test Path',
+        it('should handle cut store updates', () => {
+            cutStore.addCut({
+                id: 'test-cut-1',
+                name: 'Test Cut',
                 operationId: 'op-1',
                 chainId: 'chain-1',
                 toolId: null,
@@ -296,7 +296,7 @@ describe('Paths Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
             });
 
-            const { container } = render(Paths);
+            const { container } = render(Cuts);
 
             // Component should handle store updates without errors
             expect(container).toBeDefined();

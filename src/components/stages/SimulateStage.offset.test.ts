@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
 import type { Line } from '$lib/geometry/line';
@@ -7,8 +7,8 @@ import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { GeometryType } from '$lib/geometry/shape';
 
-describe('SimulateStage offset path detection', () => {
-    let mockPath: Path;
+describe('SimulateStage offset cut detection', () => {
+    let mockCut: Cut;
     let mockChain: Chain;
     let mockShapes: Shape[];
     let mockOffsetShapes: Shape[];
@@ -63,9 +63,9 @@ describe('SimulateStage offset path detection', () => {
             shapes: mockShapes,
         };
 
-        mockPath = {
-            id: 'path1',
-            name: 'Test Path',
+        mockCut = {
+            id: 'cut1',
+            name: 'Test Cut',
             operationId: 'op1',
             chainId: 'chain1',
             toolId: 'tool1',
@@ -78,9 +78,9 @@ describe('SimulateStage offset path detection', () => {
         };
     });
 
-    describe('Offset path detection', () => {
-        it('should detect when path has offset geometry', () => {
-            mockPath.offset = {
+    describe('Offset cut detection', () => {
+        it('should detect when cut has offset geometry', () => {
+            mockCut.offset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
                 direction: OffsetDirection.OUTSET,
@@ -89,19 +89,19 @@ describe('SimulateStage offset path detection', () => {
                 version: '1.0.0',
             };
 
-            expect(mockPath.offset).toBeDefined();
-            expect(mockPath.offset?.offsetShapes).toHaveLength(2);
-            expect(mockPath.offset?.originalShapes).toHaveLength(2);
+            expect(mockCut.offset).toBeDefined();
+            expect(mockCut.offset?.offsetShapes).toHaveLength(2);
+            expect(mockCut.offset?.originalShapes).toHaveLength(2);
         });
 
-        it('should detect when path has no offset geometry', () => {
-            mockPath.offset = undefined;
+        it('should detect when cut has no offset geometry', () => {
+            mockCut.offset = undefined;
 
-            expect(mockPath.offset).toBeUndefined();
+            expect(mockCut.offset).toBeUndefined();
         });
 
         it('should use offset shapes when available', () => {
-            mockPath.offset = {
+            mockCut.offset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
                 direction: OffsetDirection.OUTSET,
@@ -111,8 +111,8 @@ describe('SimulateStage offset path detection', () => {
             };
 
             // Simulate the logic from SimulateStage
-            const shapes = mockPath.offset
-                ? mockPath.offset.offsetShapes
+            const shapes = mockCut.offset
+                ? mockCut.offset.offsetShapes
                 : mockChain.shapes;
 
             expect(shapes).toBe(mockOffsetShapes);
@@ -120,22 +120,22 @@ describe('SimulateStage offset path detection', () => {
         });
 
         it('should fall back to original chain shapes when no offset exists', () => {
-            const pathWithoutOffset: Path = {
-                ...mockPath,
+            const cutWithoutOffset: Cut = {
+                ...mockCut,
                 offset: undefined,
             };
 
             // Simulate the logic from SimulateStage
             const shapes =
-                pathWithoutOffset.offset?.offsetShapes || mockChain.shapes;
+                cutWithoutOffset.offset?.offsetShapes || mockChain.shapes;
 
             expect(shapes).toBe(mockShapes);
         });
     });
 
-    describe('Path distance calculation with offsets', () => {
+    describe('Cut distance calculation with offsets', () => {
         it('should calculate distance using offset shapes when available', () => {
-            mockPath.offset = {
+            mockCut.offset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
                 direction: OffsetDirection.OUTSET,
@@ -156,7 +156,7 @@ describe('SimulateStage offset path detection', () => {
                 return 0;
             }
 
-            const shapes = mockPath.offset?.offsetShapes || mockChain.shapes;
+            const shapes = mockCut.offset?.offsetShapes || mockChain.shapes;
             let totalDistance = 0;
             for (const shape of shapes) {
                 totalDistance += getShapeLength(shape);
@@ -179,7 +179,7 @@ describe('SimulateStage offset path detection', () => {
 
     describe('Lead calculation with offsets', () => {
         it('should use offset shapes for lead-in/out calculation', () => {
-            mockPath.offset = {
+            mockCut.offset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
                 direction: OffsetDirection.OUTSET,
@@ -188,13 +188,13 @@ describe('SimulateStage offset path detection', () => {
                 version: '1.0.0',
             };
 
-            mockPath.leadInConfig = { type: LeadType.ARC, length: 10 };
+            mockCut.leadInConfig = { type: LeadType.ARC, length: 10 };
 
             // Simulate the chain used for lead calculation
-            const chainForLeads = mockPath.offset
+            const chainForLeads = mockCut.offset
                 ? {
                       ...mockChain,
-                      shapes: mockPath.offset.offsetShapes,
+                      shapes: mockCut.offset.offsetShapes,
                   }
                 : mockChain;
 
@@ -204,8 +204,8 @@ describe('SimulateStage offset path detection', () => {
     });
 
     describe('Visual rendering with offsets', () => {
-        it('should identify paths with offsets for different rendering', () => {
-            mockPath.offset = {
+        it('should identify cuts with offsets for different rendering', () => {
+            mockCut.offset = {
                 offsetShapes: mockOffsetShapes,
                 originalShapes: mockShapes,
                 direction: OffsetDirection.OUTSET,
@@ -214,29 +214,29 @@ describe('SimulateStage offset path detection', () => {
                 version: '1.0.0',
             };
 
-            // Paths with offsets should be rendered with both solid and dashed lines
-            const hasOffset = !!mockPath.offset;
-            const hasOriginalShapes = !!mockPath.offset?.originalShapes;
-            const hasOffsetShapes = !!mockPath.offset?.offsetShapes;
+            // Cuts with offsets should be rendered with both solid and dashed lines
+            const hasOffset = !!mockCut.offset;
+            const hasOriginalShapes = !!mockCut.offset?.originalShapes;
+            const hasOffsetShapes = !!mockCut.offset?.offsetShapes;
 
             expect(hasOffset).toBe(true);
             expect(hasOriginalShapes).toBe(true);
             expect(hasOffsetShapes).toBe(true);
         });
 
-        it('should identify paths without offsets for standard rendering', () => {
-            mockPath.offset = undefined;
+        it('should identify cuts without offsets for standard rendering', () => {
+            mockCut.offset = undefined;
 
-            const hasOffset = !!mockPath.offset;
+            const hasOffset = !!mockCut.offset;
 
             expect(hasOffset).toBe(false);
         });
     });
 
     describe('Mixed operations handling', () => {
-        it('should handle mixed paths with and without offsets', () => {
-            const pathWithOffset: Path = {
-                ...mockPath,
+        it('should handle mixed cuts with and without offsets', () => {
+            const cutWithOffset: Cut = {
+                ...mockCut,
                 offset: {
                     offsetShapes: mockOffsetShapes,
                     originalShapes: mockShapes,
@@ -247,19 +247,19 @@ describe('SimulateStage offset path detection', () => {
                 },
             };
 
-            const pathWithoutOffset: Path = {
-                ...mockPath,
-                id: 'path2',
+            const cutWithoutOffset: Cut = {
+                ...mockCut,
+                id: 'cut2',
                 offset: undefined,
             };
 
-            const paths = [pathWithOffset, pathWithoutOffset];
+            const cuts = [cutWithOffset, cutWithoutOffset];
 
-            // Each path should use its appropriate shapes
-            paths.forEach((path) => {
-                const shapes = path.offset?.offsetShapes || mockChain.shapes;
+            // Each cut should use its appropriate shapes
+            cuts.forEach((cut) => {
+                const shapes = cut.offset?.offsetShapes || mockChain.shapes;
 
-                if (path.id === 'path1') {
+                if (cut.id === 'cut1') {
                     expect(shapes).toBe(mockOffsetShapes);
                 } else {
                     expect(shapes).toBe(mockShapes);

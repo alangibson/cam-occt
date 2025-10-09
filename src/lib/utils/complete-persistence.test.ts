@@ -8,14 +8,14 @@ import {
     saveApplicationState,
 } from '$lib/stores/storage/store';
 import { drawingStore } from '$lib/stores/drawing/store';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { GeometryType } from '$lib/types/geometry';
-import type { PathsState } from '$lib/stores/paths/interfaces';
+import type { CutsState } from '$lib/stores/cuts/interfaces';
 import type { WorkflowState } from '$lib/stores/workflow/interfaces';
 import { Unit } from './units';
 
@@ -40,7 +40,7 @@ Object.defineProperty(window, 'localStorage', { value: localStorageMock });
 describe('Complete Persistence Integration', () => {
     beforeEach(() => {
         localStorageMock.clear();
-        pathStore.reset();
+        cutStore.reset();
         operationsStore.reset();
         workflowStore.reset();
     });
@@ -109,21 +109,21 @@ describe('Complete Persistence Integration', () => {
 
         operationsStore.addOperation(testOperation);
 
-        // Wait for path generation and lead calculation
+        // Wait for cut generation and lead calculation
         await new Promise((resolve) => setTimeout(resolve, 200));
 
-        // 4. Verify paths and add lead geometry
-        let pathsState: PathsState | null = null;
-        const unsubscribe1 = pathStore.subscribe((state) => {
-            pathsState = state;
+        // 4. Verify cuts and add lead geometry
+        let cutsState: CutsState | null = null;
+        const unsubscribe1 = cutStore.subscribe((state) => {
+            cutsState = state;
         });
         unsubscribe1();
-        expect(pathsState!.paths.length).toBe(1);
+        expect(cutsState!.cuts.length).toBe(1);
 
-        const createdPath = pathsState!.paths[0];
+        const createdCut = cutsState!.cuts[0];
 
         // Add lead geometry to simulate calculated leads
-        pathStore.updatePathLeadGeometry(createdPath.id, {
+        cutStore.updateCutLeadGeometry(createdCut.id, {
             leadIn: {
                 geometry: {
                     center: { x: 40, y: 47 },
@@ -159,11 +159,11 @@ describe('Complete Persistence Integration', () => {
         });
         unsubscribe2();
 
-        const unsubscribe3 = pathStore.subscribe((state) => {
-            pathsState = state;
+        const unsubscribe3 = cutStore.subscribe((state) => {
+            cutsState = state;
         });
         unsubscribe3();
-        const pathWithLeads = pathsState!.paths[0];
+        const cutWithLeads = cutsState!.cuts[0];
 
         expect(workflowState!.currentStage).toBe(WorkflowStage.PROGRAM);
         expect(workflowState!.completedStages.has(WorkflowStage.IMPORT)).toBe(
@@ -172,16 +172,16 @@ describe('Complete Persistence Integration', () => {
         expect(workflowState!.completedStages.has(WorkflowStage.EDIT)).toBe(
             true
         );
-        // Note: WorkflowStage.PREPARE stage may be affected by path generation, focus on core functionality
-        expect(pathWithLeads.leadIn).toBeDefined();
-        expect(pathWithLeads.leadOut).toBeDefined();
-        expect(pathWithLeads.leadValidation).toBeDefined();
+        // Note: WorkflowStage.PREPARE stage may be affected by cut generation, focus on core functionality
+        expect(cutWithLeads.leadIn).toBeDefined();
+        expect(cutWithLeads.leadOut).toBeDefined();
+        expect(cutWithLeads.leadValidation).toBeDefined();
 
         // 6. Save complete application state
         await saveApplicationState();
 
         // 7. Reset everything to simulate fresh app start
-        pathStore.reset();
+        cutStore.reset();
         operationsStore.reset();
         workflowStore.reset();
 
@@ -190,13 +190,13 @@ describe('Complete Persistence Integration', () => {
             workflowState = state;
         });
         unsubscribe4();
-        const unsubscribe5 = pathStore.subscribe((state) => {
-            pathsState = state;
+        const unsubscribe5 = cutStore.subscribe((state) => {
+            cutsState = state;
         });
         unsubscribe5();
 
         expect(workflowState!.currentStage).toBe(WorkflowStage.IMPORT); // Reset to initial
-        expect(pathsState!.paths).toHaveLength(0); // No paths
+        expect(cutsState!.cuts).toHaveLength(0); // No cuts
 
         // 8. Restore complete application state
         await restoreApplicationState();
@@ -206,8 +206,8 @@ describe('Complete Persistence Integration', () => {
             workflowState = state;
         });
         unsubscribe6();
-        const unsubscribe7 = pathStore.subscribe((state) => {
-            pathsState = state;
+        const unsubscribe7 = cutStore.subscribe((state) => {
+            cutsState = state;
         });
         unsubscribe7();
 
@@ -221,45 +221,45 @@ describe('Complete Persistence Integration', () => {
         );
         // Note: Focus on key stages that are reliably persisted
 
-        // Verify paths and lead geometry restoration
-        expect(pathsState!.paths).toHaveLength(1);
-        const restoredPath = pathsState!.paths[0];
+        // Verify cuts and lead geometry restoration
+        expect(cutsState!.cuts).toHaveLength(1);
+        const restoredCut = cutsState!.cuts[0];
 
-        expect(restoredPath.name).toBe('Complete Test Cut - Chain 1');
-        expect(restoredPath.leadInConfig?.type).toBe(LeadType.ARC);
-        expect(restoredPath.leadInConfig?.length).toBe(8);
-        expect(restoredPath.leadOutConfig?.type).toBe(LeadType.ARC);
-        expect(restoredPath.leadOutConfig?.length).toBe(6);
+        expect(restoredCut.name).toBe('Complete Test Cut - Chain 1');
+        expect(restoredCut.leadInConfig?.type).toBe(LeadType.ARC);
+        expect(restoredCut.leadInConfig?.length).toBe(8);
+        expect(restoredCut.leadOutConfig?.type).toBe(LeadType.ARC);
+        expect(restoredCut.leadOutConfig?.length).toBe(6);
 
         // Verify calculated lead geometry
-        expect(restoredPath.leadIn).toBeDefined();
-        expect(restoredPath.leadIn!.geometry).toEqual({
+        expect(restoredCut.leadIn).toBeDefined();
+        expect(restoredCut.leadIn!.geometry).toEqual({
             center: { x: 40, y: 47 },
             radius: 5,
             startAngle: 0,
             endAngle: Math.PI,
             clockwise: false,
         });
-        expect(restoredPath.leadIn!.type).toBe(LeadType.ARC);
-        expect(restoredPath.leadIn!.version).toBe('1.0.0');
+        expect(restoredCut.leadIn!.type).toBe(LeadType.ARC);
+        expect(restoredCut.leadIn!.version).toBe('1.0.0');
 
-        expect(restoredPath.leadOut).toBeDefined();
-        expect(restoredPath.leadOut!.geometry).toEqual({
+        expect(restoredCut.leadOut).toBeDefined();
+        expect(restoredCut.leadOut!.geometry).toEqual({
             center: { x: 77.5, y: 50 },
             radius: 2.5,
             startAngle: 180,
             endAngle: 0,
             clockwise: false,
         });
-        expect(restoredPath.leadOut!.type).toBe(LeadType.ARC);
-        expect(restoredPath.leadOut!.version).toBe('1.0.0');
+        expect(restoredCut.leadOut!.type).toBe(LeadType.ARC);
+        expect(restoredCut.leadOut!.version).toBe('1.0.0');
 
         // Verify lead validation
-        expect(restoredPath.leadValidation).toBeDefined();
-        expect(restoredPath.leadValidation!.isValid).toBe(true);
-        expect(restoredPath.leadValidation!.warnings).toContain(
+        expect(restoredCut.leadValidation).toBeDefined();
+        expect(restoredCut.leadValidation!.isValid).toBe(true);
+        expect(restoredCut.leadValidation!.warnings).toContain(
             'Lead may be close to material edge'
         );
-        expect(restoredPath.leadValidation!.severity).toBe('warning');
+        expect(restoredCut.leadValidation!.severity).toBe('warning');
     }, 10000); // 10 second timeout for async operations
 });

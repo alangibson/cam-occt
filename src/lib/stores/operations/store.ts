@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
-import { pathStore } from '$lib/stores/paths/store';
-import type { Path } from '$lib/stores/paths/interfaces';
+import { cutStore } from '$lib/stores/cuts/store';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import { partStore } from '$lib/stores/parts/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -11,7 +11,7 @@ import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Operation, OperationsStore } from './interfaces';
-import { createPathsFromOperation } from './functions';
+import { createCutsFromOperation } from './functions';
 
 function createOperationsStore(): OperationsStore {
     const { subscribe, set, update } = writable<Operation[]>([]);
@@ -28,7 +28,7 @@ function createOperationsStore(): OperationsStore {
             // Add operation to store synchronously
             update((operations) => [...operations, newOperation]);
 
-            // Generate paths for the new operation if it has targets and is enabled
+            // Generate cuts for the new operation if it has targets and is enabled
             if (newOperation.enabled && newOperation.targetIds.length > 0) {
                 operationsStore.applyOperation(newOperation.id);
             }
@@ -41,7 +41,7 @@ function createOperationsStore(): OperationsStore {
             );
             set(newOperations);
 
-            // Always regenerate paths when operation changes
+            // Always regenerate cuts when operation changes
             const operation: Operation | undefined = newOperations.find(
                 (op) => op.id === id
             );
@@ -54,8 +54,8 @@ function createOperationsStore(): OperationsStore {
         },
 
         deleteOperation: (id: string) => {
-            // Remove all paths created by this operation
-            pathStore.deletePathsByOperation(id);
+            // Remove all cuts created by this operation
+            cutStore.deleteCutsByOperation(id);
             // Clear any warnings for this operation
             leadWarningsStore.clearWarningsForOperation(id);
             offsetWarningsStore.clearWarningsForOperation(id);
@@ -83,7 +83,7 @@ function createOperationsStore(): OperationsStore {
             // Add duplicated operation to store synchronously
             update((ops) => [...ops, newOperation]);
 
-            // Generate paths for the duplicated operation if it has targets and is enabled
+            // Generate cuts for the duplicated operation if it has targets and is enabled
             if (newOperation.enabled && newOperation.targetIds.length > 0) {
                 operationsStore.applyOperation(newOperation.id);
             }
@@ -95,25 +95,25 @@ function createOperationsStore(): OperationsStore {
                 (op) => op.id === operationId
             );
             if (operation && operation.enabled) {
-                // Remove existing paths for this operation
-                pathStore.deletePathsByOperation(operation.id);
+                // Remove existing cuts for this operation
+                cutStore.deleteCutsByOperation(operation.id);
 
                 // Get required state data
                 const chainsState: { chains: Chain[] } = get(chainStore);
                 const partsState: { parts: DetectedPart[] } = get(partStore);
                 const tools = get(toolStore);
 
-                // Generate paths with leads (async)
-                const result = await createPathsFromOperation(
+                // Generate cuts with leads (async)
+                const result = await createCutsFromOperation(
                     operation,
                     chainsState.chains,
                     partsState.parts,
                     tools
                 );
 
-                // Store generated paths
-                result.paths.forEach((path) => {
-                    pathStore.addPath(path);
+                // Store generated cuts
+                result.cuts.forEach((cut) => {
+                    cutStore.addCut(cut);
                 });
 
                 // Handle warnings
@@ -132,9 +132,9 @@ function createOperationsStore(): OperationsStore {
                     }
                 });
 
-                // Check if any paths exist and mark program stage as complete
-                const pathsState: { paths: Path[] } = get(pathStore);
-                if (pathsState.paths.length > 0) {
+                // Check if any cuts exist and mark program stage as complete
+                const cutsState: { cuts: Cut[] } = get(cutStore);
+                if (cutsState.cuts.length > 0) {
                     workflowStore.completeStage(WorkflowStage.PROGRAM);
                 }
             }
@@ -142,8 +142,8 @@ function createOperationsStore(): OperationsStore {
 
         applyAllOperations: () => {
             update((operations) => {
-                // Clear existing paths first
-                pathStore.reset();
+                // Clear existing cuts first
+                cutStore.reset();
 
                 // Apply all enabled operations in order
                 const enabledOperations: Operation[] = operations

@@ -18,7 +18,7 @@ import { overlayStore } from '$lib/stores/overlay/store';
 import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import { operationsStore } from '$lib/stores/operations/store';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { settingsStore } from '$lib/stores/settings/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -173,8 +173,8 @@ vi.mock('../operations/store', () => ({
     },
 }));
 
-vi.mock('../paths/store', () => ({
-    pathStore: {
+vi.mock('../cuts/store', () => ({
+    cutStore: {
         subscribe: vi.fn((fn) => {
             fn({});
             return () => {};
@@ -284,11 +284,11 @@ vi.mock('svelte/store', () => ({
         if (store === operationsStore) {
             return [];
         }
-        if (store === pathStore) {
+        if (store === cutStore) {
             return {
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
             };
         }
         if (store === toolStore) {
@@ -401,9 +401,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -463,9 +463,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -524,9 +524,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -593,9 +593,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -655,9 +655,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -720,9 +720,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -794,9 +794,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -867,9 +867,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -946,9 +946,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -1018,9 +1018,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -1088,9 +1088,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -1161,9 +1161,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -1234,9 +1234,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -1306,9 +1306,9 @@ describe('storage/store', () => {
                     partsDetected: false,
                 },
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -1362,9 +1362,9 @@ describe('storage/store', () => {
                 leadWarnings: [],
                 prepareStageState: null,
                 operations: [],
-                paths: [],
-                selectedPathId: null,
-                highlightedPathId: null,
+                cuts: [],
+                selectedCutId: null,
+                highlightedCutId: null,
                 tools: [],
                 applicationSettings: defaultApplicationSettings,
                 savedAt: new Date().toISOString(),
@@ -1405,7 +1405,7 @@ describe('storage/store', () => {
             expect(leadWarningsStore.subscribe).toHaveBeenCalled();
             expect(prepareStageStore.subscribe).toHaveBeenCalled();
             expect(operationsStore.subscribe).toHaveBeenCalled();
-            expect(pathStore.subscribe).toHaveBeenCalled();
+            expect(cutStore.subscribe).toHaveBeenCalled();
             expect(toolStore.subscribe).toHaveBeenCalled();
 
             // Call the cleanup function

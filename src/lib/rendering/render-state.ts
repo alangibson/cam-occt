@@ -20,10 +20,10 @@ const MIN_PAN_VELOCITY_THRESHOLD = 0.1;
 const PAN_INTERPOLATION_FACTOR = 0.2;
 
 export interface RenderFlags {
-    geometry: boolean; // Shapes, paths, overlays changed
+    geometry: boolean; // Shapes, cuts, overlays changed
     transforms: boolean; // Pan, zoom, or coordinate changes
     selection: boolean; // Selection or hover state changed
-    paths: boolean; // Path calculations or visibility changed
+    cuts: boolean; // Cut calculations or visibility changed
     overlays: boolean; // Stage overlays changed
 }
 
@@ -32,7 +32,7 @@ export class RenderStateManager {
         geometry: false,
         transforms: false,
         selection: false,
-        paths: false,
+        cuts: false,
         overlays: false,
     };
 
@@ -76,7 +76,7 @@ export class RenderStateManager {
             geometry: false,
             transforms: false,
             selection: false,
-            paths: false,
+            cuts: false,
             overlays: false,
         };
     }

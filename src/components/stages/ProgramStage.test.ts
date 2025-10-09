@@ -57,15 +57,15 @@ vi.mock('$lib/stores/parts', () => ({
     clearHighlight: vi.fn(),
 }));
 
-vi.mock('$lib/stores/paths', () => ({
-    pathStore: {
+vi.mock('$lib/stores/cuts', () => ({
+    cutStore: {
         subscribe: vi.fn((callback) => {
             callback({
-                paths: [],
+                cuts: [],
             });
             return vi.fn();
         }),
-        reorderPaths: vi.fn(),
+        reorderCuts: vi.fn(),
     },
 }));
 
@@ -141,8 +141,8 @@ vi.mock('../Operations.svelte', () => ({
     },
 }));
 
-vi.mock('../Paths.svelte', () => ({
-    default: function MockPaths() {
+vi.mock('../Cuts.svelte', () => ({
+    default: function MockCuts() {
         return {
             $set: vi.fn(),
             $on: vi.fn(),
@@ -187,7 +187,7 @@ vi.mock('$lib/algorithms/part-detection/chain-part-interactions', () => ({
 
 vi.mock('$lib/algorithms/optimize-cut-order/optimize-cut-order', () => ({
     optimizeCutOrder: vi.fn().mockReturnValue({
-        orderedPaths: [],
+        orderedCuts: [],
         rapids: [],
         totalDistance: 0,
     }),
@@ -364,15 +364,15 @@ describe('ProgramStage', () => {
             expect(component).toBeTruthy();
         });
 
-        it('should handle paths with data', () => {
-            vi.doMock('$lib/stores/paths', () => ({
-                pathStore: {
+        it('should handle cuts with data', () => {
+            vi.doMock('$lib/stores/cuts', () => ({
+                cutStore: {
                     subscribe: vi.fn((callback) => {
                         callback({
-                            paths: [
+                            cuts: [
                                 {
-                                    id: 'path-1',
-                                    name: 'Test Path',
+                                    id: 'cut-1',
+                                    name: 'Test Cut',
                                     enabled: true,
                                     leadInConfig: {
                                         type: 'arc',
@@ -391,7 +391,7 @@ describe('ProgramStage', () => {
                         });
                         return vi.fn();
                     }),
-                    reorderPaths: vi.fn(),
+                    reorderCuts: vi.fn(),
                 },
             }));
 
@@ -498,7 +498,7 @@ describe('ProgramStage', () => {
                 .spyOn(console, 'log')
                 .mockImplementation(() => {});
 
-            // Test the warning case where no drawing, chains, or paths are available
+            // Test the warning case where no drawing, chains, or cuts are available
             const component = render(ProgramStage);
             expect(component).toBeTruthy();
 

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
@@ -9,7 +9,7 @@ import { GeometryType } from '$lib/geometry/shape';
 describe('SimulateStage Cut Direction', () => {
     beforeEach(() => {
         // Reset stores
-        pathStore.reset();
+        cutStore.reset();
         chainStore.clearChains();
     });
 
@@ -33,9 +33,9 @@ describe('SimulateStage Cut Direction', () => {
         // Add chain to store
         chainStore.setChains([chain]);
 
-        // Create paths with different cut directions
-        pathStore.addPath({
-            id: 'path-clockwise-1',
+        // Create cuts with different cut directions
+        cutStore.addCut({
+            id: 'cut-clockwise-1',
             name: 'Clockwise Circle',
             operationId: 'op-1',
             chainId: 'chain-1',
@@ -46,8 +46,8 @@ describe('SimulateStage Cut Direction', () => {
             feedRate: 1000,
         });
 
-        pathStore.addPath({
-            id: 'path-counter-1',
+        cutStore.addCut({
+            id: 'cut-counter-1',
             name: 'Counterclockwise Circle',
             operationId: 'op-2',
             chainId: 'chain-1',
@@ -103,9 +103,9 @@ describe('SimulateStage Cut Direction', () => {
         // Add chain to store
         chainStore.setChains([chain]);
 
-        // Create paths with different cut directions
-        pathStore.addPath({
-            id: 'path-clockwise-2',
+        // Create cuts with different cut directions
+        cutStore.addCut({
+            id: 'cut-clockwise-2',
             name: 'Clockwise Ellipse',
             operationId: 'op-3',
             chainId: 'chain-2',
@@ -116,8 +116,8 @@ describe('SimulateStage Cut Direction', () => {
             feedRate: 1000,
         });
 
-        pathStore.addPath({
-            id: 'path-counter-2',
+        cutStore.addCut({
+            id: 'cut-counter-2',
             name: 'Counterclockwise Ellipse',
             operationId: 'op-4',
             chainId: 'chain-2',
@@ -152,9 +152,9 @@ describe('SimulateStage Cut Direction', () => {
         // Add chain to store
         chainStore.setChains([chain]);
 
-        // Create path with "none" cut direction
-        pathStore.addPath({
-            id: 'path-open-1',
+        // Create cut with "none" cut direction
+        cutStore.addCut({
+            id: 'cut-open-1',
             name: 'Open Line',
             operationId: 'op-5',
             chainId: 'chain-3',

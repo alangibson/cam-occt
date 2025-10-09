@@ -2,23 +2,23 @@
     /**
      * SimulateStage Component
      *
-     * This component provides 3D cutting simulation with support for offset paths.
-     * When paths have calculated offsets (from kerf compensation), the simulation
+     * This component provides 3D cutting simulation with support for offset cuts.
+     * When cuts have calculated offsets (from kerf compensation), the simulation
      * automatically uses the offset geometry for:
      * - Tool head movement and animation
      * - Distance and timing calculations
      * - Lead-in/out calculations
      *
      * The visual rendering shows:
-     * - Offset paths as solid green lines (when present)
-     * - Original paths as dashed green reference lines
-     * - Automatic fallback to original paths when no offset exists
+     * - Offset cuts as solid green lines (when present)
+     * - Original cuts as dashed green reference lines
+     * - Automatic fallback to original cuts when no offset exists
      */
     import AccordionPanel from '../AccordionPanel.svelte';
     import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import { pathStore } from '$lib/stores/paths/store';
+    import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
@@ -42,7 +42,7 @@
     } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { Path } from '$lib/stores/paths/interfaces';
+    import type { Cut } from '$lib/stores/cuts/interfaces';
     import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import type { Tool } from '$lib/stores/tools/interfaces';
     import type { ChainStore } from '$lib/stores/chains/interfaces';
@@ -92,7 +92,7 @@
     // Animation data
     let animationSteps: Array<{
         type: 'rapid' | 'cut';
-        path: Path | null;
+        cut: Cut | null;
         rapid: Rapid | null;
         startTime: number;
         endTime: number;
@@ -101,7 +101,7 @@
     }> = [];
 
     // Store subscriptions
-    let pathStoreState: { paths: Path[] } | null = null;
+    let cutStoreState: { cuts: Cut[] } | null = null;
     let rapidStoreState: { rapids: Rapid[] } | null = null;
     let chainStoreState: ChainStore | null = null;
     let drawingState: DrawingState | null = null;
@@ -115,11 +115,11 @@
     let estimatedCutTime = 0;
 
     // Helper function to get feedRate from tool or use default, accounting for hole underspeed
-    function getFeedRateForPath(path: Path): number {
+    function getFeedRateForCut(cut: Cut): number {
         let baseFeedRate = 1000; // Default feed rate
 
-        if (path.toolId && toolStoreState) {
-            const tool = toolStoreState.find((t: Tool) => t.id === path.toolId);
+        if (cut.toolId && toolStoreState) {
+            const tool = toolStoreState.find((t: Tool) => t.id === cut.toolId);
             if (tool?.feedRate) {
                 baseFeedRate = tool.feedRate;
             }
@@ -127,11 +127,11 @@
 
         // Apply hole underspeed if applicable
         if (
-            path.isHole &&
-            path.holeUnderspeedPercent !== undefined &&
-            path.holeUnderspeedPercent < 100
+            cut.isHole &&
+            cut.holeUnderspeedPercent !== undefined &&
+            cut.holeUnderspeedPercent < 100
         ) {
-            return baseFeedRate * (path.holeUnderspeedPercent / 100);
+            return baseFeedRate * (cut.holeUnderspeedPercent / 100);
         }
 
         return baseFeedRate;
@@ -161,7 +161,7 @@
 
     // Auto-complete simulate stage when simulation data is available
     $: if (
-        (pathStoreState?.paths && pathStoreState.paths.length > 0) ||
+        (cutStoreState?.cuts && cutStoreState.cuts.length > 0) ||
         (rapidStoreState?.rapids && rapidStoreState.rapids.length > 0)
     ) {
         workflowStore.completeStage(WorkflowStage.SIMULATE);
@@ -174,8 +174,8 @@
         unsubscribers = [];
 
         unsubscribers.push(
-            pathStore.subscribe((state) => {
-                pathStoreState = state;
+            cutStore.subscribe((state) => {
+                cutStoreState = state;
             })
         );
 
@@ -212,13 +212,13 @@
 
     // Initialize simulation data
     function initializeSimulation() {
-        if (!pathStoreState || !rapidStoreState) return;
+        if (!cutStoreState || !rapidStoreState) return;
 
         buildAnimationSteps();
         resetSimulation();
     }
 
-    // Build animation steps from paths and rapids
+    // Build animation steps from cuts and rapids
     function buildAnimationSteps() {
         animationSteps = [];
         let currentTime = 0;
@@ -229,37 +229,37 @@
         pierceCount = 0;
         estimatedCutTime = 0;
 
-        // Get ordered paths and rapids
-        const orderedPaths = pathStoreState
-            ? [...pathStoreState.paths].sort((a, b) => a.order - b.order)
+        // Get ordered cuts and rapids
+        const orderedCuts = cutStoreState
+            ? [...cutStoreState.cuts].sort((a, b) => a.order - b.order)
             : [];
         const rapids = rapidStoreState ? rapidStoreState.rapids : [];
 
-        // Count pierces (one per path)
-        pierceCount = orderedPaths.length;
+        // Count pierces (one per cut)
+        pierceCount = orderedCuts.length;
 
-        // Find starting position (first rapid start or first path start)
+        // Find starting position (first rapid start or first cut start)
         if (rapids.length > 0) {
             toolHeadPosition = { ...rapids[0].start };
-        } else if (orderedPaths.length > 0) {
-            toolHeadPosition = getPathStartPoint(orderedPaths[0]);
+        } else if (orderedCuts.length > 0) {
+            toolHeadPosition = getCutStartPoint(orderedCuts[0]);
         }
 
-        // Process paths and rapids in sequence
-        // Note: The optimization algorithm generates rapids to connect between paths
-        // Rapids array should have one rapid before each path (rapids.length == paths.length)
-        for (let i = 0; i < orderedPaths.length; i++) {
-            const path = orderedPaths[i];
+        // Process cuts and rapids in sequence
+        // Note: The optimization algorithm generates rapids to connect between cuts
+        // Rapids array should have one rapid before each cut (rapids.length == cuts.length)
+        for (let i = 0; i < orderedCuts.length; i++) {
+            const cut = orderedCuts[i];
 
-            // Add rapid before this path if it exists
-            // Rapids are generated to move from previous position to this path's start
+            // Add rapid before this cut if it exists
+            // Rapids are generated to move from previous position to this cut's start
             if (i < rapids.length) {
                 const rapid = rapids[i];
                 const rapidDistance = Math.sqrt(
                     Math.pow(rapid.end.x - rapid.start.x, 2) +
                         Math.pow(rapid.end.y - rapid.start.y, 2)
                 );
-                const rapidRate = getRapidRateForPath(path); // Get rapid rate from path's tool
+                const rapidRate = getRapidRateForCut(cut); // Get rapid rate from cut's tool
                 const rapidTime = (rapidDistance / rapidRate) * 60; // Convert to seconds
 
                 // Update statistics
@@ -267,7 +267,7 @@
 
                 animationSteps.push({
                     type: 'rapid',
-                    path: null,
+                    cut: null,
                     rapid,
                     startTime: currentTime,
                     endTime: currentTime + rapidTime,
@@ -278,22 +278,22 @@
                 currentTime += rapidTime;
             }
 
-            // Add cut path
-            const pathDistance = getPathDistance(path);
-            const feedRate = getFeedRateForPath(path); // Get feed rate from tool
-            const cutTime = (pathDistance / feedRate) * 60; // Convert to seconds (feedRate is units/min)
+            // Add cut
+            const cutDistance = getCutDistance(cut);
+            const feedRate = getFeedRateForCut(cut); // Get feed rate from tool
+            const cutTime = (cutDistance / feedRate) * 60; // Convert to seconds (feedRate is units/min)
 
             // Update statistics
-            totalCutDistance += pathDistance;
+            totalCutDistance += cutDistance;
             estimatedCutTime += cutTime;
 
             animationSteps.push({
                 type: 'cut',
-                path,
+                cut,
                 rapid: null,
                 startTime: currentTime,
                 endTime: currentTime + cutTime,
-                distance: pathDistance,
+                distance: cutDistance,
             });
 
             currentTime += cutTime;
@@ -303,43 +303,43 @@
     }
 
     // Get rapid rate from DefaultsManager (automatically unit-aware)
-    function getRapidRateForPath(_path: Path): number {
+    function getRapidRateForCut(_cut: Cut): number {
         return getDefaults().cam.rapidRate;
     }
 
     /**
-     * Get starting point of a path, accounting for lead-in and offset.
-     * When a path has calculated offset geometry (from kerf compensation),
+     * Get starting point of a cut, accounting for lead-in and offset.
+     * When a cut has calculated offset geometry (from kerf compensation),
      * this function uses the offset shapes instead of the original chain shapes.
      * Falls back to original chain shapes when no offset exists.
-     * @param path - The path to get the starting point for
+     * @param cut - The cut to get the starting point for
      * @returns The starting point coordinates
      */
-    function getPathStartPoint(path: Path): Point2D {
+    function getCutStartPoint(cut: Cut): Point2D {
         // Use execution chain if available (contains shapes in correct execution order)
-        let shapes = path.cutChain?.shapes;
+        let shapes = cut.cutChain?.shapes;
 
         // Fallback to offset shapes or original chain for backward compatibility
         if (!shapes) {
             shapes =
-                path.offset?.offsetShapes ||
+                cut.offset?.offsetShapes ||
                 chainStoreState?.chains?.find(
-                    (c: Chain) => c.id === path.chainId
+                    (c: Chain) => c.id === cut.chainId
                 )?.shapes;
         }
 
         if (!shapes || shapes.length === 0) return { x: 0, y: 0 };
 
-        // Check if path has lead-in
+        // Check if cut has lead-in
         if (
-            path.leadInConfig?.type &&
-            path.leadInConfig.type !== 'none' &&
-            path.leadInConfig.length &&
-            path.leadInConfig.length > 0
+            cut.leadInConfig?.type &&
+            cut.leadInConfig.type !== 'none' &&
+            cut.leadInConfig.length &&
+            cut.leadInConfig.length > 0
         ) {
             // First try to use cached lead geometry
-            if (hasValidCachedLeads(path)) {
-                const cached = getCachedLeadGeometry(path);
+            if (hasValidCachedLeads(cut)) {
+                const cached = getCachedLeadGeometry(cut);
                 if (cached.leadIn) {
                     const cachedLeadInPoints = convertLeadGeometryToPoints(
                         cached.leadIn
@@ -354,25 +354,25 @@
             // Fallback to calculating if no valid cache
             try {
                 // Find the part that contains this chain
-                const part = findPartForChain(path.chainId);
+                const part = findPartForChain(cut.chainId);
 
                 // Use offset shapes if available
                 const chain = chainStoreState?.chains?.find(
-                    (c: Chain) => c.id === path.chainId
+                    (c: Chain) => c.id === cut.chainId
                 );
                 if (!chain) return { x: 0, y: 0 };
 
-                const chainForLeads = path.offset
-                    ? { ...chain, shapes: path.offset.offsetShapes }
+                const chainForLeads = cut.offset
+                    ? { ...chain, shapes: cut.offset.offsetShapes }
                     : chain;
 
-                const leadInConfig: LeadConfig = path.leadInConfig || {
+                const leadInConfig: LeadConfig = cut.leadInConfig || {
                     type: LeadType.NONE,
                     length: 0,
                     flipSide: false,
                     angle: 0,
                 };
-                const leadOutConfig: LeadConfig = path.leadOutConfig || {
+                const leadOutConfig: LeadConfig = cut.leadOutConfig || {
                     type: LeadType.NONE,
                     length: 0,
                     flipSide: false,
@@ -383,7 +383,7 @@
                     chainForLeads,
                     leadInConfig,
                     leadOutConfig,
-                    path.cutDirection,
+                    cut.cutDirection,
                     part
                 );
 
@@ -398,8 +398,8 @@
                 }
             } catch (error) {
                 console.warn(
-                    'Failed to calculate lead-in for path:',
-                    path.name,
+                    'Failed to calculate lead-in for cut:',
+                    cut.name,
                     error
                 );
             }
@@ -418,25 +418,25 @@
     }
 
     /**
-     * Calculate total distance of a path, including lead-in and lead-out.
+     * Calculate total distance of a cut, including lead-in and lead-out.
      * Uses offset shapes when available (from kerf compensation),
      * otherwise falls back to original chain shapes.
-     * @param path - The path to calculate distance for
-     * @returns Total path distance including leads
+     * @param cut - The cut to calculate distance for
+     * @returns Total cut distance including leads
      */
-    function getPathDistance(path: Path): number {
+    function getCutDistance(cut: Cut): number {
         // Use execution chain if available
-        let shapes = path.cutChain?.shapes;
+        let shapes = cut.cutChain?.shapes;
         const chain = chainStoreState?.chains?.find(
-            (c: Chain) => c.id === path.chainId
+            (c: Chain) => c.id === cut.chainId
         );
 
         // Fallback for backward compatibility
         if (!shapes) {
             if (!chain) return 0;
             shapes =
-                path.offset?.offsetShapes ||
-                path.cutChain?.shapes ||
+                cut.offset?.offsetShapes ||
+                cut.cutChain?.shapes ||
                 chain.shapes;
         }
 
@@ -454,18 +454,18 @@
 
         try {
             if (
-                (path.leadInConfig?.type &&
-                    path.leadInConfig.type !== 'none' &&
-                    path.leadInConfig.length &&
-                    path.leadInConfig.length > 0) ||
-                (path.leadOutConfig?.type &&
-                    path.leadOutConfig.type !== 'none' &&
-                    path.leadOutConfig.length &&
-                    path.leadOutConfig.length > 0)
+                (cut.leadInConfig?.type &&
+                    cut.leadInConfig.type !== 'none' &&
+                    cut.leadInConfig.length &&
+                    cut.leadInConfig.length > 0) ||
+                (cut.leadOutConfig?.type &&
+                    cut.leadOutConfig.type !== 'none' &&
+                    cut.leadOutConfig.length &&
+                    cut.leadOutConfig.length > 0)
             ) {
                 // First try to use cached lead geometry
-                if (hasValidCachedLeads(path)) {
-                    const cached = getCachedLeadGeometry(path);
+                if (hasValidCachedLeads(cut)) {
+                    const cached = getCachedLeadGeometry(cut);
                     if (cached.leadIn) {
                         const cachedLeadInPoints = convertLeadGeometryToPoints(
                             cached.leadIn
@@ -486,15 +486,15 @@
                     }
                 } else {
                     // Fallback to calculating if no valid cache
-                    const part = findPartForChain(path.chainId);
+                    const part = findPartForChain(cut.chainId);
 
-                    const leadInConfig: LeadConfig = path.leadInConfig || {
+                    const leadInConfig: LeadConfig = cut.leadInConfig || {
                         type: LeadType.NONE,
                         length: 0,
                         flipSide: false,
                         angle: 0,
                     };
-                    const leadOutConfig: LeadConfig = path.leadOutConfig || {
+                    const leadOutConfig: LeadConfig = cut.leadOutConfig || {
                         type: LeadType.NONE,
                         length: 0,
                         flipSide: false,
@@ -502,10 +502,10 @@
                     };
 
                     const chainForLeads =
-                        path.offset && chain
+                        cut.offset && chain
                             ? {
                                   ...chain,
-                                  shapes: path.offset.offsetShapes,
+                                  shapes: cut.offset.offsetShapes,
                               }
                             : chain;
 
@@ -514,7 +514,7 @@
                             chainForLeads,
                             leadInConfig,
                             leadOutConfig,
-                            path.cutDirection,
+                            cut.cutDirection,
                             part
                         );
 
@@ -541,8 +541,8 @@
             }
         } catch (error) {
             console.warn(
-                'Failed to calculate lead distances for path:',
-                path.name,
+                'Failed to calculate lead distances for cut:',
+                cut.name,
                 error
             );
         }
@@ -686,8 +686,8 @@
             const firstStep = animationSteps[0];
             if (firstStep.type === 'rapid' && firstStep.rapid) {
                 toolHeadPosition = { ...firstStep.rapid.start };
-            } else if (firstStep.type === 'cut' && firstStep.path) {
-                toolHeadPosition = getPathStartPoint(firstStep.path);
+            } else if (firstStep.type === 'cut' && firstStep.cut) {
+                toolHeadPosition = getCutStartPoint(firstStep.cut);
             }
         } else {
             toolHeadPosition = { x: 0, y: 0 };
@@ -775,34 +775,34 @@
                 x: rapid.start.x + (rapid.end.x - rapid.start.x) * stepProgress,
                 y: rapid.start.y + (rapid.end.y - rapid.start.y) * stepProgress,
             };
-        } else if (currentStep.type === 'cut' && currentStep.path) {
-            currentOperation = `Cutting (${getFeedRateForPath(currentStep.path)} ${displayUnit}/min)`;
-            updateToolHeadOnPath(currentStep.path, stepProgress);
+        } else if (currentStep.type === 'cut' && currentStep.cut) {
+            currentOperation = `Cutting (${getFeedRateForCut(currentStep.cut)} ${displayUnit}/min)`;
+            updateToolHeadOnCut(currentStep.cut, stepProgress);
         }
     }
 
     /**
-     * Update tool head position along a cutting path, including lead-in and lead-out.
-     * This function handles paths with offset geometry from kerf compensation,
+     * Update tool head position along a cutting cut, including lead-in and lead-out.
+     * This function handles cuts with offset geometry from kerf compensation,
      * automatically using offset shapes when available and falling back to
      * original chain shapes when no offset exists.
-     * @param path - The path being simulated
-     * @param progress - Progress along the path (0-1)
+     * @param cut - The cut being simulated
+     * @param progress - Progress along the cut (0-1)
      */
-    function updateToolHeadOnPath(path: Path, progress: number) {
+    function updateToolHeadOnCut(cut: Cut, progress: number) {
         // Use execution chain if available
-        let shapes = path.cutChain?.shapes;
-        let chain = path.cutChain;
+        let shapes = cut.cutChain?.shapes;
+        let chain = cut.cutChain;
 
         // Fallback for backward compatibility
         if (!shapes) {
             chain = chainStoreState?.chains?.find(
-                (c: Chain) => c.id === path.chainId
+                (c: Chain) => c.id === cut.chainId
             );
             if (!chain) return;
             shapes =
-                path.offset?.offsetShapes ||
-                path.cutChain?.shapes ||
+                cut.offset?.offsetShapes ||
+                cut.cutChain?.shapes ||
                 chain.shapes;
         }
 
@@ -814,18 +814,18 @@
 
         try {
             if (
-                (path.leadInConfig?.type &&
-                    path.leadInConfig.type !== 'none' &&
-                    path.leadInConfig.length &&
-                    path.leadInConfig.length > 0) ||
-                (path.leadOutConfig?.type &&
-                    path.leadOutConfig.type !== 'none' &&
-                    path.leadOutConfig.length &&
-                    path.leadOutConfig.length > 0)
+                (cut.leadInConfig?.type &&
+                    cut.leadInConfig.type !== 'none' &&
+                    cut.leadInConfig.length &&
+                    cut.leadInConfig.length > 0) ||
+                (cut.leadOutConfig?.type &&
+                    cut.leadOutConfig.type !== 'none' &&
+                    cut.leadOutConfig.length &&
+                    cut.leadOutConfig.length > 0)
             ) {
                 // First try to use cached lead geometry
-                if (hasValidCachedLeads(path)) {
-                    const cached = getCachedLeadGeometry(path);
+                if (hasValidCachedLeads(cut)) {
+                    const cached = getCachedLeadGeometry(cut);
                     if (cached.leadIn) {
                         const cachedLeadInPoints = convertLeadGeometryToPoints(
                             cached.leadIn
@@ -844,15 +844,15 @@
                     }
                 } else {
                     // Fallback to calculating if no valid cache
-                    const part = findPartForChain(path.chainId);
+                    const part = findPartForChain(cut.chainId);
 
-                    const leadInConfig: LeadConfig = path.leadInConfig || {
+                    const leadInConfig: LeadConfig = cut.leadInConfig || {
                         type: LeadType.NONE,
                         length: 0,
                         flipSide: false,
                         angle: 0,
                     };
-                    const leadOutConfig: LeadConfig = path.leadOutConfig || {
+                    const leadOutConfig: LeadConfig = cut.leadOutConfig || {
                         type: LeadType.NONE,
                         length: 0,
                         flipSide: false,
@@ -860,10 +860,10 @@
                     };
 
                     const chainForLeads =
-                        path.offset && chain
+                        cut.offset && chain
                             ? {
                                   ...chain,
-                                  shapes: path.offset.offsetShapes,
+                                  shapes: cut.offset.offsetShapes,
                               }
                             : chain;
 
@@ -872,7 +872,7 @@
                             chainForLeads,
                             leadInConfig,
                             leadOutConfig,
-                            path.cutDirection,
+                            cut.cutDirection,
                             part
                         );
 
@@ -898,7 +898,7 @@
         } catch (error) {
             console.warn(
                 'Failed to calculate leads for simulation:',
-                path.name,
+                cut.name,
                 error
             );
         }

@@ -2,7 +2,7 @@
  * Chain Default Configuration
  *
  * Provides default values for chain detection and normalization operations.
- * Chains are connected sequences of shapes that form continuous cut paths.
+ * Chains are connected sequences of shapes that form continuous cuts.
  */
 
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';

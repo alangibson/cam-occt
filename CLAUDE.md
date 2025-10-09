@@ -38,7 +38,7 @@ The application implements a complete 6-stage workflow from DXF import to G-code
 ### 4. Program Stage
 
 - Operations management with plasma cutting parameters
-- Automatic path generation with green canvas highlighting
+- Automatic cut generation with green canvas highlighting
 - Advanced lead-in/lead-out with line/arc geometry
 - Cut order optimization and rapid generation
 
@@ -47,7 +47,7 @@ The application implements a complete 6-stage workflow from DXF import to G-code
 - Real-time 3D cutting simulation with Three.js
 - Animated tool head movement and progress tracking
 - Timeline controls (play, pause, scrub, speed)
-- Visual cut path tracing
+- Visual cut tracing
 
 ### 6. Export Stage
 
@@ -58,7 +58,7 @@ The application implements a complete 6-stage workflow from DXF import to G-code
 
 ## Technical Architecture
 
-### Operations and Paths
+### Operations and Cuts
 
 **Operations** are user instructions that specify HOW to cut geometry:
 
@@ -66,12 +66,12 @@ The application implements a complete 6-stage workflow from DXF import to G-code
 - Target specific chains or parts
 - Automatically applied when created/modified
 
-**Paths** are generated FROM operations:
+**Cuts** are generated FROM operations:
 
-- One path per chain for chain operations
-- Multiple paths for part operations (shell + holes)
+- One cut per chain for chain operations
+- Multiple cuts for part operations (shell + holes)
 - Displayed with green highlighting on canvas
-- Selected paths shown in dark green
+- Selected cuts shown in dark green
 
 ### Canvas Requirements
 
@@ -86,7 +86,7 @@ The drawing canvas must maintain perfect synchronization with UI state:
 **Real-time Synchronization**:
 
 - Operations enabled/disabled → immediate canvas update
-- Path creation/deletion → instant green highlighting change
+- Cut creation/deletion → instant green highlighting change
 - Selection in panels → corresponding canvas highlight
 - Use reactive statements (`$:`) for automatic updates
 
@@ -95,7 +95,7 @@ When any object is selected in UI panels, it MUST be highlighted on canvas:
 
 - Parts list → canvas part highlighting
 - Chains list → canvas chain selection
-- Paths list → canvas path selection
+- Cuts list → canvas cut selection
 - Cut Order rapids → canvas rapid highlighting
 
 ### Chain Processing Rules

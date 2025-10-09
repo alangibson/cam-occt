@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { rapidStore } from '$lib/stores/rapids/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { operationsStore } from '$lib/stores/operations/store';
@@ -14,7 +14,7 @@ describe('SimulateStage store subscription cleanup', () => {
     beforeEach(() => {
         // Reset all stores
         workflowStore.reset();
-        pathStore.reset();
+        cutStore.reset();
         rapidStore.reset();
         chainStore.clearChains();
         chainStore.setTolerance(0.1);
@@ -34,7 +34,7 @@ describe('SimulateStage store subscription cleanup', () => {
 
         // Subscribe to stores as the component would
         unsubscribers.push(
-            pathStore.subscribe(() => {
+            cutStore.subscribe(() => {
                 subscriptionCount++;
             })
         );
@@ -69,7 +69,7 @@ describe('SimulateStage store subscription cleanup', () => {
         expect(get(workflowStore).currentStage).toBe(WorkflowStage.PROGRAM);
     });
 
-    it('should handle navigation after adding paths and rapids', () => {
+    it('should handle navigation after adding cuts and rapids', () => {
         // Complete required stages
         workflowStore.completeStage(WorkflowStage.IMPORT);
         workflowStore.completeStage(WorkflowStage.EDIT);
@@ -77,9 +77,9 @@ describe('SimulateStage store subscription cleanup', () => {
         workflowStore.completeStage(WorkflowStage.PROGRAM);
 
         // Add test data
-        pathStore.addPath({
-            id: 'test-path-1',
-            name: 'Test Path',
+        cutStore.addCut({
+            id: 'test-cut-1',
+            name: 'Test Cut',
             operationId: 'test-op',
             chainId: 'test-chain',
             toolId: 'test-tool',
@@ -105,7 +105,7 @@ describe('SimulateStage store subscription cleanup', () => {
         // Create subscriptions
         const unsubscribers: Array<() => void> = [];
 
-        unsubscribers.push(pathStore.subscribe(() => {}));
+        unsubscribers.push(cutStore.subscribe(() => {}));
         unsubscribers.push(rapidStore.subscribe(() => {}));
         unsubscribers.push(operationsStore.subscribe(() => {}));
         unsubscribers.push(drawingStore.subscribe(() => {}));
@@ -139,7 +139,7 @@ describe('SimulateStage store subscription cleanup', () => {
 
             // Create and clean up subscriptions
             const unsubscribers: Array<() => void> = [];
-            unsubscribers.push(pathStore.subscribe(() => {}));
+            unsubscribers.push(cutStore.subscribe(() => {}));
             unsubscribers.push(rapidStore.subscribe(() => {}));
             unsubscribers.forEach((fn) => fn());
 

@@ -11,7 +11,7 @@ describe('LayerId enum', () => {
         expect(LayerId.SHAPES).toBe('shapes');
         expect(LayerId.CHAINS).toBe('chains');
         expect(LayerId.PARTS).toBe('parts');
-        expect(LayerId.PATHS).toBe('paths');
+        expect(LayerId.CUTS).toBe('cuts');
         expect(LayerId.OFFSETS).toBe('offsets');
         expect(LayerId.LEADS).toBe('leads');
         expect(LayerId.RAPIDS).toBe('rapids');

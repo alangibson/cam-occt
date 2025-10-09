@@ -7,7 +7,7 @@ import type {
     TessellationPoint,
     DrawingOverlay,
 } from '$lib/stores/overlay/interfaces';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { ApplicationSettings } from '$lib/stores/settings/interfaces';
@@ -60,9 +60,9 @@ export interface PersistedState {
     // Prepare stage state
     prepareStageState: PrepareStageState | null;
 
-    // Operations, paths, and tools
+    // Operations, cuts, and tools
     operations: Operation[];
-    paths: Path[];
+    cuts: Cut[];
     tools: Tool[];
 
     // Application settings
@@ -71,6 +71,6 @@ export interface PersistedState {
     // Timestamp for debugging
     savedAt: string;
 
-    selectedPathId: string | null;
-    highlightedPathId: string | null;
+    selectedCutId: string | null;
+    highlightedCutId: string | null;
 }

@@ -25,7 +25,7 @@ describe('createEmptyRenderState', () => {
         expect(state.displayUnit).toBe(Unit.MM);
         expect(state.chains).toEqual([]);
         expect(state.parts).toEqual([]);
-        expect(state.paths).toEqual([]);
+        expect(state.cuts).toEqual([]);
         expect(state.operations).toEqual([]);
         expect(state.rapids).toEqual([]);
         expect(state.respectLayerVisibility).toBe(true);

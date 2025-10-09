@@ -1,168 +1,161 @@
 import { writable } from 'svelte/store';
 import type { Shape } from '$lib/types';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { Path, PathsState, PathsStore } from './interfaces';
+import type { Cut, CutsState, CutsStore } from './interfaces';
 import { checkProgramStageCompletion } from './functions';
-import type { PathLeadResult } from '$lib/stores/operations/interfaces';
+import type { CutLeadResult } from '$lib/stores/operations/interfaces';
 
-function createPathsStore(): PathsStore {
-    const initialState: PathsState = {
-        paths: [],
-        selectedPathId: null,
-        highlightedPathId: null,
+function createCutsStore(): CutsStore {
+    const initialState: CutsState = {
+        cuts: [],
+        selectedCutId: null,
+        highlightedCutId: null,
     };
 
-    const { subscribe, set, update } = writable<PathsState>(initialState);
+    const { subscribe, set, update } = writable<CutsState>(initialState);
 
     return {
         subscribe,
 
-        addPath: (path: Path) => {
+        addCut: (cut: Cut) => {
             update((state) => {
-                // If path doesn't have an ID, generate one
-                const pathToAdd: Path = path.id
-                    ? path
-                    : { ...path, id: crypto.randomUUID() };
+                // If cut doesn't have an ID, generate one
+                const cutToAdd: Cut = cut.id
+                    ? cut
+                    : { ...cut, id: crypto.randomUUID() };
 
-                const newPaths: Path[] = [...state.paths, pathToAdd];
+                const newCuts: Cut[] = [...state.cuts, cutToAdd];
 
                 // Check workflow completion
-                setTimeout(() => checkProgramStageCompletion(newPaths), 0);
+                setTimeout(() => checkProgramStageCompletion(newCuts), 0);
 
                 return {
                     ...state,
-                    paths: newPaths,
+                    cuts: newCuts,
                 };
             });
         },
 
-        updatePath: (id: string, updates: Partial<Path>) => {
+        updateCut: (id: string, updates: Partial<Cut>) => {
             update((state) => ({
                 ...state,
-                paths: state.paths.map((path) =>
-                    path.id === id ? { ...path, ...updates } : path
+                cuts: state.cuts.map((cut) =>
+                    cut.id === id ? { ...cut, ...updates } : cut
                 ),
             }));
         },
 
-        deletePath: (id: string) => {
+        deleteCut: (id: string) => {
             update((state) => {
-                const newPaths: Path[] = state.paths.filter(
-                    (path) => path.id !== id
+                const newCuts: Cut[] = state.cuts.filter(
+                    (cut) => cut.id !== id
                 );
 
                 // Check workflow completion
-                setTimeout(() => checkProgramStageCompletion(newPaths), 0);
+                setTimeout(() => checkProgramStageCompletion(newCuts), 0);
 
                 return {
                     ...state,
-                    paths: newPaths,
-                    selectedPathId:
-                        state.selectedPathId === id
+                    cuts: newCuts,
+                    selectedCutId:
+                        state.selectedCutId === id ? null : state.selectedCutId,
+                    highlightedCutId:
+                        state.highlightedCutId === id
                             ? null
-                            : state.selectedPathId,
-                    highlightedPathId:
-                        state.highlightedPathId === id
-                            ? null
-                            : state.highlightedPathId,
+                            : state.highlightedCutId,
                 };
             });
         },
 
-        deletePathsByOperation: (operationId: string) => {
+        deleteCutsByOperation: (operationId: string) => {
             update((state) => {
-                const newPaths: Path[] = state.paths.filter(
-                    (path) => path.operationId !== operationId
+                const newCuts: Cut[] = state.cuts.filter(
+                    (cut) => cut.operationId !== operationId
                 );
 
                 // Check workflow completion
-                setTimeout(() => checkProgramStageCompletion(newPaths), 0);
+                setTimeout(() => checkProgramStageCompletion(newCuts), 0);
 
                 return {
                     ...state,
-                    paths: newPaths,
-                    selectedPathId: state.paths.some(
-                        (p) =>
-                            p.operationId === operationId &&
-                            p.id === state.selectedPathId
+                    cuts: newCuts,
+                    selectedCutId: state.cuts.some(
+                        (c) =>
+                            c.operationId === operationId &&
+                            c.id === state.selectedCutId
                     )
                         ? null
-                        : state.selectedPathId,
-                    highlightedPathId: state.paths.some(
-                        (p) =>
-                            p.operationId === operationId &&
-                            p.id === state.highlightedPathId
+                        : state.selectedCutId,
+                    highlightedCutId: state.cuts.some(
+                        (c) =>
+                            c.operationId === operationId &&
+                            c.id === state.highlightedCutId
                     )
                         ? null
-                        : state.highlightedPathId,
+                        : state.highlightedCutId,
                 };
             });
         },
 
-        selectPath: (pathId: string | null) => {
+        selectCut: (cutId: string | null) => {
             update((state) => ({
                 ...state,
-                selectedPathId: pathId,
+                selectedCutId: cutId,
             }));
         },
 
-        highlightPath: (pathId: string | null) => {
+        highlightCut: (cutId: string | null) => {
             update((state) => ({
                 ...state,
-                highlightedPathId: pathId,
+                highlightedCutId: cutId,
             }));
         },
 
         clearHighlight: () => {
             update((state) => ({
                 ...state,
-                highlightedPathId: null,
+                highlightedCutId: null,
             }));
         },
 
-        reorderPaths: (newPaths: Path[]) => {
+        reorderCuts: (newCuts: Cut[]) => {
             update((state) => ({
                 ...state,
-                paths: newPaths,
+                cuts: newCuts,
             }));
         },
 
-        getPathsByChain: (chainId: string) => {
-            let currentPaths: Path[] = [];
+        getCutsByChain: (chainId: string) => {
+            let currentCuts: Cut[] = [];
             const unsubscribe: () => void = subscribe((state) => {
-                currentPaths = state.paths.filter(
-                    (path) => path.chainId === chainId
+                currentCuts = state.cuts.filter(
+                    (cut) => cut.chainId === chainId
                 );
             });
             unsubscribe();
-            return currentPaths;
+            return currentCuts;
         },
 
-        getChainsWithPaths: () => {
+        getChainsWithCuts: () => {
             let chainIds: string[] = [];
             const unsubscribe: () => void = subscribe((state) => {
-                chainIds = [
-                    ...new Set(state.paths.map((path) => path.chainId)),
-                ];
+                chainIds = [...new Set(state.cuts.map((cut) => cut.chainId))];
             });
             unsubscribe();
             return chainIds;
         },
 
-        // Update lead geometry for a path
-        updatePathLeadGeometry: (
-            pathId: string,
-            leadGeometry: PathLeadResult
-        ) => {
+        // Update lead geometry for a cut
+        updateCutLeadGeometry: (cutId: string, leadGeometry: CutLeadResult) => {
             const timestamp: string = new Date().toISOString();
             const version: string = '1.0.0'; // Lead calculation algorithm version
 
             update((state) => ({
                 ...state,
-                paths: state.paths.map((path) => {
-                    if (path.id !== pathId) return path;
+                cuts: state.cuts.map((cut) => {
+                    if (cut.id !== cutId) return cut;
 
-                    const updates: Partial<Path> = {};
+                    const updates: Partial<Cut> = {};
 
                     if (leadGeometry.leadIn) {
                         updates.leadIn = {
@@ -189,31 +182,31 @@ function createPathsStore(): PathsStore {
                         };
                     }
 
-                    return { ...path, ...updates };
+                    return { ...cut, ...updates };
                 }),
             }));
         },
 
         // Clear calculated lead geometry (force recalculation)
-        clearPathLeadGeometry: (pathId: string) => {
+        clearCutLeadGeometry: (cutId: string) => {
             update((state) => ({
                 ...state,
-                paths: state.paths.map((path) =>
-                    path.id === pathId
+                cuts: state.cuts.map((cut) =>
+                    cut.id === cutId
                         ? {
-                              ...path,
+                              ...cut,
                               leadIn: undefined,
                               leadOut: undefined,
                               leadValidation: undefined,
                           }
-                        : path
+                        : cut
                 ),
             }));
         },
 
-        // Update offset geometry for a path
-        updatePathOffsetGeometry: (
-            pathId: string,
+        // Update offset geometry for a cut
+        updateCutOffsetGeometry: (
+            cutId: string,
             offsetGeometry: {
                 offsetShapes: Shape[];
                 originalShapes: Shape[];
@@ -226,11 +219,11 @@ function createPathsStore(): PathsStore {
 
             update((state) => ({
                 ...state,
-                paths: state.paths.map((path) => {
-                    if (path.id !== pathId) return path;
+                cuts: state.cuts.map((cut) => {
+                    if (cut.id !== cutId) return cut;
 
                     return {
-                        ...path,
+                        ...cut,
                         offset: {
                             offsetShapes: offsetGeometry.offsetShapes,
                             originalShapes: offsetGeometry.originalShapes,
@@ -245,34 +238,33 @@ function createPathsStore(): PathsStore {
         },
 
         // Clear calculated offset geometry (force recalculation)
-        clearPathOffsetGeometry: (pathId: string) => {
+        clearCutOffsetGeometry: (cutId: string) => {
             update((state) => ({
                 ...state,
-                paths: state.paths.map((path) =>
-                    path.id === pathId
+                cuts: state.cuts.map((cut) =>
+                    cut.id === cutId
                         ? {
-                              ...path,
+                              ...cut,
                               offset: undefined,
                           }
-                        : path
+                        : cut
                 ),
             }));
         },
 
         reset: () => {
             set(initialState);
-            // Check workflow completion (will invalidate since no paths)
+            // Check workflow completion (will invalidate since no cuts)
             setTimeout(() => checkProgramStageCompletion([]), 0);
         },
 
         // Restore state from persistence (preserves IDs and calculated data)
-        restore: (pathsState: PathsState) => {
-            set(pathsState);
+        restore: (cutsState: CutsState) => {
+            set(cutsState);
             // Check workflow completion
-            setTimeout(() => checkProgramStageCompletion(pathsState.paths), 0);
+            setTimeout(() => checkProgramStageCompletion(cutsState.cuts), 0);
         },
     };
 }
 
-export const pathStore: ReturnType<typeof createPathsStore> =
-    createPathsStore();
+export const cutStore: ReturnType<typeof createCutsStore> = createCutsStore();

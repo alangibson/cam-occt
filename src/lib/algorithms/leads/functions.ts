@@ -2,7 +2,7 @@ import { LeadType } from '$lib/types/direction';
 import type { Point2D, Arc } from '$lib/types/geometry';
 import { generateArcPoints } from '$lib/geometry/arc/functions';
 import type { Lead, LeadConfig } from './interfaces';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import { normalizeVector } from '$lib/geometry/math/functions';
 
 /**
@@ -21,16 +21,16 @@ export function convertLeadGeometryToPoints(lead: Lead): Point2D[] {
 }
 
 /**
- * Create lead-in configuration from path
+ * Create lead-in configuration from cut
  */
-export function createLeadInConfig(path: Path): LeadConfig {
-    if (path.leadInConfig) {
+export function createLeadInConfig(cut: Cut): LeadConfig {
+    if (cut.leadInConfig) {
         return {
-            type: path.leadInConfig.type,
-            length: path.leadInConfig.length,
-            flipSide: path.leadInConfig.flipSide ?? false,
-            angle: path.leadInConfig.angle,
-            fit: path.leadInConfig.fit ?? true,
+            type: cut.leadInConfig.type,
+            length: cut.leadInConfig.length,
+            flipSide: cut.leadInConfig.flipSide ?? false,
+            angle: cut.leadInConfig.angle,
+            fit: cut.leadInConfig.fit ?? true,
         };
     }
 
@@ -45,16 +45,16 @@ export function createLeadInConfig(path: Path): LeadConfig {
 }
 
 /**
- * Create lead-out configuration from path
+ * Create lead-out configuration from cut
  */
-export function createLeadOutConfig(path: Path): LeadConfig {
-    if (path.leadOutConfig) {
+export function createLeadOutConfig(cut: Cut): LeadConfig {
+    if (cut.leadOutConfig) {
         return {
-            type: path.leadOutConfig.type,
-            length: path.leadOutConfig.length,
-            flipSide: path.leadOutConfig.flipSide ?? false,
-            angle: path.leadOutConfig.angle,
-            fit: path.leadOutConfig.fit ?? true,
+            type: cut.leadOutConfig.type,
+            length: cut.leadOutConfig.length,
+            flipSide: cut.leadOutConfig.flipSide ?? false,
+            angle: cut.leadOutConfig.angle,
+            fit: cut.leadOutConfig.fit ?? true,
         };
     }
 
@@ -69,15 +69,15 @@ export function createLeadOutConfig(path: Path): LeadConfig {
 }
 
 /**
- * Create both lead configurations from path
+ * Create both lead configurations from cut
  */
-export function createLeadConfigs(path: Path): {
+export function createLeadConfigs(cut: Cut): {
     leadIn: LeadConfig;
     leadOut: LeadConfig;
 } {
     return {
-        leadIn: createLeadInConfig(path),
-        leadOut: createLeadOutConfig(path),
+        leadIn: createLeadInConfig(cut),
+        leadOut: createLeadOutConfig(cut),
     };
 }
 

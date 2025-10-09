@@ -161,24 +161,24 @@ export class StylePresets {
         lineWidth: LineWidth.THICK,
     };
 
-    // Path styles
-    static readonly PATH_NORMAL: StyleConfig = {
+    // Cut styles
+    static readonly CUT_NORMAL: StyleConfig = {
         strokeColor: Color.GREEN,
         lineWidth: LineWidth.THICK,
     };
 
-    static readonly PATH_SELECTED: StyleConfig = {
+    static readonly CUT_SELECTED: StyleConfig = {
         strokeColor: Color.GREEN,
         lineWidth: LineWidth.EXTRA_THICK,
     };
 
-    static readonly PATH_HIGHLIGHTED: StyleConfig = {
+    static readonly CUT_HIGHLIGHTED: StyleConfig = {
         strokeColor: Color.DARK_GREEN,
         lineWidth: LineWidth.EXTRA_THICK,
         shadow: Shadow.GLOW_GREEN,
     };
 
-    static readonly PATH_ORIGINAL: StyleConfig = {
+    static readonly CUT_ORIGINAL: StyleConfig = {
         strokeColor: Color.LIGHT_GREEN,
         lineWidth: LineWidth.THIN,
         dashPattern: DashPattern.DASHED,

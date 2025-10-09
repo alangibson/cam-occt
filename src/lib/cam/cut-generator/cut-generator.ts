@@ -18,22 +18,22 @@ export function generateToolPaths(
     parameters: CuttingParameters,
     leadOptions?: { leadInLength?: number; leadOutLength?: number }
 ): CutPath[] {
-    const paths: CutPath[] = [];
+    const cuts: CutPath[] = [];
 
-    // Generate tool paths for each shape
+    // Generate cuts for each shape
     drawing.shapes.forEach((shape: Shape) => {
-        const path: CutPath | null = generateShapeToolPath(
+        const cut: CutPath | null = generateShapeToolPath(
             shape,
             parameters,
             leadOptions
         );
-        if (path) {
-            paths.push(path);
+        if (cut) {
+            cuts.push(cut);
         }
     });
 
     // Optimize cut sequence
-    return optimizeCutSequence(paths);
+    return optimizeCutSequence(cuts);
 }
 
 function generateShapeToolPath(
@@ -76,7 +76,7 @@ function generateShapeToolPath(
 // tessellateEllipse is now imported from the ellipse-tessellation module
 
 function applyKerfCompensation(points: Point2D[], kerf: number): Point2D[] {
-    // Simplified kerf compensation - offset perpendicular to path
+    // Simplified kerf compensation - offset perpendicular to cut
     // In production, use proper offset algorithms
     if (kerf === 0 || points.length < 2) return points;
 
@@ -134,29 +134,29 @@ function generateLeadOut(endPoint: Point2D, length: number): Lead {
     return [endPoint, leadOutPoint];
 }
 
-function optimizeCutSequence(paths: CutPath[]): CutPath[] {
-    if (paths.length <= 1) return paths;
+function optimizeCutSequence(cuts: CutPath[]): CutPath[] {
+    if (cuts.length <= 1) return cuts;
 
     // Simple nearest neighbor optimization
     const optimized: CutPath[] = [];
-    const remaining: CutPath[] = [...paths];
+    const remaining: CutPath[] = [...cuts];
 
-    // Start with the first path
+    // Start with the first cut
     let current: CutPath = remaining.shift()!;
     optimized.push(current);
 
     while (remaining.length > 0) {
-        // Find nearest path
+        // Find nearest cut
         let nearestIndex: number = 0;
         let nearestDistance: number = Infinity;
 
         const currentEnd: Point2D = current.points[current.points.length - 1];
 
-        remaining.forEach((path: CutPath, index: number) => {
-            const pathStart: Point2D = path.points[0];
+        remaining.forEach((cut: CutPath, index: number) => {
+            const cutStart: Point2D = cut.points[0];
             const distance: number = Math.sqrt(
-                Math.pow(pathStart.x - currentEnd.x, 2) +
-                    Math.pow(pathStart.y - currentEnd.y, 2)
+                Math.pow(cutStart.x - currentEnd.x, 2) +
+                    Math.pow(cutStart.y - currentEnd.y, 2)
             );
 
             if (distance < nearestDistance) {

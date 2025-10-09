@@ -54,10 +54,10 @@ program
 │  ├─ chains list (with status: open/closed, shape count)
 │  ├─ parts list (with hole count)
 ├─ center column
-│  ├─ drawing canvas (chains displayed as paths, no dragging)
+│  ├─ drawing canvas (chains displayed as cuts, no dragging)
 ├─ right column
 │  ├─ cutting parameters (feed rate, pierce settings, etc.)
-│  ├─ path information (chain count, part count, cut paths)
+│  ├─ cut information (chain count, part count, cuts)
 ```
 
 #### Simulate Stage
@@ -188,7 +188,7 @@ export
 - **Closed chain**: The end point of the last shape is coincident with the start point of the first shape (within tolerance)
 - **Open chain**: The end point of the last shape is NOT coincident with the start point of the first shape
 - **Special case**: If the sequent shapes are the first and last shapes in the chain and their endpoints are coincident, consider the chain closed
-- This is a fundamental concept for toolpath generation - closed chains represent complete boundaries, open chains represent partial paths
+- This is a fundamental concept for toolpath generation - closed chains represent complete boundaries, open chains represent partial cuts
 
 **Chain Normalization**:
 
@@ -321,7 +321,7 @@ A part consists of a shell (closed chain forming the outer boundary of a part) a
 
 **Use Cases**:
 
-- **Tool Path Optimization**: Identify connected geometry for continuous cutting paths
+- **Tool Path Optimization**: Identify connected geometry for continuous cuts
 - **Pierce Point Reduction**: Minimize torch starts by following connected chains
 - **Cut Sequencing**: Group related shapes for efficient machining order
 - **Quality Control**: Verify drawing connectivity before G-code generation
@@ -513,7 +513,7 @@ INSERT entities allow DXF files to reference reusable block definitions with tra
 **Purpose**: Provide real-time visual simulation of the cutting process, allowing users to preview tool movement, verify cut sequences, and estimate cutting times before generating G-code.
 
 **Algorithm Definition**:
-The simulation algorithm creates a time-based animation that moves a tool head marker along cutting paths and rapid movements at speeds that match the actual feed rates specified in the cutting parameters.
+The simulation algorithm creates a time-based animation that moves a tool head marker along cuts and rapid movements at speeds that match the actual feed rates specified in the cutting parameters.
 
 #### Core Animation System
 
@@ -525,9 +525,9 @@ The simulation algorithm creates a time-based animation that moves a tool head m
 
 **Animation Step Generation**:
 
-1. **Path Ordering**: Retrieve ordered cutting paths and rapids from optimization algorithm
+1. **Cut Ordering**: Retrieve ordered cuts and rapids from optimization algorithm
 2. **Time Calculation**: Calculate duration for each movement segment:
-   - **Cut paths**: `(pathDistance / feedRate) * 60` - converts units/min to seconds
+   - **Cuts**: `(cutDistance / feedRate) * 60` - converts units/min to seconds
    - **Rapids**: `(rapidDistance / 3000) * 60` - fixed rapid speed conversion
 3. **Step Creation**: Build sequential animation steps with start/end times and movement data
 4. **Total Duration**: Sum all step durations for complete simulation time
@@ -591,7 +591,7 @@ position = center + radius * [cos(angle), sin(angle)];
 
 **Efficient Shape Processing**:
 
-- Pre-calculate total distances for all paths during initialization
+- Pre-calculate total distances for all cuts during initialization
 - Cache shape geometry calculations to avoid repeated computations
 - Use efficient distance formulas optimized for each shape type
 
@@ -611,7 +611,7 @@ position = center + radius * [cos(angle), sin(angle)];
 
 **Input Data Sources**:
 
-- **Paths**: Ordered cutting paths from operations store with feed rates
+- **Cuts**: Ordered cuts from cuts store with feed rates
 - **Rapids**: Optimized rapid movements from cut order algorithm
 - **Chains**: Shape geometry data for tool movement calculation
 - **Drawing**: Canvas scaling and coordinate system information
@@ -634,7 +634,7 @@ position = center + radius * [cos(angle), sin(angle)];
 
 **Key Functions**:
 
-- `buildAnimationSteps()`: Convert paths/rapids into time-based animation data
+- `buildAnimationSteps()`: Convert cuts/rapids into time-based animation data
 - `animate()`: Main real-time animation loop with precise timing
 - `updateToolHeadPosition()`: Calculate tool position for current time
 - `getPositionOnShape()`: Interpolate position along specific geometry types
@@ -653,10 +653,10 @@ position = center + radius * [cos(angle), sin(angle)];
 
 #### Algorithm Complexity
 
-**Initialization**: O(n) where n is the number of paths and rapids
+**Initialization**: O(n) where n is the number of cuts and rapids
 **Animation Loop**: O(1) per frame - constant time position updates
 **Shape Interpolation**: O(1) for simple shapes, O(m) for polylines with m vertices
 
-**Memory Usage**: Linear with respect to number of animation steps (paths + rapids)
+**Memory Usage**: Linear with respect to number of animation steps (cuts + rapids)
 
 This simulation system provides manufacturing professionals with accurate cutting previews, enabling confident G-code generation and optimal production planning.

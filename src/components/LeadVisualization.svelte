@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Path } from '$lib/stores/paths/interfaces';
+    import type { Cut } from '$lib/stores/cuts/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
     import {
@@ -18,14 +18,14 @@
     // Props
     export let ctx: CanvasRenderingContext2D;
     export let coordinator: CoordinateTransformer;
-    export let paths: Path[];
+    export let cuts: Cut[];
     export let operations: Operation[];
     export let parts: DetectedPart[];
     export let chains: Chain[];
     export let currentStage: string = 'program';
     export let isSimulating: boolean = false;
     export let simulationProgress: number = 0;
-    export let currentSimulationPath: Path | null = null;
+    export let currentSimulationCut: Cut | null = null;
 
     // Lead visualization settings
     export let showLeadIn: boolean = true;
@@ -40,41 +40,41 @@
      * Main function to draw all lead lines
      */
     export function drawLeads() {
-        if (!paths || paths.length === 0) return;
+        if (!cuts || cuts.length === 0) return;
 
-        paths.forEach((path) => {
-            // Skip disabled paths or paths with disabled operations
+        cuts.forEach((cut) => {
+            // Skip disabled cuts or cuts with disabled operations
             const operation = operations.find(
-                (op) => op.id === path.operationId
+                (op) => op.id === cut.operationId
             );
-            if (!operation || !operation.enabled || !path.enabled) return;
+            if (!operation || !operation.enabled || !cut.enabled) return;
 
-            // During simulation, optionally hide leads for non-current paths
-            if (isSimulating && shouldHideLeadDuringSimulation(path)) return;
+            // During simulation, optionally hide leads for non-current cuts
+            if (isSimulating && shouldHideLeadDuringSimulation(cut)) return;
 
-            drawPathLeads(path, operation);
+            drawCutLeads(cut, operation);
         });
     }
 
     /**
-     * Draw leads for a specific path
+     * Draw leads for a specific cut
      */
-    function drawPathLeads(path: Path, operation: Operation) {
+    function drawCutLeads(cut: Cut, operation: Operation) {
         // Skip if both leads are disabled
-        const leadInType = path.leadInConfig?.type || LeadType.NONE;
-        const leadOutType = path.leadOutConfig?.type || LeadType.NONE;
+        const leadInType = cut.leadInConfig?.type || LeadType.NONE;
+        const leadOutType = cut.leadOutConfig?.type || LeadType.NONE;
         if (leadInType === LeadType.NONE && leadOutType === LeadType.NONE)
             return;
 
-        // Calculate leads for this path
-        const leadResult = calculatePathLeads(path, operation);
+        // Calculate leads for this cut
+        const leadResult = calculateCutLeads(cut, operation);
         if (!leadResult) return;
 
         // Draw lead-in
         if (showLeadIn && leadResult.leadIn) {
             const points = convertLeadGeometryToPoints(leadResult.leadIn);
             if (points.length > 1) {
-                const opacity = getLeadOpacity(path, 'leadIn');
+                const opacity = getLeadOpacity(cut, 'leadIn');
                 drawLeadGeometry(points, leadInColor, opacity);
             }
         }
@@ -83,64 +83,64 @@
         if (showLeadOut && leadResult.leadOut) {
             const points = convertLeadGeometryToPoints(leadResult.leadOut);
             if (points.length > 1) {
-                const opacity = getLeadOpacity(path, 'leadOut');
+                const opacity = getLeadOpacity(cut, 'leadOut');
                 drawLeadGeometry(points, leadOutColor, opacity);
             }
         }
     }
 
     /**
-     * Calculate lead geometry for a path (with caching)
+     * Calculate lead geometry for a cut (with caching)
      */
-    function calculatePathLeads(path: Path, operation: Operation): LeadResult {
+    function calculateCutLeads(cut: Cut, operation: Operation): LeadResult {
         try {
             // First check if we have valid cached lead geometry
-            if (hasValidCachedLeads(path)) {
-                console.log(`Using cached lead geometry for path ${path.name}`);
+            if (hasValidCachedLeads(cut)) {
+                console.log(`Using cached lead geometry for cut ${cut.name}`);
                 return {
-                    leadIn: path.leadIn || undefined,
-                    leadOut: path.leadOut || undefined,
-                    warnings: path.leadValidation?.warnings || [],
+                    leadIn: cut.leadIn || undefined,
+                    leadOut: cut.leadOut || undefined,
+                    warnings: cut.leadValidation?.warnings || [],
                 };
             }
 
             // Fall back to dynamic calculation if no valid cache
             console.log(
-                `Calculating lead geometry dynamically for path ${path.name}`
+                `Calculating lead geometry dynamically for cut ${cut.name}`
             );
 
-            // Get the chain for this path - prefer cut chain if available
-            let chain = path.cutChain;
+            // Get the chain for this cut - prefer cut chain if available
+            let chain = cut.cutChain;
 
             // Fallback to original chain lookup for backward compatibility
             if (!chain) {
-                chain = chains.find((c) => c.id === path.chainId);
+                chain = chains.find((c) => c.id === cut.chainId);
                 if (!chain || chain.shapes.length === 0)
                     return { warnings: [] };
 
                 // Apply cut direction ordering if using fallback chain
-                if (path.cutDirection === 'counterclockwise') {
+                if (cut.cutDirection === 'counterclockwise') {
                     chain = { ...chain, shapes: [...chain.shapes].reverse() };
                 }
             }
 
             if (!chain || chain.shapes.length === 0) return { warnings: [] };
 
-            // Get the part if the path is part of a part
+            // Get the part if the cut is part of a part
             let part = null;
             if (operation.targetType === 'parts') {
-                part = findPartContainingChain(path.chainId, parts);
+                part = findPartContainingChain(cut.chainId, parts);
             }
 
             // Get lead configurations with proper defaults
-            const leadInConfig: LeadConfig = path.leadInConfig || {
+            const leadInConfig: LeadConfig = cut.leadInConfig || {
                 type: LeadType.NONE,
                 length: 0,
                 flipSide: false,
                 angle: undefined,
             };
 
-            const leadOutConfig: LeadConfig = path.leadOutConfig || {
+            const leadOutConfig: LeadConfig = cut.leadOutConfig || {
                 type: LeadType.NONE,
                 length: 0,
                 flipSide: false,
@@ -152,13 +152,13 @@
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                path.cutDirection,
+                cut.cutDirection,
                 part || undefined
             );
 
             return leadResult;
         } catch (error) {
-            console.warn('Error calculating leads for path:', path.id, error);
+            console.warn('Error calculating leads for cut:', cut.id, error);
             return { warnings: [`Error calculating leads: ${error}`] };
         }
     }
@@ -195,14 +195,14 @@
     /**
      * Determine if leads should be hidden during simulation
      */
-    function shouldHideLeadDuringSimulation(path: Path): boolean {
+    function shouldHideLeadDuringSimulation(cut: Cut): boolean {
         if (!isSimulating || currentStage !== 'simulate') return false;
 
         // Option 1: Hide all static leads during simulation
         // return true;
 
-        // Option 2: Only hide leads for the currently executing path
-        return currentSimulationPath?.id === path.id;
+        // Option 2: Only hide leads for the currently executing cut
+        return currentSimulationCut?.id === cut.id;
 
         // Option 3: Don't hide any leads (current behavior)
         // return false;
@@ -211,10 +211,7 @@
     /**
      * Get lead opacity based on simulation state
      */
-    function getLeadOpacity(
-        path: Path,
-        leadType: 'leadIn' | 'leadOut'
-    ): number {
+    function getLeadOpacity(cut: Cut, leadType: 'leadIn' | 'leadOut'): number {
         if (!isSimulating) {
             return leadType === 'leadIn' ? leadInOpacity : leadOutOpacity;
         }
@@ -223,12 +220,12 @@
         const baseOpacity =
             leadType === 'leadIn' ? leadInOpacity : leadOutOpacity;
 
-        if (currentSimulationPath?.id === path.id) {
-            // Make leads for current path more transparent
+        if (currentSimulationCut?.id === cut.id) {
+            // Make leads for current cut more transparent
             return baseOpacity * 0.3;
         }
 
-        // Keep other path leads at normal opacity
+        // Keep other cut leads at normal opacity
         return baseOpacity;
     }
 
@@ -264,11 +261,11 @@
     export function updateSimulationState(
         playing: boolean,
         progress: number,
-        currentPath: Path | null
+        currentCut: Cut | null
     ) {
         isSimulating = playing;
         simulationProgress = progress;
-        currentSimulationPath = currentPath;
+        currentSimulationCut = currentCut;
     }
 </script>
 

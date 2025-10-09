@@ -833,7 +833,7 @@
                         Next: Program Cuts
                     </button>
                     <p class="next-help">
-                        Set cutting parameters and generate tool paths.
+                        Set cutting parameters and generate cuts.
                     </p>
                 </div>
             </AccordionPanel>
@@ -1447,15 +1447,15 @@
 
             <!-- Hidden for now -->
             <!-- <div class="panel">
-        <h3 class="panel-title">Tool Path Information</h3>
+        <h3 class="panel-title">Cut Information</h3>
         <p class="placeholder-text">
-          Tool path generation and optimization features will be implemented here.
+          Cut generation and optimization features will be implemented here.
         </p>
         <ul class="info-list">
           <li>Total cutting length: <strong>--</strong></li>
           <li>Estimated cut time: <strong>--</strong></li>
           <li>Number of pierces: <strong>--</strong></li>
-          <li>Tool path optimization: <strong>Enabled</strong></li>
+          <li>Cut optimization: <strong>Enabled</strong></li>
         </ul>
       </div> -->
         </div>

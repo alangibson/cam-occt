@@ -87,7 +87,7 @@ import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import {
     splitArcAtMidpoint,
     splitLineAtMidpoint,
-} from '$lib/algorithms/optimize-start-points/path-optimization-utils';
+} from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
 import { generateId } from '$lib/domain/id';
 import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
 
@@ -790,10 +790,10 @@ export function getShapeLength(shape: Shape): number {
     }
 }
 /**
- * Sample points along a path of shapes at regular distance intervals
+ * Sample points along an array of shapes at regular distance intervals
  */
 
-export function samplePathAtDistanceIntervals(
+export function sampleShapesAtDistanceIntervals(
     shapes: Shape[],
     intervalDistance: number
 ): { point: Point2D; direction: Point2D }[] {

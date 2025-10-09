@@ -38,7 +38,7 @@ export function detectCutDirection(
     );
 
     if (!isPointsClosed(firstPoint, lastPoint, tolerance)) {
-        return CutDirection.NONE; // Open paths don't have a natural cut direction
+        return CutDirection.NONE; // Open chains don't have a natural cut direction
     }
 
     // Get all points from the chain

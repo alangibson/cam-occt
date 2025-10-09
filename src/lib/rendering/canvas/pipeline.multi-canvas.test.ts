@@ -151,16 +151,16 @@ describe('RenderingPipeline - Multi-Canvas Integration', () => {
                 hitScreen: vi.fn(),
             };
 
-            const pathRenderer = {
-                id: 'path-renderer',
-                layer: LayerId.PATHS,
+            const cutRenderer = {
+                id: 'cut-renderer',
+                layer: LayerId.CUTS,
                 render: vi.fn(),
                 hitWorld: vi.fn(),
                 hitScreen: vi.fn(),
             };
 
             pipeline.addRenderer(shapeRenderer);
-            pipeline.addRenderer(pathRenderer);
+            pipeline.addRenderer(cutRenderer);
 
             const renderState = createEmptyRenderState();
             pipeline.updateState(renderState);
@@ -170,13 +170,13 @@ describe('RenderingPipeline - Multi-Canvas Integration', () => {
 
             // Note: isDirty functionality removed, so all layers will be rendered
             const shapesLayer = mockLayers.get(LayerId.SHAPES);
-            const pathsLayer = mockLayers.get(LayerId.PATHS);
+            const cutsLayer = mockLayers.get(LayerId.CUTS);
 
             expect(shapesLayer?.clear).toHaveBeenCalled();
-            expect(pathsLayer?.clear).toHaveBeenCalled();
+            expect(cutsLayer?.clear).toHaveBeenCalled();
 
             expect(shapeRenderer.render).toHaveBeenCalled();
-            expect(pathRenderer.render).toHaveBeenCalled();
+            expect(cutRenderer.render).toHaveBeenCalled();
         });
 
         // Test removed - markClean functionality no longer exists

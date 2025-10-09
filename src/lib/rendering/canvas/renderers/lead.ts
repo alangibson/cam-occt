@@ -1,7 +1,7 @@
 /**
  * LeadRenderer - Renders lead-in and lead-out geometry
  *
- * Leads are lines or arcs that provide smooth entry and exit from cutting paths.
+ * Leads are lines or arcs that provide smooth entry and exit from cutting cuts.
  * This renderer handles:
  * - Lead-in lines (blue)
  * - Lead-out lines (red)
@@ -18,7 +18,7 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import type { LeadConfig, LeadResult } from '$lib/algorithms/leads/interfaces';
@@ -54,56 +54,56 @@ export class LeadRenderer extends BaseRenderer {
     }
 
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        if (!state.paths || state.paths.length === 0) {
+        if (!state.cuts || state.cuts.length === 0) {
             return;
         }
 
-        state.paths.forEach((path) => {
-            // Skip disabled paths or paths with disabled operations
+        state.cuts.forEach((cut) => {
+            // Skip disabled cuts or cuts with disabled operations
             const operation = state.operations.find(
-                (op) => op.id === path.operationId
+                (op) => op.id === cut.operationId
             );
-            if (!operation || !operation.enabled || !path.enabled) return;
+            if (!operation || !operation.enabled || !cut.enabled) return;
 
-            // During simulation, optionally hide leads for non-current paths
+            // During simulation, optionally hide leads for non-current cuts
             if (
                 state.stage === 'simulate' &&
-                this.shouldHideLeadDuringSimulation(path, state)
+                this.shouldHideLeadDuringSimulation(cut, state)
             ) {
                 return;
             }
 
-            this.drawPathLeads(ctx, state, path, operation);
+            this.drawCutLeads(ctx, state, cut, operation);
 
             // Draw lead normals if enabled
             if (state.visibility?.showLeadNormals) {
-                this.drawLeadNormals(ctx, state, path, operation);
+                this.drawLeadNormals(ctx, state, cut, operation);
             }
         });
     }
 
-    private drawPathLeads(
+    private drawCutLeads(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        path: Path,
+        cut: Cut,
         operation: Operation
     ): void {
         // Skip if both leads are disabled
-        const leadInType = path.leadInConfig?.type || LeadType.NONE;
-        const leadOutType = path.leadOutConfig?.type || LeadType.NONE;
+        const leadInType = cut.leadInConfig?.type || LeadType.NONE;
+        const leadOutType = cut.leadOutConfig?.type || LeadType.NONE;
         if (leadInType === LeadType.NONE && leadOutType === LeadType.NONE) {
             return;
         }
 
-        // Calculate leads for this path
-        const leadResult = this.calculatePathLeads(path, operation, state);
+        // Calculate leads for this cut
+        const leadResult = this.calculateCutLeads(cut, operation, state);
         if (!leadResult) return;
 
         // Draw lead-in
         if (this.showLeadIn && leadResult.leadIn) {
             const points = convertLeadGeometryToPoints(leadResult.leadIn);
             if (points.length > 1) {
-                const opacity = this.getLeadOpacity(path, 'leadIn', state);
+                const opacity = this.getLeadOpacity(cut, 'leadIn', state);
                 this.drawLeadGeometry(
                     ctx,
                     state,
@@ -118,7 +118,7 @@ export class LeadRenderer extends BaseRenderer {
         if (this.showLeadOut && leadResult.leadOut) {
             const points = convertLeadGeometryToPoints(leadResult.leadOut);
             if (points.length > 1) {
-                const opacity = this.getLeadOpacity(path, 'leadOut', state);
+                const opacity = this.getLeadOpacity(cut, 'leadOut', state);
                 this.drawLeadGeometry(
                     ctx,
                     state,
@@ -130,17 +130,17 @@ export class LeadRenderer extends BaseRenderer {
         }
     }
 
-    private calculatePathLeads(
-        path: Path,
+    private calculateCutLeads(
+        cut: Cut,
         operation: Operation,
         state: RenderState
     ): LeadResult {
         try {
             // First check if we have valid cached lead geometry
-            if (hasValidCachedLeads(path)) {
+            if (hasValidCachedLeads(cut)) {
                 // For cached leads, we need to add normal and connection point if missing
-                const leadIn = path.leadIn ? { ...path.leadIn } : undefined;
-                const leadOut = path.leadOut ? { ...path.leadOut } : undefined;
+                const leadIn = cut.leadIn ? { ...cut.leadIn } : undefined;
+                const leadOut = cut.leadOut ? { ...cut.leadOut } : undefined;
 
                 // Add normal and connection point to cached leads if missing
                 if (leadIn && (!leadIn.normal || !leadIn.connectionPoint)) {
@@ -168,44 +168,44 @@ export class LeadRenderer extends BaseRenderer {
                 return {
                     leadIn,
                     leadOut,
-                    warnings: path.leadValidation?.warnings || [],
+                    warnings: cut.leadValidation?.warnings || [],
                 };
             }
 
             // Fall back to dynamic calculation if no valid cache
-            // Get the chain for this path - prefer cut chain if available
-            let chain = path.cutChain;
+            // Get the chain for this cut - prefer cut chain if available
+            let chain = cut.cutChain;
 
             // Fallback to original chain lookup for backward compatibility
             if (!chain) {
-                chain = state.chains.find((c) => c.id === path.chainId);
+                chain = state.chains.find((c) => c.id === cut.chainId);
                 if (!chain || chain.shapes.length === 0) {
                     return { warnings: [] };
                 }
 
                 // Apply cut direction ordering if using fallback chain
-                if (path.cutDirection === 'counterclockwise') {
+                if (cut.cutDirection === 'counterclockwise') {
                     chain = { ...chain, shapes: [...chain.shapes].reverse() };
                 }
             }
 
             if (!chain || chain.shapes.length === 0) return { warnings: [] };
 
-            // Get the part if the path is part of a part
+            // Get the part if the cut is part of a part
             let part = null;
             if (operation.targetType === 'parts') {
-                part = findPartContainingChain(path.chainId, state.parts);
+                part = findPartContainingChain(cut.chainId, state.parts);
             }
 
             // Get lead configurations with proper defaults
-            const leadInConfig: LeadConfig = path.leadInConfig || {
+            const leadInConfig: LeadConfig = cut.leadInConfig || {
                 type: LeadType.NONE,
                 length: 0,
                 flipSide: false,
                 angle: undefined,
             };
 
-            const leadOutConfig: LeadConfig = path.leadOutConfig || {
+            const leadOutConfig: LeadConfig = cut.leadOutConfig || {
                 type: LeadType.NONE,
                 length: 0,
                 flipSide: false,
@@ -217,13 +217,13 @@ export class LeadRenderer extends BaseRenderer {
                 chain,
                 leadInConfig,
                 leadOutConfig,
-                path.cutDirection,
+                cut.cutDirection,
                 part || undefined
             );
 
             return leadResult;
         } catch (error) {
-            console.error('Error calculating leads for path:', path.id, error);
+            console.error('Error calculating leads for cut:', cut.id, error);
             return { warnings: [`Error calculating leads: ${error}`] };
         }
     }
@@ -259,19 +259,19 @@ export class LeadRenderer extends BaseRenderer {
     }
 
     private shouldHideLeadDuringSimulation(
-        _path: Path,
+        _cut: Cut,
         state: RenderState
     ): boolean {
         if (state.stage !== 'simulate') return false;
 
-        // Option: Only hide leads for the currently executing path
-        // This would need access to current simulation path from state
+        // Option: Only hide leads for the currently executing cut
+        // This would need access to current simulation cut from state
         // For now, return false to maintain existing behavior
         return false;
     }
 
     private getLeadOpacity(
-        _path: Path,
+        _cut: Cut,
         leadType: 'leadIn' | 'leadOut',
         state: RenderState
     ): number {
@@ -291,18 +291,18 @@ export class LeadRenderer extends BaseRenderer {
     }
 
     hitWorld(point: Point2D, state: RenderState): HitTestResult | null {
-        if (!state.paths || state.paths.length === 0) {
+        if (!state.cuts || state.cuts.length === 0) {
             return null;
         }
 
         // Test for hits on lead geometry
-        for (const path of state.paths) {
+        for (const cut of state.cuts) {
             const operation = state.operations.find(
-                (op) => op.id === path.operationId
+                (op) => op.id === cut.operationId
             );
-            if (!operation || !operation.enabled || !path.enabled) continue;
+            if (!operation || !operation.enabled || !cut.enabled) continue;
 
-            const leadResult = this.calculatePathLeads(path, operation, state);
+            const leadResult = this.calculateCutLeads(cut, operation, state);
             if (!leadResult) continue;
 
             // Test lead-in
@@ -310,12 +310,12 @@ export class LeadRenderer extends BaseRenderer {
                 const points = convertLeadGeometryToPoints(leadResult.leadIn);
                 if (this.isPointNearLeadGeometry(point, points, state)) {
                     return {
-                        type: HitTestType.PATH, // Could add LEAD type if needed
-                        id: `${path.id}-leadIn`,
+                        type: HitTestType.CUT, // Could add LEAD type if needed
+                        id: `${cut.id}-leadIn`,
                         distance: 0,
                         point: point,
                         metadata: {
-                            pathId: path.id,
+                            cutId: cut.id,
                             leadType: 'leadIn',
                         },
                     };
@@ -327,12 +327,12 @@ export class LeadRenderer extends BaseRenderer {
                 const points = convertLeadGeometryToPoints(leadResult.leadOut);
                 if (this.isPointNearLeadGeometry(point, points, state)) {
                     return {
-                        type: HitTestType.PATH, // Could add LEAD type if needed
-                        id: `${path.id}-leadOut`,
+                        type: HitTestType.CUT, // Could add LEAD type if needed
+                        id: `${cut.id}-leadOut`,
                         distance: 0,
                         point: point,
                         metadata: {
-                            pathId: path.id,
+                            cutId: cut.id,
                             leadType: 'leadOut',
                         },
                     };
@@ -374,10 +374,10 @@ export class LeadRenderer extends BaseRenderer {
     private drawLeadNormals(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        path: Path,
+        cut: Cut,
         operation: Operation
     ): void {
-        const leadResult = this.calculatePathLeads(path, operation, state);
+        const leadResult = this.calculateCutLeads(cut, operation, state);
         if (!leadResult) return;
 
         // Draw normal for lead-in (normal starts at connection point)

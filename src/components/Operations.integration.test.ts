@@ -37,20 +37,20 @@ describe('Operations Highlighting Integration', () => {
         expect(get(partStore).highlightedPartId).toBe(null);
     });
 
-    it('should select chains in chain store when handlePathHover is called', () => {
+    it('should select chains in chain store when handleCutHover is called', () => {
         const testChainId = 'chain-456';
 
         // Verify initial state
         expect(get(chainStore).selectedChainId).toBe(null);
 
-        // Simulate hovering over a path in Operations apply-to menu
+        // Simulate hovering over a cut in Operations apply-to menu
         chainStore.selectChain(testChainId);
 
         // Verify chain is selected in store
         expect(get(chainStore).selectedChainId).toBe(testChainId);
     });
 
-    it('should change chain selection when hovering over different paths', () => {
+    it('should change chain selection when hovering over different cuts', () => {
         const firstChainId = 'chain-456';
         const secondChainId = 'chain-789';
 
@@ -58,14 +58,14 @@ describe('Operations Highlighting Integration', () => {
         chainStore.selectChain(firstChainId);
         expect(get(chainStore).selectedChainId).toBe(firstChainId);
 
-        // Select second chain (simulating hovering over different path)
+        // Select second chain (simulating hovering over different cut)
         chainStore.selectChain(secondChainId);
 
         // Verify selection changed
         expect(get(chainStore).selectedChainId).toBe(secondChainId);
     });
 
-    it('should clear chain selection when hovering away from paths', () => {
+    it('should clear chain selection when hovering away from cuts', () => {
         const testChainId = 'chain-456';
 
         // First select a chain
@@ -85,7 +85,7 @@ describe('Operations Highlighting Integration', () => {
         const chainId1 = 'chain-111';
         const chainId2 = 'chain-222';
 
-        // Simulate rapid hovering between parts and paths
+        // Simulate rapid hovering between parts and cuts
         partStore.highlightPart(partId1);
         expect(get(partStore).highlightedPartId).toBe(partId1);
 

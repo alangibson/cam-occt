@@ -37,7 +37,7 @@
         // Reset File Measurement Units to default (Automatic)
         settingsStore.setImportUnitSetting(ImportUnitSetting.Automatic);
 
-        // Reset drawing store to empty state (this also clears chains, parts, paths, operations, rapids, tessellation, overlay)
+        // Reset drawing store to empty state (this also clears chains, parts, cuts, operations, rapids, tessellation, overlay)
         drawingStore.setDrawing({
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },

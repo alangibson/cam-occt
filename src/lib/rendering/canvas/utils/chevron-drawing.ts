@@ -27,7 +27,7 @@ export function drawChevronArrow(
     size: number
 ): void {
     ctx.save();
-    ctx.strokeStyle = 'rgb(0, 133, 84)'; // Green color to match path color
+    ctx.strokeStyle = 'rgb(0, 133, 84)'; // Green color to match cut color
     ctx.lineWidth =
         state.transform.coordinator.screenToWorldDistance(CHEVRON_LINE_WIDTH);
     ctx.lineCap = 'round';

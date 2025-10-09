@@ -1,13 +1,13 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { pathStore } from '$lib/stores/paths/store';
+    import { cutStore } from '$lib/stores/cuts/store';
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { SvelteMap } from 'svelte/reactivity';
     import { CutterCompensation } from '$lib/types/cam';
     import { onMount, createEventDispatcher } from 'svelte';
-    import { pathsToToolPaths } from '$lib/cam/path-generator/path-to-toolpath';
+    import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
     import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
@@ -24,7 +24,7 @@
 
     $: drawing = $drawingStore.drawing;
     $: displayUnit = $drawingStore.displayUnit;
-    $: paths = $pathStore.paths;
+    $: cuts = $cutStore.cuts;
     $: chains = $chainStore.chains;
     $: parts = $partStore.parts;
     $: tools = $toolStore;
@@ -58,10 +58,10 @@
                 }
             });
 
-            // Convert paths to tool paths using simulation's validated approach
-            // This handles empty paths array gracefully
-            const toolPaths = await pathsToToolPaths(
-                paths,
+            // Convert cuts to tool paths using simulation's validated approach
+            // This handles empty cuts array gracefully
+            const toolPaths = await cutsToToolPaths(
+                cuts,
                 chainShapes,
                 tools,
                 chainMap,
@@ -142,7 +142,7 @@
             enableTHC
         );
         void displayUnit; // Watch for display unit changes
-        void paths; // Watch for path changes
+        void cuts; // Watch for cut changes
         handleGenerateGCode();
     }
 </script>
@@ -196,7 +196,7 @@
     {:else}
         <div class="generate-section">
             <div class="error-message">
-                <p>No paths available. Please create operations first.</p>
+                <p>No cuts available. Please create operations first.</p>
             </div>
         </div>
     {/if}

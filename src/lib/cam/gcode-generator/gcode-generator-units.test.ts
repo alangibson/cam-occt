@@ -4,7 +4,7 @@ import { CutterCompensation } from '$lib/types/cam';
 import { type Drawing, type CutPath, Unit } from '$lib/types';
 
 describe('GCode Generator - Units', () => {
-    const mockPath: CutPath = {
+    const mockCut: CutPath = {
         id: 'path1',
         shapeId: 'shape1',
         points: [
@@ -41,7 +41,7 @@ describe('GCode Generator - Units', () => {
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
-        const gcode = generateGCode([mockPath], mockDrawing, {
+        const gcode = generateGCode([mockCut], mockDrawing, {
             ...baseOptions,
             units: Unit.MM, // Use display unit, not drawing.units
         });
@@ -57,7 +57,7 @@ describe('GCode Generator - Units', () => {
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
-        const gcode = generateGCode([mockPath], mockDrawing, {
+        const gcode = generateGCode([mockCut], mockDrawing, {
             ...baseOptions,
             units: Unit.INCH, // Use display unit, not drawing.units
         });
@@ -79,12 +79,12 @@ describe('GCode Generator - Units', () => {
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
-        const gcodeMetric = generateGCode([mockPath], mockDrawingMM, {
+        const gcodeMetric = generateGCode([mockCut], mockDrawingMM, {
             ...baseOptions,
             units: Unit.MM, // Use display unit
         });
 
-        const gcodeImperial = generateGCode([mockPath], mockDrawingInch, {
+        const gcodeImperial = generateGCode([mockCut], mockDrawingInch, {
             ...baseOptions,
             units: Unit.INCH, // Use display unit
         });
@@ -103,7 +103,7 @@ describe('GCode Generator - Units', () => {
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
-        const gcode = generateGCode([mockPath], mockDrawing, {
+        const gcode = generateGCode([mockCut], mockDrawing, {
             ...baseOptions,
             units: Unit.MM, // Use display unit
         });
@@ -125,7 +125,7 @@ describe('GCode Generator - Units', () => {
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
-        const gcodeMetric = generateGCode([mockPath], mockDrawingMM, {
+        const gcodeMetric = generateGCode([mockCut], mockDrawingMM, {
             ...baseOptions,
             units: Unit.MM, // Display unit set to mm
         });
@@ -136,7 +136,7 @@ describe('GCode Generator - Units', () => {
             units: Unit.INCH,
         };
 
-        const gcodeImperial = generateGCode([mockPath], mockDrawingInch, {
+        const gcodeImperial = generateGCode([mockCut], mockDrawingInch, {
             ...baseOptions,
             units: Unit.INCH, // Display unit changed to inch
         });

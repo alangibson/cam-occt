@@ -2,11 +2,11 @@ import { describe, expect, it, vi, beforeEach } from 'vitest';
 import {
     calculateChainOffset,
     calculateOperationLeads,
-    calculatePathLeads,
+    calculateCutLeads,
     createCutChain,
-    createPathsFromOperation,
-    generatePathsForChainWithOperation,
-    generatePathsForPartTargetWithOperation,
+    createCutsFromOperation,
+    generateCutsForChainWithOperation,
+    generateCutsForPartTargetWithOperation,
     getChainCutDirection,
 } from './functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
@@ -15,7 +15,7 @@ import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { Operation } from './interfaces';
-import type { Path } from '$lib/stores/paths/interfaces';
+import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { DetectedPart } from '$lib/types';
 import { PartType } from '$lib/types';
 import { GeometryType } from '$lib/types/geometry';
@@ -106,9 +106,9 @@ describe('Operations Functions', () => {
         holeUnderspeedPercent: 50,
     };
 
-    const mockPath: Path = {
-        id: 'path-1',
-        name: 'Test Path',
+    const mockCut: Cut = {
+        id: 'cut-1',
+        name: 'Test Cut',
         operationId: 'op-1',
         chainId: 'chain-1',
         toolId: 'tool-1',
@@ -492,9 +492,9 @@ describe('Operations Functions', () => {
         });
     });
 
-    describe('generatePathsForChainWithOperation', () => {
+    describe('generateCutsForChainWithOperation', () => {
         it('should return empty arrays when chain not found', async () => {
-            const result = await generatePathsForChainWithOperation(
+            const result = await generateCutsForChainWithOperation(
                 mockOperation,
                 'unknown-chain',
                 0,
@@ -503,11 +503,11 @@ describe('Operations Functions', () => {
                 []
             );
 
-            expect(result.paths).toEqual([]);
+            expect(result.cuts).toEqual([]);
             expect(result.warnings).toEqual([]);
         });
 
-        it('should generate path for chain with kerf compensation INNER', async () => {
+        it('should generate cut for chain with kerf compensation INNER', async () => {
             const operationWithKerf = {
                 ...mockOperation,
                 kerfCompensation: KerfCompensation.INNER,
@@ -537,7 +537,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await generatePathsForChainWithOperation(
+            const result = await generateCutsForChainWithOperation(
                 operationWithKerf,
                 'chain-1',
                 0,
@@ -546,13 +546,11 @@ describe('Operations Functions', () => {
                 []
             );
 
-            expect(result.paths).toHaveLength(1);
-            expect(result.paths[0].kerfCompensation).toBe(
-                OffsetDirection.INSET
-            );
+            expect(result.cuts).toHaveLength(1);
+            expect(result.cuts[0].kerfCompensation).toBe(OffsetDirection.INSET);
         });
 
-        it('should generate path for chain with kerf compensation OUTER', async () => {
+        it('should generate cut for chain with kerf compensation OUTER', async () => {
             const operationWithKerf = {
                 ...mockOperation,
                 kerfCompensation: KerfCompensation.OUTER,
@@ -582,7 +580,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await generatePathsForChainWithOperation(
+            const result = await generateCutsForChainWithOperation(
                 operationWithKerf,
                 'chain-1',
                 0,
@@ -591,19 +589,19 @@ describe('Operations Functions', () => {
                 []
             );
 
-            expect(result.paths).toHaveLength(1);
-            expect(result.paths[0].kerfCompensation).toBe(
+            expect(result.cuts).toHaveLength(1);
+            expect(result.cuts[0].kerfCompensation).toBe(
                 OffsetDirection.OUTSET
             );
         });
 
-        it('should generate path for chain with kerf compensation PART (treated as NONE for chains)', async () => {
+        it('should generate cut for chain with kerf compensation PART (treated as NONE for chains)', async () => {
             const operationWithKerf = {
                 ...mockOperation,
                 kerfCompensation: KerfCompensation.PART,
             };
 
-            const result = await generatePathsForChainWithOperation(
+            const result = await generateCutsForChainWithOperation(
                 operationWithKerf,
                 'chain-1',
                 0,
@@ -612,14 +610,14 @@ describe('Operations Functions', () => {
                 []
             );
 
-            expect(result.paths).toHaveLength(1);
-            expect(result.paths[0].kerfCompensation).toBe(OffsetDirection.NONE);
+            expect(result.cuts).toHaveLength(1);
+            expect(result.cuts[0].kerfCompensation).toBe(OffsetDirection.NONE);
         });
     });
 
-    describe('generatePathsForPartTargetWithOperation', () => {
+    describe('generateCutsForPartTargetWithOperation', () => {
         it('should return empty arrays when part not found', async () => {
-            const result = await generatePathsForPartTargetWithOperation(
+            const result = await generateCutsForPartTargetWithOperation(
                 mockOperation,
                 'unknown-part',
                 0,
@@ -628,11 +626,11 @@ describe('Operations Functions', () => {
                 [mockTool]
             );
 
-            expect(result.paths).toEqual([]);
+            expect(result.cuts).toEqual([]);
             expect(result.warnings).toEqual([]);
         });
 
-        it('should generate paths for part with kerf compensation PART', async () => {
+        it('should generate cuts for part with kerf compensation PART', async () => {
             const operationWithKerf = {
                 ...mockOperation,
                 targetType: 'parts' as const,
@@ -672,7 +670,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await generatePathsForPartTargetWithOperation(
+            const result = await generateCutsForPartTargetWithOperation(
                 operationWithKerf,
                 'part-1',
                 0,
@@ -681,13 +679,11 @@ describe('Operations Functions', () => {
                 [mockTool]
             );
 
-            expect(result.paths).toHaveLength(2); // Shell + 1 hole
-            expect(result.paths[0].kerfCompensation).toBe(
+            expect(result.cuts).toHaveLength(2); // Shell + 1 hole
+            expect(result.cuts[0].kerfCompensation).toBe(
                 OffsetDirection.OUTSET
             ); // Shell
-            expect(result.paths[1].kerfCompensation).toBe(
-                OffsetDirection.INSET
-            ); // Hole
+            expect(result.cuts[1].kerfCompensation).toBe(OffsetDirection.INSET); // Hole
         });
 
         it('should handle nested holes', async () => {
@@ -736,7 +732,7 @@ describe('Operations Functions', () => {
                 },
             ];
 
-            const result = await generatePathsForPartTargetWithOperation(
+            const result = await generateCutsForPartTargetWithOperation(
                 mockOperation,
                 'part-1',
                 0,
@@ -745,11 +741,11 @@ describe('Operations Functions', () => {
                 [mockTool]
             );
 
-            expect(result.paths).toHaveLength(3); // Shell + 2 holes
+            expect(result.cuts).toHaveLength(3); // Shell + 2 holes
         });
     });
 
-    describe('calculatePathLeads', () => {
+    describe('calculateCutLeads', () => {
         beforeEach(() => {
             vi.mocked(createLeadInConfig).mockReturnValue({
                 type: LeadType.ARC,
@@ -793,14 +789,14 @@ describe('Operations Functions', () => {
         });
 
         it('should return empty object when both leads are disabled', async () => {
-            const pathNoLeads = {
-                ...mockPath,
+            const cutNoLeads = {
+                ...mockCut,
                 leadInConfig: { type: LeadType.NONE, length: 0 },
                 leadOutConfig: { type: LeadType.NONE, length: 0 },
             };
 
-            const result = await calculatePathLeads(
-                pathNoLeads,
+            const result = await calculateCutLeads(
+                cutNoLeads,
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -810,8 +806,8 @@ describe('Operations Functions', () => {
         });
 
         it('should calculate leads with offset geometry when available', async () => {
-            const pathWithOffset = {
-                ...mockPath,
+            const cutWithOffset = {
+                ...mockCut,
                 offset: {
                     offsetShapes: [
                         { ...mockChain.shapes[0], id: 'offset-shape' },
@@ -829,8 +825,8 @@ describe('Operations Functions', () => {
                 targetType: 'parts' as const,
             };
 
-            const result = await calculatePathLeads(
-                pathWithOffset,
+            const result = await calculateCutLeads(
+                cutWithOffset,
                 operationParts,
                 mockChain,
                 [mockPart]
@@ -839,7 +835,7 @@ describe('Operations Functions', () => {
             expect(calculateLeads).toHaveBeenCalledWith(
                 expect.objectContaining({
                     id: 'chain-1_offset_temp',
-                    shapes: pathWithOffset.offset.offsetShapes,
+                    shapes: cutWithOffset.offset.offsetShapes,
                 }),
                 expect.objectContaining({
                     type: LeadType.ARC,
@@ -855,7 +851,7 @@ describe('Operations Functions', () => {
                     angle: 90,
                     fit: false,
                 }),
-                mockPath.cutDirection,
+                mockCut.cutDirection,
                 mockPart
             );
 
@@ -864,8 +860,8 @@ describe('Operations Functions', () => {
         });
 
         it('should handle empty offset shapes by using original chain', async () => {
-            const pathWithEmptyOffset = {
-                ...mockPath,
+            const cutWithEmptyOffset = {
+                ...mockCut,
                 calculatedOffset: {
                     offsetShapes: [],
                     originalShapes: mockChain.shapes,
@@ -876,8 +872,8 @@ describe('Operations Functions', () => {
                 },
             };
 
-            const result = await calculatePathLeads(
-                pathWithEmptyOffset,
+            const result = await calculateCutLeads(
+                cutWithEmptyOffset,
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -887,7 +883,7 @@ describe('Operations Functions', () => {
                 mockChain,
                 expect.anything(),
                 expect.anything(),
-                mockPath.cutDirection,
+                mockCut.cutDirection,
                 undefined
             );
 
@@ -920,8 +916,8 @@ describe('Operations Functions', () => {
                 warnings: ['Test warning'],
             });
 
-            const result = await calculatePathLeads(
-                mockPath,
+            const result = await calculateCutLeads(
+                mockCut,
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -936,8 +932,8 @@ describe('Operations Functions', () => {
                 throw new Error('Calculation error');
             });
 
-            const result = await calculatePathLeads(
-                mockPath,
+            const result = await calculateCutLeads(
+                mockCut,
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -953,8 +949,8 @@ describe('Operations Functions', () => {
                 throw 'String error';
             });
 
-            const result = await calculatePathLeads(
-                mockPath,
+            const result = await calculateCutLeads(
+                mockCut,
                 mockOperation,
                 mockChain,
                 [mockPart]
@@ -966,10 +962,10 @@ describe('Operations Functions', () => {
     });
 
     describe('calculateOperationLeads', () => {
-        it('should calculate leads for all paths in operation', async () => {
-            const paths = [
-                mockPath,
-                { ...mockPath, id: 'path-2', chainId: 'chain-2' },
+        it('should calculate leads for all cuts in operation', async () => {
+            const cuts = [
+                mockCut,
+                { ...mockCut, id: 'cut-2', chainId: 'chain-2' },
             ];
             const chains = [mockChain, { ...mockChain, id: 'chain-2' }];
 
@@ -1015,14 +1011,14 @@ describe('Operations Functions', () => {
 
             const result = await calculateOperationLeads(
                 mockOperation,
-                paths,
+                cuts,
                 chains,
                 [mockPart]
             );
 
             expect(result.size).toBe(2);
-            expect(result.has('path-1')).toBe(true);
-            expect(result.has('path-2')).toBe(true);
+            expect(result.has('cut-1')).toBe(true);
+            expect(result.has('cut-2')).toBe(true);
         });
 
         it('should handle errors during calculation', async () => {
@@ -1032,7 +1028,7 @@ describe('Operations Functions', () => {
 
             const result = await calculateOperationLeads(
                 mockOperation,
-                [mockPath],
+                [mockCut],
                 [mockChain],
                 [mockPart]
             );
@@ -1042,36 +1038,36 @@ describe('Operations Functions', () => {
         });
     });
 
-    describe('createPathsFromOperation', () => {
+    describe('createCutsFromOperation', () => {
         it('should return empty arrays when operation is disabled', async () => {
             const disabledOperation = { ...mockOperation, enabled: false };
 
-            const result = await createPathsFromOperation(
+            const result = await createCutsFromOperation(
                 disabledOperation,
                 [mockChain],
                 [mockPart],
                 [mockTool]
             );
 
-            expect(result.paths).toEqual([]);
+            expect(result.cuts).toEqual([]);
             expect(result.warnings).toEqual([]);
         });
 
         it('should return empty arrays when operation has no target IDs', async () => {
             const operationNoTargets = { ...mockOperation, targetIds: [] };
 
-            const result = await createPathsFromOperation(
+            const result = await createCutsFromOperation(
                 operationNoTargets,
                 [mockChain],
                 [mockPart],
                 [mockTool]
             );
 
-            expect(result.paths).toEqual([]);
+            expect(result.cuts).toEqual([]);
             expect(result.warnings).toEqual([]);
         });
 
-        it('should generate paths for chain targets', async () => {
+        it('should generate cuts for chain targets', async () => {
             vi.mocked(offsetChain).mockReturnValue({
                 success: true,
                 innerChain: {
@@ -1096,18 +1092,18 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await createPathsFromOperation(
+            const result = await createCutsFromOperation(
                 mockOperation,
                 [mockChain],
                 [mockPart],
                 [mockTool]
             );
 
-            expect(result.paths).toHaveLength(1);
+            expect(result.cuts).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
         });
 
-        it('should generate paths for part targets', async () => {
+        it('should generate cuts for part targets', async () => {
             const operationParts = {
                 ...mockOperation,
                 targetType: 'parts' as const,
@@ -1147,14 +1143,14 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await createPathsFromOperation(
+            const result = await createCutsFromOperation(
                 operationParts,
                 chains,
                 [mockPart],
                 [mockTool]
             );
 
-            expect(result.paths).toHaveLength(2); // Shell + 1 hole
+            expect(result.cuts).toHaveLength(2); // Shell + 1 hole
         });
     });
 });

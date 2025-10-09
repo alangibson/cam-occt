@@ -1,7 +1,7 @@
 <script lang="ts">
     import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
     import Operations from '../Operations.svelte';
-    import Paths from '../Paths.svelte';
+    import Cuts from '../Cuts.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
     import InspectPanel from '../InspectPanel.svelte';
     import PartsPanel from '../PartsPanel.svelte';
@@ -13,7 +13,7 @@
     import { partStore } from '$lib/stores/parts/store';
     import { SvelteMap } from 'svelte/reactivity';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import { pathStore } from '$lib/stores/paths/store';
+    import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import {
         selectRapid,
@@ -42,12 +42,7 @@
     $: drawing = $drawingStore.drawing;
     $: chains = $chainStore.chains;
     $: parts = $partStore.parts;
-    $: _selectedChainId = $chainStore.selectedChainId;
-    $: _highlightedChainId = $chainStore.highlightedChainId;
-    $: _highlightedPartId = $partStore.highlightedPartId;
-    $: _hoveredPartId = $partStore.hoveredPartId;
-    $: _selectedPartId = $partStore.selectedPartId;
-    $: paths = $pathStore.paths;
+    $: cuts = $cutStore.cuts;
     $: rapids = $rapidStore.rapids;
     $: selectedRapidId = $rapidStore.selectedRapidId;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
@@ -58,27 +53,27 @@
     let previousPathsHash = '';
     let isOptimizing = false;
 
-    // Automatically recalculate rapids when paths change
+    // Automatically recalculate rapids when cuts change
     // We only react to lead-related changes, not order changes to avoid loops
 
     $: {
         // Only include properties that affect lead geometry, not order
-        const pathsHash = paths
+        const cutsHash = cuts
             .map(
-                (p) =>
-                    `${p.id}:${p.leadInConfig?.type}:${p.leadInConfig?.length}:${p.leadInConfig?.flipSide}:${p.leadInConfig?.angle}:${p.leadOutConfig?.type}:${p.leadOutConfig?.length}:${p.leadOutConfig?.flipSide}:${p.leadOutConfig?.angle}:${p.enabled}`
+                (c) =>
+                    `${c.id}:${c.leadInConfig?.type}:${c.leadInConfig?.length}:${c.leadInConfig?.flipSide}:${c.leadInConfig?.angle}:${c.leadOutConfig?.type}:${c.leadOutConfig?.length}:${c.leadOutConfig?.flipSide}:${c.leadOutConfig?.angle}:${c.enabled}`
             )
             .join('|');
 
         // Only trigger if the hash actually changed and we have the necessary data
         if (
-            pathsHash !== previousPathsHash &&
-            paths.length > 0 &&
+            cutsHash !== previousPathsHash &&
+            cuts.length > 0 &&
             chains.length > 0 &&
             drawing &&
             !isOptimizing
         ) {
-            previousPathsHash = pathsHash;
+            previousPathsHash = cutsHash;
             // Use setTimeout to avoid recursive updates and ensure all stores are synced
             setTimeout(() => {
                 // eslint-disable-next-line svelte/infinite-reactive-loop
@@ -93,9 +88,9 @@
         }
     }
 
-    // Clear rapids when no paths exist
+    // Clear rapids when no cuts exist
     $: {
-        if (paths.length === 0) {
+        if (cuts.length === 0) {
             rapidStore.clearRapids();
             selectRapid(null);
         }
@@ -133,9 +128,9 @@
 
     // Handle cut order optimization
     function handleOptimizeCutOrder() {
-        if (!drawing || chains.length === 0 || paths.length === 0) {
+        if (!drawing || chains.length === 0 || cuts.length === 0) {
             console.warn(
-                'No drawing, chains, or paths available for optimization'
+                'No drawing, chains, or cuts available for optimization'
             );
             return;
         }
@@ -147,22 +142,22 @@
         });
 
         // Optimize the cut order
-        const result = optimizeCutOrder(paths, chainMap, parts);
+        const result = optimizeCutOrder(cuts, chainMap, parts);
 
-        // Update the path order in the store with corrected order property
-        const orderedPathsWithUpdatedOrder = result.orderedPaths.map(
-            (path, index) => ({
-                ...path,
+        // Update the cut order in the store with corrected order property
+        const orderedCutsWithUpdatedOrder = result.orderedCuts.map(
+            (cut, index) => ({
+                ...cut,
                 order: index + 1,
             })
         );
-        pathStore.reorderPaths(orderedPathsWithUpdatedOrder);
+        cutStore.reorderCuts(orderedCutsWithUpdatedOrder);
 
         // Update the rapids in the store
         rapidStore.setRapids(result.rapids);
 
         console.log(
-            `Optimized cut order: ${result.orderedPaths.length} paths, ${result.rapids.length} rapids, total distance: ${result.totalDistance.toFixed(2)} units`
+            `Optimized cut order: ${result.orderedCuts.length} cuts, ${result.rapids.length} rapids, total distance: ${result.totalDistance.toFixed(2)} units`
         );
     }
 </script>
@@ -173,8 +168,8 @@
         rightColumnStorageKey="metalheadcam-program-right-column-width"
     >
         <svelte:fragment slot="left">
-            <AccordionPanel title="Paths ({paths.length})" isExpanded={false}>
-                <Paths />
+            <AccordionPanel title="Cuts ({cuts.length})" isExpanded={false}>
+                <Cuts />
             </AccordionPanel>
 
             <AccordionPanel title="Rapids ({rapids.length})" isExpanded={false}>
@@ -235,10 +230,10 @@
                     </button>
                     <p class="next-help">
                         {#if !$workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)}
-                            Create at least one operation with paths to simulate
+                            Create at least one operation with cuts to simulate
                             the cutting process.
                         {:else}
-                            Review your tool paths and simulate the cutting
+                            Review your tool cuts and simulate the cutting
                             process.
                         {/if}
                     </p>

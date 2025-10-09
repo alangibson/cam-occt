@@ -9,7 +9,7 @@ import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
-import { pathStore } from '$lib/stores/paths/store';
+import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
@@ -21,7 +21,7 @@ import { join } from 'path';
 describe('Spline Rendering Race Condition', () => {
     beforeEach(() => {
         // Reset stores that support it
-        pathStore.reset();
+        cutStore.reset();
         operationsStore.reset();
         toolStore.reset();
     });
@@ -102,41 +102,41 @@ describe('Spline Rendering Race Condition', () => {
             kerfCompensation: KerfCompensation.PART,
         });
 
-        // Wait for async path generation to complete
+        // Wait for async cut generation to complete
         await new Promise((resolve) => setTimeout(resolve, 200));
 
-        // Get the generated paths
-        const pathsState = get(pathStore);
-        const generatedPaths = pathsState.paths;
+        // Get the generated cuts
+        const cutsState = get(cutStore);
+        const generatedCuts = cutsState.cuts;
 
-        expect(generatedPaths.length).toBeGreaterThan(0);
+        expect(generatedCuts.length).toBeGreaterThan(0);
 
-        // Check each path has offset shapes
-        for (const path of generatedPaths) {
+        // Check each cut has offset shapes
+        for (const cut of generatedCuts) {
             expect(
-                path.offset,
-                `Path ${path.name} should have offset`
+                cut.offset,
+                `Cut ${cut.name} should have offset`
             ).toBeDefined();
             expect(
-                path.offset?.offsetShapes,
-                `Path ${path.name} should have offset shapes`
+                cut.offset?.offsetShapes,
+                `Cut ${cut.name} should have offset shapes`
             ).toBeDefined();
             expect(
-                path.offset?.offsetShapes.length,
-                `Path ${path.name} should have at least one offset shape`
+                cut.offset?.offsetShapes.length,
+                `Cut ${cut.name} should have at least one offset shape`
             ).toBeGreaterThan(0);
 
             // Log shape types to help debug
-            const shapeTypes = path.offset?.offsetShapes
+            const shapeTypes = cut.offset?.offsetShapes
                 .map((s) => s.type)
                 .join(', ');
-            console.log(`Path ${path.name} has offset shapes: ${shapeTypes}`);
+            console.log(`Cut ${cut.name} has offset shapes: ${shapeTypes}`);
         }
 
         // Specifically check for spline or polyline shapes (splines may be converted to polylines by offset)
-        const allOffsetShapes: Shape[] = generatedPaths
-            .filter((p) => p.offset?.offsetShapes)
-            .flatMap((p) => p.offset!.offsetShapes);
+        const allOffsetShapes: Shape[] = generatedCuts
+            .filter((cut) => cut.offset?.offsetShapes)
+            .flatMap((cut) => cut.offset!.offsetShapes);
 
         const hasSplineOrPolyline = allOffsetShapes.some(
             (shape) => shape.type === 'spline' || shape.type === 'polyline'
@@ -224,19 +224,19 @@ describe('Spline Rendering Race Condition', () => {
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Capture first operation's paths and offset shapes
-        const firstPathsState = get(pathStore);
-        const firstPaths = [...firstPathsState.paths];
+        // Capture first operation's cuts and offset shapes
+        const firstCutsState = get(cutStore);
+        const firstCuts = [...firstCutsState.cuts];
         const firstOffsetShapes: Map<string, Shape[]> = new Map();
 
-        for (const path of firstPaths) {
-            if (path.offset?.offsetShapes) {
-                firstOffsetShapes.set(path.id, [...path.offset.offsetShapes]);
+        for (const cut of firstCuts) {
+            if (cut.offset?.offsetShapes) {
+                firstOffsetShapes.set(cut.id, [...cut.offset.offsetShapes]);
             }
         }
 
-        expect(firstPaths.length).toBeGreaterThan(0);
-        console.log(`First operation created ${firstPaths.length} paths`);
+        expect(firstCuts.length).toBeGreaterThan(0);
+        console.log(`First operation created ${firstCuts.length} cuts`);
 
         // Create second operation
         operationsStore.addOperation({
@@ -266,34 +266,34 @@ describe('Spline Rendering Race Condition', () => {
 
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Get updated paths
-        const secondPathsState = get(pathStore);
-        const allPaths = secondPathsState.paths;
+        // Get updated cuts
+        const secondCutsState = get(cutStore);
+        const allCuts = secondCutsState.cuts;
 
-        console.log(`After second operation: ${allPaths.length} total paths`);
+        console.log(`After second operation: ${allCuts.length} total cuts`);
 
-        // Verify first operation's paths still exist and have ALL their offset shapes
+        // Verify first operation's cuts still exist and have ALL their offset shapes
         for (const [
-            pathId,
+            cutId,
             originalOffsetShapes,
         ] of firstOffsetShapes.entries()) {
-            const currentPath = allPaths.find((p) => p.id === pathId);
+            const currentCut = allCuts.find((c) => c.id === cutId);
 
             expect(
-                currentPath,
-                `Path ${pathId} from first operation should still exist`
+                currentCut,
+                `Cut ${cutId} from first operation should still exist`
             ).toBeDefined();
             expect(
-                currentPath?.offset?.offsetShapes,
-                `Path ${pathId} should still have offset shapes`
+                currentCut?.offset?.offsetShapes,
+                `Cut ${cutId} should still have offset shapes`
             ).toBeDefined();
 
-            const currentOffsetShapes = currentPath?.offset?.offsetShapes || [];
+            const currentOffsetShapes = currentCut?.offset?.offsetShapes || [];
 
             // Check same number of offset shapes
             expect(
                 currentOffsetShapes.length,
-                `Path ${pathId} should have same number of offset shapes (original: ${originalOffsetShapes.length}, current: ${currentOffsetShapes.length})`
+                `Cut ${cutId} should have same number of offset shapes (original: ${originalOffsetShapes.length}, current: ${currentOffsetShapes.length})`
             ).toBe(originalOffsetShapes.length);
 
             // Check shape types match
@@ -308,18 +308,16 @@ describe('Spline Rendering Race Condition', () => {
 
             expect(
                 currentTypes,
-                `Path ${pathId} offset shape types should match (original: ${originalTypes}, current: ${currentTypes})`
+                `Cut ${cutId} offset shape types should match (original: ${originalTypes}, current: ${currentTypes})`
             ).toBe(originalTypes);
         }
 
         // Verify second operation also has offset shapes with splines/polylines
-        const secondOpPaths = allPaths.filter((p) =>
-            p.name.includes('Second O')
-        );
-        expect(secondOpPaths.length).toBeGreaterThan(0);
+        const secondOpCuts = allCuts.filter((c) => c.name.includes('Second O'));
+        expect(secondOpCuts.length).toBeGreaterThan(0);
 
-        for (const path of secondOpPaths) {
-            expect(path.offset?.offsetShapes.length).toBeGreaterThan(0);
+        for (const cut of secondOpCuts) {
+            expect(cut.offset?.offsetShapes.length).toBeGreaterThan(0);
         }
     });
 
@@ -417,30 +415,30 @@ describe('Spline Rendering Race Condition', () => {
 
         await new Promise((resolve) => setTimeout(resolve, 150));
 
-        // Get all paths
-        const pathsState = get(pathStore);
-        const allPaths = pathsState.paths;
+        // Get all cuts
+        const cutsState = get(cutStore);
+        const allCuts = cutsState.cuts;
 
-        // Collect all offset shapes from all paths
-        const allOffsetShapes: Array<{ pathName: string; shape: Shape }> = [];
+        // Collect all offset shapes from all cuts
+        const allOffsetShapes: Array<{ cutName: string; shape: Shape }> = [];
 
-        for (const path of allPaths) {
-            if (path.offset?.offsetShapes) {
-                for (const shape of path.offset.offsetShapes) {
-                    allOffsetShapes.push({ pathName: path.name, shape });
+        for (const cut of allCuts) {
+            if (cut.offset?.offsetShapes) {
+                for (const shape of cut.offset.offsetShapes) {
+                    allOffsetShapes.push({ cutName: cut.name, shape });
                 }
             }
         }
 
         console.log(
-            `Total offset shapes across all paths: ${allOffsetShapes.length}`
+            `Total offset shapes across all cuts: ${allOffsetShapes.length}`
         );
 
         // Group by type
         const shapesByType = allOffsetShapes.reduce(
-            (acc, { pathName, shape }) => {
+            (acc, { cutName, shape }) => {
                 if (!acc[shape.type]) acc[shape.type] = [];
-                acc[shape.type].push(pathName);
+                acc[shape.type].push(cutName);
                 return acc;
             },
             {} as Record<string, string[]>
@@ -449,7 +447,7 @@ describe('Spline Rendering Race Condition', () => {
         console.log(
             'Shapes by type:',
             Object.entries(shapesByType)
-                .map(([type, paths]) => `${type}: ${paths.length}`)
+                .map(([type, cuts]) => `${type}: ${cuts.length}`)
                 .join(', ')
         );
 
@@ -473,7 +471,7 @@ describe('Spline Rendering Race Condition', () => {
         ).toBeGreaterThan(0);
 
         console.log(
-            `Successfully verified ${allOffsetShapes.length} offset shapes (${splineCount} splines, ${polylineCount} polylines) from ${allPaths.length} paths`
+            `Successfully verified ${allOffsetShapes.length} offset shapes (${splineCount} splines, ${polylineCount} polylines) from ${allCuts.length} cuts`
         );
     });
 });
