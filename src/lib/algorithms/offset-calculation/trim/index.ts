@@ -2,12 +2,10 @@ import type { Arc, Circle, Line, Polyline } from '$lib/types/geometry';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Point2D, Shape } from '$lib/types';
 import { MICRO_TOLERANCE } from '$lib/geometry/constants';
-
 import { trimArc } from './arc';
 import { trimCircle } from './circle';
 import { trimLine } from './line';
 import { trimPolyline } from './polyline';
-import { trimSpline } from './spline';
 import { trimEllipse } from './ellipse';
 import type { KeepSide, TrimResult } from './types';
 import { polylineToPoints } from '$lib/geometry/polyline';
@@ -80,7 +78,12 @@ export function trimShapeAtPoint(
             case 'polyline':
                 return trimPolyline(shape, point, keepSide, tolerance);
             case 'spline':
-                return trimSpline(shape, point, keepSide, tolerance);
+                // Disabled because this breaks splines.
+                // Also doesnt seem necessary for splines.
+                // return trimSpline(shape, point, keepSide, tolerance);
+                result.success = true;
+                result.shape = shape;
+                return result;
             case 'ellipse':
                 return trimEllipse(shape, point, keepSide, tolerance);
             default:

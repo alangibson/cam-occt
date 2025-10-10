@@ -218,11 +218,14 @@ export function trimSpline(
         }
     }
 
-    // Simplified knot vector (uniform)
+    // Reduce degree if insufficient control points (degree requires at least degree+1 points)
+    const adjustedDegree = Math.min(spline.degree, newControlPoints.length - 1);
+
+    // Simplified knot vector (uniform) - use adjusted degree
     newKnots = [];
     for (
         let i: number = 0;
-        i < newControlPoints.length + spline.degree + 1;
+        i < newControlPoints.length + adjustedDegree + 1;
         i++
     ) {
         newKnots.push(i);
@@ -232,7 +235,7 @@ export function trimSpline(
         controlPoints: newControlPoints,
         knots: newKnots,
         weights: newWeights,
-        degree: spline.degree,
+        degree: adjustedDegree,
         fitPoints: newFitPoints,
         closed: false, // Trimmed splines are always open
     };

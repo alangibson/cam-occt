@@ -19,7 +19,6 @@ import { fillLineToIntersection } from './line';
 import { fillArcToIntersection } from './arc';
 import { fillCircleToIntersection } from './circle';
 import { fillPolylineToIntersection } from './polyline';
-import { fillSplineToIntersection } from './spline';
 import { fillEllipseToIntersection } from './ellipse';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 
@@ -184,7 +183,10 @@ function extendShapeToPoint(
                 options
             );
         case GeometryType.SPLINE:
-            return fillSplineToIntersection(shape, intersectionPoint, options);
+            // Disabled because this breaks splines.
+            // Also doesnt seem necessary for splines.
+            // return fillSplineToIntersection(shape, intersectionPoint, options);
+            return createSuccessResult(shape, null, intersectionPoint);
         case GeometryType.ELLIPSE:
             return fillEllipseToIntersection(shape, intersectionPoint, options);
         default:

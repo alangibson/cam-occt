@@ -317,6 +317,7 @@ function createNurbsCurve(spline: Spline): VerbCurve {
             spline.degree,
             spline.controlPoints.length
         );
+
         return verb.geom.NurbsCurve.byKnotsControlPointsWeights(
             spline.degree,
             clampedKnots,

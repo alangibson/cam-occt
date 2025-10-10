@@ -2,9 +2,7 @@ import verb, { type VerbDerivatives, type VerbPoint } from 'verb-nurbs';
 import { GeometryType, type Point2D } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import {
-    generateUniformKnotVector,
     DEFAULT_RETRY_COUNT,
-    SPLINE_SAMPLE_COUNT,
     VALIDATION_SAMPLE_COUNT,
 } from '$lib/geometry/spline';
 import {
@@ -23,13 +21,21 @@ import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 const DEFAULT_OPERATION_TIMEOUT_MS = 10000;
 
 /**
- * Spline operation constants for comprehensive spline offset calculations
+ * Spline operation constants for adaptive offset calculations
  */
-const MAX_SPLINE_SAMPLES = 500;
-const MIN_SPLINE_SAMPLES = 20;
-const SPLINE_CONTROL_POINT_MULTIPLIER = 10;
-const SPLINE_SAMPLE_INCREASE_MULTIPLIER = 1.5;
 const DEFAULT_SPLINE_MAX_RETRIES = 10;
+
+/**
+ * Tolerance refinement multiplier for adaptive sampling
+ * Each refinement iteration reduces tolerance by this factor
+ */
+const TOLERANCE_REFINEMENT_FACTOR = 0.5;
+
+/**
+ * Minimum tolerance threshold relative to initial tolerance
+ * Refinement stops when tolerance becomes this fraction of initial value
+ */
+const MINIMUM_TOLERANCE_THRESHOLD = 0.01;
 
 // Type definitions for verb-nurbs library
 type VerbPoint3D = [number, number, number];
@@ -127,41 +133,66 @@ function calculateNormalAtPoint(
 
 /**
  * Calculates offset points along the curve using adaptive sampling
+ * Uses verb's adaptive tessellation to intelligently sample based on curvature
  */
 function calculateOffsetPoints(
     curve: verb.geom.NurbsCurve,
     offsetDistance: number,
-    numSamples: number,
+    tolerance: number,
     timeoutMs: number,
     startTime: number
 ): Point2D[] {
-    const offsetPoints: Point2D[] = [];
-    const domain: { min: number; max: number } = curve.domain();
+    if (Date.now() - startTime > timeoutMs) {
+        throw new Error(
+            `Spline offset operation timed out before sampling after ${timeoutMs}ms`
+        );
+    }
 
-    for (let i: number = 0; i <= numSamples; i++) {
+    // Get the NURBS curve data for adaptive sampling
+    const curveData = curve.asNurbs();
+
+    // Use verb's adaptive sampling with parameter values included
+    // Returns array of [u, x, y, z] where u is the parameter
+    let sampledPoints: VerbPoint[];
+    try {
+        sampledPoints = verb.eval.Tess.rationalCurveAdaptiveSample(
+            curveData,
+            tolerance,
+            true // includeU: true to get parameter values
+        );
+    } catch (error) {
+        throw new Error(
+            `Adaptive sampling failed: ${error instanceof Error ? error.message : String(error)}`
+        );
+    }
+
+    if (!sampledPoints || sampledPoints.length === 0) {
+        throw new Error('Adaptive sampling produced no points');
+    }
+
+    const offsetPoints: Point2D[] = [];
+
+    // Process each sampled point
+    for (let i = 0; i < sampledPoints.length; i++) {
         if (Date.now() - startTime > timeoutMs) {
             throw new Error(
-                `Spline offset operation timed out during sampling after ${timeoutMs}ms`
+                `Spline offset operation timed out during offset calculation after ${timeoutMs}ms`
             );
         }
 
-        const t: number =
-            domain.min + (i / numSamples) * (domain.max - domain.min);
+        const sample = sampledPoints[i];
+        // First element is the parameter, rest is the point [u, x, y, z]
+        const t: number = sample[0];
+        const point: number[] = [sample[1], sample[2], sample[3]];
 
-        let derivatives: VerbDerivatives;
+        let normal: [number, number, number];
         try {
-            derivatives = curve.derivatives(t, 1);
+            normal = calculateNormalAtPoint(curve, t);
         } catch (error) {
             throw new Error(
-                `Derivative calculation failed at t=${t}: ${error}`
+                `Normal calculation failed at t=${t}: ${error instanceof Error ? error.message : String(error)}`
             );
         }
-
-        const point: number[] = derivatives[0];
-        const normal: [number, number, number] = calculateNormalAtPoint(
-            curve,
-            t
-        );
 
         const scaledNormal: [number, number, number] = [
             normal[0] * offsetDistance,
@@ -216,26 +247,8 @@ function convertVerbCurveToSpline(
     const degree: number = verbCurve.degree();
     const knots: number[] = verbCurve.knots();
     const weights: number[] = verbCurve.weights();
-    const expectedKnots: number = controlPoints2D.length + degree + 1;
 
-    // Validate knot vector before creating spline
-    if (knots.length !== expectedKnots) {
-        // Generate a valid uniform knot vector
-        const validKnots = generateUniformKnotVector(
-            controlPoints2D.length,
-            degree
-        );
-
-        return {
-            controlPoints: controlPoints2D,
-            knots: validKnots,
-            weights: weights,
-            degree: degree,
-            fitPoints: [],
-            closed: originalSpline.closed,
-        };
-    }
-
+    // Trust verb's output - the knot vector is correct for its control points
     return {
         controlPoints: controlPoints2D,
         knots: knots,
@@ -510,7 +523,9 @@ function shouldRefineOffset(
 }
 
 /**
- * Performs adaptive refinement of the offset calculation
+ * Performs adaptive offset calculation using verb's adaptive tessellation
+ * The adaptive sampling automatically adjusts density based on curvature,
+ * so refinement is simplified compared to the previous uniform sampling approach
  */
 function refineOffset(
     spline: Spline,
@@ -520,19 +535,14 @@ function refineOffset(
     maxRetries: number,
     timeoutMs: number
 ): { offsetCurve: verb.geom.NurbsCurve; warnings: string[] } {
-    let numSamples: number = Math.min(
-        SPLINE_SAMPLE_COUNT,
-        Math.max(
-            MIN_SPLINE_SAMPLES,
-            spline.controlPoints.length * SPLINE_CONTROL_POINT_MULTIPLIER
-        )
-    );
-    let retryCount: number = 0;
-    let finalOffsetCurve: verb.geom.NurbsCurve | undefined;
     const warnings: string[] = [];
     const actualMaxRetries: number = Math.min(maxRetries, DEFAULT_RETRY_COUNT);
     const startTime: number = Date.now();
+    let retryCount: number = 0;
+    let currentTolerance: number = tolerance;
+    let finalOffsetCurve: verb.geom.NurbsCurve | undefined;
 
+    // Adaptive sampling approach: start with user tolerance and refine if needed
     while (retryCount < actualMaxRetries) {
         if (Date.now() - startTime > timeoutMs) {
             throw new Error(
@@ -540,13 +550,15 @@ function refineOffset(
             );
         }
 
+        // Use adaptive sampling to get offset points
         const offsetPoints: Point2D[] = calculateOffsetPoints(
             curve,
             offsetDistance,
-            numSamples,
+            currentTolerance,
             timeoutMs,
             startTime
         );
+
         const closedOffsetPoints: Point2D[] = ensureClosedCurve(
             offsetPoints,
             spline.closed
@@ -582,7 +594,7 @@ function refineOffset(
             if (retryCount > 0) {
                 warnings.push(
                     // eslint-disable-next-line no-magic-numbers
-                    `Spline offset refined with ${numSamples} samples after ${retryCount} iterations (max error: ${maxError.toFixed(6)})`
+                    `Spline offset refined with tolerance ${currentTolerance.toFixed(6)} after ${retryCount} iterations (max error: ${maxError.toFixed(6)})`
                 );
             }
             break;
@@ -590,19 +602,18 @@ function refineOffset(
 
         retryCount++;
 
+        // Refine by reducing tolerance (more points in adaptive sampling)
         if (retryCount < actualMaxRetries) {
-            const newSamples: number = Math.min(
-                Math.floor(numSamples * SPLINE_SAMPLE_INCREASE_MULTIPLIER),
-                MAX_SPLINE_SAMPLES
-            );
-            if (newSamples === numSamples) {
+            const newTolerance: number =
+                currentTolerance * TOLERANCE_REFINEMENT_FACTOR;
+            if (newTolerance < tolerance * MINIMUM_TOLERANCE_THRESHOLD) {
                 warnings.push(
                     // eslint-disable-next-line no-magic-numbers
-                    `Maximum sample limit reached (${numSamples}), stopping refinement with error ${maxError.toFixed(6)}`
+                    `Minimum tolerance reached (${newTolerance.toFixed(6)}), stopping refinement with error ${maxError.toFixed(6)}`
                 );
                 break;
             }
-            numSamples = newSamples;
+            currentTolerance = newTolerance;
         } else {
             warnings.push(
                 // eslint-disable-next-line no-magic-numbers

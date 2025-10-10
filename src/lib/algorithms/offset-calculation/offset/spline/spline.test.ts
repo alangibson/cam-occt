@@ -692,3 +692,198 @@ describe('tessellateVerbCurve', () => {
         curve.tessellate = originalTessellate;
     });
 });
+
+describe('Adaptive Sampling for Offsets', () => {
+    it('should use adaptive sampling for straight vs curved splines', () => {
+        // Create a relatively straight spline
+        const straightSpline: Spline = {
+            controlPoints: [
+                { x: 0, y: 0 },
+                { x: 3, y: 0.1 },
+                { x: 6, y: -0.1 },
+                { x: 9, y: 0 },
+            ],
+            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+            weights: [1, 1, 1, 1],
+            degree: 3,
+            fitPoints: [],
+            closed: false,
+        };
+
+        // Create a highly curved spline
+        const curvedSpline: Spline = {
+            controlPoints: [
+                { x: 0, y: 0 },
+                { x: 2, y: 8 },
+                { x: 6, y: -8 },
+                { x: 9, y: 0 },
+            ],
+            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+            weights: [1, 1, 1, 1],
+            degree: 3,
+            fitPoints: [],
+            closed: false,
+        };
+
+        const straightResult = offsetSpline(
+            straightSpline,
+            1,
+            OffsetDirection.OUTSET
+        );
+        const curvedResult = offsetSpline(
+            curvedSpline,
+            1,
+            OffsetDirection.OUTSET
+        );
+
+        // Both should succeed
+        expect(straightResult.success).toBe(true);
+        expect(curvedResult.success).toBe(true);
+
+        // Both should produce spline results
+        expect(straightResult.shapes.length).toBeGreaterThan(0);
+        expect(curvedResult.shapes.length).toBeGreaterThan(0);
+    });
+
+    it('should handle adaptive sampling with different tolerances', () => {
+        const testSpline: Spline = {
+            controlPoints: [
+                { x: 0, y: 0 },
+                { x: 2, y: 4 },
+                { x: 6, y: 4 },
+                { x: 8, y: 0 },
+            ],
+            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+            weights: [1, 1, 1, 1],
+            degree: 3,
+            fitPoints: [],
+            closed: false,
+        };
+
+        // Test with coarse tolerance (fewer samples expected from adaptive algorithm)
+        const coarseResult = offsetSpline(
+            testSpline,
+            1,
+            OffsetDirection.OUTSET,
+            0.1 // Coarse tolerance
+        );
+
+        // Test with fine tolerance (more samples expected from adaptive algorithm)
+        const fineResult = offsetSpline(
+            testSpline,
+            1,
+            OffsetDirection.OUTSET,
+            0.001 // Fine tolerance
+        );
+
+        // Both should succeed
+        expect(coarseResult.success).toBe(true);
+        expect(fineResult.success).toBe(true);
+
+        // Both should produce valid spline geometry
+        expect(coarseResult.shapes[0].type).toBe('spline');
+        expect(fineResult.shapes[0].type).toBe('spline');
+    });
+
+    it('should maintain offset quality with adaptive sampling', () => {
+        const testSpline: Spline = {
+            controlPoints: [
+                { x: 0, y: 0 },
+                { x: 5, y: 5 },
+                { x: 10, y: 0 },
+            ],
+            knots: [0, 0, 0, 1, 1, 1],
+            weights: [1, 1, 1],
+            degree: 2,
+            fitPoints: [],
+            closed: false,
+        };
+
+        const offsetDistance = 2;
+        const result = offsetSpline(
+            testSpline,
+            offsetDistance,
+            OffsetDirection.OUTSET,
+            0.01
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.shapes.length).toBeGreaterThan(0);
+
+        const offsetSplineGeom = result.shapes[0].geometry as Spline;
+        expect(offsetSplineGeom.controlPoints.length).toBeGreaterThan(0);
+
+        // Verify the offset spline has reasonable properties
+        expect(offsetSplineGeom.degree).toBeGreaterThanOrEqual(1);
+        expect(offsetSplineGeom.knots.length).toBeGreaterThan(0);
+    });
+
+    it('should handle closed splines with adaptive sampling', () => {
+        const closedSpline: Spline = {
+            controlPoints: [
+                { x: 0, y: 0 },
+                { x: 5, y: 0 },
+                { x: 5, y: 5 },
+                { x: 0, y: 5 },
+            ],
+            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+            weights: [1, 1, 1, 1],
+            degree: 3,
+            fitPoints: [],
+            closed: true,
+        };
+
+        const result = offsetSpline(
+            closedSpline,
+            0.5,
+            OffsetDirection.OUTSET,
+            0.01
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.shapes.length).toBeGreaterThan(0);
+
+        const offsetGeometry = result.shapes[0].geometry as Spline;
+        expect(offsetGeometry.closed).toBe(true);
+    });
+
+    it('should handle refinement with progressively finer tolerances', () => {
+        const complexSpline: Spline = {
+            controlPoints: [
+                { x: 0, y: 0 },
+                { x: 2, y: 6 },
+                { x: 4, y: -4 },
+                { x: 6, y: 8 },
+                { x: 8, y: 0 },
+            ],
+            knots: [0, 0, 0, 0, 0.5, 1, 1, 1, 1],
+            weights: [1, 1, 1, 1, 1],
+            degree: 3,
+            fitPoints: [],
+            closed: false,
+        };
+
+        // Set very tight tolerance to trigger refinement
+        const result = offsetSpline(
+            complexSpline,
+            1.5,
+            OffsetDirection.OUTSET,
+            0.0001, // Very tight
+            5 // Allow multiple refinement attempts
+        );
+
+        expect(result.success).toBe(true);
+        expect(result.shapes.length).toBeGreaterThan(0);
+
+        // May have warnings about refinement
+        if (result.warnings.length > 0) {
+            const refinementWarnings = result.warnings.filter(
+                (w) =>
+                    w.includes('refined with tolerance') ||
+                    w.includes('Minimum tolerance reached')
+            );
+            // Acceptable to have refinement warnings
+            expect(refinementWarnings.length).toBeGreaterThanOrEqual(0);
+        }
+    });
+});

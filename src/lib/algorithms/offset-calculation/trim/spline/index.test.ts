@@ -574,9 +574,14 @@ describe('Spline Trimming Functions', () => {
                 expect(result.success).toBe(true);
 
                 const trimmedSpline = result.shape?.geometry as Spline;
-                expect(trimmedSpline.degree).toBe(5);
+                // Degree should be reduced if there aren't enough control points
+                expect(trimmedSpline.degree).toBe(
+                    Math.min(5, trimmedSpline.controlPoints.length - 1)
+                );
                 expect(trimmedSpline.knots.length).toBe(
-                    trimmedSpline.controlPoints.length + 5 + 1
+                    trimmedSpline.controlPoints.length +
+                        trimmedSpline.degree +
+                        1
                 );
             });
 
@@ -678,7 +683,10 @@ describe('Spline Trimming Functions', () => {
                 expect(result.shape?.id).toBe('generated-id-456');
 
                 const trimmedSpline = result.shape?.geometry as Spline;
-                expect(trimmedSpline.degree).toBe(2); // Should preserve degree
+                // Degree should be preserved or reduced if insufficient control points
+                expect(trimmedSpline.degree).toBe(
+                    Math.min(2, trimmedSpline.controlPoints.length - 1)
+                );
             });
         });
     });
