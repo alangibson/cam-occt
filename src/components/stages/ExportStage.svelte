@@ -285,27 +285,6 @@
                 </div>
             </AccordionPanel>
 
-            <AccordionPanel title="Export Summary" isExpanded={false}>
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <span class="summary-label">Target Controller:</span>
-                        <span class="summary-value">LinuxCNC QtPlasmaC</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Output Format:</span>
-                        <span class="summary-value">G-code (.ngc)</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Drawing Units:</span>
-                        <span class="summary-value">Millimeters</span>
-                    </div>
-                    <div class="summary-item">
-                        <span class="summary-label">Cut Optimization:</span>
-                        <span class="summary-value">Enabled</span>
-                    </div>
-                </div>
-            </AccordionPanel>
-
             <AccordionPanel title="Start New Project" isExpanded={true}>
                 <div class="workflow-content">
                     <button class="restart-button" on:click={handleStartOver}>
@@ -366,35 +345,6 @@
         color: white;
         border-radius: 0.5rem;
         padding: 1rem;
-    }
-
-    .summary-grid {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .summary-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem 0;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    .summary-item:last-child {
-        border-bottom: none;
-    }
-
-    .summary-label {
-        color: #6b7280;
-        font-size: 0.875rem;
-    }
-
-    .summary-value {
-        color: #374151;
-        font-weight: 600;
-        font-size: 0.875rem;
     }
 
     /* Removed .workflow-panel styles - now handled by workflow-content within AccordionPanel */

@@ -21,7 +21,6 @@
         clearRapidHighlight,
     } from '$lib/stores/rapids/functions';
     import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
-    import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
     import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import ShowPanel from '../ShowPanel.svelte';
@@ -47,7 +46,6 @@
     $: selectedRapidId = $rapidStore.selectedRapidId;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
     $: leadWarnings = $leadWarningsStore.warnings;
-    $: offsetWarnings = $offsetWarningsStore.warnings;
 
     // Track previous hash to prevent infinite loops
     let previousPathsHash = '';
@@ -264,36 +262,6 @@
 
             <InspectPanel />
 
-            <AccordionPanel
-                title="Problems ({offsetWarnings.length})"
-                isExpanded={false}
-            >
-                <div class="offset-warnings-list">
-                    {#if offsetWarnings.length > 0}
-                        {#each offsetWarnings as warning (warning.id)}
-                            <div class="warning-item offset-warning">
-                                <div class="warning-header">
-                                    <span class="warning-type {warning.type}">
-                                        ⚠️ {warning.type}
-                                    </span>
-                                    <span class="warning-chain"
-                                        >Chain {warning.chainId.split(
-                                            '-'
-                                        )[1]}</span
-                                    >
-                                </div>
-                                <p class="warning-message">{warning.message}</p>
-                            </div>
-                        {/each}
-                    {:else}
-                        <p class="no-problems">
-                            No problems detected. All offset calculations
-                            completed successfully.
-                        </p>
-                    {/if}
-                </div>
-            </AccordionPanel>
-
             {#if leadWarnings.length > 0}
                 <AccordionPanel
                     title="Lead Warnings ({leadWarnings.length})"
@@ -427,49 +395,6 @@
     }
 
     .no-rapids {
-        color: #6b7280;
-        font-size: 0.875rem;
-        text-align: center;
-        padding: 1rem;
-        margin: 0;
-    }
-
-    /* Offset Warnings section styles */
-    .offset-warnings-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-
-    .warning-item.offset-warning {
-        padding: 0.75rem;
-        background-color: #fef2f2;
-        border: 1px solid rgba(133, 0, 15, 0.4);
-        border-radius: 0.375rem;
-        border-left: 4px solid rgb(133, 18, 0);
-    }
-
-    .warning-type.offset {
-        color: rgb(133, 18, 0);
-    }
-
-    .warning-type.trim {
-        color: #ea580c;
-    }
-
-    .warning-type.gap {
-        color: #d97706;
-    }
-
-    .warning-type.intersection {
-        color: #7c2d12;
-    }
-
-    .warning-type.geometry {
-        color: #991b1b;
-    }
-
-    .no-problems {
         color: #6b7280;
         font-size: 0.875rem;
         text-align: center;
