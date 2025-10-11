@@ -29,7 +29,7 @@ describe('GCode Generator - Units', () => {
         safeZ: 10,
         rapidFeedRate: 5000,
         includeComments: true,
-        cutterCompensation: CutterCompensation.OFF,
+        cutterCompensation: CutterCompensation.NONE,
         adaptiveFeedControl: true as boolean | null,
         enableTHC: true as boolean | null,
     };

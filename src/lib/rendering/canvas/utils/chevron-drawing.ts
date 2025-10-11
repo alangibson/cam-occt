@@ -11,7 +11,7 @@ const BACK_OFFSET_RATIO = 0.3;
 const TIP_OFFSET_RATIO = 0.4;
 const PI_DIVISOR = 4;
 const QUARTER_PI = Math.PI / PI_DIVISOR;
-const CHEVRON_LINE_WIDTH = 1.5;
+const CHEVRON_LINE_WIDTH = 1;
 
 /**
  * Draw a chevron arrow at the specified location

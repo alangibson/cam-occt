@@ -10,7 +10,7 @@ import type { Circle } from '$lib/geometry/circle';
 import type { Point2D, Shape } from '$lib/types/geometry';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/geometry/shape';
-import { CutterCompensation } from '$lib/types';
+import { CutterCompensation, NormalSide } from '$lib/types';
 import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 import {
     DEFAULT_CUT_HEIGHT_MM,
@@ -106,30 +106,13 @@ function generateHeader(options: GCodeOptions): GCodeCommand[] {
         comment: `Set units to ${options.units === 'mm' ? 'millimeters' : 'inches'}`,
     });
 
-    // Cutter compensation
-    //
-    // If cutter compensation is in effect g-code thc,
-    // velocity based thc and over cut are not able to
-    // be used; an error message will be displayed.
-    if (options.cutterCompensation !== null) {
-        const compensationCode =
-            options.cutterCompensation === CutterCompensation.LEFT_OUTER
-                ? 'G41'
-                : options.cutterCompensation === CutterCompensation.RIGHT_INNER
-                  ? 'G42'
-                  : 'G40';
-        const compensationComment =
-            options.cutterCompensation === CutterCompensation.LEFT_OUTER
-                ? 'Cutter compensation left (outer)'
-                : options.cutterCompensation === CutterCompensation.RIGHT_INNER
-                  ? 'Cutter compensation right (inner)'
-                  : 'Cutter compensation off';
-        commands.push({
-            code: compensationCode,
-            parameters: {},
-            comment: compensationComment,
-        });
-    }
+    // Cutter compensation off
+    // Always set G40 at start to ensure clean state
+    commands.push({
+        code: 'G40',
+        parameters: {},
+        comment: 'Cutter compensation off',
+    });
 
     // Tool length offset cancel
     //
@@ -379,6 +362,36 @@ function generateCutCommands(
         parameters: { Z: options.safeZ },
         comment: 'Move to safe height',
     });
+
+    // Machine cutter compensation (G41/G42) if enabled
+    if (options.cutterCompensation === CutterCompensation.MACHINE) {
+        if (
+            cut.hasOffset &&
+            cut.normalSide &&
+            cut.normalSide !== NormalSide.NONE
+        ) {
+            if (cut.normalSide === NormalSide.LEFT) {
+                commands.push({
+                    code: 'G41',
+                    parameters: {},
+                    comment: 'Cutter compensation left',
+                });
+            } else if (cut.normalSide === NormalSide.RIGHT) {
+                commands.push({
+                    code: 'G42',
+                    parameters: {},
+                    comment: 'Cutter compensation right',
+                });
+            }
+        } else {
+            // No offset or normalSide is NONE - use G40
+            commands.push({
+                code: 'G40',
+                parameters: {},
+                comment: 'Cutter compensation off',
+            });
+        }
+    }
 
     // Lead-in if present
     if (cut.leadIn && cut.leadIn.length > 0) {

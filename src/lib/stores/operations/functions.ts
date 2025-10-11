@@ -301,7 +301,21 @@ export async function generateCutsForChainWithOperation(
         throw new Error('Cannot create cut: cutChain is undefined');
     }
     const part = findPartContainingChain(targetId, parts);
-    const cutNormalResult = calculateCutNormal(cutChain, cutDirection, part);
+    const cutNormalResult = calculateCutNormal(
+        cutChain,
+        cutDirection,
+        part,
+        kerfCompensation
+    );
+
+    // Get kerf width from tool (needed for cutter visualization even when compensation is NONE)
+    let kerfWidth: number | undefined = undefined;
+    if (operation.toolId) {
+        const tool = tools.find((t) => t.id === operation.toolId);
+        if (tool && tool.kerfWidth) {
+            kerfWidth = tool.kerfWidth;
+        }
+    }
 
     // Create the cut object
     const cutToReturn: Cut = {
@@ -317,12 +331,14 @@ export async function generateCutsForChainWithOperation(
         leadInConfig: operation.leadInConfig,
         leadOutConfig: operation.leadOutConfig,
         kerfCompensation: kerfCompensation,
+        kerfWidth: kerfWidth,
         offset: calculatedOffset,
         cutChain: cutChain,
         isHole: false,
         holeUnderspeedPercent: undefined,
         normal: cutNormalResult.normal,
         normalConnectionPoint: cutNormalResult.connectionPoint,
+        normalSide: cutNormalResult.normalSide,
     };
 
     // Calculate leads for the cut
@@ -474,8 +490,18 @@ export async function generateCutsForPartTargetWithOperation(
     const shellCutNormalResult = calculateCutNormal(
         shellExecutionChain,
         shellCutDirection,
-        part
+        part,
+        shellKerfCompensation
     );
+
+    // Get kerf width from tool (needed for cutter visualization even when compensation is NONE)
+    let shellKerfWidth: number | undefined = undefined;
+    if (operation.toolId) {
+        const tool = tools.find((t) => t.id === operation.toolId);
+        if (tool && tool.kerfWidth) {
+            shellKerfWidth = tool.kerfWidth;
+        }
+    }
 
     // Create shell cut
     const shellCut: Cut = {
@@ -491,6 +517,7 @@ export async function generateCutsForPartTargetWithOperation(
         leadInConfig: operation.leadInConfig,
         leadOutConfig: operation.leadOutConfig,
         kerfCompensation: shellKerfCompensation,
+        kerfWidth: shellKerfWidth,
         offset: shellCalculatedOffset,
         cutChain: shellExecutionChain,
         isHole: false,
@@ -499,6 +526,7 @@ export async function generateCutsForPartTargetWithOperation(
             : undefined,
         normal: shellCutNormalResult.normal,
         normalConnectionPoint: shellCutNormalResult.connectionPoint,
+        normalSide: shellCutNormalResult.normalSide,
     };
 
     // Calculate leads for shell cut
@@ -631,8 +659,18 @@ export async function generateCutsForPartTargetWithOperation(
             const holeCutNormalResult = calculateCutNormal(
                 holeExecutionChain,
                 holeCutDirection,
-                part
+                part,
+                holeKerfCompensation
             );
+
+            // Get kerf width from tool (needed for cutter visualization even when compensation is NONE)
+            let holeKerfWidth: number | undefined = undefined;
+            if (operation.toolId) {
+                const tool = tools.find((t) => t.id === operation.toolId);
+                if (tool && tool.kerfWidth) {
+                    holeKerfWidth = tool.kerfWidth;
+                }
+            }
 
             // Create hole cut
             const holeCut: Cut = {
@@ -648,6 +686,7 @@ export async function generateCutsForPartTargetWithOperation(
                 leadInConfig: operation.leadInConfig,
                 leadOutConfig: operation.leadOutConfig,
                 kerfCompensation: holeKerfCompensation,
+                kerfWidth: holeKerfWidth,
                 offset: holeCalculatedOffset,
                 cutChain: holeExecutionChain,
                 isHole: true,
@@ -656,6 +695,7 @@ export async function generateCutsForPartTargetWithOperation(
                     : undefined,
                 normal: holeCutNormalResult.normal,
                 normalConnectionPoint: holeCutNormalResult.connectionPoint,
+                normalSide: holeCutNormalResult.normalSide,
             };
 
             // Calculate leads for hole cut

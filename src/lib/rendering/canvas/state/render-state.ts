@@ -61,17 +61,24 @@ export interface VisibilityState {
     showChains: boolean;
     showParts: boolean;
     showOverlays: boolean;
+    showShapePaths: boolean;
     showShapeStartPoints: boolean;
     showShapeEndPoints: boolean;
+    showChainPaths: boolean;
     showChainStartPoints: boolean;
     showChainEndPoints: boolean;
     showChainTangentLines: boolean;
     showChainNormals: boolean;
+    showChainDirections: boolean;
     showShapeNormals: boolean;
     showShapeWindingDirection: boolean;
     showShapeTangentLines: boolean;
     showCutNormals: boolean;
+    showCutDirections: boolean;
+    showCutPaths: boolean;
+    showCutter: boolean;
     showLeadNormals: boolean;
+    showLeadPaths: boolean;
 }
 
 /**
@@ -175,17 +182,24 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showChains: true,
             showParts: true,
             showOverlays: true,
+            showShapePaths: true,
             showShapeStartPoints: false,
             showShapeEndPoints: false,
+            showChainPaths: true,
             showChainStartPoints: false,
             showChainEndPoints: false,
             showChainTangentLines: false,
             showChainNormals: false,
+            showChainDirections: false,
             showShapeNormals: false,
             showShapeWindingDirection: false,
             showShapeTangentLines: false,
             showCutNormals: false,
+            showCutDirections: false,
+            showCutPaths: true,
+            showCutter: false,
             showLeadNormals: false,
+            showLeadPaths: true,
         },
         stage: stage || ('import' as WorkflowStage),
         displayUnit: Unit.MM,
@@ -255,6 +269,9 @@ export function cloneRenderState(state: RenderState): RenderState {
                   selectedCutId: state.cutsState.selectedCutId,
                   highlightedCutId: state.cutsState.highlightedCutId,
                   showCutNormals: state.cutsState.showCutNormals,
+                  showCutDirections: state.cutsState.showCutDirections,
+                  showCutPaths: state.cutsState.showCutPaths,
+                  showCutter: state.cutsState.showCutter,
               }
             : null,
         chainsWithCuts: [...state.chainsWithCuts],

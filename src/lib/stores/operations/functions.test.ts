@@ -19,6 +19,7 @@ import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { DetectedPart } from '$lib/types';
 import { PartType } from '$lib/types';
 import { GeometryType } from '$lib/types/geometry';
+import { NormalSide } from '$lib/types/cam';
 import { reverseChain } from '$lib/geometry/chain';
 import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
 import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
@@ -133,6 +134,7 @@ describe('Operations Functions', () => {
         isHole: false,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
+        normalSide: NormalSide.LEFT,
     };
 
     const mockPart: DetectedPart = {

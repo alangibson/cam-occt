@@ -18,6 +18,7 @@ import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types
 import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type { LeadResult } from '$lib/algorithms/leads/interfaces';
+import { NormalSide } from '$lib/types/cam';
 
 // Mock the stores
 vi.mock('$lib/stores/cuts/store', () => ({
@@ -91,6 +92,7 @@ describe('Lead Persistence Utils', () => {
         cutDirection: CutDirection.CLOCKWISE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
+        normalSide: NormalSide.LEFT,
         leadInConfig: {
             type: LeadType.ARC,
             length: 5,

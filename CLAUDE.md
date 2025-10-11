@@ -196,8 +196,8 @@ Never run `npm run dev` - the user manages the dev server. If you need it runnin
 **Shape Colors**:
 
 - Normal: Black (`#000000`) 1px
-- Hovered: Orange (`#ff6600`) 1.5px
-- Selected: Orange (`#ff6600`) 2px
+- Hovered: Orange (`#ff6600`) 1px
+- Selected: Orange (`#ff6600`) 1px
 - Origin cross: Gray (`#888888`) 1px
 
 **Hit Detection**: All shapes must implement `isPointNearShape()` with consistent tolerance scaled by zoom.

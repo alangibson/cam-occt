@@ -9,6 +9,7 @@ import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { NormalSide } from '$lib/types/cam';
 
 // Test data setup
 const createTestCut = (overrides: Partial<Cut> = {}): Cut => ({
@@ -34,6 +35,7 @@ const createTestCut = (overrides: Partial<Cut> = {}): Cut => ({
     cutDirection: CutDirection.CLOCKWISE,
     normal: { x: 1, y: 0 },
     normalConnectionPoint: { x: 0, y: 0 },
+    normalSide: NormalSide.LEFT,
     ...overrides,
 });
 

@@ -8,6 +8,7 @@ import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
+import { NormalSide } from '$lib/types/cam';
 
 // Mock DragEvent for jsdom
 interface MockDragEventInit extends EventInit {
@@ -89,6 +90,7 @@ describe('Cuts Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
             });
 
             const { container } = render(Cuts);
@@ -120,6 +122,7 @@ describe('Cuts Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
             });
 
             const { container } = render(Cuts);
@@ -151,6 +154,7 @@ describe('Cuts Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
             });
 
             const { container } = render(Cuts);
@@ -191,6 +195,7 @@ describe('Cuts Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
             });
 
             const { container } = render(Cuts);
@@ -220,6 +225,7 @@ describe('Cuts Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
             });
 
             cutStore.addCut({
@@ -233,6 +239,7 @@ describe('Cuts Component - Function Coverage', () => {
                 cutDirection: CutDirection.CLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
             });
 
             const { container } = render(Cuts);
@@ -308,6 +315,7 @@ describe('Cuts Component - Function Coverage', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
             });
 
             const { container } = render(Cuts);

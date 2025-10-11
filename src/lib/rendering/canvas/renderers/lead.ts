@@ -35,7 +35,7 @@ import type { CoordinateTransformer } from '$lib/rendering/coordinate-transforme
 const HIT_TEST_TOLERANCE = 5;
 const NORMAL_INDICATOR_RADIUS = 3; // Radius of the circle at normal line start
 const DEFAULT_NORMAL_LINE_LENGTH = 30; // Length in screen pixels
-const LEAD_NORMAL_LINE_WIDTH = 2; // Width in screen pixels
+const LEAD_NORMAL_LINE_WIDTH = 1; // Width in screen pixels
 
 export class LeadRenderer extends BaseRenderer {
     // Lead visualization settings
@@ -45,7 +45,7 @@ export class LeadRenderer extends BaseRenderer {
     private leadOutColor: string = 'rgb(133, 18, 0)'; // Red
     private leadInOpacity: number = 1.0;
     private leadOutOpacity: number = 1.0;
-    private leadLineWidth: number = 1;
+    private leadLineWidth: number = 2;
     private normalLineColor: string = 'rgba(255, 165, 0, 0.6)'; // Light orange
     private normalLineLength: number = DEFAULT_NORMAL_LINE_LENGTH;
 
@@ -73,7 +73,10 @@ export class LeadRenderer extends BaseRenderer {
                 return;
             }
 
-            this.drawCutLeads(ctx, state, cut, operation);
+            // Draw lead paths if enabled
+            if (state.visibility?.showLeadPaths) {
+                this.drawCutLeads(ctx, state, cut, operation);
+            }
 
             // Draw lead normals if enabled
             if (state.visibility?.showLeadNormals) {

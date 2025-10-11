@@ -2,7 +2,7 @@ import type { Point2D } from '$lib/types';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 
 const NORMAL_LINE_LENGTH = 20; // Screen pixels
-const NORMAL_LINE_WIDTH = 2; // Screen pixels
+const NORMAL_LINE_WIDTH = 1; // Screen pixels
 const DASH_SIZE = 4;
 const ARROW_LENGTH_RATIO = 0.15;
 const ARROW_ANGLE_DEGREES = 30;

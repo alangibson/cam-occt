@@ -12,6 +12,7 @@ import type {
 
 function createShapeVisualizationStore(): ShapeVisualizationStore {
     const { subscribe, set, update } = writable<ShapeVisualizationState>({
+        showShapePaths: true,
         showShapeStartPoints: false,
         showShapeEndPoints: false,
         showShapeNormals: false,
@@ -21,6 +22,16 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
 
     return {
         subscribe,
+
+        /**
+         * Set shape paths visibility
+         */
+        setShowShapePaths: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showShapePaths: show,
+            }));
+        },
 
         /**
          * Set shape start points visibility
@@ -77,6 +88,7 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
          */
         reset: () => {
             set({
+                showShapePaths: true,
                 showShapeStartPoints: false,
                 showShapeEndPoints: false,
                 showShapeNormals: false,

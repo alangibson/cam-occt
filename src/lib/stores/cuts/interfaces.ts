@@ -7,6 +7,7 @@
 import type { Shape, Point2D } from '$lib/types';
 import { CutDirection } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import type { NormalSide } from '$lib/types/cam';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { CutLeadResult } from '$lib/stores/operations/interfaces';
@@ -49,6 +50,7 @@ export interface Cut {
     // This is the source of truth used by both visualization and lead calculation
     normal: Point2D; // Normalized normal vector
     normalConnectionPoint: Point2D; // Point where normal is calculated (cut start point)
+    normalSide: NormalSide; // Which side the normal is on (for machine cutter compensation)
 
     // Hole
     //
@@ -93,6 +95,9 @@ export interface CutsState {
     selectedCutId: string | null;
     highlightedCutId: string | null;
     showCutNormals: boolean;
+    showCutter: boolean;
+    showCutDirections: boolean;
+    showCutPaths: boolean;
 }
 
 export interface CutsStore {
@@ -120,6 +125,9 @@ export interface CutsStore {
     ) => void;
     clearCutOffsetGeometry: (cutId: string) => void;
     setShowCutNormals: (show: boolean) => void;
+    setShowCutter: (show: boolean) => void;
+    setShowCutDirections: (show: boolean) => void;
+    setShowCutPaths: (show: boolean) => void;
     reset: () => void;
     restore: (cutsState: CutsState) => void;
 }

@@ -38,7 +38,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: true,
                 enableTHC: null,
             });
@@ -55,7 +55,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: false,
                 enableTHC: null,
             });
@@ -70,7 +70,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: null,
                 enableTHC: null,
             });
@@ -86,7 +86,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: null,
                 enableTHC: true,
             });
@@ -102,7 +102,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: null,
                 enableTHC: false,
             });
@@ -118,7 +118,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: null,
                 enableTHC: null,
             });
@@ -137,7 +137,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: true,
                 enableTHC: true,
             });
@@ -156,7 +156,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: false,
                 enableTHC: false,
             });
@@ -173,7 +173,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: true,
                 enableTHC: null,
             });

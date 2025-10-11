@@ -49,7 +49,7 @@ describe('generateGCode', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         expect(gcode).toContain('G21'); // Metric units
@@ -63,7 +63,7 @@ describe('generateGCode', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         expect(gcode).toContain('M3'); // Plasma on
@@ -77,7 +77,7 @@ describe('generateGCode', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         expect(gcode).toContain(
@@ -92,7 +92,7 @@ describe('generateGCode', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: false,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         expect(gcode).not.toContain(
@@ -106,7 +106,7 @@ describe('generateGCode', () => {
             safeZ: 0.5,
             rapidFeedRate: 200,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         expect(gcode).toContain('G20'); // Imperial units
@@ -119,7 +119,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: false,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
             });
 
             expect(gcode).toContain('G21'); // Should still have header
@@ -142,7 +142,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
             });
 
             // Current implementation treats rapids as regular cuts but without parameters
@@ -163,7 +163,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
             });
 
             expect(gcode).toContain('M3'); // Should still pierce
@@ -176,7 +176,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 materialNumber: 5,
                 enableTHC: true,
                 adaptiveFeedControl: true,
@@ -194,7 +194,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: false,
             });
 
@@ -217,7 +217,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: true,
             });
 
@@ -240,7 +240,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: true,
             });
 
@@ -262,7 +262,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: true,
             });
 
@@ -285,7 +285,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 adaptiveFeedControl: true,
             });
 
@@ -304,7 +304,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
             });
 
             // Should not crash and should include basic commands
@@ -339,7 +339,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 useNativeSplines: true,
             });
 
@@ -372,7 +372,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 useNativeSplines: true,
             });
 
@@ -402,7 +402,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 useNativeSplines: true,
             });
 
@@ -435,7 +435,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 useNativeSplines: true,
             });
 
@@ -468,7 +468,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
                 useNativeSplines: true,
             });
 
@@ -494,7 +494,7 @@ describe('generateGCode', () => {
                 safeZ: 10.123456,
                 rapidFeedRate: 5000,
                 includeComments: false,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
             });
 
             // Check that coordinates appear with proper precision somewhere in the output
@@ -514,7 +514,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
             });
 
             expect(gcode).toContain('M3 $0'); // QtPlasmaC plasma on syntax
@@ -527,7 +527,7 @@ describe('generateGCode', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
             });
 
             expect(gcode).toContain('F#<_hal[plasmac.cut-feed-rate]>'); // HAL feed rate

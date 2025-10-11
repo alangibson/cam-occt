@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CutterCompensation } from '$lib/types/cam';
+import { CutterCompensation, NormalSide } from '$lib/types/cam';
 import type { Cut } from '$lib/stores/cuts/interfaces';
 import { type Drawing, type Shape, Unit } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
@@ -79,10 +79,16 @@ describe('G-code generation with offset cuts', () => {
             kerfWidth: 1.5,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = await cutsToToolPaths([testCut], chainShapes, []);
+        const toolPaths = await cutsToToolPaths(
+            [testCut],
+            chainShapes,
+            [],
+            CutterCompensation.SOFTWARE
+        );
 
         expect(toolPaths).toHaveLength(1);
         expect(toolPaths[0].points).toEqual([
@@ -98,7 +104,7 @@ describe('G-code generation with offset cuts', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         // Verify G-code contains original coordinates
@@ -124,6 +130,7 @@ describe('G-code generation with offset cuts', () => {
             kerfWidth: 1.5,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
             // Add calculated offset
             offset: {
                 offsetShapes,
@@ -136,7 +143,12 @@ describe('G-code generation with offset cuts', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = await cutsToToolPaths([testCut], chainShapes, []);
+        const toolPaths = await cutsToToolPaths(
+            [testCut],
+            chainShapes,
+            [],
+            CutterCompensation.SOFTWARE
+        );
 
         expect(toolPaths).toHaveLength(1);
         // Should use offset geometry
@@ -153,7 +165,7 @@ describe('G-code generation with offset cuts', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         // Verify G-code contains offset coordinates
@@ -183,6 +195,7 @@ describe('G-code generation with offset cuts', () => {
             kerfWidth: 1.5,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
             // Lead lengths are now handled via cut configurations, not CuttingParameters
             // Calculated lead-in connecting to offset cut
             leadIn: {
@@ -220,7 +233,12 @@ describe('G-code generation with offset cuts', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = await cutsToToolPaths([testCut], chainShapes, []);
+        const toolPaths = await cutsToToolPaths(
+            [testCut],
+            chainShapes,
+            [],
+            CutterCompensation.SOFTWARE
+        );
 
         expect(toolPaths).toHaveLength(1);
 
@@ -249,7 +267,7 @@ describe('G-code generation with offset cuts', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         // Should contain linear interpolation moves (G1 commands) from arc tessellation
@@ -270,6 +288,7 @@ describe('G-code generation with offset cuts', () => {
             pierceHeight: 3.87654,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
             offset: {
                 offsetShapes: [
                     {
@@ -290,14 +309,19 @@ describe('G-code generation with offset cuts', () => {
         };
 
         const chainShapes = new Map([['chain-1', testShapes]]);
-        const toolPaths = await cutsToToolPaths([testCut], chainShapes, []);
+        const toolPaths = await cutsToToolPaths(
+            [testCut],
+            chainShapes,
+            [],
+            CutterCompensation.SOFTWARE
+        );
 
         const gcode = generateGCode(toolPaths, testDrawing, {
             units: Unit.MM,
             safeZ: 10.123456,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         // Should format coordinates to 4 decimal places

@@ -25,7 +25,6 @@ import {
     getShapeChainId,
     getChainShapeIds,
 } from '$lib/stores/chains/functions';
-import { getChainPartType, getPartChainIds } from '$lib/stores/parts/functions';
 import { tessellateSpline } from '$lib/geometry/spline';
 import { distanceFromEllipsePerimeter } from '$lib/geometry/ellipse/index';
 import { drawNormalLine } from './normal-renderer-utils';
@@ -47,28 +46,14 @@ import type { CoordinateTransformer } from '$lib/rendering/coordinate-transforme
 const VIEWPORT_CULLING_THRESHOLD = 100;
 const VIEWPORT_CULLING_BUFFER = 50;
 const HIT_TEST_TOLERANCE_PIXELS = 5;
-const SELECTED_LINE_WIDTH = 2;
-const HOVERED_LINE_WIDTH = 1.5;
-const CUT_SELECTED_LINE_WIDTH = 3;
-const CUT_HIGHLIGHTED_LINE_WIDTH = 3;
-const CUT_HIGHLIGHTED_SHADOW_BLUR = 4;
-const CHAIN_SELECTED_LINE_WIDTH = 2;
-const PART_SELECTED_LINE_WIDTH = 2.5;
-const PART_SELECTED_SHADOW_BLUR = 2;
-const CHAIN_HIGHLIGHTED_LINE_WIDTH = 2;
-const PART_HIGHLIGHTED_LINE_WIDTH = 2.5;
-const PART_HIGHLIGHTED_SHADOW_BLUR = 3;
-const PART_HOVERED_LINE_WIDTH = 2;
-const CUT_LINE_WIDTH = 2;
-const PART_SHELL_LINE_WIDTH = 1.5;
-const PART_HOLE_LINE_WIDTH = 1.5;
-const CHAIN_FALLBACK_LINE_WIDTH = 1.5;
+const SELECTED_LINE_WIDTH = 1;
+const HOVERED_LINE_WIDTH = 1;
 const DEFAULT_LINE_WIDTH = 1;
 
 // Constants for shape winding direction and tangent lines
 const SHAPE_CHEVRON_SIZE_PX = 8;
 const SHAPE_TANGENT_LINE_LENGTH = 50; // Length of tangent lines in screen pixels
-const SHAPE_TANGENT_LINE_WIDTH = 2;
+const SHAPE_TANGENT_LINE_WIDTH = 1;
 
 /**
  * Shape renderer that handles all basic geometry rendering
@@ -92,6 +77,9 @@ export class ShapeRenderer extends BaseRenderer {
         // Get shapes from the configured data source
         const shapes = this.getShapes(state);
         if (!shapes || shapes.length === 0) return;
+
+        // Skip rendering if shape paths are disabled
+        if (!state.visibility.showShapePaths) return;
 
         // Create drawing context for coordinate transformation
         const drawingContext = new DrawingContext(ctx, state.transform);
@@ -126,7 +114,7 @@ export class ShapeRenderer extends BaseRenderer {
             }
 
             const chainId = getShapeChainId(shape.id, state.chains);
-            const partType = getChainPartType(chainId || '', state.parts);
+
             let isSelected = state.selection.selectedShapes.has(shape.id);
             let isHovered = state.selection.hoveredShape === shape.id;
 
@@ -150,8 +138,6 @@ export class ShapeRenderer extends BaseRenderer {
                 shape,
                 isSelected,
                 isHovered,
-                chainId,
-                partType,
                 state,
                 drawingContext
             );
@@ -398,130 +384,25 @@ export class ShapeRenderer extends BaseRenderer {
         ctx: CanvasRenderingContext2D,
         shape: Shape,
         isSelected: boolean,
-        isHovered: boolean = false,
-        chainId: string | null = null,
-        partType: 'shell' | 'hole' | null = null,
+        isHovered: boolean,
         state: RenderState,
         drawingContext: DrawingContext
     ): void {
         // Save context state
         ctx.save();
 
-        // Get chain IDs for part highlighting
-        const highlightedChainIds = state.selection.highlightedPartId
-            ? getPartChainIds(state.selection.highlightedPartId, state.parts)
-            : [];
-        const hoveredChainIds = state.selection.hoveredPartId
-            ? getPartChainIds(state.selection.hoveredPartId, state.parts)
-            : [];
-        const selectedChainIds = state.selection.selectedPartId
-            ? getPartChainIds(state.selection.selectedPartId, state.parts)
-            : [];
-
-        // Check various highlighting states
-        const isPartHighlighted =
-            chainId && highlightedChainIds.includes(chainId);
-        const isPartHovered = chainId && hoveredChainIds.includes(chainId);
-        const isPartSelected = chainId && selectedChainIds.includes(chainId);
-        const isChainSelected =
-            chainId && state.selection.selectedChainId === chainId;
-
-        const isChainHighlighted =
-            chainId && state.selection.highlightedChainId === chainId;
-        const hasCut = chainId && state.chainsWithCuts.includes(chainId);
-
-        // Check if this cut is selected or highlighted
-        const isCutSelected =
-            state.selection.selectedCutId &&
-            state.cuts.some(
-                (cut) =>
-                    cut.id === state.selection.selectedCutId &&
-                    cut.chainId === chainId
-            );
-        const isCutHighlighted =
-            state.selection.highlightedCutId &&
-            state.cuts.some(
-                (cut) =>
-                    cut.id === state.selection.highlightedCutId &&
-                    cut.chainId === chainId
-            );
-
-        // Apply styling based on priority: selected > hovered > cut selected > cut highlighted > etc.
+        // Shapes are ONLY black or orange (when selected/hovered)
+        // Blue rendering is handled by ChainRenderer and PartRenderer
         if (isSelected) {
-            ctx.strokeStyle = '#ff6600';
+            ctx.strokeStyle = '#ff6600'; // Orange for selected
             ctx.lineWidth =
                 drawingContext.screenToWorldDistance(SELECTED_LINE_WIDTH);
         } else if (isHovered) {
-            ctx.strokeStyle = '#ff6600';
+            ctx.strokeStyle = '#ff6600'; // Orange for hovered
             ctx.lineWidth =
                 drawingContext.screenToWorldDistance(HOVERED_LINE_WIDTH);
-        } else if (isCutSelected) {
-            ctx.strokeStyle = 'rgb(0, 133, 84)'; // Dark green color for selected cut
-            ctx.lineWidth = drawingContext.screenToWorldDistance(
-                CUT_SELECTED_LINE_WIDTH
-            );
-        } else if (isCutHighlighted) {
-            ctx.strokeStyle = '#15803d'; // Dark green color for highlighted cut
-            ctx.lineWidth = drawingContext.screenToWorldDistance(
-                CUT_HIGHLIGHTED_LINE_WIDTH
-            );
-            ctx.shadowColor = '#15803d';
-            ctx.shadowBlur = drawingContext.screenToWorldDistance(
-                CUT_HIGHLIGHTED_SHADOW_BLUR
-            );
-        } else if (isChainSelected) {
-            ctx.strokeStyle = '#f59e0b'; // Dark amber color for selected chain
-            ctx.lineWidth = drawingContext.screenToWorldDistance(
-                CHAIN_SELECTED_LINE_WIDTH
-            );
-        } else if (isPartSelected) {
-            ctx.strokeStyle = '#f59e0b'; // Dark amber color for selected part
-            ctx.lineWidth = drawingContext.screenToWorldDistance(
-                PART_SELECTED_LINE_WIDTH
-            );
-            ctx.shadowColor = '#f59e0b';
-            ctx.shadowBlur = drawingContext.screenToWorldDistance(
-                PART_SELECTED_SHADOW_BLUR
-            );
-        } else if (isChainHighlighted) {
-            ctx.strokeStyle = '#fbbf24'; // Light amber color for highlighted chain
-            ctx.lineWidth = drawingContext.screenToWorldDistance(
-                CHAIN_HIGHLIGHTED_LINE_WIDTH
-            );
-        } else if (isPartHighlighted) {
-            ctx.strokeStyle = '#f59e0b'; // Amber color for highlighted part
-            ctx.lineWidth = drawingContext.screenToWorldDistance(
-                PART_HIGHLIGHTED_LINE_WIDTH
-            );
-            ctx.shadowColor = '#f59e0b';
-            ctx.shadowBlur = drawingContext.screenToWorldDistance(
-                PART_HIGHLIGHTED_SHADOW_BLUR
-            );
-        } else if (isPartHovered) {
-            ctx.strokeStyle = '#fbbf24'; // Light amber color for hovered part
-            ctx.lineWidth = drawingContext.screenToWorldDistance(
-                PART_HOVERED_LINE_WIDTH
-            );
-        } else if (hasCut) {
-            ctx.strokeStyle = 'rgb(0, 133, 84)'; // Green color for chains with cuts
-            ctx.lineWidth =
-                drawingContext.screenToWorldDistance(CUT_LINE_WIDTH);
-        } else if (partType === 'shell') {
-            ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for part shells
-            ctx.lineWidth = drawingContext.screenToWorldDistance(
-                PART_SHELL_LINE_WIDTH
-            );
-        } else if (partType === 'hole') {
-            ctx.strokeStyle = 'rgba(0, 83, 135, 0.6)'; // Lighter RAL 5005 Signal Blue for holes
-            ctx.lineWidth =
-                drawingContext.screenToWorldDistance(PART_HOLE_LINE_WIDTH);
-        } else if (chainId) {
-            ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for chained shapes (fallback)
-            ctx.lineWidth = drawingContext.screenToWorldDistance(
-                CHAIN_FALLBACK_LINE_WIDTH
-            );
         } else {
-            ctx.strokeStyle = '#000000';
+            ctx.strokeStyle = '#000000'; // Black for all other shapes
             ctx.lineWidth =
                 drawingContext.screenToWorldDistance(DEFAULT_LINE_WIDTH);
         }

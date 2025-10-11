@@ -8,6 +8,7 @@ import type { Shape, Line } from '$lib/types';
 import type { Cut } from '$lib/stores/cuts/interfaces';
 import { prepareChainsAndLeadConfigs } from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { NormalSide } from '$lib/types/cam';
 
 /**
  * Test to validate that the clockwise property fix works in the actual code cuts
@@ -86,6 +87,7 @@ describe('Clockwise Property Fix Validation', () => {
             cutDirection: CutDirection.CLOCKWISE,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
             offset: {
                 offsetShapes,
                 originalShapes: originalChain.shapes,

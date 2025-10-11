@@ -9,10 +9,12 @@ function createChainStore() {
         tolerance: 0.1,
         selectedChainId: null,
         highlightedChainId: null,
+        showChainPaths: true,
         showChainStartPoints: false,
         showChainEndPoints: false,
         showChainTangentLines: false,
         showChainNormals: false,
+        showChainDirections: false,
     };
 
     const { subscribe, update } = writable<ChainStore>(initialState);
@@ -105,6 +107,20 @@ function createChainStore() {
         }));
     }
 
+    function setShowChainDirections(show: boolean) {
+        update((state) => ({
+            ...state,
+            showChainDirections: show,
+        }));
+    }
+
+    function setShowChainPaths(show: boolean) {
+        update((state) => ({
+            ...state,
+            showChainPaths: show,
+        }));
+    }
+
     return {
         subscribe,
         setChains,
@@ -118,6 +134,8 @@ function createChainStore() {
         setShowChainEndPoints,
         setShowChainTangentLines,
         setShowChainNormals,
+        setShowChainDirections,
+        setShowChainPaths,
     };
 }
 

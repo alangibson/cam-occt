@@ -20,6 +20,7 @@ import {
     ImportUnitSetting,
     SelectionMode,
 } from '$lib/stores/settings/interfaces';
+import { NormalSide } from '$lib/types/cam';
 
 // Default application settings for tests
 const defaultApplicationSettings = {
@@ -194,6 +195,7 @@ describe('State Persistence', () => {
                     order: 1,
                     normal: { x: 1, y: 0 },
                     normalConnectionPoint: { x: 0, y: 0 },
+                    normalSide: NormalSide.LEFT,
                     leadIn: {
                         geometry: {
                             center: { x: 2.5, y: 2.5 },
@@ -254,6 +256,9 @@ describe('State Persistence', () => {
             selectedCutId: null,
             highlightedCutId: null,
             showCutNormals: false,
+            showCutter: false,
+            showCutDirections: false,
+            showCutPaths: false,
         };
 
         // Save state
@@ -355,6 +360,9 @@ describe('State Persistence', () => {
             selectedCutId: null,
             highlightedCutId: null,
             showCutNormals: false,
+            showCutter: false,
+            showCutDirections: false,
+            showCutPaths: false,
         };
 
         saveState(testState);

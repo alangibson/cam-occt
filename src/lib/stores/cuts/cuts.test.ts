@@ -8,6 +8,7 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { Shape } from '$lib/types';
 import { GeometryType } from '$lib/geometry/shape';
+import { NormalSide } from '$lib/types/cam';
 
 // Mock workflow store
 vi.mock('../workflow');
@@ -62,6 +63,7 @@ describe('cutStore', () => {
         kerfCompensation: OffsetDirection.NONE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
+        normalSide: NormalSide.LEFT,
     });
 
     describe('addCut', () => {
@@ -527,11 +529,15 @@ describe('cutStore', () => {
                         cutDirection: CutDirection.CLOCKWISE,
                         normal: { x: 1, y: 0 },
                         normalConnectionPoint: { x: 0, y: 0 },
+                        normalSide: NormalSide.LEFT,
                     },
                 ],
                 selectedCutId: 'restored-cut',
                 highlightedCutId: null,
                 showCutNormals: false,
+                showCutter: false,
+                showCutDirections: false,
+                showCutPaths: false,
             };
 
             cutStore.restore(cutsState);

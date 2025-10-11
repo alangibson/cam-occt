@@ -9,9 +9,9 @@ import {
 describe('CAM Types', () => {
     describe('CutterCompensation enum', () => {
         it('should have correct values', () => {
-            expect(CutterCompensation.LEFT_OUTER).toBe('left_outer');
-            expect(CutterCompensation.RIGHT_INNER).toBe('right_inner');
-            expect(CutterCompensation.OFF).toBe('off');
+            expect(CutterCompensation.MACHINE).toBe('machine');
+            expect(CutterCompensation.SOFTWARE).toBe('software');
+            expect(CutterCompensation.NONE).toBe('none');
         });
     });
 
@@ -24,16 +24,14 @@ describe('CAM Types', () => {
 
     describe('isCutterCompensation', () => {
         it('should return true for valid CutterCompensation values', () => {
-            expect(isCutterCompensation(CutterCompensation.LEFT_OUTER)).toBe(
+            expect(isCutterCompensation(CutterCompensation.MACHINE)).toBe(true);
+            expect(isCutterCompensation(CutterCompensation.SOFTWARE)).toBe(
                 true
             );
-            expect(isCutterCompensation(CutterCompensation.RIGHT_INNER)).toBe(
-                true
-            );
-            expect(isCutterCompensation(CutterCompensation.OFF)).toBe(true);
-            expect(isCutterCompensation('left_outer')).toBe(true);
-            expect(isCutterCompensation('right_inner')).toBe(true);
-            expect(isCutterCompensation('off')).toBe(true);
+            expect(isCutterCompensation(CutterCompensation.NONE)).toBe(true);
+            expect(isCutterCompensation('machine')).toBe(true);
+            expect(isCutterCompensation('software')).toBe(true);
+            expect(isCutterCompensation('none')).toBe(true);
         });
 
         it('should return false for invalid values', () => {

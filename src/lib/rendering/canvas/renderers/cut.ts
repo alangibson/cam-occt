@@ -6,9 +6,10 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type { Point2D } from '$lib/types';
+import type { Point2D, Shape } from '$lib/types';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Chain } from '$lib/geometry/chain/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import {
@@ -25,13 +26,31 @@ import { drawNormalLine } from './normal-renderer-utils';
 /**
  * Constants for cut rendering
  */
-const OFFSET_LINE_WIDTH = 2;
-const SELECTED_OFFSET_LINE_WIDTH = 2;
-const SELECTED_CUT_LINE_WIDTH = 3;
-const HIGHLIGHTED_CUT_LINE_WIDTH = 2.5;
-const GAP_FILL_LINE_WIDTH = 2;
+const OFFSET_LINE_WIDTH = 1;
+const SELECTED_OFFSET_LINE_WIDTH = 1;
+const SELECTED_CUT_LINE_WIDTH = 1;
+const HIGHLIGHTED_CUT_LINE_WIDTH = 1;
+const GAP_FILL_LINE_WIDTH = 1;
 const ENDPOINT_RADIUS_PX = 3;
 const HIT_TOLERANCE_PX = 5;
+
+/**
+ * Determines which shapes to use for a cut.
+ * Priority: offset shapes > cutChain shapes > original chain shapes
+ */
+function getShapesForCut(cut: Cut, chains: Chain[]): Shape[] | null {
+    if (cut.offset?.offsetShapes && cut.offset.offsetShapes.length > 0) {
+        return cut.offset.offsetShapes;
+    } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
+        return cut.cutChain.shapes;
+    } else {
+        const chain = chains.find((c) => c.id === cut.chainId);
+        if (chain && chain.shapes.length > 0) {
+            return chain.shapes;
+        }
+    }
+    return null;
+}
 
 /**
  * CutRenderer handles rendering of cuts including:
@@ -47,11 +66,20 @@ export class CutRenderer extends BaseRenderer {
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
         if (!state.cutsState || state.cutsState.cuts.length === 0) return;
 
-        // First render cut geometry (offset shapes)
-        this.drawOffsetCuts(ctx, state);
+        // First render cut geometry if enabled
+        if (state.visibility.showCutPaths) {
+            this.drawCuts(ctx, state);
+        }
 
-        // Then render endpoints on top
-        this.drawCutEndpoints(ctx, state);
+        // Render cutter path if enabled
+        if (state.visibility.showCutter) {
+            this.drawCutterPath(ctx, state);
+        }
+
+        // Then render endpoints on top if cut paths are shown
+        if (state.visibility.showCutPaths) {
+            this.drawCutEndpoints(ctx, state);
+        }
 
         // Render cut normals if enabled
         if (state.visibility.showCutNormals) {
@@ -60,44 +88,40 @@ export class CutRenderer extends BaseRenderer {
     }
 
     /**
-     * Draw offset cuts with offset shapes as solid green lines
+     * Draw cuts as solid green lines
+     * Uses offset shapes if available, otherwise falls back to cutChain or original chain shapes
      */
-    private drawOffsetCuts(
-        ctx: CanvasRenderingContext2D,
-        state: RenderState
-    ): void {
+    private drawCuts(ctx: CanvasRenderingContext2D, state: RenderState): void {
         if (!state.cutsState || state.cutsState.cuts.length === 0) return;
 
         state.cutsState.cuts.forEach((cut: Cut) => {
-            // Only draw offset cuts for enabled cuts with enabled operations
+            // Only draw cuts for enabled cuts with enabled operations
             if (!isCutEnabledForRendering(cut, state)) {
                 return;
             }
 
-            // Only draw if cut has calculated offset
-            if (!cut.offset) {
-                return;
+            // Determine which shapes to render
+            // Priority: offset shapes > cutChain shapes > original chain shapes
+            let shapesToDraw: Shape[] | null = null;
+
+            if (
+                cut.offset?.offsetShapes &&
+                cut.offset.offsetShapes.length > 0
+            ) {
+                // Use offset shapes if available (kerf compensation applied)
+                shapesToDraw = cut.offset.offsetShapes;
+            } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
+                // Use cutChain if no offset (kerf compensation NONE)
+                shapesToDraw = cut.cutChain.shapes;
+            } else {
+                // Fall back to original chain shapes
+                const chain = state.chains.find((c) => c.id === cut.chainId);
+                if (chain && chain.shapes.length > 0) {
+                    shapesToDraw = chain.shapes;
+                }
             }
 
-            // Validate offset geometry before rendering
-            if (!cut.offset.offsetShapes) {
-                console.warn(
-                    `Invalid offset geometry for cut ${cut.id}: missing offsetShapes`
-                );
-                return;
-            }
-
-            if (!Array.isArray(cut.offset.offsetShapes)) {
-                console.warn(
-                    `Invalid offset geometry for cut ${cut.id}: offsetShapes is not an array`
-                );
-                return;
-            }
-
-            if (cut.offset.offsetShapes.length === 0) {
-                console.warn(
-                    `Invalid offset geometry for cut ${cut.id}: empty offsetShapes array`
-                );
+            if (!shapesToDraw || shapesToDraw.length === 0) {
                 return;
             }
 
@@ -113,12 +137,12 @@ export class CutRenderer extends BaseRenderer {
             try {
                 // Define color constants for visual consistency
                 const cutColors = {
-                    offsetGreen: 'rgb(0, 133, 84)', // Green for offset cuts
+                    offsetGreen: 'rgb(0, 133, 84)', // Green for cuts
                     selectedDark: '#ff9933', // Light orange for selected
                     highlighted: '#ff9933', // Light orange for highlighted
                 };
 
-                // Draw offset shapes as solid green lines
+                // Draw cut shapes as solid green lines
                 ctx.setLineDash([]); // Solid line pattern
                 ctx.shadowColor = 'transparent'; // Reset shadow
                 ctx.shadowBlur = 0;
@@ -127,7 +151,7 @@ export class CutRenderer extends BaseRenderer {
                 ctx.lineCap = 'round';
                 ctx.lineJoin = 'round';
 
-                cut.offset.offsetShapes.forEach((shape, index) => {
+                shapesToDraw.forEach((shape, index) => {
                     try {
                         // Check if this specific offset shape is selected
                         const isOffsetShapeSelected =
@@ -175,8 +199,8 @@ export class CutRenderer extends BaseRenderer {
                     }
                 });
 
-                // Render gap fills if they exist (filler shapes and modified shapes)
-                if (cut.offset.gapFills && cut.offset.gapFills.length > 0) {
+                // Render gap fills if they exist (only applies to offset cuts)
+                if (cut.offset?.gapFills && cut.offset.gapFills.length > 0) {
                     ctx.save();
 
                     // Use same color logic as offset shapes for consistency
@@ -226,7 +250,104 @@ export class CutRenderer extends BaseRenderer {
                     ctx.restore();
                 }
             } catch (error) {
-                console.error(`Error rendering offset cut ${cut.id}:`, error);
+                console.error(`Error rendering cut ${cut.id}:`, error);
+            } finally {
+                ctx.restore();
+            }
+        });
+    }
+
+    /**
+     * Draw cutter path visualization (translucent yellow stroke matching kerf width)
+     */
+    private drawCutterPath(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState
+    ): void {
+        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+
+        state.cutsState.cuts.forEach((cut: Cut) => {
+            // Only draw cutter for enabled cuts with enabled operations
+            if (!isCutEnabledForRendering(cut, state)) {
+                return;
+            }
+
+            // Get kerf width from offset (if exists) or directly from cut
+            const kerfWidth = cut.offset?.kerfWidth || cut.kerfWidth;
+            if (!kerfWidth) {
+                return;
+            }
+
+            // Determine which shapes to render cutter on
+            // Priority: offset shapes > cutChain shapes > original chain shapes
+            let shapesToDraw: Shape[] | null = null;
+
+            if (
+                cut.offset?.offsetShapes &&
+                cut.offset.offsetShapes.length > 0
+            ) {
+                shapesToDraw = cut.offset.offsetShapes;
+            } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
+                shapesToDraw = cut.cutChain.shapes;
+            } else {
+                const chain = state.chains.find((c) => c.id === cut.chainId);
+                if (chain && chain.shapes.length > 0) {
+                    shapesToDraw = chain.shapes;
+                }
+            }
+
+            if (!shapesToDraw || shapesToDraw.length === 0) {
+                return;
+            }
+
+            ctx.save();
+
+            try {
+                // Set translucent yellow stroke with kerf width
+                ctx.strokeStyle = 'rgba(255, 255, 0, 0.4)'; // Translucent yellow
+                ctx.lineWidth = kerfWidth;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.setLineDash([]); // Solid line
+
+                // Draw all shapes with cutter visualization
+                shapesToDraw.forEach((shape) => {
+                    try {
+                        drawShape(ctx, shape);
+                    } catch (error) {
+                        console.warn(
+                            `Error rendering cutter path shape for cut ${cut.id}:`,
+                            error
+                        );
+                    }
+                });
+
+                // Also draw gap fills if they exist (only for offset cuts)
+                if (cut.offset?.gapFills && cut.offset.gapFills.length > 0) {
+                    for (const gapFill of cut.offset.gapFills) {
+                        // Render filler shape if it exists
+                        if (gapFill.fillerShape) {
+                            try {
+                                drawShape(ctx, gapFill.fillerShape);
+                            } catch (error) {
+                                console.warn(
+                                    `Error rendering cutter path gap filler for cut ${cut.id}:`,
+                                    error
+                                );
+                            }
+                        }
+
+                        // Render modified shapes
+                        for (const modifiedShapeEntry of gapFill.modifiedShapes) {
+                            drawShape(ctx, modifiedShapeEntry.modified);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error(
+                    `Error rendering cutter path for cut ${cut.id}:`,
+                    error
+                );
             } finally {
                 ctx.restore();
             }
@@ -248,15 +369,8 @@ export class CutRenderer extends BaseRenderer {
             // Only draw endpoints for enabled cuts with enabled operations
             if (!isCutEnabledForRendering(cut, state)) return;
 
-            // Get the chain for this cut to find start/end points
-            const chain = state.chains.find((c) => c.id === cut.chainId);
-            if (!chain || chain.shapes.length === 0) return;
-
-            // Use offset shapes if they exist, otherwise use original chain shapes
-            const shapesToUse =
-                cut.offset && cut.offset.offsetShapes.length > 0
-                    ? cut.offset.offsetShapes
-                    : chain.shapes;
+            const shapesToUse = getShapesForCut(cut, state.chains);
+            if (!shapesToUse || shapesToUse.length === 0) return;
 
             // Get first and last shape
             const firstShape = shapesToUse[0];
@@ -336,13 +450,30 @@ export class CutRenderer extends BaseRenderer {
 
         const { hitTolerance, enabledCuts } = hitSetup;
 
-        // First test for cut geometry hits (offset shapes)
+        // First test for cut geometry hits
         for (const cut of enabledCuts) {
-            // Only test if cut has offset geometry
-            if (!cut.offset || !cut.offset.offsetShapes) continue;
+            // Determine which shapes to test for hit
+            // Priority: offset shapes > cutChain shapes > original chain shapes
+            let shapesToTest: Shape[] | null = null;
 
-            // Test offset shapes for cut hit
-            for (const shape of cut.offset.offsetShapes) {
+            if (
+                cut.offset?.offsetShapes &&
+                cut.offset.offsetShapes.length > 0
+            ) {
+                shapesToTest = cut.offset.offsetShapes;
+            } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
+                shapesToTest = cut.cutChain.shapes;
+            } else {
+                const chain = state.chains.find((c) => c.id === cut.chainId);
+                if (chain && chain.shapes.length > 0) {
+                    shapesToTest = chain.shapes;
+                }
+            }
+
+            if (!shapesToTest) continue;
+
+            // Test shapes for cut hit
+            for (const shape of shapesToTest) {
                 if (HitTestUtils.isPointNearShape(point, shape, hitTolerance)) {
                     return {
                         type: HitTestType.CUT,
@@ -357,15 +488,8 @@ export class CutRenderer extends BaseRenderer {
 
         // Then test for endpoint hits
         for (const cut of enabledCuts) {
-            // Get the chain for this cut
-            const chain = state.chains.find((c) => c.id === cut.chainId);
-            if (!chain || chain.shapes.length === 0) continue;
-
-            // Use offset shapes if they exist, otherwise use original chain shapes
-            const shapesToUse =
-                cut.offset && cut.offset.offsetShapes.length > 0
-                    ? cut.offset.offsetShapes
-                    : chain.shapes;
+            const shapesToUse = getShapesForCut(cut, state.chains);
+            if (!shapesToUse || shapesToUse.length === 0) continue;
 
             // Check if point is near cut endpoint
             const firstShape = shapesToUse[0];

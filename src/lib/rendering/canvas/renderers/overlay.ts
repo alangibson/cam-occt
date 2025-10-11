@@ -140,7 +140,7 @@ export class OverlayRenderer extends BaseRenderer {
     ): void {
         ctx.save();
         ctx.strokeStyle = 'rgb(133, 18, 0)'; // Red
-        ctx.lineWidth = _state.transform.coordinator.screenToWorldDistance(2);
+        ctx.lineWidth = _state.transform.coordinator.screenToWorldDistance(1);
 
         // Draw cross
         ctx.beginPath();

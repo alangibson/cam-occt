@@ -2,6 +2,7 @@ import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { Arc, Line, Point2D, Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutterCompensation, NormalSide } from '$lib/types/cam';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cutToToolPath, cutsToToolPaths } from './cut-to-toolpath';
 import { GeometryType, getShapePoints } from '$lib/geometry/shape';
@@ -45,6 +46,7 @@ describe('cutToToolPath', () => {
         leadOutConfig: { type: LeadType.ARC, length: 5.0 },
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
+        normalSide: NormalSide.LEFT,
         ...overrides,
     });
 
@@ -94,7 +96,12 @@ describe('cutToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutToToolPath(cut, shapes, tools);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                tools,
+                CutterCompensation.NONE
+            );
 
             expect(result).toEqual({
                 id: 'test-cut',
@@ -117,11 +124,24 @@ describe('cutToToolPath', () => {
                     holeUnderspeedPercent: undefined,
                 },
                 originalShape: undefined,
+                executionClockwise: undefined,
+                normalSide: 'left',
+                hasOffset: false,
             });
         });
 
         it('should use offset shapes when available', async () => {
             const cut = createMockCut({
+                cutChain: {
+                    id: 'test-chain-cut',
+                    shapes: [
+                        createMockLine(
+                            'offset1',
+                            { x: 1, y: 1 },
+                            { x: 11, y: 1 }
+                        ),
+                    ],
+                },
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -152,14 +172,20 @@ describe('cutToToolPath', () => {
                 { x: 11, y: 1 },
             ]);
 
-            const result = await cutToToolPath(cut, originalShapes, []);
+            const result = await cutToToolPath(
+                cut,
+                originalShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result.points).toEqual([
                 { x: 1, y: 1 },
                 { x: 11, y: 1 },
             ]);
+            // Should use cutChain shapes, which contain the offset shapes
             expect(mockGetShapePoints).toHaveBeenCalledWith(
-                cut.offset!.offsetShapes[0],
+                cut.cutChain!.shapes[0],
                 false
             );
         });
@@ -181,7 +207,12 @@ describe('cutToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result.parameters).toEqual({
                 feedRate: 1000,
@@ -214,7 +245,12 @@ describe('cutToToolPath', () => {
                     { x: 10, y: 0 },
                 ]);
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result.points).toEqual([
                 { x: 0, y: 0 },
@@ -240,7 +276,12 @@ describe('cutToToolPath', () => {
                     { x: 10, y: 0 },
                 ]);
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             // Should skip the duplicate point at (5, 0)
             expect(result.points).toEqual([
@@ -267,7 +308,12 @@ describe('cutToToolPath', () => {
                     { x: 10, y: 0 },
                 ]);
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result.points).toEqual([
                 { x: 0, y: 0 },
@@ -294,7 +340,12 @@ describe('cutToToolPath', () => {
                     { x: 10, y: 0 },
                 ]);
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             // Should skip duplicate point since within tolerance
             expect(result.points).toEqual([
@@ -335,7 +386,12 @@ describe('cutToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             // Check that leadIn exists and has correct start/end points
             expect(result.leadIn).toBeDefined();
@@ -354,6 +410,16 @@ describe('cutToToolPath', () => {
         it('should include lead-in when it connects to offset geometry', async () => {
             // Arc leads will be tessellated, no longer hardcoded line points
             const cut = createMockCut({
+                cutChain: {
+                    id: 'test-chain-cut',
+                    shapes: [
+                        createMockLine(
+                            'offset1',
+                            { x: 1, y: 1 },
+                            { x: 11, y: 1 }
+                        ),
+                    ],
+                },
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -376,7 +442,7 @@ describe('cutToToolPath', () => {
                 },
                 leadIn: {
                     geometry: {
-                        center: { x: -2.5, y: 0 },
+                        center: { x: -2.5, y: 1 },
                         radius: 2.5,
                         startAngle: 180,
                         endAngle: 0,
@@ -398,7 +464,12 @@ describe('cutToToolPath', () => {
 
             // Using real convertLeadGeometryToPoints function
 
-            const result = await cutToToolPath(cut, originalShapes, []);
+            const result = await cutToToolPath(
+                cut,
+                originalShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             // Arc lead may be undefined if it doesn't connect properly to offset geometry
             if (result.leadIn) {
@@ -414,6 +485,16 @@ describe('cutToToolPath', () => {
         it('should exclude lead-in when it does not connect to offset geometry', async () => {
             // Real function will handle this case
             const cut = createMockCut({
+                cutChain: {
+                    id: 'test-chain-cut',
+                    shapes: [
+                        createMockLine(
+                            'offset1',
+                            { x: 1, y: 1 },
+                            { x: 11, y: 1 }
+                        ),
+                    ],
+                },
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -436,7 +517,7 @@ describe('cutToToolPath', () => {
                 },
                 leadIn: {
                     geometry: {
-                        center: { x: -2.5, y: 0 },
+                        center: { x: 50, y: 50 }, // Far away - won't connect
                         radius: 2.5,
                         startAngle: 180,
                         endAngle: 0,
@@ -456,7 +537,12 @@ describe('cutToToolPath', () => {
                 { x: 11, y: 1 },
             ]);
 
-            const result = await cutToToolPath(cut, originalShapes, []);
+            const result = await cutToToolPath(
+                cut,
+                originalShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result.leadIn).toBeUndefined();
         });
@@ -486,7 +572,12 @@ describe('cutToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             // Lead may be undefined if it doesn't connect properly to the cut
             // or may be defined if it connects - both are acceptable outcomes
@@ -524,7 +615,12 @@ describe('cutToToolPath', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             // Arc lead should be tessellated into multiple points
             expect(result.leadOut).toBeDefined();
@@ -540,6 +636,16 @@ describe('cutToToolPath', () => {
         it('should include lead-out when it connects to offset geometry', async () => {
             // Arc leads will be tessellated, no longer hardcoded line points
             const cut = createMockCut({
+                cutChain: {
+                    id: 'test-chain-cut',
+                    shapes: [
+                        createMockLine(
+                            'offset1',
+                            { x: 1, y: 1 },
+                            { x: 11, y: 1 }
+                        ),
+                    ],
+                },
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -582,7 +688,12 @@ describe('cutToToolPath', () => {
                 { x: 11, y: 1 },
             ]);
 
-            const result = await cutToToolPath(cut, originalShapes, []);
+            const result = await cutToToolPath(
+                cut,
+                originalShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             // Lead may be undefined if it doesn't connect properly to offset geometry
             if (result.leadOut) {
@@ -599,6 +710,16 @@ describe('cutToToolPath', () => {
 
         it('should exclude lead-out when it does not connect to offset geometry', async () => {
             const cut = createMockCut({
+                cutChain: {
+                    id: 'test-chain-cut',
+                    shapes: [
+                        createMockLine(
+                            'offset1',
+                            { x: 1, y: 1 },
+                            { x: 11, y: 1 }
+                        ),
+                    ],
+                },
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -621,7 +742,7 @@ describe('cutToToolPath', () => {
                 },
                 leadOut: {
                     geometry: {
-                        center: { x: 12.5, y: 0 },
+                        center: { x: 50, y: 50 }, // Far away - won't connect
                         radius: 2.5,
                         startAngle: 180,
                         endAngle: 0,
@@ -641,7 +762,12 @@ describe('cutToToolPath', () => {
                 { x: 11, y: 1 },
             ]);
 
-            const result = await cutToToolPath(cut, originalShapes, []);
+            const result = await cutToToolPath(
+                cut,
+                originalShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result.leadOut).toBeUndefined();
         });
@@ -652,7 +778,12 @@ describe('cutToToolPath', () => {
             const cut = createMockCut();
             const shapes: Shape[] = [];
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result.points).toEqual([]);
         });
@@ -665,7 +796,12 @@ describe('cutToToolPath', () => {
 
             mockGetShapePoints.mockReturnValueOnce([{ x: 5, y: 5 }]);
 
-            const result = await cutToToolPath(cut, shapes, []);
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result.points).toEqual([{ x: 5, y: 5 }]);
         });
@@ -690,6 +826,7 @@ describe('cutsToToolPaths', () => {
         leadOutConfig: { type: LeadType.ARC, length: 5.0 },
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
+        normalSide: NormalSide.LEFT,
         ...overrides,
     });
 
@@ -728,7 +865,12 @@ describe('cutsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutsToToolPaths(cuts, chainShapes, []);
+            const result = await cutsToToolPaths(
+                cuts,
+                chainShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result).toHaveLength(5); // 3 cuts + 2 rapids
             expect(result[0].id).toBe('cut-1');
@@ -757,7 +899,12 @@ describe('cutsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutsToToolPaths(cuts, chainShapes, []);
+            const result = await cutsToToolPaths(
+                cuts,
+                chainShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result).toHaveLength(3); // 2 enabled cuts + 1 rapid
             expect(result[0].id).toBe('cut-1');
@@ -783,7 +930,12 @@ describe('cutsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutsToToolPaths(cuts, chainShapes, []);
+            const result = await cutsToToolPaths(
+                cuts,
+                chainShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result).toHaveLength(1);
             expect(result[0].id).toBe('cut-1');
@@ -809,7 +961,12 @@ describe('cutsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutsToToolPaths(cuts, chainShapes, []);
+            const result = await cutsToToolPaths(
+                cuts,
+                chainShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result).toHaveLength(3); // 2 cuts + 1 rapid
 
@@ -857,7 +1014,12 @@ describe('cutsToToolPaths', () => {
                 { x: 10, y: 0 },
             ]);
 
-            const result = await cutsToToolPaths(cuts, chainShapes, []);
+            const result = await cutsToToolPaths(
+                cuts,
+                chainShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             const rapid = result[1];
             expect(rapid.points).toEqual([
@@ -881,7 +1043,12 @@ describe('cutsToToolPaths', () => {
 
             mockGetShapePoints.mockReturnValue([{ x: 0, y: 0 }]);
 
-            const result = await cutsToToolPaths(cuts, chainShapes, []);
+            const result = await cutsToToolPaths(
+                cuts,
+                chainShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result).toHaveLength(2); // Only 2 cuts, no rapid
             expect(result.every((tp) => !tp.isRapid)).toBe(true);
@@ -916,7 +1083,12 @@ describe('cutsToToolPaths', () => {
                     { x: 0.0005, y: 0 },
                 ]);
 
-            const result = await cutsToToolPaths(cuts, chainShapes, []);
+            const result = await cutsToToolPaths(
+                cuts,
+                chainShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result).toHaveLength(2); // Only 2 cuts, no rapid due to small distance
         });
@@ -927,7 +1099,12 @@ describe('cutsToToolPaths', () => {
             const cuts: Cut[] = [];
             const chainShapes = new Map<string, Shape[]>();
 
-            const result = await cutsToToolPaths(cuts, chainShapes, []);
+            const result = await cutsToToolPaths(
+                cuts,
+                chainShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result).toEqual([]);
         });
@@ -936,7 +1113,12 @@ describe('cutsToToolPaths', () => {
             const cuts: Cut[] = [createMockCut()];
             const chainShapes = new Map<string, Shape[]>();
 
-            const result = await cutsToToolPaths(cuts, chainShapes, []);
+            const result = await cutsToToolPaths(
+                cuts,
+                chainShapes,
+                [],
+                CutterCompensation.NONE
+            );
 
             expect(result).toEqual([]);
         });

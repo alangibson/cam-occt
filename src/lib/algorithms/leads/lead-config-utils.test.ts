@@ -6,6 +6,7 @@ import {
 } from '$lib/algorithms/leads/functions';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Cut } from '$lib/stores/cuts/interfaces';
+import { NormalSide } from '$lib/types/cam';
 
 // Helper function to create test cut
 function createTestCut(overrides: Partial<Cut> = {}): Cut {
@@ -20,6 +21,7 @@ function createTestCut(overrides: Partial<Cut> = {}): Cut {
         cutDirection: CutDirection.COUNTERCLOCKWISE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
+        normalSide: NormalSide.LEFT,
         leadInConfig: {
             type: LeadType.ARC,
             length: 5,

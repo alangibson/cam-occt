@@ -16,7 +16,7 @@
     // Props from parent component
     export let includeComments: boolean = true;
     export let cutterCompensation: CutterCompensation | null =
-        CutterCompensation.OFF;
+        CutterCompensation.NONE;
     export let adaptiveFeedControl: boolean | null = true;
     export let enableTHC: boolean | null = true;
 
@@ -64,6 +64,7 @@
                 cuts,
                 chainShapes,
                 tools,
+                cutterCompensation,
                 chainMap,
                 partMap
             );

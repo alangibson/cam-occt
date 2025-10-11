@@ -9,7 +9,7 @@
     import { overlayStore } from '$lib/stores/overlay/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
-    import { showLeadNormals } from '$lib/stores/leads';
+    import { showLeadNormals, showLeadPaths } from '$lib/stores/leads';
     import { settingsStore } from '$lib/stores/settings/store';
     import { generateChainEndpoints } from '$lib/stores/chains/functions';
     import { generateShapePoints } from '$lib/stores/shape/functions';
@@ -90,18 +90,25 @@
     $: selectedRapidId = $rapidStore.selectedRapidId;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
     $: shapeVisualization = $shapeVisualizationStore;
+    $: showShapePaths = shapeVisualization.showShapePaths;
     $: showShapeStartPoints = shapeVisualization.showShapeStartPoints;
     $: showShapeEndPoints = shapeVisualization.showShapeEndPoints;
     $: showShapeNormals = shapeVisualization.showShapeNormals;
     $: showShapeWindingDirection = shapeVisualization.showShapeWindingDirection;
     $: showShapeTangentLines = shapeVisualization.showShapeTangentLines;
     $: chainVisualization = $chainStore;
+    $: showChainPaths = chainVisualization.showChainPaths;
     $: showChainStartPoints = chainVisualization.showChainStartPoints;
     $: showChainEndPoints = chainVisualization.showChainEndPoints;
     $: showChainTangentLines = chainVisualization.showChainTangentLines;
     $: showChainNormals = chainVisualization.showChainNormals;
+    $: showChainDirections = chainVisualization.showChainDirections;
     $: showCutNormals = cutsState.showCutNormals;
+    $: showCutDirections = cutsState.showCutDirections;
+    $: showCutPaths = cutsState.showCutPaths;
+    $: showCutter = cutsState.showCutter;
     $: leadNormals = $showLeadNormals;
+    $: leadPaths = $showLeadPaths;
     $: selectionMode = $settingsStore.settings.selectionMode;
 
     // Compute effective interaction mode based on selection mode and current stage
@@ -297,17 +304,24 @@
                 showChains: true,
                 showParts: true,
                 showOverlays: true,
+                showShapePaths,
                 showShapeStartPoints,
                 showShapeEndPoints,
                 showShapeNormals,
                 showShapeWindingDirection,
                 showShapeTangentLines,
+                showChainPaths,
                 showChainStartPoints,
                 showChainEndPoints,
                 showChainTangentLines,
                 showChainNormals,
+                showChainDirections,
                 showCutNormals,
+                showCutDirections,
+                showCutPaths,
+                showCutter,
                 showLeadNormals: leadNormals,
+                showLeadPaths: leadPaths,
             },
             respectLayerVisibility: canvasConfig.respectLayerVisibility,
         });

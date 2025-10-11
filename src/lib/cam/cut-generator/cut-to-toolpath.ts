@@ -4,6 +4,7 @@ import {
     type Shape,
     type CutPath,
     type Lead,
+    CutterCompensation,
 } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Cut } from '$lib/stores/cuts/interfaces';
@@ -32,26 +33,33 @@ import type { LeadResult } from '$lib/algorithms/leads/interfaces';
  * Convert a Cut from the cut store to a ToolPath for G-code generation.
  * Uses simulation's validated geometry resolution approach:
  * 1. cut.cutChain?.shapes (preferred - execution-ordered shapes)
- * 2. cut.calculatedOffset?.offsetShapes (fallback - offset geometry)
- * 3. originalShapes (final fallback)
+ * 2. cut.calculatedOffset?.offsetShapes (fallback - offset geometry for SOFTWARE mode)
+ * 3. originalShapes (final fallback or for MACHINE mode)
  */
 export async function cutToToolPath(
     cut: Cut,
     originalShapes: Shape[],
     tools: Tool[],
+    cutterCompensation: CutterCompensation | null,
     chainMap?: Map<string, Chain>,
     partMap?: Map<string, DetectedPart>
 ): Promise<CutPath> {
     // Use simulation's validated geometry resolution approach
-    // Priority: cutChain > calculatedOffset > original shapes
+    // Priority: cutChain > calculatedOffset (if SOFTWARE mode) > original shapes
     let shapesToUse: Shape[];
 
     // First priority: Use execution chain if available (contains shapes in correct execution order)
     if (cut.cutChain && cut.cutChain.shapes.length > 0) {
         shapesToUse = cut.cutChain.shapes;
+    } else if (
+        cutterCompensation === CutterCompensation.SOFTWARE &&
+        cut.offset?.offsetShapes
+    ) {
+        // Second priority: Use offset shapes ONLY in SOFTWARE mode
+        shapesToUse = cut.offset.offsetShapes;
     } else {
-        // Second priority: Use offset shapes if available, otherwise fall back to original
-        shapesToUse = cut.offset?.offsetShapes || originalShapes;
+        // Fall back to original shapes (used for MACHINE mode or when no offset available)
+        shapesToUse = originalShapes;
     }
 
     // Determine if we can use native shape commands early
@@ -298,6 +306,11 @@ export async function cutToToolPath(
         parameters,
         originalShape,
         executionClockwise: cut.executionClockwise,
+        normalSide: cut.normalSide,
+        hasOffset:
+            cut.offset !== undefined &&
+            cut.offset.offsetShapes !== undefined &&
+            cut.offset.offsetShapes.length > 0,
     };
 }
 
@@ -309,6 +322,7 @@ export async function cutsToToolPaths(
     cuts: Cut[],
     chainShapes: Map<string, Shape[]>,
     tools: Tool[],
+    cutterCompensation: CutterCompensation | null,
     chainMap?: Map<string, Chain>,
     partMap?: Map<string, DetectedPart>
 ): Promise<CutPath[]> {
@@ -329,6 +343,7 @@ export async function cutsToToolPaths(
             cut,
             originalShapes,
             tools,
+            cutterCompensation,
             chainMap,
             partMap
         );

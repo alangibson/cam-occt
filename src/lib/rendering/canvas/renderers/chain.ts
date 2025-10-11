@@ -20,6 +20,7 @@ import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import { getChainTangent } from '$lib/geometry/chain/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { PartHole } from '$lib/algorithms/part-detection/part-detection';
 import {
     getShapeStartPoint,
     getShapeEndPoint,
@@ -28,12 +29,13 @@ import {
 import { drawNormalLine } from './normal-renderer-utils';
 
 // Constants for rendering
-const HIGHLIGHT_LINE_WIDTH = 2.5;
-const SELECTION_LINE_WIDTH = 3;
+const CHAIN_LINE_WIDTH = 1;
+const HIGHLIGHT_LINE_WIDTH = 1;
+const SELECTION_LINE_WIDTH = 1;
 const ENDPOINT_SIZE = 6;
 const HIT_TEST_TOLERANCE = 5;
 const TANGENT_LINE_LENGTH = 50; // Length of tangent lines in screen pixels
-const TANGENT_LINE_WIDTH = 2;
+const TANGENT_LINE_WIDTH = 1;
 
 export class ChainRenderer extends BaseRenderer {
     constructor(coordinator: CoordinateTransformer) {
@@ -46,8 +48,49 @@ export class ChainRenderer extends BaseRenderer {
             return;
         }
 
-        // Render chain highlights only if showChains is true
-        if (state.visibility.showChains) {
+        // Render chain shapes if showChainPaths is true
+        if (state.visibility.showChainPaths) {
+            this.renderChainShapes(ctx, state);
+        }
+
+        // Render chain highlights only if showChains and showChainPaths are true
+        if (state.visibility.showChains && state.visibility.showChainPaths) {
+            // Render highlighted part (if any)
+            if (state.selection.highlightedPartId) {
+                this.renderHighlightedPart(
+                    ctx,
+                    state,
+                    state.selection.highlightedPartId
+                );
+            }
+
+            // Render hovered part (if any and different from highlighted)
+            if (
+                state.selection.hoveredPartId &&
+                state.selection.hoveredPartId !==
+                    state.selection.highlightedPartId
+            ) {
+                this.renderHighlightedPart(
+                    ctx,
+                    state,
+                    state.selection.hoveredPartId
+                );
+            }
+
+            // Render selected part (if any and different from highlighted/hovered)
+            if (
+                state.selection.selectedPartId &&
+                state.selection.selectedPartId !==
+                    state.selection.highlightedPartId &&
+                state.selection.selectedPartId !== state.selection.hoveredPartId
+            ) {
+                this.renderSelectedPart(
+                    ctx,
+                    state,
+                    state.selection.selectedPartId
+                );
+            }
+
             // Render highlighted chain
             if (state.selection.highlightedChainId) {
                 this.renderHighlightedChain(
@@ -84,6 +127,63 @@ export class ChainRenderer extends BaseRenderer {
         if (state.visibility.showChainNormals) {
             this.drawChainNormals(ctx, state);
         }
+    }
+
+    /**
+     * Render all chain shapes in blue
+     */
+    private renderChainShapes(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState
+    ): void {
+        ctx.save();
+
+        ctx.lineWidth =
+            state.transform.coordinator.screenToWorldDistance(CHAIN_LINE_WIDTH);
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.setLineDash([]);
+
+        // Build a set of chain IDs that are holes in parts
+        const holeChainIds = new Set<string>();
+        for (const part of state.parts) {
+            // Add shell holes
+            for (const hole of part.holes) {
+                holeChainIds.add(hole.chain.id);
+            }
+            // Add nested holes recursively
+            const addNestedHoles = (holes: PartHole[]) => {
+                for (const hole of holes) {
+                    holeChainIds.add(hole.chain.id);
+                    if (hole.holes && hole.holes.length > 0) {
+                        addNestedHoles(hole.holes);
+                    }
+                }
+            };
+            addNestedHoles(part.holes);
+        }
+
+        // Render all chains
+        for (const chain of state.chains) {
+            // Use lighter blue for holes, darker blue for shells
+            if (holeChainIds.has(chain.id)) {
+                ctx.strokeStyle = 'rgb(102, 153, 204)'; // Light blue for holes
+            } else {
+                ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for shells
+            }
+
+            // Draw all shapes in the chain
+            for (const chainShape of chain.shapes) {
+                const shape = state.drawing?.shapes.find(
+                    (s) => s.id === chainShape.id
+                );
+                if (shape) {
+                    drawShape(ctx, shape);
+                }
+            }
+        }
+
+        ctx.restore();
     }
 
     private renderHighlightedChain(
@@ -144,6 +244,90 @@ export class ChainRenderer extends BaseRenderer {
                 drawShape(ctx, shape);
             }
         }
+
+        ctx.restore();
+    }
+
+    /**
+     * Helper method to draw a part (shell and holes)
+     */
+    private drawPartShapes(
+        ctx: CanvasRenderingContext2D,
+        part: { shell: { chain: Chain }; holes: PartHole[] },
+        state: RenderState
+    ): void {
+        // Draw shell chain
+        for (const chainShape of part.shell.chain.shapes) {
+            const shape = state.drawing?.shapes.find(
+                (s) => s.id === chainShape.id
+            );
+            if (shape) {
+                drawShape(ctx, shape);
+            }
+        }
+
+        // Draw all hole chains
+        const drawHoles = (holes: PartHole[]) => {
+            for (const hole of holes) {
+                for (const chainShape of hole.chain.shapes) {
+                    const shape = state.drawing?.shapes.find(
+                        (s) => s.id === chainShape.id
+                    );
+                    if (shape) {
+                        drawShape(ctx, shape);
+                    }
+                }
+                // Recursively draw nested holes
+                if (hole.holes && hole.holes.length > 0) {
+                    drawHoles(hole.holes);
+                }
+            }
+        };
+        drawHoles(part.holes);
+    }
+
+    private renderHighlightedPart(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        partId: string
+    ): void {
+        const part = state.parts.find((p) => p.id === partId);
+        if (!part) return;
+
+        ctx.save();
+
+        // Use orange highlighting for highlighted parts
+        ctx.strokeStyle = '#ff6600'; // Orange
+        ctx.lineWidth =
+            state.transform.coordinator.screenToWorldDistance(
+                HIGHLIGHT_LINE_WIDTH
+            );
+        ctx.setLineDash([]);
+
+        this.drawPartShapes(ctx, part, state);
+
+        ctx.restore();
+    }
+
+    private renderSelectedPart(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        partId: string
+    ): void {
+        const part = state.parts.find((p) => p.id === partId);
+        if (!part) return;
+
+        ctx.save();
+
+        // Use thicker orange for selected parts
+        ctx.strokeStyle = '#ff6600'; // Orange
+        ctx.lineWidth =
+            state.transform.coordinator.screenToWorldDistance(
+                SELECTION_LINE_WIDTH
+            );
+        ctx.setLineDash([]);
+
+        this.drawPartShapes(ctx, part, state);
 
         ctx.restore();
     }

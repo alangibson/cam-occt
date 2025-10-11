@@ -60,7 +60,7 @@ describe('GCodeExport Component Logic', () => {
                 safeZ: 10,
                 rapidFeedRate: 5000,
                 includeComments: true,
-                cutterCompensation: CutterCompensation.OFF,
+                cutterCompensation: CutterCompensation.NONE,
             });
 
             // Verify the functions were called correctly
@@ -76,7 +76,7 @@ describe('GCodeExport Component Logic', () => {
                     safeZ: 10,
                     rapidFeedRate: 5000,
                     includeComments: true,
-                    cutterCompensation: CutterCompensation.OFF,
+                    cutterCompensation: CutterCompensation.NONE,
                 }
             );
             expect(gcode).toBe(mockGCode);

@@ -42,7 +42,7 @@ describe('GCode Generator - Temporary Materials', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         // Check for magic comment - using o=0 format
@@ -142,7 +142,7 @@ describe('GCode Generator - Temporary Materials', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         // Should not contain any material magic comments
@@ -174,7 +174,7 @@ describe('GCode Generator - Temporary Materials', () => {
             safeZ: 10,
             rapidFeedRate: 5000,
             includeComments: true,
-            cutterCompensation: CutterCompensation.OFF,
+            cutterCompensation: CutterCompensation.NONE,
         });
 
         // Check for default values

@@ -11,6 +11,9 @@ function createCutsStore(): CutsStore {
         selectedCutId: null,
         highlightedCutId: null,
         showCutNormals: false,
+        showCutter: false,
+        showCutDirections: false,
+        showCutPaths: true,
     };
 
     const { subscribe, set, update } = writable<CutsState>(initialState);
@@ -257,6 +260,27 @@ function createCutsStore(): CutsStore {
             update((state) => ({
                 ...state,
                 showCutNormals: show,
+            }));
+        },
+
+        setShowCutter: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showCutter: show,
+            }));
+        },
+
+        setShowCutDirections: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showCutDirections: show,
+            }));
+        },
+
+        setShowCutPaths: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showCutPaths: show,
             }));
         },
 

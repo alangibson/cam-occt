@@ -15,9 +15,9 @@ import type { CoordinateTransformer } from '$lib/rendering/coordinate-transforme
 
 // Constants for styling
 const HIT_TEST_TOLERANCE_PIXELS = 5;
-const SELECTED_LINE_WIDTH = 2;
-const HIGHLIGHTED_LINE_WIDTH = 1.5;
-const DEFAULT_LINE_WIDTH = 0.5;
+const SELECTED_LINE_WIDTH = 1;
+const HIGHLIGHTED_LINE_WIDTH = 1;
+const DEFAULT_LINE_WIDTH = 1;
 const DASH_SIZE = 5;
 const HIGHLIGHTED_DASH_SIZE = 3;
 

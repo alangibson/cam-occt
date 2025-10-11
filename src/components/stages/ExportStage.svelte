@@ -24,7 +24,8 @@
 
     // G-code generation options with localStorage persistence
     let includeComments = true;
-    let cutterCompensation: CutterCompensation | null = CutterCompensation.OFF;
+    let cutterCompensation: CutterCompensation | null =
+        CutterCompensation.MACHINE;
     let adaptiveFeedControl: boolean | null = true;
     let enableTHC: boolean | null = true;
     let settingsLoaded = false; // Flag to prevent saving during initial load
@@ -67,8 +68,23 @@
             if (savedCutterCompensation === 'null') {
                 cutterCompensation = null;
             } else {
-                cutterCompensation =
-                    savedCutterCompensation as CutterCompensation;
+                // Validate that saved value is a valid enum value
+                const validValues = [
+                    CutterCompensation.MACHINE,
+                    CutterCompensation.SOFTWARE,
+                    CutterCompensation.NONE,
+                ];
+                if (
+                    validValues.includes(
+                        savedCutterCompensation as CutterCompensation
+                    )
+                ) {
+                    cutterCompensation =
+                        savedCutterCompensation as CutterCompensation;
+                } else {
+                    // Invalid/old value - reset to default
+                    cutterCompensation = CutterCompensation.MACHINE;
+                }
             }
         }
 
@@ -222,12 +238,9 @@
                             class="setting-select"
                             bind:value={cutterCompensation}
                         >
-                            <option value="off">Off (G40)</option>
-                            <option value="left_outer">Left/Outer (G41)</option>
-                            <option value="right_inner"
-                                >Right/Inner (G42)</option
-                            >
-                            <option value={null}>No G-code</option>
+                            <option value="machine">Machine</option>
+                            <option value="software">Software</option>
+                            <option value="none">No G-code</option>
                         </select>
                     </div>
 

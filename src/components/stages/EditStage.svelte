@@ -5,6 +5,7 @@
     import InspectPanel from '../InspectPanel.svelte';
     import AccordionPanel from '../AccordionPanel.svelte';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
+    import ShowPanel from '../ShowPanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
@@ -80,6 +81,8 @@
 
         <svelte:fragment slot="right">
             <InspectPanel />
+
+            <ShowPanel />
         </svelte:fragment>
     </ThreeColumnLayout>
 </div>

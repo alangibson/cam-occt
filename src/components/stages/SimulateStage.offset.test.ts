@@ -6,6 +6,7 @@ import type { Line } from '$lib/geometry/line';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { GeometryType } from '$lib/geometry/shape';
+import { NormalSide } from '$lib/types/cam';
 
 describe('SimulateStage offset cut detection', () => {
     let mockCut: Cut;
@@ -77,6 +78,7 @@ describe('SimulateStage offset cut detection', () => {
             offset: undefined,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
         };
     });
 

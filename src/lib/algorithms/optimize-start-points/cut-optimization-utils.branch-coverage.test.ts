@@ -13,6 +13,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType, type Shape } from '$lib/types/geometry';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
+import { NormalSide } from '$lib/types/cam';
 
 describe('cut-optimization-utils - branch coverage', () => {
     // Mock data
@@ -41,6 +42,7 @@ describe('cut-optimization-utils - branch coverage', () => {
         cutDirection: CutDirection.CLOCKWISE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
+        normalSide: NormalSide.LEFT,
     };
 
     describe('findNearestCut uncovered branches', () => {

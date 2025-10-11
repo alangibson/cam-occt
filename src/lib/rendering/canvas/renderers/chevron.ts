@@ -28,11 +28,19 @@ export class ChevronRenderer extends BaseRenderer {
     }
 
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        if (!state.cutsState || state.cutsState.cuts.length === 0) {
-            return;
+        // Only draw cut chevrons if showCutDirections is enabled
+        if (
+            state.visibility.showCutDirections &&
+            state.cutsState &&
+            state.cutsState.cuts.length > 0
+        ) {
+            this.drawCutChevrons(ctx, state);
         }
 
-        this.drawCutChevrons(ctx, state);
+        // Draw chain chevrons if showChainDirections is enabled
+        if (state.visibility.showChainDirections && state.chains.length > 0) {
+            this.drawChainChevrons(ctx, state);
+        }
     }
 
     /**
@@ -93,6 +101,50 @@ export class ChevronRenderer extends BaseRenderer {
                 // Get the direction from the sampling function
                 // Since cutChain shapes have been properly reversed (both order and geometry),
                 // the direction vectors are already correct for the intended cut direction
+                const dirX = sample.direction.x;
+                const dirY = sample.direction.y;
+
+                // Calculate perpendicular vector for chevron wings
+                const perpX = -dirY;
+                const perpY = dirX;
+
+                drawChevronArrow(
+                    ctx,
+                    state,
+                    sample.point,
+                    dirX,
+                    dirY,
+                    perpX,
+                    perpY,
+                    chevronSize
+                );
+            });
+        });
+    }
+
+    /**
+     * Draw chevron arrows along chains to show chain direction
+     */
+    private drawChainChevrons(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState
+    ): void {
+        state.chains.forEach((chain) => {
+            if (chain.shapes.length === 0) return;
+
+            // Use the new utility to sample at regular distance intervals
+            const chevronSamples = sampleShapesAtDistanceIntervals(
+                chain.shapes,
+                CHEVRON_SPACING_UNITS
+            );
+
+            // Draw chevron arrows at the sampled locations
+            const chevronSize =
+                state.transform.coordinator.screenToWorldDistance(
+                    CHEVRON_SIZE_PX
+                );
+
+            chevronSamples.forEach((sample) => {
                 const dirX = sample.direction.x;
                 const dirY = sample.direction.y;
 

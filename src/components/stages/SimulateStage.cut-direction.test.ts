@@ -5,6 +5,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types';
 import { CutDirection } from '$lib/types/direction';
 import { GeometryType } from '$lib/geometry/shape';
+import { NormalSide } from '$lib/types/cam';
 
 describe('SimulateStage Cut Direction', () => {
     beforeEach(() => {
@@ -46,6 +47,7 @@ describe('SimulateStage Cut Direction', () => {
             feedRate: 1000,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
         });
 
         cutStore.addCut({
@@ -60,6 +62,7 @@ describe('SimulateStage Cut Direction', () => {
             feedRate: 1000,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
         });
 
         // Access the internal getPositionOnShape function from the SimulateStage component
@@ -120,6 +123,7 @@ describe('SimulateStage Cut Direction', () => {
             feedRate: 1000,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
         });
 
         cutStore.addCut({
@@ -134,6 +138,7 @@ describe('SimulateStage Cut Direction', () => {
             feedRate: 1000,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
         });
 
         // TODO: Once getPositionOnShape is updated to accept cut direction,
@@ -173,6 +178,7 @@ describe('SimulateStage Cut Direction', () => {
             feedRate: 1000,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
         });
 
         // Open chains should always trace from start to end regardless of cut direction

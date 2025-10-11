@@ -9,9 +9,18 @@ export type Lead = Point2D[];
  * Cutter compensation modes for G-code generation
  */
 export enum CutterCompensation {
-    LEFT_OUTER = 'left_outer',
-    RIGHT_INNER = 'right_inner',
-    OFF = 'off',
+    MACHINE = 'machine',
+    SOFTWARE = 'software',
+    NONE = 'none',
+}
+
+/**
+ * Normal side relative to cut direction (for machine cutter compensation)
+ */
+export enum NormalSide {
+    LEFT = 'left',
+    RIGHT = 'right',
+    NONE = 'none',
 }
 
 /**
@@ -53,6 +62,8 @@ export interface CutPath {
     parameters?: CuttingParameters;
     originalShape?: Shape; // Preserve original shape for native G-code generation
     executionClockwise?: boolean | null; // Execution direction from cut (true=CW, false=CCW, null=no direction)
+    normalSide?: NormalSide; // Which side the normal is on (for machine cutter compensation)
+    hasOffset?: boolean; // Whether this cut has an offset applied
 }
 
 export interface CutSequence {

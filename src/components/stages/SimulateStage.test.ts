@@ -9,6 +9,7 @@ import { operationsStore } from '$lib/stores/operations/store';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { uiStore } from '$lib/stores/ui/store';
 import { CutDirection } from '$lib/types/direction';
+import { NormalSide } from '$lib/types/cam';
 
 describe('SimulateStage store subscription cleanup', () => {
     beforeEach(() => {
@@ -89,6 +90,7 @@ describe('SimulateStage store subscription cleanup', () => {
             cutDirection: CutDirection.COUNTERCLOCKWISE,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
         });
 
         rapidStore.setRapids([

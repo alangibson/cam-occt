@@ -16,6 +16,7 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import * as pathOptUtils from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
+import { NormalSide } from '$lib/types/cam';
 
 // Mock crypto.randomUUID
 if (typeof crypto === 'undefined') {
@@ -45,6 +46,7 @@ describe('Optimize Cut Order', () => {
         cutDirection: CutDirection.COUNTERCLOCKWISE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
+        normalSide: NormalSide.LEFT,
         ...options,
     });
 
@@ -939,6 +941,7 @@ describe('Optimize Cut Order', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
             };
 
             // Create a map of chains
@@ -996,6 +999,7 @@ describe('Optimize Cut Order', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
             };
 
             // Create a map of chains
@@ -1113,6 +1117,7 @@ describe('Optimize Cut Order', () => {
                     cutDirection: CutDirection.COUNTERCLOCKWISE,
                     normal: { x: 1, y: 0 },
                     normalConnectionPoint: { x: 0, y: 0 },
+                    normalSide: NormalSide.LEFT,
                 });
             });
 

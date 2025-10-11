@@ -120,6 +120,9 @@ function collectCurrentState(): PersistedState {
         selectedCutId: cuts.selectedCutId, // Cut selection state
         highlightedCutId: cuts.highlightedCutId, // Cut highlight state
         showCutNormals: cuts.showCutNormals, // Cut normals visibility state
+        showCutter: cuts.showCutter, // Cutter visualization visibility state
+        showCutDirections: cuts.showCutDirections, // Cut directions visibility state
+        showCutPaths: cuts.showCutPaths, // Cut paths visibility state
         tools: tools,
 
         // Application settings
@@ -290,6 +293,9 @@ function restoreStateToStores(state: PersistedState): void {
                 selectedCutId: state.selectedCutId || null,
                 highlightedCutId: state.highlightedCutId || null,
                 showCutNormals: state.showCutNormals || false,
+                showCutter: state.showCutter || false,
+                showCutDirections: state.showCutDirections || false,
+                showCutPaths: state.showCutPaths || false,
             };
             cutStore.restore(cutsState);
         }

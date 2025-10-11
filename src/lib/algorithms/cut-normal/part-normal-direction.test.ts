@@ -16,6 +16,8 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isPointInsidePart } from '$lib/algorithms/raytracing/point-in-chain';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { NormalSide } from '$lib/types/cam';
 
 describe('Cut Normal Direction on Parts', () => {
     /**
@@ -962,5 +964,293 @@ describe('Cut Normal Direction on Parts', () => {
 
         // The two normals should be different (demonstrating the fix)
         expect(normalBroken.normal.y).not.toBeCloseTo(normalFixed.normal.y);
+    });
+
+    /**
+     * Test that INNER kerf compensation flips shell normal
+     */
+    it('should flip shell normal when INNER kerf compensation is applied', () => {
+        // Simple rectangular shell
+        const part: DetectedPart = {
+            id: 'part-test',
+            shell: {
+                id: 'shell-test',
+                chain: {
+                    id: 'chain-test',
+                    shapes: [
+                        {
+                            id: 'line1',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 0 },
+                                end: { x: 10, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line2',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 10, y: 0 },
+                                end: { x: 10, y: 10 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line3',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 10, y: 10 },
+                                end: { x: 0, y: 10 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line4',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 10 },
+                                end: { x: 0, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                    ],
+                    clockwise: true,
+                },
+                type: PartType.SHELL,
+                boundingBox: {
+                    min: { x: 0, y: 0 },
+                    max: { x: 10, y: 10 },
+                },
+                holes: [],
+            },
+            holes: [],
+        };
+
+        // Test shell without INNER kerf (normal case)
+        // Start point (0,0), tangent (1,0)
+        // Shell + CW → left normal (0,1) pointing up/outward
+        const normalNoKerf = calculateCutNormal(
+            part.shell.chain,
+            CutDirection.CLOCKWISE,
+            part
+        );
+        expect(normalNoKerf.normal.x).toBeCloseTo(0);
+        expect(normalNoKerf.normal.y).toBeCloseTo(1); // Points outward (up)
+        expect(normalNoKerf.normalSide).toBe(NormalSide.LEFT);
+
+        // Test shell with INNER kerf (should flip)
+        // Shell + CW + INNER → right normal (0,-1) pointing down/inward
+        const normalWithInnerKerf = calculateCutNormal(
+            part.shell.chain,
+            CutDirection.CLOCKWISE,
+            part,
+            OffsetDirection.INSET
+        );
+        expect(normalWithInnerKerf.normal.x).toBeCloseTo(0);
+        expect(normalWithInnerKerf.normal.y).toBeCloseTo(-1); // Points inward (down)
+        expect(normalWithInnerKerf.normalSide).toBe(NormalSide.RIGHT);
+
+        // Verify they are flipped
+        expect(normalNoKerf.normal.y).toBeCloseTo(
+            -normalWithInnerKerf.normal.y
+        );
+    });
+
+    /**
+     * Test that OUTER kerf compensation flips hole normal
+     */
+    it('should flip hole normal when OUTER kerf compensation is applied', () => {
+        // Simple rectangular part with hole
+        const part: DetectedPart = {
+            id: 'part-test',
+            shell: {
+                id: 'shell-test',
+                chain: {
+                    id: 'chain-shell',
+                    shapes: [
+                        {
+                            id: 'line1',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 0 },
+                                end: { x: 20, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line2',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 20, y: 0 },
+                                end: { x: 20, y: 20 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line3',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 20, y: 20 },
+                                end: { x: 0, y: 20 },
+                            },
+                            layer: '0',
+                        },
+                        {
+                            id: 'line4',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 0, y: 20 },
+                                end: { x: 0, y: 0 },
+                            },
+                            layer: '0',
+                        },
+                    ],
+                    clockwise: true,
+                },
+                type: PartType.SHELL,
+                boundingBox: {
+                    min: { x: 0, y: 0 },
+                    max: { x: 20, y: 20 },
+                },
+                holes: [
+                    {
+                        id: 'hole-1',
+                        chain: {
+                            id: 'chain-hole',
+                            shapes: [
+                                {
+                                    id: 'hole-line1',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 5, y: 5 },
+                                        end: { x: 15, y: 5 },
+                                    },
+                                    layer: '0',
+                                },
+                                {
+                                    id: 'hole-line2',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 15, y: 5 },
+                                        end: { x: 15, y: 15 },
+                                    },
+                                    layer: '0',
+                                },
+                                {
+                                    id: 'hole-line3',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 15, y: 15 },
+                                        end: { x: 5, y: 15 },
+                                    },
+                                    layer: '0',
+                                },
+                                {
+                                    id: 'hole-line4',
+                                    type: GeometryType.LINE,
+                                    geometry: {
+                                        start: { x: 5, y: 15 },
+                                        end: { x: 5, y: 5 },
+                                    },
+                                    layer: '0',
+                                },
+                            ],
+                            clockwise: false, // Holes are typically CCW
+                        },
+                        type: PartType.HOLE,
+                        boundingBox: {
+                            min: { x: 5, y: 5 },
+                            max: { x: 15, y: 15 },
+                        },
+                        holes: [],
+                    },
+                ],
+            },
+            holes: [
+                {
+                    id: 'hole-1',
+                    chain: {
+                        id: 'chain-hole',
+                        shapes: [
+                            {
+                                id: 'hole-line1',
+                                type: GeometryType.LINE,
+                                geometry: {
+                                    start: { x: 5, y: 5 },
+                                    end: { x: 15, y: 5 },
+                                },
+                                layer: '0',
+                            },
+                            {
+                                id: 'hole-line2',
+                                type: GeometryType.LINE,
+                                geometry: {
+                                    start: { x: 15, y: 5 },
+                                    end: { x: 15, y: 15 },
+                                },
+                                layer: '0',
+                            },
+                            {
+                                id: 'hole-line3',
+                                type: GeometryType.LINE,
+                                geometry: {
+                                    start: { x: 15, y: 15 },
+                                    end: { x: 5, y: 15 },
+                                },
+                                layer: '0',
+                            },
+                            {
+                                id: 'hole-line4',
+                                type: GeometryType.LINE,
+                                geometry: {
+                                    start: { x: 5, y: 15 },
+                                    end: { x: 5, y: 5 },
+                                },
+                                layer: '0',
+                            },
+                        ],
+                        clockwise: false,
+                    },
+                    type: PartType.HOLE,
+                    boundingBox: {
+                        min: { x: 5, y: 5 },
+                        max: { x: 15, y: 15 },
+                    },
+                    holes: [],
+                },
+            ],
+        };
+
+        const holeChain = part.holes[0].chain;
+
+        // Test hole without OUTER kerf (normal case)
+        // Start point (5,5), tangent (1,0)
+        // Hole + CCW → left normal (0,1) pointing up/inward
+        const normalNoKerf = calculateCutNormal(
+            holeChain,
+            CutDirection.COUNTERCLOCKWISE,
+            part
+        );
+        expect(normalNoKerf.normal.x).toBeCloseTo(0);
+        expect(normalNoKerf.normal.y).toBeCloseTo(1); // Points inward (up)
+        expect(normalNoKerf.normalSide).toBe(NormalSide.LEFT);
+
+        // Test hole with OUTER kerf (should flip)
+        // Hole + CCW + OUTER → right normal (0,-1) pointing down/outward
+        const normalWithOuterKerf = calculateCutNormal(
+            holeChain,
+            CutDirection.COUNTERCLOCKWISE,
+            part,
+            OffsetDirection.OUTSET
+        );
+        expect(normalWithOuterKerf.normal.x).toBeCloseTo(0);
+        expect(normalWithOuterKerf.normal.y).toBeCloseTo(-1); // Points outward (down)
+        expect(normalWithOuterKerf.normalSide).toBe(NormalSide.RIGHT);
+
+        // Verify they are flipped
+        expect(normalNoKerf.normal.y).toBeCloseTo(
+            -normalWithOuterKerf.normal.y
+        );
     });
 });
