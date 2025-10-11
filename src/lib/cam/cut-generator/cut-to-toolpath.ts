@@ -28,6 +28,13 @@ import {
     DEFAULT_PIERCE_HEIGHT_MM,
 } from '$lib/cam/constants';
 import type { LeadResult } from '$lib/algorithms/leads/interfaces';
+import {
+    getToolFeedRate,
+    getToolPierceHeight,
+    getToolCutHeight,
+    getToolKerfWidth,
+} from '$lib/utils/tool-units';
+import { Unit } from '$lib/utils/units';
 
 /**
  * Convert a Cut from the cut store to a ToolPath for G-code generation.
@@ -42,7 +49,8 @@ export async function cutToToolPath(
     tools: Tool[],
     cutterCompensation: CutterCompensation | null,
     chainMap?: Map<string, Chain>,
-    partMap?: Map<string, DetectedPart>
+    partMap?: Map<string, DetectedPart>,
+    displayUnit?: Unit
 ): Promise<CutPath> {
     // Use simulation's validated geometry resolution approach
     // Priority: cutChain > calculatedOffset (if SOFTWARE mode) > original shapes
@@ -281,12 +289,22 @@ export async function cutToToolPath(
 
     // Build cutting parameters from tool settings
     const tool = cut.toolId ? tools.find((t) => t.id === cut.toolId) : null;
+
+    // Use the correct unit-specific values based on displayUnit
+    const unitToUse = displayUnit || Unit.MM; // Default to mm if not specified
+
     const parameters: CutPath['parameters'] = {
-        feedRate: tool?.feedRate || DEFAULT_FEED_RATE_MM,
-        pierceHeight: tool?.pierceHeight || DEFAULT_PIERCE_HEIGHT_MM,
+        feedRate: tool
+            ? getToolFeedRate(tool, unitToUse)
+            : DEFAULT_FEED_RATE_MM,
+        pierceHeight: tool
+            ? getToolPierceHeight(tool, unitToUse)
+            : DEFAULT_PIERCE_HEIGHT_MM,
         pierceDelay: tool?.pierceDelay || DEFAULT_PIERCE_DELAY,
-        cutHeight: tool?.cutHeight || DEFAULT_CUT_HEIGHT_MM,
-        kerf: tool?.kerfWidth || 0,
+        cutHeight: tool
+            ? getToolCutHeight(tool, unitToUse)
+            : DEFAULT_CUT_HEIGHT_MM,
+        kerf: tool ? getToolKerfWidth(tool, unitToUse) : 0,
         isHole: cut.isHole || false,
         holeUnderspeedPercent: cut.holeUnderspeedPercent,
     };
@@ -324,7 +342,8 @@ export async function cutsToToolPaths(
     tools: Tool[],
     cutterCompensation: CutterCompensation | null,
     chainMap?: Map<string, Chain>,
-    partMap?: Map<string, DetectedPart>
+    partMap?: Map<string, DetectedPart>,
+    displayUnit?: Unit
 ): Promise<CutPath[]> {
     const toolPaths: CutPath[] = [];
 
@@ -345,7 +364,8 @@ export async function cutsToToolPaths(
             tools,
             cutterCompensation,
             chainMap,
-            partMap
+            partMap,
+            displayUnit
         );
         toolPaths.push(toolPath);
     }

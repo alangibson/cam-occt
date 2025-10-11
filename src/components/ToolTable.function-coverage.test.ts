@@ -310,14 +310,18 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const feedRateInput = inputs[1] as HTMLInputElement; // Second numeric input
-            if (feedRateInput) {
-                await fireEvent.change(feedRateInput, {
+            // Now we have dual-unit inputs (metric and imperial) for feedRate
+            // inputs[0] = toolNumber
+            // inputs[1] = feedRateMetric
+            // inputs[2] = feedRateImperial
+            const feedRateMetricInput = inputs[1] as HTMLInputElement;
+            if (feedRateMetricInput) {
+                await fireEvent.change(feedRateMetricInput, {
                     target: { value: '150.5' },
                 });
 
                 const tools = get(toolStore);
-                expect(tools[0].feedRate).toBe(150.5);
+                expect(tools[0].feedRateMetric).toBe(150.5);
             }
         });
 
@@ -325,14 +329,15 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const pierceHeightInput = inputs[2] as HTMLInputElement;
-            if (pierceHeightInput) {
-                await fireEvent.change(pierceHeightInput, {
+            // inputs[3] = pierceHeightMetric, inputs[4] = pierceHeightImperial
+            const pierceHeightMetricInput = inputs[3] as HTMLInputElement;
+            if (pierceHeightMetricInput) {
+                await fireEvent.change(pierceHeightMetricInput, {
                     target: { value: '4.2' },
                 });
 
                 const tools = get(toolStore);
-                expect(tools[0].pierceHeight).toBe(4.2);
+                expect(tools[0].pierceHeightMetric).toBe(4.2);
             }
         });
 
@@ -340,14 +345,15 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const cutHeightInput = inputs[3] as HTMLInputElement;
-            if (cutHeightInput) {
-                await fireEvent.change(cutHeightInput, {
+            // inputs[5] = cutHeightMetric, inputs[6] = cutHeightImperial
+            const cutHeightMetricInput = inputs[5] as HTMLInputElement;
+            if (cutHeightMetricInput) {
+                await fireEvent.change(cutHeightMetricInput, {
                     target: { value: '2.0' },
                 });
 
                 const tools = get(toolStore);
-                expect(tools[0].cutHeight).toBe(2.0);
+                expect(tools[0].cutHeightMetric).toBe(2.0);
             }
         });
 
@@ -355,7 +361,8 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const pierceDelayInput = inputs[4] as HTMLInputElement;
+            // inputs[7] = pierceDelay (single input)
+            const pierceDelayInput = inputs[7] as HTMLInputElement;
             if (pierceDelayInput) {
                 await fireEvent.change(pierceDelayInput, {
                     target: { value: '0.8' },
@@ -370,7 +377,8 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const arcVoltageInput = inputs[5] as HTMLInputElement;
+            // inputs[8] = arcVoltage (single input)
+            const arcVoltageInput = inputs[8] as HTMLInputElement;
             if (arcVoltageInput) {
                 await fireEvent.change(arcVoltageInput, {
                     target: { value: '135' },
@@ -385,14 +393,15 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const kerfWidthInput = inputs[6] as HTMLInputElement;
-            if (kerfWidthInput) {
-                await fireEvent.change(kerfWidthInput, {
+            // inputs[9] = kerfWidthMetric, inputs[10] = kerfWidthImperial
+            const kerfWidthMetricInput = inputs[9] as HTMLInputElement;
+            if (kerfWidthMetricInput) {
+                await fireEvent.change(kerfWidthMetricInput, {
                     target: { value: '1.8' },
                 });
 
                 const tools = get(toolStore);
-                expect(tools[0].kerfWidth).toBe(1.8);
+                expect(tools[0].kerfWidthMetric).toBe(1.8);
             }
         });
 
@@ -416,7 +425,8 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const gasPressureInput = inputs[7] as HTMLInputElement;
+            // inputs[11] = gasPressure (single input)
+            const gasPressureInput = inputs[11] as HTMLInputElement;
             if (gasPressureInput) {
                 await fireEvent.change(gasPressureInput, {
                     target: { value: '5.2' },
@@ -431,7 +441,8 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const pauseAtEndInput = inputs[8] as HTMLInputElement;
+            // inputs[12] = pauseAtEnd (single input)
+            const pauseAtEndInput = inputs[12] as HTMLInputElement;
             if (pauseAtEndInput) {
                 await fireEvent.change(pauseAtEndInput, {
                     target: { value: '1.5' },
@@ -446,14 +457,15 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const puddleJumpHeightInput = inputs[9] as HTMLInputElement;
-            if (puddleJumpHeightInput) {
-                await fireEvent.change(puddleJumpHeightInput, {
+            // inputs[13] = puddleJumpHeightMetric, inputs[14] = puddleJumpHeightImperial
+            const puddleJumpHeightMetricInput = inputs[13] as HTMLInputElement;
+            if (puddleJumpHeightMetricInput) {
+                await fireEvent.change(puddleJumpHeightMetricInput, {
                     target: { value: '75' },
                 });
 
                 const tools = get(toolStore);
-                expect(tools[0].puddleJumpHeight).toBe(75);
+                expect(tools[0].puddleJumpHeightMetric).toBe(75);
             }
         });
 
@@ -461,7 +473,8 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const puddleJumpDelayInput = inputs[10] as HTMLInputElement;
+            // inputs[15] = puddleJumpDelay (single input)
+            const puddleJumpDelayInput = inputs[15] as HTMLInputElement;
             if (puddleJumpDelayInput) {
                 await fireEvent.change(puddleJumpDelayInput, {
                     target: { value: '0.3' },
@@ -476,14 +489,15 @@ describe('ToolTable Component - Function Coverage', () => {
             const { container } = render(ToolTable);
 
             const inputs = container.querySelectorAll('input[type="number"]');
-            const plungeRateInput = inputs[11] as HTMLInputElement;
-            if (plungeRateInput) {
-                await fireEvent.change(plungeRateInput, {
+            // inputs[16] = plungeRateMetric, inputs[17] = plungeRateImperial
+            const plungeRateMetricInput = inputs[16] as HTMLInputElement;
+            if (plungeRateMetricInput) {
+                await fireEvent.change(plungeRateMetricInput, {
                     target: { value: '700' },
                 });
 
                 const tools = get(toolStore);
-                expect(tools[0].plungeRate).toBe(700);
+                expect(tools[0].plungeRateMetric).toBe(700);
             }
         });
     });
@@ -531,7 +545,8 @@ describe('ToolTable Component - Function Coverage', () => {
         it('should handle drag start', async () => {
             const { container } = render(ToolTable);
 
-            const toolRows = container.querySelectorAll('tbody tr');
+            // Component uses divs with class 'tool-item' instead of tbody tr
+            const toolRows = container.querySelectorAll('.tool-item');
             expect(toolRows.length).toBe(2);
 
             const dragEvent = new DragEvent('dragstart', { bubbles: true });
@@ -548,7 +563,8 @@ describe('ToolTable Component - Function Coverage', () => {
         it('should handle drag over and drop', async () => {
             const { container } = render(ToolTable);
 
-            const toolRows = container.querySelectorAll('tbody tr');
+            // Component uses divs with class 'tool-item' instead of tbody tr
+            const toolRows = container.querySelectorAll('.tool-item');
             expect(toolRows.length).toBe(2);
 
             // First simulate drag start to set up the dragged tool
@@ -597,12 +613,15 @@ describe('ToolTable Component - Function Coverage', () => {
 
     describe('unit display functionality', () => {
         it('should show mm units correctly', () => {
+            // Enable auto tool creation for this test so we have at least one tool row
+            localStorageMock.getItem.mockReturnValue(null);
+
             const { container } = render(ToolTable);
 
-            // Check for mm units in table headers
-            const headers = container.querySelectorAll('th');
-            const hasMMUnit = Array.from(headers).some((header) =>
-                header.textContent?.includes('mm')
+            // Check for mm units in the unit-suffix spans within tool rows
+            const unitSuffixes = container.querySelectorAll('.unit-suffix');
+            const hasMMUnit = Array.from(unitSuffixes).some((span) =>
+                span.textContent?.includes('mm')
             );
             expect(hasMMUnit).toBe(true);
         });

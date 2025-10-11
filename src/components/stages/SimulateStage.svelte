@@ -59,6 +59,8 @@
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
+    import { getToolFeedRate } from '$lib/utils/tool-units';
+    import { Unit } from '$lib/utils/units';
 
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;
@@ -117,11 +119,13 @@
     // Helper function to get feedRate from tool or use default, accounting for hole underspeed
     function getFeedRateForCut(cut: Cut): number {
         let baseFeedRate = 1000; // Default feed rate
+        const displayUnitEnum = displayUnit === 'mm' ? Unit.MM : Unit.INCH;
 
         if (cut.toolId && toolStoreState) {
             const tool = toolStoreState.find((t: Tool) => t.id === cut.toolId);
-            if (tool?.feedRate) {
-                baseFeedRate = tool.feedRate;
+            if (tool) {
+                // Use helper function to get the correct feed rate based on display unit
+                baseFeedRate = getToolFeedRate(tool, displayUnitEnum);
             }
         }
 
@@ -702,6 +706,10 @@
             isPaused = false;
             lastFrameTime = 0; // Reset frame time when resuming
         } else if (!isPlaying) {
+            // If simulation is complete, reset before playing
+            if (currentTime >= totalTime) {
+                resetSimulation();
+            }
             isPlaying = true;
             lastFrameTime = 0; // Reset frame time when starting
         }

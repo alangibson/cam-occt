@@ -26,6 +26,39 @@ import {
 } from '$lib/algorithms/leads/functions';
 import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
+import { settingsStore } from '$lib/stores/settings/store';
+import { get } from 'svelte/store';
+import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+
+/**
+ * Get the appropriate tool value based on the current measurement system
+ */
+function getToolValue(
+    tool: Tool,
+    field:
+        | 'feedRate'
+        | 'pierceHeight'
+        | 'cutHeight'
+        | 'kerfWidth'
+        | 'puddleJumpHeight'
+        | 'plungeRate'
+): number {
+    const settings = get(settingsStore).settings;
+    const isMetric = settings.measurementSystem === MeasurementSystem.Metric;
+
+    // Check for unit-specific fields
+    const metricField = `${field}Metric` as keyof Tool;
+    const imperialField = `${field}Imperial` as keyof Tool;
+
+    if (isMetric && tool[metricField] !== undefined) {
+        return tool[metricField] as number;
+    } else if (!isMetric && tool[imperialField] !== undefined) {
+        return tool[imperialField] as number;
+    }
+
+    // Fall back to the base field
+    return tool[field];
+}
 
 /**
  * Get CutDirection from chain's stored clockwise property.
@@ -65,13 +98,14 @@ export function calculateChainOffset(
         console.warn('Tool not found for kerf compensation');
         return null;
     }
-    if (!tool.kerfWidth || tool.kerfWidth <= 0) {
+    const kerfWidth = getToolValue(tool, 'kerfWidth');
+    if (!kerfWidth || kerfWidth <= 0) {
         console.warn(`Tool "${tool.toolName}" has no kerf width set`);
         return null;
     }
 
     // Calculate offset distance (kerf/2)
-    const offsetDistance: number = tool.kerfWidth / 2;
+    const offsetDistance: number = kerfWidth / 2;
 
     try {
         // Call offset calculation
@@ -118,7 +152,7 @@ export function calculateChainOffset(
         return {
             offsetShapes: finalOffsetShapes,
             originalShapes: chain.shapes,
-            kerfWidth: tool.kerfWidth,
+            kerfWidth: kerfWidth,
             gapFills: selectedGapFills,
             warnings: offsetResult.warnings || [],
         };
@@ -312,8 +346,11 @@ export async function generateCutsForChainWithOperation(
     let kerfWidth: number | undefined = undefined;
     if (operation.toolId) {
         const tool = tools.find((t) => t.id === operation.toolId);
-        if (tool && tool.kerfWidth) {
-            kerfWidth = tool.kerfWidth;
+        if (tool) {
+            const toolKerfWidth = getToolValue(tool, 'kerfWidth');
+            if (toolKerfWidth) {
+                kerfWidth = toolKerfWidth;
+            }
         }
     }
 
@@ -498,8 +535,11 @@ export async function generateCutsForPartTargetWithOperation(
     let shellKerfWidth: number | undefined = undefined;
     if (operation.toolId) {
         const tool = tools.find((t) => t.id === operation.toolId);
-        if (tool && tool.kerfWidth) {
-            shellKerfWidth = tool.kerfWidth;
+        if (tool) {
+            const toolKerfWidth = getToolValue(tool, 'kerfWidth');
+            if (toolKerfWidth) {
+                shellKerfWidth = toolKerfWidth;
+            }
         }
     }
 
@@ -667,8 +707,11 @@ export async function generateCutsForPartTargetWithOperation(
             let holeKerfWidth: number | undefined = undefined;
             if (operation.toolId) {
                 const tool = tools.find((t) => t.id === operation.toolId);
-                if (tool && tool.kerfWidth) {
-                    holeKerfWidth = tool.kerfWidth;
+                if (tool) {
+                    const toolKerfWidth = getToolValue(tool, 'kerfWidth');
+                    if (toolKerfWidth) {
+                        holeKerfWidth = toolKerfWidth;
+                    }
                 }
             }
 

@@ -1,18 +1,11 @@
 <script lang="ts">
     import { toolStore, type Tool } from '$lib/stores/tools/store';
-    import { settingsStore } from '$lib/stores/settings/store';
-    import { flip } from 'svelte/animate';
     import { onMount } from 'svelte';
-    import { getReactiveUnitSymbol } from '$lib/utils/units';
     import { getDefaults } from '$lib/config';
 
     let tools: Tool[] = [];
     let draggedTool: Tool | null = null;
     let dragOverIndex: number | null = null;
-
-    // Get reactive unit symbol from application settings
-    $: settings = $settingsStore.settings;
-    $: unitSymbol = getReactiveUnitSymbol(settings.measurementSystem);
 
     // Load tools from localStorage on mount
     onMount(() => {
@@ -49,21 +42,43 @@
         const defaults = getDefaults();
         const camDefaults = defaults.cam;
 
+        // Default imperial values
+        const imperialDefaults = {
+            feedRate: 40, // inch/min
+            pierceHeight: 0.04, // inch
+            cutHeight: 0.06, // inch
+            kerfWidth: 0.06, // inch
+            puddleJumpHeight: 0.02, // inch
+            plungeRate: 20, // inch/min
+        };
+
         toolStore.addTool({
             toolNumber: newToolNumber,
             toolName: `Tool ${newToolNumber}`,
-            feedRate: camDefaults.feedRate, // Unit-aware default
-            pierceHeight: camDefaults.pierceHeight, // Unit-aware default
-            cutHeight: camDefaults.cutHeight, // Unit-aware default
-            pierceDelay: camDefaults.pierceDelay, // No unit conversion needed
-            arcVoltage: 120, // TODO: Add to defaults system
-            kerfWidth: camDefaults.kerfWidth, // Unit-aware default
+            feedRate: camDefaults.feedRate, // Legacy field for current system
+            feedRateMetric: camDefaults.feedRate, // Metric default
+            feedRateImperial: imperialDefaults.feedRate, // Imperial default
+            pierceHeight: camDefaults.pierceHeight,
+            pierceHeightMetric: camDefaults.pierceHeight,
+            pierceHeightImperial: imperialDefaults.pierceHeight,
+            cutHeight: camDefaults.cutHeight,
+            cutHeightMetric: camDefaults.cutHeight,
+            cutHeightImperial: imperialDefaults.cutHeight,
+            pierceDelay: camDefaults.pierceDelay,
+            arcVoltage: 120,
+            kerfWidth: camDefaults.kerfWidth,
+            kerfWidthMetric: camDefaults.kerfWidth,
+            kerfWidthImperial: imperialDefaults.kerfWidth,
             thcEnable: true,
             gasPressure: 4.5,
             pauseAtEnd: 0,
-            puddleJumpHeight: camDefaults.puddleJumpHeight, // Unit-aware default
+            puddleJumpHeight: camDefaults.puddleJumpHeight,
+            puddleJumpHeightMetric: camDefaults.puddleJumpHeight,
+            puddleJumpHeightImperial: imperialDefaults.puddleJumpHeight,
             puddleJumpDelay: 0,
-            plungeRate: camDefaults.plungeRate, // Unit-aware default
+            plungeRate: camDefaults.plungeRate,
+            plungeRateMetric: camDefaults.plungeRate,
+            plungeRateImperial: imperialDefaults.plungeRate,
         });
     }
 
@@ -121,6 +136,7 @@
         field: keyof Tool,
         value: string | number | boolean
     ) {
+        // Only update the exact field that was changed
         toolStore.updateTool(id, { [field]: value });
     }
 </script>
@@ -132,251 +148,444 @@
     </div>
 
     <div class="table-wrapper">
-        <table class="tool-table">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>Tool #</th>
-                    <th>Name</th>
-                    <th>Feed Rate<br />({unitSymbol}/min)</th>
-                    <th>Pierce<br />Height<br />({unitSymbol})</th>
-                    <th>Cut<br />Height<br />({unitSymbol})</th>
-                    <th>Pierce<br />Delay<br />(sec)</th>
-                    <th>Arc<br />Voltage<br />(V)</th>
-                    <th>Kerf<br />Width<br />({unitSymbol})</th>
-                    <th>THC</th>
-                    <th>Gas<br />Press.<br />(bar)</th>
-                    <th>Pause<br />End<br />(sec)</th>
-                    <th>Puddle<br />Jump Ht<br />({unitSymbol})</th>
-                    <th>Puddle<br />Jump Dly<br />(sec)</th>
-                    <th>Plunge<br />Rate<br />({unitSymbol}/min)</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {#each tools as tool, index (tool.id)}
-                    <tr
-                        class:drag-over={dragOverIndex === index}
-                        draggable="true"
-                        ondragstart={(e) => handleDragStart(e, tool)}
-                        ondragover={(e) => handleDragOver(e, index)}
-                        ondragleave={handleDragLeave}
-                        ondrop={(e) => handleDrop(e, index)}
-                        animate:flip={{ duration: 200 }}
-                    >
-                        <td class="drag-handle">☰</td>
-                        <td>
+        <div class="tool-grid">
+            <!-- Header -->
+            <div class="grid-header">
+                <div class="header-cell"></div>
+                <div class="header-cell">Tool #</div>
+                <div class="header-cell">Name</div>
+                <div class="header-cell">Feed Rate</div>
+                <div class="header-cell">Pierce Height</div>
+                <div class="header-cell">Cut Height</div>
+                <div class="header-cell">Pierce Delay</div>
+                <div class="header-cell">Arc Voltage</div>
+                <div class="header-cell">Kerf Width</div>
+                <div class="header-cell">THC</div>
+                <div class="header-cell">Gas Press.</div>
+                <div class="header-cell">Pause End</div>
+                <div class="header-cell">Puddle Jump Ht</div>
+                <div class="header-cell">Puddle Jump Dly</div>
+                <div class="header-cell">Plunge Rate</div>
+                <div class="header-cell">Actions</div>
+            </div>
+
+            <!-- Tool Rows -->
+            {#each tools as tool, index (tool.id)}
+                <div
+                    class="tool-item"
+                    class:drag-over={dragOverIndex === index}
+                    draggable="true"
+                    ondragstart={(e) => handleDragStart(e, tool)}
+                    ondragover={(e) => handleDragOver(e, index)}
+                    ondragleave={handleDragLeave}
+                    ondrop={(e) => handleDrop(e, index)}
+                    role="row"
+                    tabindex="0"
+                >
+                    <!-- Drag handle -->
+                    <div class="cell drag-handle">☰</div>
+
+                    <!-- Tool # -->
+                    <div class="cell">
+                        <input
+                            type="number"
+                            value={tool.toolNumber}
+                            onchange={(e) =>
+                                updateToolField(
+                                    tool.id,
+                                    'toolNumber',
+                                    parseInt(e.currentTarget.value)
+                                )}
+                            class="input-xs"
+                        />
+                    </div>
+
+                    <!-- Name -->
+                    <div class="cell">
+                        <input
+                            type="text"
+                            value={tool.toolName}
+                            onchange={(e) =>
+                                updateToolField(
+                                    tool.id,
+                                    'toolName',
+                                    e.currentTarget.value
+                                )}
+                            class="input-sm"
+                        />
+                    </div>
+
+                    <!-- Feed Rate -->
+                    <div class="cell dual-unit">
+                        <div class="unit-row metric">
                             <input
                                 type="number"
-                                value={tool.toolNumber}
+                                value={(
+                                    tool.feedRateMetric ??
+                                    tool.feedRate ??
+                                    0
+                                ).toFixed(1)}
                                 onchange={(e) =>
                                     updateToolField(
                                         tool.id,
-                                        'toolNumber',
-                                        parseInt(e.currentTarget.value)
-                                    )}
-                                class="input-xs"
-                            />
-                        </td>
-                        <td>
-                            <input
-                                type="text"
-                                value={tool.toolName}
-                                onchange={(e) =>
-                                    updateToolField(
-                                        tool.id,
-                                        'toolName',
-                                        e.currentTarget.value
-                                    )}
-                                class="input-sm"
-                            />
-                        </td>
-                        <td>
-                            <input
-                                type="number"
-                                value={tool.feedRate}
-                                onchange={(e) =>
-                                    updateToolField(
-                                        tool.id,
-                                        'feedRate',
+                                        'feedRateMetric',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"
                                 step="0.1"
                             />
-                        </td>
-                        <td>
+                            <span class="unit-suffix">mm/min</span>
+                        </div>
+                        <div class="unit-row imperial">
                             <input
                                 type="number"
-                                value={tool.pierceHeight}
+                                value={(
+                                    tool.feedRateImperial ??
+                                    tool.feedRate ??
+                                    0
+                                ).toFixed(3)}
                                 onchange={(e) =>
                                     updateToolField(
                                         tool.id,
-                                        'pierceHeight',
+                                        'feedRateImperial',
+                                        parseFloat(e.currentTarget.value)
+                                    )}
+                                class="input-xs"
+                                step="0.001"
+                            />
+                            <span class="unit-suffix">in/min</span>
+                        </div>
+                    </div>
+
+                    <!-- Pierce Height -->
+                    <div class="cell dual-unit">
+                        <div class="unit-row metric">
+                            <input
+                                type="number"
+                                value={(
+                                    tool.pierceHeightMetric ??
+                                    tool.pierceHeight ??
+                                    0
+                                ).toFixed(1)}
+                                onchange={(e) =>
+                                    updateToolField(
+                                        tool.id,
+                                        'pierceHeightMetric',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"
                                 step="0.1"
                             />
-                        </td>
-                        <td>
+                            <span class="unit-suffix">mm</span>
+                        </div>
+                        <div class="unit-row imperial">
                             <input
                                 type="number"
-                                value={tool.cutHeight}
+                                value={(
+                                    tool.pierceHeightImperial ??
+                                    tool.pierceHeight ??
+                                    0
+                                ).toFixed(3)}
                                 onchange={(e) =>
                                     updateToolField(
                                         tool.id,
-                                        'cutHeight',
+                                        'pierceHeightImperial',
+                                        parseFloat(e.currentTarget.value)
+                                    )}
+                                class="input-xs"
+                                step="0.001"
+                            />
+                            <span class="unit-suffix">in</span>
+                        </div>
+                    </div>
+
+                    <!-- Cut Height -->
+                    <div class="cell dual-unit">
+                        <div class="unit-row metric">
+                            <input
+                                type="number"
+                                value={(
+                                    tool.cutHeightMetric ??
+                                    tool.cutHeight ??
+                                    0
+                                ).toFixed(1)}
+                                onchange={(e) =>
+                                    updateToolField(
+                                        tool.id,
+                                        'cutHeightMetric',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"
                                 step="0.1"
                             />
-                        </td>
-                        <td>
+                            <span class="unit-suffix">mm</span>
+                        </div>
+                        <div class="unit-row imperial">
                             <input
                                 type="number"
-                                value={tool.pierceDelay}
+                                value={(
+                                    tool.cutHeightImperial ??
+                                    tool.cutHeight ??
+                                    0
+                                ).toFixed(3)}
                                 onchange={(e) =>
                                     updateToolField(
                                         tool.id,
-                                        'pierceDelay',
+                                        'cutHeightImperial',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"
-                                step="0.1"
+                                step="0.001"
                             />
-                        </td>
-                        <td>
+                            <span class="unit-suffix">in</span>
+                        </div>
+                    </div>
+
+                    <!-- Pierce Delay -->
+                    <div class="cell">
+                        <input
+                            type="number"
+                            value={tool.pierceDelay}
+                            onchange={(e) =>
+                                updateToolField(
+                                    tool.id,
+                                    'pierceDelay',
+                                    parseFloat(e.currentTarget.value)
+                                )}
+                            class="input-xs"
+                            step="0.1"
+                        />
+                        <span class="unit-suffix">sec</span>
+                    </div>
+
+                    <!-- Arc Voltage -->
+                    <div class="cell">
+                        <input
+                            type="number"
+                            value={tool.arcVoltage}
+                            onchange={(e) =>
+                                updateToolField(
+                                    tool.id,
+                                    'arcVoltage',
+                                    parseFloat(e.currentTarget.value)
+                                )}
+                            class="input-xs"
+                            step="0.1"
+                        />
+                        <span class="unit-suffix">V</span>
+                    </div>
+
+                    <!-- Kerf Width -->
+                    <div class="cell dual-unit">
+                        <div class="unit-row metric">
                             <input
                                 type="number"
-                                value={tool.arcVoltage}
+                                value={(
+                                    tool.kerfWidthMetric ??
+                                    tool.kerfWidth ??
+                                    0
+                                ).toFixed(2)}
                                 onchange={(e) =>
                                     updateToolField(
                                         tool.id,
-                                        'arcVoltage',
-                                        parseFloat(e.currentTarget.value)
-                                    )}
-                                class="input-xs"
-                                step="0.1"
-                            />
-                        </td>
-                        <td>
-                            <input
-                                type="number"
-                                value={tool.kerfWidth}
-                                onchange={(e) =>
-                                    updateToolField(
-                                        tool.id,
-                                        'kerfWidth',
+                                        'kerfWidthMetric',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"
                                 step="0.01"
                             />
-                        </td>
-                        <td>
-                            <input
-                                type="checkbox"
-                                checked={tool.thcEnable}
-                                onchange={(e) =>
-                                    updateToolField(
-                                        tool.id,
-                                        'thcEnable',
-                                        e.currentTarget.checked
-                                    )}
-                            />
-                        </td>
-                        <td>
+                            <span class="unit-suffix">mm</span>
+                        </div>
+                        <div class="unit-row imperial">
                             <input
                                 type="number"
-                                value={tool.gasPressure}
+                                value={(
+                                    tool.kerfWidthImperial ??
+                                    tool.kerfWidth ??
+                                    0
+                                ).toFixed(3)}
                                 onchange={(e) =>
                                     updateToolField(
                                         tool.id,
-                                        'gasPressure',
+                                        'kerfWidthImperial',
+                                        parseFloat(e.currentTarget.value)
+                                    )}
+                                class="input-xs"
+                                step="0.001"
+                            />
+                            <span class="unit-suffix">in</span>
+                        </div>
+                    </div>
+
+                    <!-- THC -->
+                    <div class="cell">
+                        <input
+                            type="checkbox"
+                            checked={tool.thcEnable}
+                            onchange={(e) =>
+                                updateToolField(
+                                    tool.id,
+                                    'thcEnable',
+                                    e.currentTarget.checked
+                                )}
+                        />
+                    </div>
+
+                    <!-- Gas Pressure -->
+                    <div class="cell">
+                        <input
+                            type="number"
+                            value={tool.gasPressure}
+                            onchange={(e) =>
+                                updateToolField(
+                                    tool.id,
+                                    'gasPressure',
+                                    parseFloat(e.currentTarget.value)
+                                )}
+                            class="input-xs"
+                            step="0.1"
+                        />
+                        <span class="unit-suffix">bar</span>
+                    </div>
+
+                    <!-- Pause End -->
+                    <div class="cell">
+                        <input
+                            type="number"
+                            value={tool.pauseAtEnd}
+                            onchange={(e) =>
+                                updateToolField(
+                                    tool.id,
+                                    'pauseAtEnd',
+                                    parseFloat(e.currentTarget.value)
+                                )}
+                            class="input-xs"
+                            step="0.1"
+                        />
+                        <span class="unit-suffix">sec</span>
+                    </div>
+
+                    <!-- Puddle Jump Height -->
+                    <div class="cell dual-unit">
+                        <div class="unit-row metric">
+                            <input
+                                type="number"
+                                value={(
+                                    tool.puddleJumpHeightMetric ??
+                                    tool.puddleJumpHeight ??
+                                    0
+                                ).toFixed(1)}
+                                onchange={(e) =>
+                                    updateToolField(
+                                        tool.id,
+                                        'puddleJumpHeightMetric',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"
                                 step="0.1"
                             />
-                        </td>
-                        <td>
+                            <span class="unit-suffix">mm</span>
+                        </div>
+                        <div class="unit-row imperial">
                             <input
                                 type="number"
-                                value={tool.pauseAtEnd}
+                                value={(
+                                    tool.puddleJumpHeightImperial ??
+                                    tool.puddleJumpHeight ??
+                                    0
+                                ).toFixed(3)}
                                 onchange={(e) =>
                                     updateToolField(
                                         tool.id,
-                                        'pauseAtEnd',
+                                        'puddleJumpHeightImperial',
+                                        parseFloat(e.currentTarget.value)
+                                    )}
+                                class="input-xs"
+                                step="0.001"
+                            />
+                            <span class="unit-suffix">in</span>
+                        </div>
+                    </div>
+
+                    <!-- Puddle Jump Delay -->
+                    <div class="cell">
+                        <input
+                            type="number"
+                            value={tool.puddleJumpDelay}
+                            onchange={(e) =>
+                                updateToolField(
+                                    tool.id,
+                                    'puddleJumpDelay',
+                                    parseFloat(e.currentTarget.value)
+                                )}
+                            class="input-xs"
+                            step="0.1"
+                        />
+                        <span class="unit-suffix">sec</span>
+                    </div>
+
+                    <!-- Plunge Rate -->
+                    <div class="cell dual-unit">
+                        <div class="unit-row metric">
+                            <input
+                                type="number"
+                                value={(
+                                    tool.plungeRateMetric ??
+                                    tool.plungeRate ??
+                                    0
+                                ).toFixed(1)}
+                                onchange={(e) =>
+                                    updateToolField(
+                                        tool.id,
+                                        'plungeRateMetric',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"
                                 step="0.1"
                             />
-                        </td>
-                        <td>
+                            <span class="unit-suffix">mm/min</span>
+                        </div>
+                        <div class="unit-row imperial">
                             <input
                                 type="number"
-                                value={tool.puddleJumpHeight}
+                                value={(
+                                    tool.plungeRateImperial ??
+                                    tool.plungeRate ??
+                                    0
+                                ).toFixed(3)}
                                 onchange={(e) =>
                                     updateToolField(
                                         tool.id,
-                                        'puddleJumpHeight',
+                                        'plungeRateImperial',
                                         parseFloat(e.currentTarget.value)
                                     )}
                                 class="input-xs"
-                                step="0.1"
+                                step="0.001"
                             />
-                        </td>
-                        <td>
-                            <input
-                                type="number"
-                                value={tool.puddleJumpDelay}
-                                onchange={(e) =>
-                                    updateToolField(
-                                        tool.id,
-                                        'puddleJumpDelay',
-                                        parseFloat(e.currentTarget.value)
-                                    )}
-                                class="input-xs"
-                                step="0.1"
-                            />
-                        </td>
-                        <td>
-                            <input
-                                type="number"
-                                value={tool.plungeRate}
-                                onchange={(e) =>
-                                    updateToolField(
-                                        tool.id,
-                                        'plungeRate',
-                                        parseFloat(e.currentTarget.value)
-                                    )}
-                                class="input-xs"
-                                step="0.1"
-                            />
-                        </td>
-                        <td class="actions-cell">
-                            <button
-                                onclick={() => duplicateTool(tool)}
-                                class="btn btn-primary btn-small"
-                                title="Duplicate tool"
-                            >
-                                ⎘
-                            </button>
-                            <button
-                                onclick={() => deleteTool(tool.id)}
-                                class="btn btn-danger btn-small"
-                                title="Delete tool"
-                            >
-                                ✕
-                            </button>
-                        </td>
-                    </tr>
-                {/each}
-            </tbody>
-        </table>
+                            <span class="unit-suffix">in/min</span>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="cell actions-cell">
+                        <button
+                            onclick={() => duplicateTool(tool)}
+                            class="btn btn-primary btn-small"
+                            title="Duplicate tool"
+                        >
+                            ⎘
+                        </button>
+                        <button
+                            onclick={() => deleteTool(tool.id)}
+                            class="btn btn-danger btn-small"
+                            title="Delete tool"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+            {/each}
+        </div>
     </div>
 </div>
 
@@ -409,59 +618,108 @@
         overflow-y: auto;
         border: 1px solid #e5e7eb;
         border-radius: 0.375rem;
-        max-width: 100%;
-    }
-
-    .tool-table {
-        width: auto;
-        min-width: 100%;
-        border-collapse: collapse;
         background: white;
     }
 
-    .tool-table th {
+    .tool-grid {
+        display: flex;
+        flex-direction: column;
+        min-width: fit-content;
+        --grid-columns: 2rem 4rem 6rem repeat(13, minmax(6rem, 1fr));
+    }
+
+    .grid-header {
+        display: grid;
+        grid-template-columns: var(--grid-columns);
+        gap: 0;
         background: #f3f4f6;
-        padding: 0.25rem;
-        text-align: left;
-        font-weight: 600;
-        font-size: 0.75rem;
         border-bottom: 1px solid #e5e7eb;
         position: sticky;
         top: 0;
         z-index: 10;
+    }
+
+    .header-cell {
+        padding: 0.25rem;
+        text-align: left;
+        font-weight: 600;
+        font-size: 0.75rem;
         white-space: normal;
         line-height: 1.2;
+        border-right: 1px solid #e5e7eb;
+        overflow: hidden;
     }
 
-    .tool-table td {
-        padding: 0.25rem;
-        border-bottom: 1px solid #e5e7eb;
+    .header-cell:last-child {
+        border-right: none;
     }
 
-    .tool-table tr:hover {
+    .tool-item {
+        display: grid;
+        grid-template-columns: var(--grid-columns);
+        gap: 0;
+        border-bottom: 2px solid #d1d5db;
+    }
+
+    .tool-item:hover {
         background: #f9fafb;
     }
 
-    .tool-table tr.drag-over {
+    .tool-item.drag-over {
         background: #e6f2ff;
+    }
+
+    .cell {
+        padding: 0.25rem;
+        border-right: 1px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        white-space: nowrap;
+    }
+
+    .cell:last-child {
+        border-right: none;
+    }
+
+    .cell.dual-unit {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0;
+        gap: 0;
+    }
+
+    .unit-row {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0.125rem 0.25rem;
+        flex: 1;
+    }
+
+    .unit-row.metric {
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .unit-row.imperial {
+        background: #fafafa;
     }
 
     .drag-handle {
         cursor: move;
         color: #6b7280;
         font-size: 1rem;
-        text-align: center;
-        width: 1.5rem;
-        padding: 0.125rem;
+        justify-content: center;
     }
 
     input[type='number'],
     input[type='text'] {
-        width: 100%;
+        flex: 1;
         padding: 0.125rem 0.25rem;
         border: 1px solid #d1d5db;
         border-radius: 0.25rem;
         font-size: 0.75rem;
+        min-width: 0;
     }
 
     input[type='checkbox'] {
@@ -469,13 +727,22 @@
     }
 
     .input-xs {
-        width: 2.5rem;
-        min-width: 2rem;
+        max-width: 4rem;
     }
 
     .input-sm {
-        width: 4rem;
-        min-width: 3rem;
+        max-width: 6rem;
+    }
+
+    .unit-suffix {
+        font-size: 0.7rem;
+        color: #6b7280;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .actions-cell {
+        gap: 0.125rem;
     }
 
     .btn {
@@ -510,13 +777,5 @@
         padding: 0.125rem 0.25rem;
         font-size: 0.65rem;
         min-width: 1.5rem;
-    }
-
-    .actions-cell {
-        white-space: nowrap;
-    }
-
-    .actions-cell button {
-        margin: 0 0.125rem;
     }
 </style>

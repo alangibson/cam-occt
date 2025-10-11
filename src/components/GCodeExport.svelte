@@ -12,6 +12,7 @@
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import type { Shape } from '$lib/geometry/shape';
+    import { Unit } from '$lib/utils/units';
 
     // Props from parent component
     export let includeComments: boolean = true;
@@ -58,6 +59,9 @@
                 }
             });
 
+            // Convert display unit string to Unit enum
+            const displayUnitEnum = displayUnit === 'mm' ? Unit.MM : Unit.INCH;
+
             // Convert cuts to tool paths using simulation's validated approach
             // This handles empty cuts array gracefully
             const toolPaths = await cutsToToolPaths(
@@ -66,7 +70,8 @@
                 tools,
                 cutterCompensation,
                 chainMap,
-                partMap
+                partMap,
+                displayUnitEnum
             );
 
             // Generate G-code with settings from props
