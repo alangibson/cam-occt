@@ -30,6 +30,7 @@ import {
     ImportUnitSetting,
     SelectionMode,
     PreprocessingStep,
+    RapidOptimizationAlgorithm,
 } from '$lib/stores/settings/interfaces';
 
 // Default application settings for tests
@@ -54,6 +55,11 @@ const defaultApplicationSettings = {
         PreprocessingStep.OptimizeStarts,
         PreprocessingStep.DetectParts,
     ],
+    optimizationSettings: {
+        cutHolesFirst: true,
+        rapidOptimizationAlgorithm:
+            RapidOptimizationAlgorithm.TravelingSalesman,
+    },
 };
 
 // Mock localStorage module

@@ -20,6 +20,7 @@ import {
     ImportUnitSetting,
     SelectionMode,
     PreprocessingStep,
+    RapidOptimizationAlgorithm,
 } from '$lib/stores/settings/interfaces';
 import { NormalSide } from '$lib/types/cam';
 
@@ -45,6 +46,11 @@ const defaultApplicationSettings = {
         PreprocessingStep.OptimizeStarts,
         PreprocessingStep.DetectParts,
     ],
+    optimizationSettings: {
+        cutHolesFirst: true,
+        rapidOptimizationAlgorithm:
+            RapidOptimizationAlgorithm.TravelingSalesman,
+    },
 };
 
 // Mock localStorage

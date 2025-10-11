@@ -7,6 +7,7 @@
     import InspectPanel from '../InspectPanel.svelte';
     import PartsPanel from '../PartsPanel.svelte';
     import ChainsPanel from '../ChainsPanel.svelte';
+    import OptimizePanel from '../OptimizePanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
@@ -49,6 +50,7 @@
     $: selectedRapidId = $rapidStore.selectedRapidId;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
     $: leadWarnings = $leadWarningsStore.warnings;
+    $: optimizationSettings = $settingsStore.settings.optimizationSettings;
 
     // Track preprocessing state
     let hasRunPreprocessing = false;
@@ -172,8 +174,14 @@
             chainMap.set(chain.id, chain);
         });
 
-        // Optimize the cut order
-        const result = optimizeCutOrder(cuts, chainMap, parts);
+        // Optimize the cut order with cutHolesFirst setting
+        const result = optimizeCutOrder(
+            cuts,
+            chainMap,
+            parts,
+            { x: 0, y: 0 },
+            optimizationSettings.cutHolesFirst
+        );
 
         // Update the cut order in the store with corrected order property
         const orderedCutsWithUpdatedOrder = result.orderedCuts.map(
@@ -292,6 +300,8 @@
                 </button>
                 <Operations bind:this={operationsComponent} />
             </AccordionPanel>
+
+            <OptimizePanel />
 
             <InspectPanel />
 

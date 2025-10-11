@@ -49,6 +49,24 @@ export enum PreprocessingStep {
 }
 
 /**
+ * Rapid optimization algorithm options
+ */
+export enum RapidOptimizationAlgorithm {
+    TravelingSalesman = 'traveling-salesman',
+}
+
+/**
+ * Optimization settings interface
+ */
+export interface OptimizationSettings {
+    /** When true, cut all holes before any shells */
+    cutHolesFirst: boolean;
+
+    /** Algorithm to use for rapid movement optimization */
+    rapidOptimizationAlgorithm: RapidOptimizationAlgorithm;
+}
+
+/**
  * Application settings interface
  */
 export interface ApplicationSettings {
@@ -66,6 +84,9 @@ export interface ApplicationSettings {
 
     /** Preprocessing steps that are enabled */
     enabledPreprocessingSteps: PreprocessingStep[];
+
+    /** Optimization settings */
+    optimizationSettings: OptimizationSettings;
 }
 
 /**
@@ -103,6 +124,14 @@ export interface SettingsStore {
     setPreprocessingStepEnabled: (
         step: PreprocessingStep,
         enabled: boolean
+    ) => void;
+
+    /** Set whether to cut holes first */
+    setCutHolesFirst: (enabled: boolean) => void;
+
+    /** Set the rapid optimization algorithm */
+    setRapidOptimizationAlgorithm: (
+        algorithm: RapidOptimizationAlgorithm
     ) => void;
 
     /** Update all settings at once */

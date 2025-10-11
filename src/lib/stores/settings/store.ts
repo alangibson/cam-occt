@@ -13,15 +13,23 @@ import type {
     MeasurementSystem,
     ImportUnitSetting,
     SelectionMode,
+    OptimizationSettings,
 } from './interfaces';
 import {
     MeasurementSystem as MS,
     ImportUnitSetting as IUS,
     SelectionMode as SM,
     PreprocessingStep,
+    RapidOptimizationAlgorithm,
 } from './interfaces';
 import { DefaultsManager } from '$lib/config/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
+
+// Default optimization settings
+const DEFAULT_OPTIMIZATION_SETTINGS: OptimizationSettings = {
+    cutHolesFirst: true,
+    rapidOptimizationAlgorithm: RapidOptimizationAlgorithm.TravelingSalesman,
+};
 
 // Default application settings
 const DEFAULT_SETTINGS: ApplicationSettings = {
@@ -42,6 +50,7 @@ const DEFAULT_SETTINGS: ApplicationSettings = {
         PreprocessingStep.OptimizeStarts,
         PreprocessingStep.DetectParts,
     ],
+    optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,
 };
 
 // localStorage key for settings persistence
@@ -58,6 +67,29 @@ function loadSettings(): ApplicationSettings {
 
             // Validate the loaded settings structure
             if (parsed && typeof parsed === 'object') {
+                // Validate optimization settings
+                const optimizationSettings: OptimizationSettings =
+                    parsed.optimizationSettings &&
+                    typeof parsed.optimizationSettings === 'object'
+                        ? {
+                              cutHolesFirst:
+                                  typeof parsed.optimizationSettings
+                                      .cutHolesFirst === 'boolean'
+                                      ? parsed.optimizationSettings
+                                            .cutHolesFirst
+                                      : DEFAULT_OPTIMIZATION_SETTINGS.cutHolesFirst,
+                              rapidOptimizationAlgorithm: Object.values(
+                                  RapidOptimizationAlgorithm
+                              ).includes(
+                                  parsed.optimizationSettings
+                                      .rapidOptimizationAlgorithm
+                              )
+                                  ? parsed.optimizationSettings
+                                        .rapidOptimizationAlgorithm
+                                  : DEFAULT_OPTIMIZATION_SETTINGS.rapidOptimizationAlgorithm,
+                          }
+                        : DEFAULT_OPTIMIZATION_SETTINGS;
+
                 return {
                     measurementSystem: Object.values(MS).includes(
                         parsed.measurementSystem
@@ -90,6 +122,7 @@ function loadSettings(): ApplicationSettings {
                               )
                           )
                         : DEFAULT_SETTINGS.enabledPreprocessingSteps,
+                    optimizationSettings,
                 };
             }
         }
@@ -265,6 +298,40 @@ function createSettingsStore(): SettingsStore {
                 const newSettings = {
                     ...state.settings,
                     enabledPreprocessingSteps: newEnabledSteps,
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setCutHolesFirst(enabled: boolean) {
+            update((state) => {
+                const newSettings = {
+                    ...state.settings,
+                    optimizationSettings: {
+                        ...state.settings.optimizationSettings,
+                        cutHolesFirst: enabled,
+                    },
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setRapidOptimizationAlgorithm(algorithm: RapidOptimizationAlgorithm) {
+            update((state) => {
+                const newSettings = {
+                    ...state.settings,
+                    optimizationSettings: {
+                        ...state.settings.optimizationSettings,
+                        rapidOptimizationAlgorithm: algorithm,
+                    },
                 };
                 saveSettings(newSettings);
                 return {

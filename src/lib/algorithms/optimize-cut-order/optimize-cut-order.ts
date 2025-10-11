@@ -123,12 +123,14 @@ function getCutEndPoint(cut: Cut, chain: Chain, part?: DetectedPart): Point2D {
 /**
  * Simple nearest neighbor algorithm for TSP
  * This is a greedy approximation that works well for many practical cases
+ * @param cutHolesFirst - When true, cuts all holes across all parts before any shells
  */
 function nearestNeighborTSP(
     cuts: Cut[],
     chains: Map<string, Chain>,
     parts: DetectedPart[],
-    startPoint: Point2D
+    startPoint: Point2D,
+    cutHolesFirst: boolean = false
 ): OptimizationResult {
     // Create a map of part ID to part for efficient lookup
     const partMap: Map<string, DetectedPart> = new Map<string, DetectedPart>();
@@ -229,35 +231,37 @@ function nearestNeighborTSP(
         }
     }
 
-    // Process parts - shell must be last within each part
-    for (const [partId, partCuts] of cutsByPart) {
-        const part: DetectedPart | undefined = parts.find(
-            (p) => p.id === partId
-        );
-        if (!part) continue;
+    if (cutHolesFirst) {
+        // Process ALL holes across ALL parts first
+        const allHoleCuts: Cut[] = [];
+        const allShellCuts: Cut[] = [];
 
-        // Separate shell cut and hole cuts
-        let shellCut: Cut | null = null;
-        const holeCuts: Cut[] = [];
+        // Separate all holes and shells
+        for (const [partId, partCuts] of cutsByPart) {
+            const part: DetectedPart | undefined = parts.find(
+                (p) => p.id === partId
+            );
+            if (!part) continue;
 
-        for (const cut of partCuts) {
-            if (!unvisited.has(cut)) continue;
+            for (const cut of partCuts) {
+                if (!unvisited.has(cut)) continue;
 
-            const chain: Chain | undefined = chains.get(cut.chainId);
-            if (!chain) continue;
+                const chain: Chain | undefined = chains.get(cut.chainId);
+                if (!chain) continue;
 
-            if (chain.id === part.shell.chain.id) {
-                shellCut = cut;
-            } else {
-                holeCuts.push(cut);
+                if (chain.id === part.shell.chain.id) {
+                    allShellCuts.push(cut);
+                } else {
+                    allHoleCuts.push(cut);
+                }
             }
         }
 
-        // Process holes first
-        while (holeCuts.length > 0 && unvisited.size > 0) {
+        // Process all holes using nearest neighbor
+        while (allHoleCuts.length > 0 && unvisited.size > 0) {
             const nearestResult = findNearestCut(
                 currentPoint,
-                holeCuts,
+                allHoleCuts,
                 chains,
                 unvisited,
                 findPartForChain
@@ -279,32 +283,128 @@ function nearestNeighborTSP(
             currentPoint = result.updatedPoint;
 
             // Remove from holes list
-            const index = holeCuts.indexOf(nearestResult.cut);
+            const index = allHoleCuts.indexOf(nearestResult.cut);
             if (index > DEFAULT_ARRAY_NOT_FOUND_INDEX) {
-                holeCuts.splice(index, 1);
+                allHoleCuts.splice(index, 1);
             }
         }
 
-        // Process shell last
-        if (shellCut && unvisited.has(shellCut)) {
-            const chain: Chain = chains.get(shellCut.chainId)!;
-            const part: DetectedPart | undefined = findPartForChain(
-                shellCut.chainId
+        // Process all shells using nearest neighbor
+        while (allShellCuts.length > 0 && unvisited.size > 0) {
+            const nearestResult = findNearestCut(
+                currentPoint,
+                allShellCuts,
+                chains,
+                unvisited,
+                findPartForChain
             );
-            const cutStart: Point2D = getCutStartPoint(shellCut, chain, part);
-            const dist: number = calculateDistance(currentPoint, cutStart);
 
-            rapids.push({
-                id: crypto.randomUUID(),
-                start: currentPoint,
-                end: cutStart,
-                type: 'rapid',
-            });
+            if (!nearestResult.cut) break;
 
-            totalDistance += dist;
-            orderedCuts.push(shellCut);
-            unvisited.delete(shellCut);
-            currentPoint = getCutEndPoint(shellCut, chain, part);
+            // Add rapid and cut
+            const result = processNearestCut(
+                { cut: nearestResult.cut, distance: nearestResult.distance },
+                chains,
+                currentPoint,
+                findPartForChain,
+                rapids,
+                orderedCuts,
+                unvisited
+            );
+            totalDistance += result.totalDistance;
+            currentPoint = result.updatedPoint;
+
+            // Remove from shells list
+            const index = allShellCuts.indexOf(nearestResult.cut);
+            if (index > DEFAULT_ARRAY_NOT_FOUND_INDEX) {
+                allShellCuts.splice(index, 1);
+            }
+        }
+    } else {
+        // Process parts - shell must be last within each part
+        for (const [partId, partCuts] of cutsByPart) {
+            const part: DetectedPart | undefined = parts.find(
+                (p) => p.id === partId
+            );
+            if (!part) continue;
+
+            // Separate shell cut and hole cuts
+            let shellCut: Cut | null = null;
+            const holeCuts: Cut[] = [];
+
+            for (const cut of partCuts) {
+                if (!unvisited.has(cut)) continue;
+
+                const chain: Chain | undefined = chains.get(cut.chainId);
+                if (!chain) continue;
+
+                if (chain.id === part.shell.chain.id) {
+                    shellCut = cut;
+                } else {
+                    holeCuts.push(cut);
+                }
+            }
+
+            // Process holes first
+            while (holeCuts.length > 0 && unvisited.size > 0) {
+                const nearestResult = findNearestCut(
+                    currentPoint,
+                    holeCuts,
+                    chains,
+                    unvisited,
+                    findPartForChain
+                );
+
+                if (!nearestResult.cut) break;
+
+                // Add rapid and cut
+                const result = processNearestCut(
+                    {
+                        cut: nearestResult.cut,
+                        distance: nearestResult.distance,
+                    },
+                    chains,
+                    currentPoint,
+                    findPartForChain,
+                    rapids,
+                    orderedCuts,
+                    unvisited
+                );
+                totalDistance += result.totalDistance;
+                currentPoint = result.updatedPoint;
+
+                // Remove from holes list
+                const index = holeCuts.indexOf(nearestResult.cut);
+                if (index > DEFAULT_ARRAY_NOT_FOUND_INDEX) {
+                    holeCuts.splice(index, 1);
+                }
+            }
+
+            // Process shell last
+            if (shellCut && unvisited.has(shellCut)) {
+                const chain: Chain = chains.get(shellCut.chainId)!;
+                const part: DetectedPart | undefined = findPartForChain(
+                    shellCut.chainId
+                );
+                const cutStart: Point2D = getCutStartPoint(
+                    shellCut,
+                    chain,
+                    part
+                );
+                const dist: number = calculateDistance(currentPoint, cutStart);
+
+                rapids.push({
+                    id: crypto.randomUUID(),
+                    start: currentPoint,
+                    end: cutStart,
+                    type: 'rapid',
+                });
+
+                totalDistance += dist;
+                orderedCuts.push(shellCut);
+                unvisited.delete(shellCut);
+                currentPoint = getCutEndPoint(shellCut, chain, part);
+            }
         }
     }
 
@@ -322,13 +422,15 @@ function nearestNeighborTSP(
  * @param chains - Map of chain IDs to chains
  * @param parts - Array of detected parts (for shell/hole ordering)
  * @param origin - Starting point (usually drawing origin 0,0)
+ * @param cutHolesFirst - When true, cut all holes before any shells
  * @returns Optimized cut order with rapids
  */
 export function optimizeCutOrder(
     cuts: Cut[],
     chains: Map<string, Chain>,
     parts: DetectedPart[],
-    origin: Point2D = { x: 0, y: 0 }
+    origin: Point2D = { x: 0, y: 0 },
+    cutHolesFirst: boolean = false
 ): OptimizationResult {
     if (cuts.length === 0) {
         return {
@@ -351,5 +453,5 @@ export function optimizeCutOrder(
 
     // Use nearest neighbor algorithm for now
     // This can be replaced with more sophisticated algorithms if needed
-    return nearestNeighborTSP(validCuts, chains, parts, origin);
+    return nearestNeighborTSP(validCuts, chains, parts, origin, cutHolesFirst);
 }
