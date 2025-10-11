@@ -19,6 +19,7 @@ import {
     MeasurementSystem,
     ImportUnitSetting,
     SelectionMode,
+    PreprocessingStep,
 } from '$lib/stores/settings/interfaces';
 import { NormalSide } from '$lib/types/cam';
 
@@ -27,6 +28,23 @@ const defaultApplicationSettings = {
     measurementSystem: MeasurementSystem.Metric,
     importUnitSetting: ImportUnitSetting.Automatic,
     selectionMode: SelectionMode.Auto,
+    enabledStages: [
+        WorkflowStage.IMPORT,
+        WorkflowStage.EDIT,
+        WorkflowStage.PREPARE,
+        WorkflowStage.PROGRAM,
+        WorkflowStage.SIMULATE,
+        WorkflowStage.EXPORT,
+    ],
+    enabledPreprocessingSteps: [
+        PreprocessingStep.DecomposePolylines,
+        PreprocessingStep.JoinColinearLines,
+        PreprocessingStep.TranslateToPositive,
+        PreprocessingStep.DetectChains,
+        PreprocessingStep.NormalizeChains,
+        PreprocessingStep.OptimizeStarts,
+        PreprocessingStep.DetectParts,
+    ],
 };
 
 // Mock localStorage

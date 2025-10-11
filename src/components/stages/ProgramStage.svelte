@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
     import Operations from '../Operations.svelte';
     import Cuts from '../Cuts.svelte';
@@ -24,6 +25,8 @@
     import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import ShowPanel from '../ShowPanel.svelte';
+    import { applyAutoPreprocessing } from '$lib/preprocessing/auto-preprocess';
+    import { settingsStore } from '$lib/stores/settings/store';
 
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;
@@ -46,6 +49,36 @@
     $: selectedRapidId = $rapidStore.selectedRapidId;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
     $: leadWarnings = $leadWarningsStore.warnings;
+
+    // Track preprocessing state
+    let hasRunPreprocessing = false;
+
+    // Run preprocessing when stage mounts (only if chains/parts don't exist)
+    onMount(async () => {
+        const settings = $settingsStore.settings;
+        const currentChains = $chainStore.chains;
+        const currentParts = $partStore.parts;
+
+        // Only run preprocessing if we don't have chains or parts yet
+        // and preprocessing steps are enabled
+        if (
+            (currentChains.length === 0 || currentParts.length === 0) &&
+            settings.enabledPreprocessingSteps.length > 0 &&
+            !hasRunPreprocessing
+        ) {
+            console.log(
+                'Program stage: Running auto-preprocessing to detect chains/parts...'
+            );
+            hasRunPreprocessing = true;
+
+            try {
+                await applyAutoPreprocessing();
+                console.log('Auto-preprocessing completed successfully');
+            } catch (error) {
+                console.error('Error during auto-preprocessing:', error);
+            }
+        }
+    });
 
     // Track previous hash to prevent infinite loops
     let previousPathsHash = '';

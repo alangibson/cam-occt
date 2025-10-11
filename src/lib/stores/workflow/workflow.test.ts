@@ -1,7 +1,28 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { workflowStore } from './store';
 import { WorkflowStage } from './enums';
+
+// Mock settings store to return all stages enabled (for testing workflow logic)
+vi.mock('$lib/stores/settings/store', () => ({
+    settingsStore: {
+        subscribe: vi.fn((callback) => {
+            callback({
+                settings: {
+                    enabledStages: [
+                        WorkflowStage.IMPORT,
+                        WorkflowStage.EDIT,
+                        WorkflowStage.PREPARE,
+                        WorkflowStage.PROGRAM,
+                        WorkflowStage.SIMULATE,
+                        WorkflowStage.EXPORT,
+                    ],
+                },
+            });
+            return () => {};
+        }),
+    },
+}));
 
 describe('Workflow Store - Breadcrumbs Navigation', () => {
     beforeEach(() => {
@@ -304,13 +325,13 @@ describe('Workflow Store - Breadcrumbs Navigation', () => {
                 workflowStore.completeStage('invalid' as WorkflowStage)
             ).not.toThrow();
 
-            // setStage with invalid stage should be allowed if canAdvanceTo allows it
-            // Since 'invalid' is not in WORKFLOW_ORDER, indexOf returns -1,
-            // and the canAdvanceTo logic will return true (no previous stages to check)
+            // setStage with invalid stage should not be allowed because it's not in enabled stages
+            // Invalid stages are filtered out by validateStageAdvancement
+            const currentStageBefore = get(workflowStore).currentStage;
             workflowStore.setStage('invalid' as WorkflowStage);
 
-            // The invalid stage should be set as current (this is the actual behavior)
-            expect(get(workflowStore).currentStage).toBe('invalid');
+            // The invalid stage should NOT be set; current stage should remain unchanged
+            expect(get(workflowStore).currentStage).toBe(currentStageBefore);
         });
 
         it('should maintain workflow integrity after multiple operations', () => {

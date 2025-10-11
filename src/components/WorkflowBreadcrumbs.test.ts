@@ -45,6 +45,27 @@ vi.mock('$lib/stores/workflow/functions', () => ({
 vi.mock('$lib/stores/ui/store', () => ({
     uiStore: {
         hideToolTable: vi.fn(),
+        hideSettings: vi.fn(),
+    },
+}));
+
+vi.mock('$lib/stores/settings/store', () => ({
+    settingsStore: {
+        subscribe: vi.fn((callback) => {
+            callback({
+                settings: {
+                    enabledStages: [
+                        'import',
+                        'edit',
+                        'prepare',
+                        'program',
+                        'simulate',
+                        'export',
+                    ],
+                },
+            });
+            return () => {};
+        }),
     },
 }));
 
@@ -96,6 +117,7 @@ describe('WorkflowBreadcrumbs Component', () => {
 
         expect(workflowStore.setStage).toHaveBeenCalledWith(WorkflowStage.EDIT);
         expect(uiStore.hideToolTable).toHaveBeenCalled();
+        expect(uiStore.hideSettings).toHaveBeenCalled();
     });
 
     it('should not call setStage when inaccessible stage is clicked', async () => {

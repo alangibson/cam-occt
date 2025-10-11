@@ -1,9 +1,30 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { workflowStore } from './store';
 import { WorkflowStage } from './enums';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/utils/units';
+
+// Mock settings store to return all stages enabled (for testing workflow logic)
+vi.mock('$lib/stores/settings/store', () => ({
+    settingsStore: {
+        subscribe: vi.fn((callback) => {
+            callback({
+                settings: {
+                    enabledStages: [
+                        WorkflowStage.IMPORT,
+                        WorkflowStage.EDIT,
+                        WorkflowStage.PREPARE,
+                        WorkflowStage.PROGRAM,
+                        WorkflowStage.SIMULATE,
+                        WorkflowStage.EXPORT,
+                    ],
+                },
+            });
+            return () => {};
+        }),
+    },
+}));
 
 describe('Workflow Integration', () => {
     beforeEach(() => {

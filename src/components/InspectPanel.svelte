@@ -20,15 +20,9 @@
         hoveredShape ||
         selectedOffsetShape
     );
-    $: hasSelection = !!(
-        selectedCutId ||
-        selectedPartId ||
-        selectedChainId ||
-        hasShapeSelection
-    );
 </script>
 
-<AccordionPanel title="Inspect" isExpanded={hasSelection}>
+<AccordionPanel title="Inspect" isExpanded={false}>
     {#if selectedCutId}
         <CutProperties />
     {:else if selectedPartId}

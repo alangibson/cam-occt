@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -10,6 +10,27 @@ import { drawingStore } from '$lib/stores/drawing/store';
 import { uiStore } from '$lib/stores/ui/store';
 import { CutDirection } from '$lib/types/direction';
 import { NormalSide } from '$lib/types/cam';
+
+// Mock settings store to return all stages enabled (for testing workflow logic)
+vi.mock('$lib/stores/settings/store', () => ({
+    settingsStore: {
+        subscribe: vi.fn((callback) => {
+            callback({
+                settings: {
+                    enabledStages: [
+                        WorkflowStage.IMPORT,
+                        WorkflowStage.EDIT,
+                        WorkflowStage.PREPARE,
+                        WorkflowStage.PROGRAM,
+                        WorkflowStage.SIMULATE,
+                        WorkflowStage.EXPORT,
+                    ],
+                },
+            });
+            return () => {};
+        }),
+    },
+}));
 
 describe('SimulateStage store subscription cleanup', () => {
     beforeEach(() => {

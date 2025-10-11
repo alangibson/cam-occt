@@ -18,14 +18,30 @@ import {
     MeasurementSystem as MS,
     ImportUnitSetting as IUS,
     SelectionMode as SM,
+    PreprocessingStep,
 } from './interfaces';
 import { DefaultsManager } from '$lib/config/defaults-manager';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 
 // Default application settings
 const DEFAULT_SETTINGS: ApplicationSettings = {
     measurementSystem: MS.Metric,
     importUnitSetting: IUS.Automatic,
     selectionMode: SM.Auto,
+    enabledStages: [
+        WorkflowStage.IMPORT,
+        WorkflowStage.PROGRAM,
+        WorkflowStage.SIMULATE,
+        WorkflowStage.EXPORT,
+    ],
+    enabledPreprocessingSteps: [
+        PreprocessingStep.DecomposePolylines,
+        PreprocessingStep.TranslateToPositive,
+        PreprocessingStep.DetectChains,
+        PreprocessingStep.NormalizeChains,
+        PreprocessingStep.OptimizeStarts,
+        PreprocessingStep.DetectParts,
+    ],
 };
 
 // localStorage key for settings persistence
@@ -58,6 +74,22 @@ function loadSettings(): ApplicationSettings {
                     )
                         ? parsed.selectionMode
                         : DEFAULT_SETTINGS.selectionMode,
+                    enabledStages: Array.isArray(parsed.enabledStages)
+                        ? parsed.enabledStages.filter((s: string) =>
+                              Object.values(WorkflowStage).includes(
+                                  s as WorkflowStage
+                              )
+                          )
+                        : DEFAULT_SETTINGS.enabledStages,
+                    enabledPreprocessingSteps: Array.isArray(
+                        parsed.enabledPreprocessingSteps
+                    )
+                        ? parsed.enabledPreprocessingSteps.filter((s: string) =>
+                              Object.values(PreprocessingStep).includes(
+                                  s as PreprocessingStep
+                              )
+                          )
+                        : DEFAULT_SETTINGS.enabledPreprocessingSteps,
                 };
             }
         }
@@ -129,6 +161,110 @@ function createSettingsStore(): SettingsStore {
                 const newSettings = {
                     ...state.settings,
                     selectionMode: mode,
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        toggleStageEnabled(stage: WorkflowStage) {
+            update((state) => {
+                // Import stage cannot be disabled
+                if (stage === WorkflowStage.IMPORT) {
+                    return state;
+                }
+
+                const currentEnabled = state.settings.enabledStages;
+                const isEnabled = currentEnabled.includes(stage);
+
+                const newEnabledStages = isEnabled
+                    ? currentEnabled.filter((s) => s !== stage)
+                    : [...currentEnabled, stage];
+
+                const newSettings = {
+                    ...state.settings,
+                    enabledStages: newEnabledStages,
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setStageEnabled(stage: WorkflowStage, enabled: boolean) {
+            update((state) => {
+                // Import stage cannot be disabled
+                if (stage === WorkflowStage.IMPORT && !enabled) {
+                    return state;
+                }
+
+                const currentEnabled = state.settings.enabledStages;
+                const isCurrentlyEnabled = currentEnabled.includes(stage);
+
+                let newEnabledStages = currentEnabled;
+
+                if (enabled && !isCurrentlyEnabled) {
+                    newEnabledStages = [...currentEnabled, stage];
+                } else if (!enabled && isCurrentlyEnabled) {
+                    newEnabledStages = currentEnabled.filter(
+                        (s) => s !== stage
+                    );
+                }
+
+                const newSettings = {
+                    ...state.settings,
+                    enabledStages: newEnabledStages,
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        togglePreprocessingStepEnabled(step: PreprocessingStep) {
+            update((state) => {
+                const currentEnabled = state.settings.enabledPreprocessingSteps;
+                const isEnabled = currentEnabled.includes(step);
+
+                const newEnabledSteps = isEnabled
+                    ? currentEnabled.filter((s) => s !== step)
+                    : [...currentEnabled, step];
+
+                const newSettings = {
+                    ...state.settings,
+                    enabledPreprocessingSteps: newEnabledSteps,
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setPreprocessingStepEnabled(step: PreprocessingStep, enabled: boolean) {
+            update((state) => {
+                const currentEnabled = state.settings.enabledPreprocessingSteps;
+                const isCurrentlyEnabled = currentEnabled.includes(step);
+
+                let newEnabledSteps = currentEnabled;
+
+                if (enabled && !isCurrentlyEnabled) {
+                    newEnabledSteps = [...currentEnabled, step];
+                } else if (!enabled && isCurrentlyEnabled) {
+                    newEnabledSteps = currentEnabled.filter((s) => s !== step);
+                }
+
+                const newSettings = {
+                    ...state.settings,
+                    enabledPreprocessingSteps: newEnabledSteps,
                 };
                 saveSettings(newSettings);
                 return {

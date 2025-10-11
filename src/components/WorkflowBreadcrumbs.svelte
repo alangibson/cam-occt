@@ -5,8 +5,9 @@
 
     type WorkflowStageType = WorkflowStage;
     import { uiStore } from '$lib/stores/ui/store';
+    import { settingsStore } from '$lib/stores/settings/store';
 
-    const stages: WorkflowStageType[] = [
+    const allStages: WorkflowStageType[] = [
         WorkflowStage.IMPORT,
         WorkflowStage.EDIT,
         WorkflowStage.PREPARE,
@@ -15,10 +16,16 @@
         WorkflowStage.EXPORT,
     ];
 
+    // Filter stages based on enabled stages from settings
+    $: stages = allStages.filter((stage) =>
+        $settingsStore.settings.enabledStages.includes(stage)
+    );
+
     function handleStageClick(stage: WorkflowStageType) {
         if ($workflowStore.canAdvanceTo(stage)) {
-            // Hide tool table when navigating to a stage
+            // Hide tool table and settings when navigating to a stage
             uiStore.hideToolTable();
+            uiStore.hideSettings();
             workflowStore.setStage(stage);
         }
     }

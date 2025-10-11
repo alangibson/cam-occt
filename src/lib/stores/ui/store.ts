@@ -4,6 +4,7 @@ import type { UIState, UIStore } from './interfaces';
 function createUIStore(): UIStore {
     const { subscribe, update } = writable<UIState>({
         showToolTable: false,
+        showSettings: false,
     });
 
     return {
@@ -27,6 +28,27 @@ function createUIStore(): UIStore {
             update((state) => ({
                 ...state,
                 showToolTable: false,
+            }));
+        },
+
+        toggleSettings: () => {
+            update((state) => ({
+                ...state,
+                showSettings: !state.showSettings,
+            }));
+        },
+
+        showSettings: () => {
+            update((state) => ({
+                ...state,
+                showSettings: true,
+            }));
+        },
+
+        hideSettings: () => {
+            update((state) => ({
+                ...state,
+                showSettings: false,
             }));
         },
     };

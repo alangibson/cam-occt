@@ -4,6 +4,8 @@
  * Type definitions for global application settings including measurement systems.
  */
 
+import type { WorkflowStage } from '$lib/stores/workflow/enums';
+
 /**
  * Application measurement system options
  */
@@ -34,6 +36,19 @@ export enum SelectionMode {
 }
 
 /**
+ * Preprocessing step identifiers
+ */
+export enum PreprocessingStep {
+    DecomposePolylines = 'decomposePolylines',
+    JoinColinearLines = 'joinColinearLines',
+    TranslateToPositive = 'translateToPositive',
+    DetectChains = 'detectChains',
+    NormalizeChains = 'normalizeChains',
+    OptimizeStarts = 'optimizeStarts',
+    DetectParts = 'detectParts',
+}
+
+/**
  * Application settings interface
  */
 export interface ApplicationSettings {
@@ -45,6 +60,12 @@ export interface ApplicationSettings {
 
     /** Selection mode for canvas interaction */
     selectionMode: SelectionMode;
+
+    /** Workflow stages that are enabled */
+    enabledStages: WorkflowStage[];
+
+    /** Preprocessing steps that are enabled */
+    enabledPreprocessingSteps: PreprocessingStep[];
 }
 
 /**
@@ -68,6 +89,21 @@ export interface SettingsStore {
 
     /** Update the selection mode */
     setSelectionMode: (mode: SelectionMode) => void;
+
+    /** Toggle a workflow stage enabled/disabled */
+    toggleStageEnabled: (stage: WorkflowStage) => void;
+
+    /** Set a workflow stage enabled/disabled */
+    setStageEnabled: (stage: WorkflowStage, enabled: boolean) => void;
+
+    /** Toggle a preprocessing step enabled/disabled */
+    togglePreprocessingStepEnabled: (step: PreprocessingStep) => void;
+
+    /** Set a preprocessing step enabled/disabled */
+    setPreprocessingStepEnabled: (
+        step: PreprocessingStep,
+        enabled: boolean
+    ) => void;
 
     /** Update all settings at once */
     updateSettings: (settings: Partial<ApplicationSettings>) => void;

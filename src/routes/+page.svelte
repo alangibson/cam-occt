@@ -4,6 +4,7 @@
     import WorkflowContainer from '../components/WorkflowContainer.svelte';
     import Footer from '../components/Footer.svelte';
     import ToolTable from '../components/ToolTable.svelte';
+    import Settings from '../components/Settings.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { uiStore } from '$lib/stores/ui/store';
     import { drawingStore } from '$lib/stores/drawing/store';
@@ -143,6 +144,17 @@
                     >
                         Tools
                     </button>
+                    <button
+                        class="menu-item settings-menu-item"
+                        onclick={() => {
+                            closeMenu();
+                            $uiStore.showSettings
+                                ? uiStore.hideSettings()
+                                : uiStore.showSettings();
+                        }}
+                    >
+                        Settings
+                    </button>
                 </div>
             {/if}
         </div>
@@ -152,7 +164,9 @@
 
     <!-- Body -->
     <main class="app-body">
-        {#if $uiStore.showToolTable}
+        {#if $uiStore.showSettings}
+            <Settings />
+        {:else if $uiStore.showToolTable}
             <ToolTable />
         {:else}
             <WorkflowContainer />
@@ -257,6 +271,15 @@
     }
 
     .tools-menu-item:hover {
+        background: #e6f2ff;
+        color: rgb(0, 83, 135);
+    }
+
+    .settings-menu-item {
+        color: rgb(0, 83, 135);
+    }
+
+    .settings-menu-item:hover {
         background: #e6f2ff;
         color: rgb(0, 83, 135);
     }

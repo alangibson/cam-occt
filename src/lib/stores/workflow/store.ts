@@ -10,12 +10,24 @@ import { validateStageAdvancement, WORKFLOW_ORDER } from './functions';
 import { DefaultsManager } from '$lib/config/defaults-manager';
 import { settingsStore } from '$lib/stores/settings/store';
 
+/**
+ * Get enabled stages from settings store
+ */
+function getEnabledStages(): WorkflowStage[] {
+    const settings = get(settingsStore);
+    return settings.settings.enabledStages;
+}
+
 function createWorkflowStore(): WorkflowStore {
     const initialState: WorkflowState = {
         currentStage: WorkflowStage.IMPORT,
         completedStages: new Set(),
         canAdvanceTo: (stage: WorkflowStage) =>
-            validateStageAdvancement(stage, initialState.completedStages),
+            validateStageAdvancement(
+                stage,
+                initialState.completedStages,
+                getEnabledStages()
+            ),
     };
 
     const { subscribe, set, update } = writable<WorkflowState>(initialState);
@@ -53,7 +65,11 @@ function createWorkflowStore(): WorkflowStore {
                     ...state,
                     completedStages: newCompleted,
                     canAdvanceTo: (targetStage: WorkflowStage) =>
-                        validateStageAdvancement(targetStage, newCompleted),
+                        validateStageAdvancement(
+                            targetStage,
+                            newCompleted,
+                            getEnabledStages()
+                        ),
                 };
             });
         },
@@ -70,11 +86,17 @@ function createWorkflowStore(): WorkflowStore {
         getNextStage: () => {
             let nextStage: WorkflowStage | null = null;
             update((state) => {
+                const enabledStages = getEnabledStages();
                 const currentIndex: number = WORKFLOW_ORDER.indexOf(
                     state.currentStage
                 );
-                if (currentIndex < WORKFLOW_ORDER.length - 1) {
-                    nextStage = WORKFLOW_ORDER[currentIndex + 1];
+
+                // Find the next enabled stage
+                for (let i = currentIndex + 1; i < WORKFLOW_ORDER.length; i++) {
+                    if (enabledStages.includes(WORKFLOW_ORDER[i])) {
+                        nextStage = WORKFLOW_ORDER[i];
+                        break;
+                    }
                 }
                 return state;
             });
@@ -84,11 +106,17 @@ function createWorkflowStore(): WorkflowStore {
         getPreviousStage: () => {
             let prevStage: WorkflowStage | null = null;
             update((state) => {
+                const enabledStages = getEnabledStages();
                 const currentIndex: number = WORKFLOW_ORDER.indexOf(
                     state.currentStage
                 );
-                if (currentIndex > 0) {
-                    prevStage = WORKFLOW_ORDER[currentIndex - 1];
+
+                // Find the previous enabled stage
+                for (let i = currentIndex - 1; i >= 0; i--) {
+                    if (enabledStages.includes(WORKFLOW_ORDER[i])) {
+                        prevStage = WORKFLOW_ORDER[i];
+                        break;
+                    }
                 }
                 return state;
             });
@@ -100,9 +128,10 @@ function createWorkflowStore(): WorkflowStore {
                 currentStage: WorkflowStage.IMPORT,
                 completedStages: new Set(),
                 canAdvanceTo: (stage: WorkflowStage) => {
+                    const enabledStages = getEnabledStages();
                     const targetIndex: number = WORKFLOW_ORDER.indexOf(stage);
-                    // Only import stage (index 0) accessible initially
-                    return targetIndex === 0;
+                    // Only import stage (index 0) accessible initially, and it must be enabled
+                    return targetIndex === 0 && enabledStages.includes(stage);
                 },
             });
         },
@@ -134,7 +163,11 @@ function createWorkflowStore(): WorkflowStore {
                     currentStage: newCurrentStage,
                     completedStages: newCompleted,
                     canAdvanceTo: (targetStage: WorkflowStage) =>
-                        validateStageAdvancement(targetStage, newCompleted),
+                        validateStageAdvancement(
+                            targetStage,
+                            newCompleted,
+                            getEnabledStages()
+                        ),
                 };
             });
         },
@@ -158,7 +191,11 @@ function createWorkflowStore(): WorkflowStore {
                     ...state,
                     completedStages: newCompleted,
                     canAdvanceTo: (targetStage: WorkflowStage) =>
-                        validateStageAdvancement(targetStage, newCompleted),
+                        validateStageAdvancement(
+                            targetStage,
+                            newCompleted,
+                            getEnabledStages()
+                        ),
                 };
             });
         },
@@ -173,7 +210,11 @@ function createWorkflowStore(): WorkflowStore {
                 currentStage,
                 completedStages: completedSet,
                 canAdvanceTo: (targetStage: WorkflowStage) =>
-                    validateStageAdvancement(targetStage, completedSet),
+                    validateStageAdvancement(
+                        targetStage,
+                        completedSet,
+                        getEnabledStages()
+                    ),
             });
         },
     };

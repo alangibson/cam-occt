@@ -2,7 +2,30 @@
  * Test to verify workflow stage persistence
  */
 
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Mock settings store to return all stages enabled (for testing workflow logic)
+vi.mock('$lib/stores/settings/store', () => ({
+    settingsStore: {
+        subscribe: vi.fn((callback) => {
+            callback({
+                settings: {
+                    enabledStages: [
+                        'import',
+                        'edit',
+                        'prepare',
+                        'program',
+                        'simulate',
+                        'export',
+                    ],
+                },
+            });
+            return () => {};
+        }),
+    },
+}));
+
+/* eslint-disable import/first */
 import {
     restoreApplicationState,
     saveApplicationState,
@@ -10,6 +33,7 @@ import {
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { WorkflowState } from '$lib/stores/workflow/interfaces';
+/* eslint-enable import/first */
 
 // Mock localStorage
 const localStorageMock = {

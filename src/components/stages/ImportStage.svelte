@@ -17,7 +17,7 @@
     // Get current settings
     $: settings = $settingsStore.settings;
 
-    function handleFileImported(event: CustomEvent) {
+    async function handleFileImported(event: CustomEvent) {
         // Reset all application state when a new file is imported
         // This ensures clean state for the new drawing
 
@@ -77,8 +77,11 @@
             );
         }
 
-        // Advance to edit stage when user clicks "Import >"
-        workflowStore.setStage(WorkflowStage.EDIT);
+        // Advance to next enabled stage when user clicks "Import >"
+        const nextStage = workflowStore.getNextStage();
+        if (nextStage) {
+            workflowStore.setStage(nextStage);
+        }
     }
 </script>
 

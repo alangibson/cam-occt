@@ -1,4 +1,27 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+// Mock settings store to return all stages enabled (for testing workflow logic)
+vi.mock('$lib/stores/settings/store', () => ({
+    settingsStore: {
+        subscribe: vi.fn((callback) => {
+            callback({
+                settings: {
+                    enabledStages: [
+                        'import',
+                        'edit',
+                        'prepare',
+                        'program',
+                        'simulate',
+                        'export',
+                    ],
+                },
+            });
+            return () => {};
+        }),
+    },
+}));
+
+/* eslint-disable import/first */
 import WorkflowBreadcrumbs from './WorkflowBreadcrumbs.svelte';
 import WorkflowContainer from './WorkflowContainer.svelte';
 import ImportStage from './stages/ImportStage.svelte';
@@ -13,6 +36,7 @@ import {
     getStageDescription,
     getStageDisplayName,
 } from '$lib/stores/workflow/functions';
+/* eslint-enable import/first */
 
 describe('Workflow Components', () => {
     describe('Component imports', () => {
