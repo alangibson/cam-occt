@@ -106,12 +106,16 @@ export class LeadRenderer extends BaseRenderer {
         if (this.showLeadIn && leadResult.leadIn) {
             const points = convertLeadGeometryToPoints(leadResult.leadIn);
             if (points.length > 1) {
+                const leadId = `${cut.id}-leadIn`;
+                const isSelected = state.selection?.selectedLeadId === leadId;
+                const isHighlighted = state.selection?.highlightedLeadId === leadId;
+                const color = isSelected || isHighlighted ? '#ff6600' : this.leadInColor;
                 const opacity = this.getLeadOpacity(cut, 'leadIn', state);
                 this.drawLeadGeometry(
                     ctx,
                     state,
                     points,
-                    this.leadInColor,
+                    color,
                     opacity
                 );
             }
@@ -121,12 +125,16 @@ export class LeadRenderer extends BaseRenderer {
         if (this.showLeadOut && leadResult.leadOut) {
             const points = convertLeadGeometryToPoints(leadResult.leadOut);
             if (points.length > 1) {
+                const leadId = `${cut.id}-leadOut`;
+                const isSelected = state.selection?.selectedLeadId === leadId;
+                const isHighlighted = state.selection?.highlightedLeadId === leadId;
+                const color = isSelected || isHighlighted ? '#ff6600' : this.leadOutColor;
                 const opacity = this.getLeadOpacity(cut, 'leadOut', state);
                 this.drawLeadGeometry(
                     ctx,
                     state,
                     points,
-                    this.leadOutColor,
+                    color,
                     opacity
                 );
             }
@@ -314,7 +322,7 @@ export class LeadRenderer extends BaseRenderer {
                 const points = convertLeadGeometryToPoints(leadResult.leadIn);
                 if (this.isPointNearLeadGeometry(point, points, state)) {
                     return {
-                        type: HitTestType.CUT, // Could add LEAD type if needed
+                        type: HitTestType.LEAD,
                         id: `${cut.id}-leadIn`,
                         distance: 0,
                         point: point,
@@ -331,7 +339,7 @@ export class LeadRenderer extends BaseRenderer {
                 const points = convertLeadGeometryToPoints(leadResult.leadOut);
                 if (this.isPointNearLeadGeometry(point, points, state)) {
                     return {
-                        type: HitTestType.CUT, // Could add LEAD type if needed
+                        type: HitTestType.LEAD,
                         id: `${cut.id}-leadOut`,
                         distance: 0,
                         point: point,

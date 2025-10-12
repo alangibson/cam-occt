@@ -476,7 +476,8 @@ export function createArcWithLength(
     clockwise: boolean
 ): Arc {
     // Calculate sweep angle from arc length
-    const sweepAngle = arcLength / radius;
+    // Clamp to maximum of 2π (full circle) to prevent invalid multi-loop arcs
+    const sweepAngle = Math.min(arcLength / radius, FULL_CIRCLE_RADIANS);
 
     // Calculate end angle based on sweep direction
     const endAngle = clockwise
@@ -558,14 +559,13 @@ export function createTangentArc(
     isLeadIn: boolean,
     clockwise: boolean
 ): Arc {
-    // Choose a reasonable radius for the arc length
-    // Smaller radius = tighter curve, larger radius = gentler curve
-    // For a 90-degree arc: radius = arcLength / (π/2) ≈ arcLength / 1.57
-    // For a 180-degree arc: radius = arcLength / π ≈ arcLength / 3.14
-    // We'll use something in between for a good balance
-    const radius = arcLength / 2.0; // This gives about 115 degrees of sweep
+    // Lead arcs should have a maximum 90-degree sweep for optimal cutting
+    // For a 90-degree arc: radius = arcLength / (π/2) = arcLength × (2/π)
+    const LEAD_ARC_MAX_SWEEP = Math.PI / 2; // 90 degrees
+    const radius = arcLength / LEAD_ARC_MAX_SWEEP; // = arcLength × (2/π) ≈ arcLength × 0.637
 
     // Calculate the actual sweep angle
+    // This will be exactly π/2 (90 degrees) for normal cases
     const sweepAngle = arcLength / radius;
 
     // For tangency, the arc center must be positioned perpendicular to the tangent direction

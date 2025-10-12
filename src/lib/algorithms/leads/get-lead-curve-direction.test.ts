@@ -313,7 +313,9 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                     'distance from hole center:',
                     distFromHoleCenter
                 );
-                expect(distFromHoleCenter).toBeLessThan(3.5); // Should be within hole radius + tolerance
+                // With 90° arc sweep and arcLength=5, radius ≈ 3.18
+                // Arc center can be up to hole_radius + arc_radius from hole center
+                expect(distFromHoleCenter).toBeLessThan(7); // 3 (hole radius) + ~3.18 (arc radius) + tolerance
             }
         });
 

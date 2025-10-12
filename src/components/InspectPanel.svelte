@@ -4,14 +4,17 @@
     import ChainProperties from './ChainProperties.svelte';
     import PartProperties from './PartProperties.svelte';
     import CutProperties from './CutProperties.svelte';
+    import LeadProperties from './LeadProperties.svelte';
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
     import { cutStore } from '$lib/stores/cuts/store';
+    import { leadStore } from '$lib/stores/leads/store';
     import { drawingStore } from '$lib/stores/drawing/store';
 
     $: selectedChainId = $chainStore.selectedChainId;
     $: selectedPartId = $partStore.selectedPartId;
     $: selectedCutId = $cutStore.selectedCutId;
+    $: selectedLeadId = $leadStore.selectedLeadId;
     $: selectedShapes = $drawingStore.selectedShapes;
     $: hoveredShape = $drawingStore.hoveredShape;
     $: selectedOffsetShape = $drawingStore.selectedOffsetShape;
@@ -23,7 +26,9 @@
 </script>
 
 <AccordionPanel title="Inspect" isExpanded={false}>
-    {#if selectedCutId}
+    {#if selectedLeadId}
+        <LeadProperties />
+    {:else if selectedCutId}
         <CutProperties />
     {:else if selectedPartId}
         <PartProperties />

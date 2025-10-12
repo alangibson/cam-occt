@@ -9,7 +9,13 @@
     import { overlayStore } from '$lib/stores/overlay/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
-    import { showLeadNormals, showLeadPaths } from '$lib/stores/leads';
+    import {
+        leadStore,
+        selectLead,
+        clearLeadSelection,
+        highlightLead,
+        clearLeadHighlight,
+    } from '$lib/stores/leads/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { generateChainEndpoints } from '$lib/stores/chains/functions';
     import { generateShapePoints } from '$lib/stores/shape/functions';
@@ -107,8 +113,11 @@
     $: showCutDirections = cutsState.showCutDirections;
     $: showCutPaths = cutsState.showCutPaths;
     $: showCutter = cutsState.showCutter;
-    $: leadNormals = $showLeadNormals;
-    $: leadPaths = $showLeadPaths;
+    $: leadState = $leadStore;
+    $: selectedLeadId = leadState.selectedLeadId;
+    $: highlightedLeadId = leadState.highlightedLeadId;
+    $: leadNormals = leadState.showLeadNormals;
+    $: leadPaths = leadState.showLeadPaths;
     $: selectionMode = $settingsStore.settings.selectionMode;
 
     // Compute effective interaction mode based on selection mode and current stage
@@ -122,6 +131,8 @@
             return 'chains'; // Parts use chain interaction
         } else if (selectionMode === 'cut') {
             return 'cuts';
+        } else if (selectionMode === 'lead') {
+            return 'leads';
         } else {
             // Auto mode: use stage-based interaction
             switch (currentStage) {
@@ -293,6 +304,8 @@
                 highlightedCutId: highlightedCutId,
                 selectedRapidId,
                 highlightedRapidId,
+                selectedLeadId,
+                highlightedLeadId,
                 selectedOffsetShape,
                 hoveredPartId,
                 hoveredShape,
@@ -508,6 +521,20 @@
                             return;
                         }
                         break;
+
+                    case HitTestType.LEAD:
+                        // Handle lead selection
+                        if (interactionMode === 'leads' || interactionMode === 'cuts') {
+                            const leadId = hitResult.id;
+                            // Toggle lead selection
+                            if (selectedLeadId === leadId) {
+                                selectLead(null); // Deselect if already selected
+                            } else {
+                                selectLead(leadId);
+                            }
+                            return;
+                        }
+                        break;
                 }
             } else {
                 // Clear selections when clicking on empty area
@@ -605,6 +632,8 @@
                     cutStore.clearHighlight();
                     selectRapid(null);
                     clearRapidHighlight();
+                    selectLead(null);
+                    clearLeadHighlight();
                 }
             }
         }

@@ -2,7 +2,7 @@
     import AccordionPanel from './AccordionPanel.svelte';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
     import { chainStore } from '$lib/stores/chains/store';
-    import { showLeadNormals, showLeadPaths } from '$lib/stores/leads';
+    import { showLeadNormals, showLeadPaths } from '$lib/stores/leads/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
 

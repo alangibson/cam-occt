@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     calculateArcEndPoint,
+    calculateArcLength,
     calculateArcPoint,
     calculateArcStartPoint,
     convertBulgeToArc,
+    createArcWithLength,
+    createTangentArc,
     generateArcPoints,
     getArcEndPoint,
     getArcPointAt,
@@ -789,6 +792,150 @@ describe('arc-utils', () => {
 
             expect(result).not.toBeNull();
             expect(result!.radius).toBeGreaterThan(10); // Large radius for small bulge
+        });
+    });
+
+    describe('createTangentArc', () => {
+        it('should create lead arcs with exactly 90° (π/2) sweep', () => {
+            // Lead arcs should have maximum 90° sweep for optimal cutting
+            const connectionPoint = { x: 0, y: 0 };
+            const tangentDirection = { x: 1, y: 0 };
+            const curveDirection = { x: 0, y: 1 };
+            const arcLength = 100; // Any arc length
+            const isLeadIn = true;
+            const clockwise = false;
+
+            const arc = createTangentArc(
+                connectionPoint,
+                tangentDirection,
+                arcLength,
+                curveDirection,
+                isLeadIn,
+                clockwise
+            );
+
+            // Calculate angular span
+            let angularSpan: number;
+            if (arc.clockwise) {
+                angularSpan = arc.startAngle - arc.endAngle;
+                if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+            } else {
+                angularSpan = arc.endAngle - arc.startAngle;
+                if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+            }
+
+            // FIXED: Arc sweep is now exactly 90° (π/2 radians)
+            const expectedSweep = Math.PI / 2; // 90 degrees
+            expect(angularSpan).toBeCloseTo(expectedSweep, 5);
+
+            // Verify radius calculation: radius = arcLength / (π/2)
+            const expectedRadius = arcLength / expectedSweep; // = arcLength × (2/π)
+            expect(arc.radius).toBeCloseTo(expectedRadius, 5);
+        });
+
+        it('should handle normal arc lengths correctly', () => {
+            // Test with reasonable arc length
+            const connectionPoint = { x: 10, y: 10 };
+            const tangentDirection = { x: 0, y: 1 }; // Vertical tangent
+            const curveDirection = { x: -1, y: 0 }; // Curve left (perpendicular to tangent)
+            const arcLength = 5;
+            const isLeadIn = false;
+            const clockwise = true;
+
+            const arc = createTangentArc(
+                connectionPoint,
+                tangentDirection,
+                arcLength,
+                curveDirection,
+                isLeadIn,
+                clockwise
+            );
+
+            // Arc should have 90° sweep
+            let angularSpan: number;
+            if (arc.clockwise) {
+                angularSpan = arc.startAngle - arc.endAngle;
+                if (angularSpan <= 0) {
+                    angularSpan += 2 * Math.PI;
+                }
+            } else {
+                angularSpan = arc.endAngle - arc.startAngle;
+                if (angularSpan <= 0) {
+                    angularSpan += 2 * Math.PI;
+                }
+            }
+
+            expect(angularSpan).toBeGreaterThan(0);
+            expect(angularSpan).toBeCloseTo(Math.PI / 2, 5); // 90° sweep
+            expect(arc.radius).toBeCloseTo(arcLength / (Math.PI / 2), 5); // Radius = arcLength / (π/2)
+        });
+    });
+
+    describe('createArcWithLength', () => {
+        it('should clamp sweep angle to 2π maximum (FIXED)', () => {
+            // Test that would previously create invalid arc with sweep > 2π
+            const center = { x: 0, y: 0 };
+            const radius = 10; // Small radius
+            const startAngle = 0;
+            const arcLength = 100; // Long arc length: unclamped sweepAngle = 100/10 = 10 radians > 2π (6.28)
+            const clockwise = false;
+
+            const arc = createArcWithLength(
+                center,
+                radius,
+                startAngle,
+                arcLength,
+                clockwise
+            );
+
+            // Calculate what unclamped sweep angle would be
+            const unclampedSweepAngle = arcLength / radius; // = 10 radians
+
+            // Verify unclamped calculation would exceed 2π
+            expect(unclampedSweepAngle).toBeGreaterThan(2 * Math.PI);
+
+            // Calculate actual angular span of the created arc
+            let angularSpan: number;
+            if (arc.clockwise) {
+                angularSpan = arc.startAngle - arc.endAngle;
+                if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+            } else {
+                angularSpan = arc.endAngle - arc.startAngle;
+                if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+            }
+
+            // FIXED: Arc is now clamped to 2π maximum
+            expect(angularSpan).toBeLessThanOrEqual(2 * Math.PI + 0.0001); // Small epsilon for floating point
+            expect(angularSpan).toBeCloseTo(2 * Math.PI, 3); // Should be at full circle limit
+        });
+
+        it('should handle normal arc lengths without clamping', () => {
+            const center = { x: 5, y: 5 };
+            const radius = 20;
+            const startAngle = Math.PI / 4;
+            const arcLength = 31.4; // ~π radians sweep (half circle)
+            const clockwise = true;
+
+            const arc = createArcWithLength(
+                center,
+                radius,
+                startAngle,
+                arcLength,
+                clockwise
+            );
+
+            const expectedSweepAngle = arcLength / radius; // = 1.57 radians (π/2)
+
+            let angularSpan: number;
+            if (arc.clockwise) {
+                angularSpan = arc.startAngle - arc.endAngle;
+                if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+            } else {
+                angularSpan = arc.endAngle - arc.startAngle;
+                if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+            }
+
+            expect(angularSpan).toBeCloseTo(expectedSweepAngle, 2);
         });
     });
 });

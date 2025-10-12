@@ -38,6 +38,8 @@ export interface SelectionState {
     highlightedCutId: string | null;
     selectedRapidId: string | null;
     highlightedRapidId: string | null;
+    selectedLeadId?: string | null;
+    highlightedLeadId?: string | null;
 }
 
 /**

@@ -33,6 +33,7 @@ export enum SelectionMode {
     Shape = 'shape', // Only individual shapes can be selected/hovered
     Part = 'part', // Only parts can be selected/hovered
     Cut = 'cut', // Only cuts can be selected/hovered
+    Lead = 'lead', // Only leads can be selected/hovered
 }
 
 /**
