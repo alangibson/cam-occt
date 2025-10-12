@@ -630,13 +630,13 @@ export function createTangentArc(
 
     if (isLeadIn) {
         // Lead-in: arc ends at connection point
-        endAngle = connectionAngle;
+        endAngle = normalizeAngle(connectionAngle);
         startAngle = clockwise
             ? normalizeAngle(connectionAngle + sweepAngle)
             : normalizeAngle(connectionAngle - sweepAngle);
     } else {
         // Lead-out: arc starts at connection point
-        startAngle = connectionAngle;
+        startAngle = normalizeAngle(connectionAngle);
         endAngle = clockwise
             ? normalizeAngle(connectionAngle - sweepAngle)
             : normalizeAngle(connectionAngle + sweepAngle);

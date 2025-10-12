@@ -108,16 +108,12 @@ export class LeadRenderer extends BaseRenderer {
             if (points.length > 1) {
                 const leadId = `${cut.id}-leadIn`;
                 const isSelected = state.selection?.selectedLeadId === leadId;
-                const isHighlighted = state.selection?.highlightedLeadId === leadId;
-                const color = isSelected || isHighlighted ? '#ff6600' : this.leadInColor;
+                const isHighlighted =
+                    state.selection?.highlightedLeadId === leadId;
+                const color =
+                    isSelected || isHighlighted ? '#ff6600' : this.leadInColor;
                 const opacity = this.getLeadOpacity(cut, 'leadIn', state);
-                this.drawLeadGeometry(
-                    ctx,
-                    state,
-                    points,
-                    color,
-                    opacity
-                );
+                this.drawLeadGeometry(ctx, state, points, color, opacity);
             }
         }
 
@@ -127,16 +123,12 @@ export class LeadRenderer extends BaseRenderer {
             if (points.length > 1) {
                 const leadId = `${cut.id}-leadOut`;
                 const isSelected = state.selection?.selectedLeadId === leadId;
-                const isHighlighted = state.selection?.highlightedLeadId === leadId;
-                const color = isSelected || isHighlighted ? '#ff6600' : this.leadOutColor;
+                const isHighlighted =
+                    state.selection?.highlightedLeadId === leadId;
+                const color =
+                    isSelected || isHighlighted ? '#ff6600' : this.leadOutColor;
                 const opacity = this.getLeadOpacity(cut, 'leadOut', state);
-                this.drawLeadGeometry(
-                    ctx,
-                    state,
-                    points,
-                    color,
-                    opacity
-                );
+                this.drawLeadGeometry(ctx, state, points, color, opacity);
             }
         }
     }

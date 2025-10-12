@@ -308,16 +308,6 @@
         color: #999;
     }
 
-    .property-value.enabled {
-        color: #00aa00;
-        font-weight: 600;
-    }
-
-    .property-value.disabled {
-        color: #cc0000;
-        font-weight: 600;
-    }
-
     .copy-button {
         margin-top: 0.5rem;
         padding: 0.5rem;

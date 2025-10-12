@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     calculateArcEndPoint,
-    calculateArcLength,
     calculateArcPoint,
     calculateArcStartPoint,
     convertBulgeToArc,
@@ -868,6 +867,50 @@ describe('arc-utils', () => {
             expect(angularSpan).toBeGreaterThan(0);
             expect(angularSpan).toBeCloseTo(Math.PI / 2, 5); // 90° sweep
             expect(arc.radius).toBeCloseTo(arcLength / (Math.PI / 2), 5); // Radius = arcLength / (π/2)
+        });
+    });
+
+    describe('createTangentArc - angle normalization', () => {
+        it('should normalize angles correctly when connectionAngle is negative (FIXED)', () => {
+            // Real-world case where connectionAngle ≈ -3.001 radians (-172°)
+            // Previously caused unnormalized startAngle to create 450° sweep
+            const connectionPoint = { x: 8.027328, y: 20.4865555 };
+            const center = { x: 8.077124090081115, y: 20.49360755226022 };
+
+            // Calculate actual connection angle from geometry
+            const connectionAngle = Math.atan2(
+                connectionPoint.y - center.y,
+                connectionPoint.x - center.x
+            );
+
+            // Verify this is the problematic negative angle
+            expect(connectionAngle).toBeCloseTo(-3.001, 2);
+
+            const tangentDirection = { x: 0.1397, y: -0.9902 }; // Approximate tangent
+            const arcLength = 0.079;
+            const curveDirection = { x: 1, y: 0 }; // From normal
+            const isLeadIn = false; // Lead-out
+            const clockwise = false;
+
+            const arc = createTangentArc(
+                connectionPoint,
+                tangentDirection,
+                arcLength,
+                curveDirection,
+                isLeadIn,
+                clockwise
+            );
+
+            // Calculate sweep angle
+            let sweep = arc.clockwise
+                ? arc.startAngle - arc.endAngle
+                : arc.endAngle - arc.startAngle;
+
+            if (sweep <= 0) sweep += 2 * Math.PI;
+
+            // FIXED: Both angles now normalized, sweep is exactly π/2 (90°)
+            expect(sweep).toBeLessThan(Math.PI); // Must be < 180°
+            expect(sweep).toBeCloseTo(Math.PI / 2, 2); // Should be 90°
         });
     });
 

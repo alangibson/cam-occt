@@ -12,8 +12,6 @@
     import {
         leadStore,
         selectLead,
-        clearLeadSelection,
-        highlightLead,
         clearLeadHighlight,
     } from '$lib/stores/leads/store';
     import { settingsStore } from '$lib/stores/settings/store';
@@ -446,13 +444,16 @@
             if (hitResult) {
                 switch (hitResult.type) {
                     case HitTestType.RAPID:
-                        // Handle rapid selection
-                        if (selectedRapidId === hitResult.id) {
-                            selectRapid(null); // Deselect if already selected
-                        } else {
-                            selectRapid(hitResult.id);
+                        // Handle rapid selection (only in cuts mode, not in leads mode)
+                        if (interactionMode === 'cuts') {
+                            if (selectedRapidId === hitResult.id) {
+                                selectRapid(null); // Deselect if already selected
+                            } else {
+                                selectRapid(hitResult.id);
+                            }
+                            return; // Don't process other selections
                         }
-                        return; // Don't process other selections
+                        break;
 
                     case HitTestType.SHAPE:
                         const metadata = hitResult.metadata;
@@ -524,7 +525,10 @@
 
                     case HitTestType.LEAD:
                         // Handle lead selection
-                        if (interactionMode === 'leads' || interactionMode === 'cuts') {
+                        if (
+                            interactionMode === 'leads' ||
+                            interactionMode === 'cuts'
+                        ) {
                             const leadId = hitResult.id;
                             // Toggle lead selection
                             if (selectedLeadId === leadId) {

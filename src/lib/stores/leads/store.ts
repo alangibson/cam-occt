@@ -10,8 +10,18 @@ const highlightedLeadIdStore = writable<string | null>(null);
 
 // Exported store with selection state
 export const leadStore = derived(
-    [selectedLeadIdStore, highlightedLeadIdStore, showLeadNormals, showLeadPaths],
-    ([$selectedLeadId, $highlightedLeadId, $showLeadNormals, $showLeadPaths]) => ({
+    [
+        selectedLeadIdStore,
+        highlightedLeadIdStore,
+        showLeadNormals,
+        showLeadPaths,
+    ],
+    ([
+        $selectedLeadId,
+        $highlightedLeadId,
+        $showLeadNormals,
+        $showLeadPaths,
+    ]) => ({
         selectedLeadId: $selectedLeadId,
         highlightedLeadId: $highlightedLeadId,
         showLeadNormals: $showLeadNormals,
@@ -59,10 +69,11 @@ export function parseLeadId(leadId: string): {
     const parts = leadId.split('-');
     if (parts.length < 2) return null;
 
-    const leadType = parts[parts.length - 1];
+    const LAST_INDEX_OFFSET = -1;
+    const leadType = parts[parts.length + LAST_INDEX_OFFSET];
     if (leadType !== 'leadIn' && leadType !== 'leadOut') return null;
 
-    const cutId = parts.slice(0, -1).join('-');
+    const cutId = parts.slice(0, LAST_INDEX_OFFSET).join('-');
 
     return {
         cutId,

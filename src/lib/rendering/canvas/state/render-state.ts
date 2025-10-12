@@ -140,7 +140,7 @@ export interface RenderState {
     // Interaction settings
     respectLayerVisibility: boolean;
     interactionMode: 'shapes' | 'chains' | 'cuts';
-    selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'cut';
+    selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'cut' | 'lead';
 }
 
 /**
