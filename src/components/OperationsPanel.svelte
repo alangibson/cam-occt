@@ -703,7 +703,7 @@
             <div class="no-operations">
                 <p>No operations created yet.</p>
                 <p>
-                    Operations define how tools are applied to parts or chains.
+                    Click Add button to create cuts
                 </p>
             </div>
         {/if}
@@ -715,8 +715,13 @@
         display: flex;
         flex-direction: column;
         gap: 0.75rem;
-        max-height: 400px;
+        max-height: 700px;
         overflow-y: auto;
+    }
+
+    .operations-list:empty,
+    .operations-list:has(.no-operations) {
+        max-height: 200px;
     }
 
     .operation-item {

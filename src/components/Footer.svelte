@@ -45,6 +45,10 @@
         drawingStore.zoomToFit();
     }
 
+    function handleZoom100Click() {
+        drawingStore.setViewTransform(1, $drawingStore.offset);
+    }
+
     function handleSelectionModeChange(event: Event) {
         const select = event.target as HTMLSelectElement;
         settingsStore.setSelectionMode(select.value as SelectionMode);
@@ -102,6 +106,14 @@
                 title="Zoom to fit"
             >
                 Fit
+            </button>
+            <button
+                class="fit-button"
+                on:click={handleZoom100Click}
+                disabled={!drawing}
+                title="Zoom to 100%"
+            >
+                100%
             </button>
         </div>
     </div>

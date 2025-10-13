@@ -19,7 +19,7 @@
     }
 </script>
 
-<AccordionPanel title="Optimize" isExpanded={true}>
+<AccordionPanel title="Optimize" isExpanded={false}>
     <div class="optimize-content">
         <div class="field-group">
             <label class="checkbox-label">

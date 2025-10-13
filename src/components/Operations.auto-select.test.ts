@@ -7,6 +7,7 @@ import { partStore } from '$lib/stores/parts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
+import { PartType } from '$lib/algorithms/part-detection/part-detection';
 
 describe('Operations Auto-Selection Feature', () => {
     beforeEach(() => {
@@ -172,13 +173,13 @@ describe('Operations Auto-Selection Feature', () => {
         expect(newOperation.targetIds).toEqual(['part-3']);
     });
 
-    it('should create empty operation when nothing is selected', async () => {
+    it('should create empty operation when nothing is selected and no parts/chains exist', async () => {
         // Don't select anything
 
         // Render the component
         const { container: _container } = render(Operations);
 
-        // Simulate operation creation with nothing selected
+        // Simulate operation creation with nothing selected and no parts/chains
         operationsStore.addOperation({
             name: 'Test Operation',
             toolId: '1',
@@ -210,5 +211,118 @@ describe('Operations Auto-Selection Feature', () => {
         const newOperation = operations[0];
         expect(newOperation.targetType).toBe('parts'); // defaults to parts
         expect(newOperation.targetIds).toEqual([]); // empty array
+    });
+
+    it('should default to all parts when nothing is selected but parts exist (first operation only)', async () => {
+        // Add some parts but don't select anything
+        partStore.setParts([
+            {
+                id: 'part-1',
+                shell: {
+                    id: 'shell-1',
+                    chain: { id: 'chain-1', shapes: [], clockwise: true },
+                    type: PartType.SHELL,
+                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
+                    holes: [],
+                },
+                holes: [],
+            },
+            {
+                id: 'part-2',
+                shell: {
+                    id: 'shell-2',
+                    chain: { id: 'chain-2', shapes: [], clockwise: true },
+                    type: PartType.SHELL,
+                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
+                    holes: [],
+                },
+                holes: [],
+            },
+        ]);
+
+        // Render the component
+        const component = render(Operations);
+
+        // Ensure no operations exist yet
+        expect(get(operationsStore).length).toBe(0);
+
+        // Call the component's addNewOperation function with disabled operation
+        // to avoid trying to generate cuts
+        component.component.addNewOperation({ enabled: false });
+
+        // Check that the first operation was created with all parts
+        const operations = get(operationsStore);
+        expect(operations.length).toBe(1);
+
+        const newOperation = operations[0];
+        expect(newOperation.targetType).toBe('parts');
+        expect(newOperation.targetIds).toEqual(['part-1', 'part-2']);
+    });
+
+    it('should default to all chains when nothing is selected, no parts exist, but chains exist (first operation only)', async () => {
+        // Add some chains but don't select anything
+        chainStore.setChains([
+            {
+                id: 'chain-1',
+                shapes: [],
+                clockwise: true,
+            },
+            {
+                id: 'chain-2',
+                shapes: [],
+                clockwise: false,
+            },
+        ]);
+
+        // Render the component
+        const component = render(Operations);
+
+        // Ensure no operations exist yet
+        expect(get(operationsStore).length).toBe(0);
+
+        // Call the component's addNewOperation function with disabled operation
+        // to avoid trying to generate cuts
+        component.component.addNewOperation({ enabled: false });
+
+        // Check that the first operation was created with all chains
+        const operations = get(operationsStore);
+        expect(operations.length).toBe(1);
+
+        const newOperation = operations[0];
+        expect(newOperation.targetType).toBe('chains');
+        expect(newOperation.targetIds).toEqual(['chain-1', 'chain-2']);
+    });
+
+    it('should not auto-select when creating second operation with nothing selected', async () => {
+        // Add some parts
+        partStore.setParts([
+            {
+                id: 'part-1',
+                shell: {
+                    id: 'shell-1',
+                    chain: { id: 'chain-1', shapes: [], clockwise: true },
+                    type: PartType.SHELL,
+                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
+                    holes: [],
+                },
+                holes: [],
+            },
+        ]);
+
+        // Render the component
+        const component = render(Operations);
+
+        // Create first operation (should auto-select all parts)
+        component.component.addNewOperation({ enabled: false });
+        expect(get(operationsStore).length).toBe(1);
+        expect(get(operationsStore)[0].targetIds).toEqual(['part-1']);
+
+        // Create second operation with nothing selected (should NOT auto-select)
+        component.component.addNewOperation({ enabled: false });
+        expect(get(operationsStore).length).toBe(2);
+
+        const secondOperation = get(operationsStore)[1];
+        expect(secondOperation.targetType).toBe('parts');
+        expect(secondOperation.targetIds).toEqual([]); // Should be empty
     });
 });

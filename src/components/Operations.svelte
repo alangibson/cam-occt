@@ -80,7 +80,7 @@
     chainStore.subscribe((state) => (chains = state.chains));
     partStore.subscribe((state) => (parts = state.parts));
 
-    export function addNewOperation() {
+    export function addNewOperation(options?: { enabled?: boolean }) {
         const newOrder =
             operations.length > 0
                 ? Math.max(...operations.map((op) => op.order)) + 1
@@ -103,6 +103,16 @@
                 targetType = 'chains';
                 targetIds = [selectedChainId];
             }
+            // If nothing is selected and this is the first operation, default to all parts or all chains
+            else if (operations.length === 0) {
+                if (parts.length > 0) {
+                    targetType = 'parts';
+                    targetIds = parts.map((p) => p.id);
+                } else if (chains.length > 0) {
+                    targetType = 'chains';
+                    targetIds = chains.map((c) => c.id);
+                }
+            }
         }
 
         operationsStore.addOperation({
@@ -110,7 +120,7 @@
             toolId: $toolStore.length > 0 ? $toolStore[0].id : null,
             targetType,
             targetIds,
-            enabled: DEFAULT_OPERATION_ENABLED,
+            enabled: options?.enabled ?? DEFAULT_OPERATION_ENABLED,
             order: newOrder,
             cutDirection: DEFAULT_CUT_DIRECTION,
             leadInConfig: getDefaultLeadInConfig(), // Unit-aware default
