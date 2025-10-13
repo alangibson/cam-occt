@@ -59,6 +59,7 @@ export interface HoverState {
 export interface VisibilityState {
     layerVisibility: Record<string, boolean>;
     showRapids: boolean;
+    showRapidDirections: boolean;
     showCuts: boolean;
     showChains: boolean;
     showParts: boolean;
@@ -182,6 +183,7 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
         visibility: {
             layerVisibility: {},
             showRapids: true,
+            showRapidDirections: false,
             showCuts: true,
             showChains: true,
             showParts: true,

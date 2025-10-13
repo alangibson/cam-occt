@@ -41,6 +41,11 @@ export class ChevronRenderer extends BaseRenderer {
         if (state.visibility.showChainDirections && state.chains.length > 0) {
             this.drawChainChevrons(ctx, state);
         }
+
+        // Draw rapid chevrons if showRapidDirections is enabled
+        if (state.visibility.showRapidDirections && state.rapids.length > 0) {
+            this.drawRapidChevrons(ctx, state);
+        }
     }
 
     /**
@@ -163,6 +168,94 @@ export class ChevronRenderer extends BaseRenderer {
                     chevronSize
                 );
             });
+        });
+    }
+
+    /**
+     * Draw chevron arrows along rapids to show rapid direction
+     */
+    private drawRapidChevrons(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState
+    ): void {
+        state.rapids.forEach((rapid) => {
+            // Calculate direction vector from start to end
+            const dx = rapid.end.x - rapid.start.x;
+            const dy = rapid.end.y - rapid.start.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+
+            if (length === 0) return; // Skip zero-length rapids
+
+            // Normalize direction vector
+            const dirX = dx / length;
+            const dirY = dy / length;
+
+            // Calculate perpendicular vector for chevron wings
+            const perpX = -dirY;
+            const perpY = dirX;
+
+            // Draw chevron at midpoint of the rapid
+            const midpoint = {
+                x: (rapid.start.x + rapid.end.x) / 2,
+                y: (rapid.start.y + rapid.end.y) / 2,
+            };
+
+            const chevronSize =
+                state.transform.coordinator.screenToWorldDistance(
+                    CHEVRON_SIZE_PX
+                );
+
+            // Use blue color to match rapid line color
+            ctx.save();
+            ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue
+            ctx.lineWidth =
+                state.transform.coordinator.screenToWorldDistance(1);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Calculate chevron wing points (90 degree angle between wings)
+            const wingLength = chevronSize * 0.7;
+            const backOffset = chevronSize * 0.3;
+            const quarterPI = Math.PI / 4;
+
+            // Wing points: 45 degrees on each side of the direction vector
+            const wing1X =
+                midpoint.x -
+                backOffset * dirX +
+                wingLength *
+                    (dirX * Math.cos(quarterPI) +
+                        perpX * Math.sin(quarterPI));
+            const wing1Y =
+                midpoint.y -
+                backOffset * dirY +
+                wingLength *
+                    (dirY * Math.cos(quarterPI) +
+                        perpY * Math.sin(quarterPI));
+
+            const wing2X =
+                midpoint.x -
+                backOffset * dirX +
+                wingLength *
+                    (dirX * Math.cos(quarterPI) -
+                        perpX * Math.sin(quarterPI));
+            const wing2Y =
+                midpoint.y -
+                backOffset * dirY +
+                wingLength *
+                    (dirY * Math.cos(quarterPI) -
+                        perpY * Math.sin(quarterPI));
+
+            const tipX = midpoint.x + chevronSize * 0.4 * dirX;
+            const tipY = midpoint.y + chevronSize * 0.4 * dirY;
+
+            // Draw the chevron (two lines forming arrow shape)
+            ctx.beginPath();
+            ctx.moveTo(wing1X, wing1Y);
+            ctx.lineTo(tipX, tipY);
+            ctx.lineTo(wing2X, wing2Y);
+            ctx.stroke();
+
+            ctx.restore();
         });
     }
 

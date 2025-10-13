@@ -3,6 +3,7 @@ import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-orde
 export interface RapidsState {
     rapids: Rapid[];
     showRapids: boolean;
+    showRapidDirections: boolean;
     selectedRapidId: string | null;
     highlightedRapidId: string | null;
 }
@@ -13,6 +14,7 @@ export interface RapidsStore {
     clearRapids: () => void;
     toggleShowRapids: () => void;
     setShowRapids: (show: boolean) => void;
+    setShowRapidDirections: (show: boolean) => void;
     selectRapid: (rapidId: string | null) => void;
     highlightRapid: (rapidId: string | null) => void;
     clearHighlight: () => void;

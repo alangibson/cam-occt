@@ -233,6 +233,7 @@ describe('rapidStore', () => {
             expect(state).toEqual({
                 rapids: [],
                 showRapids: true,
+                showRapidDirections: false,
                 selectedRapidId: null,
                 highlightedRapidId: null,
             });

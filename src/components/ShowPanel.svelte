@@ -38,6 +38,7 @@
 
         // Reset rapid visualization
         rapidStore.setShowRapids(true);
+        rapidStore.setShowRapidDirections(false);
     }
 </script>
 
@@ -277,6 +278,18 @@
 
         <div class="show-section">
             <h3 class="section-header">Rapids</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={rapidsVisualization.showRapidDirections}
+                    onchange={(e) =>
+                        rapidStore.setShowRapidDirections(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Directions
+            </label>
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"

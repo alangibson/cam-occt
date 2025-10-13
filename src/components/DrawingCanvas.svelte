@@ -91,6 +91,7 @@
     $: currentOverlay = overlayState.overlays[currentStage];
     $: rapids = $rapidStore.rapids;
     $: showRapids = $rapidStore.showRapids;
+    $: showRapidDirections = $rapidStore.showRapidDirections;
     $: selectedRapidId = $rapidStore.selectedRapidId;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
     $: shapeVisualization = $shapeVisualizationStore;
@@ -313,6 +314,7 @@
             visibility: {
                 layerVisibility: layerVisibility || {},
                 showRapids,
+                showRapidDirections,
                 showCuts: true,
                 showChains: true,
                 showParts: true,

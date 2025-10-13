@@ -6,6 +6,7 @@ function createRapidsStore(): RapidsStore {
     const initialState: RapidsState = {
         rapids: [],
         showRapids: true,
+        showRapidDirections: false,
         selectedRapidId: null,
         highlightedRapidId: null,
     };
@@ -40,6 +41,13 @@ function createRapidsStore(): RapidsStore {
             update((state) => ({
                 ...state,
                 showRapids: show,
+            }));
+        },
+
+        setShowRapidDirections: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showRapidDirections: show,
             }));
         },
 
