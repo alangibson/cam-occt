@@ -86,7 +86,7 @@
     let previousPathsHash = '';
     let isOptimizing = false;
 
-    // Automatically recalculate rapids when cuts change
+    // Automatically recalculate rapids when cuts or optimization settings change
     // We only react to lead-related changes, not order changes to avoid loops
 
     $: {
@@ -98,18 +98,21 @@
             )
             .join('|');
 
+        // Include optimization settings in the hash to trigger re-optimization when they change
+        const optimizationHash = `${cutsHash}|cutHolesFirst:${optimizationSettings.cutHolesFirst}`;
+
         // Only trigger if the hash actually changed and we have the necessary data
         if (
-            cutsHash !== previousPathsHash &&
+            optimizationHash !== previousPathsHash &&
             cuts.length > 0 &&
             chains.length > 0 &&
             drawing &&
             !isOptimizing
         ) {
             console.log(
-                '[ProgramStage] Cut hash changed, recalculating rapids'
+                '[ProgramStage] Cut hash or optimization settings changed, recalculating rapids'
             );
-            previousPathsHash = cutsHash;
+            previousPathsHash = optimizationHash;
             // Use setTimeout to avoid recursive updates and ensure all stores are synced
             setTimeout(() => {
                 // eslint-disable-next-line svelte/infinite-reactive-loop
