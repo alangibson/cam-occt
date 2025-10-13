@@ -127,7 +127,12 @@
                                 OffsetImplementation.Exact
                             )}
                     />
-                    <span class="stage-name">Exact (preserves curves)</span>
+                    <div class="option-content">
+                        <span class="stage-name">Exact</span>
+                        <span class="option-description"
+                            >Preserves curves for smooth geometry</span
+                        >
+                    </div>
                 </label>
                 <label class="stage-item">
                     <input
@@ -142,9 +147,12 @@
                                 OffsetImplementation.Polyline
                             )}
                     />
-                    <span class="stage-name"
-                        >Polyline (tessellates to polylines)</span
-                    >
+                    <div class="option-content">
+                        <span class="stage-name">Polyline</span>
+                        <span class="option-description"
+                            >Converts curves to straight line segments</span
+                        >
+                    </div>
                 </label>
             </div>
         </section>
@@ -212,6 +220,7 @@
         width: 1rem;
         height: 1rem;
         cursor: pointer;
+        flex-shrink: 0;
     }
 
     .stage-item input[type='checkbox']:disabled {
@@ -219,10 +228,22 @@
         opacity: 0.5;
     }
 
+    .option-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
     .stage-name {
         font-size: 0.875rem;
         font-weight: 500;
         color: #374151;
+    }
+
+    .option-description {
+        font-size: 0.75rem;
+        color: #6b7280;
+        line-height: 1.2;
     }
 
     .reset-button {

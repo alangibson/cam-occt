@@ -62,7 +62,7 @@ const DEFAULT_SETTINGS: ApplicationSettings = {
         PreprocessingStep.DetectParts,
     ],
     optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,
-    offsetImplementation: OffsetImplementation.Exact,
+    offsetImplementation: OffsetImplementation.Polyline,
     camSettings: DEFAULT_CAM_SETTINGS,
 };
 
