@@ -51,6 +51,7 @@ const defaultApplicationSettings = {
         cutHolesFirst: true,
         rapidOptimizationAlgorithm:
             RapidOptimizationAlgorithm.TravelingSalesman,
+        zoomToFit: true,
     },
     offsetImplementation: OffsetImplementation.Exact,
     camSettings: {

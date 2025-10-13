@@ -40,6 +40,7 @@ const DEFAULT_CAM_SETTINGS: CamSettings = {
 const DEFAULT_OPTIMIZATION_SETTINGS: OptimizationSettings = {
     cutHolesFirst: true,
     rapidOptimizationAlgorithm: RapidOptimizationAlgorithm.TravelingSalesman,
+    zoomToFit: true,
 };
 
 // Default application settings
@@ -100,6 +101,11 @@ function loadSettings(): ApplicationSettings {
                                   ? parsed.optimizationSettings
                                         .rapidOptimizationAlgorithm
                                   : DEFAULT_OPTIMIZATION_SETTINGS.rapidOptimizationAlgorithm,
+                              zoomToFit:
+                                  typeof parsed.optimizationSettings.zoomToFit ===
+                                  'boolean'
+                                      ? parsed.optimizationSettings.zoomToFit
+                                      : DEFAULT_OPTIMIZATION_SETTINGS.zoomToFit,
                           }
                         : DEFAULT_OPTIMIZATION_SETTINGS;
 
@@ -384,6 +390,23 @@ function createSettingsStore(): SettingsStore {
                     optimizationSettings: {
                         ...state.settings.optimizationSettings,
                         rapidOptimizationAlgorithm: algorithm,
+                    },
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setZoomToFit(enabled: boolean) {
+            update((state) => {
+                const newSettings = {
+                    ...state.settings,
+                    optimizationSettings: {
+                        ...state.settings.optimizationSettings,
+                        zoomToFit: enabled,
                     },
                 };
                 saveSettings(newSettings);

@@ -82,6 +82,9 @@ export interface OptimizationSettings {
 
     /** Algorithm to use for rapid movement optimization */
     rapidOptimizationAlgorithm: RapidOptimizationAlgorithm;
+
+    /** When true, automatically zoom to fit when entering the Program stage */
+    zoomToFit: boolean;
 }
 
 /**
@@ -157,6 +160,9 @@ export interface SettingsStore {
     setRapidOptimizationAlgorithm: (
         algorithm: RapidOptimizationAlgorithm
     ) => void;
+
+    /** Set whether to automatically zoom to fit on Program stage */
+    setZoomToFit: (enabled: boolean) => void;
 
     /** Set the offset implementation */
     setOffsetImplementation: (implementation: OffsetImplementation) => void;

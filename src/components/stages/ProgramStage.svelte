@@ -80,6 +80,11 @@
                 console.error('Error during auto-preprocessing:', error);
             }
         }
+
+        // Apply zoom to fit if enabled in settings
+        if (settings.optimizationSettings.zoomToFit) {
+            drawingStore.zoomToFit();
+        }
     });
 
     // Track previous hash to prevent infinite loops

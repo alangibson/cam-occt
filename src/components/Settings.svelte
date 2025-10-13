@@ -68,6 +68,12 @@
             resetApplicationToDefaults();
         }
     }
+
+    function handleZoomToFitToggle() {
+        settingsStore.setZoomToFit(
+            !$settingsStore.settings.optimizationSettings.zoomToFit
+        );
+    }
 </script>
 
 <div class="settings-container">
@@ -108,6 +114,15 @@
                         >
                     </label>
                 {/each}
+                <label class="stage-item">
+                    <input
+                        type="checkbox"
+                        checked={$settingsStore.settings.optimizationSettings
+                            .zoomToFit}
+                        onchange={handleZoomToFitToggle}
+                    />
+                    <span class="stage-name">Zoom to Fit</span>
+                </label>
             </div>
         </section>
 
