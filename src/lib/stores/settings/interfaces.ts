@@ -53,7 +53,16 @@ export enum PreprocessingStep {
  * Rapid optimization algorithm options
  */
 export enum RapidOptimizationAlgorithm {
+    None = 'none',
     TravelingSalesman = 'traveling-salesman',
+}
+
+/**
+ * Offset calculation implementation options
+ */
+export enum OffsetImplementation {
+    Exact = 'exact', // Existing TypeScript implementation (preserves curves)
+    Polyline = 'polyline', // Clipper2 WASM implementation (tessellates to polylines)
 }
 
 /**
@@ -88,6 +97,9 @@ export interface ApplicationSettings {
 
     /** Optimization settings */
     optimizationSettings: OptimizationSettings;
+
+    /** Offset calculation implementation to use */
+    offsetImplementation: OffsetImplementation;
 }
 
 /**
@@ -134,6 +146,9 @@ export interface SettingsStore {
     setRapidOptimizationAlgorithm: (
         algorithm: RapidOptimizationAlgorithm
     ) => void;
+
+    /** Set the offset implementation */
+    setOffsetImplementation: (implementation: OffsetImplementation) => void;
 
     /** Update all settings at once */
     updateSettings: (settings: Partial<ApplicationSettings>) => void;

@@ -21,6 +21,7 @@ import {
     SelectionMode as SM,
     PreprocessingStep,
     RapidOptimizationAlgorithm,
+    OffsetImplementation,
 } from './interfaces';
 import { DefaultsManager } from '$lib/config/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -51,6 +52,7 @@ const DEFAULT_SETTINGS: ApplicationSettings = {
         PreprocessingStep.DetectParts,
     ],
     optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,
+    offsetImplementation: OffsetImplementation.Exact,
 };
 
 // localStorage key for settings persistence
@@ -123,6 +125,11 @@ function loadSettings(): ApplicationSettings {
                           )
                         : DEFAULT_SETTINGS.enabledPreprocessingSteps,
                     optimizationSettings,
+                    offsetImplementation: Object.values(
+                        OffsetImplementation
+                    ).includes(parsed.offsetImplementation)
+                        ? parsed.offsetImplementation
+                        : DEFAULT_SETTINGS.offsetImplementation,
                 };
             }
         }
@@ -332,6 +339,20 @@ function createSettingsStore(): SettingsStore {
                         ...state.settings.optimizationSettings,
                         rapidOptimizationAlgorithm: algorithm,
                     },
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setOffsetImplementation(implementation: OffsetImplementation) {
+            update((state) => {
+                const newSettings = {
+                    ...state.settings,
+                    offsetImplementation: implementation,
                 };
                 saveSettings(newSettings);
                 return {

@@ -90,11 +90,11 @@
     // We only react to lead-related changes, not order changes to avoid loops
 
     $: {
-        // Only include properties that affect lead geometry, not order
+        // Include properties that affect lead geometry and cut start/end positions
         const cutsHash = cuts
             .map(
                 (c) =>
-                    `${c.id}:${c.leadInConfig?.type}:${c.leadInConfig?.length}:${c.leadInConfig?.flipSide}:${c.leadInConfig?.angle}:${c.leadOutConfig?.type}:${c.leadOutConfig?.length}:${c.leadOutConfig?.flipSide}:${c.leadOutConfig?.angle}:${c.enabled}`
+                    `${c.id}:${c.normalConnectionPoint?.x}:${c.normalConnectionPoint?.y}:${c.leadIn?.geometry?.center?.x}:${c.leadIn?.geometry?.center?.y}:${c.leadIn?.geometry?.radius}:${c.leadIn?.geometry?.startAngle}:${c.leadIn?.geometry?.endAngle}:${c.leadOut?.geometry?.center?.x}:${c.leadOut?.geometry?.center?.y}:${c.leadOut?.geometry?.radius}:${c.leadOut?.geometry?.startAngle}:${c.leadOut?.geometry?.endAngle}:${c.leadInConfig?.type}:${c.leadInConfig?.length}:${c.leadInConfig?.flipSide}:${c.leadInConfig?.angle}:${c.leadOutConfig?.type}:${c.leadOutConfig?.length}:${c.leadOutConfig?.flipSide}:${c.leadOutConfig?.angle}:${c.enabled}`
             )
             .join('|');
 
@@ -106,6 +106,9 @@
             drawing &&
             !isOptimizing
         ) {
+            console.log(
+                '[ProgramStage] Cut hash changed, recalculating rapids'
+            );
             previousPathsHash = cutsHash;
             // Use setTimeout to avoid recursive updates and ensure all stores are synced
             setTimeout(() => {
@@ -165,6 +168,13 @@
             console.warn(
                 'No drawing, chains, or cuts available for optimization'
             );
+            return;
+        }
+
+        // Check if rapid optimization is disabled
+        if (optimizationSettings.rapidOptimizationAlgorithm === 'none') {
+            console.log('Rapid optimization disabled, clearing rapids');
+            rapidStore.clearRapids();
             return;
         }
 

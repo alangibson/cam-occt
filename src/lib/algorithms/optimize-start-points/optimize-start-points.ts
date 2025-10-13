@@ -184,7 +184,7 @@ function findBestShapeToSplit(shapes: Shape[]): number {
 /**
  * Optimizes the start point of a single chain
  */
-function optimizeChainStartPoint(
+export function optimizeChainStartPoint(
     chain: Chain,
     params: StartPointOptimizationParameters
 ): OptimizeResult {

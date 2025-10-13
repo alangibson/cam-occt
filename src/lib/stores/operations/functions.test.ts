@@ -219,8 +219,8 @@ describe('Operations Functions', () => {
             });
         });
 
-        it('should return null when kerfCompensation is NONE', () => {
-            const result = calculateChainOffset(
+        it('should return null when kerfCompensation is NONE', async () => {
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.NONE,
                 'tool-1',
@@ -229,8 +229,8 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null when kerfCompensation is falsy', () => {
-            const result = calculateChainOffset(
+        it('should return null when kerfCompensation is falsy', async () => {
+            const result = await calculateChainOffset(
                 mockChain,
                 null as unknown as OffsetDirection,
                 'tool-1',
@@ -239,8 +239,8 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null when toolId is null', () => {
-            const result = calculateChainOffset(
+        it('should return null when toolId is null', async () => {
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.INSET,
                 null,
@@ -249,8 +249,8 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null when tool is not found', () => {
-            const result = calculateChainOffset(
+        it('should return null when tool is not found', async () => {
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.INSET,
                 'unknown-tool',
@@ -260,13 +260,13 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null when tool has no kerf width', () => {
+        it('should return null when tool has no kerf width', async () => {
             const toolNoKerf = {
                 ...mockTool,
                 kerfWidth: undefined,
             } as unknown as Tool;
 
-            const result = calculateChainOffset(
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.INSET,
                 'tool-1',
@@ -276,10 +276,10 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null when tool has zero kerf width', () => {
+        it('should return null when tool has zero kerf width', async () => {
             const toolZeroKerf = { ...mockTool, kerfWidth: 0 };
 
-            const result = calculateChainOffset(
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.INSET,
                 'tool-1',
@@ -289,14 +289,14 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null when offset calculation fails', () => {
+        it('should return null when offset calculation fails', async () => {
             vi.mocked(offsetChain).mockReturnValue({
                 success: false,
                 errors: ['Offset failed'],
                 warnings: [],
             });
 
-            const result = calculateChainOffset(
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.INSET,
                 'tool-1',
@@ -306,7 +306,7 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null when no appropriate offset chain is found for INSET', () => {
+        it('should return null when no appropriate offset chain is found for INSET', async () => {
             vi.mocked(offsetChain).mockReturnValue({
                 success: true,
                 innerChain: {
@@ -331,7 +331,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = calculateChainOffset(
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.INSET,
                 'tool-1',
@@ -341,7 +341,7 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return null when no appropriate offset chain is found for OUTSET', () => {
+        it('should return null when no appropriate offset chain is found for OUTSET', async () => {
             vi.mocked(offsetChain).mockReturnValue({
                 success: true,
                 innerChain: {
@@ -366,7 +366,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = calculateChainOffset(
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.OUTSET,
                 'tool-1',
@@ -376,12 +376,12 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should handle errors during offset calculation', () => {
+        it('should handle errors during offset calculation', async () => {
             vi.mocked(offsetChain).mockImplementation(() => {
                 throw new Error('Calculation error');
             });
 
-            const result = calculateChainOffset(
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.INSET,
                 'tool-1',
@@ -391,8 +391,8 @@ describe('Operations Functions', () => {
             expect(result).toBeNull();
         });
 
-        it('should return successful result for INSET direction', () => {
-            const result = calculateChainOffset(
+        it('should return successful result for INSET direction', async () => {
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.INSET,
                 'tool-1',
@@ -408,8 +408,8 @@ describe('Operations Functions', () => {
             });
         });
 
-        it('should return successful result for OUTSET direction', () => {
-            const result = calculateChainOffset(
+        it('should return successful result for OUTSET direction', async () => {
+            const result = await calculateChainOffset(
                 mockChain,
                 OffsetDirection.OUTSET,
                 'tool-1',
@@ -504,7 +504,8 @@ describe('Operations Functions', () => {
                 0,
                 [mockChain],
                 [mockTool],
-                []
+                [],
+                0.01
             );
 
             expect(result.cuts).toEqual([]);
@@ -547,7 +548,8 @@ describe('Operations Functions', () => {
                 0,
                 [mockChain],
                 [mockTool],
-                []
+                [],
+                0.01
             );
 
             expect(result.cuts).toHaveLength(1);
@@ -590,7 +592,8 @@ describe('Operations Functions', () => {
                 0,
                 [mockChain],
                 [mockTool],
-                []
+                [],
+                0.01
             );
 
             expect(result.cuts).toHaveLength(1);
@@ -611,7 +614,8 @@ describe('Operations Functions', () => {
                 0,
                 [mockChain],
                 [mockTool],
-                []
+                [],
+                0.01
             );
 
             expect(result.cuts).toHaveLength(1);
@@ -627,7 +631,8 @@ describe('Operations Functions', () => {
                 0,
                 [mockChain],
                 [mockPart],
-                [mockTool]
+                [mockTool],
+                0.01
             );
 
             expect(result.cuts).toEqual([]);
@@ -680,7 +685,8 @@ describe('Operations Functions', () => {
                 0,
                 chains,
                 [mockPart],
-                [mockTool]
+                [mockTool],
+                0.01
             );
 
             expect(result.cuts).toHaveLength(2); // Shell + 1 hole
@@ -742,7 +748,8 @@ describe('Operations Functions', () => {
                 0,
                 chains,
                 [partWithNestedHoles],
-                [mockTool]
+                [mockTool],
+                0.01
             );
 
             expect(result.cuts).toHaveLength(3); // Shell + 2 holes
@@ -1052,7 +1059,8 @@ describe('Operations Functions', () => {
                 disabledOperation,
                 [mockChain],
                 [mockPart],
-                [mockTool]
+                [mockTool],
+                0.01
             );
 
             expect(result.cuts).toEqual([]);
@@ -1066,7 +1074,8 @@ describe('Operations Functions', () => {
                 operationNoTargets,
                 [mockChain],
                 [mockPart],
-                [mockTool]
+                [mockTool],
+                0.01
             );
 
             expect(result.cuts).toEqual([]);
@@ -1102,7 +1111,8 @@ describe('Operations Functions', () => {
                 mockOperation,
                 [mockChain],
                 [mockPart],
-                [mockTool]
+                [mockTool],
+                0.01
             );
 
             expect(result.cuts).toHaveLength(1);
@@ -1153,7 +1163,8 @@ describe('Operations Functions', () => {
                 operationParts,
                 chains,
                 [mockPart],
-                [mockTool]
+                [mockTool],
+                0.01
             );
 
             expect(result.cuts).toHaveLength(2); // Shell + 1 hole

@@ -538,6 +538,8 @@ describe('cutStore', () => {
                 showCutter: false,
                 showCutDirections: false,
                 showCutPaths: false,
+                showCutStartPoints: false,
+                showCutEndPoints: false,
             };
 
             cutStore.restore(cutsState);

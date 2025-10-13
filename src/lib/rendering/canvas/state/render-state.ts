@@ -79,6 +79,8 @@ export interface VisibilityState {
     showCutDirections: boolean;
     showCutPaths: boolean;
     showCutter: boolean;
+    showCutStartPoints: boolean;
+    showCutEndPoints: boolean;
     showLeadNormals: boolean;
     showLeadPaths: boolean;
 }
@@ -200,6 +202,8 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showCutDirections: false,
             showCutPaths: true,
             showCutter: false,
+            showCutStartPoints: false,
+            showCutEndPoints: false,
             showLeadNormals: false,
             showLeadPaths: true,
         },
@@ -274,6 +278,8 @@ export function cloneRenderState(state: RenderState): RenderState {
                   showCutDirections: state.cutsState.showCutDirections,
                   showCutPaths: state.cutsState.showCutPaths,
                   showCutter: state.cutsState.showCutter,
+                  showCutStartPoints: state.cutsState.showCutStartPoints,
+                  showCutEndPoints: state.cutsState.showCutEndPoints,
               }
             : null,
         chainsWithCuts: [...state.chainsWithCuts],

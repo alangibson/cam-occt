@@ -21,6 +21,7 @@ import {
     SelectionMode,
     PreprocessingStep,
     RapidOptimizationAlgorithm,
+    OffsetImplementation,
 } from '$lib/stores/settings/interfaces';
 import { NormalSide } from '$lib/types/cam';
 
@@ -51,6 +52,7 @@ const defaultApplicationSettings = {
         rapidOptimizationAlgorithm:
             RapidOptimizationAlgorithm.TravelingSalesman,
     },
+    offsetImplementation: OffsetImplementation.Exact,
 };
 
 // Mock localStorage
@@ -283,6 +285,8 @@ describe('State Persistence', () => {
             showCutter: false,
             showCutDirections: false,
             showCutPaths: false,
+            showCutStartPoints: false,
+            showCutEndPoints: false,
         };
 
         // Save state
@@ -387,6 +391,8 @@ describe('State Persistence', () => {
             showCutter: false,
             showCutDirections: false,
             showCutPaths: false,
+            showCutStartPoints: false,
+            showCutEndPoints: false,
         };
 
         saveState(testState);

@@ -45,3 +45,6 @@ yarn.lock
 # Temporary files
 *.tmp
 *.log
+
+# WASM files
+src/lib/wasm/

@@ -253,6 +253,21 @@ export function tessellateChain(
 
     return points;
 }
+
+/**
+ * Tessellate chain preserving individual shape boundaries
+ * Returns array of point arrays (one per shape) for Clipper2 offsetting
+ *
+ * @param chain - The chain to tessellate
+ * @param params - Tessellation parameters
+ * @returns Array of point arrays, one per shape
+ */
+export function tessellateChainToShapes(
+    chain: Chain,
+    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
+): Point2D[][] {
+    return chain.shapes.map((shape) => tessellateShape(shape, params));
+}
 /**
  * Helper function to get all endpoints from a shape
  */

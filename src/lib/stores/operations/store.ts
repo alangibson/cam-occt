@@ -9,7 +9,6 @@ import { toolStore } from '$lib/stores/tools/store';
 import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
 import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Operation, OperationsStore } from './interfaces';
 import { createCutsFromOperation } from './functions';
 
@@ -99,7 +98,7 @@ function createOperationsStore(): OperationsStore {
                 cutStore.deleteCutsByOperation(operation.id);
 
                 // Get required state data
-                const chainsState: { chains: Chain[] } = get(chainStore);
+                const chainsState = get(chainStore);
                 const partsState: { parts: DetectedPart[] } = get(partStore);
                 const tools = get(toolStore);
 
@@ -108,7 +107,8 @@ function createOperationsStore(): OperationsStore {
                     operation,
                     chainsState.chains,
                     partsState.parts,
-                    tools
+                    tools,
+                    chainsState.tolerance
                 );
 
                 // Store generated cuts

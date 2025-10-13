@@ -1,5 +1,9 @@
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
+import {
+    OptimizeStarts,
+    DEFAULT_OPTIMIZE_STARTS,
+} from '$lib/types/optimize-starts';
 import type { LeadConfig } from '$lib/algorithms/leads/interfaces';
 import { getDefaults } from '$lib/config';
 
@@ -61,3 +65,5 @@ export const DEFAULT_HOLE_UNDERSPEED = {
 };
 
 export const DEFAULT_OPERATION_ENABLED = true;
+
+export { DEFAULT_OPTIMIZE_STARTS, OptimizeStarts };

@@ -2,7 +2,10 @@
     import { settingsStore } from '$lib/stores/settings/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { getStageDisplayName } from '$lib/stores/workflow/functions';
-    import { PreprocessingStep } from '$lib/stores/settings/interfaces';
+    import {
+        PreprocessingStep,
+        OffsetImplementation,
+    } from '$lib/stores/settings/interfaces';
 
     const allStages = [
         WorkflowStage.IMPORT,
@@ -48,6 +51,12 @@
     function isPreprocessingStepEnabled(step: PreprocessingStep): boolean {
         return $settingsStore.settings.enabledPreprocessingSteps.includes(step);
     }
+
+    function handleOffsetImplementationChange(
+        implementation: OffsetImplementation
+    ) {
+        settingsStore.setOffsetImplementation(implementation);
+    }
 </script>
 
 <div class="settings-container">
@@ -90,6 +99,44 @@
                 {/each}
             </div>
         </section>
+
+        <section class="settings-section">
+            <h2>Offset Calculation</h2>
+            <div class="stages-list">
+                <label class="stage-item">
+                    <input
+                        type="radio"
+                        name="offsetImplementation"
+                        value={OffsetImplementation.Exact}
+                        checked={$settingsStore.settings
+                            .offsetImplementation ===
+                            OffsetImplementation.Exact}
+                        onchange={() =>
+                            handleOffsetImplementationChange(
+                                OffsetImplementation.Exact
+                            )}
+                    />
+                    <span class="stage-name">Exact (preserves curves)</span>
+                </label>
+                <label class="stage-item">
+                    <input
+                        type="radio"
+                        name="offsetImplementation"
+                        value={OffsetImplementation.Polyline}
+                        checked={$settingsStore.settings
+                            .offsetImplementation ===
+                            OffsetImplementation.Polyline}
+                        onchange={() =>
+                            handleOffsetImplementationChange(
+                                OffsetImplementation.Polyline
+                            )}
+                    />
+                    <span class="stage-name"
+                        >Polyline (tessellates to polylines)</span
+                    >
+                </label>
+            </div>
+        </section>
     </div>
 </div>
 
@@ -109,7 +156,7 @@
 
     .settings-columns {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 2rem;
     }
 
@@ -144,7 +191,8 @@
         background-color: #f3f4f6;
     }
 
-    .stage-item input[type='checkbox'] {
+    .stage-item input[type='checkbox'],
+    .stage-item input[type='radio'] {
         width: 1rem;
         height: 1rem;
         cursor: pointer;

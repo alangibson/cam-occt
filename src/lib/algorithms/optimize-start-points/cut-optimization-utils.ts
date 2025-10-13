@@ -75,9 +75,12 @@ export function prepareChainsAndLeadConfigs(
     leadInConfig: LeadConfig;
     leadOutConfig: LeadConfig;
 } {
-    // Use offset geometry for lead calculation if available
-    let leadCalculationChain: Chain = chain;
-    if (cut.offset && cut.offset.offsetShapes.length > 0) {
+    // Use the cut's cutChain if available (it may have been optimized)
+    let leadCalculationChain: Chain;
+    if (cut.cutChain) {
+        // Use the cutChain directly - it already has the correct shape order
+        leadCalculationChain = cut.cutChain;
+    } else if (cut.offset && cut.offset.offsetShapes.length > 0) {
         // Create a temporary chain from offset shapes
         // IMPORTANT: Preserve the clockwise property from the original chain
         // to maintain consistent normal direction calculation
@@ -88,6 +91,8 @@ export function prepareChainsAndLeadConfigs(
             clockwise: chain.clockwise,
             originalChainId: chain.id,
         };
+    } else {
+        leadCalculationChain = chain;
     }
 
     const leadInConfig = createLeadInConfig(cut);

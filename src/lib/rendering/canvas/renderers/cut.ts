@@ -76,8 +76,11 @@ export class CutRenderer extends BaseRenderer {
             this.drawCutterPath(ctx, state);
         }
 
-        // Then render endpoints on top if cut paths are shown
-        if (state.visibility.showCutPaths) {
+        // Then render endpoints on top if enabled
+        if (
+            state.visibility.showCutStartPoints ||
+            state.visibility.showCutEndPoints
+        ) {
             this.drawCutEndpoints(ctx, state);
         }
 
@@ -379,31 +382,41 @@ export class CutRenderer extends BaseRenderer {
             if (!firstShape || !lastShape) return;
 
             // Get start point of first shape
-            const startPoint = getShapeStartPoint(firstShape);
-            if (startPoint) {
-                ctx.save();
-                ctx.fillStyle = 'rgb(0, 133, 84)'; // Green for start
-                ctx.beginPath();
-                ctx.arc(
-                    startPoint.x,
-                    startPoint.y,
-                    pointRadius,
-                    0,
-                    2 * Math.PI
-                );
-                ctx.fill();
-                ctx.restore();
+            if (state.visibility.showCutStartPoints) {
+                const startPoint = getShapeStartPoint(firstShape);
+                if (startPoint) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgb(0, 133, 84)'; // Green for start
+                    ctx.beginPath();
+                    ctx.arc(
+                        startPoint.x,
+                        startPoint.y,
+                        pointRadius,
+                        0,
+                        2 * Math.PI
+                    );
+                    ctx.fill();
+                    ctx.restore();
+                }
             }
 
             // Get end point of last shape
-            const endPoint = getShapeEndPoint(lastShape);
-            if (endPoint) {
-                ctx.save();
-                ctx.fillStyle = 'rgb(133, 18, 0)'; // Red for end
-                ctx.beginPath();
-                ctx.arc(endPoint.x, endPoint.y, pointRadius, 0, 2 * Math.PI);
-                ctx.fill();
-                ctx.restore();
+            if (state.visibility.showCutEndPoints) {
+                const endPoint = getShapeEndPoint(lastShape);
+                if (endPoint) {
+                    ctx.save();
+                    ctx.fillStyle = 'rgb(133, 18, 0)'; // Red for end
+                    ctx.beginPath();
+                    ctx.arc(
+                        endPoint.x,
+                        endPoint.y,
+                        pointRadius,
+                        0,
+                        2 * Math.PI
+                    );
+                    ctx.fill();
+                    ctx.restore();
+                }
             }
         });
     }

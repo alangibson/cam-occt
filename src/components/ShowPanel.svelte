@@ -29,6 +29,8 @@
         cutStore.setShowCutDirections(false);
         cutStore.setShowCutPaths(true);
         cutStore.setShowCutter(false);
+        cutStore.setShowCutStartPoints(false);
+        cutStore.setShowCutEndPoints(false);
 
         // Reset lead visualization
         showLeadNormals.set(false);
@@ -214,6 +216,16 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
+                    checked={cutsVisualization.showCutEndPoints}
+                    onchange={(e) =>
+                        cutStore.setShowCutEndPoints(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Ends
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
                     checked={cutsVisualization.showCutNormals}
                     onchange={(e) =>
                         cutStore.setShowCutNormals(e.currentTarget.checked)}
@@ -230,6 +242,16 @@
                     class="show-checkbox"
                 />
                 Paths
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={cutsVisualization.showCutStartPoints}
+                    onchange={(e) =>
+                        cutStore.setShowCutStartPoints(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Starts
             </label>
         </div>
 

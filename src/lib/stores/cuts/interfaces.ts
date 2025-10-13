@@ -98,6 +98,8 @@ export interface CutsState {
     showCutter: boolean;
     showCutDirections: boolean;
     showCutPaths: boolean;
+    showCutStartPoints: boolean;
+    showCutEndPoints: boolean;
 }
 
 export interface CutsStore {
@@ -128,6 +130,8 @@ export interface CutsStore {
     setShowCutter: (show: boolean) => void;
     setShowCutDirections: (show: boolean) => void;
     setShowCutPaths: (show: boolean) => void;
+    setShowCutStartPoints: (show: boolean) => void;
+    setShowCutEndPoints: (show: boolean) => void;
     reset: () => void;
     restore: (cutsState: CutsState) => void;
 }

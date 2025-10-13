@@ -23,6 +23,7 @@ export default [
       "report/**",
       ".wrangler/**",
       "worker/**",
+      "src/lib/wasm/**",
     ],
   },
   // Prepackaged defaults
@@ -116,6 +117,13 @@ export default [
         "ignore": [0, 1, 2],
         "ignoreArrayIndexes": true,
       }],
+    },
+  },
+  // WASM loader files that need dynamic imports
+  {
+    files: ["src/lib/cam/offset/clipper-init.ts", "src/lib/algorithms/offset-calculation/offset-adapter.ts"],
+    rules: {
+      "no-restricted-syntax": "off",
     },
   },
   // Test file overrides

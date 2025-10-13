@@ -11,6 +11,7 @@ import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/
 import type { Shape } from '$lib/types';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { OptimizeStarts } from '$lib/types/optimize-starts';
 
 export interface OffsetCalculation {
     offsetShapes: Shape[];
@@ -44,6 +45,7 @@ export interface Operation {
     kerfCompensation?: KerfCompensation; // Kerf compensation type (none, inner, outer, part)
     holeUnderspeedEnabled?: boolean; // Enable velocity reduction for holes
     holeUnderspeedPercent?: number; // Velocity percentage for holes (10-100)
+    optimizeStarts?: OptimizeStarts; // Optimize start points (none, midpoint)
 }
 
 export interface OperationsStore {

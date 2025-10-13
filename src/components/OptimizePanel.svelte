@@ -43,6 +43,7 @@
                 onchange={handleAlgorithmChange}
                 class="algorithm-select"
             >
+                <option value={RapidOptimizationAlgorithm.None}>None</option>
                 <option value={RapidOptimizationAlgorithm.TravelingSalesman}
                     >Traveling Salesman</option
                 >

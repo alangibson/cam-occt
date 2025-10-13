@@ -6,7 +6,7 @@ import {
     DIRECTION_COUNTERCLOCKWISE,
 } from '$lib/geometry/constants';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
+import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { DetectedPart, PartHole, Shape } from '$lib/types';
 import type { Tool } from '$lib/stores/tools/interfaces';
@@ -29,6 +29,8 @@ import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-pa
 import { settingsStore } from '$lib/stores/settings/store';
 import { get } from 'svelte/store';
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+import { OptimizeStarts } from '$lib/types/optimize-starts';
+import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
 
 /**
  * Get the appropriate tool value based on the current measurement system
@@ -78,12 +80,12 @@ export function getChainCutDirection(chain: Chain | undefined): CutDirection {
  * Calculate chain offset for kerf compensation.
  * Returns offset result with warnings instead of directly updating stores.
  */
-export function calculateChainOffset(
+export async function calculateChainOffset(
     chain: Chain,
     kerfCompensation: OffsetDirection,
     toolId: string | null,
     tools: Tool[]
-): ChainOffsetResult | null {
+): Promise<ChainOffsetResult | null> {
     if (
         !kerfCompensation ||
         kerfCompensation === OffsetDirection.NONE ||
@@ -108,17 +110,25 @@ export function calculateChainOffset(
     const offsetDistance: number = kerfWidth / 2;
 
     try {
-        // Call offset calculation
+        // Get offset implementation setting
+        const settings = get(settingsStore).settings;
+
+        // Call offset calculation via adapter
         // For inset, use negative distance; for outset, use positive
         const direction: number =
             kerfCompensation === OffsetDirection.INSET
                 ? DIRECTION_CLOCKWISE
                 : DIRECTION_COUNTERCLOCKWISE;
-        const offsetResult = offsetChain(chain, offsetDistance * direction, {
-            tolerance: 0.1,
-            maxExtension: 50,
-            snapThreshold: 0.5,
-        });
+        const offsetResult = await offsetChainAdapter(
+            chain,
+            offsetDistance * direction,
+            {
+                tolerance: 0.1,
+                maxExtension: 50,
+                snapThreshold: 0.5,
+            },
+            settings.offsetImplementation
+        );
 
         if (!offsetResult.success) {
             console.warn('Offset calculation failed', offsetResult.errors);
@@ -243,7 +253,8 @@ export async function generateCutsForChainWithOperation(
     index: number,
     chains: Chain[],
     tools: Tool[],
-    parts: DetectedPart[]
+    parts: DetectedPart[],
+    tolerance: number
 ): Promise<CutGenerationResult> {
     // Use the operation's preferred cut direction
     // For open cuts, the stored clockwise property will be null (indicating 'none')
@@ -290,7 +301,7 @@ export async function generateCutsForChainWithOperation(
         chain &&
         operation.toolId
     ) {
-        const offsetResult = calculateChainOffset(
+        const offsetResult = await calculateChainOffset(
             chain,
             kerfCompensation,
             operation.toolId,
@@ -378,7 +389,40 @@ export async function generateCutsForChainWithOperation(
         normalSide: cutNormalResult.normalSide,
     };
 
-    // Calculate leads for the cut
+    // Optimize start point if enabled
+    if (
+        operation.optimizeStarts &&
+        operation.optimizeStarts !== OptimizeStarts.NONE
+    ) {
+        const optimizedCut = optimizeCutStartPoint(
+            cutToReturn,
+            operation.optimizeStarts,
+            tolerance
+        );
+        if (optimizedCut) {
+            // Use the optimized cut with the new start point
+            Object.assign(cutToReturn, optimizedCut);
+
+            // Recalculate normal with the new start point
+            const newCutNormalResult = calculateCutNormal(
+                cutToReturn.cutChain!,
+                cutDirection,
+                part,
+                kerfCompensation
+            );
+            cutToReturn.normal = newCutNormalResult.normal;
+            cutToReturn.normalConnectionPoint =
+                newCutNormalResult.connectionPoint;
+            cutToReturn.normalSide = newCutNormalResult.normalSide;
+
+            // Update offset shapes to match optimized cutChain
+            if (cutToReturn.offset && cutToReturn.cutChain) {
+                cutToReturn.offset.offsetShapes = cutToReturn.cutChain.shapes;
+            }
+        }
+    }
+
+    // Calculate leads for the cut (uses the updated normal if optimization was applied)
     const leadResult = await calculateCutLeads(
         cutToReturn,
         operation,
@@ -422,7 +466,8 @@ export async function generateCutsForPartTargetWithOperation(
     index: number,
     chains: Chain[],
     parts: DetectedPart[],
-    tools: Tool[]
+    tools: Tool[],
+    tolerance: number
 ): Promise<CutGenerationResult> {
     // For parts, create cuts for all chains that make up the part
     const part: DetectedPart | undefined = parts.find((p) => p.id === targetId);
@@ -478,7 +523,7 @@ export async function generateCutsForPartTargetWithOperation(
         shellChain &&
         operation.toolId
     ) {
-        const offsetResult = calculateChainOffset(
+        const offsetResult = await calculateChainOffset(
             shellChain,
             shellKerfCompensation,
             operation.toolId,
@@ -569,7 +614,40 @@ export async function generateCutsForPartTargetWithOperation(
         normalSide: shellCutNormalResult.normalSide,
     };
 
-    // Calculate leads for shell cut
+    // Optimize shell cut start point if enabled
+    if (
+        operation.optimizeStarts &&
+        operation.optimizeStarts !== OptimizeStarts.NONE
+    ) {
+        const optimizedCut = optimizeCutStartPoint(
+            shellCut,
+            operation.optimizeStarts,
+            tolerance
+        );
+        if (optimizedCut) {
+            // Use the optimized cut with the new start point
+            Object.assign(shellCut, optimizedCut);
+
+            // Recalculate normal with the new start point
+            const newShellCutNormalResult = calculateCutNormal(
+                shellCut.cutChain!,
+                shellCutDirection,
+                part,
+                shellKerfCompensation
+            );
+            shellCut.normal = newShellCutNormalResult.normal;
+            shellCut.normalConnectionPoint =
+                newShellCutNormalResult.connectionPoint;
+            shellCut.normalSide = newShellCutNormalResult.normalSide;
+
+            // Update offset shapes to match optimized cutChain
+            if (shellCut.offset && shellCut.cutChain) {
+                shellCut.offset.offsetShapes = shellCut.cutChain.shapes;
+            }
+        }
+    }
+
+    // Calculate leads for shell cut (uses the updated normal if optimization was applied)
     if (shellChain) {
         const shellLeadResult = await calculateCutLeads(
             shellCut,
@@ -650,7 +728,7 @@ export async function generateCutsForPartTargetWithOperation(
                 holeChain &&
                 operation.toolId
             ) {
-                const offsetResult = calculateChainOffset(
+                const offsetResult = await calculateChainOffset(
                     holeChain,
                     holeKerfCompensation,
                     operation.toolId,
@@ -741,7 +819,40 @@ export async function generateCutsForPartTargetWithOperation(
                 normalSide: holeCutNormalResult.normalSide,
             };
 
-            // Calculate leads for hole cut
+            // Optimize hole cut start point if enabled
+            if (
+                operation.optimizeStarts &&
+                operation.optimizeStarts !== OptimizeStarts.NONE
+            ) {
+                const optimizedCut = optimizeCutStartPoint(
+                    holeCut,
+                    operation.optimizeStarts,
+                    tolerance
+                );
+                if (optimizedCut) {
+                    // Use the optimized cut with the new start point
+                    Object.assign(holeCut, optimizedCut);
+
+                    // Recalculate normal with the new start point
+                    const newHoleCutNormalResult = calculateCutNormal(
+                        holeCut.cutChain!,
+                        holeCutDirection,
+                        part,
+                        holeKerfCompensation
+                    );
+                    holeCut.normal = newHoleCutNormalResult.normal;
+                    holeCut.normalConnectionPoint =
+                        newHoleCutNormalResult.connectionPoint;
+                    holeCut.normalSide = newHoleCutNormalResult.normalSide;
+
+                    // Update offset shapes to match optimized cutChain
+                    if (holeCut.offset && holeCut.cutChain) {
+                        holeCut.offset.offsetShapes = holeCut.cutChain.shapes;
+                    }
+                }
+            }
+
+            // Calculate leads for hole cut (uses the updated normal if optimization was applied)
             if (holeChain) {
                 const holeLeadResult = await calculateCutLeads(
                     holeCut,
@@ -827,9 +938,14 @@ export async function calculateCutLeads(
         const leadInConfig = createLeadInConfig(cut);
         const leadOutConfig = createLeadOutConfig(cut);
 
-        // Use offset geometry for lead calculation if available
-        let leadCalculationChain: Chain = chain;
-        if (cut.offset && cut.offset.offsetShapes.length > 0) {
+        // Use the cut's cutChain if available (it may have been optimized)
+        // Otherwise use offset geometry, or fall back to original chain
+        let leadCalculationChain: Chain;
+        if (cut.cutChain) {
+            // Use the cutChain directly - it already has the correct shape order
+            // and includes any optimizations (like midpoint start)
+            leadCalculationChain = cut.cutChain;
+        } else if (cut.offset && cut.offset.offsetShapes.length > 0) {
             // Create a temporary chain from offset shapes
             // IMPORTANT: Preserve the clockwise property from the original chain
             // to maintain consistent normal direction calculation
@@ -840,6 +956,8 @@ export async function calculateCutLeads(
                 clockwise: chain.clockwise,
                 originalChainId: chain.id,
             };
+        } else {
+            leadCalculationChain = chain;
         }
 
         // Calculate leads using the appropriate chain (original or offset)
@@ -959,7 +1077,8 @@ export async function createCutsFromOperation(
     operation: Operation,
     chains: Chain[],
     parts: DetectedPart[],
-    tools: Tool[]
+    tools: Tool[],
+    tolerance: number
 ): Promise<CutGenerationResult> {
     // If operation is disabled or has no targets, don't generate cuts
     if (!operation.enabled || operation.targetIds.length === 0) {
@@ -980,7 +1099,8 @@ export async function createCutsFromOperation(
                     index,
                     chains,
                     tools,
-                    parts
+                    parts,
+                    tolerance
                 );
             allCuts.push(...result.cuts);
             allWarnings.push(...result.warnings);
@@ -992,7 +1112,8 @@ export async function createCutsFromOperation(
                     index,
                     chains,
                     parts,
-                    tools
+                    tools,
+                    tolerance
                 );
             allCuts.push(...result.cuts);
             allWarnings.push(...result.warnings);

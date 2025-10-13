@@ -111,6 +111,8 @@
     $: showCutDirections = cutsState.showCutDirections;
     $: showCutPaths = cutsState.showCutPaths;
     $: showCutter = cutsState.showCutter;
+    $: showCutStartPoints = cutsState.showCutStartPoints;
+    $: showCutEndPoints = cutsState.showCutEndPoints;
     $: leadState = $leadStore;
     $: selectedLeadId = leadState.selectedLeadId;
     $: highlightedLeadId = leadState.highlightedLeadId;
@@ -331,6 +333,8 @@
                 showCutDirections,
                 showCutPaths,
                 showCutter,
+                showCutStartPoints,
+                showCutEndPoints,
                 showLeadNormals: leadNormals,
                 showLeadPaths: leadPaths,
             },
