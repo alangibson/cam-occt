@@ -22,6 +22,7 @@ import {
     DEFAULT_PUDDLE_JUMP_HEIGHT_MM,
     DEFAULT_PLUNGE_RATE_MM,
     DEFAULT_RAPID_RATE_MM,
+    IMPERIAL_RAPID_RATE_MM,
 } from '$lib/cam/constants';
 
 export class CamDefaults {
@@ -148,10 +149,15 @@ export class CamDefaults {
 
     /**
      * Get default rapid rate for plasma cutting (units/min)
+     * Uses appropriate rate based on measurement system (like feed rate does)
      */
     get rapidRate(): number {
+        const rapidRateMM = this.measurementSystem === MeasurementSystem.Imperial
+            ? IMPERIAL_RAPID_RATE_MM
+            : DEFAULT_RAPID_RATE_MM;
+
         return convertToCurrentSystem(
-            DEFAULT_RAPID_RATE_MM,
+            rapidRateMM,
             this.measurementSystem
         );
     }

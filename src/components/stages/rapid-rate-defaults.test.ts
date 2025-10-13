@@ -24,8 +24,8 @@ describe('Rapid Rate from DefaultsManager', () => {
 
         const rapidRate = defaults.cam.rapidRate;
 
-        // Should be converted to inches/min (3000 mm/min ≈ 118.11 in/min)
-        expect(rapidRate).toBeCloseTo(118.11, 2);
+        // Should be 3000 in/min (76200 mm/min converted to imperial)
+        expect(rapidRate).toBe(3000);
     });
 
     it('should automatically update rapid rate when measurement system changes', () => {
@@ -35,9 +35,9 @@ describe('Rapid Rate from DefaultsManager', () => {
         defaults.updateMeasurementSystem(MeasurementSystem.Metric);
         expect(defaults.cam.rapidRate).toBe(3000);
 
-        // Switch to imperial
+        // Switch to imperial - should be 3000 in/min
         defaults.updateMeasurementSystem(MeasurementSystem.Imperial);
-        expect(defaults.cam.rapidRate).toBeCloseTo(118.11, 2);
+        expect(defaults.cam.rapidRate).toBe(3000);
 
         // Switch back to metric
         defaults.updateMeasurementSystem(MeasurementSystem.Metric);

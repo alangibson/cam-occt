@@ -66,6 +66,14 @@ export enum OffsetImplementation {
 }
 
 /**
+ * CAM settings interface
+ */
+export interface CamSettings {
+    /** Rapid feed rate in units/min (units depend on measurement system) */
+    rapidRate: number;
+}
+
+/**
  * Optimization settings interface
  */
 export interface OptimizationSettings {
@@ -100,6 +108,9 @@ export interface ApplicationSettings {
 
     /** Offset calculation implementation to use */
     offsetImplementation: OffsetImplementation;
+
+    /** CAM settings */
+    camSettings: CamSettings;
 }
 
 /**
@@ -149,6 +160,9 @@ export interface SettingsStore {
 
     /** Set the offset implementation */
     setOffsetImplementation: (implementation: OffsetImplementation) => void;
+
+    /** Set the rapid rate */
+    setRapidRate: (rate: number) => void;
 
     /** Update all settings at once */
     updateSettings: (settings: Partial<ApplicationSettings>) => void;

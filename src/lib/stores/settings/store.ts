@@ -14,6 +14,7 @@ import type {
     ImportUnitSetting,
     SelectionMode,
     OptimizationSettings,
+    CamSettings,
 } from './interfaces';
 import {
     MeasurementSystem as MS,
@@ -25,6 +26,12 @@ import {
 } from './interfaces';
 import { DefaultsManager } from '$lib/config/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
+import { DEFAULT_RAPID_RATE_MM } from '$lib/cam/constants';
+
+// Default CAM settings - use metric default, will be converted if needed when measurement system is set
+const DEFAULT_CAM_SETTINGS: CamSettings = {
+    rapidRate: DEFAULT_RAPID_RATE_MM,
+};
 
 // Default optimization settings
 const DEFAULT_OPTIMIZATION_SETTINGS: OptimizationSettings = {
@@ -53,6 +60,7 @@ const DEFAULT_SETTINGS: ApplicationSettings = {
     ],
     optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,
     offsetImplementation: OffsetImplementation.Exact,
+    camSettings: DEFAULT_CAM_SETTINGS,
 };
 
 // localStorage key for settings persistence
@@ -92,6 +100,18 @@ function loadSettings(): ApplicationSettings {
                           }
                         : DEFAULT_OPTIMIZATION_SETTINGS;
 
+                // Validate CAM settings
+                const camSettings: CamSettings =
+                    parsed.camSettings && typeof parsed.camSettings === 'object'
+                        ? {
+                              rapidRate:
+                                  typeof parsed.camSettings.rapidRate ===
+                                  'number' && parsed.camSettings.rapidRate > 0
+                                      ? parsed.camSettings.rapidRate
+                                      : DEFAULT_CAM_SETTINGS.rapidRate,
+                          }
+                        : DEFAULT_CAM_SETTINGS;
+
                 return {
                     measurementSystem: Object.values(MS).includes(
                         parsed.measurementSystem
@@ -130,6 +150,7 @@ function loadSettings(): ApplicationSettings {
                     ).includes(parsed.offsetImplementation)
                         ? parsed.offsetImplementation
                         : DEFAULT_SETTINGS.offsetImplementation,
+                    camSettings,
                 };
             }
         }
@@ -166,9 +187,27 @@ function createSettingsStore(): SettingsStore {
 
         setMeasurementSystem(system: MeasurementSystem) {
             update((state) => {
+                const oldSystem = state.settings.measurementSystem;
+
+                // Convert rapid rate when measurement system changes
+                let newRapidRate = state.settings.camSettings.rapidRate;
+                if (oldSystem !== system) {
+                    if (oldSystem === MS.Metric && system === MS.Imperial) {
+                        // Convert mm/min to in/min
+                        newRapidRate = newRapidRate / 25.4;
+                    } else if (oldSystem === MS.Imperial && system === MS.Metric) {
+                        // Convert in/min to mm/min
+                        newRapidRate = newRapidRate * 25.4;
+                    }
+                }
+
                 const newSettings = {
                     ...state.settings,
                     measurementSystem: system,
+                    camSettings: {
+                        ...state.settings.camSettings,
+                        rapidRate: newRapidRate,
+                    },
                 };
                 saveSettings(newSettings);
 
@@ -353,6 +392,23 @@ function createSettingsStore(): SettingsStore {
                 const newSettings = {
                     ...state.settings,
                     offsetImplementation: implementation,
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setRapidRate(rate: number) {
+            update((state) => {
+                const newSettings = {
+                    ...state.settings,
+                    camSettings: {
+                        ...state.settings.camSettings,
+                        rapidRate: rate,
+                    },
                 };
                 saveSettings(newSettings);
                 return {

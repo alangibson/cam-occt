@@ -28,8 +28,8 @@ describe('DefaultsManager', () => {
             expect(defaults.cam.pierceHeight).toBe(1); // mm
             expect(defaults.cam.cutHeight).toBe(1.5); // mm
             expect(defaults.cam.feedRate).toBe(1000); // mm/min
-            expect(defaults.lead.leadInLength).toBe(2); // mm
-            expect(defaults.lead.leadOutLength).toBe(2); // mm
+            expect(defaults.lead.leadInLength).toBe(1); // mm
+            expect(defaults.lead.leadOutLength).toBe(1); // mm
         });
 
         it('should convert to imperial units correctly', () => {
@@ -49,11 +49,11 @@ describe('DefaultsManager', () => {
                     THOUSANDTHS_PRECISION_FACTOR
             );
             expect(defaults.lead.leadInLength).toBe(
-                Math.round((2 / 25.4) * THOUSANDTHS_PRECISION_FACTOR) /
+                Math.round((1 / 25.4) * THOUSANDTHS_PRECISION_FACTOR) /
                     THOUSANDTHS_PRECISION_FACTOR
             );
             expect(defaults.lead.leadOutLength).toBe(
-                Math.round((2 / 25.4) * THOUSANDTHS_PRECISION_FACTOR) /
+                Math.round((1 / 25.4) * THOUSANDTHS_PRECISION_FACTOR) /
                     THOUSANDTHS_PRECISION_FACTOR
             );
         });
@@ -237,9 +237,9 @@ describe('DefaultsManager', () => {
                 MeasurementSystem.Imperial
             );
 
-            // Lead lengths should be in imperial units (2mm converted to inches)
+            // Lead lengths should be in imperial units (1mm converted to inches)
             const expectedImperialLeadLength =
-                Math.round((2 / 25.4) * THOUSANDTHS_PRECISION_FACTOR) /
+                Math.round((1 / 25.4) * THOUSANDTHS_PRECISION_FACTOR) /
                 THOUSANDTHS_PRECISION_FACTOR;
 
             expect(newInstance.lead.leadInLength).toBe(

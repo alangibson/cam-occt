@@ -15,6 +15,7 @@
      * - Automatic fallback to original cuts when no offset exists
      */
     import AccordionPanel from '../AccordionPanel.svelte';
+    import SimulatePanel from '../SimulatePanel.svelte';
     import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -25,6 +26,7 @@
     import { toolStore } from '$lib/stores/tools/store';
     import { overlayStore } from '$lib/stores/overlay/store';
     import { partStore } from '$lib/stores/parts/store';
+    import { settingsStore } from '$lib/stores/settings/store';
     import {
         hasValidCachedLeads,
         getCachedLeadGeometry,
@@ -52,8 +54,8 @@
     import { polylineToPoints } from '$lib/geometry/polyline';
     import { getShapePointAt } from '$lib/geometry/shape/functions';
     import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
-    import { getDefaults } from '$lib/config';
     import { type LeadConfig } from '$lib/algorithms/leads/interfaces';
+    import { MeasurementSystem, type SettingsState } from '$lib/stores/settings/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import { LeadType } from '$lib/types/direction';
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
@@ -109,12 +111,35 @@
     let drawingState: DrawingState | null = null;
     let toolStoreState: Tool[] | null = null;
     let partStoreState: PartStore | null = null;
+    let settingsStoreState: SettingsState | null = null;
 
     // Statistics
     let totalCutDistance = 0;
     let totalRapidDistance = 0;
     let pierceCount = 0;
     let estimatedCutTime = 0;
+
+    // Helper function to convert distance from drawing units to display units
+    function convertDistanceToDisplayUnit(distance: number): number {
+        if (!drawingState?.drawing) return distance;
+
+        const drawingUnit = drawingState.drawing.units === 'mm' ? Unit.MM : Unit.INCH;
+        const displayUnitEnum = displayUnit === 'mm' ? Unit.MM : Unit.INCH;
+
+        // If units match, no conversion needed
+        if (drawingUnit === displayUnitEnum) {
+            return distance;
+        }
+
+        // Convert between mm and inch
+        if (drawingUnit === Unit.MM && displayUnitEnum === Unit.INCH) {
+            return distance / 25.4;
+        } else if (drawingUnit === Unit.INCH && displayUnitEnum === Unit.MM) {
+            return distance * 25.4;
+        }
+
+        return distance;
+    }
 
     // Helper function to get feedRate from tool or use default, accounting for hole underspeed
     function getFeedRateForCut(cut: Cut): number {
@@ -171,6 +196,15 @@
         workflowStore.completeStage(WorkflowStage.SIMULATE);
     }
 
+    // Rebuild animation steps when rapid rate changes
+    $: if (
+        settingsStoreState?.settings.camSettings.rapidRate &&
+        cutStoreState &&
+        rapidStoreState
+    ) {
+        buildAnimationSteps();
+    }
+
     // Setup store subscriptions
     function setupStoreSubscriptions() {
         // Clear any existing subscriptions
@@ -210,6 +244,12 @@
         unsubscribers.push(
             partStore.subscribe((state) => {
                 partStoreState = state;
+            })
+        );
+
+        unsubscribers.push(
+            settingsStore.subscribe((state) => {
+                settingsStoreState = state;
             })
         );
     }
@@ -264,10 +304,13 @@
                         Math.pow(rapid.end.y - rapid.start.y, 2)
                 );
                 const rapidRate = getRapidRateForCut(cut); // Get rapid rate from cut's tool
-                const rapidTime = (rapidDistance / rapidRate) * 60; // Convert to seconds
 
-                // Update statistics
-                totalRapidDistance += rapidDistance;
+                // Convert rapid distance to display units for time calculation
+                const rapidDistanceInDisplayUnits = convertDistanceToDisplayUnit(rapidDistance);
+                const rapidTime = (rapidDistanceInDisplayUnits / rapidRate) * 60; // Convert to seconds
+
+                // Update statistics (keep in display units)
+                totalRapidDistance += rapidDistanceInDisplayUnits;
 
                 animationSteps.push({
                     type: 'rapid',
@@ -285,10 +328,13 @@
             // Add cut
             const cutDistance = getCutDistance(cut);
             const feedRate = getFeedRateForCut(cut); // Get feed rate from tool
-            const cutTime = (cutDistance / feedRate) * 60; // Convert to seconds (feedRate is units/min)
 
-            // Update statistics
-            totalCutDistance += cutDistance;
+            // Convert cut distance to display units for time calculation
+            const cutDistanceInDisplayUnits = convertDistanceToDisplayUnit(cutDistance);
+            const cutTime = (cutDistanceInDisplayUnits / feedRate) * 60; // Convert to seconds (feedRate is units/min)
+
+            // Update statistics (keep in display units)
+            totalCutDistance += cutDistanceInDisplayUnits;
             estimatedCutTime += cutTime;
 
             animationSteps.push({
@@ -306,9 +352,32 @@
         totalTime = currentTime;
     }
 
-    // Get rapid rate from DefaultsManager (automatically unit-aware)
+    // Get rapid rate from settings store and convert to display units
     function getRapidRateForCut(_cut: Cut): number {
-        return getDefaults().cam.rapidRate;
+        if (!settingsStoreState) return 3000; // Fallback
+
+        // Get rapid rate from settings (stored in measurement system units)
+        const rapidRateInMeasurementSystemUnits = settingsStoreState.settings.camSettings.rapidRate;
+        const measurementSystem = settingsStoreState.settings.measurementSystem;
+
+        if (!drawingState?.drawing) return rapidRateInMeasurementSystemUnits;
+
+        const measurementSystemUnit = measurementSystem === MeasurementSystem.Metric ? Unit.MM : Unit.INCH;
+        const displayUnitEnum = displayUnit === 'mm' ? Unit.MM : Unit.INCH;
+
+        // If units match, no conversion needed
+        if (measurementSystemUnit === displayUnitEnum) {
+            return rapidRateInMeasurementSystemUnits;
+        }
+
+        // Convert between mm and inch
+        if (measurementSystemUnit === Unit.MM && displayUnitEnum === Unit.INCH) {
+            return rapidRateInMeasurementSystemUnits / 25.4;
+        } else if (measurementSystemUnit === Unit.INCH && displayUnitEnum === Unit.MM) {
+            return rapidRateInMeasurementSystemUnits * 25.4;
+        }
+
+        return rapidRateInMeasurementSystemUnits;
     }
 
     /**
@@ -1227,25 +1296,9 @@
     }
 
     // Format distance with units
+    // Note: Statistics are already in display units after the fix
     function formatDistance(distance: number): string {
-        if (!drawingState?.drawing) return '0.0';
-        const displayUnit = drawingState.displayUnit || 'mm';
-
-        // Convert from drawing units to display units if needed
-        let displayDistance = distance;
-        if (drawingState.drawing.units !== displayUnit) {
-            // Convert between mm and inch
-            if (drawingState.drawing.units === 'mm' && displayUnit === 'inch') {
-                displayDistance = distance / 25.4;
-            } else if (
-                drawingState.drawing.units === 'inch' &&
-                displayUnit === 'mm'
-            ) {
-                displayDistance = distance * 25.4;
-            }
-        }
-
-        return displayDistance.toFixed(1);
+        return distance.toFixed(1);
     }
 
     // Load column widths from localStorage on mount
@@ -1417,6 +1470,7 @@
             aria-label="Resize right panel (Arrow keys to adjust)"
             type="button"
         ></button>
+        <SimulatePanel />
         <AccordionPanel title="Cut Statistics" isExpanded={true}>
             <div class="stats-grid">
                 <div class="stat-item">
