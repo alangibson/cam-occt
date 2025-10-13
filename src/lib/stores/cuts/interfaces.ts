@@ -100,6 +100,7 @@ export interface CutsState {
     showCutPaths: boolean;
     showCutStartPoints: boolean;
     showCutEndPoints: boolean;
+    showCutTangentLines: boolean;
 }
 
 export interface CutsStore {
@@ -132,6 +133,7 @@ export interface CutsStore {
     setShowCutPaths: (show: boolean) => void;
     setShowCutStartPoints: (show: boolean) => void;
     setShowCutEndPoints: (show: boolean) => void;
+    setShowCutTangentLines: (show: boolean) => void;
     reset: () => void;
     restore: (cutsState: CutsState) => void;
 }

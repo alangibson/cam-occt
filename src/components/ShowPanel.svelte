@@ -31,6 +31,7 @@
         cutStore.setShowCutter(false);
         cutStore.setShowCutStartPoints(false);
         cutStore.setShowCutEndPoints(false);
+        cutStore.setShowCutTangentLines(false);
 
         // Reset lead visualization
         showLeadNormals.set(false);
@@ -253,6 +254,16 @@
                     class="show-checkbox"
                 />
                 Starts
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={cutsVisualization.showCutTangentLines}
+                    onchange={(e) =>
+                        cutStore.setShowCutTangentLines(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Tangents
             </label>
         </div>
 

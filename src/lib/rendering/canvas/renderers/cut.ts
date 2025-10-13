@@ -84,6 +84,11 @@ export class CutRenderer extends BaseRenderer {
             this.drawCutEndpoints(ctx, state);
         }
 
+        // Render cut tangents if enabled
+        if (state.visibility.showCutTangentLines) {
+            this.drawCutTangents(ctx, state);
+        }
+
         // Render cut normals if enabled
         if (state.visibility.showCutNormals) {
             this.drawCutNormals(ctx, state);
@@ -418,6 +423,140 @@ export class CutRenderer extends BaseRenderer {
                     ctx.restore();
                 }
             }
+        });
+    }
+
+    /**
+     * Draw cut tangents (tangent direction lines at cut start point)
+     */
+    private drawCutTangents(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState
+    ): void {
+        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+
+        const TANGENT_LINE_LENGTH = 50; // Length in screen pixels
+        const TANGENT_LINE_WIDTH = 1;
+        const ARROW_SIZE = 10; // Arrow head size in screen pixels
+        const ARROW_ANGLE = Math.PI / 6; // 30 degrees
+
+        state.cutsState.cuts.forEach((cut: Cut) => {
+            // Only draw tangents for enabled cuts with enabled operations
+            if (!isCutEnabledForRendering(cut, state)) return;
+
+            const shapesToUse = getShapesForCut(cut, state.chains);
+            if (!shapesToUse || shapesToUse.length === 0) return;
+
+            // Get first shape
+            const firstShape = shapesToUse[0];
+            if (!firstShape) return;
+
+            const startPoint = getShapeStartPoint(firstShape);
+            if (!startPoint) return;
+
+            // Get the tangent at the start of the first shape
+            let tangent: Point2D;
+            switch (firstShape.type) {
+                case 'line':
+                    tangent = {
+                        x: (firstShape.geometry as any).end.x - (firstShape.geometry as any).start.x,
+                        y: (firstShape.geometry as any).end.y - (firstShape.geometry as any).start.y,
+                    };
+                    break;
+                case 'arc':
+                    // For arc, calculate tangent at start
+                    const arc = firstShape.geometry as any;
+                    const startAngle = Math.atan2(
+                        arc.start.y - arc.center.y,
+                        arc.start.x - arc.center.x
+                    );
+                    // Tangent is perpendicular to radius
+                    if (arc.clockwise) {
+                        tangent = {
+                            x: -Math.sin(startAngle),
+                            y: Math.cos(startAngle),
+                        };
+                    } else {
+                        tangent = {
+                            x: Math.sin(startAngle),
+                            y: -Math.cos(startAngle),
+                        };
+                    }
+                    break;
+                default:
+                    // For other shapes, use simple forward difference
+                    if (shapesToUse.length > 1) {
+                        const secondShape = shapesToUse[1];
+                        const secondStart = getShapeStartPoint(secondShape);
+                        if (secondStart) {
+                            tangent = {
+                                x: secondStart.x - startPoint.x,
+                                y: secondStart.y - startPoint.y,
+                            };
+                        } else {
+                            return;
+                        }
+                    } else {
+                        return;
+                    }
+            }
+
+            // Normalize the tangent vector
+            const magnitude = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
+            if (magnitude === 0) return;
+
+            const normalizedTangent = {
+                x: tangent.x / magnitude,
+                y: tangent.y / magnitude,
+            };
+
+            // Calculate the length in world coordinates
+            const tangentLength = state.transform.coordinator.screenToWorldDistance(TANGENT_LINE_LENGTH);
+            const lineWidth = state.transform.coordinator.screenToWorldDistance(TANGENT_LINE_WIDTH);
+            const arrowSize = state.transform.coordinator.screenToWorldDistance(ARROW_SIZE);
+
+            // Calculate end point of the tangent line (pointing in cut direction)
+            const endPoint = {
+                x: startPoint.x + normalizedTangent.x * tangentLength,
+                y: startPoint.y + normalizedTangent.y * tangentLength,
+            };
+
+            ctx.save();
+
+            // Set purple color and line style
+            ctx.strokeStyle = '#800080'; // Purple
+            ctx.fillStyle = '#800080'; // Purple for arrow
+            ctx.lineWidth = lineWidth;
+            ctx.setLineDash([]);
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Draw the tangent line from start point to end point
+            ctx.beginPath();
+            ctx.moveTo(startPoint.x, startPoint.y);
+            ctx.lineTo(endPoint.x, endPoint.y);
+            ctx.stroke();
+
+            // Draw arrow head at the end point
+            // Calculate arrow points
+            const arrowLeft = {
+                x: endPoint.x - arrowSize * Math.cos(Math.atan2(normalizedTangent.y, normalizedTangent.x) - ARROW_ANGLE),
+                y: endPoint.y - arrowSize * Math.sin(Math.atan2(normalizedTangent.y, normalizedTangent.x) - ARROW_ANGLE),
+            };
+            const arrowRight = {
+                x: endPoint.x - arrowSize * Math.cos(Math.atan2(normalizedTangent.y, normalizedTangent.x) + ARROW_ANGLE),
+                y: endPoint.y - arrowSize * Math.sin(Math.atan2(normalizedTangent.y, normalizedTangent.x) + ARROW_ANGLE),
+            };
+
+            // Fill arrow head
+            ctx.beginPath();
+            ctx.moveTo(endPoint.x, endPoint.y);
+            ctx.lineTo(arrowLeft.x, arrowLeft.y);
+            ctx.lineTo(arrowRight.x, arrowRight.y);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
         });
     }
 

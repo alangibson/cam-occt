@@ -16,6 +16,7 @@ function createCutsStore(): CutsStore {
         showCutPaths: true,
         showCutStartPoints: false,
         showCutEndPoints: false,
+        showCutTangentLines: false,
     };
 
     const { subscribe, set, update } = writable<CutsState>(initialState);
@@ -297,6 +298,13 @@ function createCutsStore(): CutsStore {
             update((state) => ({
                 ...state,
                 showCutEndPoints: show,
+            }));
+        },
+
+        setShowCutTangentLines: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showCutTangentLines: show,
             }));
         },
 
