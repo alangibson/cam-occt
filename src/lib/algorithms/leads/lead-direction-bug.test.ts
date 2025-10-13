@@ -213,43 +213,63 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             };
 
             // Calculate leads for shell - CLOCKWISE
+            const cwShellNormal = calculateCutNormal(
+                shellChain,
+                CutDirection.CLOCKWISE,
+                part
+            );
             const cwShellResult = calculateLeads(
                 shellChain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
                 part,
-                { x: 1, y: 0 }
+                cwShellNormal.normal
             );
 
             // Calculate leads for shell - COUNTERCLOCKWISE
+            const ccwShellNormal = calculateCutNormal(
+                shellChain,
+                CutDirection.COUNTERCLOCKWISE,
+                part
+            );
             const ccwShellResult = calculateLeads(
                 shellChain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
                 part,
-                { x: 1, y: 0 }
+                ccwShellNormal.normal
             );
 
             // Calculate leads for hole - CLOCKWISE
+            const cwHoleNormal = calculateCutNormal(
+                holeChain,
+                CutDirection.CLOCKWISE,
+                part
+            );
             const cwHoleResult = calculateLeads(
                 holeChain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
                 part,
-                { x: 1, y: 0 }
+                cwHoleNormal.normal
             );
 
             // Calculate leads for hole - COUNTERCLOCKWISE
+            const ccwHoleNormal = calculateCutNormal(
+                holeChain,
+                CutDirection.COUNTERCLOCKWISE,
+                part
+            );
             const ccwHoleResult = calculateLeads(
                 holeChain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
                 part,
-                { x: 1, y: 0 }
+                ccwHoleNormal.normal
             );
 
             // All should have leads
@@ -616,23 +636,33 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             };
 
             // Calculate leads for CLOCKWISE
+            const cwNormal = calculateCutNormal(
+                chain,
+                CutDirection.CLOCKWISE,
+                undefined
+            );
             const cwResult = calculateLeads(
                 chain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                cwNormal.normal
             );
 
             // Calculate leads for COUNTERCLOCKWISE
+            const ccwNormal = calculateCutNormal(
+                chain,
+                CutDirection.COUNTERCLOCKWISE,
+                undefined
+            );
             const ccwResult = calculateLeads(
                 chain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                ccwNormal.normal
             );
 
             // Both should have leads
@@ -983,23 +1013,33 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             };
 
             // Calculate leads for CLOCKWISE
+            const cwNormal = calculateCutNormal(
+                chain,
+                CutDirection.CLOCKWISE,
+                undefined
+            );
             const cwResult = calculateLeads(
                 chain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                cwNormal.normal
             );
 
             // Calculate leads for COUNTERCLOCKWISE
+            const ccwNormal = calculateCutNormal(
+                chain,
+                CutDirection.COUNTERCLOCKWISE,
+                undefined
+            );
             const ccwResult = calculateLeads(
                 chain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                ccwNormal.normal
             );
 
             // Both should have leads
@@ -1253,23 +1293,33 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             };
 
             // Calculate leads for CLOCKWISE on the detected part
+            const cwNormal = calculateCutNormal(
+                shellChain,
+                CutDirection.CLOCKWISE,
+                part
+            );
             const cwResult = calculateLeads(
                 shellChain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
                 part,
-                { x: 1, y: 0 }
+                cwNormal.normal
             );
 
             // Calculate leads for COUNTERCLOCKWISE on the detected part
+            const ccwNormal = calculateCutNormal(
+                shellChain,
+                CutDirection.COUNTERCLOCKWISE,
+                part
+            );
             const ccwResult = calculateLeads(
                 shellChain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
                 part,
-                { x: 1, y: 0 }
+                ccwNormal.normal
             );
 
             // Both should have leads
@@ -1490,23 +1540,33 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             };
 
             // Calculate leads for CLOCKWISE
+            const cwNormal = calculateCutNormal(
+                chain,
+                CutDirection.CLOCKWISE,
+                undefined
+            );
             const cwResult = calculateLeads(
                 chain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                cwNormal.normal
             );
 
             // Calculate leads for COUNTERCLOCKWISE
+            const ccwNormal = calculateCutNormal(
+                chain,
+                CutDirection.COUNTERCLOCKWISE,
+                undefined
+            );
             const ccwResult = calculateLeads(
                 chain,
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                ccwNormal.normal
             );
 
             // Both should have leads
@@ -1813,6 +1873,51 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
         });
     });
 
+    describe('Lead Normal Invariant', () => {
+        it('lead normal must always equal cut normal regardless of manual angle', () => {
+            // INVARIANT: The lead's normal property MUST ALWAYS equal the cut's normal property
+            const chain = createRectangleChain();
+
+            const leadConfigWithManualAngle = {
+                type: LeadType.ARC,
+                length: 10,
+                flipSide: false,
+                fit: false,
+                angle: 0, // Manual angle that would override automatic calculation
+            };
+
+            const cwNormal = calculateCutNormal(
+                chain,
+                CutDirection.CLOCKWISE,
+                undefined
+            );
+            const cwResult = calculateLeads(
+                chain,
+                leadConfigWithManualAngle,
+                leadConfigWithManualAngle,
+                CutDirection.CLOCKWISE,
+                undefined,
+                cwNormal.normal
+            );
+
+            // CRITICAL: Lead normal must equal cut normal, even with manual angle
+            expect(cwResult.leadIn).toBeDefined();
+            expect(cwResult.leadOut).toBeDefined();
+            expect(cwResult.leadIn!.normal.x).toBeCloseTo(cwNormal.normal.x, 5);
+            expect(cwResult.leadIn!.normal.y).toBeCloseTo(cwNormal.normal.y, 5);
+            expect(cwResult.leadOut!.normal.x).toBeCloseTo(cwNormal.normal.x, 5);
+            expect(cwResult.leadOut!.normal.y).toBeCloseTo(cwNormal.normal.y, 5);
+
+            console.log('\n--- Lead Normal Invariant Test ---');
+            console.log('Cut normal:', cwNormal.normal);
+            console.log('Lead-in normal:', cwResult.leadIn?.normal);
+            console.log('Lead-out normal:', cwResult.leadOut?.normal);
+            console.log(
+                '✓ Lead normals match cut normal (invariant satisfied)'
+            );
+        });
+    });
+
     describe('Lead Direction Invariant', () => {
         it('should satisfy the cut direction coherence invariant from CLAUDE.md', () => {
             // From CLAUDE.md: "When cut direction changes, lead placement MUST flip automatically"
@@ -1825,22 +1930,32 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 fit: false,
             };
 
+            const cwNormal = calculateCutNormal(
+                chain,
+                CutDirection.CLOCKWISE,
+                undefined
+            );
             const cwResult = calculateLeads(
                 chain,
                 leadConfig,
                 leadConfig,
                 CutDirection.CLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                cwNormal.normal
             );
 
+            const ccwNormal = calculateCutNormal(
+                chain,
+                CutDirection.COUNTERCLOCKWISE,
+                undefined
+            );
             const ccwResult = calculateLeads(
                 chain,
                 leadConfig,
                 leadConfig,
                 CutDirection.COUNTERCLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                ccwNormal.normal
             );
 
             // This is the core invariant test

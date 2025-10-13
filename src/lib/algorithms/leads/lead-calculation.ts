@@ -240,29 +240,50 @@ function calculateArcLead(
         desiredClockwise = cross < 0;
     }
 
-    // Determine curve direction strategy: manual absolute angle or automatic optimization
+    // Determine curve direction strategy: manual absolute angle or automatic (use cut normal)
     let curveDirectionsToTry: { x: number; y: number }[];
 
     if (manualAngle !== undefined) {
-        // Use manual angle as absolute direction (unit circle: 0° = right, 90° = up, etc.)
+        // Manual angle mode: User has specified an absolute angle override
+        // This rotates the cut normal by the specified angle
         // Work in world coordinates (Y+ up), canvas rendering will handle coordinate conversion
         const manualAngleRad: number =
             (manualAngle * Math.PI) / HALF_CIRCLE_DEG;
-        const absoluteDirection: Point2D = {
-            x: Math.cos(manualAngleRad),
-            y: Math.sin(manualAngleRad), // Use standard unit circle (Y+ up for world coordinates)
+
+        // Calculate rotation from cut normal direction
+        const cutNormalAngle = Math.atan2(cutNormal.y, cutNormal.x);
+        const finalAngle = cutNormalAngle + manualAngleRad;
+
+        const rotatedDirection: Point2D = {
+            x: Math.cos(finalAngle),
+            y: Math.sin(finalAngle),
         };
-        curveDirectionsToTry = [absoluteDirection];
+        curveDirectionsToTry = [rotatedDirection];
     } else {
-        // Try different curve directions up to 360 degrees to avoid solid areas
+        // Automatic mode: Use cut normal direction (INVARIANT)
+        // Allow limited rotation (±90°) for collision avoidance, but NEVER flip to opposite side
+        // This ensures leads stay on the correct side while still avoiding obstacles
+        const maxRotationDeg = 90; // Maximum rotation in either direction
         const rotationStep: number =
             (SMALL_ANGLE_INCREMENT_DEG * Math.PI) / HALF_CIRCLE_DEG; // 5 degrees in radians
-        const maxRotations: number =
-            FULL_CIRCLE_DEG / SMALL_ANGLE_INCREMENT_DEG; // Try up to 360 degrees of rotation (72 * 5 = 360)
-        curveDirectionsToTry = Array.from({ length: maxRotations }, (_, i) => {
-            const rotationAngle: number = i * rotationStep;
-            return rotateCurveDirection(baseCurveDirection, rotationAngle);
-        });
+        const maxSteps = Math.floor(maxRotationDeg / SMALL_ANGLE_INCREMENT_DEG); // 18 steps = 90°
+
+        curveDirectionsToTry = [];
+        // Try cut normal first (0° rotation)
+        curveDirectionsToTry.push(baseCurveDirection);
+
+        // Then try small rotations in both directions
+        for (let i = 1; i <= maxSteps; i++) {
+            const rotationAngle = i * rotationStep;
+            // Try positive rotation
+            curveDirectionsToTry.push(
+                rotateCurveDirection(baseCurveDirection, rotationAngle)
+            );
+            // Try negative rotation
+            curveDirectionsToTry.push(
+                rotateCurveDirection(baseCurveDirection, -rotationAngle)
+            );
+        }
     }
 
     // Try full length first, then shorter lengths if needed (only if fit is enabled)
@@ -289,7 +310,7 @@ function calculateArcLead(
                 return {
                     geometry: arc,
                     type: LeadType.ARC,
-                    normal: normalizeVector(curveDirection),
+                    normal: normalizeVector(cutNormal), // INVARIANT: Lead normal always matches cut normal
                     connectionPoint: point,
                 };
             }
@@ -305,7 +326,7 @@ function calculateArcLead(
                 return {
                     geometry: arc,
                     type: LeadType.ARC,
-                    normal: normalizeVector(curveDirection),
+                    normal: normalizeVector(cutNormal), // INVARIANT: Lead normal always matches cut normal
                     connectionPoint: point,
                 };
             }
@@ -334,7 +355,7 @@ function calculateArcLead(
     return {
         geometry: arc,
         type: LeadType.ARC,
-        normal: normalizeVector(baseCurveDirection),
+        normal: normalizeVector(cutNormal), // INVARIANT: Lead normal always matches cut normal
         connectionPoint: point,
     };
 }

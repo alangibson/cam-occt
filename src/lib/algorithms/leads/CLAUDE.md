@@ -250,29 +250,38 @@ if (cutDirection === CutDirection.CLOCKWISE) {
 
 ### Critical Invariants (Must Always Hold)
 
-1. **Tangency Invariant**
+1. **Lead Normal Invariant**
+   - The lead's `normal` property MUST ALWAYS equal the cut's `normal` property
+   - This invariant holds regardless of:
+     - Manual angle overrides
+     - Material avoidance rotations
+     - Arc geometry calculations
+   - The `curveDirection` used for arc center placement may vary, but the stored `normal` is always the cut normal
+   - This ensures leads are always on the correct side of the cut path
+
+2. **Tangency Invariant**
    - Leads MUST be tangent to the cut path at the connection point
    - Tool motion must be continuous (C1) through the lead-path transition
    - No sharp corners or discontinuities at connection
 
-2. **Material Placement Invariant**
+3. **Material Placement Invariant**
    - Leads MUST NEVER be placed inside part solid material
    - Shell leads MUST remain outside the part boundary
    - Hole leads MUST remain inside the hole boundary
 
-3. **Arc Sweep Direction Invariant**
+4. **Arc Sweep Direction Invariant**
    - Arc leads MUST ALWAYS sweep toward the cut path
    - Lead-in arcs: End at connection point, sweeping into the cut
    - Lead-out arcs: Start at connection point, sweeping away from cut
    - **Shell leads**: Sweep opposite to cut direction (CW cut → CCW sweep, CCW cut → CW sweep)
    - **Hole leads**: Sweep matches winding order (leads inside hole follow chain winding)
 
-4. **Cut Direction Coherence Invariant**
+5. **Cut Direction Coherence Invariant**
    - When cut direction changes, lead placement MUST flip automatically
    - Tool head motion must remain smooth through direction changes
    - Lead geometry must respect the new cutting direction
 
-5. **Rapid Connection Invariant**
+6. **Rapid Connection Invariant**
    - Rapids MUST ALWAYS connect to the start of lead-in geometry
    - Never connect rapids directly to cut paths when leads exist
    - Rapid end point = Lead-in start point
