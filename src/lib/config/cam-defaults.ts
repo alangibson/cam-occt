@@ -152,13 +152,11 @@ export class CamDefaults {
      * Uses appropriate rate based on measurement system (like feed rate does)
      */
     get rapidRate(): number {
-        const rapidRateMM = this.measurementSystem === MeasurementSystem.Imperial
-            ? IMPERIAL_RAPID_RATE_MM
-            : DEFAULT_RAPID_RATE_MM;
+        const rapidRateMM =
+            this.measurementSystem === MeasurementSystem.Imperial
+                ? IMPERIAL_RAPID_RATE_MM
+                : DEFAULT_RAPID_RATE_MM;
 
-        return convertToCurrentSystem(
-            rapidRateMM,
-            this.measurementSystem
-        );
+        return convertToCurrentSystem(rapidRateMM, this.measurementSystem);
     }
 }

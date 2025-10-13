@@ -1903,10 +1903,16 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             // CRITICAL: Lead normal must equal cut normal, even with manual angle
             expect(cwResult.leadIn).toBeDefined();
             expect(cwResult.leadOut).toBeDefined();
-            expect(cwResult.leadIn!.normal.x).toBeCloseTo(cwNormal.normal.x, 5);
-            expect(cwResult.leadIn!.normal.y).toBeCloseTo(cwNormal.normal.y, 5);
-            expect(cwResult.leadOut!.normal.x).toBeCloseTo(cwNormal.normal.x, 5);
-            expect(cwResult.leadOut!.normal.y).toBeCloseTo(cwNormal.normal.y, 5);
+            if (!cwResult.leadIn || !cwResult.leadOut) {
+                throw new Error('Lead-in or lead-out is undefined');
+            }
+            if (!cwResult.leadIn.normal || !cwResult.leadOut.normal) {
+                throw new Error('Lead-in or lead-out normal is undefined');
+            }
+            expect(cwResult.leadIn.normal.x).toBeCloseTo(cwNormal.normal.x, 5);
+            expect(cwResult.leadIn.normal.y).toBeCloseTo(cwNormal.normal.y, 5);
+            expect(cwResult.leadOut.normal.x).toBeCloseTo(cwNormal.normal.x, 5);
+            expect(cwResult.leadOut.normal.y).toBeCloseTo(cwNormal.normal.y, 5);
 
             console.log('\n--- Lead Normal Invariant Test ---');
             console.log('Cut normal:', cwNormal.normal);

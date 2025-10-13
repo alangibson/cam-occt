@@ -55,7 +55,10 @@
     import { getShapePointAt } from '$lib/geometry/shape/functions';
     import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
     import { type LeadConfig } from '$lib/algorithms/leads/interfaces';
-    import { MeasurementSystem, type SettingsState } from '$lib/stores/settings/interfaces';
+    import {
+        MeasurementSystem,
+        type SettingsState,
+    } from '$lib/stores/settings/interfaces';
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import { LeadType } from '$lib/types/direction';
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
@@ -123,7 +126,8 @@
     function convertDistanceToDisplayUnit(distance: number): number {
         if (!drawingState?.drawing) return distance;
 
-        const drawingUnit = drawingState.drawing.units === 'mm' ? Unit.MM : Unit.INCH;
+        const drawingUnit =
+            drawingState.drawing.units === 'mm' ? Unit.MM : Unit.INCH;
         const displayUnitEnum = displayUnit === 'mm' ? Unit.MM : Unit.INCH;
 
         // If units match, no conversion needed
@@ -306,8 +310,10 @@
                 const rapidRate = getRapidRateForCut(cut); // Get rapid rate from cut's tool
 
                 // Convert rapid distance to display units for time calculation
-                const rapidDistanceInDisplayUnits = convertDistanceToDisplayUnit(rapidDistance);
-                const rapidTime = (rapidDistanceInDisplayUnits / rapidRate) * 60; // Convert to seconds
+                const rapidDistanceInDisplayUnits =
+                    convertDistanceToDisplayUnit(rapidDistance);
+                const rapidTime =
+                    (rapidDistanceInDisplayUnits / rapidRate) * 60; // Convert to seconds
 
                 // Update statistics (keep in display units)
                 totalRapidDistance += rapidDistanceInDisplayUnits;
@@ -330,7 +336,8 @@
             const feedRate = getFeedRateForCut(cut); // Get feed rate from tool
 
             // Convert cut distance to display units for time calculation
-            const cutDistanceInDisplayUnits = convertDistanceToDisplayUnit(cutDistance);
+            const cutDistanceInDisplayUnits =
+                convertDistanceToDisplayUnit(cutDistance);
             const cutTime = (cutDistanceInDisplayUnits / feedRate) * 60; // Convert to seconds (feedRate is units/min)
 
             // Update statistics (keep in display units)
@@ -357,12 +364,16 @@
         if (!settingsStoreState) return 3000; // Fallback
 
         // Get rapid rate from settings (stored in measurement system units)
-        const rapidRateInMeasurementSystemUnits = settingsStoreState.settings.camSettings.rapidRate;
+        const rapidRateInMeasurementSystemUnits =
+            settingsStoreState.settings.camSettings.rapidRate;
         const measurementSystem = settingsStoreState.settings.measurementSystem;
 
         if (!drawingState?.drawing) return rapidRateInMeasurementSystemUnits;
 
-        const measurementSystemUnit = measurementSystem === MeasurementSystem.Metric ? Unit.MM : Unit.INCH;
+        const measurementSystemUnit =
+            measurementSystem === MeasurementSystem.Metric
+                ? Unit.MM
+                : Unit.INCH;
         const displayUnitEnum = displayUnit === 'mm' ? Unit.MM : Unit.INCH;
 
         // If units match, no conversion needed
@@ -371,9 +382,15 @@
         }
 
         // Convert between mm and inch
-        if (measurementSystemUnit === Unit.MM && displayUnitEnum === Unit.INCH) {
+        if (
+            measurementSystemUnit === Unit.MM &&
+            displayUnitEnum === Unit.INCH
+        ) {
             return rapidRateInMeasurementSystemUnits / 25.4;
-        } else if (measurementSystemUnit === Unit.INCH && displayUnitEnum === Unit.MM) {
+        } else if (
+            measurementSystemUnit === Unit.INCH &&
+            displayUnitEnum === Unit.MM
+        ) {
             return rapidRateInMeasurementSystemUnits * 25.4;
         }
 

@@ -15,8 +15,8 @@ import { MeasurementSystem } from '$lib/stores/settings/interfaces';
 describe('SimulateStage Unit Conversion', () => {
     it('should correctly calculate time when drawing units match display units', () => {
         // Drawing in inches, Display in inches
-        const cutDistance = 10; // inches (from geometry)
-        const feedRate = 120; // inches/min (from tool)
+        const _cutDistance = 10; // inches (from geometry)
+        const _feedRate = 120; // inches/min (from tool)
 
         // Time = distance / feedRate * 60 seconds
         const expectedTime = (10 / 120) * 60;
@@ -110,8 +110,8 @@ describe('SimulateStage Unit Conversion', () => {
 
     it('should ensure statistics are in display units', () => {
         // When display unit is mm, all distances should be in mm
-        const drawingUnit = 'inch';
-        const displayUnit = 'mm';
+        const _drawingUnit = 'inch';
+        const _displayUnit = 'mm';
 
         // Cut distance from geometry (in inches)
         const cutDistanceInches = 10;
@@ -163,7 +163,7 @@ describe('Rapid Rate Display Bug', () => {
         // Start with imperial measurement system
         defaultsManager.updateMeasurementSystem(MeasurementSystem.Imperial);
 
-        let rapidRate = defaultsManager.cam.rapidRate;
+        const rapidRate = defaultsManager.cam.rapidRate;
 
         // Rapid rate is 3000 inch/min (from IMPERIAL_RAPID_RATE_MM = 76200 / 25.4)
         expect(rapidRate).toBeCloseTo(3000, 0);
@@ -176,7 +176,9 @@ describe('Rapid Rate Display Bug', () => {
         // We get back to 76200 mm/min
         expect(rapidRateInMM).toBeCloseTo(76200, 0);
 
-        console.log(`Imperial system (${rapidRate.toFixed(0)} inch/min) converted to mm display: ${rapidRateInMM.toFixed(0)} mm/min`);
+        console.log(
+            `Imperial system (${rapidRate.toFixed(0)} inch/min) converted to mm display: ${rapidRateInMM.toFixed(0)} mm/min`
+        );
     });
 
     it('should verify the root cause: DEFAULT_RAPID_RATE_MM is too low', () => {
@@ -193,6 +195,8 @@ describe('Rapid Rate Display Bug', () => {
         expect(correctDefaultInMM).toBe(76200);
 
         console.log(`Current DEFAULT_RAPID_RATE_MM: ${DEFAULT_RAPID_RATE_MM}`);
-        console.log(`Should be: ${correctDefaultInMM} (for 3000 inch/min rapids)`);
+        console.log(
+            `Should be: ${correctDefaultInMM} (for 3000 inch/min rapids)`
+        );
     });
 });

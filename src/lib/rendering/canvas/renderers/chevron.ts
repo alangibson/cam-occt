@@ -18,6 +18,11 @@ const CHEVRON_SPACING_UNITS: number = 10;
  * Constants for chevron rendering
  */
 const CHEVRON_SIZE_PX = 8;
+const WING_LENGTH_RATIO = 0.7;
+const BACK_OFFSET_RATIO = 0.3;
+const TIP_OFFSET_RATIO = 0.4;
+const QUADRANTS_IN_CIRCLE = 4;
+const QUARTER_PI = Math.PI / QUADRANTS_IN_CIRCLE;
 
 /**
  * ChevronRenderer handles rendering of direction arrows along cuts
@@ -214,39 +219,35 @@ export class ChevronRenderer extends BaseRenderer {
             ctx.lineJoin = 'round';
 
             // Calculate chevron wing points (90 degree angle between wings)
-            const wingLength = chevronSize * 0.7;
-            const backOffset = chevronSize * 0.3;
-            const quarterPI = Math.PI / 4;
+            const wingLength = chevronSize * WING_LENGTH_RATIO;
+            const backOffset = chevronSize * BACK_OFFSET_RATIO;
+            const quarterPI = QUARTER_PI;
 
             // Wing points: 45 degrees on each side of the direction vector
             const wing1X =
                 midpoint.x -
                 backOffset * dirX +
                 wingLength *
-                    (dirX * Math.cos(quarterPI) +
-                        perpX * Math.sin(quarterPI));
+                    (dirX * Math.cos(quarterPI) + perpX * Math.sin(quarterPI));
             const wing1Y =
                 midpoint.y -
                 backOffset * dirY +
                 wingLength *
-                    (dirY * Math.cos(quarterPI) +
-                        perpY * Math.sin(quarterPI));
+                    (dirY * Math.cos(quarterPI) + perpY * Math.sin(quarterPI));
 
             const wing2X =
                 midpoint.x -
                 backOffset * dirX +
                 wingLength *
-                    (dirX * Math.cos(quarterPI) -
-                        perpX * Math.sin(quarterPI));
+                    (dirX * Math.cos(quarterPI) - perpX * Math.sin(quarterPI));
             const wing2Y =
                 midpoint.y -
                 backOffset * dirY +
                 wingLength *
-                    (dirY * Math.cos(quarterPI) -
-                        perpY * Math.sin(quarterPI));
+                    (dirY * Math.cos(quarterPI) - perpY * Math.sin(quarterPI));
 
-            const tipX = midpoint.x + chevronSize * 0.4 * dirX;
-            const tipY = midpoint.y + chevronSize * 0.4 * dirY;
+            const tipX = midpoint.x + chevronSize * TIP_OFFSET_RATIO * dirX;
+            const tipY = midpoint.y + chevronSize * TIP_OFFSET_RATIO * dirY;
 
             // Draw the chevron (two lines forming arrow shape)
             ctx.beginPath();

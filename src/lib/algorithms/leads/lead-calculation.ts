@@ -15,7 +15,7 @@ import {
     QUARTER_PERCENT,
     THREE_QUARTERS_PERCENT,
 } from '$lib/geometry/math';
-import { FULL_CIRCLE_DEG, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
+import { HALF_CIRCLE_DEG } from '$lib/geometry/circle';
 import {
     OCTAGON_SIDES,
     SMALL_ANGLE_INCREMENT_DEG,

@@ -28,6 +28,9 @@ import { DefaultsManager } from '$lib/config/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { DEFAULT_RAPID_RATE_MM } from '$lib/cam/constants';
 
+// Conversion factor between inches and millimeters
+const MM_PER_INCH = 25.4;
+
 // Default CAM settings - use metric default, will be converted if needed when measurement system is set
 const DEFAULT_CAM_SETTINGS: CamSettings = {
     rapidRate: DEFAULT_RAPID_RATE_MM,
@@ -106,7 +109,8 @@ function loadSettings(): ApplicationSettings {
                         ? {
                               rapidRate:
                                   typeof parsed.camSettings.rapidRate ===
-                                  'number' && parsed.camSettings.rapidRate > 0
+                                      'number' &&
+                                  parsed.camSettings.rapidRate > 0
                                       ? parsed.camSettings.rapidRate
                                       : DEFAULT_CAM_SETTINGS.rapidRate,
                           }
@@ -194,10 +198,13 @@ function createSettingsStore(): SettingsStore {
                 if (oldSystem !== system) {
                     if (oldSystem === MS.Metric && system === MS.Imperial) {
                         // Convert mm/min to in/min
-                        newRapidRate = newRapidRate / 25.4;
-                    } else if (oldSystem === MS.Imperial && system === MS.Metric) {
+                        newRapidRate = newRapidRate / MM_PER_INCH;
+                    } else if (
+                        oldSystem === MS.Imperial &&
+                        system === MS.Metric
+                    ) {
                         // Convert in/min to mm/min
-                        newRapidRate = newRapidRate * 25.4;
+                        newRapidRate = newRapidRate * MM_PER_INCH;
                     }
                 }
 

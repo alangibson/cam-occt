@@ -21,7 +21,9 @@ describe('Rapid Rate Display Values', () => {
 
         // User should see: "3000 inch/min"
         expect(rapidRate).toBeCloseTo(3000, 0);
-        console.log(`Imperial system, imperial display: ${rapidRate.toFixed(0)} inch/min`);
+        console.log(
+            `Imperial system, imperial display: ${rapidRate.toFixed(0)} inch/min`
+        );
     });
 
     it('should show 3000 mm/min when metric measurement system with metric display', () => {
@@ -44,7 +46,9 @@ describe('Rapid Rate Display Values', () => {
 
         // User should see: "76200 mm/min" (equivalent to 3000 inch/min)
         expect(rapidRateInMetric).toBeCloseTo(76200, 0);
-        console.log(`Imperial system, metric display: ${rapidRateInMetric.toFixed(0)} mm/min`);
+        console.log(
+            `Imperial system, metric display: ${rapidRateInMetric.toFixed(0)} mm/min`
+        );
     });
 
     it('should show 118 inch/min when metric system with imperial display (cross-unit conversion)', () => {
@@ -57,7 +61,9 @@ describe('Rapid Rate Display Values', () => {
 
         // User should see: "118 inch/min" (equivalent to 3000 mm/min)
         expect(rapidRateInImperial).toBeCloseTo(118, 0);
-        console.log(`Metric system, imperial display: ${rapidRateInImperial.toFixed(0)} inch/min`);
+        console.log(
+            `Metric system, imperial display: ${rapidRateInImperial.toFixed(0)} inch/min`
+        );
     });
 
     it('should match the pattern used by feed rates', () => {

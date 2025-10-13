@@ -1154,7 +1154,7 @@ describe('Optimize Cut Order', () => {
                             type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 20, y: 20 }, // Reversed: end becomes start
-                                end: { x: 10, y: 10 },   // Reversed: start becomes end
+                                end: { x: 10, y: 10 }, // Reversed: start becomes end
                             } as Line,
                         },
                     ],

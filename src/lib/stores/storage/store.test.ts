@@ -62,6 +62,9 @@ const defaultApplicationSettings = {
             RapidOptimizationAlgorithm.TravelingSalesman,
     },
     offsetImplementation: OffsetImplementation.Exact,
+    camSettings: {
+        rapidRate: 3000,
+    },
 };
 
 // Mock localStorage module

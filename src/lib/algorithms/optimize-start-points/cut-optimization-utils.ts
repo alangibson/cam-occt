@@ -163,9 +163,13 @@ export function getCutStartPoint(
 }
 
 /**
- * Get the effective start point of a cut's chain, using offset geometry if available
+ * Helper function to get chain point (start or end) with offset geometry support
  */
-export function getCutChainStartPoint(cut: Cut, chain: Chain): Point2D {
+function getCutChainPoint(
+    cut: Cut,
+    chain: Chain,
+    getPointFn: (chain: Chain) => Point2D
+): Point2D {
     // Use cut.cutChain if it exists (it may have been reversed for open chains)
     const chainToUse = cut.cutChain || chain;
 
@@ -176,30 +180,24 @@ export function getCutChainStartPoint(cut: Cut, chain: Chain): Point2D {
             clockwise: chainToUse.clockwise,
             originalChainId: chainToUse.originalChainId || chainToUse.id,
         };
-        return getChainStartPoint(offsetChain);
+        return getPointFn(offsetChain);
     }
 
-    return getChainStartPoint(chainToUse);
+    return getPointFn(chainToUse);
+}
+
+/**
+ * Get the effective start point of a cut's chain, using offset geometry if available
+ */
+export function getCutChainStartPoint(cut: Cut, chain: Chain): Point2D {
+    return getCutChainPoint(cut, chain, getChainStartPoint);
 }
 
 /**
  * Get the effective end point of a cut's chain, using offset geometry if available
  */
 export function getCutChainEndPoint(cut: Cut, chain: Chain): Point2D {
-    // Use cut.cutChain if it exists (it may have been reversed for open chains)
-    const chainToUse = cut.cutChain || chain;
-
-    if (cut.offset && cut.offset.offsetShapes.length > 0) {
-        const offsetChain: Chain = {
-            id: chainToUse.id + '_offset_temp',
-            shapes: cut.offset.offsetShapes,
-            clockwise: chainToUse.clockwise,
-            originalChainId: chainToUse.originalChainId || chainToUse.id,
-        };
-        return getChainEndPoint(offsetChain);
-    }
-
-    return getChainEndPoint(chainToUse);
+    return getCutChainPoint(cut, chain, getChainEndPoint);
 }
 
 /**

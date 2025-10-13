@@ -702,9 +702,7 @@
         {#if operations.length === 0}
             <div class="no-operations">
                 <p>No operations created yet.</p>
-                <p>
-                    Click Add button to create cuts
-                </p>
+                <p>Click Add button to create cuts</p>
             </div>
         {/if}
     </div>
