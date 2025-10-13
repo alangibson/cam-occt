@@ -6,7 +6,7 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type { Point2D, Shape } from '$lib/types';
+import type { Point2D, Shape, Line, Arc } from '$lib/types';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { Cut } from '$lib/stores/cuts/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
@@ -438,7 +438,8 @@ export class CutRenderer extends BaseRenderer {
         const TANGENT_LINE_LENGTH = 50; // Length in screen pixels
         const TANGENT_LINE_WIDTH = 1;
         const ARROW_SIZE = 10; // Arrow head size in screen pixels
-        const ARROW_ANGLE = Math.PI / 6; // 30 degrees
+        const ARROW_ANGLE_DENOMINATOR = 6; // Divisor for PI to get 30 degrees
+        const ARROW_ANGLE = Math.PI / ARROW_ANGLE_DENOMINATOR;
 
         state.cutsState.cuts.forEach((cut: Cut) => {
             // Only draw tangents for enabled cuts with enabled operations
@@ -457,32 +458,31 @@ export class CutRenderer extends BaseRenderer {
             // Get the tangent at the start of the first shape
             let tangent: Point2D;
             switch (firstShape.type) {
-                case 'line':
+                case 'line': {
+                    const lineGeometry = firstShape.geometry as Line;
                     tangent = {
-                        x: (firstShape.geometry as any).end.x - (firstShape.geometry as any).start.x,
-                        y: (firstShape.geometry as any).end.y - (firstShape.geometry as any).start.y,
+                        x: lineGeometry.end.x - lineGeometry.start.x,
+                        y: lineGeometry.end.y - lineGeometry.start.y,
                     };
                     break;
-                case 'arc':
+                }
+                case 'arc': {
                     // For arc, calculate tangent at start
-                    const arc = firstShape.geometry as any;
-                    const startAngle = Math.atan2(
-                        arc.start.y - arc.center.y,
-                        arc.start.x - arc.center.x
-                    );
-                    // Tangent is perpendicular to radius
+                    const arc = firstShape.geometry as Arc;
+                    // Tangent is perpendicular to radius at start angle
                     if (arc.clockwise) {
                         tangent = {
-                            x: -Math.sin(startAngle),
-                            y: Math.cos(startAngle),
+                            x: -Math.sin(arc.startAngle),
+                            y: Math.cos(arc.startAngle),
                         };
                     } else {
                         tangent = {
-                            x: Math.sin(startAngle),
-                            y: -Math.cos(startAngle),
+                            x: Math.sin(arc.startAngle),
+                            y: -Math.cos(arc.startAngle),
                         };
                     }
                     break;
+                }
                 default:
                     // For other shapes, use simple forward difference
                     if (shapesToUse.length > 1) {
@@ -502,7 +502,9 @@ export class CutRenderer extends BaseRenderer {
             }
 
             // Normalize the tangent vector
-            const magnitude = Math.sqrt(tangent.x * tangent.x + tangent.y * tangent.y);
+            const magnitude = Math.sqrt(
+                tangent.x * tangent.x + tangent.y * tangent.y
+            );
             if (magnitude === 0) return;
 
             const normalizedTangent = {
@@ -511,9 +513,16 @@ export class CutRenderer extends BaseRenderer {
             };
 
             // Calculate the length in world coordinates
-            const tangentLength = state.transform.coordinator.screenToWorldDistance(TANGENT_LINE_LENGTH);
-            const lineWidth = state.transform.coordinator.screenToWorldDistance(TANGENT_LINE_WIDTH);
-            const arrowSize = state.transform.coordinator.screenToWorldDistance(ARROW_SIZE);
+            const tangentLength =
+                state.transform.coordinator.screenToWorldDistance(
+                    TANGENT_LINE_LENGTH
+                );
+            const lineWidth =
+                state.transform.coordinator.screenToWorldDistance(
+                    TANGENT_LINE_WIDTH
+                );
+            const arrowSize =
+                state.transform.coordinator.screenToWorldDistance(ARROW_SIZE);
 
             // Calculate end point of the tangent line (pointing in cut direction)
             const endPoint = {
@@ -540,12 +549,44 @@ export class CutRenderer extends BaseRenderer {
             // Draw arrow head at the end point
             // Calculate arrow points
             const arrowLeft = {
-                x: endPoint.x - arrowSize * Math.cos(Math.atan2(normalizedTangent.y, normalizedTangent.x) - ARROW_ANGLE),
-                y: endPoint.y - arrowSize * Math.sin(Math.atan2(normalizedTangent.y, normalizedTangent.x) - ARROW_ANGLE),
+                x:
+                    endPoint.x -
+                    arrowSize *
+                        Math.cos(
+                            Math.atan2(
+                                normalizedTangent.y,
+                                normalizedTangent.x
+                            ) - ARROW_ANGLE
+                        ),
+                y:
+                    endPoint.y -
+                    arrowSize *
+                        Math.sin(
+                            Math.atan2(
+                                normalizedTangent.y,
+                                normalizedTangent.x
+                            ) - ARROW_ANGLE
+                        ),
             };
             const arrowRight = {
-                x: endPoint.x - arrowSize * Math.cos(Math.atan2(normalizedTangent.y, normalizedTangent.x) + ARROW_ANGLE),
-                y: endPoint.y - arrowSize * Math.sin(Math.atan2(normalizedTangent.y, normalizedTangent.x) + ARROW_ANGLE),
+                x:
+                    endPoint.x -
+                    arrowSize *
+                        Math.cos(
+                            Math.atan2(
+                                normalizedTangent.y,
+                                normalizedTangent.x
+                            ) + ARROW_ANGLE
+                        ),
+                y:
+                    endPoint.y -
+                    arrowSize *
+                        Math.sin(
+                            Math.atan2(
+                                normalizedTangent.y,
+                                normalizedTangent.x
+                            ) + ARROW_ANGLE
+                        ),
             };
 
             // Fill arrow head

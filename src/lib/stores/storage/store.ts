@@ -125,6 +125,7 @@ function collectCurrentState(): PersistedState {
         showCutPaths: cuts.showCutPaths, // Cut paths visibility state
         showCutStartPoints: cuts.showCutStartPoints, // Cut start points visibility state
         showCutEndPoints: cuts.showCutEndPoints, // Cut end points visibility state
+        showCutTangentLines: cuts.showCutTangentLines, // Cut tangent lines visibility state
         tools: tools,
 
         // Application settings
@@ -300,6 +301,7 @@ function restoreStateToStores(state: PersistedState): void {
                 showCutPaths: state.showCutPaths || false,
                 showCutStartPoints: state.showCutStartPoints || false,
                 showCutEndPoints: state.showCutEndPoints || false,
+                showCutTangentLines: state.showCutTangentLines || false,
             };
             cutStore.restore(cutsState);
         }

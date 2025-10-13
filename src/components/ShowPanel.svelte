@@ -260,7 +260,9 @@
                     type="checkbox"
                     checked={cutsVisualization.showCutTangentLines}
                     onchange={(e) =>
-                        cutStore.setShowCutTangentLines(e.currentTarget.checked)}
+                        cutStore.setShowCutTangentLines(
+                            e.currentTarget.checked
+                        )}
                     class="show-checkbox"
                 />
                 Tangents

@@ -23,11 +23,11 @@ describe('Lead Rotation Angle', () => {
     };
 
     describe('Lead-in angle behavior', () => {
-        it('should point to the right when angle is 0 degrees (unit circle convention)', () => {
+        it('should point to the left when angle is 0 degrees with CW sweep', () => {
             const leadInConfig: LeadConfig = {
                 type: LeadType.ARC,
                 length: 5,
-                angle: 0, // Should point right (+X direction)
+                angle: 0, // Rotates from cut normal by 0°
             };
 
             const LeadConfig: LeadConfig = {
@@ -41,7 +41,7 @@ describe('Lead Rotation Angle', () => {
                 LeadConfig,
                 CutDirection.CLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                { x: 1, y: 0 } // Cut normal pointing right
             );
 
             expect(result.leadIn).toBeDefined();
@@ -52,10 +52,9 @@ describe('Lead Rotation Angle', () => {
             const leadStartPoint = points[0];
             const connectionPoint = points[points.length - 1];
 
-            // Lead-in with 0° angle should start to the right (+X) of the connection point
-            expect(leadStartPoint.x).toBeGreaterThan(connectionPoint.x);
-            // Arc tessellation may not produce exact 0° direction due to geometry
-            // Verify lead is valid rather than exact positioning
+            // With CW sweep and 0° angle offset, lead starts to the left (-X)
+            // This is correct: CW arc with center on right normal sweeps from left
+            expect(leadStartPoint.x).toBeLessThan(connectionPoint.x);
             expect(points.length).toBeGreaterThan(2); // Arc creates multiple points
         });
 
@@ -93,11 +92,11 @@ describe('Lead Rotation Angle', () => {
             expect(points.length).toBeGreaterThan(2); // Arc creates multiple points
         });
 
-        it('should point to the left when angle is 180 degrees', () => {
+        it('should point to the right when angle is 180 degrees with CW sweep', () => {
             const leadInConfig: LeadConfig = {
                 type: LeadType.ARC,
                 length: 5,
-                angle: 180, // Should point left (-X direction)
+                angle: 180, // Rotates cut normal by 180° (flips it)
             };
 
             const LeadConfig: LeadConfig = {
@@ -111,7 +110,7 @@ describe('Lead Rotation Angle', () => {
                 LeadConfig,
                 CutDirection.CLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                { x: 1, y: 0 } // Cut normal pointing right, rotated 180° = left
             );
 
             expect(result.leadIn).toBeDefined();
@@ -120,9 +119,9 @@ describe('Lead Rotation Angle', () => {
             const leadStartPoint = points[0];
             const connectionPoint = points[points.length - 1];
 
-            // Lead-in with 180° angle should start to the left (-X) of the connection point
-            expect(leadStartPoint.x).toBeLessThan(connectionPoint.x);
-            // Arc tessellation may not produce exact positioning
+            // With 180° rotation, cut normal flips from right to left
+            // CW arc with center on left normal sweeps from right
+            expect(leadStartPoint.x).toBeGreaterThan(connectionPoint.x);
             expect(points.length).toBeGreaterThan(2); // Arc creates multiple points
         });
 
@@ -196,11 +195,11 @@ describe('Lead Rotation Angle', () => {
     });
 
     describe('Arc lead angle behavior', () => {
-        it('should have center positioned to the right when angle is 0 degrees', () => {
+        it('should have center positioned correctly with CW sweep and 0° angle', () => {
             const leadInConfig: LeadConfig = {
                 type: LeadType.ARC,
                 length: 5,
-                angle: 0, // Arc center should be to the right (+X direction)
+                angle: 0, // No rotation from cut normal
             };
 
             const LeadConfig: LeadConfig = {
@@ -214,7 +213,7 @@ describe('Lead Rotation Angle', () => {
                 LeadConfig,
                 CutDirection.CLOCKWISE,
                 undefined,
-                { x: 1, y: 0 }
+                { x: 1, y: 0 } // Cut normal pointing right
             );
 
             expect(result.leadIn).toBeDefined();
@@ -223,10 +222,10 @@ describe('Lead Rotation Angle', () => {
 
             const connectionPoint = points[points.length - 1];
 
-            // For arc leads with 0° angle, the center should be to the right of connection point
-            // The lead should start somewhere to the right and curve back to the connection point
+            // With CW sweep and 0° angle, arc center is on right normal
+            // CW arc sweeps from left side to connection point
             const startPoint = points[0];
-            expect(startPoint.x).toBeGreaterThan(connectionPoint.x);
+            expect(startPoint.x).toBeLessThan(connectionPoint.x);
         });
     });
 });

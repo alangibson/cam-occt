@@ -206,33 +206,16 @@ function calculateArcLead(
     }
 
     // Determine desired arc sweep direction based on cut direction and shell/hole context
-    // The key insight: for shells, we want arcs that curve AWAY from the solid material
-    // When using rightNormal (pointing outward), clockwise sweep curves further outward
+    // CRITICAL INVARIANT: Lead arcs must sweep INTO/TOWARDS the cut direction for smooth transitions
+    // - CW cut -> CW lead sweep (clockwise=true)
+    // - CCW cut -> CCW lead sweep (clockwise=false)
     let desiredClockwise: boolean;
     if (cutDirection === CutDirection.CLOCKWISE) {
-        if (part) {
-            // For clockwise cuts:
-            // - Shells (leads outside) want CCW sweep (opposite to cut direction)
-            // - Holes (leads inside) want CW sweep (same as cut direction)
-            desiredClockwise = !isShell;
-        } else {
-            // No part context - use chain's clockwise property to determine behavior
-            // Default to true (clockwise/shell) if property is undefined
-            const chainIsShell = chain.clockwise ?? true; // CW chains are shells, CCW chains are holes
-            desiredClockwise = !chainIsShell; // Shells want CCW sweep, holes want CW sweep
-        }
+        // For CLOCKWISE cuts, lead should sweep CLOCKWISE (same direction)
+        desiredClockwise = true;
     } else if (cutDirection === CutDirection.COUNTERCLOCKWISE) {
-        if (part) {
-            // For counterclockwise cuts:
-            // - Shells (leads outside) want CW sweep (opposite to cut direction)
-            // - Holes (leads inside) want CCW sweep (same as cut direction)
-            desiredClockwise = isShell;
-        } else {
-            // No part context - use chain's clockwise property to determine behavior
-            // Default to true (clockwise/shell) if property is undefined
-            const chainIsShell = chain.clockwise ?? true; // CW chains are shells, CCW chains are holes
-            desiredClockwise = chainIsShell; // Shells want CW sweep, holes want CCW sweep
-        }
+        // For COUNTERCLOCKWISE cuts, lead should sweep COUNTERCLOCKWISE (same direction)
+        desiredClockwise = false;
     } else {
         // No cut direction specified - use natural direction from cross product
         const cross =

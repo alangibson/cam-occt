@@ -234,17 +234,21 @@ if (cutDirection === CutDirection.CLOCKWISE) {
 
 #### Lead Sweep Direction Rules
 
-**For Shell Leads (Outside Part):**
+**CRITICAL INVARIANT: Lead arcs MUST sweep in the SAME direction as the cut**
 
-- When cutDirection = CLOCKWISE: Leads should have CCW sweep
-- When cutDirection = COUNTERCLOCKWISE: Leads should have CW sweep
-- This is because on a CCW-ordered shell cut clockwise, leads must sweep opposite to cut direction
+- When cutDirection = CLOCKWISE: Lead arcs have CLOCKWISE sweep (clockwise=true)
+- When cutDirection = COUNTERCLOCKWISE: Lead arcs have COUNTERCLOCKWISE sweep (clockwise=false)
+- This ensures smooth tool motion transitioning from rapid → lead → cut path
+- The arc geometry naturally curves toward the cut path for optimal entry/exit angles
 
-**For Hole Leads (Inside Part):**
+**Rationale:**
 
-- When the closed chain is a hole, leads are placed inside the closed chain
-- Lead sweep direction matches the winding order of the chain/cut
-- This maintains proper material avoidance while staying within hole boundaries
+When a tool enters a cut via a lead-in arc:
+
+- The tool must approach the cut path tangentially for smooth transition
+- The arc sweep direction determines the tool's rotational motion
+- Matching sweep to cut direction provides continuous, smooth motion
+- This prevents abrupt direction changes that could damage the material or tool
 
 ## Lead System Invariants
 

@@ -427,10 +427,11 @@ describe('getLeadCurveDirection (indirect testing)', () => {
     });
 
     describe('chain clockwise property handling', () => {
-        it('should respect chain clockwise property when no part context', () => {
+        it('lead sweep should match cut direction regardless of chain clockwise property', () => {
             const cwChain = createCircleChain({ x: 10, y: 10 }, 5, true);
             const ccwChain = createCircleChain({ x: 10, y: 10 }, 5, false);
 
+            // Both chains cut with same direction should produce same sweep
             const cwChainResult = calculateLeads(
                 cwChain,
                 baseLeadConfig,
@@ -461,22 +462,13 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
                 console.log('CW chain lead center:', cwChainArc.center);
                 console.log('CCW chain lead center:', ccwChainArc.center);
-
-                // The chain clockwise property may not always result in different centers
-                // but should result in different arc sweep directions or radii
                 console.log('CW chain arc clockwise:', cwChainArc.clockwise);
                 console.log('CCW chain arc clockwise:', ccwChainArc.clockwise);
-                console.log('CW chain arc radius:', cwChainArc.radius);
-                console.log('CCW chain arc radius:', ccwChainArc.radius);
 
-                // At minimum, the arcs should have some distinguishing property
-                const arcsIdentical =
-                    cwChainArc.center.x === ccwChainArc.center.x &&
-                    cwChainArc.center.y === ccwChainArc.center.y &&
-                    cwChainArc.clockwise === ccwChainArc.clockwise &&
-                    cwChainArc.radius === ccwChainArc.radius;
-
-                expect(arcsIdentical).toBe(false);
+                // CRITICAL INVARIANT: Lead sweep matches cut direction, not chain winding
+                // Both chains cut CW should have CW lead sweep
+                expect(cwChainArc.clockwise).toBe(true);
+                expect(ccwChainArc.clockwise).toBe(true);
             }
         });
     });

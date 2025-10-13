@@ -291,6 +291,7 @@ describe('State Persistence', () => {
             showCutPaths: false,
             showCutStartPoints: false,
             showCutEndPoints: false,
+            showCutTangentLines: false,
         };
 
         // Save state
@@ -397,6 +398,7 @@ describe('State Persistence', () => {
             showCutPaths: false,
             showCutStartPoints: false,
             showCutEndPoints: false,
+            showCutTangentLines: false,
         };
 
         saveState(testState);

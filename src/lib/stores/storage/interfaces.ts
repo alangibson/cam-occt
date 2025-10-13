@@ -79,4 +79,5 @@ export interface PersistedState {
     showCutPaths: boolean;
     showCutStartPoints: boolean;
     showCutEndPoints: boolean;
+    showCutTangentLines: boolean;
 }
