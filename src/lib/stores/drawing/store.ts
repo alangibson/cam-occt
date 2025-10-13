@@ -52,21 +52,23 @@ function calculateZoomToFitForDrawing(
     }
 }
 
+const initialState: DrawingState = {
+    drawing: null,
+    selectedShapes: new Set(),
+    hoveredShape: null,
+    selectedOffsetShape: null,
+    isDragging: false,
+    dragStart: null,
+    scale: 1,
+    offset: { x: 0, y: 0 },
+    fileName: null,
+    layerVisibility: {},
+    displayUnit: Unit.MM,
+    canvasDimensions: null,
+};
+
 function createDrawingStore(): DrawingStore {
-    const { subscribe, update } = writable<DrawingState>({
-        drawing: null,
-        selectedShapes: new Set(),
-        hoveredShape: null,
-        selectedOffsetShape: null,
-        isDragging: false,
-        dragStart: null,
-        scale: 1,
-        offset: { x: 0, y: 0 },
-        fileName: null,
-        layerVisibility: {},
-        displayUnit: Unit.MM,
-        canvasDimensions: null,
-    });
+    const { subscribe, update, set } = writable<DrawingState>(initialState);
 
     return {
         subscribe,
@@ -362,6 +364,8 @@ function createDrawingStore(): DrawingStore {
                 ...state,
                 selectedOffsetShape: null,
             })),
+
+        reset: () => set(initialState),
     };
 }
 

@@ -348,6 +348,30 @@ export function clearApplicationState(): void {
 }
 
 /**
+ * Reset all stores to their default state and clear localStorage
+ */
+export function resetApplicationToDefaults(): void {
+    // Clear localStorage first
+    clearPersistedState();
+
+    // Reset all stores to their default states
+    drawingStore.reset();
+    workflowStore.reset();
+    chainStore.clearChains();
+    partStore.clearParts();
+    rapidStore.reset();
+    uiStore.hideToolTable();
+    tessellationStore.clearTessellation();
+    overlayStore.clearAllOverlays();
+    leadWarningsStore.clearAllWarnings();
+    prepareStageStore.reset();
+    operationsStore.reset();
+    cutStore.reset();
+    toolStore.reset();
+    settingsStore.resetToDefaults();
+}
+
+/**
  * Setup auto-save subscriptions for all stores
  */
 export function setupAutoSave(): () => void {

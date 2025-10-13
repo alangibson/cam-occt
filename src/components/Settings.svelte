@@ -6,6 +6,7 @@
         PreprocessingStep,
         OffsetImplementation,
     } from '$lib/stores/settings/interfaces';
+    import { resetApplicationToDefaults } from '$lib/stores/storage/store';
 
     const allStages = [
         WorkflowStage.IMPORT,
@@ -56,6 +57,16 @@
         implementation: OffsetImplementation
     ) {
         settingsStore.setOffsetImplementation(implementation);
+    }
+
+    function handleResetApplication() {
+        if (
+            confirm(
+                'Are you sure you want to reset the application? This will clear all data and settings.'
+            )
+        ) {
+            resetApplicationToDefaults();
+        }
     }
 </script>
 
@@ -138,6 +149,10 @@
             </div>
         </section>
     </div>
+
+    <button class="reset-button" onclick={handleResetApplication}>
+        Reset Application
+    </button>
 </div>
 
 <style>
@@ -145,6 +160,7 @@
         padding: 2rem;
         height: 100%;
         overflow: auto;
+        position: relative;
     }
 
     h1 {
@@ -207,6 +223,31 @@
         font-size: 0.875rem;
         font-weight: 500;
         color: #374151;
+    }
+
+    .reset-button {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        background-color: #dc2626;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+            0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    .reset-button:hover {
+        background-color: #b91c1c;
+    }
+
+    .reset-button:active {
+        background-color: #991b1b;
     }
 
     @media (max-width: 768px) {

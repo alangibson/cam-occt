@@ -54,4 +54,5 @@ export interface DrawingStore {
     ) => void;
     selectOffsetShape: (shape: Shape | null) => void;
     clearOffsetShapeSelection: () => void;
+    reset: () => void;
 }
