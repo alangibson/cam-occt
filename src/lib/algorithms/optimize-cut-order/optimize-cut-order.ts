@@ -71,6 +71,9 @@ function processNearestCut(
  * Otherwise, returns the chain end point.
  */
 function getCutEndPoint(cut: Cut, chain: Chain, part?: DetectedPart): Point2D {
+    // Use cut.cutChain if it exists (it may have been reversed for open chains)
+    const chainToUse = cut.cutChain || chain;
+
     // Check if cut has lead-out
     if (
         cut.leadOutConfig &&
@@ -111,13 +114,13 @@ function getCutEndPoint(cut: Cut, chain: Chain, part?: DetectedPart): Point2D {
     // Fallback to chain end point (use offset if available)
     if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
-            id: chain.id + '_offset_temp',
+            id: chainToUse.id + '_offset_temp',
             shapes: cut.offset.offsetShapes,
         };
         return getChainEndPoint(offsetChain);
     }
 
-    return getChainEndPoint(chain);
+    return getChainEndPoint(chainToUse);
 }
 
 /**

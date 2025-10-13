@@ -145,52 +145,61 @@ export function getCutStartPoint(
         }
     }
 
-    // Fallback to chain start point (use offset if available)
+    // Fallback to chain start point (use cutChain if available, then offset if available)
+    // Use cut.cutChain if it exists (it may have been reversed for open chains)
+    const chainToUse = cut.cutChain || chain;
+
     if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
-            id: chain.id + '_offset_temp',
+            id: chainToUse.id + '_offset_temp',
             shapes: cut.offset.offsetShapes,
-            clockwise: chain.clockwise,
-            originalChainId: chain.id,
+            clockwise: chainToUse.clockwise,
+            originalChainId: chainToUse.originalChainId || chainToUse.id,
         };
         return getChainStartPoint(offsetChain);
     }
 
-    return getChainStartPoint(chain);
+    return getChainStartPoint(chainToUse);
 }
 
 /**
  * Get the effective start point of a cut's chain, using offset geometry if available
  */
 export function getCutChainStartPoint(cut: Cut, chain: Chain): Point2D {
+    // Use cut.cutChain if it exists (it may have been reversed for open chains)
+    const chainToUse = cut.cutChain || chain;
+
     if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
-            id: chain.id + '_offset_temp',
+            id: chainToUse.id + '_offset_temp',
             shapes: cut.offset.offsetShapes,
-            clockwise: chain.clockwise,
-            originalChainId: chain.id,
+            clockwise: chainToUse.clockwise,
+            originalChainId: chainToUse.originalChainId || chainToUse.id,
         };
         return getChainStartPoint(offsetChain);
     }
 
-    return getChainStartPoint(chain);
+    return getChainStartPoint(chainToUse);
 }
 
 /**
  * Get the effective end point of a cut's chain, using offset geometry if available
  */
 export function getCutChainEndPoint(cut: Cut, chain: Chain): Point2D {
+    // Use cut.cutChain if it exists (it may have been reversed for open chains)
+    const chainToUse = cut.cutChain || chain;
+
     if (cut.offset && cut.offset.offsetShapes.length > 0) {
         const offsetChain: Chain = {
-            id: chain.id + '_offset_temp',
+            id: chainToUse.id + '_offset_temp',
             shapes: cut.offset.offsetShapes,
-            clockwise: chain.clockwise,
-            originalChainId: chain.id,
+            clockwise: chainToUse.clockwise,
+            originalChainId: chainToUse.originalChainId || chainToUse.id,
         };
         return getChainEndPoint(offsetChain);
     }
 
-    return getChainEndPoint(chain);
+    return getChainEndPoint(chainToUse);
 }
 
 /**

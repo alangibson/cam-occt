@@ -1129,4 +1129,158 @@ describe('Optimize Cut Order', () => {
             expect(result.totalDistance).toBeGreaterThan(0);
         });
     });
+
+    describe('Open Chain Rapid Connection', () => {
+        it('should connect rapid to start point of reversed open chain without leads', () => {
+            // Create an open chain line from (10,10) to (20,20)
+            const chain = createLineChain(
+                'chain-1',
+                { x: 10, y: 10 },
+                { x: 20, y: 20 }
+            );
+
+            // Create a cut with COUNTERCLOCKWISE direction
+            // For an open chain, this should reverse the traversal order
+            const cut = createCut('cut-1', 'chain-1', {
+                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                executionClockwise: false,
+                leadInConfig: undefined, // No lead-in
+                leadOutConfig: undefined, // No lead-out
+                cutChain: {
+                    id: 'chain-1-cut',
+                    shapes: [
+                        {
+                            id: 'shape-chain-1-reversed',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 20, y: 20 }, // Reversed: end becomes start
+                                end: { x: 10, y: 10 },   // Reversed: start becomes end
+                            } as Line,
+                        },
+                    ],
+                },
+            });
+
+            const chains = new Map([['chain-1', chain]]);
+
+            const result = optimizeCutOrder([cut], chains, []);
+
+            expect(result.orderedCuts).toHaveLength(1);
+            expect(result.rapids).toHaveLength(1);
+
+            // The rapid should connect from origin (0,0) to the START of the CUT
+            // Since the cut is reversed, the start should be (20,20), NOT (10,10)
+            expect(result.rapids[0].start).toEqual({ x: 0, y: 0 });
+            expect(result.rapids[0].end).toEqual({ x: 20, y: 20 }); // Should be the reversed start
+        });
+
+        it('should connect rapid correctly for open chain with CLOCKWISE direction without leads', () => {
+            // Create an open chain line from (10,10) to (20,20)
+            const chain = createLineChain(
+                'chain-1',
+                { x: 10, y: 10 },
+                { x: 20, y: 20 }
+            );
+
+            // Create a cut with CLOCKWISE direction (no reversal for open chain)
+            const cut = createCut('cut-1', 'chain-1', {
+                cutDirection: CutDirection.CLOCKWISE,
+                executionClockwise: true,
+                leadInConfig: undefined, // No lead-in
+                leadOutConfig: undefined, // No lead-out
+                cutChain: {
+                    id: 'chain-1-cut',
+                    shapes: chain.shapes, // Not reversed
+                },
+            });
+
+            const chains = new Map([['chain-1', chain]]);
+
+            const result = optimizeCutOrder([cut], chains, []);
+
+            expect(result.orderedCuts).toHaveLength(1);
+            expect(result.rapids).toHaveLength(1);
+
+            // The rapid should connect from origin (0,0) to the START of the CUT
+            // Since the cut is NOT reversed, the start should be (10,10)
+            expect(result.rapids[0].start).toEqual({ x: 0, y: 0 });
+            expect(result.rapids[0].end).toEqual({ x: 10, y: 10 });
+        });
+
+        it('should connect sequential rapids correctly for reversed open chains without leads', () => {
+            // Create two open chain lines
+            // Chain 1: (10,10) to (20,20)
+            const chain1 = createLineChain(
+                'chain-1',
+                { x: 10, y: 10 },
+                { x: 20, y: 20 }
+            );
+
+            // Chain 2: (30,30) to (40,40)
+            const chain2 = createLineChain(
+                'chain-2',
+                { x: 30, y: 30 },
+                { x: 40, y: 40 }
+            );
+
+            // Create cuts with COUNTERCLOCKWISE direction (reversed)
+            const cut1 = createCut('cut-1', 'chain-1', {
+                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                executionClockwise: false,
+                leadInConfig: undefined,
+                leadOutConfig: undefined,
+                cutChain: {
+                    id: 'chain-1-cut',
+                    shapes: [
+                        {
+                            id: 'shape-chain-1-reversed',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 20, y: 20 }, // Reversed
+                                end: { x: 10, y: 10 },
+                            } as Line,
+                        },
+                    ],
+                },
+            });
+
+            const cut2 = createCut('cut-2', 'chain-2', {
+                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                executionClockwise: false,
+                leadInConfig: undefined,
+                leadOutConfig: undefined,
+                cutChain: {
+                    id: 'chain-2-cut',
+                    shapes: [
+                        {
+                            id: 'shape-chain-2-reversed',
+                            type: GeometryType.LINE,
+                            geometry: {
+                                start: { x: 40, y: 40 }, // Reversed
+                                end: { x: 30, y: 30 },
+                            } as Line,
+                        },
+                    ],
+                },
+            });
+
+            const chains = new Map([
+                ['chain-1', chain1],
+                ['chain-2', chain2],
+            ]);
+
+            const result = optimizeCutOrder([cut1, cut2], chains, []);
+
+            expect(result.orderedCuts).toHaveLength(2);
+            expect(result.rapids).toHaveLength(2);
+
+            // First rapid: origin (0,0) to start of cut1 (20,20)
+            expect(result.rapids[0].start).toEqual({ x: 0, y: 0 });
+            expect(result.rapids[0].end).toEqual({ x: 20, y: 20 });
+
+            // Second rapid: end of cut1 (10,10) to start of cut2 (40,40)
+            expect(result.rapids[1].start).toEqual({ x: 10, y: 10 });
+            expect(result.rapids[1].end).toEqual({ x: 40, y: 40 });
+        });
+    });
 });
