@@ -184,6 +184,7 @@ export default [
         navigator: "readonly",
         performance: "readonly",
         prompt: "readonly",
+        confirm: "readonly",
         HTMLSelectElement: "readonly",
       },
     },

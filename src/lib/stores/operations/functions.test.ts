@@ -21,7 +21,7 @@ import { PartType } from '$lib/types';
 import { GeometryType } from '$lib/types/geometry';
 import { NormalSide } from '$lib/types/cam';
 import { reverseChain } from '$lib/geometry/chain';
-import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
+import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import {
     createLeadInConfig,
@@ -34,8 +34,8 @@ vi.mock('$lib/geometry/chain', () => ({
     CHAIN_CLOSURE_TOLERANCE: 0.01,
 }));
 
-vi.mock('$lib/algorithms/offset-calculation/chain/offset', () => ({
-    offsetChain: vi.fn(),
+vi.mock('$lib/algorithms/offset-calculation/offset-adapter', () => ({
+    offsetChainAdapter: vi.fn(),
 }));
 
 vi.mock('$lib/algorithms/leads/lead-calculation', () => ({
@@ -194,7 +194,7 @@ describe('Operations Functions', () => {
 
     describe('calculateChainOffset', () => {
         beforeEach(() => {
-            vi.mocked(offsetChain).mockReturnValue({
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
@@ -290,7 +290,7 @@ describe('Operations Functions', () => {
         });
 
         it('should return null when offset calculation fails', async () => {
-            vi.mocked(offsetChain).mockReturnValue({
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
                 success: false,
                 errors: ['Offset failed'],
                 warnings: [],
@@ -307,7 +307,7 @@ describe('Operations Functions', () => {
         });
 
         it('should return null when no appropriate offset chain is found for INSET', async () => {
-            vi.mocked(offsetChain).mockReturnValue({
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
@@ -342,7 +342,7 @@ describe('Operations Functions', () => {
         });
 
         it('should return null when no appropriate offset chain is found for OUTSET', async () => {
-            vi.mocked(offsetChain).mockReturnValue({
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
@@ -377,9 +377,9 @@ describe('Operations Functions', () => {
         });
 
         it('should handle errors during offset calculation', async () => {
-            vi.mocked(offsetChain).mockImplementation(() => {
-                throw new Error('Calculation error');
-            });
+            vi.mocked(offsetChainAdapter).mockRejectedValue(
+                new Error('Calculation error')
+            );
 
             const result = await calculateChainOffset(
                 mockChain,
@@ -518,7 +518,7 @@ describe('Operations Functions', () => {
                 kerfCompensation: KerfCompensation.INNER,
             };
 
-            vi.mocked(offsetChain).mockReturnValue({
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
@@ -562,7 +562,7 @@ describe('Operations Functions', () => {
                 kerfCompensation: KerfCompensation.OUTER,
             };
 
-            vi.mocked(offsetChain).mockReturnValue({
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
@@ -655,7 +655,7 @@ describe('Operations Functions', () => {
                 },
             ];
 
-            vi.mocked(offsetChain).mockReturnValue({
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
@@ -1083,7 +1083,7 @@ describe('Operations Functions', () => {
         });
 
         it('should generate cuts for chain targets', async () => {
-            vi.mocked(offsetChain).mockReturnValue({
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
                 success: true,
                 innerChain: {
                     id: 'inner-chain',
@@ -1135,7 +1135,7 @@ describe('Operations Functions', () => {
                 },
             ];
 
-            vi.mocked(offsetChain).mockReturnValue({
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
                 success: true,
                 innerChain: {
                     id: 'inner-chain',

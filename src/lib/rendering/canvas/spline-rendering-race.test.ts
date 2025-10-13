@@ -12,6 +12,8 @@ import { partStore } from '$lib/stores/parts/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
+import { settingsStore } from '$lib/stores/settings/store';
+import { OffsetImplementation } from '$lib/stores/settings/interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { Shape } from '$lib/types';
@@ -24,6 +26,8 @@ describe('Spline Rendering Race Condition', () => {
         cutStore.reset();
         operationsStore.reset();
         toolStore.reset();
+        // Set to Exact implementation to preserve splines
+        settingsStore.setOffsetImplementation(OffsetImplementation.Exact);
     });
 
     it('should render all offset shapes including splines for single operation', async () => {

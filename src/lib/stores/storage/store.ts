@@ -41,7 +41,7 @@ import { operationsStore } from '$lib/stores/operations/store';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import { cutStore } from '$lib/stores/cuts/store';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
-import { toolStore } from '$lib/stores/tools/store';
+import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { WarningState } from '$lib/stores/warnings/interfaces';
 import { settingsStore } from '$lib/stores/settings/store';
@@ -369,6 +369,9 @@ export function resetApplicationToDefaults(): void {
     cutStore.reset();
     toolStore.reset();
     settingsStore.resetToDefaults();
+
+    // Create default tool after clearing
+    toolStore.addTool(createDefaultTool(1));
 }
 
 /**

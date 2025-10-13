@@ -102,8 +102,8 @@ function loadSettings(): ApplicationSettings {
                                         .rapidOptimizationAlgorithm
                                   : DEFAULT_OPTIMIZATION_SETTINGS.rapidOptimizationAlgorithm,
                               zoomToFit:
-                                  typeof parsed.optimizationSettings.zoomToFit ===
-                                  'boolean'
+                                  typeof parsed.optimizationSettings
+                                      .zoomToFit === 'boolean'
                                       ? parsed.optimizationSettings.zoomToFit
                                       : DEFAULT_OPTIMIZATION_SETTINGS.zoomToFit,
                           }

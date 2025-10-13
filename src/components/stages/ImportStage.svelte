@@ -194,6 +194,7 @@
     }
 
     .settings-section {
+        margin-top: 2rem;
         margin-bottom: 2rem;
         padding: 1.5rem;
         background-color: #f9fafb;

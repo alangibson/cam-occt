@@ -109,7 +109,7 @@
             disabled={!fileName}
             on:click={handleImportClick}
         >
-            Import >
+            Import
         </button>
     </div>
 
