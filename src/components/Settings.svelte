@@ -154,7 +154,8 @@
                                 e.currentTarget.value as OffsetImplementation
                             )}
                     >
-                        <option value={OffsetImplementation.Exact}>Exact</option>
+                        <option value={OffsetImplementation.Exact}>Exact</option
+                        >
                         <option value={OffsetImplementation.Polyline}
                             >Polyline</option
                         >
@@ -277,8 +278,7 @@
         background-color: #f3f4f6;
     }
 
-    .stage-item input[type='checkbox'],
-    .stage-item input[type='radio'] {
+    .stage-item input[type='checkbox'] {
         width: 1rem;
         height: 1rem;
         cursor: pointer;
@@ -288,12 +288,6 @@
     .stage-item input[type='checkbox']:disabled {
         cursor: not-allowed;
         opacity: 0.5;
-    }
-
-    .option-content {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
     }
 
     .stage-name {

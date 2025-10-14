@@ -56,6 +56,7 @@ const defaultApplicationSettings = {
     offsetImplementation: OffsetImplementation.Exact,
     camSettings: {
         rapidRate: 3000,
+        cutterCompensation: null,
     },
 };
 

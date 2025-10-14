@@ -205,29 +205,29 @@ function calculateArcLead(
         };
     }
 
-    // Determine desired arc sweep direction based on cut direction and shell/hole context
-    // CRITICAL INVARIANT: Lead arcs must sweep INTO/TOWARDS the cut direction for smooth transitions
-    // - CW cut -> CW lead sweep (clockwise=true)
-    // - CCW cut -> CCW lead sweep (clockwise=false)
-    let desiredClockwise: boolean;
-    if (cutDirection === CutDirection.CLOCKWISE) {
-        // For CLOCKWISE cuts, lead should sweep CLOCKWISE (same direction)
-        desiredClockwise = true;
-    } else if (cutDirection === CutDirection.COUNTERCLOCKWISE) {
-        // For COUNTERCLOCKWISE cuts, lead should sweep COUNTERCLOCKWISE (same direction)
-        desiredClockwise = false;
-    } else {
-        // No cut direction specified - use natural direction from cross product
-        const cross =
-            tangent.x * baseCurveDirection.y - tangent.y * baseCurveDirection.x;
-        desiredClockwise = cross < 0;
-    }
+    // Determine desired arc sweep direction based on the cut tangent
+    // CRITICAL INVARIANT: Lead arc must sweep in the direction of the cut tangent
+    //
+    // The arc's velocity at the connection point must match the cut tangent direction.
+    // For an arc, velocity is perpendicular to the radius:
+    // - CW arc (clockwise=true): velocity is 90° CW from radius
+    // - CCW arc (clockwise=false): velocity is 90° CCW from radius
+    //
+    // To match the tangent, we need to determine which sweep direction produces
+    // the correct velocity at the connection point.
+    //
+    // The key insight: calculate the cross product of tangent × normal.
+    // If cross > 0: tangent is CCW from normal → arc should be CCW to curve into tangent
+    // If cross < 0: tangent is CW from normal → arc should be CW to curve into tangent
+    const cross =
+        tangent.x * baseCurveDirection.y - tangent.y * baseCurveDirection.x;
+    const desiredClockwise = cross < 0;
 
     // Determine curve direction strategy: manual absolute angle or automatic (use cut normal)
     let curveDirectionsToTry: { x: number; y: number }[];
 
-    if (manualAngle !== undefined) {
-        // Manual angle mode: User has specified an absolute angle override
+    if (manualAngle !== undefined && manualAngle !== 0) {
+        // Manual angle mode: User has specified an absolute angle override (non-zero)
         // This rotates the cut normal by the specified angle
         // Work in world coordinates (Y+ up), canvas rendering will handle coordinate conversion
         const manualAngleRad: number =
