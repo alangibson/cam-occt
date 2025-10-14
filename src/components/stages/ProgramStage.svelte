@@ -96,7 +96,10 @@
 
     $: {
         // Include properties that affect lead geometry and cut start/end positions
+        // Sort by ID to make hash order-independent (so reordering cuts doesn't trigger recalculation)
         const cutsHash = cuts
+            .slice()
+            .sort((a, b) => a.id.localeCompare(b.id))
             .map(
                 (c) =>
                     `${c.id}:${c.normalConnectionPoint?.x}:${c.normalConnectionPoint?.y}:${c.leadIn?.geometry?.center?.x}:${c.leadIn?.geometry?.center?.y}:${c.leadIn?.geometry?.radius}:${c.leadIn?.geometry?.startAngle}:${c.leadIn?.geometry?.endAngle}:${c.leadOut?.geometry?.center?.x}:${c.leadOut?.geometry?.center?.y}:${c.leadOut?.geometry?.radius}:${c.leadOut?.geometry?.startAngle}:${c.leadOut?.geometry?.endAngle}:${c.leadInConfig?.type}:${c.leadInConfig?.length}:${c.leadInConfig?.flipSide}:${c.leadInConfig?.angle}:${c.leadOutConfig?.type}:${c.leadOutConfig?.length}:${c.leadOutConfig?.flipSide}:${c.leadOutConfig?.angle}:${c.enabled}`
