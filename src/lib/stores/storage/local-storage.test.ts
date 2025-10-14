@@ -158,8 +158,7 @@ describe('State Persistence', () => {
                     },
                     partDetection: {
                         circleTessellationPoints: 64,
-                        minArcTessellationPoints: 16,
-                        arcTessellationDensity: 0.1,
+                        arcTessellationTolerance: 0.1,
                         decimalPrecision: 3,
                         enableTessellation: false,
                     },
@@ -365,8 +364,7 @@ describe('State Persistence', () => {
                     },
                     partDetection: {
                         circleTessellationPoints: 64,
-                        minArcTessellationPoints: 16,
-                        arcTessellationDensity: 0.1,
+                        arcTessellationTolerance: 0.1,
                         decimalPrecision: 3,
                         enableTessellation: false,
                     },

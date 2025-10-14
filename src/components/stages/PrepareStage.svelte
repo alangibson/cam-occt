@@ -111,15 +111,9 @@
         });
     }
 
-    function updateTessellationMinArcPoints(value: number) {
+    function updateTessellationArcTolerance(value: number) {
         prepareStageStore.updateAlgorithmParam('partDetection', {
-            minArcTessellationPoints: value,
-        });
-    }
-
-    function updateTessellationArcPrecision(value: number) {
-        prepareStageStore.updateAlgorithmParam('partDetection', {
-            arcTessellationDensity: value,
+            arcTessellationTolerance: value,
         });
     }
 
@@ -1271,52 +1265,27 @@
                         </label>
 
                         <label class="param-label">
-                            Min Arc Points:
+                            Arc Tolerance (mm):
                             <input
                                 type="number"
                                 value={algorithmParams.partDetection
-                                    .minArcTessellationPoints}
+                                    .arcTessellationTolerance}
                                 oninput={(e) =>
-                                    updateTessellationMinArcPoints(
+                                    updateTessellationArcTolerance(
                                         parseFloat(e.currentTarget.value)
                                     )}
-                                min="4"
-                                max="64"
-                                step="1"
-                                class="param-input"
-                                title="Minimum number of points for arc tessellation."
-                            />
-                            <div class="param-description">
-                                Minimum number of points for arc tessellation,
-                                regardless of arc length. Ensures even very
-                                small arcs have adequate geometric
-                                representation. Higher values improve precision
-                                for tiny arc segments.
-                            </div>
-                        </label>
-
-                        <label class="param-label">
-                            Arc Precision:
-                            <input
-                                type="number"
-                                value={algorithmParams.partDetection
-                                    .arcTessellationDensity}
-                                oninput={(e) =>
-                                    updateTessellationArcPrecision(
-                                        parseFloat(e.currentTarget.value)
-                                    )}
-                                min="0.01"
-                                max="0.5"
+                                min="0.001"
+                                max="1.0"
                                 step="0.01"
                                 class="param-input"
-                                title="Arc tessellation density factor. Smaller = more points."
+                                title="Maximum allowed deviation between arc and tessellated chords in mm."
                             />
                             <div class="param-description">
-                                Controls how finely arcs are divided into line
-                                segments (radians per point). Smaller values
-                                create more points and better precision. Larger
-                                values use fewer points for faster processing
-                                but less accuracy.
+                                Maximum allowed deviation between the true arc
+                                and tessellated line segments (chord error). Smaller
+                                values create more points for better precision.
+                                Larger values use fewer points for faster processing.
+                                Default: 0.1mm
                             </div>
                         </label>
 

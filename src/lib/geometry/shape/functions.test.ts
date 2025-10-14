@@ -1574,8 +1574,7 @@ describe('tessellateShape', () => {
     const mockParams = {
         enableTessellation: true,
         circleTessellationPoints: 32,
-        minArcTessellationPoints: 8,
-        arcTessellationDensity: Math.PI / 16,
+        arcTessellationTolerance: 0.1,
         decimalPrecision: 6,
     };
 
@@ -1880,8 +1879,7 @@ describe('tessellateShape - spline handling', () => {
 
         const mockParams = {
             circleTessellationPoints: 32,
-            minArcTessellationPoints: 8,
-            arcTessellationDensity: Math.PI / 16,
+            arcTessellationTolerance: 0.1,
             decimalPrecision: 6,
             enableTessellation: true,
         };

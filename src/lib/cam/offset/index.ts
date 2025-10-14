@@ -65,15 +65,13 @@ export async function offsetChain(
 
         // 2. Tessellate all shapes to polylines
         const CIRCLE_POINTS = 32;
-        const MIN_ARC_POINTS = 8;
-        const ARC_DENSITY_DIVISOR = 16;
+        const ARC_TOLERANCE = 0.1; // 0.1mm tolerance for arc tessellation
         const DECIMAL_PRECISION = 3;
         const SKIP_LAST_POINT = -1;
 
         const shapePointArrays = tessellateChainToShapes(chain, {
             circleTessellationPoints: CIRCLE_POINTS,
-            minArcTessellationPoints: MIN_ARC_POINTS,
-            arcTessellationDensity: Math.PI / ARC_DENSITY_DIVISOR,
+            arcTessellationTolerance: ARC_TOLERANCE,
             decimalPrecision: DECIMAL_PRECISION,
             enableTessellation: false,
         });

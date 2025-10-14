@@ -492,10 +492,28 @@ export function tessellateShape(
             }
 
             const arcSpan: number = Math.abs(deltaAngle);
-            const numArcPoints: number = Math.max(
-                params.minArcTessellationPoints,
-                Math.round(arcSpan / params.arcTessellationDensity)
-            );
+
+            // Adaptive tessellation based on chord error tolerance
+            // For a circular arc with radius r and tolerance t (max deviation):
+            // The sagitta (chord height) s = r - r*cos(θ/2) where θ is the segment angle
+            // Setting s = t and solving for θ: θ = 2*acos(1 - t/r)
+            // Number of segments = arcSpan / θ = arcSpan / (2*acos(1 - t/r))
+            const tolerance = params.arcTessellationTolerance;
+            const radius = arc.radius;
+
+            // Handle edge cases
+            let numArcPoints: number;
+            if (tolerance >= radius) {
+                // Tolerance is larger than radius - use minimal tessellation (2 points = 1 segment)
+                numArcPoints = 1;
+            } else {
+                // Calculate optimal segment angle for the given tolerance
+                const segmentAngle = 2 * Math.acos(1 - tolerance / radius);
+                // Calculate number of segments needed for the arc span
+                const numSegments = Math.ceil(arcSpan / segmentAngle);
+                // Clamp to reasonable bounds (minimum 1 segment, maximum 1000 segments)
+                numArcPoints = Math.max(1, Math.min(1000, numSegments));
+            }
 
             for (let i: number = 0; i <= numArcPoints; i++) {
                 const t: number = i / numArcPoints;
