@@ -61,7 +61,6 @@ const DEFAULT_SETTINGS: ApplicationSettings = {
         PreprocessingStep.TranslateToPositive,
         PreprocessingStep.DetectChains,
         PreprocessingStep.NormalizeChains,
-        PreprocessingStep.OptimizeStarts,
         PreprocessingStep.DetectParts,
     ],
     optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,
