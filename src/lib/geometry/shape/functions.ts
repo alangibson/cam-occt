@@ -30,10 +30,12 @@ import {
 } from '$lib/geometry/line';
 import { GeometryType } from './enums';
 import {
+    createAdaptiveTessellationConfig,
     getSplineEndPoint,
     getSplinePointAt,
     getSplineStartPoint,
     reverseSpline,
+    SPLINE_TESSELLATION_TOLERANCE,
     tessellateSpline,
 } from '$lib/geometry/spline';
 import {
@@ -61,7 +63,6 @@ import {
 } from '$lib/geometry/polyline';
 import {
     DEFAULT_TESSELLATION_SEGMENTS,
-    HIGH_TESSELLATION_SEGMENTS,
     MIDPOINT_T,
     OCTAGON_SIDES,
     QUARTER_CIRCLE_QUADRANTS,
@@ -619,11 +620,18 @@ export function tessellateShape(
         case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;
             try {
-                // Use NURBS sampling for accurate tessellation
-                // Use more points for better accuracy in part detection
-                const sampledPoints: Point2D[] = tessellateSpline(spline, {
-                    numSamples: HIGH_TESSELLATION_SEGMENTS,
-                }).points;
+                // Use adaptive tessellation config based on spline complexity
+                // This ensures complex splines with many control points get sufficient detail
+                const config = createAdaptiveTessellationConfig(
+                    spline,
+                    SPLINE_TESSELLATION_TOLERANCE
+                );
+
+                // Tessellate with adaptive configuration
+                const sampledPoints: Point2D[] = tessellateSpline(
+                    spline,
+                    config
+                ).points;
 
                 points.push(...sampledPoints);
             } catch {

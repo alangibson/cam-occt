@@ -10,6 +10,7 @@ import { normalizeAngle } from '$lib/geometry/math/functions';
 import {
     SPLINE_TESSELLATION_TOLERANCE,
     tessellateSpline,
+    createAdaptiveTessellationConfig,
 } from '$lib/geometry/spline';
 import {
     tessellateEllipse,
@@ -120,11 +121,15 @@ export function drawSpline(
     spline: Spline,
     _shape: Shape
 ): void {
-    // Tessellate spline directly
-    const result = tessellateSpline(spline, {
-        method: 'verb-nurbs',
-        tolerance: SPLINE_TESSELLATION_TOLERANCE,
-    });
+    // Use adaptive tessellation config based on spline complexity
+    // This ensures complex splines with many control points get sufficient detail
+    const config = createAdaptiveTessellationConfig(
+        spline,
+        SPLINE_TESSELLATION_TOLERANCE
+    );
+
+    // Tessellate spline with adaptive configuration
+    const result = tessellateSpline(spline, config);
 
     if (!result.success || result.points.length < 2) return;
 

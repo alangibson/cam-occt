@@ -39,13 +39,15 @@ export const CLOSED_SPLINE_COMPLEXITY_MULTIPLIER = 1.2;
 
 /**
  * Maximum number of tessellation samples for splines
+ * Increased to support high-detail splines with many control points (e.g., 288)
  */
-export const MAX_SPLINE_TESSELLATION_SAMPLES = 200;
+export const MAX_SPLINE_TESSELLATION_SAMPLES = 1000;
 
 /**
  * Maximum number of adaptive tessellation samples
+ * Increased to support very complex splines with adaptive refinement
  */
-export const MAX_ADAPTIVE_TESSELLATION_SAMPLES = 500;
+export const MAX_ADAPTIVE_TESSELLATION_SAMPLES = 2000;
 
 /**
  * Standard tessellation timeout in milliseconds

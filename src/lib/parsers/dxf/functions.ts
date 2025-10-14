@@ -33,7 +33,7 @@ import {
 } from './constants';
 import type { ApplicationSettings } from '$lib/stores/settings/interfaces';
 import { ImportUnitSetting } from '$lib/stores/settings/interfaces';
-import { convertUnits, measurementSystemToUnit } from '$lib/utils/units';
+import { measurementSystemToUnit } from '$lib/utils/units';
 
 function updateBounds(
     shape: Shape,
@@ -493,125 +493,6 @@ export async function parseDXF(content: string): Promise<Drawing> {
         bounds: finalBounds,
         units: drawingUnits, // Use detected units from DXF header
     };
-}
-
-/**
- * Convert a point from one unit to another
- */
-function convertPoint(point: Point2D, fromUnit: Unit, toUnit: Unit): Point2D {
-    if (fromUnit === toUnit) {
-        return point;
-    }
-
-    return {
-        x: convertUnits(point.x, fromUnit, toUnit),
-        y: convertUnits(point.y, fromUnit, toUnit),
-    };
-}
-
-/**
- * Convert a shape's geometry from one unit to another
- */
-function convertShapeGeometry(
-    shape: Shape,
-    fromUnit: Unit,
-    toUnit: Unit
-): Shape {
-    if (fromUnit === toUnit) {
-        return shape;
-    }
-
-    const convertedShape: Shape = { ...shape };
-
-    switch (shape.type) {
-        case GeometryType.LINE: {
-            const lineGeometry = shape.geometry as {
-                start: Point2D;
-                end: Point2D;
-            };
-            convertedShape.geometry = {
-                start: convertPoint(lineGeometry.start, fromUnit, toUnit),
-                end: convertPoint(lineGeometry.end, fromUnit, toUnit),
-            };
-            break;
-        }
-
-        case GeometryType.CIRCLE: {
-            const circleGeometry = shape.geometry as {
-                center: Point2D;
-                radius: number;
-            };
-            convertedShape.geometry = {
-                center: convertPoint(circleGeometry.center, fromUnit, toUnit),
-                radius: convertUnits(circleGeometry.radius, fromUnit, toUnit),
-            };
-            break;
-        }
-
-        case GeometryType.ARC: {
-            const arcGeometry = shape.geometry as {
-                center: Point2D;
-                radius: number;
-                startAngle: number;
-                endAngle: number;
-                clockwise: boolean;
-            };
-            convertedShape.geometry = {
-                ...arcGeometry,
-                center: convertPoint(arcGeometry.center, fromUnit, toUnit),
-                radius: convertUnits(arcGeometry.radius, fromUnit, toUnit),
-            };
-            break;
-        }
-
-        case GeometryType.ELLIPSE: {
-            const ellipseGeometry = shape.geometry as Ellipse;
-            convertedShape.geometry = {
-                ...ellipseGeometry,
-                center: convertPoint(ellipseGeometry.center, fromUnit, toUnit),
-                majorAxisEndpoint: convertPoint(
-                    ellipseGeometry.majorAxisEndpoint,
-                    fromUnit,
-                    toUnit
-                ),
-            };
-            break;
-        }
-
-        case GeometryType.POLYLINE: {
-            const polylineGeometry = shape.geometry as {
-                closed: boolean;
-                shapes: Shape[];
-            };
-            convertedShape.geometry = {
-                ...polylineGeometry,
-                shapes: polylineGeometry.shapes.map((subShape: Shape) =>
-                    convertShapeGeometry(subShape, fromUnit, toUnit)
-                ),
-            };
-            break;
-        }
-
-        case GeometryType.SPLINE: {
-            const splineGeometry = shape.geometry as Spline;
-            convertedShape.geometry = {
-                ...splineGeometry,
-                controlPoints: splineGeometry.controlPoints.map((point) =>
-                    convertPoint(point, fromUnit, toUnit)
-                ),
-                fitPoints: splineGeometry.fitPoints.map((point) =>
-                    convertPoint(point, fromUnit, toUnit)
-                ),
-            };
-            break;
-        }
-
-        default:
-            // For unknown types, return the shape unchanged
-            break;
-    }
-
-    return convertedShape;
 }
 
 /**
