@@ -23,6 +23,7 @@
         chainStore.setShowChainTangentLines(false);
         chainStore.setShowChainNormals(false);
         chainStore.setShowChainDirections(false);
+        chainStore.setShowChainTessellation(false);
 
         // Reset cut visualization
         cutStore.setShowCutNormals(false);
@@ -190,6 +191,18 @@
                     class="show-checkbox"
                 />
                 Tangents
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={chainVisualization.showChainTessellation}
+                    onchange={(e) =>
+                        chainStore.setShowChainTessellation(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Tessellation
             </label>
         </div>
 

@@ -18,7 +18,10 @@ import {
 import { getChainById } from '$lib/stores/chains/functions';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import { getChainTangent } from '$lib/geometry/chain/functions';
+import {
+    getChainTangent,
+    tessellateChain,
+} from '$lib/geometry/chain/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { PartHole } from '$lib/algorithms/part-detection/part-detection';
 import {
@@ -27,6 +30,7 @@ import {
     getShapeNormal,
 } from '$lib/geometry/shape/functions';
 import { drawNormalLine } from './normal-renderer-utils';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
 
 // Constants for rendering
 const CHAIN_LINE_WIDTH = 1;
@@ -36,6 +40,8 @@ const ENDPOINT_SIZE = 6;
 const HIT_TEST_TOLERANCE = 5;
 const TANGENT_LINE_LENGTH = 50; // Length of tangent lines in screen pixels
 const TANGENT_LINE_WIDTH = 1;
+const TESSELLATION_POINT_SIZE = 3; // Size of tessellation points in screen pixels
+const TESSELLATION_BORDER_WIDTH = 0.5; // Border width for tessellation points
 
 export class ChainRenderer extends BaseRenderer {
     constructor(coordinator: CoordinateTransformer) {
@@ -126,6 +132,11 @@ export class ChainRenderer extends BaseRenderer {
         // Render chain normals if enabled
         if (state.visibility.showChainNormals) {
             this.drawChainNormals(ctx, state);
+        }
+
+        // Render chain tessellation if enabled
+        if (state.visibility.showChainTessellation) {
+            this.renderChainTessellation(ctx, state);
         }
     }
 
@@ -510,6 +521,60 @@ export class ChainRenderer extends BaseRenderer {
                 }
             }
         }
+    }
+
+    private renderChainTessellation(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState
+    ): void {
+        ctx.save();
+
+        const pointSize = state.transform.coordinator.screenToWorldDistance(
+            TESSELLATION_POINT_SIZE
+        );
+
+        // Use cyan color for tessellation points
+        ctx.fillStyle = '#00ffff';
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = state.transform.coordinator.screenToWorldDistance(
+            TESSELLATION_BORDER_WIDTH
+        );
+
+        for (const chain of state.chains) {
+            if (chain.shapes.length === 0) continue;
+
+            // Tessellate the chain to get all points
+            const tessellationPoints = tessellateChain(
+                chain,
+                DEFAULT_PART_DETECTION_PARAMETERS
+            );
+
+            // Draw each tessellation point as a small circle
+            for (const point of tessellationPoints) {
+                // Draw white border
+                ctx.beginPath();
+                ctx.arc(
+                    point.x,
+                    point.y,
+                    pointSize +
+                        state.transform.coordinator.screenToWorldDistance(
+                            TESSELLATION_BORDER_WIDTH
+                        ),
+                    0,
+                    2 * Math.PI
+                );
+                ctx.strokeStyle = '#ffffff';
+                ctx.stroke();
+
+                // Draw cyan center
+                ctx.beginPath();
+                ctx.arc(point.x, point.y, pointSize, 0, 2 * Math.PI);
+                ctx.fillStyle = '#00ffff';
+                ctx.fill();
+            }
+        }
+
+        ctx.restore();
     }
 
     hitWorld(point: Point2D, state: RenderState): HitTestResult | null {

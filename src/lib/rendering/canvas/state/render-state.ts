@@ -73,6 +73,7 @@ export interface VisibilityState {
     showChainTangentLines: boolean;
     showChainNormals: boolean;
     showChainDirections: boolean;
+    showChainTessellation: boolean;
     showShapeNormals: boolean;
     showShapeWindingDirection: boolean;
     showShapeTangentLines: boolean;
@@ -198,6 +199,7 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showChainTangentLines: false,
             showChainNormals: false,
             showChainDirections: false,
+            showChainTessellation: false,
             showShapeNormals: false,
             showShapeWindingDirection: false,
             showShapeTangentLines: false,

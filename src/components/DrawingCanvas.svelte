@@ -108,6 +108,7 @@
     $: showChainTangentLines = chainVisualization.showChainTangentLines;
     $: showChainNormals = chainVisualization.showChainNormals;
     $: showChainDirections = chainVisualization.showChainDirections;
+    $: showChainTessellation = chainVisualization.showChainTessellation;
     $: showCutNormals = cutsState.showCutNormals;
     $: showCutDirections = cutsState.showCutDirections;
     $: showCutPaths = cutsState.showCutPaths;
@@ -332,6 +333,7 @@
                 showChainTangentLines,
                 showChainNormals,
                 showChainDirections,
+                showChainTessellation,
                 showCutNormals,
                 showCutDirections,
                 showCutPaths,

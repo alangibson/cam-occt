@@ -13,4 +13,5 @@ export interface ChainStore {
     showChainTangentLines: boolean;
     showChainNormals: boolean;
     showChainDirections: boolean;
+    showChainTessellation: boolean;
 }

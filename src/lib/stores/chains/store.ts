@@ -15,6 +15,7 @@ function createChainStore() {
         showChainTangentLines: false,
         showChainNormals: false,
         showChainDirections: false,
+        showChainTessellation: false,
     };
 
     const { subscribe, update } = writable<ChainStore>(initialState);
@@ -121,6 +122,13 @@ function createChainStore() {
         }));
     }
 
+    function setShowChainTessellation(show: boolean) {
+        update((state) => ({
+            ...state,
+            showChainTessellation: show,
+        }));
+    }
+
     return {
         subscribe,
         setChains,
@@ -136,6 +144,7 @@ function createChainStore() {
         setShowChainNormals,
         setShowChainDirections,
         setShowChainPaths,
+        setShowChainTessellation,
     };
 }
 

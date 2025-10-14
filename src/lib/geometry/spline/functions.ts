@@ -24,6 +24,7 @@ import {
     MAX_SPLINE_TESSELLATION_SAMPLES,
     SPLINE_COMPLEXITY_WEIGHT_MULTIPLIER,
     SPLINE_SAMPLE_COUNT,
+    SPLINE_TESSELLATION_TOLERANCE,
     STANDARD_TESSELLATION_TIMEOUT_MS,
     TESSELLATION_SAMPLE_MULTIPLIER,
 } from './constants';
@@ -625,7 +626,7 @@ export function validateSplineGeometry(spline: Spline): string[] {
  */
 export function createAdaptiveTessellationConfig(
     spline: Spline,
-    targetTolerance: number = CHAIN_CLOSURE_TOLERANCE
+    targetTolerance: number = SPLINE_TESSELLATION_TOLERANCE
 ): SplineTessellationConfig {
     // Estimate complexity based on spline properties
     const numControlPoints: number = spline.controlPoints.length;
