@@ -615,8 +615,8 @@ function convertShapeGeometry(
 }
 
 /**
- * Apply unit conversion to a drawing based on application settings
- * This function handles the logic for when and how to convert units during import
+ * Apply unit override to a drawing based on application settings
+ * This function only changes the unit label without converting geometry values
  */
 export function applyImportUnitConversion(
     drawing: Drawing,
@@ -627,11 +627,11 @@ export function applyImportUnitConversion(
 
     switch (settings.importUnitSetting) {
         case ImportUnitSetting.Automatic:
-            // Use the file's detected units - no conversion needed
+            // Use the file's detected units - no override
             return drawing;
 
         case ImportUnitSetting.Application:
-            // Convert to application's measurement system
+            // Override to application's measurement system
             targetUnit = measurementSystemToUnit(settings.measurementSystem);
             break;
 
@@ -650,25 +650,14 @@ export function applyImportUnitConversion(
             return drawing;
     }
 
-    // If no conversion needed, return original drawing
+    // If no override needed, return original drawing
     if (drawing.units === targetUnit) {
         return drawing;
     }
 
-    // Convert all shapes
-    const convertedShapes = drawing.shapes.map((shape) =>
-        convertShapeGeometry(shape, drawing.units, targetUnit)
-    );
-
-    // Convert bounds
-    const convertedBounds = {
-        min: convertPoint(drawing.bounds.min, drawing.units, targetUnit),
-        max: convertPoint(drawing.bounds.max, drawing.units, targetUnit),
-    };
-
+    // Only change the unit label, keep all geometry values unchanged
     return {
-        shapes: convertedShapes,
-        bounds: convertedBounds,
+        ...drawing,
         units: targetUnit,
     };
 }

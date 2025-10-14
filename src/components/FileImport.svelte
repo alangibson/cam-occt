@@ -14,13 +14,24 @@
     let fileInput: HTMLInputElement;
     let isDragging = false;
     let originalUnits: Unit | null = null;
+    let originalDrawing: Drawing | null = null;
 
     $: fileName = $drawingStore.fileName;
     $: settings = $settingsStore.settings;
 
-    // Reset originalUnits when no file is loaded
+    // Reset originalUnits and originalDrawing when no file is loaded
     $: if (!fileName) {
         originalUnits = null;
+        originalDrawing = null;
+    }
+
+    // Re-apply unit conversion when settings change
+    $: if (originalDrawing && settings) {
+        const convertedDrawing = applyImportUnitConversion(
+            originalDrawing,
+            settings
+        );
+        drawingStore.setDrawing(convertedDrawing, fileName || undefined);
     }
 
     async function handleFiles(files: FileList | null) {
@@ -39,7 +50,8 @@
                     // Parse DXF file
                     const parsedDrawing = await parseDXF(content);
 
-                    // Store original units before conversion
+                    // Store original drawing and units before conversion
+                    originalDrawing = parsedDrawing;
                     originalUnits = parsedDrawing.units;
 
                     // Apply unit conversion based on application settings
