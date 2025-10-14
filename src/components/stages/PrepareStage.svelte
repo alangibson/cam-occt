@@ -1282,10 +1282,10 @@
                             />
                             <div class="param-description">
                                 Maximum allowed deviation between the true arc
-                                and tessellated line segments (chord error). Smaller
-                                values create more points for better precision.
-                                Larger values use fewer points for faster processing.
-                                Default: 0.1mm
+                                and tessellated line segments (chord error).
+                                Smaller values create more points for better
+                                precision. Larger values use fewer points for
+                                faster processing. Default: 0.1mm
                             </div>
                         </label>
 

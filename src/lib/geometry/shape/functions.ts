@@ -93,6 +93,8 @@ import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
 
 // Constants for shape point generation
 const HIGH_RESOLUTION_CIRCLE_SEGMENTS = 32;
+// Maximum number of segments for arc tessellation
+const MAX_ARC_SEGMENTS = 1000;
 
 /**
  * Extract points from a shape for path generation
@@ -511,8 +513,11 @@ export function tessellateShape(
                 const segmentAngle = 2 * Math.acos(1 - tolerance / radius);
                 // Calculate number of segments needed for the arc span
                 const numSegments = Math.ceil(arcSpan / segmentAngle);
-                // Clamp to reasonable bounds (minimum 1 segment, maximum 1000 segments)
-                numArcPoints = Math.max(1, Math.min(1000, numSegments));
+                // Clamp to reasonable bounds (minimum 1 segment, maximum segments)
+                numArcPoints = Math.max(
+                    1,
+                    Math.min(MAX_ARC_SEGMENTS, numSegments)
+                );
             }
 
             for (let i: number = 0; i <= numArcPoints; i++) {

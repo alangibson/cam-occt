@@ -267,8 +267,10 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
 
         // First point should be at start angle
         const startPoint = points[0];
-        const expectedStartX = arc.center.x + arc.radius * Math.cos(arc.startAngle);
-        const expectedStartY = arc.center.y + arc.radius * Math.sin(arc.startAngle);
+        const expectedStartX =
+            arc.center.x + arc.radius * Math.cos(arc.startAngle);
+        const expectedStartY =
+            arc.center.y + arc.radius * Math.sin(arc.startAngle);
         expect(startPoint.x).toBeCloseTo(expectedStartX, 5);
         expect(startPoint.y).toBeCloseTo(expectedStartY, 5);
 
