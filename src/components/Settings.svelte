@@ -7,6 +7,7 @@
         OffsetImplementation,
     } from '$lib/stores/settings/interfaces';
     import { resetApplicationToDefaults } from '$lib/stores/storage/store';
+    import { CutterCompensation } from '$lib/types/cam';
 
     const allStages = [
         WorkflowStage.IMPORT,
@@ -59,6 +60,12 @@
         settingsStore.setOffsetImplementation(implementation);
     }
 
+    function handleCutterCompensationChange(
+        compensation: CutterCompensation | null
+    ) {
+        settingsStore.setCutterCompensation(compensation);
+    }
+
     function handleResetApplication() {
         if (
             confirm(
@@ -77,7 +84,12 @@
 </script>
 
 <div class="settings-container">
-    <h1>Settings</h1>
+    <div class="settings-header">
+        <h1>Settings</h1>
+        <button class="reset-button" onclick={handleResetApplication}>
+            Reset Application
+        </button>
+    </div>
 
     <div class="settings-columns">
         <section class="settings-section">
@@ -127,55 +139,83 @@
         </section>
 
         <section class="settings-section">
-            <h2>Offset Calculation</h2>
+            <h2>Experimental</h2>
             <div class="stages-list">
-                <label class="stage-item">
-                    <input
-                        type="radio"
-                        name="offsetImplementation"
-                        value={OffsetImplementation.Exact}
-                        checked={$settingsStore.settings
-                            .offsetImplementation ===
-                            OffsetImplementation.Exact}
-                        onchange={() =>
+                <div class="dropdown-container">
+                    <label for="offsetImplementation" class="dropdown-label"
+                        >Offset Calculation</label
+                    >
+                    <select
+                        id="offsetImplementation"
+                        class="dropdown-select"
+                        value={$settingsStore.settings.offsetImplementation}
+                        onchange={(e) =>
                             handleOffsetImplementationChange(
-                                OffsetImplementation.Exact
+                                e.currentTarget.value as OffsetImplementation
                             )}
-                    />
-                    <div class="option-content">
-                        <span class="stage-name">Exact</span>
+                    >
+                        <option value={OffsetImplementation.Exact}>Exact</option>
+                        <option value={OffsetImplementation.Polyline}
+                            >Polyline</option
+                        >
+                    </select>
+                    {#if $settingsStore.settings.offsetImplementation === OffsetImplementation.Exact}
                         <span class="option-description"
                             >Preserves curves for smooth geometry</span
                         >
-                    </div>
-                </label>
-                <label class="stage-item">
-                    <input
-                        type="radio"
-                        name="offsetImplementation"
-                        value={OffsetImplementation.Polyline}
-                        checked={$settingsStore.settings
-                            .offsetImplementation ===
-                            OffsetImplementation.Polyline}
-                        onchange={() =>
-                            handleOffsetImplementationChange(
-                                OffsetImplementation.Polyline
-                            )}
-                    />
-                    <div class="option-content">
-                        <span class="stage-name">Polyline</span>
+                    {:else if $settingsStore.settings.offsetImplementation === OffsetImplementation.Polyline}
                         <span class="option-description"
                             >Converts curves to straight line segments</span
                         >
-                    </div>
-                </label>
+                    {/if}
+                </div>
+
+                <div class="dropdown-container">
+                    <label for="cutterCompensation" class="dropdown-label"
+                        >Cutter Compensation</label
+                    >
+                    <select
+                        id="cutterCompensation"
+                        class="dropdown-select"
+                        value={$settingsStore.settings.camSettings
+                            .cutterCompensation === null
+                            ? 'null'
+                            : $settingsStore.settings.camSettings
+                                  .cutterCompensation}
+                        onchange={(e) => {
+                            const value = e.currentTarget.value;
+                            handleCutterCompensationChange(
+                                value === 'null'
+                                    ? null
+                                    : (value as CutterCompensation)
+                            );
+                        }}
+                    >
+                        <option value={CutterCompensation.MACHINE}
+                            >Machine</option
+                        >
+                        <option value={CutterCompensation.SOFTWARE}
+                            >Software</option
+                        >
+                        <option value="null">No G-code</option>
+                    </select>
+                    {#if $settingsStore.settings.camSettings.cutterCompensation === CutterCompensation.MACHINE}
+                        <span class="option-description"
+                            >Machine handles cutter compensation (G41/G42)</span
+                        >
+                    {:else if $settingsStore.settings.camSettings.cutterCompensation === CutterCompensation.SOFTWARE}
+                        <span class="option-description"
+                            >Software offsets tool path by kerf width</span
+                        >
+                    {:else}
+                        <span class="option-description"
+                            >No cutter compensation in G-code</span
+                        >
+                    {/if}
+                </div>
             </div>
         </section>
     </div>
-
-    <button class="reset-button" onclick={handleResetApplication}>
-        Reset Application
-    </button>
 </div>
 
 <style>
@@ -186,10 +226,17 @@
         position: relative;
     }
 
+    .settings-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
     h1 {
         font-size: 1.5rem;
         font-weight: 600;
-        margin: 0 0 1.5rem 0;
+        margin: 0;
         color: #1f2937;
     }
 
@@ -261,22 +308,49 @@
         line-height: 1.2;
     }
 
+    .dropdown-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .dropdown-label {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .dropdown-select {
+        padding: 0.5rem;
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        font-size: 0.875rem;
+        color: #374151;
+        background-color: white;
+        cursor: pointer;
+        transition: border-color 0.2s;
+    }
+
+    .dropdown-select:hover {
+        border-color: #9ca3af;
+    }
+
+    .dropdown-select:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
     .reset-button {
-        position: fixed;
-        bottom: 2rem;
-        right: 2rem;
         background-color: #dc2626;
         color: white;
-        padding: 0.75rem 1.5rem;
+        padding: 0.5rem 1rem;
         border: none;
         border-radius: 0.375rem;
         font-size: 0.875rem;
         font-weight: 600;
         cursor: pointer;
         transition: background-color 0.2s;
-        box-shadow:
-            0 4px 6px -1px rgb(0 0 0 / 0.1),
-            0 2px 4px -2px rgb(0 0 0 / 0.1);
     }
 
     .reset-button:hover {

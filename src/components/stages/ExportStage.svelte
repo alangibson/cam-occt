@@ -4,7 +4,7 @@
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import type { CuttingParameters } from '$lib/types/cam';
-    import { CutterCompensation } from '$lib/types/cam';
+    import { settingsStore } from '$lib/stores/settings/store';
     import { onMount } from 'svelte';
 
     // Resizable columns state
@@ -24,8 +24,6 @@
 
     // G-code generation options with localStorage persistence
     let includeComments = true;
-    let cutterCompensation: CutterCompensation | null =
-        CutterCompensation.MACHINE;
     let adaptiveFeedControl: boolean | null = true;
     let enableTHC: boolean | null = true;
     let settingsLoaded = false; // Flag to prevent saving during initial load
@@ -46,9 +44,6 @@
         const savedIncludeComments = localStorage.getItem(
             'metalheadcam-gcode-include-comments'
         );
-        const savedCutterCompensation = localStorage.getItem(
-            'metalheadcam-gcode-cutter-compensation'
-        );
         const savedAdaptiveFeedControl = localStorage.getItem(
             'metalheadcam-gcode-adaptive-feed-control'
         );
@@ -62,30 +57,6 @@
 
         if (savedIncludeComments !== null) {
             includeComments = savedIncludeComments === 'true';
-        }
-
-        if (savedCutterCompensation !== null) {
-            if (savedCutterCompensation === 'null') {
-                cutterCompensation = null;
-            } else {
-                // Validate that saved value is a valid enum value
-                const validValues = [
-                    CutterCompensation.MACHINE,
-                    CutterCompensation.SOFTWARE,
-                    CutterCompensation.NONE,
-                ];
-                if (
-                    validValues.includes(
-                        savedCutterCompensation as CutterCompensation
-                    )
-                ) {
-                    cutterCompensation =
-                        savedCutterCompensation as CutterCompensation;
-                } else {
-                    // Invalid/old value - reset to default
-                    cutterCompensation = CutterCompensation.MACHINE;
-                }
-            }
         }
 
         if (savedAdaptiveFeedControl !== null) {
@@ -120,10 +91,6 @@
         localStorage.setItem(
             'metalheadcam-gcode-include-comments',
             includeComments.toString()
-        );
-        localStorage.setItem(
-            'metalheadcam-gcode-cutter-compensation',
-            cutterCompensation === null ? 'null' : cutterCompensation
         );
         localStorage.setItem(
             'metalheadcam-gcode-adaptive-feed-control',
@@ -179,10 +146,6 @@
         saveGCodeSettings();
     }
 
-    $: if (settingsLoaded && typeof cutterCompensation !== 'undefined') {
-        saveGCodeSettings();
-    }
-
     $: if (settingsLoaded && typeof adaptiveFeedControl !== 'undefined') {
         saveGCodeSettings();
     }
@@ -198,7 +161,8 @@
         <div class="main-column">
             <GCodeExport
                 {includeComments}
-                {cutterCompensation}
+                cutterCompensation={$settingsStore.settings.camSettings
+                    .cutterCompensation}
                 {adaptiveFeedControl}
                 {enableTHC}
                 on:regenerate={() => {}}
@@ -227,21 +191,6 @@
                             />
                             <span>Include Comments</span>
                         </label>
-                    </div>
-
-                    <div class="setting-item">
-                        <label class="setting-label-text" for="cutter-comp"
-                            >Cutter Compensation</label
-                        >
-                        <select
-                            id="cutter-comp"
-                            class="setting-select"
-                            bind:value={cutterCompensation}
-                        >
-                            <option value="machine">Machine</option>
-                            <option value="software">Software</option>
-                            <option value="none">No G-code</option>
-                        </select>
                     </div>
 
                     <div class="setting-item">

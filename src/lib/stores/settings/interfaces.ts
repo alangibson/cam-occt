@@ -5,6 +5,7 @@
  */
 
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
+import type { CutterCompensation } from '$lib/types/cam';
 
 /**
  * Application measurement system options
@@ -71,6 +72,8 @@ export enum OffsetImplementation {
 export interface CamSettings {
     /** Rapid feed rate in units/min (units depend on measurement system) */
     rapidRate: number;
+    /** Cutter compensation mode for G-code generation */
+    cutterCompensation: CutterCompensation | null;
 }
 
 /**
@@ -169,6 +172,9 @@ export interface SettingsStore {
 
     /** Set the rapid rate */
     setRapidRate: (rate: number) => void;
+
+    /** Set the cutter compensation mode */
+    setCutterCompensation: (mode: CutterCompensation | null) => void;
 
     /** Update all settings at once */
     updateSettings: (settings: Partial<ApplicationSettings>) => void;

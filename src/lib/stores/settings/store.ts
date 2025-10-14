@@ -27,6 +27,7 @@ import {
 import { DefaultsManager } from '$lib/config/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { DEFAULT_RAPID_RATE_MM } from '$lib/cam/constants';
+import { CutterCompensation } from '$lib/types/cam';
 
 // Conversion factor between inches and millimeters
 const MM_PER_INCH = 25.4;
@@ -34,6 +35,7 @@ const MM_PER_INCH = 25.4;
 // Default CAM settings - use metric default, will be converted if needed when measurement system is set
 const DEFAULT_CAM_SETTINGS: CamSettings = {
     rapidRate: DEFAULT_RAPID_RATE_MM,
+    cutterCompensation: CutterCompensation.SOFTWARE,
 };
 
 // Default optimization settings
@@ -119,6 +121,14 @@ function loadSettings(): ApplicationSettings {
                                   parsed.camSettings.rapidRate > 0
                                       ? parsed.camSettings.rapidRate
                                       : DEFAULT_CAM_SETTINGS.rapidRate,
+                              cutterCompensation:
+                                  parsed.camSettings.cutterCompensation ===
+                                      null ||
+                                  Object.values(CutterCompensation).includes(
+                                      parsed.camSettings.cutterCompensation
+                                  )
+                                      ? parsed.camSettings.cutterCompensation
+                                      : DEFAULT_CAM_SETTINGS.cutterCompensation,
                           }
                         : DEFAULT_CAM_SETTINGS;
 
@@ -438,6 +448,23 @@ function createSettingsStore(): SettingsStore {
                     camSettings: {
                         ...state.settings.camSettings,
                         rapidRate: rate,
+                    },
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setCutterCompensation(mode: CutterCompensation | null) {
+            update((state) => {
+                const newSettings = {
+                    ...state.settings,
+                    camSettings: {
+                        ...state.settings.camSettings,
+                        cutterCompensation: mode,
                     },
                 };
                 saveSettings(newSettings);
