@@ -26,13 +26,15 @@ import { calculateArcMidpointAngle } from '$lib/geometry/arc/functions';
 /**
  * Find the nearest cut from a current point
  * Extracted from optimize-cut-order.ts to eliminate duplication
+ * @param cutStartPointsCache - Optional cache of pre-calculated cut start points for performance
  */
 export function findNearestCut(
     currentPoint: Point2D,
     cutsToSearch: Cut[],
     chains: Map<string, Chain>,
     unvisited: Set<Cut>,
-    findPartForChain: (chainId: string) => DetectedPart | undefined
+    findPartForChain: (chainId: string) => DetectedPart | undefined,
+    cutStartPointsCache?: Map<string, Point2D>
 ): { cut: Cut | null; distance: number } {
     let nearestCut: Cut | null = null;
     let nearestDistance = Infinity;
@@ -40,11 +42,19 @@ export function findNearestCut(
     for (const cut of cutsToSearch) {
         if (!unvisited.has(cut)) continue;
 
-        const chain = chains.get(cut.chainId);
-        if (!chain) continue;
+        let startPoint: Point2D;
 
-        const part = findPartForChain(cut.chainId);
-        const startPoint = getCutStartPoint(cut, chain, part);
+        // Use cache if provided, otherwise calculate
+        if (cutStartPointsCache && cutStartPointsCache.has(cut.id)) {
+            startPoint = cutStartPointsCache.get(cut.id)!;
+        } else {
+            const chain = chains.get(cut.chainId);
+            if (!chain) continue;
+
+            const part = findPartForChain(cut.chainId);
+            startPoint = getCutStartPoint(cut, chain, part);
+        }
+
         const dist = calculateDistance(currentPoint, startPoint);
 
         if (dist < nearestDistance) {
