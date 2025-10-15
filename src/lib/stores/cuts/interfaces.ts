@@ -106,6 +106,7 @@ export interface CutsState {
 export interface CutsStore {
     subscribe: (run: (value: CutsState) => void) => () => void;
     addCut: (cut: Cut) => void;
+    addCuts: (cuts: Cut[]) => void;
     updateCut: (id: string, updates: Partial<Cut>) => void;
     deleteCut: (id: string) => void;
     deleteCutsByOperation: (operationId: string) => void;

@@ -1085,40 +1085,42 @@ export async function createCutsFromOperation(
         return { cuts: [], warnings: [] };
     }
 
-    const allCuts: Cut[] = [];
-    const allWarnings: CutGenerationResult['warnings'] = [];
-
-    // Generate cuts for each target
-    for (let index = 0; index < operation.targetIds.length; index++) {
-        const targetId = operation.targetIds[index];
+    // Generate cuts for all targets in parallel
+    const cutPromises = operation.targetIds.map((targetId, index) => {
         if (operation.targetType === 'chains') {
-            const result: CutGenerationResult =
-                await generateCutsForChainWithOperation(
-                    operation,
-                    targetId,
-                    index,
-                    chains,
-                    tools,
-                    parts,
-                    tolerance
-                );
-            allCuts.push(...result.cuts);
-            allWarnings.push(...result.warnings);
+            return generateCutsForChainWithOperation(
+                operation,
+                targetId,
+                index,
+                chains,
+                tools,
+                parts,
+                tolerance
+            );
         } else if (operation.targetType === 'parts') {
-            const result: CutGenerationResult =
-                await generateCutsForPartTargetWithOperation(
-                    operation,
-                    targetId,
-                    index,
-                    chains,
-                    parts,
-                    tools,
-                    tolerance
-                );
-            allCuts.push(...result.cuts);
-            allWarnings.push(...result.warnings);
+            return generateCutsForPartTargetWithOperation(
+                operation,
+                targetId,
+                index,
+                chains,
+                parts,
+                tools,
+                tolerance
+            );
+        } else {
+            // Return empty result for unknown target types
+            return Promise.resolve({ cuts: [], warnings: [] });
         }
-    }
+    });
+
+    // Wait for all cuts to be generated
+    const results = await Promise.all(cutPromises);
+
+    // Flatten all cuts and warnings
+    const allCuts: Cut[] = results.flatMap((result) => result.cuts);
+    const allWarnings: CutGenerationResult['warnings'] = results.flatMap(
+        (result) => result.warnings
+    );
 
     return {
         cuts: allCuts,

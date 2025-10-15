@@ -43,6 +43,25 @@ function createCutsStore(): CutsStore {
             });
         },
 
+        addCuts: (cuts: Cut[]) => {
+            update((state) => {
+                // Ensure all cuts have IDs
+                const cutsToAdd: Cut[] = cuts.map((cut) =>
+                    cut.id ? cut : { ...cut, id: crypto.randomUUID() }
+                );
+
+                const newCuts: Cut[] = [...state.cuts, ...cutsToAdd];
+
+                // Check workflow completion once after all cuts added
+                setTimeout(() => checkProgramStageCompletion(newCuts), 0);
+
+                return {
+                    ...state,
+                    cuts: newCuts,
+                };
+            });
+        },
+
         updateCut: (id: string, updates: Partial<Cut>) => {
             update((state) => ({
                 ...state,

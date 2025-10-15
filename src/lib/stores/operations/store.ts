@@ -102,7 +102,7 @@ function createOperationsStore(): OperationsStore {
                 const partsState: { parts: DetectedPart[] } = get(partStore);
                 const tools = get(toolStore);
 
-                // Generate cuts with leads (async)
+                // Generate cuts with leads (async, parallelized)
                 const result = await createCutsFromOperation(
                     operation,
                     chainsState.chains,
@@ -111,10 +111,10 @@ function createOperationsStore(): OperationsStore {
                     chainsState.tolerance
                 );
 
-                // Store generated cuts
-                result.cuts.forEach((cut) => {
-                    cutStore.addCut(cut);
-                });
+                // Store all generated cuts in a single batch update
+                if (result.cuts.length > 0) {
+                    cutStore.addCuts(result.cuts);
+                }
 
                 // Handle warnings
                 result.warnings.forEach((warning) => {
