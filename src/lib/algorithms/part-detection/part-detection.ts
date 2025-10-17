@@ -18,7 +18,7 @@ import {
 } from '$lib/algorithms/part-detection/geometric-containment';
 import type { PartDetectionParameters } from '$lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
-import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import {
     getShapeEndPoint,
     getShapeStartPoint,

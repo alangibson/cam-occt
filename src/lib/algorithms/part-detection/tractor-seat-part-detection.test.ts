@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline';

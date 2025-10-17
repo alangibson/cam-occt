@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
-import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import {
     getShapeEndPoint,
     getShapeStartPoint,

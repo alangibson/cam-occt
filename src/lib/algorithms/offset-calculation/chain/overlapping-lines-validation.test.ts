@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { GeometryType, type Line, type Shape } from '$lib/types/geometry';
 import type { OffsetChain } from './types';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
-import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { generateId } from '$lib/domain/id';
 
 describe('overlapping lines validation', () => {

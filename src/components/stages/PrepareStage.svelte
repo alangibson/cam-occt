@@ -1,9 +1,9 @@
 <script lang="ts">
-    import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+    import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
     import {
         analyzeChainTraversal,
         normalizeChain,
-    } from '$lib/algorithms/chain-normalization/chain-normalization';
+    } from '$lib/geometry/chain/chain-normalization';
     import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
     import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
     import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
@@ -34,8 +34,6 @@
     import PartsPanel from '../PartsPanel.svelte';
     import ChainsPanel from '../ChainsPanel.svelte';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
-    // Chain type used in comments
-    // import type { Chain } from '$lib/geometry/chain/interfaces';
 
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { GeometryType, type Shape } from '$lib/types/geometry';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
-import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
 
 describe('Gap Filling Integration Tests', () => {

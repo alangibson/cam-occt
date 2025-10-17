@@ -7,7 +7,7 @@ import { GeometryType } from '$lib/types/geometry';
 import { Unit } from '$lib/types';
 import type { Shape, Geometry } from '$lib/geometry/shape';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import {
     getLayerStatistics,
     squashLayers,

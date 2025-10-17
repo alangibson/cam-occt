@@ -1,10 +1,10 @@
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { describe, expect, it } from 'vitest';
-import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 
 describe('Position Analysis - Chain-7 vs Chain-13 Location', () => {
     it('should analyze the position difference between chain-7 and chain-13 relative to boundary', async () => {

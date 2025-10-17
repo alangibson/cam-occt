@@ -15,12 +15,12 @@
 
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { type PartHole, detectParts } from './part-detection';
-import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 
 describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
     // CRITICAL: Never remove these tests nor change expectations without user permission

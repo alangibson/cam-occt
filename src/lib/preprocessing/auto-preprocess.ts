@@ -15,11 +15,11 @@ import { PreprocessingStep } from '$lib/stores/settings/interfaces';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import {
     normalizeChain,
     analyzeChainTraversal,
-} from '$lib/algorithms/chain-normalization/chain-normalization';
+} from '$lib/geometry/chain/chain-normalization';
 import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import {
     detectParts,

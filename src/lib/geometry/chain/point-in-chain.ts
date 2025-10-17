@@ -16,24 +16,24 @@ import type {
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/types/geometry';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { RayTracingConfig } from './types';
-import { DEFAULT_RAYTRACING_CONFIG } from './types';
+import type { RayTracingConfig } from '$lib/algorithms/raytracing/types';
+import { DEFAULT_RAYTRACING_CONFIG } from '$lib/algorithms/raytracing/types';
 import { isChainClosed } from '$lib/geometry/chain/functions';
-import { createHorizontalRay } from './utils';
+import { createHorizontalRay } from '$lib/algorithms/raytracing/utils';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import {
     countHorizontalRayLineCrossings,
     countRayLineCrossings,
-} from './ray-line';
+} from '$lib/algorithms/raytracing/ray-line';
 import {
     countHorizontalRayArcCrossings,
     countRayArcCrossings,
-} from './ray-arc';
-import { countRayCircleCrossings } from './ray-circle';
+} from '$lib/algorithms/raytracing/ray-arc';
+import { countRayCircleCrossings } from '$lib/algorithms/raytracing/ray-circle';
 import {
     countHorizontalRaySplineCrossings,
     countRaySplineCrossings,
-} from './ray-spline';
+} from '$lib/algorithms/raytracing/ray-spline';
 
 /**
  * Exact point-in-chain test that handles all shape types without sampling

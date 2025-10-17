@@ -32,7 +32,7 @@ import {
 import {
     isPointInsidePart,
     isPointInsideChainExact,
-} from '$lib/algorithms/raytracing/point-in-chain';
+} from '$lib/geometry/chain/point-in-chain';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import { isChainShellInPart } from '$lib/algorithms/leads/part-lookup-utils';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';

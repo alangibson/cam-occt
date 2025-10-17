@@ -5,7 +5,7 @@ import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/types/geometry';
 import type { Shape, Line } from '$lib/types';
-import { isPointInsideChainExact } from '$lib/algorithms/raytracing/point-in-chain';
+import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
 import { getChainTangent } from '$lib/geometry/chain/functions';
 
 /**

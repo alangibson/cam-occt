@@ -4,7 +4,7 @@ import { parseDXF } from '$lib/parsers/dxf';
 import {
     detectShapeChains,
     setChainsDirection,
-} from '$lib/algorithms/chain-detection/chain-detection';
+} from '$lib/geometry/chain/chain-detection';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { chainStore } from '$lib/stores/chains/store';

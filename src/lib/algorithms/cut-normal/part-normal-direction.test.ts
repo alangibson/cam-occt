@@ -13,7 +13,7 @@ import { calculateCutNormal } from './calculate-cut-normal';
 import { CutDirection } from '$lib/types/direction';
 import type { DetectedPart } from '$lib/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { isPointInsidePart } from '$lib/algorithms/raytracing/point-in-chain';
+import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';

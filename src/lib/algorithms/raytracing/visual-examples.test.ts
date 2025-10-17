@@ -12,7 +12,7 @@
  */
 
 import { describe, expect, test } from 'vitest';
-import { isPointInsideChainExact } from './point-in-chain';
+import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/geometry/shape';

@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
-import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
 
 describe('Test Circle Face Creation and Containment', () => {

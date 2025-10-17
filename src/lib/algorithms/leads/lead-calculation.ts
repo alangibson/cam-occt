@@ -23,7 +23,7 @@ import {
 import {
     isPointInsidePart,
     isPointInsideChainExact,
-} from '$lib/algorithms/raytracing/point-in-chain';
+} from '$lib/geometry/chain/point-in-chain';
 import {
     getChainEndPoint,
     getChainStartPoint,

@@ -26,3 +26,12 @@ export {
     calculatePolygonPerimeter,
     isChainClosed,
 } from './functions';
+
+// Re-export point-in-chain functions
+export {
+    isPointInsideChainExact,
+    arePointsInsideChainExact,
+    anyPointInsideChainExact,
+    countPointsInsideChainExact,
+    isPointInsidePart,
+} from './point-in-chain';
