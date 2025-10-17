@@ -6,7 +6,7 @@ import type {
     CacheableLead,
     LeadConfig,
     LeadValidationResult,
-} from '$lib/algorithms/leads/interfaces';
+} from '$lib/cam/lead/interfaces';
 import type { NormalSide } from '$lib/types/cam';
 import type { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 

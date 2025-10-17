@@ -15,9 +15,9 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import { GeometryType } from '$lib/types/geometry';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { Operation } from '$lib/stores/operations/interfaces';
-import type { LeadResult } from '$lib/algorithms/leads/interfaces';
+import type { LeadResult } from '$lib/cam/lead/interfaces';
 import { NormalSide } from '$lib/types/cam';
 
 // Mock the stores
@@ -41,7 +41,7 @@ vi.mock('$lib/stores/parts/store', () => ({
 }));
 
 // Mock the lead calculation algorithm
-vi.mock('$lib/algorithms/leads/lead-calculation', () => ({
+vi.mock('$lib/cam/lead/lead-calculation', () => ({
     calculateLeads: vi.fn(() => ({
         leadIn: {
             geometry: {

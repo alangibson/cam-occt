@@ -3,7 +3,7 @@ import {
     createLeadConfigs,
     createLeadInConfig,
     createLeadOutConfig,
-} from '$lib/algorithms/leads/functions';
+} from '$lib/cam/lead/functions';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import { NormalSide } from '$lib/types/cam';

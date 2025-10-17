@@ -15,7 +15,7 @@ import {
     getCachedLeadGeometry,
     hasValidCachedLeads,
 } from '$lib/cam/cut/lead-persistence';
-import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
+import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
@@ -27,7 +27,7 @@ import {
     DEFAULT_PIERCE_DELAY,
     DEFAULT_PIERCE_HEIGHT_MM,
 } from '$lib/cam/constants';
-import type { LeadResult } from '$lib/algorithms/leads/interfaces';
+import type { LeadResult } from '$lib/cam/lead/interfaces';
 import {
     getToolFeedRate,
     getToolPierceHeight,

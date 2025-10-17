@@ -11,7 +11,7 @@ import { getShapePoints } from '$lib/geometry/shape';
 import {
     DEFAULT_LEAD_IN_LENGTH_MM,
     DEFAULT_LEAD_OUT_LENGTH_MM,
-} from '$lib/algorithms/leads/constants';
+} from '$lib/cam/lead/constants';
 
 export function generateToolPaths(
     drawing: Drawing,

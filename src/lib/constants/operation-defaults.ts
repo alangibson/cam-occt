@@ -4,7 +4,7 @@ import {
     OptimizeStarts,
     DEFAULT_OPTIMIZE_STARTS,
 } from '$lib/types/optimize-starts';
-import type { LeadConfig } from '$lib/algorithms/leads/interfaces';
+import type { LeadConfig } from '$lib/cam/lead/interfaces';
 import { getDefaults } from '$lib/config';
 
 /**

@@ -22,11 +22,11 @@ import { GeometryType } from '$lib/types/geometry';
 import { NormalSide } from '$lib/types/cam';
 import { reverseChain } from '$lib/geometry/chain';
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
-} from '$lib/algorithms/leads/functions';
+} from '$lib/cam/lead/functions';
 
 // Mock dependencies
 vi.mock('$lib/geometry/chain', () => ({
@@ -38,11 +38,11 @@ vi.mock('$lib/algorithms/offset-calculation/offset-adapter', () => ({
     offsetChainAdapter: vi.fn(),
 }));
 
-vi.mock('$lib/algorithms/leads/lead-calculation', () => ({
+vi.mock('$lib/cam/lead/lead-calculation', () => ({
     calculateLeads: vi.fn(() => ({})), // Return empty LeadResult by default
 }));
 
-vi.mock('$lib/algorithms/leads/functions', () => ({
+vi.mock('$lib/cam/lead/functions', () => ({
     createLeadInConfig: vi.fn(),
     createLeadOutConfig: vi.fn(),
     convertLeadGeometryToPoints: vi.fn(() => []),

@@ -18,7 +18,7 @@ import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
     calculateDistance,
     findNearestCut,
@@ -27,7 +27,7 @@ import {
 } from '$lib/cam/cut/cut-optimization-utils';
 import { getChainEndPoint } from '$lib/geometry/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
-import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
+import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
 
 /**
  * Rapids are the non-cutting movements that connect cuts.

@@ -19,11 +19,11 @@ import type {
 } from './interfaces';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { Cut } from '$lib/cam/cut/interfaces';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
-} from '$lib/algorithms/leads/functions';
+} from '$lib/cam/lead/functions';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
 import { settingsStore } from '$lib/stores/settings/store';

@@ -10,17 +10,14 @@ import type { Cut } from '$lib/cam/cut/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
-import {
-    type LeadConfig,
-    type LeadResult,
-} from '$lib/algorithms/leads/interfaces';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
+import { type LeadConfig, type LeadResult } from '$lib/cam/lead/interfaces';
 import { LeadType } from '$lib/types/direction';
 import {
     createLeadInConfig,
     createLeadOutConfig,
     convertLeadGeometryToPoints,
-} from '$lib/algorithms/leads/functions';
+} from '$lib/cam/lead/functions';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 
 /**

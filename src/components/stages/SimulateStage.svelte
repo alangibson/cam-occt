@@ -49,8 +49,8 @@
     import { getSplinePointAt, tessellateSpline } from '$lib/geometry/spline';
     import { polylineToPoints } from '$lib/geometry/polyline';
     import { getShapePointAt } from '$lib/geometry/shape/functions';
-    import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
-    import { type LeadConfig } from '$lib/algorithms/leads/interfaces';
+    import { calculateLeads } from '$lib/cam/lead/lead-calculation';
+    import { type LeadConfig } from '$lib/cam/lead/interfaces';
     import {
         MeasurementSystem,
         type SettingsState,
@@ -58,7 +58,7 @@
     import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
     import { LeadType } from '$lib/types/direction';
     import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
-    import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
+    import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import { getToolFeedRate } from '$lib/utils/tool-units';
     import { Unit } from '$lib/utils/units';

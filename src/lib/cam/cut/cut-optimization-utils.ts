@@ -8,13 +8,13 @@ import {
     type Shape,
 } from '$lib/types/geometry';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
-import { type LeadConfig } from '$lib/algorithms/leads/interfaces';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
+import { type LeadConfig } from '$lib/cam/lead/interfaces';
 import {
     convertLeadGeometryToPoints,
     createLeadInConfig,
     createLeadOutConfig,
-} from '$lib/algorithms/leads/functions';
+} from '$lib/cam/lead/functions';
 import { calculateSquaredDistance } from '$lib/geometry/math';
 import {
     getChainEndPoint,

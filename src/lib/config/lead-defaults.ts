@@ -12,7 +12,7 @@ import {
     DEFAULT_LEAD_OUT_LENGTH_MM,
     MINIMUM_SHELL_DISTANCE_MM,
     LEAD_PROXIMITY_THRESHOLD_MM,
-} from '$lib/algorithms/leads/constants';
+} from '$lib/cam/lead/constants';
 
 export class LeadDefaults {
     private measurementSystem: MeasurementSystem;
