@@ -35,10 +35,8 @@ import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
 import { AREA_RATIO_THRESHOLD } from '$lib/algorithms/constants';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
-import {
-    DEFAULT_PART_DETECTION_PARAMETERS,
-    type PartDetectionParameters,
-} from '$lib/types/part-detection';
+import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import {
     isPolygonContained,
     removeDuplicatePoints,

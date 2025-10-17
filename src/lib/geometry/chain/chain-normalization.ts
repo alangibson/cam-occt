@@ -17,8 +17,8 @@ import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
 import type { Ellipse } from '$lib/geometry/ellipse';
-import type { ChainNormalizationParameters } from '$lib/types/algorithm-parameters';
-import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
+import type { ChainNormalizationParameters } from '$lib/preprocessing/algorithm-parameters';
+import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
@@ -31,7 +31,7 @@ import {
     TOLERANCE_RELAXATION_MULTIPLIER,
 } from '$lib/geometry/constants';
 import { detectCutDirection } from '$lib/cam/cut/cut-direction';
-import { CutDirection } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
 
 export interface ChainTraversalIssue {
     type:

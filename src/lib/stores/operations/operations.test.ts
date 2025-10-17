@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';
 
 // Now import the modules we need

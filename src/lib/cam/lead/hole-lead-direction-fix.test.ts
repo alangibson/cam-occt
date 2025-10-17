@@ -8,7 +8,8 @@ import { describe, expect, it } from 'vitest';
 import { calculateLeads } from './lead-calculation';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape';
-import { LeadType, CutDirection } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from './enums';
 import { detectParts } from '$lib/cam/part/part-detection';
 
 describe('Hole Lead Direction Fix', () => {

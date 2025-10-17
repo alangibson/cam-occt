@@ -2,13 +2,13 @@ import type { Shape } from '$lib/geometry/shape';
 import type { Point2D } from '$lib/geometry/point';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { CutDirection } from '$lib/types/direction';
+import { CutDirection } from './enums';
 import type {
     CacheableLead,
     LeadConfig,
     LeadValidationResult,
 } from '$lib/cam/lead/interfaces';
-import type { NormalSide } from '$lib/types/cam';
+import type { NormalSide } from './enums';
 import type { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 export interface Cut {

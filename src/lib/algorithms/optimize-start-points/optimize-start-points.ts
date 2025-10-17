@@ -13,7 +13,7 @@ import {
     reconstructChainFromSplit,
 } from '$lib/cam/cut/cut-optimization-utils';
 import { splitShapeAtMidpoint } from '$lib/geometry/shape/functions';
-import type { StartPointOptimizationParameters } from '$lib/types/algorithm-parameters';
+import type { StartPointOptimizationParameters } from '$lib/preprocessing/algorithm-parameters';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 

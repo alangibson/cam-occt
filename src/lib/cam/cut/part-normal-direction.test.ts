@@ -10,14 +10,13 @@
 
 import { describe, it, expect } from 'vitest';
 import { calculateCutNormal } from './calculate-cut-normal';
-import { CutDirection } from '$lib/types/direction';
+import { CutDirection, NormalSide } from './enums';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { PartType } from '$lib/cam/part/part-detection';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { NormalSide } from '$lib/types/cam';
 
 describe('Cut Normal Direction on Parts', () => {
     /**

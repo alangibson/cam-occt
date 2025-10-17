@@ -1,5 +1,5 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { CutDirection } from '$lib/types/direction';
+import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { reverseChain } from '$lib/geometry/chain';
 import {
     DIRECTION_CLOCKWISE,
@@ -30,7 +30,6 @@ import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import { settingsStore } from '$lib/stores/settings/store';
 import { get } from 'svelte/store';
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';
-import { OptimizeStarts } from '$lib/types/optimize-starts';
 import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
 
 /**

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Circle } from '$lib/geometry/circle';
-import type { CuttingParameters } from '$lib/types/cam';
+import type { CuttingParameters } from '$lib/cam/gcode-generator/interfaces';
 import type { Line } from '$lib/geometry/line';
 import type { Point2D } from '$lib/geometry/point';
 import { Unit } from '$lib/utils/units';

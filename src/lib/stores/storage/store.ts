@@ -36,7 +36,7 @@ import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
 import type { LeadWarning } from '$lib/stores/lead-warnings/interfaces';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
-import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import { operationsStore } from '$lib/stores/operations/store';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import { cutStore } from '$lib/stores/cuts/store';

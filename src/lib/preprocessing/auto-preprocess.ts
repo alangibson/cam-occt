@@ -32,7 +32,7 @@ import {
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
-import type { AlgorithmParameters } from '$lib/types/algorithm-parameters';
+import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
 
 /**
  * Apply all enabled preprocessing steps in order

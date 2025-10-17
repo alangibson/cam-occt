@@ -16,8 +16,6 @@ import {
     buildContainmentHierarchy,
     calculateNestingLevel,
 } from '$lib/cam/part/geometric-containment';
-import type { PartDetectionParameters } from '$lib/types/part-detection';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import {
     getShapeEndPoint,
@@ -26,6 +24,8 @@ import {
 import { isChainClosed, CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
+import type { PartDetectionParameters } from './interfaces';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 
 /**
  * Part type enumeration

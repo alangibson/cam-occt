@@ -1,6 +1,6 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point';
-import { CutDirection } from '$lib/types/direction';
+import { CutDirection } from './enums';
 import {
     getShapeEndPoint,
     getShapeStartPoint,

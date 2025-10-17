@@ -2,7 +2,7 @@
     import { leadStore, parseLeadId } from '$lib/stores/leads/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
-    import { LeadType } from '$lib/types/direction';
+    import { LeadType } from '$lib/cam/lead/enums';
 
     // Reactive lead data
     $: leadState = $leadStore;

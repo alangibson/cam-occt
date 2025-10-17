@@ -6,12 +6,9 @@
  */
 
 // Import part detection parameters for combined interface
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
+import type { PartDetectionParameters } from '$lib/cam/part/interfaces';
 import { TOLERANCE } from '$lib/geometry/math';
-import {
-    DEFAULT_PART_DETECTION_PARAMETERS,
-    type PartDetectionParameters,
-} from './part-detection';
-// Import PartDetectionParameters and DEFAULT_PART_DETECTION_PARAMETERS directly from '$lib/algorithms/part-detection/part-detection'
 
 /**
  * Chain Detection Parameters

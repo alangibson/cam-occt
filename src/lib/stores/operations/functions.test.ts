@@ -10,7 +10,8 @@ import {
     getChainCutDirection,
 } from './functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { KerfCompensation } from '$lib/stores/operations/enums';
 import type { Tool } from '$lib/stores/tools/interfaces';
@@ -19,7 +20,6 @@ import type { Cut } from '$lib/cam/cut/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
 import { GeometryType } from '$lib/geometry/shape';
-import { NormalSide } from '$lib/types/cam';
 import { reverseChain } from '$lib/geometry/chain';
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';

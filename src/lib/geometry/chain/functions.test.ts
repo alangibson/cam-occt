@@ -9,7 +9,7 @@ import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point';
 import type { Shape } from '$lib/geometry/shape';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import type { Chain } from './interfaces';
 
 // Helper function to create test chains

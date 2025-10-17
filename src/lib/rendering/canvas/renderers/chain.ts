@@ -30,7 +30,7 @@ import {
     getShapeNormal,
 } from '$lib/geometry/shape/functions';
 import { drawNormalLine } from './normal-renderer-utils';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 
 // Constants for rendering
 const CHAIN_LINE_WIDTH = 1;

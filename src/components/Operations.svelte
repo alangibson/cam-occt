@@ -14,9 +14,9 @@
         DEFAULT_KERF_COMPENSATION,
         DEFAULT_HOLE_UNDERSPEED,
         DEFAULT_OPERATION_ENABLED,
-        DEFAULT_OPTIMIZE_STARTS,
     } from '$lib/constants/operation-defaults';
     import OperationsPanel from './OperationsPanel.svelte';
+    import { DEFAULT_OPTIMIZE_STARTS } from '$lib/cam/cut/defaults';
 
     let operations: Operation[] = [];
     let chains: Chain[] = [];

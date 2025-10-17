@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';

@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';
 import { GeometryType } from '$lib/geometry/shape';
 import { Unit } from '$lib/utils/units';
-import { CutterCompensation } from '$lib/types/cam';
-import type { CutPath } from '$lib/types/cam';
+import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import type { CutPath } from '$lib/cam/cut-generator/interfaces';
 import { generateToolPaths } from '$lib/cam/cut-generator/cut-generator';
 
 // Mock the modules

@@ -53,7 +53,7 @@
         type SettingsState,
     } from '$lib/stores/settings/interfaces';
     import type { DetectedPart } from '$lib/cam/part/part-detection';
-    import { LeadType } from '$lib/types/direction';
+    import { LeadType } from '$lib/cam/lead/enums';
     import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';

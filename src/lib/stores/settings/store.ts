@@ -27,7 +27,7 @@ import {
 import { DefaultsManager } from '$lib/config/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { DEFAULT_RAPID_RATE_MM } from '$lib/cam/constants';
-import { CutterCompensation } from '$lib/types/cam';
+import { CutterCompensation } from '$lib/cam/cut-generator/enums';
 
 // Conversion factor between inches and millimeters
 const MM_PER_INCH = 25.4;

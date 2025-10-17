@@ -8,8 +8,7 @@ import { chainStore } from '$lib/stores/chains/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { uiStore } from '$lib/stores/ui/store';
-import { CutDirection } from '$lib/types/direction';
-import { NormalSide } from '$lib/types/cam';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 
 // Mock settings store to return all stages enabled (for testing workflow logic)
 vi.mock('$lib/stores/settings/store', () => ({

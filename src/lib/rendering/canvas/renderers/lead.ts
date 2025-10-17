@@ -22,7 +22,7 @@ import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { LeadConfig, LeadResult } from '$lib/cam/lead/interfaces';
-import { LeadType } from '$lib/types/direction';
+import { LeadType } from '$lib/cam/lead/enums';
 import { hasValidCachedLeads } from '$lib/cam/cut/lead-persistence';
 import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import {

@@ -2,7 +2,7 @@
     import { partStore } from '$lib/stores/parts/store';
     import { detectCutDirection } from '$lib/cam/cut/cut-direction';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-    import { CutDirection } from '$lib/types/direction';
+    import { CutDirection } from '$lib/cam/cut/enums';
 
     // Reactive part data
     $: detectedParts = $partStore.parts;

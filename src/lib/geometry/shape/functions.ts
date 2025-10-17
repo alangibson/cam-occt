@@ -47,10 +47,8 @@ import {
     tessellateEllipse,
     calculateEllipsePoint,
 } from '$lib/geometry/ellipse/index';
-import {
-    DEFAULT_PART_DETECTION_PARAMETERS,
-    type PartDetectionParameters,
-} from '$lib/types/part-detection';
+import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import {
     getPolylineEndPoint,
     getPolylinePointAt,

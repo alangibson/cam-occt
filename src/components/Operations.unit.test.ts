@@ -3,7 +3,8 @@ import { get } from 'svelte/store';
 import { toolStore } from '$lib/stores/tools/store';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import { operationsStore } from '$lib/stores/operations/store';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 
 describe('Operations Store Integration', () => {
     beforeEach(() => {

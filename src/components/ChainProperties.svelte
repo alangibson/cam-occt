@@ -3,7 +3,7 @@
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { isChainClosed } from '$lib/geometry/chain/functions';
     import { detectCutDirection } from '$lib/cam/cut/cut-direction';
-    import { CutDirection } from '$lib/types/direction';
+    import { CutDirection } from '$lib/cam/cut/enums';
     import {
         getShapeStartPoint,
         getShapeEndPoint,

@@ -2,7 +2,7 @@ import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
 import type { Shape } from '$lib/geometry/shape';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { optimizeStartPoints } from './optimize-start-points';
 

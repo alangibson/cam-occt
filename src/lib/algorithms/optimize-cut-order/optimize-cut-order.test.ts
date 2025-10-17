@@ -17,11 +17,11 @@ import type {
 } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
 import { GeometryType } from '$lib/geometry/shape';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import * as pathOptUtils from '$lib/cam/cut/cut-optimization-utils';
-import { NormalSide } from '$lib/types/cam';
 
 // Mock crypto.randomUUID
 if (typeof crypto === 'undefined') {

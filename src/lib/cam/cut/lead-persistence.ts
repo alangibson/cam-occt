@@ -12,7 +12,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { type LeadConfig, type LeadResult } from '$lib/cam/lead/interfaces';
-import { LeadType } from '$lib/types/direction';
+import { LeadType } from '$lib/cam/lead/enums';
 import {
     createLeadInConfig,
     createLeadOutConfig,

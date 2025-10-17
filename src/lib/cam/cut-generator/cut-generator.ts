@@ -1,4 +1,6 @@
-import type { CuttingParameters, CutPath, Lead } from '$lib/types/cam';
+import type { CutPath } from './interfaces';
+import type { CuttingParameters } from '$lib/cam/gcode-generator/interfaces';
+import type { Lead } from './types';
 import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Point2D } from '$lib/geometry/point';
 import { generateId } from '$lib/domain/id';

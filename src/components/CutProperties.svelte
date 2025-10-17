@@ -1,7 +1,7 @@
 <script lang="ts">
     import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
-    import { CutDirection } from '$lib/types/direction';
+    import { CutDirection } from '$lib/cam/cut/enums';
 
     // Reactive cut data
     $: cuts = $cutStore.cuts;

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape';
@@ -9,7 +10,6 @@ import type { Line } from '$lib/geometry/line';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import { prepareChainsAndLeadConfigs } from '$lib/cam/cut/cut-optimization-utils';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { NormalSide } from '$lib/types/cam';
 
 /**
  * Test to validate that the clockwise property fix works in the actual code cuts

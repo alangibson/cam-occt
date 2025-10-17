@@ -4,9 +4,10 @@
     import type { DetectedPart } from '$lib/cam/part/part-detection';
     import type { Tool } from '$lib/stores/tools/store';
     import { flip } from 'svelte/animate';
-    import { CutDirection, LeadType } from '$lib/types/direction';
+    import { CutDirection } from '$lib/cam/cut/enums';
+    import { LeadType } from '$lib/cam/lead/enums';
     import { KerfCompensation } from '$lib/stores/operations/enums';
-    import { OptimizeStarts } from '$lib/types/optimize-starts';
+    import { OptimizeStarts } from '$lib/cam/cut/enums';
     import { getReactiveUnitSymbol } from '$lib/utils/units';
     import { settingsStore } from '$lib/stores/settings/store';
 

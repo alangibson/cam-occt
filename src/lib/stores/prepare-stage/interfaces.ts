@@ -4,7 +4,7 @@
  * Type definitions for the Prepare stage store.
  */
 
-import type { AlgorithmParameters } from '$lib/types/algorithm-parameters';
+import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
 import type { ChainNormalizationResult } from '$lib/geometry/chain/chain-normalization';
 import type { Shape } from '$lib/geometry/shape';
 import type { Chain } from '$lib/geometry/chain/interfaces';

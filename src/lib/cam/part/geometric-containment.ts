@@ -11,8 +11,7 @@
 
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point';
-import type { PartDetectionParameters } from '$lib/types/part-detection';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 import {
     calculatePolygonArea,
     isPointInPolygon as isPointInPolygonShared,
@@ -24,6 +23,7 @@ import {
     isChainContainedInChain,
 } from '$lib/geometry/chain/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
+import type { PartDetectionParameters } from './interfaces';
 
 /**
  * Geometric containment constants

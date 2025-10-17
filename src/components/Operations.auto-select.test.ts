@@ -6,7 +6,8 @@ import { operationsStore } from '$lib/stores/operations/store';
 import { partStore } from '$lib/stores/parts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { toolStore } from '$lib/stores/tools/store';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { PartType } from '$lib/cam/part/part-detection';
 
 describe('Operations Auto-Selection Feature', () => {

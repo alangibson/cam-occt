@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { Shape } from '$lib/geometry/shape';

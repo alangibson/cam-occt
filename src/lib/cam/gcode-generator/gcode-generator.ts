@@ -1,12 +1,10 @@
 import type { Unit } from '$lib/utils/units';
-import type { CuttingParameters, GCodeCommand, CutPath } from '$lib/types/cam';
 import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
 import type { Point2D } from '$lib/geometry/point';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/geometry/shape';
-import { CutterCompensation, NormalSide } from '$lib/types/cam';
 import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 import {
     DEFAULT_CUT_HEIGHT_MM,
@@ -16,6 +14,10 @@ import {
     GCODE_PARAMETER_PRECISION,
     IMPERIAL_FEED_RATE_MM,
 } from '$lib/cam/constants';
+import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import type { CutPath } from '$lib/cam/cut-generator/interfaces';
+import type { CuttingParameters, GCodeCommand } from './interfaces';
+import { NormalSide } from '$lib/cam/cut/enums';
 
 /**
  * G-code path blending tolerance for metric units (mm)
@@ -49,21 +51,12 @@ export function generateGCode(
     // Header
     commands.push(...generateHeader(options));
 
-    // Track temporary material numbers to avoid duplicates
-    const temporaryMaterialBase = 1000000;
-    let currentMaterialNumber = temporaryMaterialBase;
-
     // Process each tool cut
     cuts.forEach((cut, index) => {
         // Create/update temporary material if cut has cutting parameters
         if (cut.parameters) {
-            const materialCommands = generateTemporaryMaterial(
-                cut.parameters,
-                currentMaterialNumber,
-                options
-            );
+            const materialCommands = generateTemporaryMaterial(cut.parameters);
             commands.push(...materialCommands);
-            currentMaterialNumber++;
         }
 
         commands.push(...generateCutCommands(cut, options, index));
@@ -240,9 +233,7 @@ function generateHeader(options: GCodeOptions): GCodeCommand[] {
  * Generate temporary material using QtPlasmaC magic comments
  */
 function generateTemporaryMaterial(
-    parameters: CuttingParameters,
-    _materialNumber: number,
-    _options: GCodeOptions
+    parameters: CuttingParameters
 ): GCodeCommand[] {
     const commands: GCodeCommand[] = [];
 

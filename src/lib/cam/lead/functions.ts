@@ -1,4 +1,4 @@
-import { LeadType } from '$lib/types/direction';
+import { LeadType } from './enums';
 import type { Point2D } from '$lib/geometry/point';
 import type { Arc } from '$lib/geometry/arc';
 import { generateArcPoints } from '$lib/geometry/arc/functions';

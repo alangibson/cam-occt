@@ -3,7 +3,7 @@ import type { Line } from '$lib/geometry/line';
 import type { Point2D } from '$lib/geometry/point';
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Shape } from '$lib/geometry/shape';
-import type { JoinColinearLinesParameters } from '$lib/types/algorithm-parameters';
+import type { JoinColinearLinesParameters } from '$lib/preprocessing/algorithm-parameters';
 import { TOLERANCE } from '$lib/geometry/math';
 
 /**

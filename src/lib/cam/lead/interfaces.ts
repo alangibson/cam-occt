@@ -1,4 +1,5 @@
-import type { CutDirection, LeadType } from '$lib/types/direction';
+import type { CutDirection } from '$lib/cam/cut/enums';
+import type { LeadType } from './enums';
 import type { Point2D } from '$lib/geometry/point';
 import type { LeadGeometryType } from './types';
 

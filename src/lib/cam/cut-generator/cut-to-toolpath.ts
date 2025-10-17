@@ -1,8 +1,9 @@
-import { LeadType } from '$lib/types/direction';
+import { LeadType } from '$lib/cam/lead/enums';
 import type { Point2D } from '$lib/geometry/point';
 import type { Shape } from '$lib/geometry/shape';
-import type { CutPath, Lead } from '$lib/types/cam';
-import { CutterCompensation } from '$lib/types/cam';
+import type { CutPath } from './interfaces';
+import type { Lead } from './types';
+import { CutterCompensation } from './enums';
 import type { Spline } from '$lib/geometry/spline';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';

@@ -5,7 +5,7 @@
  */
 
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
-import type { CutterCompensation } from '$lib/types/cam';
+import type { CutterCompensation } from '$lib/cam/cut-generator/enums';
 
 /**
  * Application measurement system options

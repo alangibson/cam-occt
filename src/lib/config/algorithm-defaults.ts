@@ -13,11 +13,9 @@ import {
     type JoinColinearLinesParameters,
     type StartPointOptimizationParameters,
     type AlgorithmParameters,
-} from '$lib/types/algorithm-parameters';
-import {
-    DEFAULT_PART_DETECTION_PARAMETERS,
-    type PartDetectionParameters,
-} from '$lib/types/part-detection';
+} from '$lib/preprocessing/algorithm-parameters';
+import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import {
     DUPLICATE_FILTERING_TOLERANCE_MM,
     MAX_EXTENSION_MM,

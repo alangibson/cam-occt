@@ -7,7 +7,7 @@
         OffsetImplementation,
     } from '$lib/stores/settings/interfaces';
     import { resetApplicationToDefaults } from '$lib/stores/storage/store';
-    import { CutterCompensation } from '$lib/types/cam';
+    import { CutterCompensation } from '$lib/cam/cut-generator/enums';
 
     const allStages = [
         WorkflowStage.IMPORT,

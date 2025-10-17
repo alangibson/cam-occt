@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { CuttingParameters } from '$lib/types/cam';
+    import type { CuttingParameters } from '$lib/cam/gcode-generator/interfaces';
 
     export let parameters: CuttingParameters = {
         feedRate: 1000,

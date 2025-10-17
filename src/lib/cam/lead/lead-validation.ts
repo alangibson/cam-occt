@@ -1,7 +1,7 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { LeadType } from './enums';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import {
     GEOMETRIC_PRECISION_TOLERANCE,
@@ -15,6 +15,7 @@ import {
     MINIMUM_SHELL_DISTANCE_MM,
     LEAD_PROXIMITY_THRESHOLD_MM,
 } from './constants';
+import { CutDirection } from '$lib/cam/cut/enums';
 
 /**
  * Comprehensive validation pipeline for lead configurations.

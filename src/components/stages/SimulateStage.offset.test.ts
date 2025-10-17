@@ -4,9 +4,9 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/geometry/shape';
 import type { Line } from '$lib/geometry/line';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/shape';
-import { NormalSide } from '$lib/types/cam';
 
 describe('SimulateStage offset cut detection', () => {
     let mockCut: Cut;

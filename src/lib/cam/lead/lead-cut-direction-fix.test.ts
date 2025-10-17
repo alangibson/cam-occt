@@ -9,7 +9,8 @@ import type { Line } from '$lib/geometry/line';
 import type { Polyline } from '$lib/geometry/polyline';
 import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from './enums';
 import {
     createPolylineFromVertices,
     polylineToPoints,

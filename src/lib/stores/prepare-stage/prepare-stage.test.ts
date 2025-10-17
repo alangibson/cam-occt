@@ -5,7 +5,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { prepareStageStore } from './store';
-import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import { GeometryType } from '$lib/geometry/shape';
 import type { Shape } from '$lib/geometry/shape';
 

@@ -3,7 +3,7 @@ import type { Shape } from '$lib/geometry/shape';
 import { calculateSquaredDistance } from '$lib/geometry/math';
 import { getShapePoints } from '$lib/geometry/shape/functions';
 import { detectCutDirection } from '$lib/cam/cut/cut-direction';
-import { CutDirection } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 

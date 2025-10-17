@@ -1,9 +1,6 @@
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';
-import {
-    OptimizeStarts,
-    DEFAULT_OPTIMIZE_STARTS,
-} from '$lib/types/optimize-starts';
 import type { LeadConfig } from '$lib/cam/lead/interfaces';
 import { getDefaults } from '$lib/config';
 
@@ -65,5 +62,3 @@ export const DEFAULT_HOLE_UNDERSPEED = {
 };
 
 export const DEFAULT_OPERATION_ENABLED = true;
-
-export { DEFAULT_OPTIMIZE_STARTS, OptimizeStarts };

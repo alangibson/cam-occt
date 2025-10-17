@@ -4,9 +4,9 @@ import {
     createLeadInConfig,
     createLeadOutConfig,
 } from '$lib/cam/lead/functions';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from './enums';
 import type { Cut } from '$lib/cam/cut/interfaces';
-import { NormalSide } from '$lib/types/cam';
 
 // Helper function to create test cut
 function createTestCut(overrides: Partial<Cut> = {}): Cut {

@@ -9,9 +9,9 @@ import type { Line } from '$lib/geometry/line';
 import type { Point2D } from '$lib/geometry/point';
 import type { Shape } from '$lib/geometry/shape';
 import { GeometryType } from '$lib/geometry/shape';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from './enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { NormalSide } from '$lib/types/cam';
 
 // Test data setup
 const createTestCut = (overrides: Partial<Cut> = {}): Cut => ({

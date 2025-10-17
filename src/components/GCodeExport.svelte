@@ -5,7 +5,7 @@
     import { partStore } from '$lib/stores/parts/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { SvelteMap } from 'svelte/reactivity';
-    import { CutterCompensation } from '$lib/types/cam';
+    import { CutterCompensation } from '$lib/cam/cut-generator/enums';
     import { onMount, createEventDispatcher } from 'svelte';
     import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
     import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';

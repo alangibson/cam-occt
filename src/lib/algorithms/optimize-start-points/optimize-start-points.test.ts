@@ -4,7 +4,7 @@ import { GeometryType } from '$lib/geometry/shape';
 import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { optimizeStartPoints } from './optimize-start-points';
 

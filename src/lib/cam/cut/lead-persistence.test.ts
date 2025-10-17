@@ -11,14 +11,14 @@ import {
 import type { Cut } from '$lib/cam/cut/interfaces';
 import { calculateCutLeads } from '$lib/stores/operations/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from './enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';
 import { GeometryType } from '$lib/geometry/shape';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type { LeadResult } from '$lib/cam/lead/interfaces';
-import { NormalSide } from '$lib/types/cam';
 
 // Mock the stores
 vi.mock('$lib/stores/cuts/store', () => ({

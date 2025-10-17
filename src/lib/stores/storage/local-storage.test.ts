@@ -11,7 +11,8 @@ import {
     saveState,
 } from './local-storage';
 import { type PersistedState } from './interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { Unit } from '$lib/utils/units';
 import { PartType } from '$lib/cam/part/part-detection';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -23,7 +24,6 @@ import {
     RapidOptimizationAlgorithm,
     OffsetImplementation,
 } from '$lib/stores/settings/interfaces';
-import { NormalSide } from '$lib/types/cam';
 
 // Default application settings for tests
 const defaultApplicationSettings = {

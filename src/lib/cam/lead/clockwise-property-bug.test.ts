@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape';

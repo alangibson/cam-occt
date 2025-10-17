@@ -3,7 +3,7 @@
     import AccordionPanel from '../AccordionPanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import type { CuttingParameters } from '$lib/types/cam';
+    import type { CuttingParameters } from '$lib/cam/gcode-generator/interfaces';
     import { settingsStore } from '$lib/stores/settings/store';
     import { onMount } from 'svelte';
 
