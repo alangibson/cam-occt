@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { STANDARD_TIMEOUT_MS } from '../../src/lib/constants/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,7 +18,7 @@ test.describe('Drawing Drift Issue', () => {
 
         // Wait for file to be loaded and auto-advance to Edit stage
         await page.waitForURL('**/edit', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(STANDARD_TIMEOUT_MS); // Give canvas time to render
+        await page.waitForTimeout(1000); // Give canvas time to render
 
         // Take initial screenshot of the drawing canvas
         const canvas = page.locator('canvas.drawing-canvas');
@@ -73,7 +72,7 @@ test.describe('Drawing Drift Issue', () => {
         // Navigate to Prepare stage
         await page.click('text=Prepare');
         await page.waitForURL('**/prepare', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
+        await page.waitForTimeout(1000);
 
         // Take initial screenshot of the drawing canvas
         const canvas = page.locator('canvas.drawing-canvas');
@@ -110,7 +109,7 @@ test.describe('Drawing Drift Issue', () => {
         await page.waitForURL('**/prepare', { waitUntil: 'networkidle' });
         await page.click('text=Program');
         await page.waitForURL('**/program', { waitUntil: 'networkidle' });
-        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
+        await page.waitForTimeout(1000);
 
         // Take screenshots
         const canvas = page.locator('canvas.drawing-canvas');

@@ -78,7 +78,7 @@ import {
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/geometric-containment';
 import { LEAD_SEGMENT_COUNT } from '$lib/geometry/line/constants';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
-import { STANDARD_GRID_SPACING } from '$lib/constants';
+import { MIN_SPLINE_SAMPLES } from '$lib/geometry/spline/constants';
 import { calculateEllipsePoint2 } from '$lib/geometry/ellipse/functions';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import {
@@ -1608,7 +1608,7 @@ export function getShapePoints3(shape: Shape): Point2D[] {
             const spline: Spline = shape.geometry as Spline;
             const splinePoints: Point2D[] = [];
             const numSplineSamples: number = Math.max(
-                STANDARD_GRID_SPACING,
+                MIN_SPLINE_SAMPLES,
                 spline.controlPoints.length * TESSELLATION_SAMPLE_MULTIPLIER
             );
 

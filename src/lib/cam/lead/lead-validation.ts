@@ -7,7 +7,6 @@ import {
     GEOMETRIC_PRECISION_TOLERANCE,
     HALF_PERCENT,
 } from '$lib/geometry/math';
-import { MAX_ITERATIONS, STANDARD_GRID_SPACING } from '$lib/constants';
 import { FULL_CIRCLE_DEG } from '$lib/geometry/circle';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import type { LeadsConfig, LeadValidationResult } from './interfaces';
@@ -16,6 +15,18 @@ import {
     LEAD_PROXIMITY_THRESHOLD_MM,
 } from './constants';
 import { CutDirection } from '$lib/cam/cut/enums';
+
+/**
+ * Minimum lead length threshold for warning on very small chains
+ * Leads longer than this on tiny chains may cause intersection issues
+ */
+const MIN_LEAD_WARNING_LENGTH = 10;
+
+/**
+ * Maximum recommended lead length in units
+ * Leads longer than this may be impractical for most cutting operations
+ */
+const MAX_RECOMMENDED_LEAD_LENGTH = 50;
 
 /**
  * Comprehensive validation pipeline for lead configurations.
@@ -227,8 +238,8 @@ function validateChainGeometry(
     // Check for very small chains with long leads
     if (
         chainSize < POLYGON_POINTS_MIN &&
-        (config.leadIn.length > STANDARD_GRID_SPACING ||
-            config.leadOut.length > STANDARD_GRID_SPACING)
+        (config.leadIn.length > MIN_LEAD_WARNING_LENGTH ||
+            config.leadOut.length > MIN_LEAD_WARNING_LENGTH)
     ) {
         warnings.push(
             'Chain is very small but leads are long - may cause intersection issues'
@@ -329,22 +340,20 @@ function validateLeadLengths(config: LeadsConfig): LeadValidationResult {
     let severity: 'info' | 'warning' | 'error' = 'info';
 
     // Check for very long leads
-    const maxRecommendedLength: number = MAX_ITERATIONS; // Reasonable limit for lead lengths
-
-    if (config.leadIn.length > maxRecommendedLength) {
+    if (config.leadIn.length > MAX_RECOMMENDED_LEAD_LENGTH) {
         warnings.push(`Lead-in length (${config.leadIn.length}) is very long`);
         suggestions.push(
-            `Consider reducing lead-in length to under ${maxRecommendedLength} units`
+            `Consider reducing lead-in length to under ${MAX_RECOMMENDED_LEAD_LENGTH} units`
         );
         severity = 'warning';
     }
 
-    if (config.leadOut.length > maxRecommendedLength) {
+    if (config.leadOut.length > MAX_RECOMMENDED_LEAD_LENGTH) {
         warnings.push(
             `Lead-out length (${config.leadOut.length}) is very long`
         );
         suggestions.push(
-            `Consider reducing lead-out length to under ${maxRecommendedLength} units`
+            `Consider reducing lead-out length to under ${MAX_RECOMMENDED_LEAD_LENGTH} units`
         );
         severity = 'warning';
     }

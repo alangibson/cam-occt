@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import path from 'path';
-import { STANDARD_TIMEOUT_MS } from '../../src/lib/constants/index.js';
 import { promises as fs } from 'fs';
 
 test.describe('Ellipse Chain Detection', () => {
@@ -110,7 +109,7 @@ EOF`;
         await fileInput.setInputFiles(testFilePath);
 
         // Wait for file to be processed
-        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
+        await page.waitForTimeout(1000);
 
         // Go to Edit stage
         await page.getByRole('button', { name: '2 Edit' }).click();
@@ -240,7 +239,7 @@ EOF`;
         await fileInput.setInputFiles(testFilePath);
 
         // Wait for file to be processed
-        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
+        await page.waitForTimeout(1000);
 
         // Go to Edit stage
         await page.getByRole('button', { name: '2 Edit' }).click();

@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { fileURLToPath } from 'url';
 import path from 'path';
-import { STANDARD_TIMEOUT_MS } from '../../src/lib/constants/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,7 +26,7 @@ test.describe('Drawing Position Stability', () => {
         // Wait for canvas to render
         const canvas = page.locator('canvas.drawing-canvas');
         await expect(canvas).toBeVisible();
-        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
+        await page.waitForTimeout(1000);
 
         // Take initial screenshot
         const screenshot1 = await canvas.screenshot({
@@ -63,7 +62,7 @@ test.describe('Drawing Position Stability', () => {
         // Wait and navigate to Prepare
         await page.waitForTimeout(2000);
         await page.click('text=Prepare');
-        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
+        await page.waitForTimeout(1000);
 
         const canvas = page.locator('canvas.drawing-canvas');
         await expect(canvas).toBeVisible();
@@ -89,7 +88,7 @@ test.describe('Drawing Position Stability', () => {
 
         // Go to edit stage
         await page.click('text=Edit');
-        await page.waitForTimeout(STANDARD_TIMEOUT_MS);
+        await page.waitForTimeout(1000);
 
         const canvas = page.locator('canvas.drawing-canvas');
         const resizeHandle = page.locator('.resize-handle-right').first();

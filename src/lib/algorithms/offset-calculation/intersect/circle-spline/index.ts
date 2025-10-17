@@ -4,7 +4,7 @@ import type { Shape } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { processSplineWithCurveIntersection } from '$lib/algorithms/offset-calculation/shared/spline-intersection-utils';
-import { MAX_ITERATIONS } from '$lib/geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
 
 /**
  * Find intersections between a spline and a circle using verb-nurbs
@@ -16,7 +16,7 @@ export function findSplineCircleIntersectionsVerb(
     circleShape: Shape,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = MAX_ITERATIONS
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     const spline: Spline = splineShape.geometry as Spline;
     const circle: Circle = circleShape.geometry as Circle;

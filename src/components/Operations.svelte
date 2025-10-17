@@ -8,13 +8,15 @@
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { DetectedPart } from '$lib/cam/part/part-detection';
     import {
-        getDefaultLeadInConfig,
-        getDefaultLeadOutConfig,
         DEFAULT_CUT_DIRECTION,
         DEFAULT_KERF_COMPENSATION,
         DEFAULT_HOLE_UNDERSPEED,
         DEFAULT_OPERATION_ENABLED,
-    } from '$lib/constants/operation-defaults';
+    } from '$lib/config/operation-defaults';
+    import {
+        getDefaultLeadInConfig,
+        getDefaultLeadOutConfig,
+    } from '$lib/config/lead-defaults';
     import OperationsPanel from './OperationsPanel.svelte';
     import { DEFAULT_OPTIMIZE_STARTS } from '$lib/cam/cut/defaults';
 

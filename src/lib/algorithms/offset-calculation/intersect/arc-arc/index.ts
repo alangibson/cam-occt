@@ -11,7 +11,7 @@ import {
     isIntersectionOnArcExtension,
 } from '$lib/algorithms/offset-calculation/extend/arc';
 import { removeDuplicateIntersections } from '$lib/algorithms/offset-calculation/intersect/intersection-base';
-import { MAX_ITERATIONS } from '$lib/geometry/constants';
+import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
 
 /**
  * Find intersections between two arcs using radical axis method
@@ -22,7 +22,7 @@ export function findArcArcIntersections(
     arc2: Arc,
     swapParams: boolean = false,
     allowExtensions: boolean = false,
-    extensionLength: number = MAX_ITERATIONS
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM
 ): IntersectionResult[] {
     // First try intersection with original shapes
     const originalResults: IntersectionResult[] = findArcArcIntersectionsCore(

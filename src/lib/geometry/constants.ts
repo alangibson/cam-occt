@@ -60,11 +60,6 @@ export const DIRECTION_COUNTERCLOCKWISE = 1;
  */
 export const DIRECTION_CLOCKWISE = -1;
 
-/**
- * Standard grid spacing for tessellation minimum samples and lead validation
- */
-export const STANDARD_GRID_SPACING = 10;
-
 // CHAIN_CLOSURE_TOLERANCE moved to geometry/chain module
 
 // Common numerical constants

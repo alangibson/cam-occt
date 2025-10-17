@@ -14,7 +14,7 @@ import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-ex
 import {
     CONFIDENCE_HIGH_THRESHOLD,
     CONFIDENCE_THRESHOLD,
-    MAX_ITERATIONS,
+    DEFAULT_EXTENSION_LENGTH_MM,
 } from '$lib/geometry/constants';
 
 // Import intersection functions from dedicated modules and chain module
@@ -95,7 +95,7 @@ export function findShapeIntersections(
     shape2: Shape,
     tolerance: number = DEFAULT_CLUSTERING_TOLERANCE,
     allowExtensions: boolean = false,
-    extensionLength: number = MAX_ITERATIONS,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM,
     intersectionType: IntersectionType = DEFAULT_INTERSECTION_TYPE
 ): IntersectionResult[] {
     const intersections: IntersectionResult[] = findIntersectionsByType(
@@ -128,7 +128,7 @@ export function findIntersectionsByType(
     shape1: Shape,
     shape2: Shape,
     allowExtensions: boolean = false,
-    extensionLength: number = MAX_ITERATIONS,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM,
     intersectionType: IntersectionType = DEFAULT_INTERSECTION_TYPE
 ): IntersectionResult[] {
     const type1: string = shape1.type;

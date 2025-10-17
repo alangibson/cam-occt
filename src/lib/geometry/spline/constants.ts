@@ -1,4 +1,3 @@
-import { STANDARD_GRID_SPACING } from '$lib/constants';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import type { SplineTessellationConfig } from './interfaces';
 
@@ -68,6 +67,23 @@ export const TESSELLATION_SAMPLE_MULTIPLIER = 3;
  * Default retry count for spline intersection operations
  */
 export const DEFAULT_RETRY_COUNT = 3;
+
+/**
+ * Minimum number of samples for spline tessellation
+ */
+export const MIN_SPLINE_SAMPLES = 10;
+
+/**
+ * Complexity score threshold below which splines use uniform sampling
+ * Splines with complexity below this are considered simple enough for basic sampling
+ */
+export const SIMPLE_SPLINE_COMPLEXITY_THRESHOLD = 10;
+
+/**
+ * Complexity score threshold above which splines require high-complexity handling
+ * Used to determine when to use extended timeouts and adaptive sampling
+ */
+export const HIGH_SPLINE_COMPLEXITY_THRESHOLD = 50;
 /**
  * Default tessellation configuration
  */
@@ -76,6 +92,6 @@ export const DEFAULT_CONFIG: Required<SplineTessellationConfig> = {
     numSamples: 50,
     tolerance: CHAIN_CLOSURE_TOLERANCE,
     maxSamples: MAX_SPLINE_TESSELLATION_SAMPLES,
-    minSamples: STANDARD_GRID_SPACING,
+    minSamples: MIN_SPLINE_SAMPLES,
     timeoutMs: STANDARD_TESSELLATION_TIMEOUT_MS,
 };
