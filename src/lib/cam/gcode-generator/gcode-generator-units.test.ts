@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/types/cam';
-import { type Drawing, type CutPath, Unit } from '$lib/types';
+import type { Drawing } from '$lib/geometry/shape';
+import type { CutPath } from '$lib/types/cam';
+import { Unit } from '$lib/utils/units';
 
 describe('GCode Generator - Units', () => {
     const mockCut: CutPath = {

@@ -1,6 +1,10 @@
 import type { Circle } from '$lib/geometry/circle';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Arc, Line, Point2D, Polyline, Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
+import type { Polyline } from '$lib/geometry/polyline';
 import { EPSILON } from '$lib/geometry/math/constants';
 import {
     getShapeEndPoint,

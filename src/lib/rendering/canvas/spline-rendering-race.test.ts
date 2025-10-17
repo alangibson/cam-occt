@@ -15,8 +15,8 @@ import { toolStore } from '$lib/stores/tools/store';
 import { settingsStore } from '$lib/stores/settings/store';
 import { OffsetImplementation } from '$lib/stores/settings/interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Shape } from '$lib/types';
+import { KerfCompensation } from '$lib/stores/operations/enums';
+import type { Shape } from '$lib/geometry/shape';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

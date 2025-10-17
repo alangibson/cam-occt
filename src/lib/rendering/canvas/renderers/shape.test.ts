@@ -6,8 +6,10 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ShapeRenderer } from './shape';
 import { createEmptyRenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
-import { GeometryType } from '$lib/types';
-import type { Drawing, Shape, Line, Circle } from '$lib/types';
+import { GeometryType } from '$lib/geometry/shape';
+import type { Drawing, Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
+import type { Circle } from '$lib/geometry/circle';
 import { Unit } from '$lib/utils/units';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 

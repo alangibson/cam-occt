@@ -4,11 +4,11 @@ import { polylineToPoints } from '$lib/geometry/polyline';
 import { decomposePolylines } from './decompose-polylines';
 import { readFileSync } from 'fs';
 import path from 'path';
-import type { PolylineVertex, Shape } from '$lib/types';
+import type { Polyline, PolylineVertex } from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape';
 import { EPSILON } from '$lib/geometry/math';
 import type { Arc } from '$lib/geometry/arc';
 import type { Line } from '$lib/geometry/line';
-import type { Polyline } from '$lib/geometry/polyline';
 
 // Mock canvas for screenshot comparison
 function createTestCanvas(width: number = 800, height: number = 600) {

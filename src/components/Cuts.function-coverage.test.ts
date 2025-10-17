@@ -7,7 +7,7 @@ import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
+import { KerfCompensation } from '$lib/stores/operations/enums';
 import { NormalSide } from '$lib/types/cam';
 
 // Mock DragEvent for jsdom

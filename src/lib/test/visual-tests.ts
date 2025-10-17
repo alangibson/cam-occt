@@ -9,7 +9,7 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 import type { Circle } from '$lib/geometry/circle';
 import type { Line } from '$lib/geometry/line';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
 

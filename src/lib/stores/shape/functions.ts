@@ -2,7 +2,8 @@ import type { Circle } from '$lib/geometry/circle';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Line } from '$lib/geometry/line';
 import type { Polyline } from '$lib/geometry/polyline';
-import type { Point2D, Shape } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 import type { Arc } from '$lib/geometry/arc';
 import {
     getShapeEndPoint,

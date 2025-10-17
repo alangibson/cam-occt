@@ -13,7 +13,7 @@ import type { Shape } from '$lib/geometry/shape';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { calculateLeads } from './lead-calculation';
 import { isArc } from '$lib/geometry/arc';
-import type { Arc } from '$lib/types';
+import type { Arc } from '$lib/geometry/arc';
 
 describe('Chain-Pill DXF Lead Direction Bug', () => {
     let chains: Chain[];

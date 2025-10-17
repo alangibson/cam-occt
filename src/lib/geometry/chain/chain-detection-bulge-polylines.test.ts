@@ -4,7 +4,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { polylineToVertices } from '$lib/geometry/polyline';
-import type { Polyline, PolylineVertex } from '$lib/types';
+import type { Polyline, PolylineVertex } from '$lib/geometry/polyline';
 import { isShapeClosed } from '$lib/geometry/shape/functions';
 
 describe('Chain Detection for Polylines with Bulges', () => {

@@ -5,7 +5,8 @@
  * Clipper2 returns point arrays which are converted to chains of Line shapes.
  */
 
-import type { Shape, Point2D } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
 import type { Line } from '$lib/geometry/line';
 import { GeometryType } from '$lib/geometry/shape';
 import { generateId } from '$lib/domain/id';

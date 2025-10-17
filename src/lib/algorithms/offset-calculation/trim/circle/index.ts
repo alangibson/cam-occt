@@ -1,6 +1,9 @@
 import type { Circle } from '$lib/geometry/circle';
 import { generateId } from '$lib/domain/id';
-import { type Arc, GeometryType, type Point2D, type Shape } from '$lib/types';
+import { GeometryType } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 import { pointDistance } from '..';
 import {
     type KeepSide,

@@ -4,7 +4,8 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape';
-import type { Shape, Line } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
 

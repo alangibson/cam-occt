@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import { GeometryType } from '$lib/geometry/shape';
 import { convertLeadGeometryToPoints } from './functions';
 

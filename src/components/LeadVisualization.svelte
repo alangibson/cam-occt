@@ -4,7 +4,7 @@
     import { calculateLeads } from '$lib/cam/lead/lead-calculation';
     import { type LeadConfig, type LeadResult } from '$lib/cam/lead/interfaces';
     import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-    import type { Point2D } from '$lib/types';
+    import type { Point2D } from '$lib/geometry/point';
     import { LeadType } from '$lib/types/direction';
     import { hasValidCachedLeads } from '$lib/cam/cut/lead-persistence';
     import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';

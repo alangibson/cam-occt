@@ -9,7 +9,7 @@ import type {
     Shape,
 } from '$lib/algorithms/offset-calculation/chain/types';
 import { generateChainOffsetSVG } from './visual-tests';
-import { GeometryType } from '$lib/types';
+import { GeometryType } from '$lib/geometry/shape';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 
 describe('visual-tests', () => {

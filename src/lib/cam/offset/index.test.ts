@@ -8,7 +8,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape';
 import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point';
 
 /**
  * Helper to extract all points from a chain's shapes

@@ -10,16 +10,14 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type {
-    Shape,
-    Line,
-    Arc,
-    Circle,
-    Polyline,
-    Ellipse,
-    Point2D,
-} from '$lib/types';
-import { GeometryType } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Point2D } from '$lib/geometry/point';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import {
     getShapeChainId,

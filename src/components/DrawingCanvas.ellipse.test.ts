@@ -4,7 +4,7 @@ import DrawingCanvas from './DrawingCanvas.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/utils/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import type { Drawing, Shape } from '$lib/types';
+import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import { GeometryType } from '$lib/geometry/shape';
 

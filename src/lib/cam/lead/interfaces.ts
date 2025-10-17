@@ -1,4 +1,5 @@
-import type { CutDirection, LeadType, Point2D } from '$lib/types';
+import type { CutDirection, LeadType } from '$lib/types/direction';
+import type { Point2D } from '$lib/geometry/point';
 import type { LeadGeometryType } from './types';
 
 export interface LeadConfig {

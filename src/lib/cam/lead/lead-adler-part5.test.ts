@@ -11,7 +11,7 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('ADLER.dxf Part 5 Lead Fix', () => {

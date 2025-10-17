@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { cutStore } from '$lib/stores/cuts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import { CutDirection } from '$lib/types/direction';
 import { GeometryType } from '$lib/geometry/shape';
 import { NormalSide } from '$lib/types/cam';

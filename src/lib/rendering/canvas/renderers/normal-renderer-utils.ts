@@ -1,4 +1,4 @@
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 
 const NORMAL_LINE_LENGTH = 20; // Screen pixels

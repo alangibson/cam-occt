@@ -5,7 +5,7 @@
  * Handles both inward and outward offsetting in a single operation.
  */
 
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point';
 import { getClipper2 } from './clipper-init';
 import { toClipper2Paths, fromClipper2Paths } from './convert';
 

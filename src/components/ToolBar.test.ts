@@ -4,7 +4,7 @@ import { render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/utils/units';
-import type { Drawing } from '$lib/types';
+import type { Drawing } from '$lib/geometry/shape';
 import { GeometryType } from '$lib/geometry/shape';
 
 // Mock window.prompt and window.alert

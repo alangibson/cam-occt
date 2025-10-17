@@ -6,15 +6,11 @@
  * represents the part outline and another represents holes.
  */
 
-import type {
-    Circle,
-    Drawing,
-    Line,
-    Point2D,
-    Polyline,
-    PolylineVertex,
-    Shape,
-} from '$lib/types';
+import type { Drawing, Shape } from '$lib/geometry/shape';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
+import type { Polyline, PolylineVertex } from '$lib/geometry/polyline';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/geometry/shape';
 import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';

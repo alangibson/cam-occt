@@ -9,7 +9,7 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import type { Line } from '$lib/geometry/line';
 import type { Polyline } from '$lib/geometry/polyline';
 import { GeometryType } from '$lib/geometry/shape';

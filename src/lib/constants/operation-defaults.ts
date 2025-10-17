@@ -1,5 +1,5 @@
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
+import { KerfCompensation } from '$lib/stores/operations/enums';
 import {
     OptimizeStarts,
     DEFAULT_OPTIMIZE_STARTS,

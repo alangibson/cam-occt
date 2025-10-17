@@ -4,7 +4,8 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape';
-import type { Shape, Line } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
 
 /**
  * Test to demonstrate the bug in closed chain normal direction calculation

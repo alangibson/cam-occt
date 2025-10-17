@@ -2,16 +2,14 @@
  * Hit testing types and utilities for canvas rendering
  */
 
-import type {
-    Point2D,
-    Shape,
-    Line,
-    Circle,
-    Arc,
-    Polyline,
-    Ellipse,
-} from '$lib/types';
-import { GeometryType } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
+import type { Circle } from '$lib/geometry/circle';
+import type { Arc } from '$lib/geometry/arc';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import { tessellateSpline } from '$lib/geometry/spline';
 import {

@@ -1,4 +1,4 @@
-import type { Drawing } from '$lib/types';
+import type { Drawing } from '$lib/geometry/shape';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box';
 

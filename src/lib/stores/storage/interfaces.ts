@@ -1,6 +1,10 @@
 import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Drawing, DetectedPart, PartDetectionWarning } from '$lib/types';
+import type { Drawing } from '$lib/geometry/shape';
+import type {
+    DetectedPart,
+    PartDetectionWarning,
+} from '$lib/cam/part/part-detection';
 import type { LeadWarning } from '$lib/stores/lead-warnings/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type {

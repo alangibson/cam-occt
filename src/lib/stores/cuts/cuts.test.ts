@@ -6,7 +6,7 @@ import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import { GeometryType } from '$lib/geometry/shape';
 import { NormalSide } from '$lib/types/cam';
 import type { Cut } from '$lib/cam/cut/interfaces';

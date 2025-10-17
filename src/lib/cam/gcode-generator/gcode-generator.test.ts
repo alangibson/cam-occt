@@ -1,9 +1,11 @@
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
-import type { Drawing, Shape, CutPath } from '$lib/types';
+import type { Drawing, Shape } from '$lib/geometry/shape';
+import type { CutPath } from '$lib/types/cam';
 import type { Spline } from '$lib/geometry/spline';
-import { CutterCompensation, Unit } from '$lib/types';
+import { CutterCompensation } from '$lib/types/cam';
+import { Unit } from '$lib/utils/units';
 import { generateGCode } from './gcode-generator';
 import type { Circle } from '$lib/geometry/circle';
 

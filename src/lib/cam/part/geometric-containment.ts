@@ -10,7 +10,7 @@
  */
 
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point';
 import type { PartDetectionParameters } from '$lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
 import {

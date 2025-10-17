@@ -28,16 +28,13 @@
     import { partStore } from '$lib/stores/parts/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { onMount, onDestroy } from 'svelte';
-    import {
-        type Shape,
-        type Point2D,
-        type Line,
-        type Arc,
-        type Circle,
-        type Polyline,
-        type Ellipse,
-        GeometryType,
-    } from '$lib/types';
+    import { type Shape, GeometryType } from '$lib/geometry/shape';
+    import type { Point2D } from '$lib/geometry/point';
+    import type { Line } from '$lib/geometry/line';
+    import type { Arc } from '$lib/geometry/arc';
+    import type { Circle } from '$lib/geometry/circle';
+    import type { Polyline } from '$lib/geometry/polyline';
+    import type { Ellipse } from '$lib/geometry/ellipse';
     import type { Spline } from '$lib/geometry/spline';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { Cut } from '$lib/cam/cut/interfaces';

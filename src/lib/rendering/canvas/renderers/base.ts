@@ -6,7 +6,7 @@ import type { LayerId } from '$lib/rendering/canvas/layers/types';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point';
 
 /**
  * Base interface for all renderers

@@ -8,7 +8,8 @@ import {
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { DetectedPart, PartHole, Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
+import type { DetectedPart, PartHole } from '$lib/cam/part/part-detection';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type {
     ChainOffsetResult,
@@ -17,7 +18,7 @@ import type {
     CutGenerationResult,
     CutLeadResult,
 } from './interfaces';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
+import { KerfCompensation } from '$lib/stores/operations/enums';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {

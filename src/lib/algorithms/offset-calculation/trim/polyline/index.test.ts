@@ -1,10 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-    GeometryType,
-    type Polyline,
-    type PolylineVertex,
-    type Shape,
-} from '$lib/types';
+import { GeometryType } from '$lib/geometry/shape';
+import type { Polyline, PolylineVertex } from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape';
 import { trimPolyline } from './index';
 import { type KeepSide } from '$lib/algorithms/offset-calculation/trim/types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';

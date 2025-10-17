@@ -4,7 +4,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { GeometryType } from '$lib/geometry/shape';
-import { Unit } from '$lib/types';
+import { Unit } from '$lib/utils/units';
 import type { Shape, Geometry } from '$lib/geometry/shape';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';

@@ -2,7 +2,8 @@
  * Centralized render state for the canvas rendering pipeline
  */
 
-import type { Drawing, Shape, Point2D } from '$lib/types';
+import type { Drawing, Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';

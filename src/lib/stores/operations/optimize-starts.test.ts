@@ -7,8 +7,8 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import { OptimizeStarts } from '$lib/types/optimize-starts';
 import { GeometryType } from '$lib/geometry/shape';
 import type { Line } from '$lib/geometry/line';
-import type { Shape } from '$lib/types';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
+import type { Shape } from '$lib/geometry/shape';
+import { KerfCompensation } from '$lib/stores/operations/enums';
 
 describe('Optimize Starts for Operations', () => {
     let mockTool: Tool;

@@ -3,7 +3,7 @@ import { get } from 'svelte/store';
 import { drawingStore } from './store';
 import { Unit } from '$lib/utils/units';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Drawing } from '$lib/types';
+import type { Drawing } from '$lib/geometry/shape';
 
 describe('DrawingStore zoomToFit method', () => {
     beforeEach(() => {

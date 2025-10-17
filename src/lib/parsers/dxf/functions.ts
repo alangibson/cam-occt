@@ -1,12 +1,9 @@
 import { parseString } from 'dxf';
-import {
-    Unit,
-    type Drawing,
-    type Ellipse,
-    type Point2D,
-    type PolylineVertex,
-    type Shape,
-} from '$lib/types';
+import { Unit, measurementSystemToUnit } from '$lib/utils/units';
+import type { Drawing, Shape } from '$lib/geometry/shape';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Point2D } from '$lib/geometry/point';
+import type { PolylineVertex } from '$lib/geometry/polyline';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/geometry/shape';
 import { generateId } from '$lib/domain/id';
@@ -33,7 +30,6 @@ import {
 } from './constants';
 import type { ApplicationSettings } from '$lib/stores/settings/interfaces';
 import { ImportUnitSetting } from '$lib/stores/settings/interfaces';
-import { measurementSystemToUnit } from '$lib/utils/units';
 
 function updateBounds(
     shape: Shape,

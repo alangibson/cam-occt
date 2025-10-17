@@ -7,7 +7,8 @@ import {
 import type { Line } from '$lib/geometry/line';
 import { GeometryType } from '$lib/geometry/shape';
 import { describe, expect, it } from 'vitest';
-import type { Point2D, Shape } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
 import type { Chain } from './interfaces';
 

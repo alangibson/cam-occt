@@ -4,9 +4,9 @@ import { operationsStore } from './store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
+import { KerfCompensation } from '$lib/stores/operations/enums';
 import { GeometryType } from '$lib/geometry/shape';
 import type { Operation } from './interfaces';
 

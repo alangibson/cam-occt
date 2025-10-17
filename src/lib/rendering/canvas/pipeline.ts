@@ -14,7 +14,8 @@ import {
     HitTestType,
 } from './utils/hit-test';
 import { DrawingContext } from './utils/context';
-import type { Point2D, Shape } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import {
     InteractionManager,

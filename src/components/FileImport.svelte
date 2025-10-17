@@ -4,7 +4,7 @@
     import { drawingStore } from '$lib/stores/drawing/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { Unit, getUnitSymbol } from '$lib/utils/units';
-    import type { Drawing } from '$lib/types';
+    import type { Drawing } from '$lib/geometry/shape';
 
     const dispatch = createEventDispatcher();
 

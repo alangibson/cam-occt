@@ -1,17 +1,12 @@
 import type { Unit } from '$lib/utils/units';
-import type {
-    CuttingParameters,
-    Drawing,
-    GCodeCommand,
-    CutPath,
-} from '$lib/types';
+import type { CuttingParameters, GCodeCommand, CutPath } from '$lib/types/cam';
+import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
 import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/geometry/shape';
-import { CutterCompensation, NormalSide } from '$lib/types';
+import { CutterCompensation, NormalSide } from '$lib/types/cam';
 import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
 import {
     DEFAULT_CUT_HEIGHT_MM,

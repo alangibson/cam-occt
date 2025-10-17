@@ -8,7 +8,7 @@ import { toolStore } from '$lib/stores/tools/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
+import { KerfCompensation } from '$lib/stores/operations/enums';
 import type { PartShell } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';

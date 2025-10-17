@@ -6,7 +6,9 @@ import {
     polylineToPoints,
     polylineToVertices,
 } from '$lib/geometry/polyline';
-import { type Drawing, type Point2D, type Shape, Unit } from '$lib/types';
+import type { Drawing, Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
+import { Unit } from '$lib/utils/units';
 
 describe('Polyline Dragging Bug Fixes', () => {
     describe('moveShape function', () => {

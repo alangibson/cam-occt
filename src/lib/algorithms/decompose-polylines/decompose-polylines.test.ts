@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import type { Line } from '$lib/geometry/line';
 import { GeometryType } from '$lib/geometry/shape';

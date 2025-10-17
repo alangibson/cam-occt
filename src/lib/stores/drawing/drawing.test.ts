@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { drawingStore } from './store';
-import type { Drawing, Line, Point2D, Shape } from '$lib/types';
+import type { Drawing, Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
 import { Unit } from '$lib/utils/units';
 import { GeometryType } from '$lib/geometry/shape';
 import { overlayStore } from '$lib/stores/overlay/store';

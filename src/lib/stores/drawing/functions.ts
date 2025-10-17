@@ -4,7 +4,7 @@
  * Helper functions that work with drawing data but don't directly modify the store.
  */
 
-import { WorkflowStage } from '$lib/types';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 import { overlayStore } from '$lib/stores/overlay/store';

@@ -2,7 +2,12 @@ import { describe, expect, it, vi } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Arc, Circle, Ellipse, Line, Polyline, Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import type { Spline } from '$lib/geometry/spline';
 import type {

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import type { Line } from '$lib/geometry/line';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { CutDirection, LeadType } from '$lib/types/direction';

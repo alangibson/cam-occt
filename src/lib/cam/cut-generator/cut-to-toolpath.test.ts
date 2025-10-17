@@ -1,6 +1,9 @@
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
-import type { Arc, Line, Point2D, Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { CutterCompensation, NormalSide } from '$lib/types/cam';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

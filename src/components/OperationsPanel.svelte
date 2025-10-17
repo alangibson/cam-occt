@@ -5,7 +5,7 @@
     import type { Tool } from '$lib/stores/tools/store';
     import { flip } from 'svelte/animate';
     import { CutDirection, LeadType } from '$lib/types/direction';
-    import { KerfCompensation } from '$lib/types/kerf-compensation';
+    import { KerfCompensation } from '$lib/stores/operations/enums';
     import { OptimizeStarts } from '$lib/types/optimize-starts';
     import { getReactiveUnitSymbol } from '$lib/utils/units';
     import { settingsStore } from '$lib/stores/settings/store';

@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { chainStore } from './store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape';
 import { GeometryType } from '$lib/geometry/shape';
 
 describe('Chain Store - Clockwise Property Setting', () => {
