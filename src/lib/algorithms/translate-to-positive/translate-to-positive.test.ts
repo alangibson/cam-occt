@@ -4,9 +4,13 @@ import {
     polylineToPoints,
     polylineToVertices,
 } from '$lib/geometry/polyline';
-import type { Arc, Circle, Ellipse, Line, Polyline } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { Shape } from '$lib/types';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { translateToPositiveQuadrant } from './translate-to-positive';
 
 describe('Translate to Positive Quadrant Algorithm', () => {

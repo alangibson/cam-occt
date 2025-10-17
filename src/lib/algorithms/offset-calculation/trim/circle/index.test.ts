@@ -1,12 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { trimCircle } from './index';
-import {
-    GeometryType,
-    type Arc,
-    type Circle,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Point2D } from '$lib/geometry/point';
 import type { KeepSide } from '$lib/algorithms/offset-calculation/trim/types';
 
 describe('trimCircle', () => {

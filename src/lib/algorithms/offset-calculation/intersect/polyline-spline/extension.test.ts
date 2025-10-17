@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import { GeometryType, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import { findSplinePolylineIntersectionsVerb } from './index';
 

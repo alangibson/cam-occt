@@ -3,7 +3,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline, splitVerbCurve, tessellateVerbCurve } from './spline';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import verb from 'verb-nurbs';
 import type { Spline } from '$lib/geometry/spline';
 

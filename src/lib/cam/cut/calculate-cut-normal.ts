@@ -19,7 +19,7 @@
  * This normal is used by both cut visualization and lead placement.
  */
 
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { CutDirection } from '$lib/types/direction';

@@ -8,16 +8,14 @@
 // - ./ellipse/ellipse for offsetEllipse
 // - ./types for OffsetDirection, OffsetResult types
 
-import type {
-    Arc,
-    Circle,
-    Ellipse,
-    Line,
-    Polyline,
-    Shape,
-} from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { Spline } from '$lib/geometry/spline';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { OffsetDirection, type OffsetResult } from './types';
 import { offsetLine } from './line/line';
 import { offsetArc } from './arc/arc';

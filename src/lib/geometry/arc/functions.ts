@@ -1,4 +1,5 @@
-import { type Geometry, type Point2D } from '$lib/types/geometry';
+import type { Geometry } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
 import type { Arc } from './interfaces';
 import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle';

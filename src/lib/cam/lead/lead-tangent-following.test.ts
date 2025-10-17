@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Circle, Arc, Line } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateLeads } from './lead-calculation';

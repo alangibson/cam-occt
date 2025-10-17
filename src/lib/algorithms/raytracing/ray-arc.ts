@@ -7,7 +7,7 @@
  */
 
 import type { Arc } from '$lib/geometry/arc';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { approxEqual, isAngleInArcRange } from './utils';

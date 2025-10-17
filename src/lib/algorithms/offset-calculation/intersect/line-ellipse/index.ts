@@ -1,4 +1,7 @@
-import type { Ellipse, Line, Point2D, Shape } from '$lib/types/geometry';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { EPSILON, INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 import { snapParameter } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';

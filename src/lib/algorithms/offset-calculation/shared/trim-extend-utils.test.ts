@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Line, Point2D } from '$lib/types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
 import {
     type TrimExtendParams,
     calculateLineParameter,

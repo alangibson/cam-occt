@@ -1,4 +1,4 @@
-import type { Circle } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import { generateId } from '$lib/domain/id';
 import { type Arc, GeometryType, type Point2D, type Shape } from '$lib/types';
 import { pointDistance } from '..';

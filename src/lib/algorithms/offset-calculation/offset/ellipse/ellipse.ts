@@ -1,11 +1,8 @@
 import verb from 'verb-nurbs';
 import { EPSILON } from '$lib/geometry/math/constants';
-import {
-    type Ellipse,
-    GeometryType,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Point2D } from '$lib/geometry/point';
 import type { Spline } from '$lib/geometry/spline';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import {

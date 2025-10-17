@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Arc } from '$lib/geometry/arc';
-import type { Polyline } from '$lib/types/geometry';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { Spline } from '$lib/geometry/spline';
 import type { Circle, Ellipse, Line, Point2D, Shape } from '$lib/types';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { findSplineLineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/line-spline/index';
 import { findSplineSplineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/spline-spline/index';
 import { findSplinePolylineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/polyline-spline/index';

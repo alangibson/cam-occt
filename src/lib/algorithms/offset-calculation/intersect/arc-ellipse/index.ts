@@ -1,5 +1,5 @@
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
 import type { Arc } from '$lib/geometry/arc';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';

@@ -1,6 +1,7 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { generateId } from '$lib/domain/id';
-import { GeometryType, type Polyline, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Polyline } from '$lib/geometry/polyline';
 import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
 import type {
     ChainOffsetParameters,

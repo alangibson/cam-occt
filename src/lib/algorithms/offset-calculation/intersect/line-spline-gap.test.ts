@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { GeometryType, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
 import { findSplineLineIntersectionsVerb } from './line-spline/index';
 
 describe('Line-Spline Gap Intersection Tests', () => {

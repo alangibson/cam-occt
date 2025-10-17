@@ -1,4 +1,5 @@
-import type { Point2D, Shape } from './geometry';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 
 /**
  * Lead representation as an array of points

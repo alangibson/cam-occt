@@ -5,8 +5,9 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
-import type { Shape, Point2D } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
+import { GeometryType } from '$lib/geometry/shape';
 import { convertLeadGeometryToPoints } from './functions';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 

@@ -7,7 +7,7 @@ import { get } from 'svelte/store';
 import { prepareStageStore } from './store';
 import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
 import { GeometryType } from '$lib/geometry/shape';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
 
 describe('Prepare Stage Store', () => {
     beforeEach(() => {

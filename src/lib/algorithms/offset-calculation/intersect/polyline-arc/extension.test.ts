@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import type { Arc, Polyline, Shape } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { findPolylineArcIntersections } from './index';
 

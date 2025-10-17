@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { GeometryType, type Shape, type Arc } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
 import type { Spline } from '$lib/geometry/spline';
 import { findSplineArcIntersectionsVerb } from './index';
 

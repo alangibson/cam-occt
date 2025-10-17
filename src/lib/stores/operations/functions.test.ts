@@ -18,7 +18,7 @@ import type { Operation } from './interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { DetectedPart } from '$lib/types';
 import { PartType } from '$lib/types';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { NormalSide } from '$lib/types/cam';
 import { reverseChain } from '$lib/geometry/chain';
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';

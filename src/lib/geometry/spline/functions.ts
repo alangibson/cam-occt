@@ -1,5 +1,5 @@
 import verb, { type VerbCurve, type VerbVector } from 'verb-nurbs';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import type {
     Spline,
     SplineTessellationConfig,

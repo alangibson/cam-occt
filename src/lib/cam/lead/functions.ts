@@ -1,5 +1,6 @@
 import { LeadType } from '$lib/types/direction';
-import type { Point2D, Arc } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
+import type { Arc } from '$lib/geometry/arc';
 import { generateArcPoints } from '$lib/geometry/arc/functions';
 import type { Lead, LeadConfig } from './interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';

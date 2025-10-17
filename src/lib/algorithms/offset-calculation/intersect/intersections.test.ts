@@ -1,13 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { EPSILON } from '$lib/geometry/math/constants';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import {
-    type Arc,
-    GeometryType,
-    type Line,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
 import { generateId } from '$lib/domain/id';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { findArcArcIntersections } from './arc-arc/index';

@@ -1,9 +1,6 @@
-import {
-    GeometryType,
-    type Line,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
 import {
     OffsetDirection,
     type OffsetResult,

@@ -9,7 +9,10 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { polylineToPoints } from '$lib/geometry/polyline';
 import type { Arc } from '$lib/geometry/arc';
-import type { Circle, Line, Polyline, Shape } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Hole Placement Fix', () => {

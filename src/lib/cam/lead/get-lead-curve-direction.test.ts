@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Shape, Line, Circle } from '$lib/types';
 import { isArc } from '$lib/geometry/arc';
 import { PartType } from '$lib/cam/part/part-detection';

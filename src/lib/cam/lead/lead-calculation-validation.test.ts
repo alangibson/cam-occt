@@ -5,8 +5,8 @@ import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
-import { GeometryType } from '$lib/types/geometry';
-import type { Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape';
 
 describe('Lead Calculation with Validation Pipeline', () => {
     // Helper to create a simple line chain

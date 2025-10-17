@@ -8,7 +8,7 @@ import {
     validateSplineGeometry,
     type Spline,
 } from '$lib/geometry/spline';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 
 describe('Spline Tessellation', () => {
     // Test splines with known properties

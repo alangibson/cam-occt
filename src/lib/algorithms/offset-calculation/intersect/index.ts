@@ -1,4 +1,4 @@
-import type { Circle } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Arc, Line, Point2D, Polyline, Shape } from '$lib/types';
 import { EPSILON } from '$lib/geometry/math/constants';

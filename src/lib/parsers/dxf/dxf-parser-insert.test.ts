@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { Line } from '$lib/types/geometry';
+import type { Line } from '$lib/geometry/line';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
 

@@ -1,4 +1,5 @@
-import type { Point2D, Shape } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type {
     OffsetSide,

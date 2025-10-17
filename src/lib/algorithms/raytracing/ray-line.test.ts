@@ -4,7 +4,8 @@ import {
     countRayLineCrossings,
     findRayLineIntersections,
 } from './ray-line';
-import type { Line, Point2D } from '$lib/types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
 import type { Ray, RayTracingConfig } from './types';
 
 describe('Ray-Line Intersection', () => {

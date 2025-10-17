@@ -5,9 +5,10 @@ import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
 import {
     type PolylineVertex,
+    type Polyline,
     polylineToVertices,
 } from '$lib/geometry/polyline';
-import type { Ellipse, Polyline } from '$lib/types/geometry';
+import type { Ellipse } from '$lib/geometry/ellipse';
 
 describe('DXF Parser - Integration Tests', () => {
     describe('Whitespace handling', () => {

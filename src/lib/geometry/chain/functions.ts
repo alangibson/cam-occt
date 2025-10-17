@@ -2,14 +2,11 @@
  * Chain and polygon functions
  */
 
-import {
-    GeometryType,
-    type Arc,
-    type Circle,
-    type Line,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
 import type { Chain } from './interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Polyline } from '$lib/geometry/polyline';

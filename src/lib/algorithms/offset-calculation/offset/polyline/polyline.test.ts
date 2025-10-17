@@ -1,16 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { offsetPolyline } from './polyline';
-import {
-    GeometryType,
-    type Arc,
-    type Circle,
-    type Drawing,
-    type Line,
-    type Point2D,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape, type Drawing } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
+import type { Polyline } from '$lib/geometry/polyline';
 import {
     createPolylineFromVertices,
     polylineToPoints,

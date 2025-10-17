@@ -3,7 +3,7 @@ import type { Circle, Ellipse, Line, Point2D, Polyline } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
 import type { Arc } from '$lib/geometry/arc';
 import type { VerbCurve } from 'verb-nurbs';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { tessellateEllipse } from '$lib/geometry/ellipse/index';
 import type { Shape } from '$lib/algorithms/offset-calculation/chain/types';
 import { tessellateVerbCurve } from '$lib/algorithms/offset-calculation/offset/spline/spline';

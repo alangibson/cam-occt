@@ -5,7 +5,10 @@ import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positi
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
 import { getShapePoints } from '$lib/geometry/shape/functions';
-import type { Arc, Circle, Line, Polyline } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { Point2D, Shape } from '$lib/types';
 import { EPSILON } from '$lib/geometry/math';
 

@@ -7,8 +7,9 @@ import {
     cullShapesToViewport,
     isShapeInViewport,
 } from './viewport-culling';
-import { GeometryType } from '$lib/types/geometry';
-import type { Line, Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
+import type { Shape } from '$lib/geometry/shape';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 import type { Circle } from '$lib/geometry/circle';
 import { getBoundingBoxForShape } from '$lib/geometry/bounding-box';

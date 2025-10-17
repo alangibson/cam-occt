@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { findSplineCircleIntersectionsVerb } from './index';
-import { type Circle, GeometryType, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Circle } from '$lib/geometry/circle';
 import type { Spline } from '$lib/geometry/spline';
 
 describe('Circle-Spline Intersection with Extensions', () => {

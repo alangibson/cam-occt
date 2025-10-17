@@ -6,7 +6,7 @@
  */
 
 import type { Shape, Point2D } from '$lib/types';
-import type { Line } from '$lib/types/geometry';
+import type { Line } from '$lib/geometry/line';
 import { GeometryType } from '$lib/geometry/shape';
 import { generateId } from '$lib/domain/id';
 import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';

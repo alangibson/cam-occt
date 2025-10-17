@@ -10,7 +10,11 @@ import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import type { Arc, Circle, Line, Polyline, Shape } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape';
 import type { BoundingBox } from '$lib/geometry/bounding-box';
 
 describe('Tractor Seat Mount Part Detection', () => {

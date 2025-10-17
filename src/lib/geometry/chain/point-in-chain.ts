@@ -5,16 +5,14 @@
  * Provides perfect accuracy for all shape types including arcs, circles, and splines.
  */
 
-import type {
-    Arc,
-    Circle,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
-} from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { Spline } from '$lib/geometry/spline';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { RayTracingConfig } from '$lib/algorithms/raytracing/types';
 import { DEFAULT_RAYTRACING_CONFIG } from '$lib/algorithms/raytracing/types';

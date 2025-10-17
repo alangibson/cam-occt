@@ -1,4 +1,6 @@
-import type { Point2D, Polyline, Shape } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape';
 import type {
     FillOptions,
     FillResult,

@@ -1,5 +1,7 @@
 import { EPSILON } from '$lib/geometry/math/constants';
-import type { Line, Point2D, Shape } from '$lib/types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';

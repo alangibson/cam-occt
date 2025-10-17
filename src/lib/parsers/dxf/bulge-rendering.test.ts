@@ -4,13 +4,13 @@ import { parseDXF } from './functions';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import {
     type PolylineVertex,
+    type Polyline,
     polylineToVertices,
 } from '$lib/geometry/polyline';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { EPSILON } from '$lib/geometry/math';
 import type { Arc } from '$lib/geometry/arc';
-import type { Polyline } from '$lib/types/geometry';
 
 describe('Bulge Rendering Fixes', () => {
     describe('Polylinie.dxf', () => {

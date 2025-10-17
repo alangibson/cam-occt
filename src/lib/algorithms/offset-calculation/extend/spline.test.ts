@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import verb from 'verb-nurbs';
-import type { Line, Point2D } from '$lib/types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
 import type { Spline } from '$lib/geometry/spline';
 import type { Circle } from '$lib/geometry/circle';
 import {

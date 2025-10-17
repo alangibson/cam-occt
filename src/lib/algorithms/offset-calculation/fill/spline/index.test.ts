@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { GeometryType, type Point2D, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
 import type { Spline } from '$lib/geometry/spline';
 import type {
     FillOptions,

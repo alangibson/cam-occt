@@ -5,7 +5,7 @@
  * across polygon-utilities.ts, geometry-utils.ts, and geometric-operations.ts
  */
 
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
 import { doLineSegmentsIntersect } from '$lib/geometry/line/functions';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';

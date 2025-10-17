@@ -1,4 +1,4 @@
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 
 export interface Arc {
     center: Point2D;

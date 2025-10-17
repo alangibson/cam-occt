@@ -3,7 +3,7 @@ import {
     findEllipseArcIntersections,
     findEllipseArcIntersectionsVerb,
 } from './index';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
 import type { Arc } from '$lib/geometry/arc';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import { GeometryType } from '$lib/geometry/shape';

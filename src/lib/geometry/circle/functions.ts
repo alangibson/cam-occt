@@ -1,5 +1,6 @@
 import type { Circle } from './interfaces';
-import type { Geometry, Point2D } from '$lib/types/geometry';
+import type { Geometry } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
 import {
     HIGH_TESSELLATION_SEGMENTS,
     SMALL_ANGLE_INCREMENT_DEG,

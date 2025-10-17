@@ -8,7 +8,8 @@ import {
     isCircle,
     reverseCircle,
 } from '$lib/geometry/circle';
-import type { Geometry, Line } from '$lib/types/geometry';
+import type { Geometry } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
 import type { Arc } from '$lib/geometry/arc';
 
 describe('getCircleStartPoint', () => {

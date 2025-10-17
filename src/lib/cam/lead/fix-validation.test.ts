@@ -3,7 +3,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Shape, Line } from '$lib/types';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import { prepareChainsAndLeadConfigs } from '$lib/cam/cut/cut-optimization-utils';

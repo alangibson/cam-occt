@@ -14,7 +14,7 @@
 import { describe, expect, test } from 'vitest';
 import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
 import { GeometryType } from '$lib/geometry/shape';
 
 describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {

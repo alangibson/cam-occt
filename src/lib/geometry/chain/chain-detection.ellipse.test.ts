@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape';
 import { detectShapeChains } from './chain-detection';
 import { isShapeClosed } from '$lib/geometry/shape/functions';
 

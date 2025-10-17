@@ -4,7 +4,7 @@
  * Common utility functions for ray-shape intersection algorithms
  */
 
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import {
     isNearlyEqual,
     solveQuadratic as mathSolveQuadratic,

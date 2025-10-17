@@ -6,7 +6,7 @@ import { SVGBuilder } from '$lib/test/svg-builder';
 import { join } from 'path';
 import { writeFileSync, mkdirSync } from 'fs';
 import type { Shape } from '$lib/algorithms/offset-calculation/chain/types';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 describe('Visual output of offset splines', () => {
     const outputDir = join(

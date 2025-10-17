@@ -1,4 +1,5 @@
-import type { Point2D, Shape } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 
 export interface PolylineVertex extends Point2D {
     bulge?: number;

@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Shape, Line } from '$lib/types';
 import { getChainTangent } from '$lib/geometry/chain/functions';
 

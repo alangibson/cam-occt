@@ -8,7 +8,7 @@ import {
     processCircleOperation,
     validateCircleIntersectionPoint,
 } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import type { Circle } from '$lib/geometry/circle';
 import type { Arc } from '$lib/geometry/arc';
 

@@ -13,7 +13,7 @@ import { calculateCutLeads } from '$lib/stores/operations/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { Operation } from '$lib/stores/operations/interfaces';

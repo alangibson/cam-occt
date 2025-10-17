@@ -12,7 +12,7 @@ import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import { Unit } from './units';
 import type { Operation } from '$lib/stores/operations/interfaces';

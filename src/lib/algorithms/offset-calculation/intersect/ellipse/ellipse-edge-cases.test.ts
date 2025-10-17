@@ -1,13 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import {
-    GeometryType,
-    type Shape,
-    type Ellipse,
-    type Line,
-    type Arc,
-    type Circle,
-    type Polyline,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Line } from '$lib/geometry/line';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { Spline } from '$lib/geometry/spline';
 import {
     findEllipseIntersections,

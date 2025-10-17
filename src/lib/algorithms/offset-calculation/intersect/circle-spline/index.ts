@@ -1,5 +1,6 @@
 import { createVerbCurveFromCircle } from '$lib/geometry/circle/nurbs';
-import type { Circle, Shape } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
+import type { Shape } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { processSplineWithCurveIntersection } from '$lib/algorithms/offset-calculation/shared/spline-intersection-utils';

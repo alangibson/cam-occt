@@ -1,17 +1,20 @@
 import { EPSILON } from '$lib/geometry/math/constants';
-import type { Line, Point2D, Polyline, Shape } from '$lib/types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
+import {
+    MIN_VERTICES_FOR_POLYLINE,
+    type PolylineVertex,
+    type Polyline,
+    createPolylineFromVertices,
+    polylineToPoints,
+    polylineToVertices,
+} from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape';
 import { generateId } from '$lib/domain/id';
 import {
     type KeepSide,
     type TrimResult,
 } from '$lib/algorithms/offset-calculation/trim/types';
-import {
-    MIN_VERTICES_FOR_POLYLINE,
-    type PolylineVertex,
-    createPolylineFromVertices,
-    polylineToPoints,
-    polylineToVertices,
-} from '$lib/geometry/polyline';
 import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     DEFAULT_ARRAY_NOT_FOUND_INDEX,

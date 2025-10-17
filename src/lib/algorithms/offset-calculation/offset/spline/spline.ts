@@ -1,5 +1,6 @@
 import verb, { type VerbDerivatives, type VerbPoint } from 'verb-nurbs';
-import { GeometryType, type Point2D } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
 import type { Spline } from '$lib/geometry/spline';
 import {
     DEFAULT_RETRY_COUNT,

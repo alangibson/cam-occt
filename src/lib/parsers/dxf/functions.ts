@@ -8,7 +8,7 @@ import {
     type Shape,
 } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { generateId } from '$lib/domain/id';
 import {
     MIN_VERTICES_FOR_POLYLINE,

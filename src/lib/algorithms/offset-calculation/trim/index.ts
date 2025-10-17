@@ -1,4 +1,7 @@
-import type { Arc, Circle, Line, Polyline } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Point2D, Shape } from '$lib/types';
 import { MICRO_TOLERANCE } from '$lib/geometry/constants';

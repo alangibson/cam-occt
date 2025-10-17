@@ -1,4 +1,4 @@
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { findEllipseEllipseIntersectionsVerb as findEllipseEllipseIntersectionsVerbUtil } from '$lib/algorithms/offset-calculation/intersect/ellipse';
 

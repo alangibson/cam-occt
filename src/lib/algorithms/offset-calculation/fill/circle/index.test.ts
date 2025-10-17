@@ -1,10 +1,7 @@
 import type { Arc } from '$lib/geometry/arc';
-import {
-    type Circle,
-    GeometryType,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Circle } from '$lib/geometry/circle';
+import type { Point2D } from '$lib/geometry/point';
 import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
 import {

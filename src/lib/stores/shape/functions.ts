@@ -1,4 +1,7 @@
-import type { Circle, Ellipse, Line, Polyline } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { Point2D, Shape } from '$lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import {

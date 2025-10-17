@@ -1,4 +1,4 @@
-import { GeometryType, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
 import type { Arc } from '$lib/geometry/arc';
 import {
     OffsetDirection,

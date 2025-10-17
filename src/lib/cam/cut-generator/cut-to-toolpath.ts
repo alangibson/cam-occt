@@ -9,7 +9,7 @@ import {
 import type { Spline } from '$lib/geometry/spline';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
-import { getShapePoints } from '$lib/geometry/shape';
+import { getShapePoints, GeometryType } from '$lib/geometry/shape';
 import {
     calculateLeadPoints,
     getCachedLeadGeometry,
@@ -19,7 +19,6 @@ import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
-import { GeometryType } from '$lib/types/geometry';
 import {
     CAM_CALCULATION_TOLERANCE_MM,
     DEFAULT_CUT_HEIGHT_MM,

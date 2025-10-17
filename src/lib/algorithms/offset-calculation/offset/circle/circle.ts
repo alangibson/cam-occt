@@ -1,4 +1,5 @@
-import { type Circle, GeometryType, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Circle } from '$lib/geometry/circle';
 import {
     OffsetDirection,
     type OffsetResult,

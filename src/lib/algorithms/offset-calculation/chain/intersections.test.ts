@@ -8,13 +8,10 @@ import {
     findShapeIntersections,
 } from '$lib/algorithms/offset-calculation/intersect/index';
 import type { Arc } from '$lib/geometry/arc';
-import {
-    type Circle,
-    GeometryType,
-    type Line,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
 import type { IntersectionResult } from './types';
 import { generateId } from '$lib/domain/id';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';

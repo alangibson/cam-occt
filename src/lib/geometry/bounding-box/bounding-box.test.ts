@@ -13,15 +13,12 @@ import {
 } from './functions';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { GeometryType } from '$lib/geometry/shape';
-import type {
-    Circle,
-    Ellipse,
-    Geometry,
-    Line,
-    Point2D,
-    Polyline,
-    Shape,
-} from '$lib/types/geometry';
+import type { Shape, Geometry } from '$lib/geometry/shape';
+import type { Circle } from '$lib/geometry/circle';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { BoundingBox } from './interfaces';
 import type { Arc } from '$lib/geometry/arc';
 import type { Spline } from '$lib/geometry/spline';

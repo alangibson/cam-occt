@@ -1,6 +1,7 @@
 import verb from 'verb-nurbs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { type Ellipse, GeometryType, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Ellipse } from '$lib/geometry/ellipse';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 import {

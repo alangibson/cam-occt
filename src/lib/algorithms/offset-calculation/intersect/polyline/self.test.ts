@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import {
-    type Arc,
-    GeometryType,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Polyline } from '$lib/geometry/polyline';
 import {
     findPolylineSelfIntersections,
     hasPolylineSelfIntersections,

@@ -6,12 +6,8 @@ import { offsetChain } from './offset';
 import { scaleShape } from '$lib/geometry/shape/functions';
 import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
-import {
-    type Drawing,
-    GeometryType,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape, type Drawing } from '$lib/geometry/shape';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { generateId } from '$lib/domain/id';

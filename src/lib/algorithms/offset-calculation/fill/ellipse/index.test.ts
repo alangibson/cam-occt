@@ -1,9 +1,6 @@
-import {
-    type Ellipse,
-    GeometryType,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Point2D } from '$lib/geometry/point';
 import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
 import {

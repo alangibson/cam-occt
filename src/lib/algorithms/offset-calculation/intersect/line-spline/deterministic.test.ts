@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { findSplineLineIntersectionsVerb } from './index';
-import { GeometryType, type Line, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
 import type { Spline } from '$lib/geometry/spline';
 
 describe('findSplineLineIntersectionsVerb - Deterministic Behavior', () => {

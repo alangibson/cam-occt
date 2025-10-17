@@ -9,7 +9,7 @@ import { detectParts } from '$lib/cam/part/part-detection';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { calculateLeads } from './lead-calculation';
 import { isArc } from '$lib/geometry/arc';

@@ -1,11 +1,8 @@
-import {
-    type Arc,
-    type Circle,
-    GeometryType,
-    type Line,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { SegmentPosition } from '$lib/algorithms/offset-calculation/intersect/line-arc/index';
 import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect';

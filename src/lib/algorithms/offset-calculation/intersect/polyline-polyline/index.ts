@@ -1,10 +1,7 @@
-import {
-    type Arc,
-    GeometryType,
-    type Line,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc';
+import type { Line } from '$lib/geometry/line';
+import type { Polyline } from '$lib/geometry/polyline';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect';
 import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';

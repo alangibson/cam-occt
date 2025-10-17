@@ -2,12 +2,9 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline';
-import {
-    GeometryType,
-    type Point2D,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
+import type { Polyline } from '$lib/geometry/polyline';
 import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
 import {

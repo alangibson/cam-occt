@@ -1,16 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { fillGapBetweenShapes } from './index';
 import type { GapContext, FillOptions } from './types';
-import { GeometryType } from '$lib/types/geometry';
-import type {
-    Shape,
-    Line,
-    Arc,
-    Circle,
-    Polyline,
-    Ellipse,
-    Geometry,
-} from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
+import type { Shape, Geometry } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
+import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle';
+import type { Polyline } from '$lib/geometry/polyline';
+import type { Ellipse } from '$lib/geometry/ellipse';
 import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
 import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import { fillLineToIntersection } from './line';

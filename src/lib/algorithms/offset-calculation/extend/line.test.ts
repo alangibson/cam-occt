@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createExtendedLine, extendLineToPoint } from './line';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import type { Line } from '$lib/geometry/line';
 
 describe('createExtendedLine', () => {

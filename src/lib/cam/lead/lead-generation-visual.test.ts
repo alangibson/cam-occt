@@ -1,8 +1,9 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { describe, it } from 'vitest';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import type { Shape, Point2D } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point';
+import { GeometryType } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';

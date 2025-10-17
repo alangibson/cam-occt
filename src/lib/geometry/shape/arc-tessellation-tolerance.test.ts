@@ -6,7 +6,8 @@ import { describe, it, expect } from 'vitest';
 import { tessellateShape } from './functions';
 import type { Shape } from './interfaces';
 import { GeometryType } from './enums';
-import type { Arc, Point2D } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc';
+import type { Point2D } from '$lib/geometry/point';
 import type { PartDetectionParameters } from '$lib/types/part-detection';
 
 /**

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
 import type { Ellipse } from '$lib/types';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
 
 describe('DXF Parser - ELLIPSE entity support', () => {
     describe('Full ellipse parsing', () => {

@@ -3,7 +3,7 @@ import { findPolylineArcIntersections } from './index';
 import type { Polyline } from '$lib/geometry/polyline';
 import type { Arc } from '$lib/geometry/arc';
 import type { Line } from '$lib/geometry/line';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
 import { GeometryType } from '$lib/geometry/shape';
 import { createExtendedPolyline } from '$lib/algorithms/offset-calculation/extend/polyline';
 import { createExtendedArc } from '$lib/algorithms/offset-calculation/extend/arc';

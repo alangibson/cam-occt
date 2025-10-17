@@ -1,4 +1,4 @@
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import type {
     Circle,
     Ellipse,

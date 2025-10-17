@@ -9,7 +9,7 @@ import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
 
 describe('Simple Chain Comparison - Find Root Differences', () => {
     it('should compare properties of working vs failing chains', async () => {

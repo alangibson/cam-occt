@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 import { Unit } from '$lib/types';
 import type { Shape, Geometry } from '$lib/geometry/shape';
 import { parseDXF } from '$lib/parsers/dxf/functions';

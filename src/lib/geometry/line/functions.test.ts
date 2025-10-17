@@ -8,7 +8,7 @@ import {
     calculateLineDirectionAndLength,
 } from './functions';
 import type { Line } from './interfaces';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import { EPSILON } from '$lib/geometry/math';
 
 describe('line functions additional coverage tests', () => {

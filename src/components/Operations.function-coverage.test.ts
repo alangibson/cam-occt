@@ -12,7 +12,7 @@ import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { PartShell } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape';
 
 // Mock DragEvent for jsdom
 interface MockDragEventInit extends EventInit {

@@ -3,13 +3,10 @@ import {
     polylineToPoints,
 } from '$lib/geometry/polyline';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import {
-    GeometryType,
-    type Line,
-    type Point2D,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point';
+import type { Polyline } from '$lib/geometry/polyline';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { beforeEach, describe, expect, it } from 'vitest';

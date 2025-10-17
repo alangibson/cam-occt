@@ -6,7 +6,8 @@ import { describe, it, expect } from 'vitest';
 import { offsetChain, getClipper2 } from './index';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape';
-import type { Line, Arc } from '$lib/types/geometry';
+import type { Line } from '$lib/geometry/line';
+import type { Arc } from '$lib/geometry/arc';
 import type { Point2D } from '$lib/types';
 
 /**

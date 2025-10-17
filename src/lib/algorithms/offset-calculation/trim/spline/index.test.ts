@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GeometryType, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
 import { trimSpline } from './index';
 import { type KeepSide } from '$lib/algorithms/offset-calculation/trim/types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';

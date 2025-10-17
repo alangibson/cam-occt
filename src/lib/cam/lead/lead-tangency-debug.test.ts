@@ -3,8 +3,8 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Tangency Debug', () => {

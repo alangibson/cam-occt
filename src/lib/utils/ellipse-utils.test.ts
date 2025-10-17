@@ -10,7 +10,7 @@ import {
     isFullEllipse,
     tessellateEllipse,
 } from '$lib/geometry/ellipse';
-import type { Ellipse } from '$lib/types/geometry';
+import type { Ellipse } from '$lib/geometry/ellipse';
 
 describe('ellipse-utils', () => {
     // Create test ellipses

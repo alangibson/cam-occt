@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { GeometryType, type Line, type Shape } from '$lib/types/geometry';
+import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line';
 import type { FillOptions } from '$lib/algorithms/offset-calculation/fill/types';
 import { fillLineToIntersection } from './index';
 

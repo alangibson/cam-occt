@@ -3,7 +3,9 @@ import { parseDXF } from './functions';
 import { getShapePoints } from '$lib/geometry/shape/functions';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
-import type { Circle, Line, Shape } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line';
+import type { Shape } from '$lib/geometry/shape';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {

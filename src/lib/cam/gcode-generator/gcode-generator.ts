@@ -7,7 +7,8 @@ import type {
 } from '$lib/types';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';
-import type { Point2D, Shape } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape';
 import type { Spline } from '$lib/geometry/spline';
 import { GeometryType } from '$lib/geometry/shape';
 import { CutterCompensation, NormalSide } from '$lib/types';

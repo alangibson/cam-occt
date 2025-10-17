@@ -7,7 +7,7 @@ import {
     polylineToVertices,
     reversePolyline,
 } from './functions';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point';
 import type { Polyline, PolylineVertex } from './interfaces';
 import type { Arc } from '$lib/geometry/arc';
 
