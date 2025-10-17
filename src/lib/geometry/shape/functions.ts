@@ -79,7 +79,7 @@ import {
     CHAIN_CLOSURE_TOLERANCE,
     POLYGON_POINTS_MIN,
 } from '$lib/geometry/chain';
-import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';
+import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/geometric-containment';
 import { LEAD_SEGMENT_COUNT } from '$lib/geometry/line/constants';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { STANDARD_GRID_SPACING } from '$lib/constants';

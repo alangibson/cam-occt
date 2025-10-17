@@ -10,7 +10,7 @@
         handlePartClick as sharedHandlePartClick,
         handlePartMouseEnter,
         handlePartMouseLeave,
-    } from '$lib/algorithms/part-detection/chain-part-interactions';
+    } from '$lib/cam/part/chain-part-interactions';
     import ImportStage from './stages/ImportStage.svelte';
     import EditStage from './stages/EditStage.svelte';
     import PrepareStage from './stages/PrepareStage.svelte';

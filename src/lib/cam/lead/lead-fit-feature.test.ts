@@ -11,8 +11,8 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
+import { PartType } from '$lib/cam/part/part-detection';
 import { GeometryType } from '$lib/geometry/shape';
 
 describe('Lead Fit Feature', () => {

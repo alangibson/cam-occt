@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Operation } from '$lib/stores/operations/interfaces';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+    import type { DetectedPart } from '$lib/cam/part/part-detection';
     import type { Tool } from '$lib/stores/tools/store';
     import { flip } from 'svelte/animate';
     import { CutDirection, LeadType } from '$lib/types/direction';

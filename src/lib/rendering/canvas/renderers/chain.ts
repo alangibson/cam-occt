@@ -23,7 +23,7 @@ import {
     tessellateChain,
 } from '$lib/geometry/chain/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { PartHole } from '$lib/algorithms/part-detection/part-detection';
+import type { PartHole } from '$lib/cam/part/part-detection';
 import {
     getShapeStartPoint,
     getShapeEndPoint,

@@ -8,7 +8,7 @@ import { chainStore } from '$lib/stores/chains/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
 import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
 import type { Operation, OperationsStore } from './interfaces';
 import { createCutsFromOperation } from './functions';
 

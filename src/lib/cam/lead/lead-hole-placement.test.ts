@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
 import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';

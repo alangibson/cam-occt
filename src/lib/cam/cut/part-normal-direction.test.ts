@@ -15,7 +15,7 @@ import type { DetectedPart } from '$lib/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { PartType } from '$lib/cam/part/part-detection';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { NormalSide } from '$lib/types/cam';
 

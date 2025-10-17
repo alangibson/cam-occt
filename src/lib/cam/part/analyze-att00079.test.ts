@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
 import {
     getShapeEndPoint,
     getShapeStartPoint,

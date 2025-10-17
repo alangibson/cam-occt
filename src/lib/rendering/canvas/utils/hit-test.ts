@@ -19,7 +19,7 @@ import {
     distanceFromEllipsePerimeter,
     transformPointToEllipseCoordinates,
 } from '$lib/geometry/ellipse/index';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
 import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
 
 /**

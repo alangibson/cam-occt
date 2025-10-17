@@ -1,13 +1,13 @@
 <script lang="ts">
     import type { Cut } from '$lib/cam/cut/interfaces';
-    import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+    import type { DetectedPart } from '$lib/cam/part/part-detection';
     import { calculateLeads } from '$lib/cam/lead/lead-calculation';
     import { type LeadConfig, type LeadResult } from '$lib/cam/lead/interfaces';
     import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
     import type { Point2D } from '$lib/types';
     import { LeadType } from '$lib/types/direction';
     import { hasValidCachedLeads } from '$lib/cam/cut/lead-persistence';
-    import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
+    import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
     import type { Operation } from '$lib/stores/operations/interfaces';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';

@@ -17,7 +17,7 @@ import {
 } from '$lib/cam/cut/lead-persistence';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
 import { GeometryType } from '$lib/types/geometry';
 import {

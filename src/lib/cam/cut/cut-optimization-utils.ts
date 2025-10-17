@@ -7,7 +7,7 @@ import {
     type Point2D,
     type Shape,
 } from '$lib/types/geometry';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { type LeadConfig } from '$lib/cam/lead/interfaces';
 import {

@@ -9,8 +9,8 @@ import type {
     DetectedPart,
     PartShell,
     PartHole,
-} from '$lib/algorithms/part-detection/part-detection';
-import { PartType } from '$lib/algorithms/part-detection/part-detection';
+} from '$lib/cam/part/part-detection';
+import { PartType } from '$lib/cam/part/part-detection';
 import { GeometryType } from '$lib/types/geometry';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';

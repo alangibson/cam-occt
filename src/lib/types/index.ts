@@ -2,7 +2,7 @@ export * from './algorithm-parameters';
 export * from './cam';
 export * from './direction';
 export * from './geometry';
-export * from '$lib/algorithms/part-detection/part-detection';
+export * from '$lib/cam/part/part-detection';
 export * from './ui';
 export { Unit } from '$lib/utils/units';
 export { WorkflowStage } from '$lib/stores/workflow/enums';

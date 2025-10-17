@@ -1,9 +1,6 @@
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
-import type {
-    DetectedPart,
-    PartHole,
-} from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart, PartHole } from '$lib/cam/part/part-detection';
 
 /**
  * Shared chain interaction handlers for both Prepare and Program stages

@@ -3,8 +3,8 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
+import { PartType } from '$lib/cam/part/part-detection';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Direction Debug', () => {

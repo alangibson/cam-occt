@@ -24,7 +24,7 @@ import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { LeadConfig, LeadResult } from '$lib/cam/lead/interfaces';
 import { LeadType } from '$lib/types/direction';
 import { hasValidCachedLeads } from '$lib/cam/cut/lead-persistence';
-import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
+import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import {
     convertLeadGeometryToPoints,
     extractLeadNormalAndConnection,

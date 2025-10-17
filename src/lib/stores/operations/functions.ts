@@ -25,7 +25,7 @@ import {
     createLeadOutConfig,
 } from '$lib/cam/lead/functions';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
-import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
+import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import { settingsStore } from '$lib/stores/settings/store';
 import { get } from 'svelte/store';
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';

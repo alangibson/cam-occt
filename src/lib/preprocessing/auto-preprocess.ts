@@ -24,7 +24,7 @@ import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optim
 import {
     detectParts,
     type PartDetectionWarning,
-} from '$lib/algorithms/part-detection/part-detection';
+} from '$lib/cam/part/part-detection';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { tessellateShape } from '$lib/geometry/shape';
 import {

@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
 import { getChainPartType } from '$lib/stores/parts/functions';
 
 describe('UI Flow Integration Test', () => {

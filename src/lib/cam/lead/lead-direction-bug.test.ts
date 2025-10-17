@@ -10,10 +10,10 @@ import type { Spline } from '$lib/geometry/spline';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateLeads } from './lead-calculation';
 import { isArc } from '$lib/geometry/arc';
-import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
 
 describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     let outputDir: string;

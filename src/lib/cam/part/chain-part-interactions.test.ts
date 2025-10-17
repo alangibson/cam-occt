@@ -13,7 +13,7 @@ import {
     type PartHole,
     type PartShell,
     PartType,
-} from '$lib/algorithms/part-detection/part-detection';
+} from '$lib/cam/part/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';

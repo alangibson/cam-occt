@@ -9,7 +9,7 @@ import { calculateLeads } from './lead-calculation';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/types/geometry';
 import { LeadType, CutDirection } from '$lib/types/direction';
-import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
 
 describe('Hole Lead Direction Fix', () => {
     it('should calculate hole leads pointing into hole void for offset chains', async () => {

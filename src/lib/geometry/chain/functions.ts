@@ -29,7 +29,7 @@ import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
 import { isEllipseClosed } from '$lib/geometry/ellipse/index';
 import { WindingDirection } from './enums';
-import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';
+import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/geometric-containment';
 import {
     calculateDistanceBetweenPoints,
     roundToDecimalPlaces,

@@ -1,7 +1,4 @@
-import type {
-    DetectedPart,
-    PartHole,
-} from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart, PartHole } from '$lib/cam/part/part-detection';
 
 // Helper to get all chain IDs that belong to a specific part
 export function getPartChainIds(

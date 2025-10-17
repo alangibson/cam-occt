@@ -7,7 +7,7 @@ import {
     type PartDetectionWarning,
     type PartHole,
     PartType,
-} from '$lib/algorithms/part-detection/part-detection';
+} from '$lib/cam/part/part-detection';
 
 describe('Parts Store', () => {
     beforeEach(() => {

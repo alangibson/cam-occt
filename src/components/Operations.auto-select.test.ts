@@ -7,7 +7,7 @@ import { partStore } from '$lib/stores/parts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { PartType } from '$lib/cam/part/part-detection';
 
 describe('Operations Auto-Selection Feature', () => {
     beforeEach(() => {

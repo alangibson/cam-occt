@@ -5,7 +5,7 @@ import {
     detectShapeChains,
     setChainsDirection,
 } from '$lib/geometry/chain/chain-detection';
-import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';

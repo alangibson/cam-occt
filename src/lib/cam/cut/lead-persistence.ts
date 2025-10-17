@@ -7,7 +7,7 @@
  */
 
 import type { Cut } from '$lib/cam/cut/interfaces';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
@@ -18,7 +18,7 @@ import {
     createLeadOutConfig,
     convertLeadGeometryToPoints,
 } from '$lib/cam/lead/functions';
-import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
 
 /**
  * Check if cut has valid cached lead geometry

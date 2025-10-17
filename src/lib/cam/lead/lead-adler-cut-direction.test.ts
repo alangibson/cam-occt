@@ -4,10 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
-import {
-    type PartShell,
-    detectParts,
-} from '$lib/algorithms/part-detection/part-detection';
+import { type PartShell, detectParts } from '$lib/cam/part/part-detection';
 import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';

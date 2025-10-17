@@ -8,7 +8,7 @@ import {
     detectPolygonContainment,
     identifyShells,
     isPointInPolygon,
-} from '$lib/algorithms/part-detection/geometric-containment';
+} from '$lib/cam/part/geometric-containment';
 import type { Point2D } from '$lib/geometry/point';
 
 // Helper function to create test chains

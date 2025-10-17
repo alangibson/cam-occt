@@ -55,9 +55,9 @@
         MeasurementSystem,
         type SettingsState,
     } from '$lib/stores/settings/interfaces';
-    import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+    import type { DetectedPart } from '$lib/cam/part/part-detection';
     import { LeadType } from '$lib/types/direction';
-    import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
+    import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import { getToolFeedRate } from '$lib/utils/tool-units';

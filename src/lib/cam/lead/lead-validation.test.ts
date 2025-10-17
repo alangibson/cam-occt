@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
+import { PartType } from '$lib/cam/part/part-detection';
 import type { Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import { validateLeadConfiguration } from './lead-validation';

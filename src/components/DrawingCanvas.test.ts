@@ -7,11 +7,8 @@ import type { Point2D } from '$lib/types';
 import { GeometryType } from '$lib/types';
 import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
-import { PartType } from '$lib/algorithms/part-detection/part-detection';
-import type {
-    DetectedPart,
-    PartShell,
-} from '$lib/algorithms/part-detection/part-detection';
+import { PartType } from '$lib/cam/part/part-detection';
+import type { DetectedPart, PartShell } from '$lib/cam/part/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
 // Mock stores

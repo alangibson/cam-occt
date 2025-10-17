@@ -5,7 +5,7 @@
 import type { Drawing, Shape, Point2D } from '$lib/types';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
+import type { DetectedPart } from '$lib/cam/part/part-detection';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';

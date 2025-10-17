@@ -15,7 +15,7 @@ import type { Point2D } from '$lib/types';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,
-} from '$lib/algorithms/part-detection/geometric-containment';
+} from '$lib/cam/part/geometric-containment';
 import type { PartDetectionParameters } from '$lib/types/part-detection';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
