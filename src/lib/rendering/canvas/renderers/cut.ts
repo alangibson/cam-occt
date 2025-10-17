@@ -8,7 +8,7 @@ import {
 } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D, Shape, Line, Arc } from '$lib/types';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';

@@ -2,7 +2,7 @@ import { LeadType } from '$lib/types/direction';
 import type { Point2D, Arc } from '$lib/types/geometry';
 import { generateArcPoints } from '$lib/geometry/arc/functions';
 import type { Lead, LeadConfig } from './interfaces';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import { normalizeVector } from '$lib/geometry/math/functions';
 
 /**

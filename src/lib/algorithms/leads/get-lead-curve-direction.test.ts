@@ -9,7 +9,7 @@ import { GeometryType } from '$lib/types/geometry';
 import type { Shape, Line, Circle } from '$lib/types';
 import { isArc } from '$lib/geometry/arc';
 import { PartType } from '$lib/algorithms/part-detection/part-detection';
-import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
+import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 
 // Since getLeadCurveDirection is not exported, we test it indirectly
 // through calculateLeads and verify the resulting curve direction

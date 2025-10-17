@@ -2,7 +2,7 @@ import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D, Shape } from '$lib/types';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import { sampleShapesAtDistanceIntervals } from '$lib/geometry/shape/functions';

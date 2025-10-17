@@ -29,7 +29,7 @@ import {
     PRECISION_DECIMAL_PLACES,
     TOLERANCE_RELAXATION_MULTIPLIER,
 } from '$lib/geometry/constants';
-import { detectCutDirection } from '$lib/algorithms/cut-direction/cut-direction';
+import { detectCutDirection } from '$lib/cam/cut/cut-direction';
 import { CutDirection } from '$lib/types/direction';
 
 export interface ChainTraversalIssue {

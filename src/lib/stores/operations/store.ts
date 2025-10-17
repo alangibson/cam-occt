@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import { cutStore } from '$lib/stores/cuts/store';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import { partStore } from '$lib/stores/parts/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';

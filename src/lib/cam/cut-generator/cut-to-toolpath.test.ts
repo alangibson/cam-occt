@@ -1,4 +1,4 @@
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { Arc, Line, Point2D, Shape } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';

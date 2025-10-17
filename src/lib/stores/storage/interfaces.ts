@@ -7,7 +7,7 @@ import type {
     TessellationPoint,
     DrawingOverlay,
 } from '$lib/stores/overlay/interfaces';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { ApplicationSettings } from '$lib/stores/settings/interfaces';

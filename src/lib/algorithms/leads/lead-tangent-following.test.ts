@@ -4,7 +4,7 @@ import { GeometryType } from '$lib/types/geometry';
 import type { Circle, Arc, Line } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { calculateLeads } from './lead-calculation';
-import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
+import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { getArcStartPoint, getArcEndPoint } from '$lib/geometry/arc/functions';
 import {
     getChainTangent,

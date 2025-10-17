@@ -1,6 +1,6 @@
 <script lang="ts">
     import { partStore } from '$lib/stores/parts/store';
-    import { detectCutDirection } from '$lib/algorithms/cut-direction/cut-direction';
+    import { detectCutDirection } from '$lib/cam/cut/cut-direction';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { CutDirection } from '$lib/types/direction';
 

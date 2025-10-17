@@ -7,14 +7,14 @@ import {
     CutterCompensation,
 } from '$lib/types';
 import type { Spline } from '$lib/geometry/spline';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import { getShapePoints } from '$lib/geometry/shape';
 import {
     calculateLeadPoints,
     getCachedLeadGeometry,
     hasValidCachedLeads,
-} from '$lib/utils/lead-persistence-utils';
+} from '$lib/cam/cut/lead-persistence';
 import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';

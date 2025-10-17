@@ -6,7 +6,7 @@ import {
 } from '$lib/geometry/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
 import type { ChainEndpoint } from '$lib/stores/overlay/interfaces';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 
 // Helper functions to generate chain overlay data
 export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {

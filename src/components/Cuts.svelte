@@ -3,7 +3,7 @@
     import { operationsStore } from '$lib/stores/operations/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { flip } from 'svelte/animate';
-    import type { Cut } from '$lib/stores/cuts/interfaces';
+    import type { Cut } from '$lib/cam/cut/interfaces';
 
     let cuts: Cut[] = [];
     let selectedCutId: string | null = null;

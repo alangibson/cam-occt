@@ -3,7 +3,7 @@ import {
     prepareChainsAndLeadConfigs,
     getCutStartPoint,
 } from './cut-optimization-utils';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Line, Point2D, Shape } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';

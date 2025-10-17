@@ -18,13 +18,13 @@ import type {
     CutLeadResult,
 } from './interfaces';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
 } from '$lib/algorithms/leads/functions';
-import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
+import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
 import { settingsStore } from '$lib/stores/settings/store';
 import { get } from 'svelte/store';

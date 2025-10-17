@@ -12,7 +12,7 @@ import { calculateLeads } from './lead-calculation';
 import { isArc } from '$lib/geometry/arc';
 import { detectParts } from '$lib/algorithms/part-detection/part-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
-import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
+import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 
 describe('Lead Direction Bug - Leads should flip with cut direction', () => {

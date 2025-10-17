@@ -5,7 +5,7 @@ import {
     createLeadOutConfig,
 } from '$lib/algorithms/leads/functions';
 import { CutDirection, LeadType } from '$lib/types/direction';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import { NormalSide } from '$lib/types/cam';
 
 // Helper function to create test cut

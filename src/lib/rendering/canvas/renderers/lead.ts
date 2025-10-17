@@ -18,12 +18,12 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
 import type { LeadConfig, LeadResult } from '$lib/algorithms/leads/interfaces';
 import { LeadType } from '$lib/types/direction';
-import { hasValidCachedLeads } from '$lib/utils/lead-persistence-utils';
+import { hasValidCachedLeads } from '$lib/cam/cut/lead-persistence';
 import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
 import {
     convertLeadGeometryToPoints,

@@ -8,7 +8,7 @@ import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import { GeometryType } from '$lib/types/geometry';
 import type { Arc, Shape, Point2D } from '$lib/types/geometry';
 import { convertLeadGeometryToPoints } from './functions';
-import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
+import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 
 describe('Lead Tangency Tests', () => {
     // Helper to get cut normal for a chain

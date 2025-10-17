@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { CutterCompensation, NormalSide } from '$lib/types/cam';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import { type Drawing, type Shape, Unit } from '$lib/types';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';

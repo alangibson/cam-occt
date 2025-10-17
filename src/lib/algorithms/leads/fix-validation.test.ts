@@ -5,8 +5,8 @@ import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/types/geometry';
 import type { Shape, Line } from '$lib/types';
-import type { Cut } from '$lib/stores/cuts/interfaces';
-import { prepareChainsAndLeadConfigs } from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
+import type { Cut } from '$lib/cam/cut/interfaces';
+import { prepareChainsAndLeadConfigs } from '$lib/cam/cut/cut-optimization-utils';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { NormalSide } from '$lib/types/cam';
 

@@ -1,9 +1,10 @@
 import { writable } from 'svelte/store';
 import type { Shape } from '$lib/types';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { Cut, CutsState, CutsStore } from './interfaces';
+import type { CutsState, CutsStore } from './interfaces';
 import { checkProgramStageCompletion } from './functions';
 import type { CutLeadResult } from '$lib/stores/operations/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 
 function createCutsStore(): CutsStore {
     const initialState: CutsState = {

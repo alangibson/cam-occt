@@ -88,7 +88,7 @@ import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import {
     splitArcAtMidpoint,
     splitLineAtMidpoint,
-} from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
+} from '$lib/cam/cut/cut-optimization-utils';
 import { generateId } from '$lib/domain/id';
 import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
 

@@ -5,7 +5,7 @@
  * Uses the same algorithm as chain start point optimization.
  */
 
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import { OptimizeStarts } from '$lib/types/optimize-starts';
 import { optimizeChainStartPoint } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import type { StartPointOptimizationParameters } from '$lib/types/algorithm-parameters';

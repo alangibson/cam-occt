@@ -8,7 +8,7 @@ import {
     splitLineAtMidpoint,
     splitArcAtMidpoint,
 } from './cut-optimization-utils';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType, type Shape } from '$lib/types/geometry';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';

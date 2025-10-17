@@ -10,7 +10,7 @@ import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Shape } from '$lib/types';
 import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { OptimizeStarts } from '$lib/types/optimize-starts';
 
 export interface OffsetCalculation {

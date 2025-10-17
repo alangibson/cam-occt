@@ -15,7 +15,7 @@ import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types
 import { KerfCompensation } from '$lib/types/kerf-compensation';
 import type { Tool } from '$lib/stores/tools/interfaces';
 import type { Operation } from './interfaces';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { DetectedPart } from '$lib/types';
 import { PartType } from '$lib/types';
 import { GeometryType } from '$lib/types/geometry';

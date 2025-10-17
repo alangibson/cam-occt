@@ -6,7 +6,7 @@
  * using the offset shapes instead of the original chain geometry.
  */
 
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';

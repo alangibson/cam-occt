@@ -27,10 +27,6 @@
     import { overlayStore } from '$lib/stores/overlay/store';
     import { partStore } from '$lib/stores/parts/store';
     import { settingsStore } from '$lib/stores/settings/store';
-    import {
-        hasValidCachedLeads,
-        getCachedLeadGeometry,
-    } from '$lib/utils/lead-persistence-utils';
     import { onMount, onDestroy } from 'svelte';
     import {
         type Shape,
@@ -44,7 +40,7 @@
     } from '$lib/types';
     import type { Spline } from '$lib/geometry/spline';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { Cut } from '$lib/stores/cuts/interfaces';
+    import type { Cut } from '$lib/cam/cut/interfaces';
     import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import type { Tool } from '$lib/stores/tools/interfaces';
     import type { ChainStore } from '$lib/stores/chains/interfaces';
@@ -66,6 +62,10 @@
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
     import { getToolFeedRate } from '$lib/utils/tool-units';
     import { Unit } from '$lib/utils/units';
+    import {
+        getCachedLeadGeometry,
+        hasValidCachedLeads,
+    } from '$lib/cam/cut/lead-persistence';
 
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;

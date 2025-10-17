@@ -14,7 +14,7 @@
  *    - Eliminates repeated iteration through parts array during TSP
  */
 
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/types';
 import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
@@ -24,7 +24,7 @@ import {
     findNearestCut,
     getCutStartPoint,
     prepareChainsAndLeadConfigs,
-} from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
+} from '$lib/cam/cut/cut-optimization-utils';
 import { getChainEndPoint } from '$lib/geometry/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';

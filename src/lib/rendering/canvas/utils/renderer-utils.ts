@@ -4,7 +4,7 @@
 
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import type { Point2D, Shape, Line, Circle } from '$lib/types';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 
 /**
  * Constants for renderer utilities

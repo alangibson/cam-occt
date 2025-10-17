@@ -7,8 +7,8 @@ import {
     calculateLeadPoints,
     getCachedLeadGeometry,
     hasValidCachedLeads,
-} from './lead-persistence-utils';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+} from './lead-persistence';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import { calculateCutLeads } from '$lib/stores/operations/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, LeadType } from '$lib/types/direction';

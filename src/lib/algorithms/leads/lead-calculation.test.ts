@@ -8,7 +8,7 @@ import { PartType } from '$lib/algorithms/part-detection/part-detection';
 import type { Shape, Point2D } from '$lib/types/geometry';
 import { GeometryType } from '$lib/types/geometry';
 import { convertLeadGeometryToPoints } from './functions';
-import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
+import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 
 describe('calculateLeads', () => {
     // Helper to create a simple line chain

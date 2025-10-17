@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Arc, Circle, Ellipse, Line, Polyline, Shape } from '$lib/types';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
@@ -15,7 +15,7 @@ import { GeometryType } from '$lib/types/geometry';
 import { CutDirection, LeadType } from '$lib/types/direction';
 import { createPolylineFromVertices } from '$lib/geometry/polyline';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import * as pathOptUtils from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
+import * as pathOptUtils from '$lib/cam/cut/cut-optimization-utils';
 import { NormalSide } from '$lib/types/cam';
 
 // Mock crypto.randomUUID
