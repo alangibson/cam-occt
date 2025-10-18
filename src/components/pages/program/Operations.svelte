@@ -17,7 +17,7 @@
         getDefaultLeadInConfig,
         getDefaultLeadOutConfig,
     } from '$lib/config/lead-defaults';
-    import OperationsPanel from './OperationsPanel.svelte';
+    import OperationsPanel from '$components/panels/OperationsPanel.svelte';
     import { DEFAULT_OPTIMIZE_STARTS } from '$lib/cam/cut/defaults';
 
     let operations: Operation[] = [];

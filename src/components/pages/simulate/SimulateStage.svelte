@@ -14,9 +14,9 @@
      * - Original cuts as dashed green reference lines
      * - Automatic fallback to original cuts when no offset exists
      */
-    import AccordionPanel from '../AccordionPanel.svelte';
-    import SimulatePanel from '../SimulatePanel.svelte';
-    import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
+    import AccordionPanel from '$components/panels/AccordionPanel.svelte';
+    import SimulatePanel from '$components/panels/SimulatePanel.svelte';
+    import ThreeColumnLayout from '$components/layout/ThreeColumnLayout.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { cutStore } from '$lib/stores/cuts/store';
@@ -56,7 +56,7 @@
     import { LeadType } from '$lib/cam/lead/enums';
     import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
-    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
+    import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
     import { getToolFeedRate } from '$lib/config/units/tool-units';
     import { Unit } from '$lib/config/units/units';
     import {

@@ -1,13 +1,13 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
-    import Operations from '../Operations.svelte';
-    import Cuts from '../Cuts.svelte';
-    import AccordionPanel from '../AccordionPanel.svelte';
-    import InspectPanel from '../InspectPanel.svelte';
-    import PartsPanel from '../PartsPanel.svelte';
-    import ChainsPanel from '../ChainsPanel.svelte';
-    import OptimizePanel from '../OptimizePanel.svelte';
+    import ThreeColumnLayout from '$components/layout/ThreeColumnLayout.svelte';
+    import Operations from './Operations.svelte';
+    import Cuts from './Cuts.svelte';
+    import AccordionPanel from '$components/panels/AccordionPanel.svelte';
+    import InspectPanel from '$components/panels/InspectPanel.svelte';
+    import PartsPanel from '$components/panels/PartsPanel.svelte';
+    import ChainsPanel from '$components/panels/ChainsPanel.svelte';
+    import OptimizePanel from '$components/panels/OptimizePanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
@@ -24,8 +24,8 @@
     } from '$lib/stores/rapids/functions';
     import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
     import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
-    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
-    import ShowPanel from '../ShowPanel.svelte';
+    import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
+    import ShowPanel from '$components/panels/ShowPanel.svelte';
     import { applyAutoPreprocessing } from '$lib/preprocessing/auto-preprocess';
     import { settingsStore } from '$lib/stores/settings/store';
 

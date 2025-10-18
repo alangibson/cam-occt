@@ -1,6 +1,6 @@
 <script lang="ts">
-    import GCodeExport from '../GCodeExport.svelte';
-    import AccordionPanel from '../AccordionPanel.svelte';
+    import GCodeExport from './GCodeExport.svelte';
+    import AccordionPanel from '$components/panels/AccordionPanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import type { CuttingParameters } from '$lib/cam/gcode-generator/interfaces';

@@ -1,10 +1,10 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import WorkflowBreadcrumbs from '../components/WorkflowBreadcrumbs.svelte';
-    import WorkflowContainer from '../components/WorkflowContainer.svelte';
-    import Footer from '../components/Footer.svelte';
-    import ToolTable from '../components/ToolTable.svelte';
-    import Settings from '../components/Settings.svelte';
+    import WorkflowBreadcrumbs from '$components/layout/WorkflowBreadcrumbs.svelte';
+    import WorkflowContainer from '$components/layout/WorkflowContainer.svelte';
+    import Footer from '$components/layout/Footer.svelte';
+    import ToolTable from '$components/pages/tool-table/ToolTable.svelte';
+    import Settings from '$components/pages/settings/Settings.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { uiStore } from '$lib/stores/ui/store';
     import { drawingStore } from '$lib/stores/drawing/store';

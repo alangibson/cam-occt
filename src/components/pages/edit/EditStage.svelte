@@ -1,11 +1,11 @@
 <script lang="ts">
-    import ThreeColumnLayout from '../ThreeColumnLayout.svelte';
-    import ToolBar from '../ToolBar.svelte';
-    import LayersPanel from '../LayersPanel.svelte';
-    import InspectPanel from '../InspectPanel.svelte';
-    import AccordionPanel from '../AccordionPanel.svelte';
-    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
-    import ShowPanel from '../ShowPanel.svelte';
+    import ThreeColumnLayout from '$components/layout/ThreeColumnLayout.svelte';
+    import ToolBar from './ToolBar.svelte';
+    import LayersPanel from '$components/panels/LayersPanel.svelte';
+    import InspectPanel from '$components/panels/InspectPanel.svelte';
+    import AccordionPanel from '$components/panels/AccordionPanel.svelte';
+    import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
+    import ShowPanel from '$components/panels/ShowPanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';

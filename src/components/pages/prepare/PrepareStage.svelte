@@ -20,7 +20,7 @@
     } from '$lib/geometry/shape/functions';
     import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
-    import ShowPanel from '../ShowPanel.svelte';
+    import ShowPanel from '$components/panels/ShowPanel.svelte';
     import { partStore } from '$lib/stores/parts/store';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { tessellationStore } from '$lib/stores/tessellation/store';
@@ -29,11 +29,11 @@
     import { settingsStore } from '$lib/stores/settings/store';
     import { getReactiveUnitSymbol } from '$lib/config/units/units';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import AccordionPanel from '../AccordionPanel.svelte';
-    import InspectPanel from '../InspectPanel.svelte';
-    import PartsPanel from '../PartsPanel.svelte';
-    import ChainsPanel from '../ChainsPanel.svelte';
-    import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
+    import AccordionPanel from '$components/panels/AccordionPanel.svelte';
+    import InspectPanel from '$components/panels/InspectPanel.svelte';
+    import PartsPanel from '$components/panels/PartsPanel.svelte';
+    import ChainsPanel from '$components/panels/ChainsPanel.svelte';
+    import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
 
     // Props from WorkflowContainer for shared canvas
     export let sharedCanvas: typeof DrawingCanvasContainer;

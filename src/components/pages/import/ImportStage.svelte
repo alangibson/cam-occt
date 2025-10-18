@@ -1,5 +1,5 @@
 <script lang="ts">
-    import FileImport from '../FileImport.svelte';
+    import FileImport from './FileImport.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { chainStore } from '$lib/stores/chains/store';

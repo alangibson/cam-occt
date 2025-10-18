@@ -24,12 +24,12 @@ vi.mock('$lib/stores/settings/store', () => ({
 /* eslint-disable import/first */
 import WorkflowBreadcrumbs from './WorkflowBreadcrumbs.svelte';
 import WorkflowContainer from './WorkflowContainer.svelte';
-import ImportStage from './stages/ImportStage.svelte';
-import EditStage from './stages/EditStage.svelte';
-import PrepareStage from './stages/PrepareStage.svelte';
-import ProgramStage from './stages/ProgramStage.svelte';
-import SimulateStage from './stages/SimulateStage.svelte';
-import ExportStage from './stages/ExportStage.svelte';
+import ImportStage from '$components/pages/import/ImportStage.svelte';
+import EditStage from '$components/pages/edit/EditStage.svelte';
+import PrepareStage from '$components/pages/prepare/PrepareStage.svelte';
+import ProgramStage from '$components/pages/program/ProgramStage.svelte';
+import SimulateStage from '$components/pages/simulate/SimulateStage.svelte';
+import ExportStage from '$components/pages/export/ExportStage.svelte';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {

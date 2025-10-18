@@ -1,5 +1,5 @@
 <script lang="ts">
-    import DrawingCanvas from './DrawingCanvas.svelte';
+    import DrawingCanvas from '$components/drawing/DrawingCanvas.svelte';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
 
     export let onChainClick: ((chainId: string) => void) | null = null;
