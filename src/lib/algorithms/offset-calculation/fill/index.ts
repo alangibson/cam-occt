@@ -8,7 +8,7 @@ import type {
     GapContext,
     ShapeExtension,
 } from './types';
-import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
 import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
 import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import {

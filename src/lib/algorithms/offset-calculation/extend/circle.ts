@@ -1,5 +1,5 @@
 import type { OperationParams } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
-import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
 import {
     calculateCircleAngle,
     createArcFromCircle,

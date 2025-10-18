@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Arc } from '$lib/geometry/arc';
 import { GeometryType, type Shape } from '$lib/geometry/shape';
-import { TOLERANCE } from '$lib/geometry/math/constants';
+import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 import type { FillOptions } from '$lib/algorithms/offset-calculation/fill/types';
 import { fillArcToIntersection } from './index';
 
@@ -384,7 +384,7 @@ describe('fillArcToIntersection', () => {
         it('should handle machining tolerance precision requirements', () => {
             const arc = createArcShape(0, 0, 10, 0, Math.PI / 2, false);
             // Extension by TOLERANCE units = TOLERANCE/radius radians
-            const angularExtension = TOLERANCE / 10;
+            const angularExtension = MACHINE_TOLERANCE / 10;
             const intersectionPoint = pointOnCircle(
                 0,
                 0,

@@ -1,7 +1,7 @@
 import type { Point2D } from '$lib/geometry/point';
 import type { Line } from '$lib/geometry/line';
 import { EPSILON } from '$lib/geometry/math';
-import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
 import {
     calculateLineParameter,
     pointDistance,

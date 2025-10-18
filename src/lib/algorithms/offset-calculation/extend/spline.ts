@@ -6,7 +6,7 @@ import type { Circle } from '$lib/geometry/circle';
 import type { Ellipse } from '$lib/geometry/ellipse';
 import type { Polyline } from '$lib/geometry/polyline';
 import { EPSILON } from '$lib/geometry/math';
-import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
 import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
 import verb from 'verb-nurbs';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';

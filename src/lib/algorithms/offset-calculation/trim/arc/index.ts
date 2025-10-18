@@ -1,7 +1,7 @@
 import type { Arc } from '$lib/geometry/arc';
 import type { Point2D } from '$lib/geometry/point';
 import type { Shape } from '$lib/geometry/shape';
-import { TOLERANCE } from '$lib/geometry/math/constants';
+import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 import { generateId } from '$lib/domain/id';
 import { pointDistance } from '..';
 import {
@@ -138,7 +138,7 @@ export function trimArc(
             };
 
             // Validate the trimmed arc is not degenerate
-            if (!validateArcAngleRange(trimmedArc, TOLERANCE)) {
+            if (!validateArcAngleRange(trimmedArc, MACHINE_TOLERANCE)) {
                 result.errors.push(
                     'Trimmed arc would be degenerate (zero angular range)'
                 );
@@ -180,7 +180,7 @@ export function trimArc(
     };
 
     // Validate the trimmed arc is not degenerate
-    if (!validateArcAngleRange(trimmedArc, TOLERANCE)) {
+    if (!validateArcAngleRange(trimmedArc, MACHINE_TOLERANCE)) {
         result.errors.push(
             'Trimmed arc would be degenerate (zero angular range)'
         );

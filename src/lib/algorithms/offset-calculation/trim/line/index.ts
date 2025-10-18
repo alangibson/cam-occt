@@ -1,4 +1,4 @@
-import { EPSILON, TOLERANCE } from '$lib/geometry/math/constants';
+import { EPSILON, MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 import type { Line } from '$lib/geometry/line';
 import type { Point2D } from '$lib/geometry/point';
 import type { Shape } from '$lib/geometry/shape';
@@ -55,7 +55,7 @@ export function trimLine(
         Math.abs(lineVec.x * pointVec.y - lineVec.y * pointVec.x) / lineLength;
 
     // Use a more forgiving tolerance for parameter bounds to handle offset precision issues
-    const paramTolerance: number = Math.max(tolerance, TOLERANCE);
+    const paramTolerance: number = Math.max(tolerance, MACHINE_TOLERANCE);
 
     if (
         perpDistance > tolerance ||

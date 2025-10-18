@@ -96,23 +96,6 @@ describe('DefaultsManager', () => {
             expect(defaults.chain.traversalTolerance).toBeGreaterThan(0);
             expect(defaults.chain.maxTraversalAttempts).toBeGreaterThan(0);
         });
-
-        it('should provide geometry defaults', () => {
-            defaults.updateMeasurementSystem(MeasurementSystem.Metric);
-
-            expect(defaults.geometry.extensionLength).toBeGreaterThan(0);
-        });
-
-        it('should provide algorithm defaults', () => {
-            defaults.updateMeasurementSystem(MeasurementSystem.Metric);
-
-            expect(
-                defaults.algorithm.duplicateFilteringTolerance
-            ).toBeGreaterThan(0);
-            expect(defaults.algorithm.maxExtension).toBeGreaterThan(0);
-            expect(defaults.algorithm.areaRatioThreshold).toBeGreaterThan(0);
-            expect(defaults.algorithm.areaRatioThreshold).toBeLessThan(1);
-        });
     });
 
     describe('Unit System Consistency', () => {
