@@ -6,8 +6,6 @@ import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { chainStore } from '$lib/stores/chains/store';
 import { toolStore } from '$lib/stores/tools/store';
-import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
-import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
 import type { DetectedPart } from '$lib/cam/part/interfaces';
 import type { Operation, OperationsStore } from './interfaces';
 import { createCutsFromOperation } from './functions';
@@ -45,9 +43,6 @@ function createOperationsStore(): OperationsStore {
                 (op) => op.id === id
             );
             if (operation) {
-                // Clear existing warnings for this operation before regenerating
-                leadWarningsStore.clearWarningsForOperation(id);
-                offsetWarningsStore.clearWarningsForOperation(id);
                 operationsStore.applyOperation(operation.id);
             }
         },
@@ -55,9 +50,6 @@ function createOperationsStore(): OperationsStore {
         deleteOperation: (id: string) => {
             // Remove all cuts created by this operation
             cutStore.deleteCutsByOperation(id);
-            // Clear any warnings for this operation
-            leadWarningsStore.clearWarningsForOperation(id);
-            offsetWarningsStore.clearWarningsForOperation(id);
             update((operations) => operations.filter((op) => op.id !== id));
         },
 
@@ -115,22 +107,6 @@ function createOperationsStore(): OperationsStore {
                 if (result.cuts.length > 0) {
                     cutStore.addCuts(result.cuts);
                 }
-
-                // Handle warnings
-                result.warnings.forEach((warning) => {
-                    if (warning.clearExistingWarnings) {
-                        offsetWarningsStore.clearWarningsForChain(
-                            warning.chainId
-                        );
-                    }
-                    if (warning.offsetWarnings.length > 0) {
-                        offsetWarningsStore.addWarningsFromChainOffset(
-                            warning.operationId,
-                            warning.chainId,
-                            warning.offsetWarnings
-                        );
-                    }
-                });
 
                 // Check if any cuts exist and mark program stage as complete
                 const cutsState: { cuts: Cut[] } = get(cutStore);

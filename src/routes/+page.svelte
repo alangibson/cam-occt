@@ -16,8 +16,6 @@
     } from '$lib/stores/storage/store';
     import { Unit } from '$lib/config/units/units';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-    import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
-    import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { ImportUnitSetting } from '$lib/config/settings/enums';
 
@@ -48,8 +46,6 @@
 
         // Clear additional stores that aren't cleared by setDrawing
         prepareStageStore.reset();
-        leadWarningsStore.clearAllWarnings();
-        offsetWarningsStore.clearAllWarnings();
 
         // Reset workflow to import stage
         workflowStore.reset();

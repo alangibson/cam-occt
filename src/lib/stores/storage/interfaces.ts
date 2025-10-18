@@ -5,7 +5,6 @@ import type {
     DetectedPart,
     PartDetectionWarning,
 } from '$lib/cam/part/interfaces';
-import type { LeadWarning } from '$lib/stores/lead-warnings/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type {
     TessellationPoint,
@@ -57,9 +56,6 @@ export interface PersistedState {
     // Overlay state
     overlayStage: string;
     overlays: Record<string, DrawingOverlay>;
-
-    // Lead warnings
-    leadWarnings: LeadWarning[];
 
     // Prepare stage state
     prepareStageState: PrepareStageState | null;

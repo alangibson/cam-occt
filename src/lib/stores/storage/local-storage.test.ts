@@ -145,9 +145,6 @@ describe('State Persistence', () => {
             overlayStage: WorkflowStage.PROGRAM,
             overlays: {},
 
-            // Lead warnings
-            leadWarnings: [],
-
             // Prepare stage state
             prepareStageState: {
                 algorithmParams: {
@@ -354,7 +351,6 @@ describe('State Persistence', () => {
             tessellationPoints: [],
             overlayStage: WorkflowStage.IMPORT,
             overlays: {},
-            leadWarnings: [],
             prepareStageState: {
                 algorithmParams: {
                     chainDetection: { tolerance: 0.05 },

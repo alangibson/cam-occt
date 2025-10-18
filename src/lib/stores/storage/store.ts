@@ -32,8 +32,6 @@ import { tessellationStore } from '$lib/stores/tessellation/store';
 import type { TessellationState } from '$lib/stores/tessellation/interfaces';
 import { overlayStore } from '$lib/stores/overlay/store';
 import type { OverlayState } from '$lib/stores/overlay/interfaces';
-import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
-import type { LeadWarning } from '$lib/stores/lead-warnings/interfaces';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
@@ -43,7 +41,6 @@ import { cutStore } from '$lib/stores/cuts/store';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { WarningState } from '$lib/stores/warnings/interfaces';
 import { settingsStore } from '$lib/stores/settings/store';
 import type { SettingsState } from '$lib/config/settings/interfaces';
 
@@ -59,7 +56,6 @@ function collectCurrentState(): PersistedState {
     const ui: UIState = get(uiStore);
     const tessellation: TessellationState = get(tessellationStore);
     const overlay: OverlayState = get(overlayStore);
-    const leadWarnings: WarningState<LeadWarning> = get(leadWarningsStore);
     const prepareStage: PrepareStageState = get(prepareStageStore);
     const operations: Operation[] = get(operationsStore);
     const cuts: CutsState = get(cutStore);
@@ -107,9 +103,6 @@ function collectCurrentState(): PersistedState {
         // Overlay state
         overlayStage: overlay.currentStage,
         overlays: overlay.overlays,
-
-        // Lead warnings
-        leadWarnings: leadWarnings.warnings,
 
         // Prepare stage state
         prepareStageState: prepareStage,
@@ -239,12 +232,6 @@ function restoreStateToStores(state: PersistedState): void {
             });
         }
 
-        // Restore lead warnings
-        leadWarningsStore.clearAllWarnings();
-        state.leadWarnings.forEach((warning) => {
-            leadWarningsStore.addWarning(warning);
-        });
-
         // Restore prepare stage state
         if (state.prepareStageState) {
             // Merge with defaults to ensure all properties exist
@@ -365,7 +352,6 @@ export function resetApplicationToDefaults(): void {
     uiStore.hideToolTable();
     tessellationStore.clearTessellation();
     overlayStore.clearAllOverlays();
-    leadWarningsStore.clearAllWarnings();
     prepareStageStore.reset();
     operationsStore.reset();
     cutStore.reset();
@@ -398,9 +384,6 @@ export function setupAutoSave(): () => void {
     );
     unsubscribers.push(
         overlayStore.subscribe(() => autoSaveApplicationState())
-    );
-    unsubscribers.push(
-        leadWarningsStore.subscribe(() => autoSaveApplicationState())
     );
     unsubscribers.push(
         prepareStageStore.subscribe(() => autoSaveApplicationState())
