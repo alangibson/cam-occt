@@ -7,7 +7,7 @@
  */
 
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';
-import { convertToCurrentSystem } from '$lib/utils/units';
+import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_PIERCE_HEIGHT_MM,
     DEFAULT_CUT_HEIGHT_MM,

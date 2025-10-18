@@ -1,5 +1,5 @@
 import type { BoundingBox } from '$lib/geometry/bounding-box';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import type { GeometryType } from './enums';
 import type { Geometry } from './types';
 

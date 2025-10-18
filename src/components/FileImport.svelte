@@ -3,7 +3,7 @@
     import { parseDXF, applyImportUnitConversion } from '$lib/parsers/dxf';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { settingsStore } from '$lib/stores/settings/store';
-    import { Unit, getUnitSymbol } from '$lib/utils/units';
+    import { Unit, getUnitSymbol } from '$lib/config/units/units';
     import type { Drawing } from '$lib/geometry/shape';
 
     const dispatch = createEventDispatcher();

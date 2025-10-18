@@ -1,4 +1,4 @@
-import type { Unit } from '$lib/utils/units';
+import type { Unit } from '$lib/config/units/units';
 import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Arc } from '$lib/geometry/arc';
 import type { Circle } from '$lib/geometry/circle';

@@ -8,7 +8,7 @@
     import { LeadType } from '$lib/cam/lead/enums';
     import { KerfCompensation } from '$lib/stores/operations/enums';
     import { OptimizeStarts } from '$lib/cam/cut/enums';
-    import { getReactiveUnitSymbol } from '$lib/utils/units';
+    import { getReactiveUnitSymbol } from '$lib/config/units/units';
     import { settingsStore } from '$lib/stores/settings/store';
 
     // Props

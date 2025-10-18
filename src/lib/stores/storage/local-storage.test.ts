@@ -13,7 +13,7 @@ import {
 import { type PersistedState } from './interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import { PartType } from '$lib/cam/part/part-detection';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {

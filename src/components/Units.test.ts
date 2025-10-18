@@ -4,7 +4,7 @@ import { fireEvent, render } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Units from './Units.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 
 describe('Units Component', () => {
     beforeEach(() => {

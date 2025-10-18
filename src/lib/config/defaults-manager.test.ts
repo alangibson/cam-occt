@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';
 import { DefaultsManager } from './defaults-manager';
-import { THOUSANDTHS_PRECISION_FACTOR } from '$lib/utils/units';
+import { THOUSANDTHS_PRECISION_FACTOR } from '$lib/config/units/units';
 import { settingsStore } from '$lib/stores/settings/store';
 
 describe('DefaultsManager', () => {

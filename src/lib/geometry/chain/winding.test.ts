@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { EPSILON } from '$lib/geometry/math';
-import { calculateLineDirectionAndLength } from '$lib/geometry/line';
-import type { Line } from '$lib/geometry/line';
 import type { Point2D } from '$lib/geometry/point';
 import {
     calculatePolygonPerimeter,
@@ -16,7 +14,7 @@ import {
 } from '$lib/geometry/chain';
 import { calculatePolygonArea } from '$lib/geometry/polygon/functions';
 
-describe('Geometry Utils', () => {
+describe('Chain Winding and Properties', () => {
     // Test shapes with known properties
     // Note: Using standard mathematical convention where positive area = CW
     const unitSquareCW: Point2D[] = [
@@ -317,86 +315,6 @@ describe('Geometry Utils', () => {
 
             const area = calculatePolygonArea(negative);
             expect(area).toBeCloseTo(25); // 5 * 5
-        });
-    });
-
-    describe('calculateLineDirectionAndLength', () => {
-        it('calculates direction and length for horizontal line', () => {
-            const line: Line = {
-                start: { x: 0, y: 0 },
-                end: { x: 10, y: 0 },
-            };
-
-            const result = calculateLineDirectionAndLength(line);
-
-            expect(result).not.toBeNull();
-            expect(result!.direction).toEqual({ x: 10, y: 0 });
-            expect(result!.unitDirection).toEqual({ x: 1, y: 0 });
-            expect(result!.length).toBe(10);
-        });
-
-        it('calculates direction and length for vertical line', () => {
-            const line: Line = {
-                start: { x: 0, y: 0 },
-                end: { x: 0, y: 5 },
-            };
-
-            const result = calculateLineDirectionAndLength(line);
-
-            expect(result).not.toBeNull();
-            expect(result!.direction).toEqual({ x: 0, y: 5 });
-            expect(result!.unitDirection).toEqual({ x: 0, y: 1 });
-            expect(result!.length).toBe(5);
-        });
-
-        it('calculates direction and length for diagonal line', () => {
-            const line: Line = {
-                start: { x: 0, y: 0 },
-                end: { x: 3, y: 4 },
-            };
-
-            const result = calculateLineDirectionAndLength(line);
-
-            expect(result).not.toBeNull();
-            expect(result!.direction).toEqual({ x: 3, y: 4 });
-            expect(result!.unitDirection.x).toBeCloseTo(0.6);
-            expect(result!.unitDirection.y).toBeCloseTo(0.8);
-            expect(result!.length).toBe(5);
-        });
-
-        it('returns null for degenerate line (zero length)', () => {
-            const line: Line = {
-                start: { x: 5, y: 5 },
-                end: { x: 5, y: 5 },
-            };
-
-            const result = calculateLineDirectionAndLength(line);
-
-            expect(result).toBeNull();
-        });
-
-        it('returns null for nearly degenerate line (below epsilon)', () => {
-            const line: Line = {
-                start: { x: 0, y: 0 },
-                end: { x: 1e-12, y: 1e-12 },
-            };
-
-            const result = calculateLineDirectionAndLength(line);
-
-            expect(result).toBeNull();
-        });
-
-        it('handles negative coordinates correctly', () => {
-            const line: Line = {
-                start: { x: -2, y: -3 },
-                end: { x: 1, y: 1 },
-            };
-
-            const result = calculateLineDirectionAndLength(line);
-
-            expect(result).not.toBeNull();
-            expect(result!.direction).toEqual({ x: 3, y: 4 });
-            expect(result!.length).toBe(5);
         });
     });
 });

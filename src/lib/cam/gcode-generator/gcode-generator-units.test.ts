@@ -3,7 +3,7 @@ import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/cam/cut-generator/enums';
 import type { Drawing } from '$lib/geometry/shape';
 import type { CutPath } from '$lib/cam/cut-generator/interfaces';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 
 describe('GCode Generator - Units', () => {
     const mockCut: CutPath = {

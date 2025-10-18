@@ -30,8 +30,8 @@ import {
     getToolPierceHeight,
     getToolCutHeight,
     getToolKerfWidth,
-} from '$lib/utils/tool-units';
-import { Unit } from '$lib/utils/units';
+} from '$lib/config/units/tool-units';
+import { Unit } from '$lib/config/units/units';
 
 /**
  * Convert a Cut from the cut store to a ToolPath for G-code generation.

@@ -12,7 +12,7 @@ import {
     saveState,
 } from './local-storage';
 import { type PersistedState } from './interfaces';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 
 // Import all stores
 import { drawingStore } from '$lib/stores/drawing/store';

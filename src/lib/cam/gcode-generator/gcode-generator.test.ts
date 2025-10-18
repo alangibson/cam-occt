@@ -5,7 +5,7 @@ import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { CutPath } from '$lib/cam/cut-generator/interfaces';
 import type { Spline } from '$lib/geometry/spline';
 import { CutterCompensation } from '$lib/cam/cut-generator/enums';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import { generateGCode } from './gcode-generator';
 import type { Circle } from '$lib/geometry/circle';
 

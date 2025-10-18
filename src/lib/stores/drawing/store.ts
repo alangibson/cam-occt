@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Point2D } from '$lib/geometry/point';
-import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
+import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {
     moveShape,

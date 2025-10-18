@@ -22,7 +22,7 @@ import { cutStore } from '$lib/stores/cuts/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { settingsStore } from '$lib/stores/settings/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import type { PersistedState } from './interfaces';
 import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import {

@@ -15,7 +15,7 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/shape';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
-import { Unit } from './units';
+import { Unit } from '$lib/config/units/units';
 import type { Operation } from '$lib/stores/operations/interfaces';
 
 // Mock localStorage

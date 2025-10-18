@@ -12,7 +12,7 @@
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { DetectedPart } from '$lib/cam/part/part-detection';
     import type { Shape } from '$lib/geometry/shape';
-    import { Unit } from '$lib/utils/units';
+    import { Unit } from '$lib/config/units/units';
 
     // Props from parent component
     export let includeComments: boolean = true;

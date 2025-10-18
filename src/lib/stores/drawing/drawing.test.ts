@@ -4,7 +4,7 @@ import { drawingStore } from './store';
 import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Line } from '$lib/geometry/line';
 import type { Point2D } from '$lib/geometry/point';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/shape';
 import { overlayStore } from '$lib/stores/overlay/store';
 import { cutStore } from '$lib/stores/cuts/store';

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import type { Drawing } from '$lib/geometry/shape';
 import { GeometryType } from '$lib/geometry/shape';
 

@@ -14,7 +14,7 @@
         saveApplicationState,
         clearApplicationState,
     } from '$lib/stores/storage/store';
-    import { Unit } from '$lib/utils/units';
+    import { Unit } from '$lib/config/units/units';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
     import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';

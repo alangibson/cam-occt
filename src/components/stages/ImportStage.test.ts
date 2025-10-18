@@ -3,7 +3,7 @@ import { get } from 'svelte/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { drawingStore } from '$lib/stores/drawing/store';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 
 // Mock settings store to return all stages enabled (for testing workflow logic)
 vi.mock('$lib/stores/settings/store', () => ({

@@ -10,7 +10,7 @@ import type { DetectedPart } from '$lib/cam/part/part-detection';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { Cut } from '$lib/cam/cut/interfaces';
 

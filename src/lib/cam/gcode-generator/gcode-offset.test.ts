@@ -3,7 +3,7 @@ import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { CutterCompensation } from '$lib/cam/cut-generator/enums';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Drawing, Shape } from '$lib/geometry/shape';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { GeometryType } from '$lib/geometry/shape';

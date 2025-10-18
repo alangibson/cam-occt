@@ -6,7 +6,7 @@
  */
 
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';
-import { convertToCurrentSystem } from '$lib/utils/units';
+import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_CHAIN_DETECTION_PARAMETERS_MM,
     DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM,

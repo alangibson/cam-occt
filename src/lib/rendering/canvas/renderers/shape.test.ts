@@ -10,7 +10,7 @@ import { GeometryType } from '$lib/geometry/shape';
 import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Line } from '$lib/geometry/line';
 import type { Circle } from '$lib/geometry/circle';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 
 // Mock HTMLCanvasElement for testing

@@ -12,7 +12,7 @@
         MeasurementSystem,
         ImportUnitSetting,
     } from '$lib/stores/settings/interfaces';
-    import { Unit } from '$lib/utils/units';
+    import { Unit } from '$lib/config/units/units';
 
     // Get current settings
     $: settings = $settingsStore.settings;

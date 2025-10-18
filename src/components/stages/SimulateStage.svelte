@@ -57,8 +57,8 @@
     import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
     import DrawingCanvasContainer from '../DrawingCanvasContainer.svelte';
-    import { getToolFeedRate } from '$lib/utils/tool-units';
-    import { Unit } from '$lib/utils/units';
+    import { getToolFeedRate } from '$lib/config/units/tool-units';
+    import { Unit } from '$lib/config/units/units';
     import {
         getCachedLeadGeometry,
         hasValidCachedLeads,

@@ -6,7 +6,7 @@
  */
 
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';
-import { convertToCurrentSystem } from '$lib/utils/units';
+import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_JOIN_COLINEAR_LINES_PARAMETERS_MM,
     DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM,

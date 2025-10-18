@@ -27,7 +27,7 @@
     import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { settingsStore } from '$lib/stores/settings/store';
-    import { getReactiveUnitSymbol } from '$lib/utils/units';
+    import { getReactiveUnitSymbol } from '$lib/config/units/units';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import AccordionPanel from '../AccordionPanel.svelte';
     import InspectPanel from '../InspectPanel.svelte';

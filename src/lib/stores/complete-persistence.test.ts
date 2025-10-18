@@ -18,7 +18,7 @@ import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/shape';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import type { WorkflowState } from '$lib/stores/workflow/interfaces';
-import { Unit } from './units';
+import { Unit } from '$lib/config/units/units';
 
 // Mock localStorage
 const localStorageMock = {

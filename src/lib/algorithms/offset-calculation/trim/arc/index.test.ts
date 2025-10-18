@@ -24,7 +24,12 @@ describe('trimArc', () => {
             const arc = createTestArc();
             const pointOffArc: Point2D = { x: 15, y: 0 }; // Too far from center (radius 15 vs 10)
 
-            const result = trimArc(arc, pointOffArc, 'start', MACHINE_TOLERANCE);
+            const result = trimArc(
+                arc,
+                pointOffArc,
+                'start',
+                MACHINE_TOLERANCE
+            );
 
             expect(result.success).toBe(false);
             expect(result.errors).toContain('Trim point is not on the arc');
@@ -74,7 +79,12 @@ describe('trimArc', () => {
             });
             const pointOutsideArc: Point2D = { x: 0, y: 10 }; // At angle PI/2, outside the arc range
 
-            const result = trimArc(arc, pointOutsideArc, 'start', MACHINE_TOLERANCE);
+            const result = trimArc(
+                arc,
+                pointOutsideArc,
+                'start',
+                MACHINE_TOLERANCE
+            );
 
             // This may succeed or fail depending on the extend implementation
             // The key is that it doesn't throw an error
@@ -118,7 +128,12 @@ describe('trimArc', () => {
                 'start',
                 MACHINE_TOLERANCE
             );
-            const endResult = trimArc(arc, pointOutsideArc, 'end', MACHINE_TOLERANCE);
+            const endResult = trimArc(
+                arc,
+                pointOutsideArc,
+                'end',
+                MACHINE_TOLERANCE
+            );
 
             // Either should succeed or fail gracefully
             expect(typeof startResult.success).toBe('boolean');
@@ -208,7 +223,12 @@ describe('trimArc', () => {
             });
             const pointOutsideArc: Point2D = { x: 0, y: 10 }; // At angle PI/2, outside the arc range
 
-            const result = trimArc(arc, pointOutsideArc, 'start', MACHINE_TOLERANCE);
+            const result = trimArc(
+                arc,
+                pointOutsideArc,
+                'start',
+                MACHINE_TOLERANCE
+            );
 
             expect(result.success).toBe(true);
             expect(result.shape).not.toBeNull();
@@ -230,7 +250,12 @@ describe('trimArc', () => {
             });
             const pointOnArc: Point2D = { x: 10, y: 0 }; // At angle 0
 
-            const result = trimArc(arc, pointOnArc, 'before', MACHINE_TOLERANCE);
+            const result = trimArc(
+                arc,
+                pointOnArc,
+                'before',
+                MACHINE_TOLERANCE
+            );
 
             expect(result.success).toBe(true);
             expect(result.shape).not.toBeNull();

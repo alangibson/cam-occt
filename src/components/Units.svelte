@@ -1,6 +1,6 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { Unit, getUnitSymbol } from '$lib/utils/units';
+    import { Unit, getUnitSymbol } from '$lib/config/units/units';
 
     // Get current display unit from store
     $: displayUnit = $drawingStore.displayUnit;

@@ -3,7 +3,7 @@ import { render, fireEvent } from '@testing-library/svelte';
 import { get } from 'svelte/store';
 import Footer from './Footer.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Drawing } from '$lib/geometry/shape';
 

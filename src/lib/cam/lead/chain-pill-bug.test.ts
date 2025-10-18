@@ -8,7 +8,7 @@ import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
+import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/geometry/shape';
 import type { DetectedPart } from '$lib/cam/part/part-detection';

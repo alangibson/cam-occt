@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { render } from '@testing-library/svelte';
 import DrawingCanvas from './DrawingCanvas.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Drawing, Shape } from '$lib/geometry/shape';
 import type { Ellipse } from '$lib/geometry/ellipse';

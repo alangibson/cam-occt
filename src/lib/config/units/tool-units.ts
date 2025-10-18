@@ -7,7 +7,7 @@
  */
 
 import type { Tool } from '$lib/stores/tools/store';
-import { Unit, convertUnits } from './units';
+import { Unit, convertUnits } from '$lib/config/units/units';
 
 /**
  * Get the feed rate for a tool in the specified display unit

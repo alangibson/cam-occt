@@ -6,7 +6,7 @@
  */
 
 import { MeasurementSystem } from '$lib/stores/settings/interfaces';
-import { convertToCurrentSystem } from '$lib/utils/units';
+import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_LEAD_IN_LENGTH_MM,
     DEFAULT_LEAD_OUT_LENGTH_MM,
