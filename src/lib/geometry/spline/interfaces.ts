@@ -1,4 +1,4 @@
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 
 /**
  * Spline geometry interface representing a NURBS curve

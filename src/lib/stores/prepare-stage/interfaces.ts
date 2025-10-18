@@ -6,7 +6,7 @@
 
 import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
 import type { ChainNormalizationResult } from '$lib/geometry/chain/chain-normalization';
-import type { Shape } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
 export interface PrepareStageState {

@@ -2,7 +2,7 @@
     import type { Operation } from '$lib/stores/operations/interfaces';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { DetectedPart } from '$lib/cam/part/part-detection';
-    import type { Tool } from '$lib/stores/tools/store';
+    import type { Tool } from '$lib/cam/tool/interfaces';
     import { flip } from 'svelte/animate';
     import { CutDirection } from '$lib/cam/cut/enums';
     import { LeadType } from '$lib/cam/lead/enums';

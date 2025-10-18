@@ -1,4 +1,4 @@
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { describe, expect, it } from 'vitest';
 import { generateId } from '$lib/domain/id';
 import type { Chain as ShapeChain } from '$lib/geometry/chain/interfaces';

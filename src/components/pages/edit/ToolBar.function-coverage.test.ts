@@ -3,9 +3,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
-import type { Drawing } from '$lib/geometry/shape';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 // Mock window.prompt
 const mockPrompt = vi.fn();

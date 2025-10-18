@@ -14,7 +14,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Lead Fit Feature', () => {
     // Create a simple test chain (square)

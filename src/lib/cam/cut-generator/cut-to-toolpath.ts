@@ -1,13 +1,14 @@
 import { LeadType } from '$lib/cam/lead/enums';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { CutPath } from './interfaces';
 import type { Lead } from './types';
 import { CutterCompensation } from './enums';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Tool } from '$lib/stores/tools/interfaces';
-import { getShapePoints, GeometryType } from '$lib/geometry/shape';
+import type { Tool } from '$lib/cam/tool/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { getShapePoints } from '$lib/geometry/shape/functions';
 import {
     calculateLeadPoints,
     getCachedLeadGeometry,
@@ -16,7 +17,7 @@ import {
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import {
     CAM_CALCULATION_TOLERANCE_MM,
     DEFAULT_CUT_HEIGHT_MM,

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { Circle } from '$lib/geometry/circle';
-import type { Line } from '$lib/geometry/line';
-import type { Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { OffsetChain } from './types';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';

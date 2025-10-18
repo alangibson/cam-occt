@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { getSplinePointAt, tessellateSpline } from '$lib/geometry/spline';
-import type { Spline } from '$lib/geometry/spline';
+import {
+    getSplinePointAt,
+    tessellateSpline,
+} from '$lib/geometry/spline/functions';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 
 describe('NURBS Evaluation', () => {
     it('should evaluate a simple linear spline', () => {

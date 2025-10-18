@@ -1,9 +1,6 @@
 <script lang="ts">
-    import {
-        toolStore,
-        type Tool,
-        createDefaultTool,
-    } from '$lib/stores/tools/store';
+    import type { Tool } from '$lib/cam/tool/interfaces';
+    import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
     import { onMount } from 'svelte';
 
     let tools: Tool[] = [];

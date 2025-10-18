@@ -4,8 +4,11 @@ import { isShapeClosed } from '$lib/geometry/shape/functions';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
-import type { Polyline } from '$lib/geometry/polyline';
+import {
+    polylineToPoints,
+    polylineToVertices,
+} from '$lib/geometry/polyline/functions';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 
 describe('Comprehensive Closed Polyline with Bulges Test', () => {
     it('should correctly handle closed polylines with bulges end-to-end', async () => {

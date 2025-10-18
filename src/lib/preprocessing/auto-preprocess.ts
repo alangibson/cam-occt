@@ -26,10 +26,10 @@ import {
     type PartDetectionWarning,
 } from '$lib/cam/part/part-detection';
 import { isChainClosed } from '$lib/geometry/chain/functions';
-import { tessellateShape } from '$lib/geometry/shape';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
+    tessellateShape,
 } from '$lib/geometry/shape/functions';
 import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
 import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';

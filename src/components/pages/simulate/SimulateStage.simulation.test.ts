@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 
 // Import the simulation functions - we'll need to extract these from the component
 // For now, let's test the core logic by recreating the key functions

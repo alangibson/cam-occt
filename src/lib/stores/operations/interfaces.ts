@@ -8,7 +8,7 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import type { LeadConfig, Lead } from '$lib/cam/lead/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Shape } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { KerfCompensation } from '$lib/stores/operations/enums';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { OptimizeStarts } from '$lib/cam/cut/enums';

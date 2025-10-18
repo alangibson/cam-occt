@@ -2,12 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createCutsFromOperation } from './functions';
 import type { Operation } from './interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Tool } from '$lib/stores/tools/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
-import type { Shape } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { KerfCompensation } from '$lib/stores/operations/enums';
 
 describe('Optimize Starts for Operations', () => {

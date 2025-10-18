@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { EPSILON } from '$lib/geometry/math';
-import type { Point2D } from '$lib/geometry/point';
+import { EPSILON } from '$lib/geometry/math/constants';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import {
     calculatePolygonPerimeter,
     calculateSignedArea,
@@ -11,7 +11,7 @@ import {
     isCounterClockwise,
     isSimplePolygon,
     reverseWinding,
-} from '$lib/geometry/chain';
+} from '$lib/geometry/chain/functions';
 import { calculatePolygonArea } from '$lib/geometry/polygon/functions';
 
 describe('Chain Winding and Properties', () => {

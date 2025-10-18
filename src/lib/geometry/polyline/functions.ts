@@ -1,11 +1,11 @@
-import type { Shape } from '$lib/geometry/shape';
-import type { Circle } from '$lib/geometry/circle';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Spline } from '$lib/geometry/spline';
-import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { generateId } from '$lib/domain/id';
 import {
     calculateArcPoint,
@@ -13,7 +13,7 @@ import {
     getArcTangent,
 } from '$lib/geometry/arc/functions';
 import { getLineTangent } from '$lib/geometry/line/functions';
-import { EPSILON } from '$lib/geometry/math';
+import { EPSILON } from '$lib/geometry/math/constants';
 import {
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,

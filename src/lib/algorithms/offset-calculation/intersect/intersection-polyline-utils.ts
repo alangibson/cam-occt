@@ -1,10 +1,10 @@
-import type { Line } from '$lib/geometry/line';
-import type { Polyline } from '$lib/geometry/polyline';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import { processVerbIntersectionResults } from './verb-integration-utils';
 import { createVerbCurveFromLine } from '$lib/geometry/line/nurbs';
-import { INTERSECTION_TOLERANCE } from '$lib/geometry/math';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 import { createSegmentLine } from '$lib/geometry/line/functions';
 import verb from 'verb-nurbs';
 

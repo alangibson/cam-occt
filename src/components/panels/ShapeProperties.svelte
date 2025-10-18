@@ -1,18 +1,19 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { type Shape, GeometryType } from '$lib/geometry/shape';
-    import type { Point2D } from '$lib/geometry/point';
-    import type { Line } from '$lib/geometry/line';
-    import type { Arc } from '$lib/geometry/arc';
-    import type { Circle } from '$lib/geometry/circle';
-    import type { Polyline } from '$lib/geometry/polyline';
-    import type { Ellipse } from '$lib/geometry/ellipse';
-    import type { Spline } from '$lib/geometry/spline';
+    import type { Shape } from '$lib/geometry/shape/interfaces';
+    import { GeometryType } from '$lib/geometry/shape/enums';
+    import type { Point2D } from '$lib/geometry/point/interfaces';
+    import type { Line } from '$lib/geometry/line/interfaces';
+    import type { Arc } from '$lib/geometry/arc/interfaces';
+    import type { Circle } from '$lib/geometry/circle/interfaces';
+    import type { Polyline } from '$lib/geometry/polyline/interfaces';
+    import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+    import type { Spline } from '$lib/geometry/spline/interfaces';
     import {
         getShapeStartPoint,
         getShapeEndPoint,
     } from '$lib/geometry/shape/functions';
-    import { polylineToPoints } from '$lib/geometry/polyline';
+    import { polylineToPoints } from '$lib/geometry/polyline/functions';
 
     $: drawing = $drawingStore.drawing;
     $: selectedShapes = $drawingStore.selectedShapes;

@@ -4,7 +4,8 @@ import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { validateLeadConfiguration } from './lead-validation';
 
 describe('Lead Validation Pipeline', () => {

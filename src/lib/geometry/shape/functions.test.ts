@@ -20,47 +20,74 @@ import {
 import { GeometryType } from './enums';
 import type { Shape } from './interfaces';
 import type { Geometry } from './types';
-import type { Line } from '$lib/geometry/line';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Spline } from '$lib/geometry/spline';
-import type { Circle } from '$lib/geometry/circle';
-import type { Arc } from '$lib/geometry/arc';
-import type { Polyline } from '$lib/geometry/polyline';
-import { generateCirclePoints } from '$lib/geometry/circle';
-import { generateArcPoints } from '$lib/geometry/arc';
-import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { generateCirclePoints } from '$lib/geometry/circle/functions';
+import { generateArcPoints } from '$lib/geometry/arc/functions';
+import {
+    polylineToPoints,
+    polylineToVertices,
+} from '$lib/geometry/polyline/functions';
 import {
     tessellateEllipse,
     getEllipsePointAt,
     calculateEllipsePoint,
-} from '$lib/geometry/ellipse';
-import { tessellateSpline, getSplinePointAt } from '$lib/geometry/spline';
+} from '$lib/geometry/ellipse/functions';
+import {
+    tessellateSpline,
+    getSplineStartPoint,
+    getSplineEndPoint,
+} from '$lib/geometry/spline/functions';
 
 // Mock the dependencies
-vi.mock('$lib/geometry/spline', () => ({
-    tessellateSpline: vi.fn(),
-    getSplinePointAt: vi.fn(),
-}));
+vi.mock('$lib/geometry/spline/functions', async (importOriginal) => {
+    const original = (await importOriginal()) as Record<string, unknown>;
+    return {
+        ...original,
+        tessellateSpline: vi.fn(),
+        getSplineStartPoint: vi.fn(),
+        getSplineEndPoint: vi.fn(),
+    };
+});
 
-vi.mock('$lib/geometry/ellipse', () => ({
-    tessellateEllipse: vi.fn(),
-    ELLIPSE_TESSELLATION_POINTS: 64,
-    getEllipsePointAt: vi.fn(),
-    calculateEllipsePoint: vi.fn(),
-}));
+vi.mock('$lib/geometry/ellipse/functions', async (importOriginal) => {
+    const original = (await importOriginal()) as Record<string, unknown>;
+    return {
+        ...original,
+        tessellateEllipse: vi.fn(),
+        getEllipsePointAt: vi.fn(),
+        calculateEllipsePoint: vi.fn(),
+    };
+});
 
-vi.mock('$lib/geometry/polyline', () => ({
-    polylineToPoints: vi.fn(),
-    polylineToVertices: vi.fn(),
-}));
+vi.mock('$lib/geometry/polyline/functions', async (importOriginal) => {
+    const original = (await importOriginal()) as Record<string, unknown>;
+    return {
+        ...original,
+        polylineToPoints: vi.fn(),
+        polylineToVertices: vi.fn(),
+    };
+});
 
-vi.mock('$lib/geometry/arc', () => ({
-    generateArcPoints: vi.fn(),
-}));
+vi.mock('$lib/geometry/arc/functions', async (importOriginal) => {
+    const original = (await importOriginal()) as Record<string, unknown>;
+    return {
+        ...original,
+        generateArcPoints: vi.fn(),
+    };
+});
 
-vi.mock('$lib/geometry/circle', () => ({
-    generateCirclePoints: vi.fn(),
-}));
+vi.mock('$lib/geometry/circle/functions', async (importOriginal) => {
+    const original = (await importOriginal()) as Record<string, unknown>;
+    return {
+        ...original,
+        generateCirclePoints: vi.fn(),
+    };
+});
 
 // Helper function to create test circle
 function createCircle(x: number, y: number, radius: number): Shape {
@@ -1508,7 +1535,10 @@ describe('isShapeClosed', () => {
         };
 
         // Mock NURBS evaluation to fail
-        vi.mocked(getSplinePointAt).mockImplementation(() => {
+        vi.mocked(getSplineStartPoint).mockImplementation(() => {
+            throw new Error('NURBS evaluation failed');
+        });
+        vi.mocked(getSplineEndPoint).mockImplementation(() => {
             throw new Error('NURBS evaluation failed');
         });
 

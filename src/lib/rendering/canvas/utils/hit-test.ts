@@ -2,23 +2,23 @@
  * Hit testing types and utilities for canvas rendering
  */
 
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
-import type { Circle } from '$lib/geometry/circle';
-import type { Arc } from '$lib/geometry/arc';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Spline } from '$lib/geometry/spline';
-import { tessellateSpline } from '$lib/geometry/spline';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { tessellateSpline } from '$lib/geometry/spline/functions';
 import {
     isFullEllipse,
     distanceFromEllipsePerimeter,
     transformPointToEllipseCoordinates,
-} from '$lib/geometry/ellipse/index';
+} from '$lib/geometry/ellipse/functions';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
-import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 /**
  * Types of objects that can be hit

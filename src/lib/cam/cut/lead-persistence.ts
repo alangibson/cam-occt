@@ -9,7 +9,7 @@
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { type LeadConfig, type LeadResult } from '$lib/cam/lead/interfaces';
 import { LeadType } from '$lib/cam/lead/enums';

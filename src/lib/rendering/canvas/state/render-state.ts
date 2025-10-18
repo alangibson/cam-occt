@@ -2,14 +2,15 @@
  * Centralized render state for the canvas rendering pipeline
  */
 
-import type { Drawing, Shape } from '$lib/geometry/shape';
-import type { Point2D } from '$lib/geometry/point';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
-import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+import type { Rapid } from '$lib/cam/rapid/interfaces';
 import { Unit } from '$lib/config/units/units';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { Cut } from '$lib/cam/cut/interfaces';

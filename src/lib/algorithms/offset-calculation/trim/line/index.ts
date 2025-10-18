@@ -1,10 +1,12 @@
 import { EPSILON, MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { generateId } from '$lib/domain/id';
-import { pointDistance } from '..';
-import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
+import {
+    pointDistance,
+    calculateLineParameter,
+} from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     type KeepSide,
     type TrimResult,

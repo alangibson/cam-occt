@@ -1,31 +1,31 @@
 import type { Shape } from './interfaces';
-import type { Circle } from '$lib/geometry/circle';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
     generateCirclePoints,
     getCircleEndPoint,
     getCirclePointAt,
     getCircleStartPoint,
     reverseCircle,
-} from '$lib/geometry/circle';
+} from '$lib/geometry/circle/functions';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import {
-    type Arc,
     generateArcPoints,
     getArcEndPoint,
     getArcPointAt,
     getArcStartPoint,
     reverseArc,
-} from '$lib/geometry/arc';
+} from '$lib/geometry/arc/functions';
 import {
     getLineEndPoint,
     getLinePointAt,
     getLineStartPoint,
     reverseLine,
-} from '$lib/geometry/line';
+} from '$lib/geometry/line/functions';
 import { GeometryType } from './enums';
 import {
     createAdaptiveTessellationConfig,
@@ -33,11 +33,9 @@ import {
     getSplinePointAt,
     getSplineStartPoint,
     reverseSpline,
-    SPLINE_TESSELLATION_TOLERANCE,
     tessellateSpline,
-} from '$lib/geometry/spline';
+} from '$lib/geometry/spline/functions';
 import {
-    ELLIPSE_TESSELLATION_POINTS,
     generateEllipsePoints,
     getEllipseEndPoint,
     getEllipsePointAt,
@@ -46,7 +44,9 @@ import {
     reverseEllipse,
     tessellateEllipse,
     calculateEllipsePoint,
-} from '$lib/geometry/ellipse/index';
+    calculateEllipsePoint2,
+} from '$lib/geometry/ellipse/functions';
+import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
 import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import {
@@ -56,7 +56,8 @@ import {
     polylineToPoints,
     polylineToVertices,
     reversePolyline,
-} from '$lib/geometry/polyline';
+    calculatePolylineLength,
+} from '$lib/geometry/polyline/functions';
 import {
     DEFAULT_TESSELLATION_SEGMENTS,
     MIDPOINT_T,
@@ -68,18 +69,19 @@ import {
     normalizeVector,
     roundToDecimalPlaces,
 } from '$lib/geometry/math/functions';
-import { calculatePolylineLength } from '$lib/geometry/polyline/functions';
 import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import {
     CHAIN_CLOSURE_TOLERANCE,
     POLYGON_POINTS_MIN,
-} from '$lib/geometry/chain';
+} from '$lib/geometry/chain/constants';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/geometric-containment';
 import { LEAD_SEGMENT_COUNT } from '$lib/geometry/line/constants';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
-import { MIN_SPLINE_SAMPLES } from '$lib/geometry/spline/constants';
-import { calculateEllipsePoint2 } from '$lib/geometry/ellipse/functions';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
+import {
+    MIN_SPLINE_SAMPLES,
+    SPLINE_TESSELLATION_TOLERANCE,
+} from '$lib/geometry/spline/constants';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import {
     splitArcAtMidpoint,

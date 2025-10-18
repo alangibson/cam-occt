@@ -1,4 +1,4 @@
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { get } from 'svelte/store';
 import { describe, expect, it } from 'vitest';
 import type { Chain } from '$lib/geometry/chain/interfaces';

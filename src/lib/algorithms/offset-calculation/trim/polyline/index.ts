@@ -1,15 +1,12 @@
 import { EPSILON } from '$lib/geometry/math/constants';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import {
-    MIN_VERTICES_FOR_POLYLINE,
-    type PolylineVertex,
-    type Polyline,
     createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
-} from '$lib/geometry/polyline';
-import type { Shape } from '$lib/geometry/shape';
+} from '$lib/geometry/polyline/functions';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { generateId } from '$lib/domain/id';
 import {
     type KeepSide,
@@ -20,6 +17,11 @@ import {
     DEFAULT_ARRAY_NOT_FOUND_INDEX,
     TOLERANCE_RELAXATION_MULTIPLIER,
 } from '$lib/geometry/constants';
+import type {
+    Polyline,
+    PolylineVertex,
+} from '$lib/geometry/polyline/interfaces';
+import { MIN_VERTICES_FOR_POLYLINE } from '$lib/geometry/polyline/constants';
 
 /**
  * Create a line segment from polyline points at given index

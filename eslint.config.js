@@ -5,6 +5,7 @@ import eslintPluginPrettier from "eslint-plugin-prettier";
 import eslintConfigPrettier from "eslint-config-prettier";
 import eslintPluginSvelte from "eslint-plugin-svelte";
 import svelteParser from "svelte-eslint-parser";
+import noBarrelFiles from "eslint-plugin-no-barrel-files";
 
 export default [
   // Globally ignored files
@@ -31,6 +32,7 @@ export default [
   ...tseslint.configs.recommended,
   ...eslintPluginSvelte.configs["flat/recommended"],
   eslintConfigPrettier,
+  noBarrelFiles.flat,
   // Custom (Type/Java)script file treatment
   {
     files: ["src/**/*.js", "src/**/*.ts"],
@@ -111,6 +113,14 @@ export default [
         {
           "selector": "TSImportType",
           "message": "Type-only import() expressions are not allowed.",
+        },
+        {
+          "selector": "ExportAllDeclaration",
+          "message": "export * from syntax is not allowed. Import and re-export separately.",
+        },
+        {
+          "selector": "ExportNamedDeclaration[source]",
+          "message": "export { ... } from syntax is not allowed. Import and re-export separately.",
         },
       ],
       "prettier/prettier": ["error", {}, { "usePrettierrc": true }],

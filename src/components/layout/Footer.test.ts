@@ -4,8 +4,8 @@ import { render, waitFor } from '@testing-library/svelte';
 import Footer from './Footer.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
-import type { Drawing } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { calculateDrawingSize } from '$lib/algorithms/drawing-size/drawing-size';
 
 // Mock the drawing size calculation

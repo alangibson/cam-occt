@@ -19,7 +19,7 @@
  * This normal is used by both cut visualization and lead placement.
  */
 
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { CutDirection, NormalSide } from './enums';
@@ -32,7 +32,7 @@ import {
     isPointInsidePart,
     isPointInsideChainExact,
 } from '$lib/geometry/chain/point-in-chain';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import { isChainShellInPart } from '$lib/cam/lead/part-lookup-utils';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 

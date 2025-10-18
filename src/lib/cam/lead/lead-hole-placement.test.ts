@@ -8,12 +8,12 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Line } from '$lib/geometry/line';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/geometry/shape';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Hole Placement Fix', () => {

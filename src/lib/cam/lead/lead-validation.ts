@@ -6,9 +6,9 @@ import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import {
     GEOMETRIC_PRECISION_TOLERANCE,
     HALF_PERCENT,
-} from '$lib/geometry/math';
-import { FULL_CIRCLE_DEG } from '$lib/geometry/circle';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
+} from '$lib/geometry/math/constants';
+import { FULL_CIRCLE_DEG } from '$lib/geometry/circle/constants';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain/constants';
 import type { LeadsConfig, LeadValidationResult } from './interfaces';
 import {
     MINIMUM_SHELL_DISTANCE_MM,

@@ -1,6 +1,6 @@
-import type { Line } from '$lib/geometry/line';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import {
     type SegmentPosition,

@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Line } from '$lib/geometry/line';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
     findEllipseIntersections,
     findEllipseGenericIntersections,
 } from './index';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('ellipse intersection edge cases and uncovered branches', () => {
     const createEllipseShape = (ellipse: Ellipse): Shape => ({

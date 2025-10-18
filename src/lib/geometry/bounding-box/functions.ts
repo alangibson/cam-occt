@@ -1,20 +1,20 @@
-import type { Shape } from '$lib/geometry/shape';
-import type { Circle } from '$lib/geometry/circle';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
-import type { Arc } from '$lib/geometry/arc';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { BoundingBox } from './interfaces';
-import { GeometryType } from '$lib/geometry/shape';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
+import { tessellateSpline } from '$lib/geometry/spline/functions';
 import {
     VALIDATION_SAMPLE_COUNT,
     SPLINE_TESSELLATION_TOLERANCE,
-    tessellateSpline,
-} from '$lib/geometry/spline';
-import { calculateArcPoint } from '$lib/geometry/arc';
+} from '$lib/geometry/spline/constants';
+import { calculateArcPoint } from '$lib/geometry/arc/functions';
 import { THREE_HALVES_PI } from './constants';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import type { Chain } from '$lib/geometry/chain/interfaces';

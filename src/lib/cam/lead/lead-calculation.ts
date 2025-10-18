@@ -1,5 +1,5 @@
-import type { Point2D } from '$lib/geometry/point';
-import type { Arc } from '$lib/geometry/arc';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { CutDirection } from '$lib/cam/cut/enums';
@@ -15,8 +15,8 @@ import {
     HALF_PERCENT,
     QUARTER_PERCENT,
     THREE_QUARTERS_PERCENT,
-} from '$lib/geometry/math';
-import { HALF_CIRCLE_DEG } from '$lib/geometry/circle';
+} from '$lib/geometry/math/constants';
+import { HALF_CIRCLE_DEG } from '$lib/geometry/circle/constants';
 import {
     OCTAGON_SIDES,
     SMALL_ANGLE_INCREMENT_DEG,
@@ -32,7 +32,7 @@ import {
     isChainClosed,
 } from '$lib/geometry/chain/functions';
 import { isChainHoleInPart, isChainShellInPart } from './part-lookup-utils';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import type {
     LeadConfig,
     LeadResult,

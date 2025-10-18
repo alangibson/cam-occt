@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import type { Arc } from '$lib/geometry/arc';
-import type { Line } from '$lib/geometry/line';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
 import { findLineArcIntersections } from './index';
 
 describe('Line-Arc Extension Intersections', () => {

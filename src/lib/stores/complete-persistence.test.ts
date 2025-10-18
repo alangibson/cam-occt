@@ -15,7 +15,7 @@ import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import type { WorkflowState } from '$lib/stores/workflow/interfaces';
 import { Unit } from '$lib/config/units/units';

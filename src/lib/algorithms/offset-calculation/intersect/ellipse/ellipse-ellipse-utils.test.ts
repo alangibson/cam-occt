@@ -1,7 +1,7 @@
 import verb from 'verb-nurbs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 import {
@@ -13,6 +13,7 @@ import {
 } from './';
 import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 // VerbCurve interface for testing
 interface VerbCurve {
@@ -34,10 +35,12 @@ vi.mock('verb-nurbs', () => ({
 }));
 
 // Mock verb integration utils
-vi.mock('../verb-integration-utils', () => ({
-    processVerbIntersectionResults: vi.fn(),
-    INTERSECTION_TOLERANCE: 0.01,
-}));
+vi.mock(
+    '$lib/algorithms/offset-calculation/intersect/verb-integration-utils',
+    () => ({
+        processVerbIntersectionResults: vi.fn(),
+    })
+);
 
 // Mock ellipse nurbs utils
 vi.mock('$lib/geometry/ellipse/nurbs', () => ({

@@ -11,7 +11,7 @@
  */
 
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,
@@ -21,8 +21,9 @@ import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import { isChainClosed, CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
-import type { BoundingBox } from '$lib/geometry/bounding-box';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
+import { isChainClosed } from '$lib/geometry/chain/functions';
+import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type { PartDetectionParameters } from './interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';

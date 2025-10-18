@@ -5,10 +5,10 @@ import {
 } from './cut-optimization-utils';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';

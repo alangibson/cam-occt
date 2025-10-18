@@ -15,7 +15,7 @@ import { isChainClosed } from '$lib/geometry/chain/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { BoundingBox } from '$lib/geometry/bounding-box';
+import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 
 const problematicChains = [
     'chain-34',

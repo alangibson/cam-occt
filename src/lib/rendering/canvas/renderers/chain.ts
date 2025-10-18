@@ -9,7 +9,7 @@
 import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import {
     HitTestType,
@@ -18,6 +18,7 @@ import {
 import { getChainById } from '$lib/stores/chains/functions';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import {
     getChainTangent,
     tessellateChain,
@@ -186,7 +187,7 @@ export class ChainRenderer extends BaseRenderer {
             // Draw all shapes in the chain
             for (const chainShape of chain.shapes) {
                 const shape = state.drawing?.shapes.find(
-                    (s) => s.id === chainShape.id
+                    (s: Shape) => s.id === chainShape.id
                 );
                 if (shape) {
                     drawShape(ctx, shape);

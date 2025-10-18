@@ -16,7 +16,7 @@
 
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
@@ -28,17 +28,7 @@ import {
 import { getChainEndPoint } from '$lib/geometry/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
-
-/**
- * Rapids are the non-cutting movements that connect cuts.
- * They represent tool movement without cutting.
- */
-export interface Rapid {
-    id: string;
-    start: Point2D;
-    end: Point2D;
-    type: 'rapid';
-}
+import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 /**
  * Result of the cut order optimization

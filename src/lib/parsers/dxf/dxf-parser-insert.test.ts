@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { Line } from '$lib/geometry/line';
+import type { Line } from '$lib/geometry/line/interfaces';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 
 describe('DXF Parser - INSERT Entities', () => {
     it('should parse INSERT entities from Blocktest.dxf', async () => {
@@ -34,7 +35,7 @@ describe('DXF Parser - INSERT Entities', () => {
         const squareCenters: Array<{ x: number; y: number; count: number }> =
             [];
 
-        drawing.shapes.forEach((shape) => {
+        drawing.shapes.forEach((shape: Shape) => {
             if (shape.type === 'line') {
                 const line: Line = shape.geometry as Line;
 
@@ -99,7 +100,7 @@ describe('DXF Parser - INSERT Entities', () => {
 
         // Check that we have shapes at different positions (proving transformations work)
         const uniquePositions = new Set();
-        drawing.shapes.forEach((shape) => {
+        drawing.shapes.forEach((shape: Shape) => {
             if (shape.type === 'line') {
                 const line: Line = shape.geometry as Line;
                 const posKey = `${line.start.x.toFixed(2)},${line.start.y.toFixed(2)}`;

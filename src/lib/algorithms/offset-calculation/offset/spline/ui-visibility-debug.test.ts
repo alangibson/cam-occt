@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { offsetSpline } from './spline';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 
 describe('UI visibility debug for offset splines', () => {
     function createSimpleSpline(): Spline {

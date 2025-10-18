@@ -1,10 +1,10 @@
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Line } from '$lib/geometry/line';
-import type { Polyline } from '$lib/geometry/polyline';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { MICRO_TOLERANCE } from '$lib/geometry/constants';
 import { trimArc } from './arc';
 import { trimCircle } from './circle';
@@ -12,8 +12,9 @@ import { trimLine } from './line';
 import { trimPolyline } from './polyline';
 import { trimEllipse } from './ellipse';
 import type { KeepSide, TrimResult } from './types';
-import { polylineToPoints } from '$lib/geometry/polyline';
-import { isNearlyEqual, INTERSECTION_TOLERANCE } from '$lib/geometry/math';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
+import { isNearlyEqual } from '$lib/geometry/math/functions';
 import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 
 /**
@@ -30,9 +31,6 @@ const INTERSECTION_SCORE_APPROXIMATE = 10;
 const INTERSECTION_SCORE_COINCIDENT = 5;
 const INTERSECTION_SCORE_PARAMETER_WEIGHT = 5;
 const INTERSECTION_SCORE_MAX_DISTANCE = 100;
-
-// Re-export shared utilities for backward compatibility
-export { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 
 /**
  * Trimming Module

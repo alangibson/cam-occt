@@ -28,23 +28,27 @@
     import { partStore } from '$lib/stores/parts/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { onMount, onDestroy } from 'svelte';
-    import { type Shape, GeometryType } from '$lib/geometry/shape';
-    import type { Point2D } from '$lib/geometry/point';
-    import type { Line } from '$lib/geometry/line';
-    import type { Arc } from '$lib/geometry/arc';
-    import type { Circle } from '$lib/geometry/circle';
-    import type { Polyline } from '$lib/geometry/polyline';
-    import type { Ellipse } from '$lib/geometry/ellipse';
-    import type { Spline } from '$lib/geometry/spline';
+    import type { Shape } from '$lib/geometry/shape/interfaces';
+    import { GeometryType } from '$lib/geometry/shape/enums';
+    import type { Point2D } from '$lib/geometry/point/interfaces';
+    import type { Line } from '$lib/geometry/line/interfaces';
+    import type { Arc } from '$lib/geometry/arc/interfaces';
+    import type { Circle } from '$lib/geometry/circle/interfaces';
+    import type { Polyline } from '$lib/geometry/polyline/interfaces';
+    import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+    import type { Spline } from '$lib/geometry/spline/interfaces';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { Cut } from '$lib/cam/cut/interfaces';
-    import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
-    import type { Tool } from '$lib/stores/tools/interfaces';
+    import type { Rapid } from '$lib/cam/rapid/interfaces';
+    import type { Tool } from '$lib/cam/tool/interfaces';
     import type { ChainStore } from '$lib/stores/chains/interfaces';
     import type { DrawingState } from '$lib/stores/drawing/interfaces';
     import type { PartStore } from '$lib/stores/parts/interfaces';
-    import { getSplinePointAt, tessellateSpline } from '$lib/geometry/spline';
-    import { polylineToPoints } from '$lib/geometry/polyline';
+    import {
+        getSplinePointAt,
+        tessellateSpline,
+    } from '$lib/geometry/spline/functions';
+    import { polylineToPoints } from '$lib/geometry/polyline/functions';
     import { getShapePointAt } from '$lib/geometry/shape/functions';
     import { calculateLeads } from '$lib/cam/lead/lead-calculation';
     import { type LeadConfig } from '$lib/cam/lead/interfaces';

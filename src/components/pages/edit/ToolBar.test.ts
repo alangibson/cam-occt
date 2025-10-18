@@ -4,8 +4,8 @@ import { render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
-import type { Drawing } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 // Mock window.prompt and window.alert
 Object.defineProperty(window, 'prompt', {

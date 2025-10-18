@@ -1,6 +1,6 @@
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type {
     FillOptions,
     FillResult,
@@ -10,7 +10,7 @@ import type {
 } from './types';
 import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
 import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
-import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     CONFIDENCE_THRESHOLD,
     HIGH_PRECISION_TOLERANCE,

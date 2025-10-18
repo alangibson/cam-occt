@@ -1,6 +1,6 @@
-import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+import type { Rapid } from '$lib/cam/rapid/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Drawing } from '$lib/geometry/shape';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
 import type {
     DetectedPart,
     PartDetectionWarning,
@@ -13,7 +13,7 @@ import type {
 } from '$lib/stores/overlay/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
-import type { Tool } from '$lib/stores/tools/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
 import type { ApplicationSettings } from '$lib/stores/settings/interfaces';
 
 export interface PersistedState {

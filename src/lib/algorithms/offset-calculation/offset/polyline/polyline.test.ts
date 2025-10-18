@@ -1,19 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { offsetPolyline } from './polyline';
-import { GeometryType, type Shape, type Drawing } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '$lib/geometry/polyline';
+} from '$lib/geometry/polyline/functions';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { offsetShape } from '..';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('offsetPolyline', () => {
     const openPolyline: Polyline = createPolylineFromVertices(

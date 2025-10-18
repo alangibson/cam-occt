@@ -9,10 +9,10 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('ADLER Part 5 Cut Direction Analysis', () => {

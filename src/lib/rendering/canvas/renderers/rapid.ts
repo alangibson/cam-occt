@@ -10,7 +10,7 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 
 // Constants for styling

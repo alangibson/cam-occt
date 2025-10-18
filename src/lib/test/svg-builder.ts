@@ -1,28 +1,28 @@
 import verb from 'verb-nurbs';
-import type { Circle } from '$lib/geometry/circle';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
-import type { Arc } from '$lib/geometry/arc';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { VerbCurve } from 'verb-nurbs';
-import { GeometryType } from '$lib/geometry/shape';
-import { tessellateEllipse } from '$lib/geometry/ellipse/index';
-import type { Shape } from '$lib/algorithms/offset-calculation/chain/types';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { tessellateEllipse } from '$lib/geometry/ellipse/functions';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { tessellateVerbCurve } from '$lib/algorithms/offset-calculation/offset/spline/spline';
-import { EPSILON } from '$lib/geometry/math';
+import { EPSILON } from '$lib/geometry/math/constants';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import { polylineToPoints } from '$lib/geometry/polyline';
-import { calculateArcPoint, isArc } from '$lib/geometry/arc';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
+import { calculateArcPoint, isArc } from '$lib/geometry/arc/functions';
 import {
     calculateSplineEndTangent,
     calculateSplineStartTangent,
 } from '$lib/algorithms/offset-calculation/extend/spline';
-import { isLine } from '$lib/geometry/line';
+import { isLine } from '$lib/geometry/line/functions';
 
 // SVG Builder Constants
 const DEFAULT_PADDING = 50;

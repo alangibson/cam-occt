@@ -1,12 +1,12 @@
-import type { Point2D } from '$lib/geometry/point';
-import type { Line } from '$lib/geometry/line';
-import { EPSILON } from '$lib/geometry/math';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import { EPSILON } from '$lib/geometry/math/constants';
 import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
 import {
     calculateLineParameter,
     pointDistance,
 } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
-import { calculateLineDirectionAndLength } from '$lib/geometry/line';
+import { calculateLineDirectionAndLength } from '$lib/geometry/line/functions';
 
 /**
  * Line Extension Module

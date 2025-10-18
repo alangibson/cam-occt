@@ -1,7 +1,7 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
     import { SvelteSet } from 'svelte/reactivity';
-    import type { Shape } from '$lib/geometry/shape';
+    import type { Shape } from '$lib/geometry/shape/interfaces';
 
     $: drawing = $drawingStore.drawing;
 

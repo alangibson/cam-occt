@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest';
-import { EPSILON } from '$lib/geometry/math';
+import { EPSILON } from '$lib/geometry/math/constants';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import type { Arc } from '$lib/geometry/arc';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '$lib/geometry/polyline';
-import type { Shape } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
-import type { Polyline } from '$lib/geometry/polyline';
-import { GeometryType } from '$lib/geometry/shape';
+} from '$lib/geometry/polyline/functions';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
 

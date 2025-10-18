@@ -3,24 +3,22 @@
  * Extracted from ShapeRenderer to avoid code duplication
  */
 
-import type { Shape } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Spline } from '$lib/geometry/spline';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { normalizeAngle } from '$lib/geometry/math/functions';
 import {
-    SPLINE_TESSELLATION_TOLERANCE,
     tessellateSpline,
     createAdaptiveTessellationConfig,
-} from '$lib/geometry/spline';
-import {
-    tessellateEllipse,
-    ELLIPSE_TESSELLATION_POINTS,
-} from '$lib/geometry/ellipse/index';
+} from '$lib/geometry/spline/functions';
+import { tessellateEllipse } from '$lib/geometry/ellipse/functions';
+import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
+import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline/constants';
 
 /**
  * Draw a line shape

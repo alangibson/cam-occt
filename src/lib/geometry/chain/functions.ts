@@ -2,15 +2,16 @@
  * Chain and polygon functions
  */
 
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from './interfaces';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
@@ -18,16 +19,13 @@ import {
     tessellateShape,
     getShapePoints,
 } from '$lib/geometry/shape/functions';
-import {
-    GEOMETRIC_PRECISION_TOLERANCE,
-    calculatePerimeter,
-} from '$lib/geometry/math';
 import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
-import { isEllipseClosed } from '$lib/geometry/ellipse/index';
+import { isEllipseClosed } from '$lib/geometry/ellipse/functions';
 import { WindingDirection } from './enums';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/geometric-containment';
 import {
+    calculatePerimeter,
     calculateDistanceBetweenPoints,
     roundToDecimalPlaces,
 } from '$lib/geometry/math/functions';
@@ -46,6 +44,7 @@ import { getCircleTangent } from '$lib/geometry/circle/functions';
 import { getLineTangent } from '$lib/geometry/line/functions';
 import { getPolylineTangent } from '$lib/geometry/polyline/functions';
 import { getSplineTangent } from '$lib/geometry/spline/functions';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 
 /**
  * Reverses a chain's direction by reversing both the order of shapes

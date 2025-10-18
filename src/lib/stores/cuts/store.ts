@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { Shape } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { CutsState, CutsStore } from './interfaces';
 import { checkProgramStageCompletion } from './functions';

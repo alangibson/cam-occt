@@ -6,10 +6,10 @@
  * falling back to sampling when exact solutions are impractical.
  */
 
-import type { Point2D } from '$lib/geometry/point';
-import type { Spline } from '$lib/geometry/spline';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
-import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
+import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline/constants';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 
 /**

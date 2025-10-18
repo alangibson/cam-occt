@@ -5,7 +5,7 @@
  * Handles coordinate scaling to preserve precision when using Clipper2's integer-based geometry.
  */
 
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { MainModule, Path64, Paths64 } from '$lib/wasm/clipper2z';
 
 /**

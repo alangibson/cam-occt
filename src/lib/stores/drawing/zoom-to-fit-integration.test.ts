@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
 import { drawingStore } from './store';
 import { Unit } from '$lib/config/units/units';
-import type { Drawing } from '$lib/geometry/shape';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Drawing Store Zoom-to-Fit Integration', () => {

@@ -1,6 +1,6 @@
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type {
     FillOptions,
     FillResult,
@@ -12,7 +12,7 @@ import {
     determinePolylineExtensionDirection,
     extendPolylineToPoint,
 } from '$lib/algorithms/offset-calculation/extend/polyline';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
 
 /**
  * Polyline Fill Module

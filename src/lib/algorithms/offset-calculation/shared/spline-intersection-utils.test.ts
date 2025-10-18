@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import verb from 'verb-nurbs';
 import {
@@ -9,7 +9,7 @@ import {
     selectBestIntersectionResult,
     validateSplineForIntersection,
 } from './spline-intersection-utils';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
 import { createExtendedSplineVerb } from '$lib/algorithms/offset-calculation/extend/spline';
@@ -26,10 +26,13 @@ vi.mock('verb-nurbs', () => ({
 }));
 
 // Mock verb integration utils
-vi.mock('../intersect/verb-integration-utils', () => ({
-    processVerbIntersectionResults: vi.fn(),
-    INTERSECTION_TOLERANCE: 0.01,
-}));
+vi.mock(
+    '$lib/algorithms/offset-calculation/intersect/verb-integration-utils',
+    () => ({
+        processVerbIntersectionResults: vi.fn(),
+        INTERSECTION_TOLERANCE: 0.01,
+    })
+);
 
 // Mock spline nurbs utils
 vi.mock('$lib/geometry/spline/nurbs', () => ({
@@ -37,7 +40,7 @@ vi.mock('$lib/geometry/spline/nurbs', () => ({
 }));
 
 // Mock extend/spline
-vi.mock('../extend/spline', () => ({
+vi.mock('$lib/algorithms/offset-calculation/extend/spline', () => ({
     createExtendedSplineVerb: vi.fn(),
 }));
 

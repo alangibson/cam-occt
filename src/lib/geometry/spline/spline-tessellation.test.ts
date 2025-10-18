@@ -1,14 +1,16 @@
 import { beforeAll, describe, expect, it } from 'vitest';
+import type {
+    Spline,
+    SplineTessellationConfig,
+} from '$lib/geometry/spline/interfaces';
 import {
-    type SplineTessellationConfig,
     createAdaptiveTessellationConfig,
     estimateSplineArcLength,
     simplifyTessellatedSpline,
     tessellateSpline,
     validateSplineGeometry,
-    type Spline,
-} from '$lib/geometry/spline';
-import type { Point2D } from '$lib/geometry/point';
+} from '$lib/geometry/spline/functions';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 
 describe('Spline Tessellation', () => {
     // Test splines with known properties

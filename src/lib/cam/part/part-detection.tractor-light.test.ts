@@ -11,7 +11,7 @@ import { isChainClosed } from '$lib/geometry/chain/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Chain as ShapeChain } from '$lib/geometry/chain/interfaces';
-// Shape and Point2D types not needed in this test
+import type { Shape } from '$lib/geometry/shape/interfaces';
 
 function calculateChainGapDistanceTest(chain: ShapeChain): number {
     if (chain.shapes.length === 0) return 0;
@@ -42,7 +42,7 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
 
         // Log shape types for debugging
         const shapeTypes = new Map<string, number>();
-        drawing.shapes.forEach((shape) => {
+        drawing.shapes.forEach((shape: Shape) => {
             const count = shapeTypes.get(shape.type) || 0;
             shapeTypes.set(shape.type, count + 1);
         });

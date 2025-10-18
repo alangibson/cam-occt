@@ -1,6 +1,7 @@
 <script lang="ts">
     import { operationsStore } from '$lib/stores/operations/store';
-    import { toolStore, type Tool } from '$lib/stores/tools/store';
+    import { toolStore } from '$lib/stores/tools/store';
+    import type { Tool } from '$lib/cam/tool/interfaces';
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
     import { onMount } from 'svelte';

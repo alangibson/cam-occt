@@ -6,7 +6,7 @@ import {
     calculatePolygonArea,
     isPointInPolygon,
 } from '$lib/geometry/polygon/functions';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 
 describe('isPointInPolygon', () => {
     it('should detect point inside polygon', () => {

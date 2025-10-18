@@ -1,11 +1,12 @@
 import type { Unit } from '$lib/config/units/units';
-import type { Drawing, Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Point2D } from '$lib/geometry/point';
-import type { Spline } from '$lib/geometry/spline';
-import { GeometryType } from '$lib/geometry/shape';
-import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline/constants';
 import {
     DEFAULT_CUT_HEIGHT_MM,
     DEFAULT_PIERCE_DELAY,

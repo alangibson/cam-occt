@@ -1,5 +1,8 @@
-import type { Point2D } from '$lib/geometry/point';
-import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '$lib/geometry/math';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import {
+    QUARTER_PERCENT,
+    THREE_QUARTERS_PERCENT,
+} from '$lib/geometry/math/constants';
 
 const DEFAULT_ZOOM_MARGIN = 0.1; // 10% margin for zoom-to-fit
 const MAX_ZOOM_SCALE = 5.0; // 500% maximum zoom

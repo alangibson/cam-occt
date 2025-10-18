@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { parseDXF } from '$lib/parsers/dxf';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import {
     detectShapeChains,
     setChainsDirection,
@@ -17,7 +17,7 @@ import { OffsetImplementation } from '$lib/stores/settings/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';
-import type { Shape } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

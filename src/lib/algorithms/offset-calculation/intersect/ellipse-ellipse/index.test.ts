@@ -3,9 +3,9 @@ import {
     findEllipseEllipseIntersections,
     findEllipseEllipseIntersectionsVerb,
 } from './index';
-import type { Shape } from '$lib/geometry/shape';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Ellipse-Ellipse Intersection', () => {
     const createEllipseShape = (

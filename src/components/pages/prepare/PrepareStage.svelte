@@ -13,7 +13,7 @@
     } from '$lib/cam/part/part-detection';
     import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
     import { isChainClosed } from '$lib/geometry/chain/functions';
-    import { tessellateShape } from '$lib/geometry/shape';
+    import { tessellateShape } from '$lib/geometry/shape/functions';
     import {
         getShapeEndPoint,
         getShapeStartPoint,

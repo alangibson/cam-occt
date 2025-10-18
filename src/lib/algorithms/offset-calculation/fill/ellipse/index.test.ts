@@ -1,6 +1,6 @@
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Point2D } from '$lib/geometry/point';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
 import {
@@ -8,6 +8,7 @@ import {
     type FillResult,
 } from '$lib/algorithms/offset-calculation/fill/types';
 import { fillEllipseToIntersection } from './index';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('fillEllipseToIntersection', () => {
     // Helper function to create test ellipses

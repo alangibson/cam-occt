@@ -10,17 +10,18 @@ import {
     getChainCutDirection,
 } from './functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { KerfCompensation } from '$lib/stores/operations/enums';
-import type { Tool } from '$lib/stores/tools/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Operation } from './interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
-import { GeometryType } from '$lib/geometry/shape';
-import { reverseChain } from '$lib/geometry/chain';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { reverseChain } from '$lib/geometry/chain/functions';
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
@@ -29,8 +30,31 @@ import {
 } from '$lib/cam/lead/functions';
 
 // Mock dependencies
-vi.mock('$lib/geometry/chain', () => ({
+vi.mock('$lib/geometry/chain/functions', () => ({
     reverseChain: vi.fn(),
+    getChainStartPoint: vi.fn(
+        (chain) => chain.shapes[0]?.geometry?.start || { x: 0, y: 0 }
+    ),
+    getChainEndPoint: vi.fn((chain) => {
+        const lastShape = chain.shapes[chain.shapes.length - 1];
+        return lastShape?.geometry?.end || { x: 0, y: 0 };
+    }),
+    getChainPoints: vi.fn((chain) =>
+        chain.shapes.flatMap((s: Shape) => [
+            (s.geometry as { start: { x: number; y: number } }).start,
+            (s.geometry as { end: { x: number; y: number } }).end,
+        ])
+    ),
+    tessellateChain: vi.fn((chain) =>
+        chain.shapes.flatMap((s: Shape) => [
+            (s.geometry as { start: { x: number; y: number } }).start,
+            (s.geometry as { end: { x: number; y: number } }).end,
+        ])
+    ),
+    getChainTangent: vi.fn(() => ({ x: 1, y: 0 })),
+}));
+
+vi.mock('$lib/geometry/chain/constants', () => ({
     CHAIN_CLOSURE_TOLERANCE: 0.01,
 }));
 

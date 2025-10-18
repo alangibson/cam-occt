@@ -1,6 +1,6 @@
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Line } from '$lib/geometry/line';
-import type { Arc } from '$lib/geometry/arc';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { createExtendedPolyline } from '$lib/algorithms/offset-calculation/extend/polyline';
 import { createExtendedArc } from '$lib/algorithms/offset-calculation/extend/arc';

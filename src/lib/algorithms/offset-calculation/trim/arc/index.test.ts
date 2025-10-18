@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { trimArc } from './index';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Point2D } from '$lib/geometry/point';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 
 describe('trimArc', () => {

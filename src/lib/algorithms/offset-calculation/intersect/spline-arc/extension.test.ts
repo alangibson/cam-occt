@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Spline } from '$lib/geometry/spline';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { findSplineArcIntersectionsVerb } from './index';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Spline-Arc Extension Intersections', () => {
     test('should find intersection with extended spline', () => {

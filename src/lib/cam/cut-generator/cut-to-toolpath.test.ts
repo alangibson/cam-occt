@@ -1,20 +1,21 @@
 import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Tool } from '$lib/stores/tools/interfaces';
-import type { Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
+import type { Tool } from '$lib/cam/tool/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { CutterCompensation } from './enums';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cutToToolPath, cutsToToolPaths } from './cut-to-toolpath';
-import { GeometryType, getShapePoints } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { getShapePoints } from '$lib/geometry/shape/functions';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 // Mock getShapePoints function
-vi.mock('$lib/geometry/shape', async () => {
-    const actual = await vi.importActual('$lib/geometry/shape');
+vi.mock('$lib/geometry/shape/functions', async () => {
+    const actual = await vi.importActual('$lib/geometry/shape/functions');
     return {
         ...actual,
         getShapePoints: vi.fn(),

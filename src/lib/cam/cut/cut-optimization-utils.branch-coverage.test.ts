@@ -10,7 +10,8 @@ import {
 } from './cut-optimization-utils';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';

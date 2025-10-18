@@ -1,6 +1,6 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
-import { reverseChain } from '$lib/geometry/chain';
+import { reverseChain } from '$lib/geometry/chain/functions';
 import {
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,
@@ -8,9 +8,9 @@ import {
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Shape } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { DetectedPart, PartHole } from '$lib/cam/part/part-detection';
-import type { Tool } from '$lib/stores/tools/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
 import type {
     ChainOffsetResult,
     OffsetCalculation,

@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { drawingStore } from './store';
-import type { Polyline } from '$lib/geometry/polyline';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import {
     createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
-} from '$lib/geometry/polyline';
-import type { Drawing, Shape } from '$lib/geometry/shape';
-import type { Point2D } from '$lib/geometry/point';
+} from '$lib/geometry/polyline/functions';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
 
 describe('Polyline Dragging Bug Fixes', () => {

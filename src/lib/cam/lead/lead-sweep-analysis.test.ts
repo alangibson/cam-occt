@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Circle } from '$lib/geometry/circle';
-import type { Arc } from '$lib/geometry/arc';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';

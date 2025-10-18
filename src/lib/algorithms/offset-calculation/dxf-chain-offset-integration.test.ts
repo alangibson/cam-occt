@@ -2,11 +2,12 @@ import { mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { scaleShape } from '$lib/geometry/shape/functions';
-import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
+import { calculateDynamicTolerance } from '$lib/geometry/bounding-box/functions';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Circle } from '$lib/geometry/circle';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
@@ -34,7 +35,7 @@ async function processDxfFile(
     const physicalScale = getPhysicalScaleFactor(drawing.units, displayUnit);
 
     // Scale shapes first, then calculate tolerance and detect chains on scaled coordinates
-    shapes = shapes.map((shape) =>
+    shapes = shapes.map((shape: Shape) =>
         scaleShape(shape, physicalScale, { x: 0, y: 0 })
     );
 
@@ -56,7 +57,7 @@ async function processDxfFile(
     const outerSvg = new SVGBuilder();
 
     // Draw original shapes in black on both SVGs (already scaled)
-    shapes.forEach((shape) => {
+    shapes.forEach((shape: Shape) => {
         innerSvg.addShape(shape, 'black', 1.5, 'Original');
         outerSvg.addShape(shape, 'black', 1.5, 'Original');
     });

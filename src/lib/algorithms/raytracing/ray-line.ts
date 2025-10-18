@@ -5,8 +5,8 @@
  * without any sampling or approximation
  */
 
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { approxEqual, isBetween } from './utils';

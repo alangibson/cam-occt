@@ -9,8 +9,8 @@ import {
     isEllipseClosed,
     isFullEllipse,
     tessellateEllipse,
-} from '$lib/geometry/ellipse';
-import type { Ellipse } from '$lib/geometry/ellipse';
+} from '$lib/geometry/ellipse/functions';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 
 describe('ellipse-utils', () => {
     // Create test ellipses

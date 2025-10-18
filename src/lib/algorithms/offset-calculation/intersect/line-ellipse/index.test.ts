@@ -1,7 +1,7 @@
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
@@ -9,6 +9,7 @@ import {
     findEllipseLineIntersections,
     findEllipseLineIntersectionsVerb,
 } from './index';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Line-Ellipse Intersections', () => {
     // Helper functions to create test shapes

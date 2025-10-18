@@ -4,9 +4,10 @@ import DrawingCanvas from './DrawingCanvas.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import type { Drawing, Shape } from '$lib/geometry/shape';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 // Mock canvas context
 const mockCanvasContext = {

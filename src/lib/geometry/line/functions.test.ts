@@ -8,8 +8,8 @@ import {
     calculateLineDirectionAndLength,
 } from './functions';
 import type { Line } from './interfaces';
-import type { Point2D } from '$lib/geometry/point';
-import { EPSILON } from '$lib/geometry/math';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { EPSILON } from '$lib/geometry/math/constants';
 
 describe('line functions additional coverage tests', () => {
     describe('onSegment - uncovered branches', () => {

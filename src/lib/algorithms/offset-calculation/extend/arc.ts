@@ -1,5 +1,5 @@
-import type { Point2D } from '$lib/geometry/point';
-import type { Arc } from '$lib/geometry/arc';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
 import {
     DECIMAL_PRECISION,

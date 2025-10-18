@@ -1,5 +1,5 @@
-import type { Shape } from '$lib/geometry/shape';
-import type { Point2D } from '$lib/geometry/point';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection } from './enums';

@@ -1,13 +1,13 @@
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import type { Polyline } from '$lib/geometry/polyline';
-import { EPSILON } from '$lib/geometry/math';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { EPSILON } from '$lib/geometry/math/constants';
 import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
-import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '$lib/geometry/polyline';
+} from '$lib/geometry/polyline/functions';
 
 /**
  * Polyline Extension Module

@@ -1,6 +1,6 @@
-import type { Arc } from '$lib/geometry/arc';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type {
     FillOptions,
     FillResult,
@@ -12,7 +12,7 @@ import {
     extendArcToPoint,
     getArcEndpoint,
 } from '$lib/algorithms/offset-calculation/extend/arc';
-import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     createArcExtensionConfig,
     createArcExtensionOptions,

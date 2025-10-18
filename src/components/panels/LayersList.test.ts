@@ -4,8 +4,8 @@ import { fireEvent, render } from '@testing-library/svelte';
 import LayersList from './LayersList.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
-import type { Drawing } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('LayersList Component', () => {
     beforeEach(() => {

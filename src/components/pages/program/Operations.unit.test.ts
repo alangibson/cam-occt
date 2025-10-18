@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { toolStore } from '$lib/stores/tools/store';
-import type { Tool } from '$lib/stores/tools/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
 import { operationsStore } from '$lib/stores/operations/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';

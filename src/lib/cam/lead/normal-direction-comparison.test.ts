@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Shape } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
 import { getChainTangent } from '$lib/geometry/chain/functions';
 
 /**

@@ -1,10 +1,10 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line/interfaces';
+import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { JoinColinearLinesParameters } from '$lib/preprocessing/algorithm-parameters';
-import { TOLERANCE } from '$lib/geometry/math';
 
 /**
  * Primary function to join collinear lines in chains with configurable parameters
@@ -150,7 +150,7 @@ function collectCollinearLines(
  */
 export function joinColinearLinesInPolyline(
     polyline: Polyline,
-    tolerance: number = TOLERANCE
+    tolerance: number = MACHINE_TOLERANCE
 ): Polyline {
     if (!polyline.shapes || polyline.shapes.length === 0) {
         return polyline;
@@ -203,7 +203,7 @@ export function joinColinearLinesInPolyline(
  */
 export function joinColinearLinesInChains(
     chains: Chain[],
-    tolerance: number = TOLERANCE
+    tolerance: number = MACHINE_TOLERANCE
 ): Chain[] {
     return chains.map((chain) => ({
         ...chain,

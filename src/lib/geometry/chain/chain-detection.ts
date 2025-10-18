@@ -1,10 +1,10 @@
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import { calculateSquaredDistance } from '$lib/geometry/math';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { calculateSquaredDistance } from '$lib/geometry/math/functions';
 import { getShapePoints } from '$lib/geometry/shape/functions';
 import { detectCutDirection } from '$lib/cam/cut/cut-direction';
 import { CutDirection } from '$lib/cam/cut/enums';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
 export interface ChainDetectionOptions {

@@ -5,20 +5,20 @@
  * Provides perfect accuracy for all shape types including arcs, circles, and splines.
  */
 
-import type { Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { RayTracingConfig } from '$lib/algorithms/raytracing/types';
 import { DEFAULT_RAYTRACING_CONFIG } from '$lib/algorithms/raytracing/types';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { createHorizontalRay } from '$lib/algorithms/raytracing/utils';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import {
     countHorizontalRayLineCrossings,
     countRayLineCrossings,

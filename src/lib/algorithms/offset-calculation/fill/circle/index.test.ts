@@ -1,7 +1,7 @@
-import type { Arc } from '$lib/geometry/arc';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Circle } from '$lib/geometry/circle';
-import type { Point2D } from '$lib/geometry/point';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
 import {
@@ -9,6 +9,7 @@ import {
     type FillResult,
 } from '$lib/algorithms/offset-calculation/fill/types';
 import { fillCircleToIntersection } from './index';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('fillCircleToIntersection', () => {
     // Helper function to create test circles

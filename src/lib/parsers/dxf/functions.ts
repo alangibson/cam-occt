@@ -1,25 +1,22 @@
 import { parseString } from 'dxf';
 import { Unit, measurementSystemToUnit } from '$lib/config/units/units';
-import type { Drawing, Shape } from '$lib/geometry/shape';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Point2D } from '$lib/geometry/point';
-import type { PolylineVertex } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { PolylineVertex } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { generateId } from '$lib/domain/id';
-import {
-    MIN_VERTICES_FOR_POLYLINE,
-    generateSegments,
-} from '$lib/geometry/polyline';
-import {
-    normalizeSplineWeights,
-    DEFAULT_SPLINE_DEGREE,
-    MIN_CONTROL_POINTS_FOR_SPLINE,
-} from '$lib/geometry/spline';
+import { generateSegments } from '$lib/geometry/polyline/functions';
+import { normalizeSplineWeights } from '$lib/geometry/spline/functions';
 import { getShapePointsForBounds } from '$lib/geometry/bounding-box/functions';
 import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
-import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
-import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
+import {
+    FULL_CIRCLE_RADIANS,
+    HALF_CIRCLE_DEG,
+} from '$lib/geometry/circle/constants';
+import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line/constants';
 import { transformShape } from '$lib/geometry/shape/functions';
 import {
     DEFAULT_ELLIPSE_START_PARAM,
@@ -30,6 +27,11 @@ import {
 } from './constants';
 import type { ApplicationSettings } from '$lib/stores/settings/interfaces';
 import { ImportUnitSetting } from '$lib/stores/settings/interfaces';
+import {
+    DEFAULT_SPLINE_DEGREE,
+    MIN_CONTROL_POINTS_FOR_SPLINE,
+} from '$lib/geometry/spline/constants';
+import { MIN_VERTICES_FOR_POLYLINE } from '$lib/geometry/polyline/constants';
 
 function updateBounds(
     shape: Shape,

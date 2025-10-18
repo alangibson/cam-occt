@@ -4,11 +4,11 @@ import {
     isChainClosed,
     isChainContainedInChain,
 } from '$lib/geometry/chain/functions';
-import type { Line } from '$lib/geometry/line';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { describe, expect, it } from 'vitest';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import type { Chain } from './interfaces';
 

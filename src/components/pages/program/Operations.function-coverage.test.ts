@@ -13,7 +13,7 @@ import { KerfCompensation } from '$lib/stores/operations/enums';
 import type { PartShell } from '$lib/cam/part/part-detection';
 import { PartType } from '$lib/cam/part/part-detection';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 // Mock DragEvent for jsdom
 interface MockDragEventInit extends EventInit {

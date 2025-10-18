@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Shape } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
-import type { Circle } from '$lib/geometry/circle';
-import { isArc } from '$lib/geometry/arc';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import { isArc } from '$lib/geometry/arc/functions';
 import { PartType } from '$lib/cam/part/part-detection';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 

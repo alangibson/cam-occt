@@ -5,7 +5,7 @@ import Footer from './Footer.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Drawing } from '$lib/geometry/shape';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
 
 describe('Footer Fit Button', () => {
     beforeEach(() => {

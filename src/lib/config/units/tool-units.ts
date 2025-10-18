@@ -6,7 +6,7 @@
  * the correct one based on the current display unit.
  */
 
-import type { Tool } from '$lib/stores/tools/store';
+import type { Tool } from '$lib/cam/tool/interfaces';
 import { Unit, convertUnits } from '$lib/config/units/units';
 
 /**

@@ -1,6 +1,6 @@
-import type { Drawing } from '$lib/geometry/shape';
-import type { BoundingBox } from '$lib/geometry/bounding-box';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 
 export interface DrawingSize {
     width: number;
@@ -22,7 +22,7 @@ export function calculateDrawingSize(
     // Check if the bounds from DXF parser are valid
     const bounds: BoundingBox | undefined = drawing.bounds;
     const isValidBounds: boolean =
-        bounds &&
+        bounds !== undefined &&
         isFinite(bounds.min.x) &&
         isFinite(bounds.min.y) &&
         isFinite(bounds.max.x) &&
@@ -30,7 +30,7 @@ export function calculateDrawingSize(
         bounds.min.x !== bounds.max.x &&
         bounds.min.y !== bounds.max.y;
 
-    if (isValidBounds) {
+    if (isValidBounds && bounds) {
         // Use the bounding box that was already calculated by the DXF parser
         return {
             width: Math.abs(bounds.max.x - bounds.min.x),

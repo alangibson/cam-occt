@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
-import type { Arc } from '$lib/geometry/arc';
-import type { Line } from '$lib/geometry/line';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
 import { readFileSync } from 'fs';
 import path from 'path';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 
 describe('Polyline Decomposition', () => {
     it('should decompose polylines with bulges into lines and arcs', async () => {
@@ -29,9 +30,9 @@ describe('Polyline Decomposition', () => {
         // Note: Arc creation from bulge may not be implemented yet, so this test is flexible
 
         // Original should only contain polylines
-        expect(drawingOriginal.shapes.every((s) => s.type === 'polyline')).toBe(
-            true
-        );
+        expect(
+            drawingOriginal.shapes.every((s: Shape) => s.type === 'polyline')
+        ).toBe(true);
     });
 
     it('should preserve layer information when decomposing', async () => {

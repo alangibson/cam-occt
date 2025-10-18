@@ -14,7 +14,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { Operation } from '$lib/stores/operations/interfaces';

@@ -1,6 +1,6 @@
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type {
     FillOptions,
     FillResult,

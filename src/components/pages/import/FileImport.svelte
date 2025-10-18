@@ -1,10 +1,13 @@
 <script lang="ts">
     import { createEventDispatcher } from 'svelte';
-    import { parseDXF, applyImportUnitConversion } from '$lib/parsers/dxf';
+    import {
+        parseDXF,
+        applyImportUnitConversion,
+    } from '$lib/parsers/dxf/functions';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { Unit, getUnitSymbol } from '$lib/config/units/units';
-    import type { Drawing } from '$lib/geometry/shape';
+    import type { Drawing } from '$lib/cam/drawing/interfaces';
 
     const dispatch = createEventDispatcher();
 
@@ -49,7 +52,7 @@
 
                 if (file.name.toLowerCase().endsWith('.dxf')) {
                     // Parse DXF file
-                    const parsedDrawing = await parseDXF(content);
+                    const parsedDrawing: Drawing = await parseDXF(content);
 
                     // Store original drawing and units before conversion
                     originalDrawing = parsedDrawing;

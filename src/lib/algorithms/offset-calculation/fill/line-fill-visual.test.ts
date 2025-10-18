@@ -1,15 +1,16 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Line } from '$lib/geometry/line';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
 import { SVGBuilder } from '$lib/test/svg-builder';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
 import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Line-Line Gap Fill Visual Validation', { timeout: 180000 }, () => {
     const outputDir = 'tests/output/visual/fill';

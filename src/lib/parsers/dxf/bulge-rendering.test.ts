@@ -1,16 +1,17 @@
 import { describe, expect, it } from 'vitest';
-import { HALF_CIRCLE_DEG } from '$lib/geometry/circle';
+import { HALF_CIRCLE_DEG } from '$lib/geometry/circle/constants';
 import { parseDXF } from './functions';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
-import {
-    type PolylineVertex,
-    type Polyline,
-    polylineToVertices,
-} from '$lib/geometry/polyline';
+import { polylineToVertices } from '$lib/geometry/polyline/functions';
 import { readFileSync } from 'fs';
 import path from 'path';
-import { EPSILON } from '$lib/geometry/math';
-import type { Arc } from '$lib/geometry/arc';
+import { EPSILON } from '$lib/geometry/math/constants';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type {
+    Polyline,
+    PolylineVertex,
+} from '$lib/geometry/polyline/interfaces';
 
 describe('Bulge Rendering Fixes', () => {
     describe('Polylinie.dxf', () => {
@@ -29,7 +30,7 @@ describe('Bulge Rendering Fixes', () => {
 
             // Check if vertices with bulges are preserved
             let totalBulgedVertices = 0;
-            polylines.forEach((polyline) => {
+            polylines.forEach((polyline: Shape) => {
                 const geometry = polyline.geometry as Polyline;
                 const vertices = polylineToVertices(geometry);
                 const bulgedVertices = vertices.filter(
@@ -65,7 +66,7 @@ describe('Bulge Rendering Fixes', () => {
             expect(lines.length).toBeGreaterThan(0);
 
             // Check arc properties
-            arcs.forEach((arc) => {
+            arcs.forEach((arc: Shape) => {
                 const geometry = arc.geometry as Arc;
                 expect(geometry.center).toBeDefined();
                 expect(geometry.radius).toBeGreaterThan(0);
@@ -99,7 +100,7 @@ describe('Bulge Rendering Fixes', () => {
         it('should handle various bulge magnitudes correctly', () => {
             const testBulges = [0.1, 0.5, 1.0, 2.0, -0.1, -0.5, -1.0, -2.0];
 
-            testBulges.forEach((bulge) => {
+            testBulges.forEach((bulge: number) => {
                 // According to AutoCAD DXF specification: bulge = tan(θ/4)
                 // Where θ is the included angle of the arc
                 const includedAngle = 4 * Math.atan(Math.abs(bulge));
@@ -146,13 +147,13 @@ describe('Bulge Rendering Fixes', () => {
             );
 
             // With bulges should only have polylines
-            expect(withBulges.shapes.every((s) => s.type === 'polyline')).toBe(
-                true
-            );
+            expect(
+                withBulges.shapes.every((s: Shape) => s.type === 'polyline')
+            ).toBe(true);
 
             // Decomposed should have mixed types
             const decomposedTypes = new Set(
-                decomposed.shapes.map((s) => s.type)
+                decomposed.shapes.map((s: Shape) => s.type)
             );
             expect(decomposedTypes.size).toBeGreaterThan(1);
         });

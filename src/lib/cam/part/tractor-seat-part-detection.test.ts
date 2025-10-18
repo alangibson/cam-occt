@@ -5,17 +5,18 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Line } from '$lib/geometry/line';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/geometry/shape';
-import type { BoundingBox } from '$lib/geometry/bounding-box';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
 
 describe('Tractor Seat Mount Part Detection', () => {
     it('should detect 1 part with multiple holes for Tractor Seat Mount - Left.dxf', async () => {
@@ -24,7 +25,7 @@ describe('Tractor Seat Mount Part Detection', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // Parse DXF with default options
-        const drawing = await parseDXF(dxfContent);
+        const drawing: Drawing = await parseDXF(dxfContent);
 
         console.log(`Total shapes: ${drawing.shapes.length}`);
         console.log('Shapes by type:', {

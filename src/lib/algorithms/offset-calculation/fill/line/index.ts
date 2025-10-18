@@ -1,6 +1,6 @@
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type {
     FillOptions,
     FillResult,
@@ -13,7 +13,7 @@ import {
 } from '$lib/algorithms/offset-calculation/extend/line';
 import type { LineExtensionResult } from '$lib/algorithms/offset-calculation/extend/line';
 import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
-import { calculateLineDirectionAndLength } from '$lib/geometry/line';
+import { calculateLineDirectionAndLength } from '$lib/geometry/line/functions';
 
 /**
  * Line Fill Module

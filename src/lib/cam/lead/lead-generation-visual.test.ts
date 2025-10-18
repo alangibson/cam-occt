@@ -1,17 +1,17 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { describe, it } from 'vitest';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import type { Shape } from '$lib/geometry/shape';
-import type { Point2D } from '$lib/geometry/point';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Spline } from '$lib/geometry/spline';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
-import { isArc } from '$lib/geometry/arc';
-import { isLine } from '$lib/geometry/line';
+import { isArc } from '$lib/geometry/arc/functions';
+import { isLine } from '$lib/geometry/line/functions';
 import {
     getChainStartPoint,
     getChainEndPoint,

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape';
-import type { Circle } from '$lib/geometry/circle';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Line } from '$lib/geometry/line';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
-import type { Arc } from '$lib/geometry/arc';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 
 // Helper function to create test chains
 function createTestChain(id: string, shapes: Shape[]): Chain {

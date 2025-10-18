@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest';
-import type { Arc } from '$lib/geometry/arc';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/geometry/shape';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { findPolylineArcIntersections } from './index';
 
 describe('Polyline-Arc Extension Intersections', () => {

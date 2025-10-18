@@ -5,9 +5,9 @@ import {
     countPointsInsideChainExact,
     isPointInsideChainExact,
 } from './point-in-chain';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { generateId } from '$lib/domain/id';
 

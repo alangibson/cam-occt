@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import {
-    type Circle,
     generateCirclePoints,
     getCircleEndPoint,
     getCirclePointAt,
     getCircleStartPoint,
     isCircle,
     reverseCircle,
-} from '$lib/geometry/circle';
-import type { Geometry } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
-import type { Arc } from '$lib/geometry/arc';
+} from '$lib/geometry/circle/functions';
+import type { Geometry } from '$lib/geometry/shape/types';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 
 describe('getCircleStartPoint', () => {
     it('should return point at rightmost position of circle', () => {

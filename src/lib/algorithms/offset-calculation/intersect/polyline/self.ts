@@ -1,8 +1,9 @@
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type {
     IntersectionResult,
     PolylineSelfIntersection,
@@ -12,7 +13,7 @@ import {
     type IntersectionType,
     findIntersectionsByType,
 } from '$lib/algorithms/offset-calculation/intersect';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain/constants';
 import { calculatePolylineParameter } from '$lib/algorithms/offset-calculation/intersect/polyline-spline/helpers';
 import { EPSILON } from '$lib/geometry/math/constants';
 

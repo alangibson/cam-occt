@@ -15,8 +15,8 @@ import {
     tessellateArc,
 } from './functions';
 import type { Arc } from './interfaces';
-import type { Geometry } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
+import type { Geometry } from '$lib/geometry/shape/types';
+import type { Line } from '$lib/geometry/line/interfaces';
 
 describe('getArcStartPoint', () => {
     it('should calculate start point for arc at 0 degrees', () => {

@@ -4,9 +4,9 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Direction and Cut Direction Tangency', () => {

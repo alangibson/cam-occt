@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
-import type { Spline } from '$lib/geometry/spline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
 import { offsetShape } from '$lib/algorithms/offset-calculation/offset/index';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';

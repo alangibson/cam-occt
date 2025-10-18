@@ -2,19 +2,20 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import verb from 'verb-nurbs';
 import { beforeAll, describe, it } from 'vitest';
-import { tessellateEllipse } from '$lib/geometry/ellipse/index';
+import { tessellateEllipse } from '$lib/geometry/ellipse/functions';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '$lib/geometry/polyline';
+} from '$lib/geometry/polyline/functions';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Line } from '$lib/geometry/line';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { offsetArc } from '$lib/algorithms/offset-calculation/offset/arc/arc';
 import { offsetEllipse } from '$lib/algorithms/offset-calculation/offset/ellipse/ellipse';
 import { offsetLine } from '$lib/algorithms/offset-calculation/offset/line/line';

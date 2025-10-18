@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Arc } from '$lib/geometry/arc';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 import type { FillOptions } from '$lib/algorithms/offset-calculation/fill/types';
 import { fillArcToIntersection } from './index';

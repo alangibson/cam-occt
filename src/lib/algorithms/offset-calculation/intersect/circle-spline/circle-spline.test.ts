@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { findSplineCircleIntersectionsVerb } from './index';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Circle } from '$lib/geometry/circle';
-import type { Spline } from '$lib/geometry/spline';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Circle-Spline Intersection with Extensions', () => {
     it('should find intersection when spline is extended', () => {

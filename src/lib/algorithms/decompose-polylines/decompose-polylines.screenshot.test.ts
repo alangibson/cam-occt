@@ -1,14 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import { decomposePolylines } from './decompose-polylines';
 import { readFileSync } from 'fs';
 import path from 'path';
-import type { Polyline, PolylineVertex } from '$lib/geometry/polyline';
-import type { Shape } from '$lib/geometry/shape';
-import { EPSILON } from '$lib/geometry/math';
-import type { Arc } from '$lib/geometry/arc';
-import type { Line } from '$lib/geometry/line';
+import type {
+    Polyline,
+    PolylineVertex,
+} from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { EPSILON } from '$lib/geometry/math/constants';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
 
 // Mock canvas for screenshot comparison
 function createTestCanvas(width: number = 800, height: number = 600) {
@@ -182,7 +185,7 @@ describe('Polylinie.dxf Decomposition Visual Test', () => {
         const decomposedShapes = decomposePolylines(originalDrawing.shapes);
 
         // Log shape details for debugging
-        originalDrawing.shapes.forEach((shape) => {
+        originalDrawing.shapes.forEach((shape: Shape) => {
             if (shape.type === 'polyline') {
                 const geom = shape.geometry as Polyline;
                 if (

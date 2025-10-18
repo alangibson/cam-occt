@@ -3,12 +3,13 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { offsetChain, getClipper2 } from './index';
+import { offsetChain } from './index';
+import { getClipper2 } from './clipper-init';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Line } from '$lib/geometry/line';
-import type { Arc } from '$lib/geometry/arc';
-import type { Point2D } from '$lib/geometry/point';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 
 /**
  * Helper to extract all points from a chain's shapes

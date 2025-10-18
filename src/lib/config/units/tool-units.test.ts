@@ -8,7 +8,7 @@ import {
     getToolPlungeRate,
 } from './tool-units';
 import { Unit } from './units';
-import type { Tool } from '$lib/stores/tools/store';
+import type { Tool } from '$lib/cam/tool/interfaces';
 
 describe('Tool Units Utilities', () => {
     const mockTool: Tool = {

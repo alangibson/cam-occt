@@ -2,7 +2,7 @@ import { describe, expect, it, beforeAll } from 'vitest';
 import { readFileSync } from 'fs';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { scaleShape } from '$lib/geometry/shape/functions';
-import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
+import { calculateDynamicTolerance } from '$lib/geometry/bounding-box/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { detectParts } from '$lib/cam/part/part-detection';
@@ -10,11 +10,11 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { DetectedPart } from '$lib/cam/part/part-detection';
 import { calculateLeads } from './lead-calculation';
-import { isArc } from '$lib/geometry/arc';
-import type { Arc } from '$lib/geometry/arc';
+import { isArc } from '$lib/geometry/arc/functions';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 
 describe('Chain-Pill DXF Lead Direction Bug', () => {
     let chains: Chain[];
@@ -32,7 +32,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
         const physicalScale = getPhysicalScaleFactor(drawing.units, Unit.MM);
 
         // Scale shapes
-        shapes = drawing.shapes.map((shape) =>
+        shapes = drawing.shapes.map((shape: Shape) =>
             scaleShape(shape, physicalScale, { x: 0, y: 0 })
         );
 

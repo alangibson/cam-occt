@@ -5,8 +5,9 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { type DetectedPart, PartType } from '$lib/cam/part/part-detection';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Point2D } from '$lib/geometry/point';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Solid Area Avoidance', () => {

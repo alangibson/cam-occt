@@ -1,5 +1,5 @@
 import { PRECISION_DECIMAL_PLACES } from '$lib/geometry/constants';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { EPSILON } from './constants';
 
 /**

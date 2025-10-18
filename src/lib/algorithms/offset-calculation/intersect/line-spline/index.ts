@@ -1,7 +1,7 @@
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import type { Spline } from '$lib/geometry/spline';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import verb, { type CurveCurveIntersection } from 'verb-nurbs';
 import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils.js';
@@ -9,7 +9,7 @@ import { createVerbCurveFromLine } from '$lib/geometry/line/nurbs.js';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs.js';
 import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
-import { DEFAULT_RETRY_COUNT } from '$lib/geometry/spline';
+import { DEFAULT_RETRY_COUNT } from '$lib/geometry/spline/constants';
 import {
     selectBestIntersectionResult,
     validateSplineForIntersection,

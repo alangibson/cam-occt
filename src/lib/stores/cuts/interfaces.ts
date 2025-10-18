@@ -4,7 +4,7 @@
  * Type definitions for cuts and cut-related data.
  */
 
-import type { Shape } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { CutLeadResult } from '$lib/stores/operations/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';

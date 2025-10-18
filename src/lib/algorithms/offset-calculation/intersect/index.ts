@@ -1,10 +1,10 @@
-import type { Circle } from '$lib/geometry/circle';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Line } from '$lib/geometry/line';
-import type { Point2D } from '$lib/geometry/point';
-import type { Polyline } from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 import {
     getShapeEndPoint,
@@ -56,9 +56,6 @@ import { findEllipseArcIntersectionsVerb } from './arc-ellipse/index';
 
 // Import spline-polyline intersection from dedicated module
 import { findSplinePolylineIntersectionsVerb } from './polyline-spline/index';
-
-// Re-export shared utility for backward compatibility
-export { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 
 /**
  * Intersection Detection Module

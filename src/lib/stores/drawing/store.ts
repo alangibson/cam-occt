@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
-import type { Drawing, Shape } from '$lib/geometry/shape';
-import type { Point2D } from '$lib/geometry/point';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {
@@ -8,7 +9,7 @@ import {
     rotateShape,
     scaleShape,
 } from '$lib/geometry/shape/functions';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { DrawingState, DrawingStore } from './interfaces';
 import { resetDownstreamStages } from './functions';
@@ -110,11 +111,13 @@ function createDrawingStore(): DrawingStore {
                 const shapeObj =
                     typeof shapeIdOrShape === 'object'
                         ? shapeIdOrShape
-                        : state.drawing.shapes.find((s) => s.id === shapeId);
+                        : state.drawing.shapes.find(
+                              (s: Shape) => s.id === shapeId
+                          );
 
                 // Check if this is an original shape (in drawing.shapes)
                 const isOriginalShape = state.drawing.shapes.some(
-                    (s) => s.id === shapeId
+                    (s: Shape) => s.id === shapeId
                 );
 
                 if (isOriginalShape) {
@@ -158,7 +161,7 @@ function createDrawingStore(): DrawingStore {
                 if (!state.drawing) return state;
 
                 const shapes: Shape[] = state.drawing.shapes.filter(
-                    (shape) => !state.selectedShapes.has(shape.id)
+                    (shape: Shape) => !state.selectedShapes.has(shape.id)
                 );
 
                 // Reset downstream stages when shapes are deleted
@@ -175,12 +178,14 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.map((shape) => {
-                    if (shapeIds.includes(shape.id)) {
-                        return moveShape(shape, delta);
+                const shapes: Shape[] = state.drawing.shapes.map(
+                    (shape: Shape) => {
+                        if (shapeIds.includes(shape.id)) {
+                            return moveShape(shape, delta);
+                        }
+                        return shape;
                     }
-                    return shape;
-                });
+                );
 
                 // Reset downstream stages when shapes are moved
                 resetDownstreamStages('edit');
@@ -199,12 +204,14 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.map((shape) => {
-                    if (shapeIds.includes(shape.id)) {
-                        return scaleShape(shape, scaleFactor, origin);
+                const shapes: Shape[] = state.drawing.shapes.map(
+                    (shape: Shape) => {
+                        if (shapeIds.includes(shape.id)) {
+                            return scaleShape(shape, scaleFactor, origin);
+                        }
+                        return shape;
                     }
-                    return shape;
-                });
+                );
 
                 // Reset downstream stages when shapes are scaled
                 resetDownstreamStages('edit');
@@ -219,12 +226,14 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.map((shape) => {
-                    if (shapeIds.includes(shape.id)) {
-                        return rotateShape(shape, angle, origin);
+                const shapes: Shape[] = state.drawing.shapes.map(
+                    (shape: Shape) => {
+                        if (shapeIds.includes(shape.id)) {
+                            return rotateShape(shape, angle, origin);
+                        }
+                        return shape;
                     }
-                    return shape;
-                });
+                );
 
                 // Reset downstream stages when shapes are rotated
                 resetDownstreamStages('edit');

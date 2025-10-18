@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
-import type { Arc } from '$lib/geometry/arc';
-import type { Polyline } from '$lib/geometry/polyline';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import {
     findPolylineSelfIntersections,
     hasPolylineSelfIntersections,
 } from './self';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Polyline Self-Intersection Detection', () => {
     describe('findPolylineSelfIntersections', () => {

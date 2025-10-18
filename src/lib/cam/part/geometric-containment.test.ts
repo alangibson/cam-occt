@@ -1,5 +1,6 @@
-import type { Line } from '$lib/geometry/line';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
+import type { Line } from '$lib/geometry/line/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { describe, expect, it } from 'vitest';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
@@ -9,7 +10,7 @@ import {
     identifyShells,
     isPointInPolygon,
 } from '$lib/cam/part/geometric-containment';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 
 // Helper function to create test chains
 function createTestChain(id: string, shapes: Shape[]): Chain {

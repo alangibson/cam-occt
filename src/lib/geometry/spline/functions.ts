@@ -1,5 +1,5 @@
 import verb, { type VerbCurve, type VerbVector } from 'verb-nurbs';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type {
     Spline,
     SplineTessellationConfig,
@@ -12,8 +12,8 @@ import {
     GEOMETRIC_PRECISION_TOLERANCE,
     INTERSECTION_TOLERANCE,
     STANDARD_TESSELLATION_COUNT,
-} from '$lib/geometry/math';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+} from '$lib/geometry/math/constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import {
     CLOSED_SPLINE_COMPLEXITY_MULTIPLIER,
     DEFAULT_CONFIG,

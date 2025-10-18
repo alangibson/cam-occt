@@ -1,6 +1,6 @@
 import { LeadType } from './enums';
-import type { Point2D } from '$lib/geometry/point';
-import type { Arc } from '$lib/geometry/arc';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import { generateArcPoints } from '$lib/geometry/arc/functions';
 import type { Lead, LeadConfig } from './interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';

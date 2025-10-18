@@ -42,7 +42,7 @@ import type { Operation } from '$lib/stores/operations/interfaces';
 import { cutStore } from '$lib/stores/cuts/store';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
-import type { Tool } from '$lib/stores/tools/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
 import type { WarningState } from '$lib/stores/warnings/interfaces';
 import { settingsStore } from '$lib/stores/settings/store';
 import type { SettingsState } from '$lib/stores/settings/interfaces';

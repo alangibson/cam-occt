@@ -3,9 +3,9 @@ import { parseDXF } from './functions';
 import { getShapePoints } from '$lib/geometry/shape/functions';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
-import type { Circle } from '$lib/geometry/circle';
-import type { Line } from '$lib/geometry/line';
-import type { Shape } from '$lib/geometry/shape';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {
@@ -280,20 +280,23 @@ EOF`;
             // But geometry should be identical
             expect(mmDrawing.shapes.length).toBe(inchDrawing.shapes.length);
 
-            const mmLine = mmDrawing.shapes.find((s) => s.type === 'line')
-                ?.geometry as Line;
-            const inchLine = inchDrawing.shapes.find((s) => s.type === 'line')
-                ?.geometry as Line;
+            const mmLine = mmDrawing.shapes.find(
+                (s: Shape) => s.type === 'line'
+            )?.geometry as Line;
+            const inchLine = inchDrawing.shapes.find(
+                (s: Shape) => s.type === 'line'
+            )?.geometry as Line;
 
             expect(mmLine.start.x).toBe(inchLine.start.x);
             expect(mmLine.start.y).toBe(inchLine.start.y);
             expect(mmLine.end.x).toBe(inchLine.end.x);
             expect(mmLine.end.y).toBe(inchLine.end.y);
 
-            const mmCircle = mmDrawing.shapes.find((s) => s.type === 'circle')
-                ?.geometry as Circle;
+            const mmCircle = mmDrawing.shapes.find(
+                (s: Shape) => s.type === 'circle'
+            )?.geometry as Circle;
             const inchCircle = inchDrawing.shapes.find(
-                (s) => s.type === 'circle'
+                (s: Shape) => s.type === 'circle'
             )?.geometry as Circle;
 
             expect(mmCircle.center.x).toBe(inchCircle.center.x);

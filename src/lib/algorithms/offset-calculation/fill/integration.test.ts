@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import { GeometryType, type Shape } from '$lib/geometry/shape';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { type Shape } from '$lib/geometry/shape/interfaces';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Gap Filling Integration Tests', () => {
     // Helper to create shapes

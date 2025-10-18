@@ -5,11 +5,11 @@
  * transforming to standard position and solving algebraically
  */
 
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Point2D } from '$lib/geometry/point';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
-import { normalizeAngle } from './utils';
+import { normalizeAngle } from '$lib/geometry/math/functions';
 
 /**
  * Counts how many times a ray crosses an ellipse

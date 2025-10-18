@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { findEllipseEllipseIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/ellipse-ellipse';
 import { findEllipseArcIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/arc-ellipse';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { offsetEllipse } from './ellipse';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 
 describe('Quick Ellipse Intersection Test', () => {
     it('should find intersections between overlapping ellipses', () => {

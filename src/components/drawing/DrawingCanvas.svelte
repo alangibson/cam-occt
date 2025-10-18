@@ -26,7 +26,7 @@
         getChainShapeIds,
     } from '$lib/stores/chains/functions';
     import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-    import { type Shape } from '$lib/geometry/shape';
+    import type { Shape } from '$lib/geometry/shape/interfaces';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { getPhysicalScaleFactor } from '$lib/config/units/units';
     import { RenderingPipeline } from '$lib/rendering/canvas/pipeline';

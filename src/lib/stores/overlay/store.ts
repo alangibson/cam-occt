@@ -5,7 +5,7 @@
 
 import { writable } from 'svelte/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import type { Point2D } from '$lib/geometry/point';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type {
     OverlayState,
     DrawingOverlay,

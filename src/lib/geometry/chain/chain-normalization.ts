@@ -11,12 +11,12 @@
  */
 
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Point2D } from '$lib/geometry/point';
-import type { Shape } from '$lib/geometry/shape';
-import type { Spline } from '$lib/geometry/spline';
-import type { Arc } from '$lib/geometry/arc';
-import type { Circle } from '$lib/geometry/circle';
-import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { ChainNormalizationParameters } from '$lib/preprocessing/algorithm-parameters';
 import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import {
@@ -24,7 +24,7 @@ import {
     getShapeStartPoint,
     reverseShape,
 } from '$lib/geometry/shape/functions';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import {
     DEFAULT_ARRAY_NOT_FOUND_INDEX,
     PRECISION_DECIMAL_PLACES,

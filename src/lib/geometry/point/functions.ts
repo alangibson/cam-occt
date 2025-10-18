@@ -1,4 +1,4 @@
-import { calculateSquaredDistance } from '$lib/geometry/math';
+import { calculateSquaredDistance } from '$lib/geometry/math/functions';
 import type { Point2D } from './interfaces';
 
 /**

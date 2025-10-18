@@ -4,12 +4,12 @@ import { operationsStore } from '$lib/stores/operations/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';
 import { sampleShapesAtDistanceIntervals } from '$lib/geometry/shape/functions';
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Operation } from '$lib/stores/operations/interfaces';
 
 // Helper to wait for async cut generation
