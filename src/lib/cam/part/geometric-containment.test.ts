@@ -8,8 +8,8 @@ import {
     calculateNestingLevel,
     detectPolygonContainment,
     identifyShells,
-    isPointInPolygon,
 } from '$lib/cam/part/geometric-containment';
+import { isPointInPolygon } from './constants';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 
 // Helper function to create test chains

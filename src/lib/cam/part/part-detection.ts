@@ -7,7 +7,6 @@
  * - Open chains that cross boundaries generate warnings
  * - Supports recursive nesting (parts within holes within parts)
  *
- * Uses JSTS for robust geometric containment detection based on MetalHeadCAM reference
  */
 
 import type { Chain } from '$lib/geometry/chain/interfaces';
@@ -25,49 +24,14 @@ import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
-import type { PartDetectionParameters } from './interfaces';
+import type {
+    DetectedPart,
+    PartDetectionParameters,
+    PartDetectionResult,
+    PartDetectionWarning,
+} from './interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
-
-/**
- * Part type enumeration
- */
-export enum PartType {
-    SHELL = 'shell',
-    HOLE = 'hole',
-}
-
-export interface PartHole {
-    id: string;
-    chain: Chain;
-    type: PartType.HOLE;
-    boundingBox: BoundingBox;
-    holes: PartHole[]; // Nested holes within this hole (parts)
-}
-
-export interface PartShell {
-    id: string;
-    chain: Chain;
-    type: PartType.SHELL;
-    boundingBox: BoundingBox;
-    holes: PartHole[];
-}
-
-export interface DetectedPart {
-    id: string;
-    shell: PartShell;
-    holes: PartHole[];
-}
-
-export interface PartDetectionWarning {
-    type: 'overlapping_boundary';
-    chainId: string;
-    message: string;
-}
-
-export interface PartDetectionResult {
-    parts: DetectedPart[];
-    warnings: PartDetectionWarning[];
-}
+import { PartType } from './enums';
 
 /**
  * Detects parts from a collection of chains using geometric containment

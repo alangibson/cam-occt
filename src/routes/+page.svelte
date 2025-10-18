@@ -19,7 +19,7 @@
     import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
     import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
     import { settingsStore } from '$lib/stores/settings/store';
-    import { ImportUnitSetting } from '$lib/stores/settings/interfaces';
+    import { ImportUnitSetting } from '$lib/config/settings/enums';
 
     let cleanupAutoSave: (() => void) | null = null;
     let isMenuOpen = false;

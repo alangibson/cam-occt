@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
-import { partStore } from './store';
-import { getChainPartType, getPartChainIds } from './functions';
+import { partStore } from '$lib/stores/parts/store';
+import { getChainPartType, getPartChainIds } from '$lib/cam/part/functions';
 import {
     type DetectedPart,
     type PartDetectionWarning,
-    type PartHole,
-    PartType,
-} from '$lib/cam/part/part-detection';
+    type Part,
+} from '$lib/cam/part/interfaces';
+import { PartType } from '$lib/cam/part/enums';
 
 describe('Parts Store', () => {
     beforeEach(() => {
@@ -20,7 +20,7 @@ describe('Parts Store', () => {
         shellChainId: string,
         holeChainIds: string[] = []
     ): DetectedPart {
-        const holes: PartHole[] = holeChainIds.map((chainId, index) => ({
+        const holes: Part[] = holeChainIds.map((chainId, index) => ({
             id: `hole-${index + 1}`,
             chain: {
                 id: chainId,

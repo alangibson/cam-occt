@@ -4,8 +4,8 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
-import { PartType } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
+import { PartType } from '$lib/cam/part/enums';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Direction Debug', () => {

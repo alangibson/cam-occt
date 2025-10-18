@@ -7,10 +7,8 @@
     import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
     import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
     import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
-    import {
-        detectParts,
-        type PartDetectionWarning,
-    } from '$lib/cam/part/part-detection';
+    import { detectParts } from '$lib/cam/part/part-detection';
+    import { type PartDetectionWarning } from '$lib/cam/part/interfaces';
     import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
     import { isChainClosed } from '$lib/geometry/chain/functions';
     import { tessellateShape } from '$lib/geometry/shape/functions';

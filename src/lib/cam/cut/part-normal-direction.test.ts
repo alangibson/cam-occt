@@ -11,11 +11,11 @@
 import { describe, it, expect } from 'vitest';
 import { calculateCutNormal } from './calculate-cut-normal';
 import { CutDirection, NormalSide } from './enums';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import { PartType } from '$lib/cam/part/part-detection';
+import { PartType } from '$lib/cam/part/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 describe('Cut Normal Direction on Parts', () => {

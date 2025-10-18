@@ -19,7 +19,8 @@ import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { type PartHole, detectParts } from './part-detection';
+import { detectParts } from './part-detection';
+import { type Part } from './interfaces';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 
 describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
@@ -168,7 +169,7 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const closedChainIds = new Set<string>();
         partResult.parts.forEach((part) => {
             closedChainIds.add(part.shell.chain.id);
-            const addHoles = (holes: PartHole[]) => {
+            const addHoles = (holes: Part[]) => {
                 holes.forEach((hole) => {
                     closedChainIds.add(hole.chain.id);
                     addHoles(hole.holes);

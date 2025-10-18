@@ -10,7 +10,7 @@
     import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
     import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { DetectedPart } from '$lib/cam/part/part-detection';
+    import type { DetectedPart } from '$lib/cam/part/interfaces';
     import type { Shape } from '$lib/geometry/shape/interfaces';
     import { Unit } from '$lib/config/units/units';
 

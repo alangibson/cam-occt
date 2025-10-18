@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
@@ -11,7 +11,7 @@ import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import { isArc } from '$lib/geometry/arc/functions';
-import { PartType } from '$lib/cam/part/part-detection';
+import { PartType } from '$lib/cam/part/enums';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 
 // Since getLeadCurveDirection is not exported, we test it indirectly

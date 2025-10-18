@@ -5,7 +5,7 @@
     import {
         PreprocessingStep,
         OffsetImplementation,
-    } from '$lib/stores/settings/interfaces';
+    } from '$lib/config/settings/enums';
     import { resetApplicationToDefaults } from '$lib/stores/storage/store';
     import { CutterCompensation } from '$lib/cam/cut-generator/enums';
 

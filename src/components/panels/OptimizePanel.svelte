@@ -1,7 +1,7 @@
 <script lang="ts">
     import AccordionPanel from './AccordionPanel.svelte';
     import { settingsStore } from '$lib/stores/settings/store';
-    import { RapidOptimizationAlgorithm } from '$lib/stores/settings/interfaces';
+    import { RapidOptimizationAlgorithm } from '$lib/config/settings/enums';
 
     // Reactive state
     $: optimizationSettings = $settingsStore.settings.optimizationSettings;

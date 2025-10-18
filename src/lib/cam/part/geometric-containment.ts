@@ -12,10 +12,7 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
-import {
-    calculatePolygonArea,
-    isPointInPolygon as isPointInPolygonShared,
-} from '$lib/geometry/polygon/functions';
+import { calculatePolygonArea } from '$lib/geometry/polygon/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import {
     calculateChainArea,
@@ -24,29 +21,13 @@ import {
 } from '$lib/geometry/chain/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type { PartDetectionParameters } from './interfaces';
-
-/**
- * Geometric containment constants
- */
-const GEOMETRIC_CONTAINMENT_AREA_RATIO_THRESHOLD = 0.2;
-const MAX_CONTAINMENT_NESTING_LEVEL = 100;
-const BOUNDING_BOX_CONTAINMENT_MARGIN = 10;
-
-/**
- * JSTS library coordinate validation - minimum required coordinates
- */
-export const JSTS_MIN_LINEAR_RING_COORDINATES = 4;
-
-/**
- * Rounded rectangle shape count (4 shapes: line, arc, line, arc)
- */
-const ROUNDED_RECTANGLE_SHAPE_COUNT = 4;
-
-/**
- * Classic point-in-polygon test using ray casting algorithm
- * Re-exported from polygon-geometry-shared for backward compatibility
- */
-export const isPointInPolygon = isPointInPolygonShared;
+import {
+    isPointInPolygon,
+    ROUNDED_RECTANGLE_SHAPE_COUNT,
+    GEOMETRIC_CONTAINMENT_AREA_RATIO_THRESHOLD,
+    BOUNDING_BOX_CONTAINMENT_MARGIN,
+    MAX_CONTAINMENT_NESTING_LEVEL,
+} from './constants';
 
 /**
  * Detect containment relationships between multiple polygons

@@ -7,7 +7,7 @@
     import { onMount } from 'svelte';
     import type { Operation } from '$lib/stores/operations/interfaces';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { DetectedPart } from '$lib/cam/part/part-detection';
+    import type { DetectedPart } from '$lib/cam/part/interfaces';
     import {
         DEFAULT_CUT_DIRECTION,
         DEFAULT_KERF_COMPENSATION,

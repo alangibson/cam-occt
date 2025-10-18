@@ -11,7 +11,7 @@ import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 import { tessellationStore } from '$lib/stores/tessellation/store';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-import { PreprocessingStep } from '$lib/stores/settings/interfaces';
+import { PreprocessingStep } from '$lib/config/settings/enums';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
@@ -21,10 +21,8 @@ import {
     analyzeChainTraversal,
 } from '$lib/geometry/chain/chain-normalization';
 import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
-import {
-    detectParts,
-    type PartDetectionWarning,
-} from '$lib/cam/part/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
+import { type PartDetectionWarning } from '$lib/cam/part/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import {
     getShapeEndPoint,

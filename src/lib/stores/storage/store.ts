@@ -45,7 +45,7 @@ import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { WarningState } from '$lib/stores/warnings/interfaces';
 import { settingsStore } from '$lib/stores/settings/store';
-import type { SettingsState } from '$lib/stores/settings/interfaces';
+import type { SettingsState } from '$lib/config/settings/interfaces';
 
 /**
  * Collect current state from all stores

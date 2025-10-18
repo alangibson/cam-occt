@@ -2,53 +2,16 @@ import { writable } from 'svelte/store';
 import type { Drawing } from '$lib/cam/drawing/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
+import { Unit } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {
     moveShape,
     rotateShape,
     scaleShape,
 } from '$lib/geometry/shape/functions';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
-import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { DrawingState, DrawingStore } from './interfaces';
 import { resetDownstreamStages } from './functions';
-
-const ZOOM_TO_FIT_MARGIN = 0.1; // 10% margin for zoom-to-fit
-
-/**
- * Helper function to calculate zoom-to-fit settings for a drawing
- */
-function calculateZoomToFitForDrawing(
-    drawing: Drawing,
-    canvasDimensions: { width: number; height: number } | null,
-    displayUnit: Unit
-): { scale: number; offset: Point2D } {
-    // If no canvas dimensions available, use default zoom settings
-    if (!canvasDimensions || drawing.shapes.length === 0) {
-        return { scale: 1, offset: { x: 0, y: 0 } };
-    }
-
-    try {
-        // Get bounding box for all shapes in the drawing
-        const boundingBox = getBoundingBoxForShapes(drawing.shapes);
-
-        // Get unit scale factor for proper display
-        const unitScale = getPhysicalScaleFactor(drawing.units, displayUnit);
-
-        // Calculate zoom-to-fit with 10% margin
-        return CoordinateTransformer.calculateZoomToFit(
-            boundingBox,
-            canvasDimensions.width,
-            canvasDimensions.height,
-            unitScale,
-            ZOOM_TO_FIT_MARGIN
-        );
-    } catch (error) {
-        console.warn('Failed to calculate zoom-to-fit:', error);
-        return { scale: 1, offset: { x: 0, y: 0 } };
-    }
-}
+import { calculateZoomToFitForDrawing } from '$lib/cam/drawing/functions';
 
 const initialState: DrawingState = {
     drawing: null,

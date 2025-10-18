@@ -11,7 +11,7 @@
     import {
         MeasurementSystem,
         ImportUnitSetting,
-    } from '$lib/stores/settings/interfaces';
+    } from '$lib/config/settings/enums';
     import { Unit } from '$lib/config/units/units';
 
     // Get current settings

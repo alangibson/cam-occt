@@ -11,7 +11,7 @@ import {
     measurementSystemToUnit,
     convertCoordinates,
 } from './units';
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+import { MeasurementSystem } from '$lib/config/settings/enums';
 
 describe('Units utilities', () => {
     describe('getPixelsPerUnit', () => {

@@ -5,7 +5,7 @@
  * These values are used across various geometry-related algorithms.
  */
 
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+import { MeasurementSystem } from './settings/enums';
 import { convertToCurrentSystem } from '$lib/config/units/units';
 import { DEFAULT_ORIGIN_CROSS_SIZE_MM } from '$lib/geometry/constants';
 

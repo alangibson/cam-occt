@@ -5,7 +5,7 @@
  * Chains are connected sequences of shapes that form continuous cuts.
  */
 
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+import { MeasurementSystem } from './settings/enums';
 import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_CHAIN_DETECTION_PARAMETERS_MM,

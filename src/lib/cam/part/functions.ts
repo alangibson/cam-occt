@@ -1,6 +1,7 @@
-import type { DetectedPart, PartHole } from '$lib/cam/part/part-detection';
+import type { DetectedPart, Part } from './interfaces';
 
 // Helper to get all chain IDs that belong to a specific part
+
 export function getPartChainIds(
     partId: string,
     parts: DetectedPart[]
@@ -14,7 +15,7 @@ export function getPartChainIds(
     chainIds.push(part.shell.chain.id);
 
     // Add all hole chain IDs recursively
-    function addHoleChainIds(holes: PartHole[]): void {
+    function addHoleChainIds(holes: Part[]): void {
         for (const hole of holes) {
             chainIds.push(hole.chain.id);
             if (hole.holes) {
@@ -27,8 +28,8 @@ export function getPartChainIds(
 
     return chainIds;
 }
-
 // Helper to get which part a chain belongs to
+
 export function getChainPartId(
     chainId: string,
     parts: DetectedPart[]
@@ -45,8 +46,8 @@ export function getChainPartId(
     }
     return null;
 }
-
 // Helper to get the type of a chain (shell or hole)
+
 export function getChainPartType(
     chainId: string,
     parts: DetectedPart[]
@@ -63,8 +64,7 @@ export function getChainPartType(
     }
     return null;
 }
-
-function isChainInHoles(chainId: string, holes: PartHole[]): boolean {
+function isChainInHoles(chainId: string, holes: Part[]): boolean {
     for (const hole of holes) {
         if (hole.chain.id === chainId) {
             return true;

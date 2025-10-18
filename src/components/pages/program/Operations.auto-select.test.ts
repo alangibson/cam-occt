@@ -8,7 +8,7 @@ import { chainStore } from '$lib/stores/chains/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { PartType } from '$lib/cam/part/part-detection';
+import { PartType } from '$lib/cam/part/enums';
 
 describe('Operations Auto-Selection Feature', () => {
     beforeEach(() => {

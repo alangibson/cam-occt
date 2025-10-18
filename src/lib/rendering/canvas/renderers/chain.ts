@@ -24,7 +24,7 @@ import {
     tessellateChain,
 } from '$lib/geometry/chain/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { PartHole } from '$lib/cam/part/part-detection';
+import type { Part } from '$lib/cam/part/interfaces';
 import {
     getShapeStartPoint,
     getShapeEndPoint,
@@ -164,7 +164,7 @@ export class ChainRenderer extends BaseRenderer {
                 holeChainIds.add(hole.chain.id);
             }
             // Add nested holes recursively
-            const addNestedHoles = (holes: PartHole[]) => {
+            const addNestedHoles = (holes: Part[]) => {
                 for (const hole of holes) {
                     holeChainIds.add(hole.chain.id);
                     if (hole.holes && hole.holes.length > 0) {
@@ -265,7 +265,7 @@ export class ChainRenderer extends BaseRenderer {
      */
     private drawPartShapes(
         ctx: CanvasRenderingContext2D,
-        part: { shell: { chain: Chain }; holes: PartHole[] },
+        part: { shell: { chain: Chain }; holes: Part[] },
         state: RenderState
     ): void {
         // Draw shell chain
@@ -279,7 +279,7 @@ export class ChainRenderer extends BaseRenderer {
         }
 
         // Draw all hole chains
-        const drawHoles = (holes: PartHole[]) => {
+        const drawHoles = (holes: Part[]) => {
             for (const hole of holes) {
                 for (const chainShape of hole.chain.shapes) {
                     const shape = state.drawing?.shapes.find(

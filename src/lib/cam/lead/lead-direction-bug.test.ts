@@ -17,7 +17,7 @@ import { isArc } from '$lib/geometry/arc/functions';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
 
 describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     let outputDir: string;

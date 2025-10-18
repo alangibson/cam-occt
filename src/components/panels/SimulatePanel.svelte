@@ -1,7 +1,7 @@
 <script lang="ts">
     import AccordionPanel from './AccordionPanel.svelte';
     import { settingsStore } from '$lib/stores/settings/store';
-    import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+    import { MeasurementSystem } from '$lib/config/settings/enums';
 
     // Get rapid rate from settings store (stored in measurement system units)
     $: rapidRate = $settingsStore.settings.camSettings.rapidRate;

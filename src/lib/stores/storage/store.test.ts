@@ -32,7 +32,7 @@ import {
     PreprocessingStep,
     RapidOptimizationAlgorithm,
     OffsetImplementation,
-} from '$lib/stores/settings/interfaces';
+} from '$lib/config/settings/enums';
 
 // Default application settings for tests
 const defaultApplicationSettings = {

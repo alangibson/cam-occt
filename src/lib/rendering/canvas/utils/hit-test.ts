@@ -17,7 +17,7 @@ import {
     distanceFromEllipsePerimeter,
     transformPointToEllipseCoordinates,
 } from '$lib/geometry/ellipse/functions';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 /**

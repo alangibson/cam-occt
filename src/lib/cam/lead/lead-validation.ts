@@ -1,6 +1,6 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
 import { LeadType } from './enums';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import {

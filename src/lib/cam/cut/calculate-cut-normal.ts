@@ -21,7 +21,7 @@
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
 import { CutDirection, NormalSide } from './enums';
 import {
     getChainStartPoint,

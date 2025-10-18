@@ -10,12 +10,8 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import type {
-    DetectedPart,
-    PartShell,
-    PartHole,
-} from '$lib/cam/part/part-detection';
-import { PartType } from '$lib/cam/part/part-detection';
+import type { DetectedPart, PartShell, Part } from '$lib/cam/part/interfaces';
+import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
@@ -90,7 +86,7 @@ describe('Optimize Cut Order', () => {
             holes: [],
         };
 
-        const holes: PartHole[] = holeChains.map((chain, index) => ({
+        const holes: Part[] = holeChains.map((chain, index) => ({
             id: `hole-${id}-${index}`,
             chain,
             type: PartType.HOLE,

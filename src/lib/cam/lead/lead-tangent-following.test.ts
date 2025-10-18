@@ -14,8 +14,8 @@ import {
     getChainStartPoint,
 } from '$lib/geometry/chain/functions';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
-import { PartType } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
+import { PartType } from '$lib/cam/part/enums';
 
 /**
  * CRITICAL INVARIANT TESTS

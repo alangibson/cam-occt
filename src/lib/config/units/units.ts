@@ -3,7 +3,7 @@
  * Handles conversion between different units and physical display scaling
  */
 
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+import { MeasurementSystem } from '$lib/config/settings/enums';
 
 /**
  * Unit display precision
@@ -20,7 +20,7 @@ export enum Unit {
 }
 
 // Physical constants for screen display
-const MM_PER_INCH: number = 25.4;
+export const MM_PER_INCH: number = 25.4;
 const PIXELS_PER_INCH: number = 96; // Standard CSS DPI
 const PIXELS_PER_MM: number = PIXELS_PER_INCH / MM_PER_INCH; // ~3.78 pixels per mm
 

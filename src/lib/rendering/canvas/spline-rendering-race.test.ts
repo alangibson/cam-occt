@@ -13,7 +13,7 @@ import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { settingsStore } from '$lib/stores/settings/store';
-import { OffsetImplementation } from '$lib/stores/settings/interfaces';
+import { OffsetImplementation } from '$lib/config/settings/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';

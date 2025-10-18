@@ -7,8 +7,8 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
-import { PartType } from '$lib/cam/part/part-detection';
-import type { DetectedPart, PartShell } from '$lib/cam/part/part-detection';
+import { PartType } from '$lib/cam/part/enums';
+import type { DetectedPart, PartShell } from '$lib/cam/part/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
 // Mock stores

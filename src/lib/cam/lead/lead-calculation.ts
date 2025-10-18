@@ -1,7 +1,7 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { normalizeVector } from '$lib/geometry/math/functions';

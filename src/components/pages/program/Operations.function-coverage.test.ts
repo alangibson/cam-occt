@@ -10,8 +10,8 @@ import { partStore } from '$lib/stores/parts/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';
-import type { PartShell } from '$lib/cam/part/part-detection';
-import { PartType } from '$lib/cam/part/part-detection';
+import type { PartShell } from '$lib/cam/part/interfaces';
+import { PartType } from '$lib/cam/part/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 

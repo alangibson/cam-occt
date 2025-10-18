@@ -1,6 +1,6 @@
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
-import type { DetectedPart, PartHole } from '$lib/cam/part/part-detection';
+import type { DetectedPart, Part } from './interfaces';
 
 /**
  * Shared chain interaction handlers for both Prepare and Program stages
@@ -22,7 +22,7 @@ export function findPartContainingChain(
     return parts.find(
         (p) =>
             p.shell.chain.id === chainId ||
-            p.holes.some((h: PartHole) => h.chain.id === chainId)
+            p.holes.some((h: Part) => h.chain.id === chainId)
     );
 }
 

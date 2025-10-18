@@ -8,12 +8,8 @@ import {
     handlePartMouseEnter,
     handlePartMouseLeave,
 } from './chain-part-interactions';
-import {
-    type DetectedPart,
-    type PartHole,
-    type PartShell,
-    PartType,
-} from '$lib/cam/part/part-detection';
+import { type DetectedPart, type Part, type PartShell } from './interfaces';
+import { PartType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
@@ -39,7 +35,7 @@ describe('findPartContainingChain', () => {
     }
 
     // Helper function to create a mock part hole
-    function createMockHole(chainId: string): PartHole {
+    function createMockHole(chainId: string): Part {
         return {
             id: `hole-${chainId}`,
             chain: createMockChain(chainId),

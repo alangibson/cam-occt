@@ -25,8 +25,8 @@ import {
     DXF_INSUNITS_CENTIMETERS,
     DXF_INSUNITS_METERS,
 } from './constants';
-import type { ApplicationSettings } from '$lib/stores/settings/interfaces';
-import { ImportUnitSetting } from '$lib/stores/settings/interfaces';
+import type { ApplicationSettings } from '$lib/config/settings/interfaces';
+import { ImportUnitSetting } from '$lib/config/settings/enums';
 import {
     DEFAULT_SPLINE_DEGREE,
     MIN_CONTROL_POINTS_FOR_SPLINE,

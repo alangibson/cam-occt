@@ -5,7 +5,7 @@
  * Leads are essential for smooth torch entry/exit and help prevent material damage.
  */
 
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+import { MeasurementSystem } from './settings/enums';
 import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_LEAD_IN_LENGTH_MM,

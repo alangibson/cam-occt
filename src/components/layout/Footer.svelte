@@ -1,7 +1,7 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
     import { settingsStore } from '$lib/stores/settings/store';
-    import { SelectionMode } from '$lib/stores/settings/interfaces';
+    import { SelectionMode } from '$lib/config/settings/enums';
     import {
         calculateDrawingSize,
         type DrawingSize,

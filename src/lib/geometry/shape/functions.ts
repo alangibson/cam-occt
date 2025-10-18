@@ -1,4 +1,4 @@
-import type { Shape } from './interfaces';
+import type { GetShapePointsOptions, Shape } from './interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -75,7 +75,7 @@ import {
     CHAIN_CLOSURE_TOLERANCE,
     POLYGON_POINTS_MIN,
 } from '$lib/geometry/chain/constants';
-import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/geometric-containment';
+import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/constants';
 import { LEAD_SEGMENT_COUNT } from '$lib/geometry/line/constants';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import {
@@ -89,29 +89,7 @@ import {
 } from '$lib/cam/cut/cut-optimization-utils';
 import { generateId } from '$lib/domain/id';
 import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
-
-// Constants for shape point generation
-const HIGH_RESOLUTION_CIRCLE_SEGMENTS = 32;
-// Maximum number of segments for arc tessellation
-const MAX_ARC_SEGMENTS = 1000;
-
-/**
- * Extract points from a shape for path generation
- * @param shape - The shape to extract points from
- * @param forNativeShapes - If true, avoid tessellation for shapes that support native G-code commands
- */
-export type GetShapePointsMode =
-    | 'TESSELLATION'
-    | 'BOUNDS'
-    | 'CHAIN_DETECTION'
-    | 'DIRECTION_ANALYSIS';
-export type GetShapePointsResolution = 'LOW' | 'MEDIUM' | 'HIGH' | 'ADAPTIVE';
-
-export interface GetShapePointsOptions {
-    forNativeShapes?: boolean;
-    mode?: GetShapePointsMode;
-    resolution?: GetShapePointsResolution;
-}
+import { HIGH_RESOLUTION_CIRCLE_SEGMENTS, MAX_ARC_SEGMENTS } from './constants';
 
 export function getShapePoints(
     shape: Shape,
@@ -648,10 +626,10 @@ export function tessellateShape(
 
     return points;
 }
+
 /**
  * Get the starting point of a shape
  */
-
 export function getShapeStartPoint(shape: Shape): Point2D {
     switch (shape.type) {
         case 'line':
@@ -670,10 +648,10 @@ export function getShapeStartPoint(shape: Shape): Point2D {
             throw new Error(`Unknown shape type: ${shape.type}`);
     }
 }
+
 /**
  * Get the ending point of a shape
  */
-
 export function getShapeEndPoint(shape: Shape): Point2D {
     switch (shape.type) {
         case 'line':
@@ -818,10 +796,10 @@ export function getShapeLength(shape: Shape): number {
             return 0;
     }
 }
+
 /**
  * Sample points along an array of shapes at regular distance intervals
  */
-
 export function sampleShapesAtDistanceIntervals(
     shapes: Shape[],
     intervalDistance: number
@@ -870,6 +848,7 @@ export function sampleShapesAtDistanceIntervals(
 
     return samples;
 }
+
 /**
  * Gets the normal vector at a point on a shape
  *
@@ -877,7 +856,6 @@ export function sampleShapesAtDistanceIntervals(
  * @param t - Parameter value (0-1) where to get the normal
  * @returns Normalized normal vector pointing outward/rightward
  */
-
 export function getShapeNormal(shape: Shape, t: number): Point2D {
     // Get two nearby points to calculate tangent
     const delta: number = 0.001;
@@ -904,6 +882,7 @@ export function getShapeNormal(shape: Shape, t: number): Point2D {
 
     return normal;
 }
+
 /**
  * Gets the midpoint of a shape at a given parameter
  *
@@ -911,7 +890,6 @@ export function getShapeNormal(shape: Shape, t: number): Point2D {
  * @param t - Parameter value (0-1), defaults to 0.5
  * @returns Point at the given parameter
  */
-
 export function getShapeMidpoint(
     shape: Shape,
     t: number = MIDPOINT_T
@@ -1453,10 +1431,11 @@ export function getShapePoints2(shape: Shape): Point2D[] {
         default:
             return [];
     }
-} /**
+}
+
+/**
  * Checks if a single shape forms a closed loop
  */
-
 export function isShapeClosed(shape: Shape, tolerance: number): boolean {
     switch (shape.type) {
         case GeometryType.CIRCLE:
@@ -1673,11 +1652,12 @@ export function getShapePoints3(shape: Shape): Point2D[] {
         default:
             return [];
     }
-} /**
+}
+
+/**
  * Split a shape at its midpoint, creating two shapes
  * Extracted from optimize-start-points.ts to eliminate duplication
  */
-
 export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
     if (shape.type === GeometryType.LINE) {
         return splitLineAtMidpoint(shape);
@@ -1687,6 +1667,7 @@ export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
 
     return null;
 }
+
 export function transformShape(
     shape: Shape,
     transform: {
@@ -1822,4 +1803,26 @@ export function transformShape(
     clonedShape.id = generateId();
 
     return clonedShape;
+}
+
+// Helper function to get the origin point of a shape
+export function getShapeOrigin(shape: Shape): Point2D | null {
+    switch (shape.type) {
+        case 'line':
+            const line: Line = shape.geometry as Line;
+            return line.start;
+        case 'circle':
+        case 'arc':
+            const circle: Circle = shape.geometry as Circle | Arc;
+            return circle.center;
+        case 'polyline':
+            const polyline: Polyline = shape.geometry as Polyline;
+            const points: Point2D[] = polylineToPoints(polyline);
+            return points.length > 0 ? points[0] : null;
+        case 'ellipse':
+            const ellipse: Ellipse = shape.geometry as Ellipse;
+            return ellipse.center;
+        default:
+            return null;
+    }
 }

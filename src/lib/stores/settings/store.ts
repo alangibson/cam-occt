@@ -6,16 +6,18 @@
  */
 
 import { writable } from 'svelte/store';
+import type { SettingsStore } from './interfaces';
 import type {
-    ApplicationSettings,
-    SettingsState,
-    SettingsStore,
     MeasurementSystem,
     ImportUnitSetting,
     SelectionMode,
+} from '$lib/config/settings/enums';
+import type {
+    ApplicationSettings,
+    SettingsState,
     OptimizationSettings,
     CamSettings,
-} from './interfaces';
+} from '$lib/config/settings/interfaces';
 import {
     MeasurementSystem as MS,
     ImportUnitSetting as IUS,
@@ -23,53 +25,17 @@ import {
     PreprocessingStep,
     RapidOptimizationAlgorithm,
     OffsetImplementation,
-} from './interfaces';
+} from '$lib/config/settings/enums';
 import { DefaultsManager } from '$lib/config/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { DEFAULT_RAPID_RATE_MM } from '$lib/cam/constants';
 import { CutterCompensation } from '$lib/cam/cut-generator/enums';
-
-// Conversion factor between inches and millimeters
-const MM_PER_INCH = 25.4;
-
-// Default CAM settings - use metric default, will be converted if needed when measurement system is set
-const DEFAULT_CAM_SETTINGS: CamSettings = {
-    rapidRate: DEFAULT_RAPID_RATE_MM,
-    cutterCompensation: CutterCompensation.SOFTWARE,
-};
-
-// Default optimization settings
-const DEFAULT_OPTIMIZATION_SETTINGS: OptimizationSettings = {
-    cutHolesFirst: true,
-    rapidOptimizationAlgorithm: RapidOptimizationAlgorithm.TravelingSalesman,
-    zoomToFit: true,
-};
-
-// Default application settings
-const DEFAULT_SETTINGS: ApplicationSettings = {
-    measurementSystem: MS.Metric,
-    importUnitSetting: IUS.Automatic,
-    selectionMode: SM.Auto,
-    enabledStages: [
-        WorkflowStage.IMPORT,
-        WorkflowStage.PROGRAM,
-        WorkflowStage.SIMULATE,
-        WorkflowStage.EXPORT,
-    ],
-    enabledPreprocessingSteps: [
-        PreprocessingStep.DecomposePolylines,
-        PreprocessingStep.TranslateToPositive,
-        PreprocessingStep.DetectChains,
-        PreprocessingStep.NormalizeChains,
-        PreprocessingStep.DetectParts,
-    ],
-    optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,
-    offsetImplementation: OffsetImplementation.Polyline,
-    camSettings: DEFAULT_CAM_SETTINGS,
-};
-
-// localStorage key for settings persistence
-const SETTINGS_STORAGE_KEY = 'metalhead-cam-settings';
+import { MM_PER_INCH } from '$lib/config/units/units';
+import {
+    DEFAULT_OPTIMIZATION_SETTINGS,
+    DEFAULT_CAM_SETTINGS,
+    DEFAULT_SETTINGS,
+} from '$lib/config/settings/defaults';
+import { SETTINGS_STORAGE_KEY } from './constants';
 
 /**
  * Load settings from localStorage or return defaults
@@ -516,6 +482,3 @@ function createSettingsStore(): SettingsStore {
 
 // Export the settings store instance
 export const settingsStore = createSettingsStore();
-
-// Note: DefaultsManager initializes itself from settingsStore in its constructor
-// No need for explicit initialization here

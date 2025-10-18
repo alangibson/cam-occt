@@ -5,7 +5,7 @@ import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { type LeadConfig } from '$lib/cam/lead/interfaces';
 import {

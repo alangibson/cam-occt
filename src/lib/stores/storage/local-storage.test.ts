@@ -14,7 +14,7 @@ import { type PersistedState } from './interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { Unit } from '$lib/config/units/units';
-import { PartType } from '$lib/cam/part/part-detection';
+import { PartType } from '$lib/cam/part/enums';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {
     MeasurementSystem,
@@ -23,7 +23,7 @@ import {
     PreprocessingStep,
     RapidOptimizationAlgorithm,
     OffsetImplementation,
-} from '$lib/stores/settings/interfaces';
+} from '$lib/config/settings/enums';
 
 // Default application settings for tests
 const defaultApplicationSettings = {

@@ -52,11 +52,9 @@
     import { getShapePointAt } from '$lib/geometry/shape/functions';
     import { calculateLeads } from '$lib/cam/lead/lead-calculation';
     import { type LeadConfig } from '$lib/cam/lead/interfaces';
-    import {
-        MeasurementSystem,
-        type SettingsState,
-    } from '$lib/stores/settings/interfaces';
-    import type { DetectedPart } from '$lib/cam/part/part-detection';
+    import { MeasurementSystem } from '$lib/config/settings/enums';
+    import { type SettingsState } from '$lib/config/settings/interfaces';
+    import type { DetectedPart } from '$lib/cam/part/interfaces';
     import { LeadType } from '$lib/cam/lead/enums';
     import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';

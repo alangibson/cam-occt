@@ -3,7 +3,7 @@ import type { PartStore } from './interfaces';
 import type {
     DetectedPart,
     PartDetectionWarning,
-} from '$lib/cam/part/part-detection';
+} from '$lib/cam/part/interfaces';
 
 function createPartStore() {
     const initialState: PartStore = {

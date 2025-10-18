@@ -12,8 +12,8 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
-import type { DetectedPart } from '$lib/cam/part/part-detection';
-import { PartType } from '$lib/cam/part/part-detection';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
+import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Lead Fit Feature', () => {

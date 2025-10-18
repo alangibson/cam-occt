@@ -4,7 +4,7 @@ import type { Drawing } from '$lib/cam/drawing/interfaces';
 import type {
     DetectedPart,
     PartDetectionWarning,
-} from '$lib/cam/part/part-detection';
+} from '$lib/cam/part/interfaces';
 import type { LeadWarning } from '$lib/stores/lead-warnings/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type {
@@ -14,7 +14,7 @@ import type {
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { ApplicationSettings } from '$lib/stores/settings/interfaces';
+import type { ApplicationSettings } from '$lib/config/settings/interfaces';
 
 export interface PersistedState {
     // Drawing state

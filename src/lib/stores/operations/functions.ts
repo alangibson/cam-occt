@@ -9,7 +9,7 @@ import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { DetectedPart, PartHole } from '$lib/cam/part/part-detection';
+import type { DetectedPart, Part } from '$lib/cam/part/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type {
     ChainOffsetResult,
@@ -29,7 +29,7 @@ import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import { settingsStore } from '$lib/stores/settings/store';
 import { get } from 'svelte/store';
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+import { MeasurementSystem } from '$lib/config/settings/enums';
 import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
 
 /**
@@ -686,7 +686,7 @@ export async function generateCutsForPartTargetWithOperation(
     // Create cuts for all hole chains (including nested holes)
     let cutOrder: number = index + 1;
 
-    async function processHoles(holes: PartHole[], prefix: string = '') {
+    async function processHoles(holes: Part[], prefix: string = '') {
         for (let holeIndex = 0; holeIndex < holes.length; holeIndex++) {
             const hole = holes[holeIndex];
             // Use operation's preferred cut direction for the hole chain
@@ -930,7 +930,7 @@ export async function calculateCutLeads(
             part = parts?.find(
                 (p) =>
                     p.shell.chain.id === cut.chainId ||
-                    p.holes.some((h: PartHole) => h.chain.id === cut.chainId)
+                    p.holes.some((h: Part) => h.chain.id === cut.chainId)
             );
         }
 

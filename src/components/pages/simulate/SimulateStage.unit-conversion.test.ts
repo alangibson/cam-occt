@@ -10,7 +10,7 @@
 
 import { describe, it, expect, beforeEach } from 'vitest';
 import { DefaultsManager } from '$lib/config/defaults-manager';
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+import { MeasurementSystem } from '$lib/config/settings/enums';
 
 describe('SimulateStage Unit Conversion', () => {
     it('should correctly calculate time when drawing units match display units', () => {
