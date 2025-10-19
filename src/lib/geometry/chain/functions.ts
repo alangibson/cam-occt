@@ -18,6 +18,8 @@ import {
     reverseShape,
     tessellateShape,
     getShapePoints,
+    getShapePointAt,
+    getShapeLength,
 } from '$lib/geometry/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
@@ -658,4 +660,79 @@ export function getChainTangent(
         default:
             throw Error(`Can not find tangent for shape: ${shape}`);
     }
+}
+
+/**
+ * Get a point on a chain at parameter t (0-1).
+ *
+ * The parameter t represents the position along the entire chain length:
+ * - t = 0: start of the chain
+ * - t = 1: end of the chain
+ * - t = 0.5: midpoint of the chain by length
+ *
+ * @param chain - The chain to evaluate
+ * @param t - Parameter value between 0 and 1
+ * @returns Point on the chain at the specified parameter
+ * @throws Error if chain has no shapes or t is out of range
+ */
+export function getChainPointAt(chain: Chain, t: number): Point2D {
+    if (chain.shapes.length === 0) {
+        throw new Error('Chain has no shapes');
+    }
+
+    // Clamp t to [0, 1] range
+    const clampedT = Math.max(0, Math.min(1, t));
+
+    // Handle edge cases
+    if (clampedT === 0) {
+        return getChainStartPoint(chain);
+    }
+    if (clampedT === 1) {
+        return getChainEndPoint(chain);
+    }
+
+    // Calculate lengths of all shapes
+    const shapeLengths: number[] = chain.shapes.map((shape) =>
+        getShapeLength(shape)
+    );
+
+    // Calculate total chain length
+    const totalLength: number = shapeLengths.reduce(
+        (sum, length) => sum + length,
+        0
+    );
+
+    // Handle degenerate case of zero-length chain
+    if (totalLength === 0) {
+        return getChainStartPoint(chain);
+    }
+
+    // Find target distance along the chain
+    const targetDistance: number = clampedT * totalLength;
+
+    // Find which shape contains this distance
+    let accumulatedDistance: number = 0;
+    for (let i = 0; i < chain.shapes.length; i++) {
+        const shapeLength: number = shapeLengths[i];
+        const nextDistance: number = accumulatedDistance + shapeLength;
+
+        if (targetDistance <= nextDistance) {
+            // This shape contains the target point
+            // Convert global parameter to local parameter for this shape
+            let localT: number;
+            if (shapeLength === 0) {
+                // Degenerate shape - return start point
+                localT = 0;
+            } else {
+                localT = (targetDistance - accumulatedDistance) / shapeLength;
+            }
+
+            return getShapePointAt(chain.shapes[i], localT);
+        }
+
+        accumulatedDistance = nextDistance;
+    }
+
+    // Fallback: return end point (should only happen due to floating point errors)
+    return getChainEndPoint(chain);
 }
