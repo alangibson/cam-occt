@@ -645,3 +645,141 @@ describe('getSplineTangent', () => {
         expect(ourEndTangent.y).toBeCloseTo(0, 6);
     });
 });
+
+describe('Closed Spline Start/End Points', () => {
+    it('should return matching start and end points for closed splines', () => {
+        const spline: Spline = {
+            controlPoints: [
+                { x: 10, y: 10 },
+                { x: 20, y: 15 },
+                { x: 15, y: 20 },
+                { x: 5, y: 18 },
+                { x: 10, y: 10 }, // Same as first point
+            ],
+            knots: [0, 0, 0, 0, 0.33, 0.67, 1, 1, 1, 1],
+            weights: [1, 1, 1, 1, 1],
+            degree: 3,
+            fitPoints: [],
+            closed: true,
+        };
+
+        const startPoint = getSplineStartPoint(spline);
+        const endPoint = getSplineEndPoint(spline);
+
+        // For closed splines, start and end should be exactly the same (first/last control point)
+        expect(startPoint.x).toBe(10);
+        expect(startPoint.y).toBe(10);
+        expect(endPoint.x).toBe(10);
+        expect(endPoint.y).toBe(10);
+
+        // Verify they're identical
+        expect(startPoint.x).toBe(endPoint.x);
+        expect(startPoint.y).toBe(endPoint.y);
+    });
+
+    it('should use NURBS evaluation for open splines', () => {
+        const spline: Spline = {
+            controlPoints: [
+                { x: 0, y: 0 },
+                { x: 5, y: 10 },
+                { x: 10, y: 5 },
+                { x: 15, y: 0 },
+            ],
+            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+            weights: [1, 1, 1, 1],
+            degree: 3,
+            fitPoints: [],
+            closed: false,
+        };
+
+        const startPoint = getSplineStartPoint(spline);
+        const endPoint = getSplineEndPoint(spline);
+
+        // For open splines, use NURBS evaluation (should be close to control points)
+        expect(startPoint.x).toBeCloseTo(0, 5);
+        expect(startPoint.y).toBeCloseTo(0, 5);
+        expect(endPoint.x).toBeCloseTo(15, 5);
+        expect(endPoint.y).toBeCloseTo(0, 5);
+    });
+
+    it('should handle complex closed spline with many control points', () => {
+        // Simulate the user's spline case with repeated first/last control point
+        const firstPoint = { x: 21.708883278168887, y: 1.613851388888886 };
+        const lastPoint = { x: 21.708883278168887, y: 1.613851388888886 };
+
+        const controlPoints = [
+            firstPoint,
+            { x: 21.674129183730425, y: 1.7731318518339956 },
+            { x: 21.650164482282484, y: 1.93451322467544 },
+            { x: 21.634983767493065, y: 2.0955095971919215 },
+            { x: 21.62658163303018, y: 2.2536350591621424 },
+            lastPoint,
+        ];
+
+        const spline: Spline = {
+            controlPoints,
+            knots: generateUniformKnotVector(controlPoints.length, 3),
+            weights: controlPoints.map(() => 1),
+            degree: 3,
+            fitPoints: [],
+            closed: true,
+        };
+
+        const startPoint = getSplineStartPoint(spline);
+        const endPoint = getSplineEndPoint(spline);
+
+        // Both should return the exact control point values
+        expect(startPoint.x).toBe(firstPoint.x);
+        expect(startPoint.y).toBe(firstPoint.y);
+        expect(endPoint.x).toBe(lastPoint.x);
+        expect(endPoint.y).toBe(lastPoint.y);
+
+        // Verify they match
+        expect(startPoint.x).toBe(endPoint.x);
+        expect(startPoint.y).toBe(endPoint.y);
+    });
+
+    it('should return new object copies, not references to control points', () => {
+        const spline: Spline = {
+            controlPoints: [
+                { x: 0, y: 0 },
+                { x: 10, y: 10 },
+                { x: 0, y: 0 },
+            ],
+            knots: [0, 0, 0, 1, 1, 1],
+            weights: [1, 1, 1],
+            degree: 2,
+            fitPoints: [],
+            closed: true,
+        };
+
+        const startPoint = getSplineStartPoint(spline);
+        const endPoint = getSplineEndPoint(spline);
+
+        // Modify the returned points
+        startPoint.x = 999;
+        endPoint.y = 888;
+
+        // Original control points should be unchanged
+        expect(spline.controlPoints[0].x).toBe(0);
+        expect(spline.controlPoints[0].y).toBe(0);
+        expect(spline.controlPoints[2].x).toBe(0);
+        expect(spline.controlPoints[2].y).toBe(0);
+    });
+
+    it('should fall back to NURBS evaluation if controlPoints is empty for closed spline', () => {
+        // Edge case: closed flag is true but no control points
+        const spline: Spline = {
+            controlPoints: [],
+            knots: [],
+            weights: [],
+            degree: 3,
+            fitPoints: [],
+            closed: true,
+        };
+
+        // Should not crash, though this is an invalid spline
+        // The function will fall through to getSplinePointAt which will handle the error
+        expect(() => getSplineStartPoint(spline)).toThrow();
+    });
+});

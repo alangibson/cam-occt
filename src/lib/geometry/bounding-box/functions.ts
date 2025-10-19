@@ -465,3 +465,25 @@ export function getShapePointsForBounds(shape: Shape): Point2D[] {
     const bounds = getBoundingBoxForShape(shape);
     return [bounds.min, bounds.max];
 }
+
+/**
+ * Checks if one bounding box is completely contained within another
+ * Used for quick rejection in geometric containment tests
+ *
+ * @param inner - The potentially contained bounding box
+ * @param outer - The potentially containing bounding box
+ * @param margin - Optional margin to allow for numerical tolerance (default: 0)
+ * @returns true if inner is fully contained within outer (with margin)
+ */
+export function isBBoxContainedInBBox(
+    inner: BoundingBox,
+    outer: BoundingBox,
+    margin: number = 0
+): boolean {
+    return (
+        inner.min.x >= outer.min.x - margin &&
+        inner.max.x <= outer.max.x + margin &&
+        inner.min.y >= outer.min.y - margin &&
+        inner.max.y <= outer.max.y + margin
+    );
+}

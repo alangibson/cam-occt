@@ -24,10 +24,20 @@ import {
 } from './constants';
 
 export function getSplineStartPoint(spline: Spline): Point2D {
+    // For closed splines, return the first control point directly
+    // This ensures UI consistency since closed splines should have matching start/end
+    if (spline.closed && spline.controlPoints && spline.controlPoints.length > 0) {
+        return { ...spline.controlPoints[0] };
+    }
     return getSplinePointAt(spline, 0);
 }
 
 export function getSplineEndPoint(spline: Spline): Point2D {
+    // For closed splines, return the last control point directly
+    // This ensures UI consistency since closed splines should have matching start/end
+    if (spline.closed && spline.controlPoints && spline.controlPoints.length > 0) {
+        return { ...spline.controlPoints[spline.controlPoints.length - 1] };
+    }
     return getSplinePointAt(spline, 1);
 }
 
@@ -221,6 +231,22 @@ function isClampedKnotVector(knots: number[], degree: number): boolean {
 }
 
 /**
+ * Check if a spline has a clamped knot vector and emit warning if not
+ */
+function checkAndWarnUnclampedSpline(spline: Spline): void {
+    if (!spline.knots || spline.knots.length === 0) {
+        return; // No knots to check
+    }
+
+    if (!isClampedKnotVector(spline.knots, spline.degree)) {
+        console.warn(
+            `[SPLINE WARNING] Unclamped spline detected: degree=${spline.degree}, ` +
+            `controlPoints=${spline.controlPoints.length}, knots=[${spline.knots.slice(0, spline.degree + 1).join(',')}...${spline.knots.slice(-(spline.degree + 1)).join(',')}]`
+        );
+    }
+}
+
+/**
  * Convert uniform or invalid knot vectors to proper clamped NURBS format
  *
  * @param knots Original knot vector
@@ -271,6 +297,10 @@ function createNurbsCurve(spline: Spline): VerbCurve {
             'Spline control points cannot be null, undefined, or empty'
         );
     }
+
+    // Warn if spline has unclamped knot vector
+    checkAndWarnUnclampedSpline(spline);
+
     // Convert control points to 3D format for verb
     const controlPoints3D: number[][] = spline.controlPoints.map((p) => [
         p.x,

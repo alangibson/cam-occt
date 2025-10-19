@@ -19,7 +19,10 @@ import {
     isChainClosed,
     isChainContainedInChain,
 } from '$lib/geometry/chain/functions';
-import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
+import {
+    calculateChainBoundingBox,
+    isBBoxContainedInBBox,
+} from '$lib/geometry/bounding-box/functions';
 import type { PartDetectionParameters } from './interfaces';
 import {
     isPointInPolygon,
@@ -126,8 +129,16 @@ export function buildContainmentHierarchy(
         for (let j = 0; j < i; j++) {
             const potential = chainsWithArea[j];
 
-            // Skip if potential parent has same or smaller area
+            // PERFORMANCE: Skip if potential parent has same or smaller area
+            // A chain cannot be contained by a chain with less or equal area
             if (potential.area <= current.area) continue;
+
+            // PERFORMANCE: Early exit if we found a parent and remaining candidates
+            // are much larger. If bestParent exists and potential is significantly
+            // larger than bestParent, skip it (we want the smallest containing parent)
+            if (bestParent !== null && potential.area > smallestArea * 2) {
+                continue;
+            }
 
             // Do full geometric containment check
             let isContained = isChainContainedInChain(
