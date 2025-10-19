@@ -341,16 +341,15 @@ describe('Spline Tessellation', () => {
     });
 
     describe('createAdaptiveTessellationConfig', () => {
-        it('should create appropriate config for simple splines', () => {
+        it('should always create adaptive config', () => {
             const config = createAdaptiveTessellationConfig(linearSpline, 0.01);
 
-            expect(config.method).toBe('uniform-sampling');
+            expect(config.method).toBe('adaptive-sampling');
             expect(config.tolerance).toBe(0.01);
             expect(config.numSamples).toBeGreaterThanOrEqual(10);
-            expect(config.numSamples).toBeLessThanOrEqual(50);
         });
 
-        it('should create appropriate config for complex splines', () => {
+        it('should use specified tolerance', () => {
             const complexSpline: Spline = {
                 controlPoints: Array.from({ length: 20 }, (_, i) => ({
                     x: i,
@@ -368,22 +367,20 @@ describe('Spline Tessellation', () => {
                 0.001
             );
 
-            expect(['verb-nurbs', 'adaptive-sampling']).toContain(
-                config.method
-            );
+            expect(config.method).toBe('adaptive-sampling');
             expect(config.tolerance).toBe(0.001);
             expect(config.maxSamples).toBeGreaterThan(config.numSamples!);
         });
 
-        it('should handle closed splines appropriately', () => {
+        it('should provide reasonable defaults', () => {
             const config = createAdaptiveTessellationConfig(closedSpline, 0.01);
 
-            // Closed splines should get slightly more complex treatment
+            expect(config.method).toBe('adaptive-sampling');
             expect(config.numSamples).toBeGreaterThan(10);
             expect(config.timeoutMs).toBeGreaterThan(1000);
         });
 
-        it('should handle weighted splines appropriately', () => {
+        it('should work with any spline type', () => {
             const weightedSpline: Spline = {
                 ...quadraticBezier,
                 weights: [1, 2, 1], // Non-uniform weights
@@ -394,8 +391,8 @@ describe('Spline Tessellation', () => {
                 0.01
             );
 
-            // Weighted splines are more complex
-            expect(config.numSamples).toBeGreaterThan(15);
+            expect(config.method).toBe('adaptive-sampling');
+            expect(config.tolerance).toBe(0.01);
         });
     });
 

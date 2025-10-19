@@ -11,3 +11,4 @@ tests/output
 report/
 coverage/
 .wrangler/
+tests/dxf/non-free

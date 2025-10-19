@@ -22,9 +22,9 @@ export const SPLINE_SAMPLE_COUNT = 100;
 export const VALIDATION_SAMPLE_COUNT = 50;
 
 /**
- * Fine tessellation tolerance for spline rendering (pixels)
+ * Adaptive tessellation tolerance for spline rendering.
  */
-export const SPLINE_TESSELLATION_TOLERANCE: number = 0.1;
+export const SPLINE_TESSELLATION_TOLERANCE: number = 1e-7;
 
 /**
  * Spline complexity weight multiplier
@@ -37,16 +37,17 @@ export const SPLINE_COMPLEXITY_WEIGHT_MULTIPLIER = 1.5;
 export const CLOSED_SPLINE_COMPLEXITY_MULTIPLIER = 1.2;
 
 /**
- * Maximum number of tessellation samples for splines
- * Increased to support high-detail splines with many control points (e.g., 288)
+ * Maximum number of tessellation samples for uniform sampling
+ * This limit applies only to uniform sampling, not adaptive
  */
 export const MAX_SPLINE_TESSELLATION_SAMPLES = 1000;
 
 /**
  * Maximum number of adaptive tessellation samples
- * Increased to support very complex splines with adaptive refinement
+ * Set to a very high value to effectively remove limits
+ * Adaptive tessellation will generate as many points as needed based on curvature
  */
-export const MAX_ADAPTIVE_TESSELLATION_SAMPLES = 2000;
+export const MAX_ADAPTIVE_TESSELLATION_SAMPLES = Number.MAX_SAFE_INTEGER;
 
 /**
  * Standard tessellation timeout in milliseconds

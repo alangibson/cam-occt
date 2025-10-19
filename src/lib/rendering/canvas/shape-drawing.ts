@@ -9,6 +9,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { normalizeAngle } from '$lib/geometry/math/functions';
@@ -122,21 +123,36 @@ export function drawEllipse(
 export function drawSpline(
     ctx: CanvasRenderingContext2D,
     spline: Spline,
-    _shape: Shape
+    shape: Shape
 ): void {
-    // Use adaptive tessellation config based on spline complexity
-    // This ensures complex splines with many control points get sufficient detail
-    const config = createAdaptiveTessellationConfig(
-        spline,
-        SPLINE_TESSELLATION_TOLERANCE
-    );
+    const tolerance = SPLINE_TESSELLATION_TOLERANCE;
 
-    // Tessellate spline with adaptive configuration
-    const result = tessellateSpline(spline, config);
+    // Check if we have a valid cached tessellation
+    let tessellatedPoints: Point2D[];
 
-    if (!result.success || result.points.length < 2) return;
+    if (
+        shape.tessellationCache &&
+        shape.tessellationCache.tolerance === tolerance
+    ) {
+        // Use cached tessellation
+        tessellatedPoints = shape.tessellationCache.points;
+    } else {
+        // Compute new tessellation
+        const config = createAdaptiveTessellationConfig(spline, tolerance);
+        const result = tessellateSpline(spline, config);
 
-    const tessellatedPoints = result.points;
+        if (!result.success || result.points.length < 2) return;
+
+        tessellatedPoints = result.points;
+
+        // Cache the tessellation on the shape object
+        shape.tessellationCache = {
+            points: tessellatedPoints,
+            tolerance: tolerance,
+            timestamp: Date.now(),
+        };
+    }
+
     if (tessellatedPoints.length < 2) return;
 
     ctx.beginPath();

@@ -387,10 +387,19 @@ export class HitTestUtils {
 
             case GeometryType.SPLINE:
                 const spline = shape.geometry as Spline;
-                // For hit testing, use properly evaluated NURBS points
-                const evaluatedPoints = tessellateSpline(spline, {
-                    numSamples: 50,
-                }).points; // Use fewer points for hit testing performance
+
+                // Use cached tessellation if available, otherwise compute
+                let evaluatedPoints: Point2D[];
+
+                if (shape.tessellationCache) {
+                    // Reuse the rendering cache for consistency and performance
+                    evaluatedPoints = shape.tessellationCache.points;
+                } else {
+                    // Cache doesn't exist yet - compute with fewer points for hit testing
+                    evaluatedPoints = tessellateSpline(spline, {
+                        numSamples: 50,
+                    }).points;
+                }
 
                 if (!evaluatedPoints || evaluatedPoints.length < 2)
                     return false;
