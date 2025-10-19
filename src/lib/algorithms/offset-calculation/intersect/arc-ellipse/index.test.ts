@@ -3,10 +3,10 @@ import {
     findEllipseArcIntersections,
     findEllipseArcIntersectionsVerb,
 } from './index';
-import type { Shape } from '$lib/types/geometry';
-import type { Arc } from '$lib/geometry/arc';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Arc-Ellipse Intersection', () => {
     const createEllipseShape = (

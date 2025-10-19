@@ -1,6 +1,10 @@
-import type { Circle } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Arc, Line, Point2D, Polyline, Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 import {
     getShapeEndPoint,
@@ -10,7 +14,7 @@ import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-ex
 import {
     CONFIDENCE_HIGH_THRESHOLD,
     CONFIDENCE_THRESHOLD,
-    MAX_ITERATIONS,
+    DEFAULT_EXTENSION_LENGTH_MM,
 } from '$lib/geometry/constants';
 
 // Import intersection functions from dedicated modules and chain module
@@ -53,9 +57,6 @@ import { findEllipseArcIntersectionsVerb } from './arc-ellipse/index';
 // Import spline-polyline intersection from dedicated module
 import { findSplinePolylineIntersectionsVerb } from './polyline-spline/index';
 
-// Re-export shared utility for backward compatibility
-export { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
-
 /**
  * Intersection Detection Module
  *
@@ -91,7 +92,7 @@ export function findShapeIntersections(
     shape2: Shape,
     tolerance: number = DEFAULT_CLUSTERING_TOLERANCE,
     allowExtensions: boolean = false,
-    extensionLength: number = MAX_ITERATIONS,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM,
     intersectionType: IntersectionType = DEFAULT_INTERSECTION_TYPE
 ): IntersectionResult[] {
     const intersections: IntersectionResult[] = findIntersectionsByType(
@@ -124,7 +125,7 @@ export function findIntersectionsByType(
     shape1: Shape,
     shape2: Shape,
     allowExtensions: boolean = false,
-    extensionLength: number = MAX_ITERATIONS,
+    extensionLength: number = DEFAULT_EXTENSION_LENGTH_MM,
     intersectionType: IntersectionType = DEFAULT_INTERSECTION_TYPE
 ): IntersectionResult[] {
     const type1: string = shape1.type;

@@ -1,16 +1,12 @@
 import type { OperationParams } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
-import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
 import {
-    calculateCircleAngle,
-    createArcFromCircle,
-    determineCircleExtension,
-    getCirclePoint,
     processCircleOperation,
     validateCircleIntersectionPoint,
 } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
-import type { Point2D } from '$lib/types/geometry';
-import type { Circle } from '$lib/geometry/circle';
-import type { Arc } from '$lib/geometry/arc';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 
 /**
  * Circle Extension Module
@@ -118,11 +114,3 @@ export function isPointOnCircle(
         distance: validation.distance || 0,
     };
 }
-
-// Re-export shared functions for backward compatibility
-export {
-    calculateCircleAngle,
-    determineCircleExtension,
-    createArcFromCircle,
-    getCirclePoint,
-};

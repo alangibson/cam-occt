@@ -1,7 +1,10 @@
-import type { Circle } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import { generateId } from '$lib/domain/id';
-import { type Arc, GeometryType, type Point2D, type Shape } from '$lib/types';
-import { pointDistance } from '..';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     type KeepSide,
     type TrimResult,

@@ -1,19 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { offsetChain } from './offset';
 import { scaleShape } from '$lib/geometry/shape/functions';
-import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
-import { calculateDynamicTolerance } from '$lib/geometry/bounding-box';
-import {
-    type Drawing,
-    GeometryType,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
+import { calculateDynamicTolerance } from '$lib/geometry/bounding-box/functions';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { generateId } from '$lib/domain/id';
 
 describe('offsetChain Polyline Support', () => {

@@ -15,16 +15,15 @@ import { rapidStore } from '$lib/stores/rapids/store';
 import { uiStore } from '$lib/stores/ui/store';
 import { tessellationStore } from '$lib/stores/tessellation/store';
 import { overlayStore } from '$lib/stores/overlay/store';
-import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { settingsStore } from '$lib/stores/settings/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import type { PersistedState } from './interfaces';
-import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
+import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import {
     MeasurementSystem,
     ImportUnitSetting,
@@ -32,7 +31,7 @@ import {
     PreprocessingStep,
     RapidOptimizationAlgorithm,
     OffsetImplementation,
-} from '$lib/stores/settings/interfaces';
+} from '$lib/config/settings/enums';
 
 // Default application settings for tests
 const defaultApplicationSettings = {
@@ -171,17 +170,6 @@ vi.mock('../overlay/store', () => ({
     },
 }));
 
-vi.mock('../lead-warnings/store', () => ({
-    leadWarningsStore: {
-        subscribe: vi.fn((fn) => {
-            fn({});
-            return () => {};
-        }),
-        clearAllWarnings: vi.fn(),
-        addWarning: vi.fn(),
-    },
-}));
-
 vi.mock('../prepare-stage/store', () => ({
     prepareStageStore: {
         subscribe: vi.fn((fn) => {
@@ -297,11 +285,6 @@ vi.mock('svelte/store', () => ({
             return {
                 currentStage: WorkflowStage.IMPORT,
                 overlays: {},
-            };
-        }
-        if (store === leadWarningsStore) {
-            return {
-                warnings: [],
             };
         }
         if (store === prepareStageStore) {
@@ -424,7 +407,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -493,7 +475,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -561,7 +542,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -637,7 +617,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -706,7 +685,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -778,7 +756,6 @@ describe('storage/store', () => {
                 ],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -859,7 +836,6 @@ describe('storage/store', () => {
                         toolHead: undefined,
                     },
                 },
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -939,7 +915,6 @@ describe('storage/store', () => {
                         toolHead: undefined,
                     },
                 },
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -1025,7 +1000,6 @@ describe('storage/store', () => {
                         toolHead: undefined,
                     },
                 },
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -1104,7 +1078,6 @@ describe('storage/store', () => {
                         toolHead: { x: 100, y: 100, visible: true },
                     },
                 },
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: DEFAULT_ALGORITHM_PARAMETERS_MM,
                     chainNormalizationResults: [],
@@ -1176,7 +1149,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: {
                         ...DEFAULT_ALGORITHM_PARAMETERS_MM,
@@ -1255,7 +1227,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: {
                         ...DEFAULT_ALGORITHM_PARAMETERS_MM,
@@ -1335,7 +1306,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: {
                         ...DEFAULT_ALGORITHM_PARAMETERS_MM,
@@ -1415,7 +1385,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: {
                     algorithmParams: {
                         ...DEFAULT_ALGORITHM_PARAMETERS_MM,
@@ -1494,7 +1463,6 @@ describe('storage/store', () => {
                 tessellationPoints: [],
                 overlayStage: WorkflowStage.IMPORT,
                 overlays: {},
-                leadWarnings: [],
                 prepareStageState: null,
                 operations: [],
                 cuts: [],
@@ -1544,7 +1512,6 @@ describe('storage/store', () => {
             expect(uiStore.subscribe).toHaveBeenCalled();
             expect(tessellationStore.subscribe).toHaveBeenCalled();
             expect(overlayStore.subscribe).toHaveBeenCalled();
-            expect(leadWarningsStore.subscribe).toHaveBeenCalled();
             expect(prepareStageStore.subscribe).toHaveBeenCalled();
             expect(operationsStore.subscribe).toHaveBeenCalled();
             expect(cutStore.subscribe).toHaveBeenCalled();

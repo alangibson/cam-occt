@@ -1,10 +1,7 @@
-import {
-    type Arc,
-    GeometryType,
-    type Line,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect';
 import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';
@@ -15,6 +12,7 @@ import { type SegmentPosition } from '$lib/algorithms/offset-calculation/interse
 import { findIntersectionsByType } from '$lib/algorithms/offset-calculation/intersect';
 // Import polyline helper functions from the polyline-spline module
 import { calculatePolylineParameter } from '$lib/algorithms/offset-calculation/intersect/polyline-spline/helpers';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 /**
  * Type guard to check if a segment is a Line

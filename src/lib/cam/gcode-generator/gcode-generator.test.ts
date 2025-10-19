@@ -1,11 +1,14 @@
-import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { describe, expect, it } from 'vitest';
-import type { Drawing, Shape, CutPath } from '$lib/types';
-import type { Spline } from '$lib/geometry/spline';
-import { CutterCompensation, Unit } from '$lib/types';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { CutPath } from '$lib/cam/cut-generator/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import { Unit } from '$lib/config/units/units';
 import { generateGCode } from './gcode-generator';
-import type { Circle } from '$lib/geometry/circle';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 
 describe('generateGCode', () => {
     const mockDrawing: Drawing = {

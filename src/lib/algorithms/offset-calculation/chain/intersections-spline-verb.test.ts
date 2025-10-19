@@ -1,15 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import type { Arc } from '$lib/geometry/arc';
-import type { Polyline } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
-import type { Circle, Ellipse, Line, Point2D, Shape } from '$lib/types';
-import { GeometryType } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { findSplineLineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/line-spline/index';
 import { findSplineSplineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/spline-spline/index';
 import { findSplinePolylineIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/polyline-spline/index';
 import { findSplineCircleIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/circle-spline';
 import { findSplineArcIntersectionsVerb } from '$lib/algorithms/offset-calculation/intersect/spline-arc/index';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 
 describe('intersections-spline-verb', () => {
     // Helper function to create test spline

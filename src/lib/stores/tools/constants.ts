@@ -1,4 +1,4 @@
-import type { Tool } from './interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
 
 // Default tool values for new tools
 export const DEFAULT_TOOL_VALUES: Omit<Tool, 'id' | 'toolNumber' | 'toolName'> =

@@ -1,5 +1,6 @@
-import type { Polyline, Shape } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import verb from 'verb-nurbs';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';

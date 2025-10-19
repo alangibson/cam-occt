@@ -1,5 +1,5 @@
 import verb, { type VerbCurve, type VerbVector } from 'verb-nurbs';
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type {
     Spline,
     SplineTessellationConfig,
@@ -12,16 +12,18 @@ import {
     GEOMETRIC_PRECISION_TOLERANCE,
     INTERSECTION_TOLERANCE,
     STANDARD_TESSELLATION_COUNT,
-} from '$lib/geometry/math';
-import { MAX_ITERATIONS, STANDARD_GRID_SPACING } from '$lib/constants/index';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+} from '$lib/geometry/math/constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import {
     CLOSED_SPLINE_COMPLEXITY_MULTIPLIER,
     DEFAULT_CONFIG,
     DEFAULT_SPLINE_DEGREE,
     HIGH_COMPLEXITY_TIMEOUT_MS,
+    HIGH_SPLINE_COMPLEXITY_THRESHOLD,
     MAX_ADAPTIVE_TESSELLATION_SAMPLES,
     MAX_SPLINE_TESSELLATION_SAMPLES,
+    MIN_SPLINE_SAMPLES,
+    SIMPLE_SPLINE_COMPLEXITY_THRESHOLD,
     SPLINE_COMPLEXITY_WEIGHT_MULTIPLIER,
     SPLINE_SAMPLE_COUNT,
     SPLINE_TESSELLATION_TOLERANCE,
@@ -647,7 +649,7 @@ export function createAdaptiveTessellationConfig(
         Math.max(STANDARD_TESSELLATION_COUNT, complexityScore * 2)
     );
 
-    if (complexityScore < STANDARD_GRID_SPACING) {
+    if (complexityScore < SIMPLE_SPLINE_COMPLEXITY_THRESHOLD) {
         method = 'uniform-sampling';
         numSamples = STANDARD_TESSELLATION_COUNT;
     } else if (complexityScore > SPLINE_SAMPLE_COUNT) {
@@ -663,11 +665,11 @@ export function createAdaptiveTessellationConfig(
             numSamples * TESSELLATION_SAMPLE_MULTIPLIER
         ),
         minSamples: Math.max(
-            STANDARD_GRID_SPACING,
+            MIN_SPLINE_SAMPLES,
             Math.floor(numSamples / TESSELLATION_SAMPLE_MULTIPLIER)
         ),
         timeoutMs:
-            complexityScore > MAX_ITERATIONS
+            complexityScore > HIGH_SPLINE_COMPLEXITY_THRESHOLD
                 ? HIGH_COMPLEXITY_TIMEOUT_MS
                 : STANDARD_TESSELLATION_TIMEOUT_MS,
     };

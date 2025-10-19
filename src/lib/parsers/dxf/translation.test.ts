@@ -1,13 +1,23 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
-import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
+import {
+    polylineToPoints,
+    polylineToVertices,
+} from '$lib/geometry/polyline/functions';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
-import { getBoundingBoxForArc } from '$lib/geometry/bounding-box';
+import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import { getShapePoints } from '$lib/geometry/shape/functions';
-import type { Arc, Circle, Line, Polyline } from '$lib/types/geometry';
-import type { Point2D, Shape } from '$lib/types';
-import { EPSILON } from '$lib/geometry/math';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type {
+    Polyline,
+    PolylineVertex,
+} from '$lib/geometry/polyline/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { EPSILON } from '$lib/geometry/math/constants';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: Shape[]) {
@@ -88,8 +98,12 @@ EOF`;
             expect(drawing.bounds.max.y).toBeGreaterThan(0);
 
             // Check that shapes were translated
-            const lineShape = drawing.shapes.find((s) => s.type === 'line');
-            const circleShape = drawing.shapes.find((s) => s.type === 'circle');
+            const lineShape = drawing.shapes.find(
+                (s: Shape) => s.type === 'line'
+            );
+            const circleShape = drawing.shapes.find(
+                (s: Shape) => s.type === 'circle'
+            );
 
             if (lineShape) {
                 const lineGeom = lineShape.geometry as Line;
@@ -206,7 +220,7 @@ EOF`;
             expect(drawing.bounds.min.y).toBe(0);
 
             // All shapes should be in positive quadrant
-            drawing.shapes.forEach((shape) => {
+            drawing.shapes.forEach((shape: Shape) => {
                 switch (shape.type) {
                     case 'line':
                         const line: Line = shape.geometry as Line;
@@ -270,7 +284,7 @@ EOF`;
             };
 
             const polylineShape = drawing.shapes.find(
-                (s) => s.type === 'polyline'
+                (s: Shape) => s.type === 'polyline'
             );
             expect(polylineShape).toBeDefined();
 
@@ -278,7 +292,7 @@ EOF`;
                 const geom = polylineShape.geometry as Polyline;
 
                 // Check points array
-                polylineToPoints(geom).forEach((point) => {
+                polylineToPoints(geom).forEach((point: Point2D) => {
                     expect(point.x).toBeGreaterThanOrEqual(0);
                     expect(point.y).toBeGreaterThanOrEqual(0);
                 });
@@ -340,7 +354,7 @@ EOF`;
             };
 
             const polylineShape = drawing.shapes.find(
-                (s) => s.type === 'polyline'
+                (s: Shape) => s.type === 'polyline'
             );
             expect(polylineShape).toBeDefined();
 
@@ -348,7 +362,7 @@ EOF`;
                 const geom = polylineShape.geometry as Polyline;
 
                 // All coordinates should be non-negative
-                polylineToPoints(geom).forEach((point) => {
+                polylineToPoints(geom).forEach((point: Point2D) => {
                     expect(point.x).toBeGreaterThanOrEqual(0);
                     expect(point.y).toBeGreaterThanOrEqual(0);
                 });
@@ -356,7 +370,7 @@ EOF`;
                 // Polylines don't have a vertices property in our Polyline type
                 // They have a shapes property containing Line and Arc geometries
                 const vertices = polylineToVertices(geom);
-                vertices.forEach((vertex) => {
+                vertices.forEach((vertex: PolylineVertex) => {
                     expect(vertex.x).toBeGreaterThanOrEqual(0);
                     expect(vertex.y).toBeGreaterThanOrEqual(0);
                     // Bulge values should be preserved
@@ -415,7 +429,7 @@ EOF`;
             expect(drawing.shapes.length).toBeGreaterThan(1);
 
             // All shapes should be in positive quadrant
-            drawing.shapes.forEach((shape) => {
+            drawing.shapes.forEach((shape: Shape) => {
                 switch (shape.type) {
                     case 'line':
                         const line: Line = shape.geometry as Line;
@@ -526,10 +540,10 @@ EOF`;
 
             // Get the two lines
             const originalLines = originalDrawing.shapes.filter(
-                (s) => s.type === 'line'
+                (s: Shape) => s.type === 'line'
             );
             const translatedLines = translatedDrawing.shapes.filter(
-                (s) => s.type === 'line'
+                (s: Shape) => s.type === 'line'
             );
 
             expect(originalLines.length).toBe(2);
@@ -749,7 +763,7 @@ EOF`;
             expect(drawing.bounds.min.x).toBeCloseTo(0, 10);
             expect(drawing.bounds.min.y).toBeCloseTo(0, 10);
 
-            drawing.shapes.forEach((shape) => {
+            drawing.shapes.forEach((shape: Shape) => {
                 const bounds = getShapeBounds(shape);
                 expect(bounds.min.x).toBeGreaterThanOrEqual(-EPSILON); // Allow for floating point precision
                 expect(bounds.min.y).toBeGreaterThanOrEqual(-EPSILON);

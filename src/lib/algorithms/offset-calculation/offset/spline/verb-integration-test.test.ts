@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { offsetSpline } from './spline';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 
 describe('verb integration test for offset splines', () => {
     function createTestSpline(): Spline {

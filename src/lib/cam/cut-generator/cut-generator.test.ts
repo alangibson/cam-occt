@@ -1,20 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-    type Circle,
-    type CuttingParameters,
-    type Drawing,
-    type Line,
-    type Point2D,
-    type Shape,
-    Unit,
-} from '$lib/types';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { CuttingParameters } from '$lib/cam/gcode-generator/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { Unit } from '$lib/config/units/units';
 
-import { GeometryType, getShapePoints } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { getShapePoints } from '$lib/geometry/shape/functions';
 import { generateToolPaths } from './cut-generator';
 
 // Mock getShapePoints function
-vi.mock('$lib/geometry/shape', async () => {
-    const actual = await vi.importActual('$lib/geometry/shape');
+vi.mock('$lib/geometry/shape/functions', async () => {
+    const actual = await vi.importActual('$lib/geometry/shape/functions');
     return {
         ...actual,
         getShapePoints: vi.fn(),

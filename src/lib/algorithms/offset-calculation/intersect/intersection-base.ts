@@ -1,5 +1,5 @@
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
-import { EPSILON } from '$lib/geometry/math';
+import { EPSILON } from '$lib/geometry/math/constants';
 import { TOLERANCE_RELAXATION_MULTIPLIER } from '$lib/geometry/constants';
 
 /**

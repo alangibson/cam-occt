@@ -1,6 +1,7 @@
-import { type Geometry, type Point2D } from '$lib/types/geometry';
+import type { Geometry } from '$lib/geometry/shape/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Line } from './interfaces';
-import { EPSILON } from '$lib/geometry/math';
+import { EPSILON } from '$lib/geometry/math/constants';
 import { snapParameter } from '$lib/geometry/math/functions';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { TOLERANCE_RELAXATION_MULTIPLIER } from '$lib/geometry/constants';

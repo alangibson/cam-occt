@@ -3,11 +3,12 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { GeometryType } from '$lib/types/geometry';
-import { Unit } from '$lib/types';
-import type { Shape, Geometry } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { Unit } from '$lib/config/units/units';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Geometry } from '$lib/geometry/shape/types';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import {
     getLayerStatistics,
     squashLayers,
@@ -127,7 +128,7 @@ describe('Layer Squashing Algorithm', () => {
 
         // All shapes should have layer information (either from original layer or shape.layer)
         const shapesWithLayerInfo = squashedDrawing.shapes.filter(
-            (shape) => shape.metadata?.originalLayer || shape.layer
+            (shape: Shape) => shape.metadata?.originalLayer || shape.layer
         );
         expect(shapesWithLayerInfo.length).toBeGreaterThan(0);
     });

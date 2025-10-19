@@ -5,10 +5,10 @@
  * across polygon-utilities.ts, geometry-utils.ts, and geometric-operations.ts
  */
 
-import type { Point2D } from '$lib/types/geometry';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain/constants';
 import { doLineSegmentsIntersect } from '$lib/geometry/line/functions';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import { calculateDistanceBetweenPoints } from '$lib/geometry/math/functions';
 
 /**

@@ -1,14 +1,19 @@
-import type { Arc, Point2D, Shape } from '$lib/types/geometry';
-import { TOLERANCE } from '$lib/geometry/math/constants';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 import { generateId } from '$lib/domain/id';
-import { pointDistance } from '..';
 import {
     type KeepSide,
     type TrimResult,
 } from '$lib/algorithms/offset-calculation/trim/types';
 import { isAngleInArcRange } from '$lib/geometry/arc/functions';
 import { extendArcToPoint } from '$lib/algorithms/offset-calculation/extend/arc';
-import { FULL_CIRCLE_RADIANS, HALF_CIRCLE_DEG } from '$lib/geometry/circle';
+import {
+    FULL_CIRCLE_RADIANS,
+    HALF_CIRCLE_DEG,
+} from '$lib/geometry/circle/constants';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 
 /**
  * Adjust arc angles based on the trim point and which side to keep
@@ -136,7 +141,7 @@ export function trimArc(
             };
 
             // Validate the trimmed arc is not degenerate
-            if (!validateArcAngleRange(trimmedArc, TOLERANCE)) {
+            if (!validateArcAngleRange(trimmedArc, MACHINE_TOLERANCE)) {
                 result.errors.push(
                     'Trimmed arc would be degenerate (zero angular range)'
                 );
@@ -178,7 +183,7 @@ export function trimArc(
     };
 
     // Validate the trimmed arc is not degenerate
-    if (!validateArcAngleRange(trimmedArc, TOLERANCE)) {
+    if (!validateArcAngleRange(trimmedArc, MACHINE_TOLERANCE)) {
         result.errors.push(
             'Trimmed arc would be degenerate (zero angular range)'
         );

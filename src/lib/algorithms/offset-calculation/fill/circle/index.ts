@@ -1,4 +1,6 @@
-import type { Circle, Point2D, Shape } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type {
     FillOptions,
     FillResult,

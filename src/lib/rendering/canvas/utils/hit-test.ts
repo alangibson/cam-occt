@@ -2,25 +2,23 @@
  * Hit testing types and utilities for canvas rendering
  */
 
-import type {
-    Point2D,
-    Shape,
-    Line,
-    Circle,
-    Arc,
-    Polyline,
-    Ellipse,
-} from '$lib/types';
-import { GeometryType } from '$lib/types';
-import type { Spline } from '$lib/geometry/spline';
-import { tessellateSpline } from '$lib/geometry/spline';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { tessellateSpline } from '$lib/geometry/spline/functions';
 import {
     isFullEllipse,
     distanceFromEllipsePerimeter,
     transformPointToEllipseCoordinates,
-} from '$lib/geometry/ellipse/index';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+} from '$lib/geometry/ellipse/functions';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 /**
  * Types of objects that can be hit

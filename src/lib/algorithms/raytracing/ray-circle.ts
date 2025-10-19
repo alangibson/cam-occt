@@ -5,8 +5,8 @@
  * Circles always produce 0 or 2 intersections (never 1 unless tangent)
  */
 
-import type { Point2D } from '$lib/types/geometry';
-import type { Circle } from '$lib/geometry/circle';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import {

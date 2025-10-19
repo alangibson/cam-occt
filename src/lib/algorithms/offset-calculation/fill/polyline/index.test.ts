@@ -1,13 +1,10 @@
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '$lib/geometry/polyline';
-import {
-    GeometryType,
-    type Point2D,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+} from '$lib/geometry/polyline/functions';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { generateId } from '$lib/domain/id';
 import { describe, expect, it } from 'vitest';
 import {
@@ -15,6 +12,7 @@ import {
     type FillResult,
 } from '$lib/algorithms/offset-calculation/fill/types';
 import { fillPolylineToIntersection } from './index';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('fillPolylineToIntersection', () => {
     // Helper function to create test polylines

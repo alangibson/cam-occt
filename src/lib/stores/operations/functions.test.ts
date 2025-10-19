@@ -10,27 +10,51 @@ import {
     getChainCutDirection,
 } from './functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Tool } from '$lib/stores/tools/interfaces';
+import { KerfCompensation } from '$lib/stores/operations/enums';
+import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Operation } from './interfaces';
-import type { Cut } from '$lib/stores/cuts/interfaces';
-import type { DetectedPart } from '$lib/types';
-import { PartType } from '$lib/types';
-import { GeometryType } from '$lib/types/geometry';
-import { NormalSide } from '$lib/types/cam';
-import { reverseChain } from '$lib/geometry/chain';
+import type { Cut } from '$lib/cam/cut/interfaces';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
+import { PartType } from '$lib/cam/part/enums';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { reverseChain } from '$lib/geometry/chain/functions';
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
-} from '$lib/algorithms/leads/functions';
+} from '$lib/cam/lead/functions';
 
 // Mock dependencies
-vi.mock('$lib/geometry/chain', () => ({
+vi.mock('$lib/geometry/chain/functions', () => ({
     reverseChain: vi.fn(),
+    getChainStartPoint: vi.fn(
+        (chain) => chain.shapes[0]?.geometry?.start || { x: 0, y: 0 }
+    ),
+    getChainEndPoint: vi.fn((chain) => {
+        const lastShape = chain.shapes[chain.shapes.length - 1];
+        return lastShape?.geometry?.end || { x: 0, y: 0 };
+    }),
+    getChainPoints: vi.fn((chain) =>
+        chain.shapes.flatMap((s: Shape) => [
+            (s.geometry as { start: { x: number; y: number } }).start,
+            (s.geometry as { end: { x: number; y: number } }).end,
+        ])
+    ),
+    tessellateChain: vi.fn((chain) =>
+        chain.shapes.flatMap((s: Shape) => [
+            (s.geometry as { start: { x: number; y: number } }).start,
+            (s.geometry as { end: { x: number; y: number } }).end,
+        ])
+    ),
+    getChainTangent: vi.fn(() => ({ x: 1, y: 0 })),
+}));
+
+vi.mock('$lib/geometry/chain/constants', () => ({
     CHAIN_CLOSURE_TOLERANCE: 0.01,
 }));
 
@@ -38,11 +62,11 @@ vi.mock('$lib/algorithms/offset-calculation/offset-adapter', () => ({
     offsetChainAdapter: vi.fn(),
 }));
 
-vi.mock('$lib/algorithms/leads/lead-calculation', () => ({
+vi.mock('$lib/cam/lead/lead-calculation', () => ({
     calculateLeads: vi.fn(() => ({})), // Return empty LeadResult by default
 }));
 
-vi.mock('$lib/algorithms/leads/functions', () => ({
+vi.mock('$lib/cam/lead/functions', () => ({
     createLeadInConfig: vi.fn(),
     createLeadOutConfig: vi.fn(),
     convertLeadGeometryToPoints: vi.fn(() => []),

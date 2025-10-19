@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { findSplineArcIntersectionsVerb } from './index';
-import { GeometryType, type Shape } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
-import type { Arc } from '$lib/geometry/arc';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('findSplineArcIntersectionsVerb', () => {
     const createTestSpline = (): Shape => ({

@@ -6,18 +6,22 @@
  * represents the part outline and another represents holes.
  */
 
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Layer } from '$lib/cam/layer/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type {
-    Circle,
-    Drawing,
-    Line,
-    Point2D,
     Polyline,
     PolylineVertex,
-    Shape,
-} from '$lib/types';
-import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '$lib/geometry/shape';
-import { polylineToPoints, polylineToVertices } from '$lib/geometry/polyline';
+} from '$lib/geometry/polyline/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import {
+    polylineToPoints,
+    polylineToVertices,
+} from '$lib/geometry/polyline/functions';
 import { DUPLICATE_FILTERING_TOLERANCE_MM } from '$lib/algorithms/constants';
 
 export interface LayerSquashingOptions {
@@ -60,7 +64,8 @@ export function squashLayers(
 
     // Add shapes from individual layers if they exist
     if (drawing.layers) {
-        for (const [layerName, layer] of Object.entries(drawing.layers)) {
+        for (const [layerName, layerData] of Object.entries(drawing.layers)) {
+            const layer = layerData as Layer;
             if (layer.shapes && layer.shapes.length > 0) {
                 for (const shape of layer.shapes) {
                     const processedShape: Shape = {
@@ -296,7 +301,8 @@ export function getLayerStatistics(drawing: Drawing): {
     let totalShapes: number = mainShapes;
 
     if (drawing.layers) {
-        for (const [layerName, layer] of Object.entries(drawing.layers)) {
+        for (const [layerName, layerData] of Object.entries(drawing.layers)) {
+            const layer = layerData as Layer;
             const shapeCount: number = layer.shapes?.length || 0;
             layerCounts[layerName] = shapeCount;
             totalShapes += shapeCount;

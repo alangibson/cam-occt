@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import verb from 'verb-nurbs';
-import type { Line, Point2D } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
-import type { Circle } from '$lib/geometry/circle';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import {
     type SplineExtensionOptions,
     analyzeParameterLocation,
@@ -36,11 +37,14 @@ vi.mock('verb-nurbs', () => ({
 }));
 
 // Mock verb integration utils
-vi.mock('../../../utils/verb-integration-utils', () => ({
-    createVerbCurveFromSpline: vi.fn(() => ({
-        asNurbs: vi.fn(() => ({})),
-    })),
-}));
+vi.mock(
+    '$lib/algorithms/offset-calculation/intersect/verb-integration-utils',
+    () => ({
+        createVerbCurveFromSpline: vi.fn(() => ({
+            asNurbs: vi.fn(() => ({})),
+        })),
+    })
+);
 
 // Mock common utils
 vi.mock('./common', () => ({

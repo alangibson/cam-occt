@@ -1,17 +1,15 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { mkdirSync, writeFileSync } from 'fs';
 import { offsetEllipse } from './ellipse';
-import {
-    type Ellipse,
-    GeometryType,
-    type Point2D,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import verb from 'verb-nurbs';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 /**
  * Visual validation test for ellipse offsets

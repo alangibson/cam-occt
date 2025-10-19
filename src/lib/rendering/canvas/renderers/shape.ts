@@ -10,23 +10,21 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type {
-    Shape,
-    Line,
-    Arc,
-    Circle,
-    Polyline,
-    Ellipse,
-    Point2D,
-} from '$lib/types';
-import { GeometryType } from '$lib/types';
-import type { Spline } from '$lib/geometry/spline';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
     getShapeChainId,
     getChainShapeIds,
 } from '$lib/stores/chains/functions';
-import { tessellateSpline } from '$lib/geometry/spline';
-import { distanceFromEllipsePerimeter } from '$lib/geometry/ellipse/index';
+import { tessellateSpline } from '$lib/geometry/spline/functions';
+import { distanceFromEllipsePerimeter } from '$lib/geometry/ellipse/functions';
 import { drawNormalLine } from './normal-renderer-utils';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import { drawChevronArrow } from '$lib/rendering/canvas/utils/chevron-drawing';

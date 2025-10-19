@@ -1,31 +1,29 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { fillGapBetweenShapes } from './index';
 import type { GapContext, FillOptions } from './types';
-import { GeometryType } from '$lib/types/geometry';
-import type {
-    Shape,
-    Line,
-    Arc,
-    Circle,
-    Polyline,
-    Ellipse,
-    Geometry,
-} from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Geometry } from '$lib/geometry/shape/types';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
-import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import { fillLineToIntersection } from './line';
 import { fillArcToIntersection } from './arc';
 import { fillCircleToIntersection } from './circle';
 import { fillPolylineToIntersection } from './polyline';
 import { fillSplineToIntersection } from './spline';
 import { fillEllipseToIntersection } from './ellipse';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 // Mock the dependencies
-vi.mock('../intersect', () => ({
+vi.mock('$lib/algorithms/offset-calculation/intersect', () => ({
     findShapeIntersections: vi.fn(),
 }));
 
-vi.mock('../trim', () => ({
+vi.mock('$lib/algorithms/offset-calculation/shared/trim-extend-utils', () => ({
     pointDistance: vi.fn(),
 }));
 

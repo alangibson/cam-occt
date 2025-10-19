@@ -3,18 +3,19 @@ import { parseDXF } from './functions';
 import { readFileSync } from 'fs';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
-import {
-    type PolylineVertex,
-    polylineToVertices,
-} from '$lib/geometry/polyline';
-import type { Ellipse, Polyline } from '$lib/types/geometry';
+import type {
+    PolylineVertex,
+    Polyline,
+} from '$lib/geometry/polyline/interfaces';
+import { polylineToVertices } from '$lib/geometry/polyline/functions';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 
 describe('DXF Parser - Integration Tests', () => {
     describe('Whitespace handling', () => {
         it('should handle DXF content with leading whitespace', async () => {
             // Note: The dxf library may not handle leading whitespace on every line
             // This is a known limitation of the library
-            const dxfContentWithWhitespace = `        0
+            const dxfContentWithWhitespace: string = `        0
         SECTION
         2
         ENTITIES

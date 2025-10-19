@@ -12,7 +12,7 @@
  * - Automatic handling of trimming/gap-filling (done by Clipper2)
  */
 
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type {
     ChainOffsetParameters,
@@ -149,13 +149,3 @@ export async function offsetChain(
 
     return result;
 }
-
-// Re-export types for convenience
-export type {
-    ChainOffsetParameters,
-    ChainOffsetResult,
-    OffsetChain,
-} from '$lib/algorithms/offset-calculation/chain/types';
-
-// Re-export for direct WASM access if needed
-export { getClipper2 } from './clipper-init';

@@ -6,7 +6,7 @@
 
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import type { Cut } from './interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 
 /**
  * Helper function to check if program stage should be completed

@@ -1,6 +1,6 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { CutDirection } from '$lib/types/direction';
-import { reverseChain } from '$lib/geometry/chain';
+import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
+import { reverseChain } from '$lib/geometry/chain/functions';
 import {
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,
@@ -8,8 +8,9 @@ import {
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { DetectedPart, PartHole, Shape } from '$lib/types';
-import type { Tool } from '$lib/stores/tools/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { DetectedPart, Part } from '$lib/cam/part/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
 import type {
     ChainOffsetResult,
     OffsetCalculation,
@@ -17,19 +18,18 @@ import type {
     CutGenerationResult,
     CutLeadResult,
 } from './interfaces';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Cut } from '$lib/stores/cuts/interfaces';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+import { KerfCompensation } from '$lib/stores/operations/enums';
+import type { Cut } from '$lib/cam/cut/interfaces';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
     createLeadInConfig,
     createLeadOutConfig,
-} from '$lib/algorithms/leads/functions';
-import { calculateCutNormal } from '$lib/algorithms/cut-normal/calculate-cut-normal';
-import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
+} from '$lib/cam/lead/functions';
+import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
+import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import { settingsStore } from '$lib/stores/settings/store';
 import { get } from 'svelte/store';
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
-import { OptimizeStarts } from '$lib/types/optimize-starts';
+import { MeasurementSystem } from '$lib/config/settings/enums';
 import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
 
 /**
@@ -686,7 +686,7 @@ export async function generateCutsForPartTargetWithOperation(
     // Create cuts for all hole chains (including nested holes)
     let cutOrder: number = index + 1;
 
-    async function processHoles(holes: PartHole[], prefix: string = '') {
+    async function processHoles(holes: Part[], prefix: string = '') {
         for (let holeIndex = 0; holeIndex < holes.length; holeIndex++) {
             const hole = holes[holeIndex];
             // Use operation's preferred cut direction for the hole chain
@@ -930,7 +930,7 @@ export async function calculateCutLeads(
             part = parts?.find(
                 (p) =>
                     p.shell.chain.id === cut.chainId ||
-                    p.holes.some((h: PartHole) => h.chain.id === cut.chainId)
+                    p.holes.some((h: Part) => h.chain.id === cut.chainId)
             );
         }
 

@@ -1,8 +1,12 @@
-import { EPSILON, TOLERANCE } from '$lib/geometry/math/constants';
-import type { Line, Point2D, Shape } from '$lib/types/geometry';
+import { EPSILON, MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { generateId } from '$lib/domain/id';
-import { pointDistance } from '..';
-import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
+import {
+    pointDistance,
+    calculateLineParameter,
+} from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     type KeepSide,
     type TrimResult,
@@ -53,7 +57,7 @@ export function trimLine(
         Math.abs(lineVec.x * pointVec.y - lineVec.y * pointVec.x) / lineLength;
 
     // Use a more forgiving tolerance for parameter bounds to handle offset precision issues
-    const paramTolerance: number = Math.max(tolerance, TOLERANCE);
+    const paramTolerance: number = Math.max(tolerance, MACHINE_TOLERANCE);
 
     if (
         perpDistance > tolerance ||

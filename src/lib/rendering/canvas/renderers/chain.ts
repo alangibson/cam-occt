@@ -9,7 +9,7 @@
 import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import {
     HitTestType,
@@ -18,19 +18,20 @@ import {
 import { getChainById } from '$lib/stores/chains/functions';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import {
     getChainTangent,
     tessellateChain,
 } from '$lib/geometry/chain/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { PartHole } from '$lib/algorithms/part-detection/part-detection';
+import type { Part } from '$lib/cam/part/interfaces';
 import {
     getShapeStartPoint,
     getShapeEndPoint,
     getShapeNormal,
 } from '$lib/geometry/shape/functions';
 import { drawNormalLine } from './normal-renderer-utils';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/types/part-detection';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 
 // Constants for rendering
 const CHAIN_LINE_WIDTH = 1;
@@ -163,7 +164,7 @@ export class ChainRenderer extends BaseRenderer {
                 holeChainIds.add(hole.chain.id);
             }
             // Add nested holes recursively
-            const addNestedHoles = (holes: PartHole[]) => {
+            const addNestedHoles = (holes: Part[]) => {
                 for (const hole of holes) {
                     holeChainIds.add(hole.chain.id);
                     if (hole.holes && hole.holes.length > 0) {
@@ -186,7 +187,7 @@ export class ChainRenderer extends BaseRenderer {
             // Draw all shapes in the chain
             for (const chainShape of chain.shapes) {
                 const shape = state.drawing?.shapes.find(
-                    (s) => s.id === chainShape.id
+                    (s: Shape) => s.id === chainShape.id
                 );
                 if (shape) {
                     drawShape(ctx, shape);
@@ -264,7 +265,7 @@ export class ChainRenderer extends BaseRenderer {
      */
     private drawPartShapes(
         ctx: CanvasRenderingContext2D,
-        part: { shell: { chain: Chain }; holes: PartHole[] },
+        part: { shell: { chain: Chain }; holes: Part[] },
         state: RenderState
     ): void {
         // Draw shell chain
@@ -278,7 +279,7 @@ export class ChainRenderer extends BaseRenderer {
         }
 
         // Draw all hole chains
-        const drawHoles = (holes: PartHole[]) => {
+        const drawHoles = (holes: Part[]) => {
             for (const hole of holes) {
                 for (const chainShape of hole.chain.shapes) {
                     const shape = state.drawing?.shapes.find(

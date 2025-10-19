@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import _verb from 'verb-nurbs';
 import { offsetSpline } from './spline';
-import type { Point2D } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 describe('Spline offset adaptive refinement', () => {

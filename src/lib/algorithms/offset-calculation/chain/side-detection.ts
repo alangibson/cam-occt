@@ -1,4 +1,5 @@
-import type { Point2D, Shape } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type {
     OffsetSide,
@@ -11,8 +12,8 @@ import {
     getShapeMidpoint,
     getShapePointAt,
 } from '$lib/geometry/shape/functions';
-import { isPointInsideChainExact } from '$lib/algorithms/raytracing/point-in-chain';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 
 /**
  * Side Detection Module

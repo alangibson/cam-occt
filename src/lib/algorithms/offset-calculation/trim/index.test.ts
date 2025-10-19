@@ -5,8 +5,10 @@ import {
     trimConsecutiveShapes,
     trimShapeAtPoint,
 } from './index';
-import type { Shape, Line, Circle } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { generateId } from '$lib/domain/id';
 
 describe('trim/index additional coverage tests', () => {

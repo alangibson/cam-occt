@@ -6,9 +6,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { ShapeRenderer } from './shape';
 import { createEmptyRenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
-import { GeometryType } from '$lib/types';
-import type { Drawing, Shape, Line, Circle } from '$lib/types';
-import { Unit } from '$lib/utils/units';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import { Unit } from '$lib/config/units/units';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 
 // Mock HTMLCanvasElement for testing

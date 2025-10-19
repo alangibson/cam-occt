@@ -5,9 +5,11 @@
  * iterating through constituent shapes and aggregating crossings
  */
 
-import type { Arc } from '$lib/geometry/arc';
-import type { Line, Point2D, Polyline } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
 import { countRayLineCrossings, findRayLineIntersections } from './ray-line';

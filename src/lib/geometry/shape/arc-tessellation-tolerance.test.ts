@@ -6,8 +6,9 @@ import { describe, it, expect } from 'vitest';
 import { tessellateShape } from './functions';
 import type { Shape } from './interfaces';
 import { GeometryType } from './enums';
-import type { Arc, Point2D } from '$lib/types/geometry';
-import type { PartDetectionParameters } from '$lib/types/part-detection';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { PartDetectionParameters } from '$lib/cam/part/interfaces';
 
 /**
  * Calculate the maximum chord error (sagitta) for a tessellated arc

@@ -1,4 +1,4 @@
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 
 export interface Line {
     start: Point2D;

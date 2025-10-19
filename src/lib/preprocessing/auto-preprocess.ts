@@ -11,28 +11,26 @@ import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 import { tessellationStore } from '$lib/stores/tessellation/store';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-import { PreprocessingStep } from '$lib/stores/settings/interfaces';
+import { PreprocessingStep } from '$lib/config/settings/enums';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import {
     normalizeChain,
     analyzeChainTraversal,
-} from '$lib/algorithms/chain-normalization/chain-normalization';
+} from '$lib/geometry/chain/chain-normalization';
 import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
-import {
-    detectParts,
-    type PartDetectionWarning,
-} from '$lib/algorithms/part-detection/part-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
+import { type PartDetectionWarning } from '$lib/cam/part/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
-import { tessellateShape } from '$lib/geometry/shape';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
+    tessellateShape,
 } from '$lib/geometry/shape/functions';
 import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
-import type { AlgorithmParameters } from '$lib/types/algorithm-parameters';
+import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
 
 /**
  * Apply all enabled preprocessing steps in order

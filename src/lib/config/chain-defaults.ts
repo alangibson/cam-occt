@@ -5,14 +5,14 @@
  * Chains are connected sequences of shapes that form continuous cuts.
  */
 
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
-import { convertToCurrentSystem } from '$lib/utils/units';
+import { MeasurementSystem } from './settings/enums';
+import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_CHAIN_DETECTION_PARAMETERS_MM,
     DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM,
     type ChainDetectionParameters,
     type ChainNormalizationParameters,
-} from '$lib/types/algorithm-parameters';
+} from '$lib/preprocessing/algorithm-parameters';
 
 export class ChainDefaults {
     private measurementSystem: MeasurementSystem;

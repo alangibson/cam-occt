@@ -1,10 +1,10 @@
 <script lang="ts">
     import { onMount } from 'svelte';
-    import WorkflowBreadcrumbs from '../components/WorkflowBreadcrumbs.svelte';
-    import WorkflowContainer from '../components/WorkflowContainer.svelte';
-    import Footer from '../components/Footer.svelte';
-    import ToolTable from '../components/ToolTable.svelte';
-    import Settings from '../components/Settings.svelte';
+    import WorkflowBreadcrumbs from '$components/layout/WorkflowBreadcrumbs.svelte';
+    import WorkflowContainer from '$components/layout/WorkflowContainer.svelte';
+    import Footer from '$components/layout/Footer.svelte';
+    import ToolTable from '$components/pages/tool-table/ToolTable.svelte';
+    import Settings from '$components/pages/settings/Settings.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { uiStore } from '$lib/stores/ui/store';
     import { drawingStore } from '$lib/stores/drawing/store';
@@ -14,12 +14,10 @@
         saveApplicationState,
         clearApplicationState,
     } from '$lib/stores/storage/store';
-    import { Unit } from '$lib/utils/units';
+    import { Unit } from '$lib/config/units/units';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-    import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
-    import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
     import { settingsStore } from '$lib/stores/settings/store';
-    import { ImportUnitSetting } from '$lib/stores/settings/interfaces';
+    import { ImportUnitSetting } from '$lib/config/settings/enums';
 
     let cleanupAutoSave: (() => void) | null = null;
     let isMenuOpen = false;
@@ -48,8 +46,6 @@
 
         // Clear additional stores that aren't cleared by setDrawing
         prepareStageStore.reset();
-        leadWarningsStore.clearAllWarnings();
-        offsetWarningsStore.clearAllWarnings();
 
         // Reset workflow to import stage
         workflowStore.reset();

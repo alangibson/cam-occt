@@ -4,8 +4,8 @@ import {
     countRayArcCrossings,
     findRayArcIntersections,
 } from './ray-arc';
-import type { Arc } from '$lib/geometry/arc';
-import type { Point2D } from '$lib/types/geometry';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Ray, RayTracingConfig } from './types';
 
 describe('Ray-Arc Intersection', () => {

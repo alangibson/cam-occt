@@ -2,17 +2,14 @@ import { describe, expect, it } from 'vitest';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '$lib/geometry/polyline';
-import {
-    type Arc,
-    type Circle,
-    type Ellipse,
-    GeometryType,
-    type Line,
-    type Point2D,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+} from '$lib/geometry/polyline/functions';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { generateId } from '$lib/domain/id';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import {
@@ -21,7 +18,8 @@ import {
     trimShapeAtPoint,
 } from './index';
 import { type KeepSide, type TrimResult } from './types';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('trimming', () => {
     // Helper functions to create test shapes

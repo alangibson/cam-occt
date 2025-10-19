@@ -1,4 +1,6 @@
-import type { Ellipse, Polyline, Shape } from '$lib/types/geometry';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs.js';
 import verb from 'verb-nurbs';

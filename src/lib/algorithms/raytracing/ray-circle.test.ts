@@ -3,8 +3,8 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import type { Point2D } from '$lib/types/geometry';
-import type { Circle } from '$lib/geometry/circle';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ray } from './types';
 import {
     countHorizontalRayCircleCrossings,

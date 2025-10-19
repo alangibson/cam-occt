@@ -1,12 +1,13 @@
-import type { Point2D, Shape } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import type { ChainEndpoint } from '$lib/stores/overlay/interfaces';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 
 // Helper functions to generate chain overlay data
 export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {

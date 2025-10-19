@@ -1,6 +1,6 @@
-import type { Shape } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
-import type { Ellipse } from '$lib/geometry/ellipse';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { createVerbCurveFromEllipse } from '$lib/geometry/ellipse/nurbs';
 import { processSplineWithCurveIntersection } from '$lib/algorithms/offset-calculation/shared/spline-intersection-utils';

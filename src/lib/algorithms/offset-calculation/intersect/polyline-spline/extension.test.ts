@@ -1,8 +1,9 @@
 import { describe, expect, test } from 'vitest';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import { GeometryType, type Shape } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { findSplinePolylineIntersectionsVerb } from './index';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Spline-Polyline Extension Intersections', () => {
     test('should find intersection with extended polyline', () => {

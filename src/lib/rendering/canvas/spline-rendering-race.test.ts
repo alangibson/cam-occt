@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { get } from 'svelte/store';
-import { parseDXF } from '$lib/parsers/dxf';
+import { parseDXF } from '$lib/parsers/dxf/functions';
 import {
     detectShapeChains,
     setChainsDirection,
-} from '$lib/algorithms/chain-detection/chain-detection';
-import { detectParts } from '$lib/algorithms/part-detection/part-detection';
+} from '$lib/geometry/chain/chain-detection';
+import { detectParts } from '$lib/cam/part/part-detection';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
@@ -13,10 +13,11 @@ import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { settingsStore } from '$lib/stores/settings/store';
-import { OffsetImplementation } from '$lib/stores/settings/interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Shape } from '$lib/types';
+import { OffsetImplementation } from '$lib/config/settings/enums';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
+import { KerfCompensation } from '$lib/stores/operations/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

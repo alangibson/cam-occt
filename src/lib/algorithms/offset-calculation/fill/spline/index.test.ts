@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { GeometryType, type Point2D, type Shape } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import type {
     FillOptions,
     FillResult,
@@ -12,9 +13,10 @@ import {
     extendSplineToPoint,
     getSplinePoint,
 } from '$lib/algorithms/offset-calculation/extend/spline';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 // Mock the extend/spline module
-vi.mock('../../extend/spline', () => ({
+vi.mock('$lib/algorithms/offset-calculation/extend/spline', () => ({
     extendSplineToPoint: vi.fn(),
     determineSplineExtensionDirection: vi.fn(),
     calculateSplineExtension: vi.fn(),

@@ -1,4 +1,4 @@
-import type { Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { TrimPoint } from '$lib/algorithms/offset-calculation/chain/types';
 
 /**

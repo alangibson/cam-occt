@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { GeometryType, type Shape } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { findSplineLineIntersectionsVerb } from './line-spline/index';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Line-Spline Gap Intersection Tests', () => {
     // Create test spline - a cubic spline that we know works for gap intersection

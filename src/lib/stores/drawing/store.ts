@@ -1,56 +1,17 @@
 import { writable } from 'svelte/store';
-import {
-    type Drawing,
-    type Point2D,
-    type Shape,
-    WorkflowStage,
-} from '$lib/types';
-import { Unit, getPhysicalScaleFactor } from '$lib/utils/units';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { Unit } from '$lib/config/units/units';
+import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {
     moveShape,
     rotateShape,
     scaleShape,
 } from '$lib/geometry/shape/functions';
-import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box';
-import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { DrawingState, DrawingStore } from './interfaces';
 import { resetDownstreamStages } from './functions';
-
-const ZOOM_TO_FIT_MARGIN = 0.1; // 10% margin for zoom-to-fit
-
-/**
- * Helper function to calculate zoom-to-fit settings for a drawing
- */
-function calculateZoomToFitForDrawing(
-    drawing: Drawing,
-    canvasDimensions: { width: number; height: number } | null,
-    displayUnit: Unit
-): { scale: number; offset: Point2D } {
-    // If no canvas dimensions available, use default zoom settings
-    if (!canvasDimensions || drawing.shapes.length === 0) {
-        return { scale: 1, offset: { x: 0, y: 0 } };
-    }
-
-    try {
-        // Get bounding box for all shapes in the drawing
-        const boundingBox = getBoundingBoxForShapes(drawing.shapes);
-
-        // Get unit scale factor for proper display
-        const unitScale = getPhysicalScaleFactor(drawing.units, displayUnit);
-
-        // Calculate zoom-to-fit with 10% margin
-        return CoordinateTransformer.calculateZoomToFit(
-            boundingBox,
-            canvasDimensions.width,
-            canvasDimensions.height,
-            unitScale,
-            ZOOM_TO_FIT_MARGIN
-        );
-    } catch (error) {
-        console.warn('Failed to calculate zoom-to-fit:', error);
-        return { scale: 1, offset: { x: 0, y: 0 } };
-    }
-}
+import { calculateZoomToFitForDrawing } from '$lib/cam/drawing/functions';
 
 const initialState: DrawingState = {
     drawing: null,
@@ -113,11 +74,13 @@ function createDrawingStore(): DrawingStore {
                 const shapeObj =
                     typeof shapeIdOrShape === 'object'
                         ? shapeIdOrShape
-                        : state.drawing.shapes.find((s) => s.id === shapeId);
+                        : state.drawing.shapes.find(
+                              (s: Shape) => s.id === shapeId
+                          );
 
                 // Check if this is an original shape (in drawing.shapes)
                 const isOriginalShape = state.drawing.shapes.some(
-                    (s) => s.id === shapeId
+                    (s: Shape) => s.id === shapeId
                 );
 
                 if (isOriginalShape) {
@@ -161,7 +124,7 @@ function createDrawingStore(): DrawingStore {
                 if (!state.drawing) return state;
 
                 const shapes: Shape[] = state.drawing.shapes.filter(
-                    (shape) => !state.selectedShapes.has(shape.id)
+                    (shape: Shape) => !state.selectedShapes.has(shape.id)
                 );
 
                 // Reset downstream stages when shapes are deleted
@@ -178,12 +141,14 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.map((shape) => {
-                    if (shapeIds.includes(shape.id)) {
-                        return moveShape(shape, delta);
+                const shapes: Shape[] = state.drawing.shapes.map(
+                    (shape: Shape) => {
+                        if (shapeIds.includes(shape.id)) {
+                            return moveShape(shape, delta);
+                        }
+                        return shape;
                     }
-                    return shape;
-                });
+                );
 
                 // Reset downstream stages when shapes are moved
                 resetDownstreamStages('edit');
@@ -202,12 +167,14 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.map((shape) => {
-                    if (shapeIds.includes(shape.id)) {
-                        return scaleShape(shape, scaleFactor, origin);
+                const shapes: Shape[] = state.drawing.shapes.map(
+                    (shape: Shape) => {
+                        if (shapeIds.includes(shape.id)) {
+                            return scaleShape(shape, scaleFactor, origin);
+                        }
+                        return shape;
                     }
-                    return shape;
-                });
+                );
 
                 // Reset downstream stages when shapes are scaled
                 resetDownstreamStages('edit');
@@ -222,12 +189,14 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.map((shape) => {
-                    if (shapeIds.includes(shape.id)) {
-                        return rotateShape(shape, angle, origin);
+                const shapes: Shape[] = state.drawing.shapes.map(
+                    (shape: Shape) => {
+                        if (shapeIds.includes(shape.id)) {
+                            return rotateShape(shape, angle, origin);
+                        }
+                        return shape;
                     }
-                    return shape;
-                });
+                );
 
                 // Reset downstream stages when shapes are rotated
                 resetDownstreamStages('edit');

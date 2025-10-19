@@ -1,13 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
-import { CutDirection, LeadType } from '$lib/types/direction';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
+import { CutDirection } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
+import { KerfCompensation } from '$lib/stores/operations/enums';
 
 // Now import the modules we need
 import { operationsStore } from './store';
 import { cutStore } from '$lib/stores/cuts/store';
-import { leadWarningsStore } from '$lib/stores/lead-warnings/store';
-import { offsetWarningsStore } from '$lib/stores/offset-warnings/store';
 import type { Operation } from './interfaces';
 
 // Mock the stores before importing the module under test
@@ -80,8 +79,6 @@ Object.defineProperty(global, 'crypto', {
 
 // Get references to the mocked functions for easy access in tests
 const mockCutStore = vi.mocked(cutStore);
-const mockLeadWarningsStore = vi.mocked(leadWarningsStore);
-const mockOffsetWarningsStore = vi.mocked(offsetWarningsStore);
 
 describe('operationsStore', () => {
     beforeEach(() => {
@@ -163,7 +160,7 @@ describe('operationsStore', () => {
             expect(operations[0].name).toBe('Updated Operation');
         });
 
-        it('should clear warnings and regenerate cuts when updated', () => {
+        it('should regenerate cuts when updated', () => {
             const operation = createTestOperation();
             operationsStore.addOperation(operation);
 
@@ -171,12 +168,9 @@ describe('operationsStore', () => {
                 name: 'Updated',
             });
 
-            expect(
-                mockLeadWarningsStore.clearWarningsForOperation
-            ).toHaveBeenCalledWith('mock-uuid-123');
-            expect(
-                mockOffsetWarningsStore.clearWarningsForOperation
-            ).toHaveBeenCalledWith('mock-uuid-123');
+            // Verify operation was updated (warning stores removed)
+            const operations = get(operationsStore);
+            expect(operations[0].name).toBe('Updated');
         });
 
         it('should not update non-existent operation', () => {
@@ -201,12 +195,6 @@ describe('operationsStore', () => {
             expect(mockCutStore.deleteCutsByOperation).toHaveBeenCalledWith(
                 'mock-uuid-123'
             );
-            expect(
-                mockLeadWarningsStore.clearWarningsForOperation
-            ).toHaveBeenCalledWith('mock-uuid-123');
-            expect(
-                mockOffsetWarningsStore.clearWarningsForOperation
-            ).toHaveBeenCalledWith('mock-uuid-123');
         });
     });
 

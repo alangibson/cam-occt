@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { offsetSpline } from './spline';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { SVGBuilder } from '$lib/test/svg-builder';
 import { join } from 'path';
 import { writeFileSync, mkdirSync } from 'fs';
-import type { Shape } from '$lib/algorithms/offset-calculation/chain/types';
-import { GeometryType } from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Visual output of offset splines', () => {
     const outputDir = join(

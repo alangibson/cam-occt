@@ -1,7 +1,7 @@
 import type {
     DetectedPart,
     PartDetectionWarning,
-} from '$lib/algorithms/part-detection/part-detection';
+} from '$lib/cam/part/interfaces';
 
 export interface PartStore {
     parts: DetectedPart[];

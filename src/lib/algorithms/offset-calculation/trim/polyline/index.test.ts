@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-    GeometryType,
-    type Polyline,
-    type PolylineVertex,
-    type Shape,
-} from '$lib/types';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { trimPolyline } from './index';
 import { type KeepSide } from '$lib/algorithms/offset-calculation/trim/types';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
@@ -12,22 +8,29 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
-} from '$lib/geometry/polyline';
+} from '$lib/geometry/polyline/functions';
 import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
+import type {
+    Polyline,
+    PolylineVertex,
+} from '$lib/geometry/polyline/interfaces';
 
 // Mock dependencies
 vi.mock('$lib/domain/id', () => ({
     generateId: vi.fn(() => 'generated-id-123'),
 }));
 
-vi.mock('$lib/geometry/polyline', () => ({
+vi.mock('$lib/geometry/polyline/functions', () => ({
     polylineToPoints: vi.fn(),
     createPolylineFromVertices: vi.fn(),
     polylineToVertices: vi.fn(),
+}));
+
+vi.mock('$lib/geometry/polyline/constants', () => ({
     MIN_VERTICES_FOR_POLYLINE: 2,
 }));
 
-vi.mock('../../shared/trim-extend-utils', () => ({
+vi.mock('$lib/algorithms/offset-calculation/shared/trim-extend-utils', () => ({
     calculateLineParameter: vi.fn(),
 }));
 

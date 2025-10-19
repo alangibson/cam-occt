@@ -1,19 +1,18 @@
-import type { Shape, Point2D } from '$lib/types';
-import type { Polyline } from '$lib/geometry/polyline';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
-import {
-    MIN_VERTICES_FOR_POLYLINE,
-    polylineToPoints,
-} from '$lib/geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
+import { MIN_VERTICES_FOR_POLYLINE } from '$lib/geometry/polyline/constants';
 import {
     createSplitShape,
     reconstructChainFromSplit,
-} from './cut-optimization-utils';
+} from '$lib/cam/cut/cut-optimization-utils';
 import { splitShapeAtMidpoint } from '$lib/geometry/shape/functions';
-import type { StartPointOptimizationParameters } from '$lib/types/algorithm-parameters';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
+import type { StartPointOptimizationParameters } from '$lib/preprocessing/algorithm-parameters';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain/constants';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 
 /**

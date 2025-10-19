@@ -1,18 +1,14 @@
 import verb from 'verb-nurbs';
 import { EPSILON } from '$lib/geometry/math/constants';
-import {
-    type Ellipse,
-    GeometryType,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/chain';
-import {
-    DEFAULT_SPLINE_DEGREE,
-    generateUniformKnotVector,
-} from '$lib/geometry/spline';
-import { getEllipseParameters } from '$lib/geometry/ellipse/index';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { POLYGON_POINTS_MIN } from '$lib/geometry/chain/constants';
+import { generateUniformKnotVector } from '$lib/geometry/spline/functions';
+import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline/constants';
+import { getEllipseParameters } from '$lib/geometry/ellipse/functions';
 import {
     OffsetDirection,
     type OffsetResult,

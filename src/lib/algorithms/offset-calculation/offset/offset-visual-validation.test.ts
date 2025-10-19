@@ -2,22 +2,19 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import verb from 'verb-nurbs';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { tessellateEllipse } from '$lib/geometry/ellipse/index';
+import { tessellateEllipse } from '$lib/geometry/ellipse/functions';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '$lib/geometry/polyline';
+} from '$lib/geometry/polyline/functions';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import {
-    type Arc,
-    type Circle,
-    type Ellipse,
-    GeometryType,
-    type Line,
-    type Point2D,
-    type Polyline,
-    type Shape,
-} from '$lib/types/geometry';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
 import type { ChainOffsetResult } from '$lib/algorithms/offset-calculation/chain/types';
@@ -29,8 +26,9 @@ import { offsetLine } from './line/line';
 import { offsetPolyline } from './polyline/polyline';
 import { offsetSpline, tessellateVerbCurve } from './spline/spline';
 import { OffsetDirection } from './types';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { calculateSignedArea } from '$lib/geometry/chain/functions';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 // Type guard function to check if a shape has polyline geometry
 function isPolylineShape(

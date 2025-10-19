@@ -4,7 +4,7 @@ import {
     validateSplineGeometry2,
     validateSplineKnots,
 } from '$lib/geometry/spline/functions.js';
-import type { Spline } from '$lib/geometry/spline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 
 describe('spline-validation-utils', () => {
     const createValidSpline = (): Spline => ({

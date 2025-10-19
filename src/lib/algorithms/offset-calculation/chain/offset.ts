@@ -11,20 +11,23 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { generateId } from '$lib/domain/id';
 import { validateSplineGeometry2 } from '$lib/geometry/spline/functions';
-import { type SplineValidationResult } from '$lib/geometry/spline/interfaces';
-import type { Circle, Ellipse, Line, Polyline } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
-import type { Arc } from '$lib/geometry/arc';
-import { GeometryType } from '$lib/geometry/shape';
+import type {
+    SplineValidationResult,
+    Spline,
+} from '$lib/geometry/spline/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { findShapeIntersections } from '$lib/algorithms/offset-calculation/intersect';
 import { findPolylineSelfIntersections } from '$lib/algorithms/offset-calculation/intersect/polyline/self';
-import { polylineToPoints } from '$lib/geometry/polyline';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import { offsetShape } from '$lib/algorithms/offset-calculation/offset/index';
-import {
-    pointDistance,
-    trimConsecutiveShapes,
-} from '$lib/algorithms/offset-calculation/trim';
+import { trimConsecutiveShapes } from '$lib/algorithms/offset-calculation/trim';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import type { TrimResult } from '$lib/algorithms/offset-calculation/trim/types';
 import { fillGapBetweenShapes } from '$lib/algorithms/offset-calculation/fill';
 import type {
@@ -32,6 +35,7 @@ import type {
     GapContext,
 } from '$lib/algorithms/offset-calculation/fill/types';
 import { detectChainSide } from './side-detection';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import {
     type ChainOffsetParameters,
     type ChainOffsetResult,
@@ -39,7 +43,6 @@ import {
     type GapFillingResult,
     type IntersectionResult,
     type OffsetChain,
-    type Shape,
     type TrimPoint,
 } from './types';
 

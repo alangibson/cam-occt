@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { readFileSync, readdirSync, statSync } from 'fs';
 import { join } from 'path';
-import { STANDARD_TIMEOUT_MS } from '../../src/lib/constants/index.js';
 
 // Get all DXF files recursively
 function getAllDxfFiles(dir: string): string[] {
@@ -158,7 +157,7 @@ test.describe('DXF File Loading Tests', () => {
                     }
                 }, dxfContent);
 
-                await page.waitForTimeout(STANDARD_TIMEOUT_MS);
+                await page.waitForTimeout(1000);
 
                 if (errors.length > 0) {
                     allErrors.push({ file: dxfFile, errors: [...errors] });

@@ -1,14 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { cutStore } from './store';
-import type { Cut, CutsState } from './interfaces';
+import type { CutsState } from './interfaces';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { Shape } from '$lib/types';
-import { GeometryType } from '$lib/geometry/shape';
-import { NormalSide } from '$lib/types/cam';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Cut } from '$lib/cam/cut/interfaces';
 
 // Mock workflow store
 vi.mock('../workflow');

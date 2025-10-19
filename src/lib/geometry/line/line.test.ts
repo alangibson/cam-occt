@@ -7,9 +7,9 @@ import {
     reverseLine,
 } from './functions';
 import type { Line } from './interfaces';
-import type { Geometry } from '$lib/types/geometry';
-import type { Circle } from '$lib/geometry/circle';
-import type { Arc } from '$lib/geometry/arc';
+import type { Geometry } from '$lib/geometry/shape/types';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 
 describe('getLineStartPoint', () => {
     it('should return the start point of the line', () => {

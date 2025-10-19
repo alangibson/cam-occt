@@ -3,8 +3,11 @@
  */
 
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
-import type { Point2D, Shape, Line, Circle } from '$lib/types';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 
 /**
  * Constants for renderer utilities

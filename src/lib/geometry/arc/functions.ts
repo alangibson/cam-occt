@@ -1,12 +1,16 @@
-import { type Geometry, type Point2D } from '$lib/types/geometry';
+import type { Geometry } from '$lib/geometry/shape/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from './interfaces';
-import { EPSILON, GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
-import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle';
+import {
+    EPSILON,
+    GEOMETRIC_PRECISION_TOLERANCE,
+} from '$lib/geometry/math/constants';
+import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle/constants';
 import {
     DEFAULT_TESSELLATION_SEGMENTS,
     PRECISION_DECIMAL_PLACES,
 } from '$lib/geometry/constants';
-import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line';
+import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line/constants';
 import {
     ARC_TESSELLATION_CHORD_LENGTH,
     DEFAULT_ARC_TESSELLATION_POINTS,

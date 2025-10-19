@@ -1,5 +1,7 @@
 import { EPSILON } from '$lib/geometry/math/constants';
-import type { Ellipse, Point2D, Shape } from '$lib/types/geometry';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { generateId } from '$lib/domain/id';
 import type {
     KeepSide,

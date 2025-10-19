@@ -1,16 +1,19 @@
-import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+import type { Rapid } from '$lib/cam/rapid/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Drawing, DetectedPart, PartDetectionWarning } from '$lib/types';
-import type { LeadWarning } from '$lib/stores/lead-warnings/interfaces';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type {
+    DetectedPart,
+    PartDetectionWarning,
+} from '$lib/cam/part/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type {
     TessellationPoint,
     DrawingOverlay,
 } from '$lib/stores/overlay/interfaces';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
-import type { Tool } from '$lib/stores/tools/interfaces';
-import type { ApplicationSettings } from '$lib/stores/settings/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
+import type { ApplicationSettings } from '$lib/config/settings/interfaces';
 
 export interface PersistedState {
     // Drawing state
@@ -53,9 +56,6 @@ export interface PersistedState {
     // Overlay state
     overlayStage: string;
     overlays: Record<string, DrawingOverlay>;
-
-    // Lead warnings
-    leadWarnings: LeadWarning[];
 
     // Prepare stage state
     prepareStageState: PrepareStageState | null;

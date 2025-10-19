@@ -1,4 +1,4 @@
-import type { Arc } from '$lib/geometry/arc';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import {
     type ArcExtensionOptions,
     determineArcExtensionDirection as _determineArcExtensionDirection,

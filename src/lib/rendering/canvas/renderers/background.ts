@@ -6,9 +6,9 @@ import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import { screenToWorldDistance } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import { getDefaults } from '$lib/config';
+import { getDefaults } from '$lib/config/defaults-manager';
 
 // Constants for background rendering
 const ORIGIN_CROSS_COLOR = '#888888'; // Gray color as specified in CLAUDE.md

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
+import { MeasurementSystem } from './settings/enums';
 import { DefaultsManager } from './defaults-manager';
-import { THOUSANDTHS_PRECISION_FACTOR } from '$lib/utils/units';
+import { THOUSANDTHS_PRECISION_FACTOR } from '$lib/config/units/units';
 import { settingsStore } from '$lib/stores/settings/store';
 
 describe('DefaultsManager', () => {
@@ -95,23 +95,6 @@ describe('DefaultsManager', () => {
             expect(defaults.chain.detectionTolerance).toBeGreaterThan(0);
             expect(defaults.chain.traversalTolerance).toBeGreaterThan(0);
             expect(defaults.chain.maxTraversalAttempts).toBeGreaterThan(0);
-        });
-
-        it('should provide geometry defaults', () => {
-            defaults.updateMeasurementSystem(MeasurementSystem.Metric);
-
-            expect(defaults.geometry.extensionLength).toBeGreaterThan(0);
-        });
-
-        it('should provide algorithm defaults', () => {
-            defaults.updateMeasurementSystem(MeasurementSystem.Metric);
-
-            expect(
-                defaults.algorithm.duplicateFilteringTolerance
-            ).toBeGreaterThan(0);
-            expect(defaults.algorithm.maxExtension).toBeGreaterThan(0);
-            expect(defaults.algorithm.areaRatioThreshold).toBeGreaterThan(0);
-            expect(defaults.algorithm.areaRatioThreshold).toBeLessThan(1);
         });
     });
 

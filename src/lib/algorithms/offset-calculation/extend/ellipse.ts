@@ -1,11 +1,7 @@
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { OperationParams } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
-import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
 import {
-    calculateEllipseAngle,
-    createEllipticalArcFromEllipse,
-    determineEllipseExtension,
-    getEllipsePoint,
     processEllipseOperation,
     validateEllipseIntersectionPoint,
 } from '$lib/algorithms/offset-calculation/shared/fill-extend-ops';
@@ -144,11 +140,3 @@ export function isPointOnEllipse(
         distance: validation.distance || 0,
     };
 }
-
-// Re-export shared functions for backward compatibility
-export {
-    calculateEllipseAngle,
-    determineEllipseExtension,
-    createEllipticalArcFromEllipse,
-    getEllipsePoint,
-};

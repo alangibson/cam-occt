@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { findSplinePolylineIntersectionsVerb } from './index';
-import { GeometryType, type Shape } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('findSplinePolylineIntersectionsVerb error handling', () => {
     const createTestSpline = (): Shape => ({

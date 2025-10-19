@@ -3,7 +3,7 @@ import {
     generateUniformKnotVector,
     generateValidKnotVector,
     validateKnotVector,
-} from '$lib/geometry/spline';
+} from '$lib/geometry/spline/functions';
 
 describe('nurbs-utils', () => {
     describe('generateUniformKnotVector', () => {

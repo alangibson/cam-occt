@@ -1,17 +1,15 @@
-import type {
-    CuttingParameters,
-    Drawing,
-    Point2D,
-    Shape,
-    CutPath,
-    Lead,
-} from '$lib/types';
+import type { CutPath } from './interfaces';
+import type { CuttingParameters } from '$lib/cam/gcode-generator/interfaces';
+import type { Lead } from './types';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { generateId } from '$lib/domain/id';
-import { getShapePoints } from '$lib/geometry/shape';
+import { getShapePoints } from '$lib/geometry/shape/functions';
 import {
     DEFAULT_LEAD_IN_LENGTH_MM,
     DEFAULT_LEAD_OUT_LENGTH_MM,
-} from '$lib/algorithms/leads/constants';
+} from '$lib/cam/lead/constants';
 
 export function generateToolPaths(
     drawing: Drawing,

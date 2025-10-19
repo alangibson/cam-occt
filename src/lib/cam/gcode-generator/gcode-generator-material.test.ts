@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
-import { CutterCompensation } from '$lib/types/cam';
-import { type Drawing, type CutPath, Unit } from '$lib/types';
+import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { CutPath } from '$lib/cam/cut-generator/interfaces';
+import { Unit } from '$lib/config/units/units';
 
 describe('GCode Generator - Temporary Materials', () => {
     const mockDrawing: Drawing = {

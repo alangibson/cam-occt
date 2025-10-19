@@ -12,10 +12,11 @@ export const EPSILON: number = 1e-10;
  * Machining tolerance
  * TODO this is actually a property of the machine, so it should not be constant.
  */
-export const TOLERANCE: number = 0.05;
+export const MACHINE_TOLERANCE: number = 0.05;
 
 /**
- * Intersection tolerance for precise geometric intersections and mathematical operations
+ * Intersection tolerance for precise geometric intersections and
+ * mathematical operations
  */
 export const INTERSECTION_TOLERANCE: number = 1e-6;
 

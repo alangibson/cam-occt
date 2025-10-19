@@ -1,5 +1,5 @@
-import type { Shape } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { processSplineIntersection } from '$lib/algorithms/offset-calculation/shared/spline-intersection-utils';
 import { DEFAULT_EXTENSION_LENGTH_MM } from '$lib/geometry/constants';

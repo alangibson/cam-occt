@@ -1,5 +1,6 @@
-import { GeometryType, type Shape } from '$lib/types/geometry';
-import type { Arc } from '$lib/geometry/arc';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import {
     OffsetDirection,
     type OffsetResult,

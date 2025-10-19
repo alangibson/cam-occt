@@ -7,14 +7,15 @@ import {
     cullShapesToViewport,
     isShapeInViewport,
 } from './viewport-culling';
-import { GeometryType } from '$lib/types/geometry';
-import type { Line, Shape } from '$lib/types/geometry';
-import type { BoundingBox } from '$lib/geometry/bounding-box';
-import type { Circle } from '$lib/geometry/circle';
-import { getBoundingBoxForShape } from '$lib/geometry/bounding-box';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import { getBoundingBoxForShape } from '$lib/geometry/bounding-box/functions';
 
 // Mock the bounding box function
-vi.mock('$lib/geometry/bounding-box', () => ({
+vi.mock('$lib/geometry/bounding-box/functions', () => ({
     getBoundingBoxForShape: vi.fn(),
 }));
 

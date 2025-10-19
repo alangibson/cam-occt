@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Shape } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
-import type { Line } from '$lib/geometry/line';
-import type { Arc } from '$lib/geometry/arc';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { optimizeStartPoints } from './optimize-start-points';
 

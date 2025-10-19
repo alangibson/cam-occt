@@ -1,25 +1,23 @@
-import {
-    LeadType,
-    type Point2D,
-    type Shape,
-    type CutPath,
-    type Lead,
-    CutterCompensation,
-} from '$lib/types';
-import type { Spline } from '$lib/geometry/spline';
-import type { Cut } from '$lib/stores/cuts/interfaces';
-import type { Tool } from '$lib/stores/tools/interfaces';
-import { getShapePoints } from '$lib/geometry/shape';
+import { LeadType } from '$lib/cam/lead/enums';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { CutPath } from './interfaces';
+import type { Lead } from './types';
+import { CutterCompensation } from './enums';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { getShapePoints } from '$lib/geometry/shape/functions';
 import {
     calculateLeadPoints,
     getCachedLeadGeometry,
     hasValidCachedLeads,
-} from '$lib/utils/lead-persistence-utils';
-import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
+} from '$lib/cam/cut/lead-persistence';
+import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
-import { GeometryType } from '$lib/types/geometry';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import {
     CAM_CALCULATION_TOLERANCE_MM,
     DEFAULT_CUT_HEIGHT_MM,
@@ -27,14 +25,14 @@ import {
     DEFAULT_PIERCE_DELAY,
     DEFAULT_PIERCE_HEIGHT_MM,
 } from '$lib/cam/constants';
-import type { LeadResult } from '$lib/algorithms/leads/interfaces';
+import type { LeadResult } from '$lib/cam/lead/interfaces';
 import {
     getToolFeedRate,
     getToolPierceHeight,
     getToolCutHeight,
     getToolKerfWidth,
-} from '$lib/utils/tool-units';
-import { Unit } from '$lib/utils/units';
+} from '$lib/config/units/tool-units';
+import { Unit } from '$lib/config/units/units';
 
 /**
  * Convert a Cut from the cut store to a ToolPath for G-code generation.

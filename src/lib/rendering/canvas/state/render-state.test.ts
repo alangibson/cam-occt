@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { createEmptyRenderState, cloneRenderState } from './render-state';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { Unit } from '$lib/utils/units';
+import { Unit } from '$lib/config/units/units';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
 describe('createEmptyRenderState', () => {

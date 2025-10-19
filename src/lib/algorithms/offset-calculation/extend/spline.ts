@@ -1,20 +1,20 @@
-import type { Arc } from '$lib/geometry/arc';
-import type { Point2D } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
-import type { Line } from '$lib/geometry/line';
-import type { Circle } from '$lib/geometry/circle';
-import type { Ellipse } from '$lib/geometry/ellipse';
-import type { Polyline } from '$lib/geometry/polyline';
-import { EPSILON } from '$lib/geometry/math';
-import { MAX_EXTENSION_MM } from '$lib/algorithms/constants';
-import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { EPSILON } from '$lib/geometry/math/constants';
+import { MAX_EXTENSION_MM } from '$lib/algorithms/offset-calculation/constants';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import verb from 'verb-nurbs';
 import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
 import { generateUniformKnots } from './common';
-import { isLine } from '$lib/geometry/line';
-import { isCircle } from '$lib/geometry/circle';
+import { isLine } from '$lib/geometry/line/functions';
+import { isCircle } from '$lib/geometry/circle/functions';
 import { MICRO_TOLERANCE } from '$lib/geometry/constants';
-import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline';
+import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline/constants';
 
 /**
  * Calculate tangent vector at start of spline

@@ -1,4 +1,6 @@
-import type { Circle, Ellipse, Shape } from '$lib/types/geometry';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { processVerbIntersectionResults } from '$lib/algorithms/offset-calculation/intersect/verb-integration-utils';
 import { createVerbCurveFromCircle } from '$lib/geometry/circle/nurbs';

@@ -12,23 +12,23 @@
 import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
-import type { LeadConfig, LeadResult } from '$lib/algorithms/leads/interfaces';
-import { LeadType } from '$lib/types/direction';
-import { hasValidCachedLeads } from '$lib/utils/lead-persistence-utils';
-import { findPartContainingChain } from '$lib/algorithms/part-detection/chain-part-interactions';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
+import type { LeadConfig, LeadResult } from '$lib/cam/lead/interfaces';
+import { LeadType } from '$lib/cam/lead/enums';
+import { hasValidCachedLeads } from '$lib/cam/cut/lead-persistence';
+import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import {
     convertLeadGeometryToPoints,
     extractLeadNormalAndConnection,
-} from '$lib/algorithms/leads/functions';
+} from '$lib/cam/lead/functions';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 
 // Constants for lead rendering

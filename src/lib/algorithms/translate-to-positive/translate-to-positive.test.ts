@@ -3,10 +3,14 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
-} from '$lib/geometry/polyline';
-import type { Arc, Circle, Ellipse, Line, Polyline } from '$lib/types/geometry';
-import type { Shape } from '$lib/types';
-import { GeometryType } from '$lib/types/geometry';
+} from '$lib/geometry/polyline/functions';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { translateToPositiveQuadrant } from './translate-to-positive';
 
 describe('Translate to Positive Quadrant Algorithm', () => {

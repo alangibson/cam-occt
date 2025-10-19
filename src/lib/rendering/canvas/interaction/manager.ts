@@ -2,7 +2,7 @@
  * Interaction manager for handling mouse and keyboard events on the interaction canvas
  */
 
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 
 /**

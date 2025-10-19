@@ -2,9 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { offsetSpline } from './spline';
-import type { Point2D, Polyline } from '$lib/types/geometry';
-import { polylineToPoints } from '$lib/geometry/polyline';
-import type { Spline } from '$lib/geometry/spline';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import { polylineToPoints } from '$lib/geometry/polyline/functions';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
 describe('Combination Operations Diagnostic', () => {

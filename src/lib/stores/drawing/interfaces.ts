@@ -4,8 +4,10 @@
  * Type definitions for the drawing store.
  */
 
-import { type Drawing, type Point2D, type Shape } from '$lib/types';
-import { Unit } from '$lib/utils/units';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { Unit } from '$lib/config/units/units';
 
 export interface DrawingState {
     drawing: Drawing | null;

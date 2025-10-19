@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { CutterCompensation, NormalSide } from '$lib/types/cam';
-import type { Cut } from '$lib/stores/cuts/interfaces';
-import { type Drawing, type Shape, Unit } from '$lib/types';
-import { CutDirection, LeadType } from '$lib/types/direction';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import type { Cut } from '$lib/cam/cut/interfaces';
+import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { Unit } from '$lib/config/units/units';
+import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { GeometryType } from '$lib/geometry/shape';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
 import { generateGCode } from './gcode-generator';
 

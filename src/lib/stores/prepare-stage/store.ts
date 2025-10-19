@@ -6,12 +6,12 @@
  */
 
 import { writable, get } from 'svelte/store';
-import type { AlgorithmParameters } from '$lib/types/algorithm-parameters';
-import type { ChainNormalizationResult } from '$lib/algorithms/chain-normalization/chain-normalization';
-import type { Shape } from '$lib/types/geometry';
+import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
+import type { ChainNormalizationResult } from '$lib/geometry/chain/chain-normalization';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { PrepareStageState, PrepareStageStore } from './interfaces';
-import { getDefaults } from '$lib/config';
+import { getDefaults } from '$lib/config/defaults-manager';
 import { settingsStore } from '$lib/stores/settings/store';
 
 /**

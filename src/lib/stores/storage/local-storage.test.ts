@@ -11,9 +11,10 @@ import {
     saveState,
 } from './local-storage';
 import { type PersistedState } from './interfaces';
-import { CutDirection, LeadType } from '$lib/types/direction';
-import { Unit } from '$lib/utils/units';
-import { PartType } from '$lib/algorithms/part-detection/part-detection';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
+import { Unit } from '$lib/config/units/units';
+import { PartType } from '$lib/cam/part/enums';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {
     MeasurementSystem,
@@ -22,8 +23,7 @@ import {
     PreprocessingStep,
     RapidOptimizationAlgorithm,
     OffsetImplementation,
-} from '$lib/stores/settings/interfaces';
-import { NormalSide } from '$lib/types/cam';
+} from '$lib/config/settings/enums';
 
 // Default application settings for tests
 const defaultApplicationSettings = {
@@ -144,9 +144,6 @@ describe('State Persistence', () => {
             // Overlay state
             overlayStage: WorkflowStage.PROGRAM,
             overlays: {},
-
-            // Lead warnings
-            leadWarnings: [],
 
             // Prepare stage state
             prepareStageState: {
@@ -354,7 +351,6 @@ describe('State Persistence', () => {
             tessellationPoints: [],
             overlayStage: WorkflowStage.IMPORT,
             overlays: {},
-            leadWarnings: [],
             prepareStageState: {
                 algorithmParams: {
                     chainDetection: { tolerance: 0.05 },

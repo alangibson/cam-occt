@@ -5,10 +5,14 @@
  * to dramatically improve performance with large drawings.
  */
 
-import type { Point2D, Shape } from '$lib/types/geometry';
-import type { BoundingBox } from '$lib/geometry/bounding-box';
-import { getBoundingBoxForShape } from '$lib/geometry/bounding-box';
-import { QUARTER_PERCENT, THREE_QUARTERS_PERCENT } from '$lib/geometry/math';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import { getBoundingBoxForShape } from '$lib/geometry/bounding-box/functions';
+import {
+    QUARTER_PERCENT,
+    THREE_QUARTERS_PERCENT,
+} from '$lib/geometry/math/constants';
 /**
  * Default margin for viewport culling in world units
  */

@@ -1,8 +1,7 @@
 import { writable } from 'svelte/store';
-import type { Tool, ToolStore } from './interfaces';
-import { getDefaults } from '$lib/config';
-
-export type { Tool } from './interfaces';
+import type { ToolStore } from './interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
+import { getDefaults } from '$lib/config/defaults-manager';
 
 /**
  * Create a new tool with proper dual-unit defaults

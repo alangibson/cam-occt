@@ -1,4 +1,4 @@
-import { generateUniformKnotVector } from '$lib/geometry/spline';
+import { generateUniformKnotVector } from '$lib/geometry/spline/functions';
 
 /**
  * Generate a uniform knot vector for NURBS curve

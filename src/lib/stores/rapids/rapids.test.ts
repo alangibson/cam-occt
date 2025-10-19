@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { rapidStore } from './store';
 import { clearRapidHighlight, highlightRapid, selectRapid } from './functions';
-import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 describe('rapidStore', () => {
     beforeEach(() => {

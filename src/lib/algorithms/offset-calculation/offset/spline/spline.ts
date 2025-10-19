@@ -1,10 +1,11 @@
 import verb, { type VerbDerivatives, type VerbPoint } from 'verb-nurbs';
-import { GeometryType, type Point2D } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
     DEFAULT_RETRY_COUNT,
     VALIDATION_SAMPLE_COUNT,
-} from '$lib/geometry/spline';
+} from '$lib/geometry/spline/constants';
 import {
     OffsetDirection,
     type OffsetResult,
@@ -13,7 +14,7 @@ import {
     EPSILON,
     GEOMETRIC_PRECISION_TOLERANCE,
 } from '$lib/geometry/math/constants';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 
 /**
  * Default timeout for computationally intensive operations (10 seconds)

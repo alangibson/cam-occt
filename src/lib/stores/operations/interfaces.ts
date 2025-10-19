@@ -4,14 +4,14 @@
  * Type definitions for operations and related data structures.
  */
 
-import { CutDirection } from '$lib/types/direction';
-import type { LeadConfig, Lead } from '$lib/algorithms/leads/interfaces';
+import { CutDirection } from '$lib/cam/cut/enums';
+import type { LeadConfig, Lead } from '$lib/cam/lead/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Shape } from '$lib/types';
-import { KerfCompensation } from '$lib/types/kerf-compensation';
-import type { Cut } from '$lib/stores/cuts/interfaces';
-import type { OptimizeStarts } from '$lib/types/optimize-starts';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { KerfCompensation } from '$lib/stores/operations/enums';
+import type { Cut } from '$lib/cam/cut/interfaces';
+import type { OptimizeStarts } from '$lib/cam/cut/enums';
 
 export interface OffsetCalculation {
     offsetShapes: Shape[];

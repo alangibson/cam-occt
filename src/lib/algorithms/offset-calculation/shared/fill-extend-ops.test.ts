@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Ellipse, Point2D } from '$lib/types/geometry';
-import type { Circle } from '$lib/geometry/circle';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import {
     type EllipseGeometry,
     type ExtensionResult,
@@ -20,21 +21,21 @@ import {
     validateEllipseIntersectionPoint,
     validateEllipseOperation,
 } from './fill-extend-ops';
-import { pointDistance } from '$lib/algorithms/offset-calculation/trim';
+import { pointDistance } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     getEllipseRadiusX,
     getEllipseRadiusY,
     getEllipseRotation,
-} from '$lib/geometry/ellipse';
+} from '$lib/geometry/ellipse/functions';
 
 // Mock dependencies
-vi.mock('../../../geometry/ellipse', () => ({
+vi.mock('$lib/geometry/ellipse/functions', () => ({
     getEllipseRadiusX: vi.fn(),
     getEllipseRadiusY: vi.fn(),
     getEllipseRotation: vi.fn(),
 }));
 
-vi.mock('../trim', () => ({
+vi.mock('$lib/algorithms/offset-calculation/shared/trim-extend-utils', () => ({
     pointDistance: vi.fn(),
 }));
 

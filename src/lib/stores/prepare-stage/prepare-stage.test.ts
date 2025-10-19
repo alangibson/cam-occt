@@ -5,9 +5,9 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { prepareStageStore } from './store';
-import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
-import { GeometryType } from '$lib/geometry/shape';
-import type { Shape } from '$lib/types/geometry';
+import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 
 describe('Prepare Stage Store', () => {
     beforeEach(() => {

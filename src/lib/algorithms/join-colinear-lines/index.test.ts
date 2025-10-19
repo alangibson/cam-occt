@@ -4,8 +4,10 @@ import {
     joinColinearLinesInChains,
     joinColinearLinesInPolyline,
 } from './index';
-import { GeometryType } from '$lib/types/geometry';
-import type { Line, Polyline, Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 import { generateId } from '$lib/domain/id';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 

@@ -2,7 +2,7 @@
  * Enhanced canvas context wrapper for coordinate transformation and drawing utilities
  */
 
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { TransformState } from '$lib/rendering/canvas/state/render-state';
 
 /**

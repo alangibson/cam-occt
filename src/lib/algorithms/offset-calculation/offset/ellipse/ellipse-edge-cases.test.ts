@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { offsetEllipse } from './ellipse';
-import type { Ellipse } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
-import { generateUniformKnotVector } from '$lib/geometry/spline';
-import { getEllipseParameters } from '$lib/geometry/ellipse';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import { generateUniformKnotVector } from '$lib/geometry/spline/functions';
+import { getEllipseParameters } from '$lib/geometry/ellipse/functions';
 import verb from 'verb-nurbs';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 
@@ -19,18 +19,18 @@ vi.mock('verb-nurbs', () => ({
 }));
 
 // Mock ellipse utils
-vi.mock('$lib/geometry/ellipse', () => ({
+vi.mock('$lib/geometry/ellipse/functions', () => ({
     getEllipseParameters: vi.fn(),
 }));
 
 // Mock chain constants
-vi.mock('$lib/geometry/chain', () => ({
+vi.mock('$lib/geometry/chain/constants', () => ({
     POLYGON_POINTS_MIN: 3,
     CHAIN_CLOSURE_TOLERANCE: 0.01,
 }));
 
 // Mock NURBS utils
-vi.mock('$lib/geometry/spline', () => ({
+vi.mock('$lib/geometry/spline/functions', () => ({
     generateUniformKnotVector: vi.fn((controlPointsCount, degree) => {
         // Generate a valid uniform knot vector
         const knotCount = controlPointsCount + degree + 1;

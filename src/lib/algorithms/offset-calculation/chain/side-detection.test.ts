@@ -4,9 +4,10 @@ import {
     determineChainOrientation,
     isPointInsideChain,
 } from './side-detection';
-import { GeometryType, type Shape } from '$lib/types/geometry';
-import { detectShapeChains } from '$lib/algorithms/chain-detection/chain-detection';
-import { normalizeChain } from '$lib/algorithms/chain-normalization/chain-normalization';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { generateId } from '$lib/domain/id';
 import {
     getShapeMidpoint,

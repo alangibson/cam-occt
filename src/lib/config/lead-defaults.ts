@@ -5,14 +5,17 @@
  * Leads are essential for smooth torch entry/exit and help prevent material damage.
  */
 
-import { MeasurementSystem } from '$lib/stores/settings/interfaces';
-import { convertToCurrentSystem } from '$lib/utils/units';
+import { MeasurementSystem } from './settings/enums';
+import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_LEAD_IN_LENGTH_MM,
     DEFAULT_LEAD_OUT_LENGTH_MM,
     MINIMUM_SHELL_DISTANCE_MM,
     LEAD_PROXIMITY_THRESHOLD_MM,
-} from '$lib/algorithms/leads/constants';
+} from '$lib/cam/lead/constants';
+import { LeadType } from '$lib/cam/lead/enums';
+import type { LeadConfig } from '$lib/cam/lead/interfaces';
+import { getDefaults } from './defaults-manager';
 
 export class LeadDefaults {
     private measurementSystem: MeasurementSystem;
@@ -67,4 +70,33 @@ export class LeadDefaults {
             this.measurementSystem
         );
     }
+}
+
+/**
+ * Get default lead-in configuration based on current measurement system
+ */
+
+export function getDefaultLeadInConfig(): LeadConfig {
+    const defaults = getDefaults();
+    return {
+        type: LeadType.ARC,
+        length: defaults.lead.leadInLength, // Unit-aware default
+        angle: 0,
+        flipSide: false,
+        fit: false,
+    };
+}
+
+/**
+ * Get default lead-out configuration based on current measurement system
+ */
+export function getDefaultLeadOutConfig(): LeadConfig {
+    const defaults = getDefaults();
+    return {
+        type: LeadType.ARC,
+        length: defaults.lead.leadOutLength, // Unit-aware default
+        angle: 0,
+        flipSide: false,
+        fit: false,
+    };
 }

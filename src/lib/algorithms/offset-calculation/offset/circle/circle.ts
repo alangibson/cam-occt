@@ -1,4 +1,6 @@
-import { type Circle, GeometryType, type Shape } from '$lib/types/geometry';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
 import {
     OffsetDirection,
     type OffsetResult,

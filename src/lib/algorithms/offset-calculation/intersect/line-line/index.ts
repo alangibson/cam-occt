@@ -1,5 +1,5 @@
-import type { Point2D } from '$lib/types/geometry';
-import type { Line } from '$lib/geometry/line';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { IntersectionType } from '$lib/algorithms/offset-calculation/intersect';
 import { EPSILON } from '$lib/geometry/math/constants';

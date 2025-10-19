@@ -11,7 +11,7 @@
 import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
-import type { Point2D } from '$lib/types';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import {
     HitTestType,

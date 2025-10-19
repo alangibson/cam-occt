@@ -1,9 +1,13 @@
 import { EPSILON } from '$lib/geometry/math/constants';
-import type { Line, Point2D, Shape } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import { generateId } from '$lib/domain/id';
-import { pointDistance } from '..';
-import { calculateLineParameter } from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
+import {
+    pointDistance,
+    calculateLineParameter,
+} from '$lib/algorithms/offset-calculation/shared/trim-extend-utils';
 import {
     type KeepSide,
     type TrimResult,
@@ -12,7 +16,7 @@ import {
     DEFAULT_ARRAY_NOT_FOUND_INDEX,
     TOLERANCE_RELAXATION_MULTIPLIER,
 } from '$lib/geometry/constants';
-import { MIN_CONTROL_POINTS_FOR_SPLINE } from '$lib/geometry/spline';
+import { MIN_CONTROL_POINTS_FOR_SPLINE } from '$lib/geometry/spline/constants';
 
 /**
  * Default spline weight assignment

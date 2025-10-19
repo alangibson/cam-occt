@@ -1,33 +1,31 @@
-import type { Shape } from './interfaces';
-import type {
-    Circle,
-    Ellipse,
-    Line,
-    Point2D,
-    Polyline,
-} from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
+import type { GetShapePointsOptions, Shape } from './interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import {
     generateCirclePoints,
     getCircleEndPoint,
     getCirclePointAt,
     getCircleStartPoint,
     reverseCircle,
-} from '$lib/geometry/circle';
+} from '$lib/geometry/circle/functions';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import {
-    type Arc,
     generateArcPoints,
     getArcEndPoint,
     getArcPointAt,
     getArcStartPoint,
     reverseArc,
-} from '$lib/geometry/arc';
+} from '$lib/geometry/arc/functions';
 import {
     getLineEndPoint,
     getLinePointAt,
     getLineStartPoint,
     reverseLine,
-} from '$lib/geometry/line';
+} from '$lib/geometry/line/functions';
 import { GeometryType } from './enums';
 import {
     createAdaptiveTessellationConfig,
@@ -35,11 +33,9 @@ import {
     getSplinePointAt,
     getSplineStartPoint,
     reverseSpline,
-    SPLINE_TESSELLATION_TOLERANCE,
     tessellateSpline,
-} from '$lib/geometry/spline';
+} from '$lib/geometry/spline/functions';
 import {
-    ELLIPSE_TESSELLATION_POINTS,
     generateEllipsePoints,
     getEllipseEndPoint,
     getEllipsePointAt,
@@ -48,11 +44,11 @@ import {
     reverseEllipse,
     tessellateEllipse,
     calculateEllipsePoint,
-} from '$lib/geometry/ellipse/index';
-import {
-    DEFAULT_PART_DETECTION_PARAMETERS,
-    type PartDetectionParameters,
-} from '$lib/types/part-detection';
+    calculateEllipsePoint2,
+} from '$lib/geometry/ellipse/functions';
+import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
+import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import {
     getPolylineEndPoint,
     getPolylinePointAt,
@@ -60,7 +56,8 @@ import {
     polylineToPoints,
     polylineToVertices,
     reversePolyline,
-} from '$lib/geometry/polyline';
+    calculatePolylineLength,
+} from '$lib/geometry/polyline/functions';
 import {
     DEFAULT_TESSELLATION_SEGMENTS,
     MIDPOINT_T,
@@ -72,48 +69,27 @@ import {
     normalizeVector,
     roundToDecimalPlaces,
 } from '$lib/geometry/math/functions';
-import { calculatePolylineLength } from '$lib/geometry/polyline/functions';
 import { Coordinate, GeometryFactory } from 'jsts/org/locationtech/jts/geom';
 import { RelateOp } from 'jsts/org/locationtech/jts/operation/relate';
 import {
     CHAIN_CLOSURE_TOLERANCE,
     POLYGON_POINTS_MIN,
-} from '$lib/geometry/chain';
-import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/algorithms/part-detection/geometric-containment';
+} from '$lib/geometry/chain/constants';
+import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/constants';
 import { LEAD_SEGMENT_COUNT } from '$lib/geometry/line/constants';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math';
-import { STANDARD_GRID_SPACING } from '$lib/constants';
-import { calculateEllipsePoint2 } from '$lib/geometry/ellipse/functions';
+import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
+import {
+    MIN_SPLINE_SAMPLES,
+    SPLINE_TESSELLATION_TOLERANCE,
+} from '$lib/geometry/spline/constants';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import {
     splitArcAtMidpoint,
     splitLineAtMidpoint,
-} from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
+} from '$lib/cam/cut/cut-optimization-utils';
 import { generateId } from '$lib/domain/id';
 import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
-
-// Constants for shape point generation
-const HIGH_RESOLUTION_CIRCLE_SEGMENTS = 32;
-// Maximum number of segments for arc tessellation
-const MAX_ARC_SEGMENTS = 1000;
-
-/**
- * Extract points from a shape for path generation
- * @param shape - The shape to extract points from
- * @param forNativeShapes - If true, avoid tessellation for shapes that support native G-code commands
- */
-export type GetShapePointsMode =
-    | 'TESSELLATION'
-    | 'BOUNDS'
-    | 'CHAIN_DETECTION'
-    | 'DIRECTION_ANALYSIS';
-export type GetShapePointsResolution = 'LOW' | 'MEDIUM' | 'HIGH' | 'ADAPTIVE';
-
-export interface GetShapePointsOptions {
-    forNativeShapes?: boolean;
-    mode?: GetShapePointsMode;
-    resolution?: GetShapePointsResolution;
-}
+import { HIGH_RESOLUTION_CIRCLE_SEGMENTS, MAX_ARC_SEGMENTS } from './constants';
 
 export function getShapePoints(
     shape: Shape,
@@ -650,10 +626,10 @@ export function tessellateShape(
 
     return points;
 }
+
 /**
  * Get the starting point of a shape
  */
-
 export function getShapeStartPoint(shape: Shape): Point2D {
     switch (shape.type) {
         case 'line':
@@ -672,10 +648,10 @@ export function getShapeStartPoint(shape: Shape): Point2D {
             throw new Error(`Unknown shape type: ${shape.type}`);
     }
 }
+
 /**
  * Get the ending point of a shape
  */
-
 export function getShapeEndPoint(shape: Shape): Point2D {
     switch (shape.type) {
         case 'line':
@@ -820,10 +796,10 @@ export function getShapeLength(shape: Shape): number {
             return 0;
     }
 }
+
 /**
  * Sample points along an array of shapes at regular distance intervals
  */
-
 export function sampleShapesAtDistanceIntervals(
     shapes: Shape[],
     intervalDistance: number
@@ -872,6 +848,7 @@ export function sampleShapesAtDistanceIntervals(
 
     return samples;
 }
+
 /**
  * Gets the normal vector at a point on a shape
  *
@@ -879,7 +856,6 @@ export function sampleShapesAtDistanceIntervals(
  * @param t - Parameter value (0-1) where to get the normal
  * @returns Normalized normal vector pointing outward/rightward
  */
-
 export function getShapeNormal(shape: Shape, t: number): Point2D {
     // Get two nearby points to calculate tangent
     const delta: number = 0.001;
@@ -906,6 +882,7 @@ export function getShapeNormal(shape: Shape, t: number): Point2D {
 
     return normal;
 }
+
 /**
  * Gets the midpoint of a shape at a given parameter
  *
@@ -913,7 +890,6 @@ export function getShapeNormal(shape: Shape, t: number): Point2D {
  * @param t - Parameter value (0-1), defaults to 0.5
  * @returns Point at the given parameter
  */
-
 export function getShapeMidpoint(
     shape: Shape,
     t: number = MIDPOINT_T
@@ -1455,10 +1431,11 @@ export function getShapePoints2(shape: Shape): Point2D[] {
         default:
             return [];
     }
-} /**
+}
+
+/**
  * Checks if a single shape forms a closed loop
  */
-
 export function isShapeClosed(shape: Shape, tolerance: number): boolean {
     switch (shape.type) {
         case GeometryType.CIRCLE:
@@ -1612,7 +1589,7 @@ export function getShapePoints3(shape: Shape): Point2D[] {
             const spline: Spline = shape.geometry as Spline;
             const splinePoints: Point2D[] = [];
             const numSplineSamples: number = Math.max(
-                STANDARD_GRID_SPACING,
+                MIN_SPLINE_SAMPLES,
                 spline.controlPoints.length * TESSELLATION_SAMPLE_MULTIPLIER
             );
 
@@ -1675,11 +1652,12 @@ export function getShapePoints3(shape: Shape): Point2D[] {
         default:
             return [];
     }
-} /**
+}
+
+/**
  * Split a shape at its midpoint, creating two shapes
  * Extracted from optimize-start-points.ts to eliminate duplication
  */
-
 export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
     if (shape.type === GeometryType.LINE) {
         return splitLineAtMidpoint(shape);
@@ -1689,6 +1667,7 @@ export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
 
     return null;
 }
+
 export function transformShape(
     shape: Shape,
     transform: {
@@ -1824,4 +1803,26 @@ export function transformShape(
     clonedShape.id = generateId();
 
     return clonedShape;
+}
+
+// Helper function to get the origin point of a shape
+export function getShapeOrigin(shape: Shape): Point2D | null {
+    switch (shape.type) {
+        case 'line':
+            const line: Line = shape.geometry as Line;
+            return line.start;
+        case 'circle':
+        case 'arc':
+            const circle: Circle = shape.geometry as Circle | Arc;
+            return circle.center;
+        case 'polyline':
+            const polyline: Polyline = shape.geometry as Polyline;
+            const points: Point2D[] = polylineToPoints(polyline);
+            return points.length > 0 ? points[0] : null;
+        case 'ellipse':
+            const ellipse: Ellipse = shape.geometry as Ellipse;
+            return ellipse.center;
+        default:
+            return null;
+    }
 }

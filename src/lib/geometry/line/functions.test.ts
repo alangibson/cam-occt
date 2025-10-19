@@ -8,8 +8,8 @@ import {
     calculateLineDirectionAndLength,
 } from './functions';
 import type { Line } from './interfaces';
-import type { Point2D } from '$lib/types/geometry';
-import { EPSILON } from '$lib/geometry/math';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { EPSILON } from '$lib/geometry/math/constants';
 
 describe('line functions additional coverage tests', () => {
     describe('onSegment - uncovered branches', () => {
@@ -300,6 +300,47 @@ describe('line functions additional coverage tests', () => {
             expect(result!.direction).toEqual({ x: 3, y: 4 });
             expect(result!.unitDirection.x).toBeCloseTo(0.6);
             expect(result!.unitDirection.y).toBeCloseTo(0.8);
+        });
+
+        it('should calculate direction and length for horizontal line', () => {
+            const line: Line = {
+                start: { x: 0, y: 0 },
+                end: { x: 10, y: 0 },
+            };
+
+            const result = calculateLineDirectionAndLength(line);
+
+            expect(result).not.toBeNull();
+            expect(result!.direction).toEqual({ x: 10, y: 0 });
+            expect(result!.unitDirection).toEqual({ x: 1, y: 0 });
+            expect(result!.length).toBe(10);
+        });
+
+        it('should calculate direction and length for vertical line', () => {
+            const line: Line = {
+                start: { x: 0, y: 0 },
+                end: { x: 0, y: 5 },
+            };
+
+            const result = calculateLineDirectionAndLength(line);
+
+            expect(result).not.toBeNull();
+            expect(result!.direction).toEqual({ x: 0, y: 5 });
+            expect(result!.unitDirection).toEqual({ x: 0, y: 1 });
+            expect(result!.length).toBe(5);
+        });
+
+        it('should handle negative coordinates correctly', () => {
+            const line: Line = {
+                start: { x: -2, y: -3 },
+                end: { x: 1, y: 1 },
+            };
+
+            const result = calculateLineDirectionAndLength(line);
+
+            expect(result).not.toBeNull();
+            expect(result!.direction).toEqual({ x: 3, y: 4 });
+            expect(result!.length).toBe(5);
         });
     });
 

@@ -1,5 +1,6 @@
-import type { Point2D, Shape } from '$lib/types/geometry';
-import type { Spline } from '$lib/geometry/spline';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Spline } from '$lib/geometry/spline/interfaces';
 import type {
     FillOptions,
     FillResult,

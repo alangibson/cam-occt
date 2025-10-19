@@ -4,16 +4,13 @@
  * Common utility functions for ray-shape intersection algorithms
  */
 
-import type { Point2D } from '$lib/types/geometry';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import { EPSILON } from '$lib/geometry/math/constants';
 import {
     isNearlyEqual,
     solveQuadratic as mathSolveQuadratic,
-    EPSILON,
-} from '$lib/geometry/math';
-import { normalizeAngle } from '$lib/geometry/math/functions';
-
-// Re-export normalizeAngle from shared library for backward compatibility
-export { normalizeAngle };
+    normalizeAngle as mathNormalizeAngle,
+} from '$lib/geometry/math/functions';
 
 /**
  * Checks if two floating point numbers are approximately equal
@@ -77,9 +74,9 @@ export function isAngleInArcRange(
     clockwise: boolean = false
 ): boolean {
     // Normalize all angles to [0, 2π]
-    const testAngle: number = normalizeAngle(angle);
-    const start: number = normalizeAngle(startAngle);
-    const end: number = normalizeAngle(endAngle);
+    const testAngle: number = mathNormalizeAngle(angle);
+    const start: number = mathNormalizeAngle(startAngle);
+    const end: number = mathNormalizeAngle(endAngle);
 
     if (approxEqual(start, end)) {
         // Full circle

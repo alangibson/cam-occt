@@ -3,11 +3,14 @@ import { optimizeStartPoints } from './optimize-start-points';
 import {
     createPolylineFromVertices,
     polylineToPoints,
-} from '$lib/geometry/polyline';
-import type { Arc, Line, Polyline, Shape } from '$lib/types/geometry';
-import { GeometryType } from '$lib/types/geometry';
+} from '$lib/geometry/polyline/functions';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/types/algorithm-parameters';
+import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 
 describe('optimizeStartPoints - polyline splitting', () => {
     const optimizationParams = {

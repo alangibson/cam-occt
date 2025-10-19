@@ -1,19 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { EPSILON } from '$lib/geometry/math/constants';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
-import {
-    type Arc,
-    GeometryType,
-    type Line,
-    type Point2D,
-    type Shape,
-} from '$lib/types/geometry';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { type Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { generateId } from '$lib/domain/id';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { findArcArcIntersections } from './arc-arc/index';
 import { clusterIntersections, findShapeIntersections } from './index';
 import { findLineArcIntersections } from './line-arc/index';
 import { findLineLineIntersections } from '$lib/algorithms/offset-calculation/intersect/line-line/index';
+import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('intersections', () => {
     // Helper functions to create test shapes

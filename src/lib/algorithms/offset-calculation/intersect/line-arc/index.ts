@@ -1,6 +1,6 @@
-import type { Point2D } from '$lib/types/geometry';
-import type { Line } from '$lib/geometry/line';
-import type { Arc } from '$lib/geometry/arc';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
 import { EPSILON, INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 import {

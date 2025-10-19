@@ -9,7 +9,7 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { ChainOffsetResult, ChainOffsetParameters } from './chain/types';
 import { offsetChain as exactOffset } from './chain/offset';
-import { OffsetImplementation } from '$lib/stores/settings/interfaces';
+import { OffsetImplementation } from '$lib/config/settings/enums';
 
 /**
  * Calculate chain offset using the specified implementation

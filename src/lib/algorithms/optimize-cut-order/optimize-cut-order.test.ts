@@ -1,22 +1,23 @@
 import { describe, expect, it, vi } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Arc, Circle, Ellipse, Line, Polyline, Shape } from '$lib/types';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Circle } from '$lib/geometry/circle/interfaces';
+import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
-import type { Spline } from '$lib/geometry/spline';
-import type {
-    DetectedPart,
-    PartShell,
-    PartHole,
-} from '$lib/algorithms/part-detection/part-detection';
-import { PartType } from '$lib/algorithms/part-detection/part-detection';
-import { GeometryType } from '$lib/types/geometry';
-import { CutDirection, LeadType } from '$lib/types/direction';
-import { createPolylineFromVertices } from '$lib/geometry/polyline';
+import type { Spline } from '$lib/geometry/spline/interfaces';
+import type { DetectedPart, PartShell, Part } from '$lib/cam/part/interfaces';
+import { PartType } from '$lib/cam/part/enums';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { LeadType } from '$lib/cam/lead/enums';
+import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import * as pathOptUtils from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
-import { NormalSide } from '$lib/types/cam';
+import * as pathOptUtils from '$lib/cam/cut/cut-optimization-utils';
 
 // Mock crypto.randomUUID
 if (typeof crypto === 'undefined') {
@@ -85,7 +86,7 @@ describe('Optimize Cut Order', () => {
             holes: [],
         };
 
-        const holes: PartHole[] = holeChains.map((chain, index) => ({
+        const holes: Part[] = holeChains.map((chain, index) => ({
             id: `hole-${id}-${index}`,
             chain,
             type: PartType.HOLE,

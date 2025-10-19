@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import type { RapidsState, RapidsStore } from './interfaces';
-import type { Rapid } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 function createRapidsStore(): RapidsStore {
     const initialState: RapidsState = {

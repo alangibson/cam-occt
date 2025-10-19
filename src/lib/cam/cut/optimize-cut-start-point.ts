@@ -5,10 +5,10 @@
  * Uses the same algorithm as chain start point optimization.
  */
 
-import type { Cut } from '$lib/stores/cuts/interfaces';
-import { OptimizeStarts } from '$lib/types/optimize-starts';
+import type { Cut } from '$lib/cam/cut/interfaces';
+import { OptimizeStarts } from './enums';
 import { optimizeChainStartPoint } from '$lib/algorithms/optimize-start-points/optimize-start-points';
-import type { StartPointOptimizationParameters } from '$lib/types/algorithm-parameters';
+import type { StartPointOptimizationParameters } from '$lib/preprocessing/algorithm-parameters';
 
 /**
  * Optimizes the start point of a cut by optimizing its cutChain.

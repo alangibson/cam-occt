@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { findPolylineArcIntersections } from './index';
-import type { Polyline } from '$lib/geometry/polyline';
-import type { Arc } from '$lib/geometry/arc';
-import type { Line } from '$lib/geometry/line';
-import type { Shape } from '$lib/types/geometry';
-import { GeometryType } from '$lib/geometry/shape';
+import type { Polyline } from '$lib/geometry/polyline/interfaces';
+import type { Arc } from '$lib/geometry/arc/interfaces';
+import type { Line } from '$lib/geometry/line/interfaces';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/shape/enums';
 import { createExtendedPolyline } from '$lib/algorithms/offset-calculation/extend/polyline';
 import { createExtendedArc } from '$lib/algorithms/offset-calculation/extend/arc';
 

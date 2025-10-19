@@ -14,31 +14,21 @@
  *    - Eliminates repeated iteration through parts array during TSP
  */
 
-import type { Cut } from '$lib/stores/cuts/interfaces';
+import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Point2D } from '$lib/types';
-import type { DetectedPart } from '$lib/algorithms/part-detection/part-detection';
-import { calculateLeads } from '$lib/algorithms/leads/lead-calculation';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { DetectedPart } from '$lib/cam/part/interfaces';
+import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
     calculateDistance,
     findNearestCut,
     getCutStartPoint,
     prepareChainsAndLeadConfigs,
-} from '$lib/algorithms/optimize-start-points/cut-optimization-utils';
+} from '$lib/cam/cut/cut-optimization-utils';
 import { getChainEndPoint } from '$lib/geometry/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
-import { convertLeadGeometryToPoints } from '$lib/algorithms/leads/functions';
-
-/**
- * Rapids are the non-cutting movements that connect cuts.
- * They represent tool movement without cutting.
- */
-export interface Rapid {
-    id: string;
-    start: Point2D;
-    end: Point2D;
-    type: 'rapid';
-}
+import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
+import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 /**
  * Result of the cut order optimization
