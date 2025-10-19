@@ -37,40 +37,6 @@
                             >{part.voids.length} voids, {part.slots.length} slots</span
                         >
                     </div>
-                    <div class="part-details">
-                        <div class="shell-info">
-                            <span class="shell-label">Shell:</span>
-                            <span class="chain-ref"
-                                >{part.shell.shapes.length} shapes</span
-                            >
-                        </div>
-                        {#if part.voids.length > 0}
-                            <div class="voids-info">
-                                <span class="voids-label">Voids:</span>
-                                {#each part.voids as voidItem, voidIndex (voidItem.id)}
-                                    <div class="void-item">
-                                        <span class="void-ref"
-                                            >Void {voidIndex + 1}: {voidItem
-                                                .chain.shapes.length} shapes</span
-                                        >
-                                    </div>
-                                {/each}
-                            </div>
-                        {/if}
-                        {#if part.slots.length > 0}
-                            <div class="slots-info">
-                                <span class="slots-label">Slots:</span>
-                                {#each part.slots as slotItem, slotIndex (slotItem.id)}
-                                    <div class="slot-item">
-                                        <span class="slot-ref"
-                                            >Slot {slotIndex + 1}: {slotItem
-                                                .chain.shapes.length} shapes</span
-                                        >
-                                    </div>
-                                {/each}
-                            </div>
-                        {/if}
-                    </div>
                 </div>
             {/each}
         </div>
@@ -90,7 +56,7 @@
 
     .part-item {
         padding: 0.75rem;
-        background-color: #f8fafc;
+        background-color: #ffffff;
         border: 1px solid #e2e8f0;
         border-radius: 0.375rem;
         cursor: pointer;
@@ -99,7 +65,7 @@
     }
 
     .part-item:hover {
-        background-color: #f1f5f9;
+        background-color: #f9fafb;
         border-color: #cbd5e1;
         transform: translateY(-1px);
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -134,46 +100,6 @@
         background-color: #e5e7eb;
         padding: 0.25rem 0.5rem;
         border-radius: 0.25rem;
-    }
-
-    .part-details {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-        font-size: 0.85rem;
-        color: #666;
-    }
-
-    .shell-info,
-    .voids-info,
-    .slots-info {
-        display: flex;
-        flex-direction: column;
-        gap: 0.25rem;
-    }
-
-    .shell-label,
-    .voids-label,
-    .slots-label {
-        font-weight: 500;
-        color: #555;
-        font-size: 0.8rem;
-    }
-
-    .chain-ref {
-        color: #666;
-        margin-left: 0.5rem;
-    }
-
-    .void-item,
-    .slot-item {
-        margin-left: 0.5rem;
-    }
-
-    .void-ref,
-    .slot-ref {
-        color: #666;
-        font-size: 0.75rem;
     }
 
     .empty-state {

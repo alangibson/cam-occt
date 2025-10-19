@@ -8,6 +8,7 @@
     import PartsPanel from '$components/panels/PartsPanel.svelte';
     import ChainsPanel from '$components/panels/ChainsPanel.svelte';
     import OptimizePanel from '$components/panels/OptimizePanel.svelte';
+    import LayersPanel from '$components/panels/LayersPanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
@@ -226,6 +227,8 @@
         rightColumnStorageKey="metalheadcam-program-right-column-width"
     >
         <svelte:fragment slot="left">
+            <LayersPanel />
+
             <AccordionPanel title="Cuts ({cuts.length})" isExpanded={false}>
                 <Cuts />
             </AccordionPanel>
