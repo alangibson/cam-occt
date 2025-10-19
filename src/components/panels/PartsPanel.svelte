@@ -33,23 +33,38 @@
                 >
                     <div class="part-header">
                         <span class="part-name">Part {index + 1}</span>
-                        <span class="part-info">{part.holes.length} holes</span>
+                        <span class="part-info"
+                            >{part.voids.length} voids, {part.slots.length} slots</span
+                        >
                     </div>
                     <div class="part-details">
                         <div class="shell-info">
                             <span class="shell-label">Shell:</span>
                             <span class="chain-ref"
-                                >{part.shell.chain.shapes.length} shapes</span
+                                >{part.shell.shapes.length} shapes</span
                             >
                         </div>
-                        {#if part.holes.length > 0}
-                            <div class="holes-info">
-                                <span class="holes-label">Holes:</span>
-                                {#each part.holes as hole, holeIndex (hole.id)}
-                                    <div class="hole-item">
-                                        <span class="hole-ref"
-                                            >Hole {holeIndex + 1}: {hole.chain
-                                                .shapes.length} shapes</span
+                        {#if part.voids.length > 0}
+                            <div class="voids-info">
+                                <span class="voids-label">Voids:</span>
+                                {#each part.voids as voidItem, voidIndex (voidItem.id)}
+                                    <div class="void-item">
+                                        <span class="void-ref"
+                                            >Void {voidIndex + 1}: {voidItem
+                                                .chain.shapes.length} shapes</span
+                                        >
+                                    </div>
+                                {/each}
+                            </div>
+                        {/if}
+                        {#if part.slots.length > 0}
+                            <div class="slots-info">
+                                <span class="slots-label">Slots:</span>
+                                {#each part.slots as slotItem, slotIndex (slotItem.id)}
+                                    <div class="slot-item">
+                                        <span class="slot-ref"
+                                            >Slot {slotIndex + 1}: {slotItem
+                                                .chain.shapes.length} shapes</span
                                         >
                                     </div>
                                 {/each}
@@ -130,14 +145,16 @@
     }
 
     .shell-info,
-    .holes-info {
+    .voids-info,
+    .slots-info {
         display: flex;
         flex-direction: column;
         gap: 0.25rem;
     }
 
     .shell-label,
-    .holes-label {
+    .voids-label,
+    .slots-label {
         font-weight: 500;
         color: #555;
         font-size: 0.8rem;
@@ -148,11 +165,13 @@
         margin-left: 0.5rem;
     }
 
-    .hole-item {
+    .void-item,
+    .slot-item {
         margin-left: 0.5rem;
     }
 
-    .hole-ref {
+    .void-ref,
+    .slot-ref {
         color: #666;
         font-size: 0.75rem;
     }

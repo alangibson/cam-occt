@@ -66,15 +66,11 @@ describe('Tractor Seat Mount Debug Analysis', () => {
                     if (partResult.parts.length > 1) {
                         const sortedParts = partResult.parts.sort((a, b) => {
                             const aArea =
-                                (a.shell.boundingBox.max.x -
-                                    a.shell.boundingBox.min.x) *
-                                (a.shell.boundingBox.max.y -
-                                    a.shell.boundingBox.min.y);
+                                (a.boundingBox.max.x - a.boundingBox.min.x) *
+                                (a.boundingBox.max.y - a.boundingBox.min.y);
                             const bArea =
-                                (b.shell.boundingBox.max.x -
-                                    b.shell.boundingBox.min.x) *
-                                (b.shell.boundingBox.max.y -
-                                    b.shell.boundingBox.min.y);
+                                (b.boundingBox.max.x - b.boundingBox.min.x) *
+                                (b.boundingBox.max.y - b.boundingBox.min.y);
                             return bArea - aArea; // Largest first
                         });
 

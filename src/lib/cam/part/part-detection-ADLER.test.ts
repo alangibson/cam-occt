@@ -27,7 +27,7 @@ describe('ADLER.dxf Part Detection', () => {
         partResult.parts.forEach(() => {});
 
         const totalHoles = partResult.parts.reduce(
-            (sum, part) => sum + part.holes.length,
+            (sum, part) => sum + part.voids.length,
             0
         );
 
@@ -38,10 +38,10 @@ describe('ADLER.dxf Part Detection', () => {
 
         // Should have 9 parts, with only one having a hole
         const partsWithHoles = partResult.parts.filter(
-            (part) => part.holes.length > 0
+            (part) => part.voids.length > 0
         );
         expect(partsWithHoles).toHaveLength(1); // Only one part should have a hole
-        expect(partsWithHoles[0].holes).toHaveLength(1); // That part should have exactly 1 hole
+        expect(partsWithHoles[0].voids).toHaveLength(1); // That part should have exactly 1 hole
     });
 
     it('should process the ADLER.dxf file without errors', async () => {

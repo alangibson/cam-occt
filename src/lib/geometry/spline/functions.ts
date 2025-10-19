@@ -26,7 +26,11 @@ import {
 export function getSplineStartPoint(spline: Spline): Point2D {
     // For closed splines, return the first control point directly
     // This ensures UI consistency since closed splines should have matching start/end
-    if (spline.closed && spline.controlPoints && spline.controlPoints.length > 0) {
+    if (
+        spline.closed &&
+        spline.controlPoints &&
+        spline.controlPoints.length > 0
+    ) {
         return { ...spline.controlPoints[0] };
     }
     return getSplinePointAt(spline, 0);
@@ -35,7 +39,11 @@ export function getSplineStartPoint(spline: Spline): Point2D {
 export function getSplineEndPoint(spline: Spline): Point2D {
     // For closed splines, return the last control point directly
     // This ensures UI consistency since closed splines should have matching start/end
-    if (spline.closed && spline.controlPoints && spline.controlPoints.length > 0) {
+    if (
+        spline.closed &&
+        spline.controlPoints &&
+        spline.controlPoints.length > 0
+    ) {
         return { ...spline.controlPoints[spline.controlPoints.length - 1] };
     }
     return getSplinePointAt(spline, 1);
@@ -241,7 +249,7 @@ function checkAndWarnUnclampedSpline(spline: Spline): void {
     if (!isClampedKnotVector(spline.knots, spline.degree)) {
         console.warn(
             `[SPLINE WARNING] Unclamped spline detected: degree=${spline.degree}, ` +
-            `controlPoints=${spline.controlPoints.length}, knots=[${spline.knots.slice(0, spline.degree + 1).join(',')}...${spline.knots.slice(-(spline.degree + 1)).join(',')}]`
+                `controlPoints=${spline.controlPoints.length}, knots=[${spline.knots.slice(0, spline.degree + 1).join(',')}...${spline.knots.slice(-(spline.degree + 1)).join(',')}]`
         );
     }
 }

@@ -45,7 +45,7 @@ describe('1997.dxf Part Detection', () => {
 
         // Additional validation: total holes across all parts
         const totalHoles = partResult.parts.reduce(
-            (sum, part) => sum + part.holes.length,
+            (sum, part) => sum + part.voids.length,
             0
         );
 

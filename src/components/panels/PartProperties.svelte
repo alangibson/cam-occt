@@ -34,8 +34,7 @@
 
             <div class="property-row">
                 <span class="property-label">Shell Chain:</span>
-                <span class="property-value">{selectedPart.shell.chain.id}</span
-                >
+                <span class="property-value">{selectedPart.shell.id}</span>
             </div>
 
             <div class="property-row">
@@ -43,7 +42,7 @@
                 <span class="property-value">
                     {(() => {
                         const direction = detectCutDirection(
-                            selectedPart.shell.chain,
+                            selectedPart.shell,
                             algorithmParams.chainDetection.tolerance
                         );
                         return direction === CutDirection.CLOCKWISE
@@ -58,23 +57,23 @@
             <div class="property-row">
                 <span class="property-label">Shell Shapes:</span>
                 <span class="property-value"
-                    >{selectedPart.shell.chain.shapes.length}</span
+                    >{selectedPart.shell.shapes.length}</span
                 >
             </div>
 
             <div class="property-row">
-                <span class="property-label">Holes:</span>
-                <span class="property-value">{selectedPart.holes.length}</span>
+                <span class="property-label">Voids:</span>
+                <span class="property-value">{selectedPart.voids.length}</span>
             </div>
         </div>
 
-        {#if selectedPart.holes.length > 0}
+        {#if selectedPart.voids.length > 0}
             <div class="holes-section">
                 <h4 class="holes-title">
-                    Holes ({selectedPart.holes.length}):
+                    Voids ({selectedPart.voids.length}):
                 </h4>
                 <div class="holes-list">
-                    {#each selectedPart.holes as hole, index (hole.id)}
+                    {#each selectedPart.voids as hole, index (hole.id)}
                         <div class="hole-item">
                             <div class="hole-header">
                                 <span class="hole-index">Hole {index + 1}</span>
@@ -113,16 +112,6 @@
                                         })()}
                                     </span>
                                 </div>
-                                {#if hole.holes && hole.holes.length > 0}
-                                    <div class="hole-detail-row">
-                                        <span class="hole-detail-label"
-                                            >Nested Holes:</span
-                                        >
-                                        <span class="hole-detail-value"
-                                            >{hole.holes.length}</span
-                                        >
-                                    </div>
-                                {/if}
                             </div>
                         </div>
                     {/each}

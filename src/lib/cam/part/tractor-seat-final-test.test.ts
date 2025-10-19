@@ -21,7 +21,7 @@ describe('Tractor Seat Mount Final Test', () => {
         const partResult = await detectParts(chains);
 
         partResult.parts.forEach((part) => {
-            part.holes.forEach(() => {});
+            part.voids.forEach(() => {});
         });
 
         if (partResult.warnings.length > 0) {
@@ -30,10 +30,10 @@ describe('Tractor Seat Mount Final Test', () => {
 
         // The expected behavior: 1 part with multiple holes
         expect(partResult.parts.length).toBe(1);
-        expect(partResult.parts[0].holes.length).toBeGreaterThan(0);
+        expect(partResult.parts[0].voids.length).toBeGreaterThan(0);
 
         // The largest chain should be the shell
-        const shellChain = partResult.parts[0].shell.chain;
+        const shellChain = partResult.parts[0].shell;
         expect(shellChain.shapes.length).toBe(42); // The large boundary chain
     }, 10000);
 });

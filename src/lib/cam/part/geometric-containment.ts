@@ -19,10 +19,7 @@ import {
     isChainClosed,
     isChainContainedInChain,
 } from '$lib/geometry/chain/functions';
-import {
-    calculateChainBoundingBox,
-    isBBoxContainedInBBox,
-} from '$lib/geometry/bounding-box/functions';
+import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type { PartDetectionParameters } from './interfaces';
 import {
     isPointInPolygon,

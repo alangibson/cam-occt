@@ -17,7 +17,7 @@ import { isArc } from '$lib/geometry/arc/functions';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 
 describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     let outputDir: string;
@@ -163,7 +163,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     function getCutNormal(
         chain: Chain,
         cutDirection: CutDirection,
-        part?: DetectedPart
+        part?: Part
     ): Point2D {
         const result = calculateCutNormal(chain, cutDirection, part);
         return result.normal;
@@ -197,10 +197,10 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
             expect(partDetectionResult.parts).toHaveLength(1);
             const part = partDetectionResult.parts[0];
-            expect(part.holes).toHaveLength(1);
+            expect(part.voids).toHaveLength(1);
 
-            const shellChain = part.shell.chain;
-            const holeChain = part.holes[0].chain;
+            const shellChain = part.shell;
+            const holeChain = part.voids[0].chain;
 
             const leadInConfig = {
                 type: LeadType.ARC,
@@ -1278,9 +1278,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
             expect(partDetectionResult.parts).toHaveLength(1);
             const part = partDetectionResult.parts[0];
-            expect(part.holes).toHaveLength(0); // Single circle should be a shell, not a hole
+            expect(part.voids).toHaveLength(0); // Single circle should be a shell, not a hole
 
-            const shellChain = part.shell.chain;
+            const shellChain = part.shell;
 
             const leadInConfig = {
                 type: LeadType.ARC,

@@ -72,20 +72,19 @@ describe('Tractor Seat Mount Part Detection', () => {
 
         for (const part of partResult.parts) {
             console.log(
-                `Part ${part.id}: ${part.holes.length} holes, shell has ${part.shell.chain.shapes.length} shapes`
+                `Part ${part.id}: ${part.voids.length} holes, shell has ${part.shell.shapes.length} shapes`
             );
-            console.log(`  Shell bounding box:`, part.shell.boundingBox);
+            console.log(`  Shell bounding box:`, part.boundingBox);
         }
 
         // Find the largest part (should be the main boundary)
         const largestPart = partResult.parts.reduce((largest, current) =>
-            current.shell.chain.shapes.length >
-            largest.shell.chain.shapes.length
+            current.shell.shapes.length > largest.shell.shapes.length
                 ? current
                 : largest
         );
         console.log(
-            `Largest part: ${largestPart.id} with ${largestPart.shell.chain.shapes.length} shapes`
+            `Largest part: ${largestPart.id} with ${largestPart.shell.shapes.length} shapes`
         );
 
         // Check which closed chains should be inside the largest part
@@ -114,7 +113,7 @@ describe('Tractor Seat Mount Part Detection', () => {
         // The expectation: should detect 1 part with multiple holes
         // Currently this will fail, showing us the actual problem
         expect(partResult.parts).toHaveLength(1);
-        expect(partResult.parts[0].holes.length).toBeGreaterThan(0);
+        expect(partResult.parts[0].voids.length).toBeGreaterThan(0);
     });
 });
 

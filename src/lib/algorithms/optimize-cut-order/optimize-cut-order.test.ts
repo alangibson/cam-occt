@@ -10,7 +10,7 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import type { DetectedPart, PartShell, Part } from '$lib/cam/part/interfaces';
+import type { Part, PartVoid } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
@@ -67,37 +67,31 @@ describe('Optimize Cut Order', () => {
         ],
     });
 
-    // Helper function to create a detected part
+    // Helper function to create a part
     const createDetectedPart = (
         id: string,
         shellChain: Chain,
         holeChains: Chain[] = []
-    ): DetectedPart => {
+    ): Part => {
         const createBoundingBox = (): BoundingBox => ({
             min: { x: 0, y: 0 },
             max: { x: 100, y: 100 },
         });
 
-        const shell: PartShell = {
-            id: `shell-${id}`,
-            chain: shellChain,
-            type: PartType.SHELL,
-            boundingBox: createBoundingBox(),
-            holes: [],
-        };
-
-        const holes: Part[] = holeChains.map((chain, index) => ({
+        const holes: PartVoid[] = holeChains.map((chain, index) => ({
             id: `hole-${id}-${index}`,
             chain,
             type: PartType.HOLE,
             boundingBox: createBoundingBox(),
-            holes: [],
         }));
 
         return {
             id,
-            shell,
-            holes,
+            shell: shellChain,
+            type: PartType.SHELL,
+            boundingBox: createBoundingBox(),
+            voids: holes,
+            slots: [],
         };
     };
 

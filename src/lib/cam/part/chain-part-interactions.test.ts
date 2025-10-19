@@ -8,7 +8,7 @@ import {
     handlePartMouseEnter,
     handlePartMouseLeave,
 } from './chain-part-interactions';
-import { type DetectedPart, type Part, type PartShell } from './interfaces';
+import { type Part, type PartVoid } from './interfaces';
 import { PartType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { chainStore } from '$lib/stores/chains/store';
@@ -23,25 +23,13 @@ describe('findPartContainingChain', () => {
         };
     }
 
-    // Helper function to create a mock part shell
-    function createMockShell(chainId: string): PartShell {
-        return {
-            id: `shell-${chainId}`,
-            chain: createMockChain(chainId),
-            type: PartType.SHELL,
-            boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
-            holes: [],
-        };
-    }
-
     // Helper function to create a mock part hole
-    function createMockHole(chainId: string): Part {
+    function createMockHole(chainId: string): PartVoid {
         return {
             id: `hole-${chainId}`,
             chain: createMockChain(chainId),
             type: PartType.HOLE,
             boundingBox: { min: { x: 10, y: 10 }, max: { x: 20, y: 20 } },
-            holes: [],
         };
     }
 
@@ -49,12 +37,15 @@ describe('findPartContainingChain', () => {
     function createMockPart(
         shellChainId: string,
         holeChainIds: string[] = []
-    ): DetectedPart {
+    ): Part {
         const holes = holeChainIds.map((holeId) => createMockHole(holeId));
         return {
             id: `part-${shellChainId}`,
-            shell: createMockShell(shellChainId),
-            holes,
+            shell: createMockChain(shellChainId),
+            type: PartType.SHELL,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            voids: holes,
+            slots: [],
         };
     }
 
@@ -82,15 +73,12 @@ describe('findPartContainingChain', () => {
 
         it('should return undefined for null/undefined parts array', () => {
             expect(
-                findPartContainingChain(
-                    'chain-1',
-                    null as unknown as DetectedPart[]
-                )
+                findPartContainingChain('chain-1', null as unknown as Part[])
             ).toBeUndefined();
             expect(
                 findPartContainingChain(
                     'chain-1',
-                    undefined as unknown as DetectedPart[]
+                    undefined as unknown as Part[]
                 )
             ).toBeUndefined();
         });
@@ -117,7 +105,7 @@ describe('findPartContainingChain', () => {
 
             expect(result).toBeDefined();
             expect(result?.id).toBe('part-shell-2');
-            expect(result?.shell.chain.id).toBe('shell-2');
+            expect(result?.shell.id).toBe('shell-2');
         });
 
         it('should return first matching part when multiple parts have same shell chain ID', () => {
@@ -131,7 +119,7 @@ describe('findPartContainingChain', () => {
             const result = findPartContainingChain('shell-1', parts);
 
             expect(result).toBeDefined();
-            expect(result?.shell.chain.id).toBe('shell-1');
+            expect(result?.shell.id).toBe('shell-1');
             // Should return the first one found
             expect(result?.id).toBe('part-shell-1');
         });
@@ -149,8 +137,8 @@ describe('findPartContainingChain', () => {
 
             expect(result).toBeDefined();
             expect(result?.id).toBe('part-shell-2');
-            expect(result?.shell.chain.id).toBe('shell-2');
-            expect(result?.holes.some((h) => h.chain.id === 'hole-3')).toBe(
+            expect(result?.shell.id).toBe('shell-2');
+            expect(result?.voids.some((h) => h.chain.id === 'hole-3')).toBe(
                 true
             );
         });
@@ -181,7 +169,7 @@ describe('findPartContainingChain', () => {
 
             const result1 = findPartContainingChain('shell-1', parts);
             expect(result1?.id).toBe('part-shell-1');
-            expect(result1?.holes).toHaveLength(0);
+            expect(result1?.voids).toHaveLength(0);
 
             const result2 = findPartContainingChain('hole-1', parts);
             expect(result2?.id).toBe('part-shell-2');

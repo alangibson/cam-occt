@@ -54,7 +54,7 @@
     import { type LeadConfig } from '$lib/cam/lead/interfaces';
     import { MeasurementSystem } from '$lib/config/settings/enums';
     import { type SettingsState } from '$lib/config/settings/interfaces';
-    import type { DetectedPart } from '$lib/cam/part/interfaces';
+    import type { Part } from '$lib/cam/part/interfaces';
     import { LeadType } from '$lib/cam/lead/enums';
     import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
@@ -503,7 +503,7 @@
     }
 
     // Helper function to find the part that contains a given chain
-    function findPartForChain(chainId: string): DetectedPart | undefined {
+    function findPartForChain(chainId: string): Part | undefined {
         return findPartContainingChain(chainId, partStoreState?.parts || []);
     }
 

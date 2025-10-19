@@ -11,18 +11,25 @@ import type { PartType } from './enums';
 
 export interface Part {
     id: string;
+    shell: Chain;
+    type: PartType.SHELL;
+    boundingBox: BoundingBox;
+    voids: PartVoid[];
+    slots: PartSlot[];
+}
+
+export interface PartVoid {
+    id: string;
     chain: Chain;
     type: PartType.HOLE;
     boundingBox: BoundingBox;
-    holes: Part[]; // Nested holes within this hole (parts)
 }
 
-export interface PartShell {
+export interface PartSlot {
     id: string;
     chain: Chain;
-    type: PartType.SHELL;
+    type: PartType.SLOT;
     boundingBox: BoundingBox;
-    holes: Part[];
 }
 
 export interface PartDetectionParameters {
@@ -39,12 +46,6 @@ export interface PartDetectionParameters {
     enableTessellation: boolean;
 }
 
-export interface DetectedPart {
-    id: string;
-    shell: PartShell;
-    holes: Part[];
-}
-
 export interface PartDetectionWarning {
     type: 'overlapping_boundary';
     chainId: string;
@@ -52,6 +53,6 @@ export interface PartDetectionWarning {
 }
 
 export interface PartDetectionResult {
-    parts: DetectedPart[];
+    parts: Part[];
     warnings: PartDetectionWarning[];
 }

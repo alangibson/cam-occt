@@ -18,7 +18,7 @@ import { KerfCompensation } from '$lib/stores/operations/enums';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Operation } from './interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { reverseChain } from '$lib/geometry/chain/functions';
@@ -161,24 +161,20 @@ describe('Operations Functions', () => {
         normalSide: NormalSide.LEFT,
     };
 
-    const mockPart: DetectedPart = {
+    const mockPart: Part = {
         id: 'part-1',
-        shell: {
-            id: 'shell-1',
-            type: PartType.SHELL,
-            chain: { id: 'chain-1', clockwise: true, shapes: [] },
-            boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            holes: [],
-        },
-        holes: [
+        type: PartType.SHELL,
+        shell: { id: 'chain-1', clockwise: true, shapes: [] },
+        boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+        voids: [
             {
                 id: 'hole-1',
                 type: PartType.HOLE,
                 chain: { id: 'chain-2', clockwise: false, shapes: [] },
                 boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
-                holes: [],
             },
         ],
+        slots: [],
     };
 
     beforeEach(() => {
@@ -720,10 +716,10 @@ describe('Operations Functions', () => {
             expect(result.cuts[1].kerfCompensation).toBe(OffsetDirection.INSET); // Hole
         });
 
-        it('should handle nested holes', async () => {
-            const partWithNestedHoles: DetectedPart = {
+        it('should handle multiple holes', async () => {
+            const partWithMultipleHoles: Part = {
                 ...mockPart,
-                holes: [
+                voids: [
                     {
                         id: 'hole-1',
                         type: PartType.HOLE,
@@ -732,24 +728,22 @@ describe('Operations Functions', () => {
                             min: { x: 2, y: 2 },
                             max: { x: 8, y: 8 },
                         },
-                        holes: [
-                            {
-                                id: 'nested-hole-1',
-                                type: PartType.HOLE,
-                                chain: {
-                                    id: 'chain-3',
-                                    clockwise: false,
-                                    shapes: [],
-                                },
-                                boundingBox: {
-                                    min: { x: 4, y: 4 },
-                                    max: { x: 6, y: 6 },
-                                },
-                                holes: [],
-                            },
-                        ],
+                    },
+                    {
+                        id: 'hole-2',
+                        type: PartType.HOLE,
+                        chain: {
+                            id: 'chain-3',
+                            clockwise: false,
+                            shapes: [],
+                        },
+                        boundingBox: {
+                            min: { x: 4, y: 4 },
+                            max: { x: 6, y: 6 },
+                        },
                     },
                 ],
+                slots: [],
             };
 
             const chains = [
@@ -771,12 +765,312 @@ describe('Operations Functions', () => {
                 'part-1',
                 0,
                 chains,
-                [partWithNestedHoles],
+                [partWithMultipleHoles],
                 [mockTool],
                 0.01
             );
 
             expect(result.cuts).toHaveLength(3); // Shell + 2 holes
+        });
+
+        it('should generate cuts for part with slots and kerf compensation NONE', async () => {
+            const partWithSlots: Part = {
+                ...mockPart,
+                voids: [],
+                slots: [
+                    {
+                        id: 'slot-1',
+                        type: PartType.SLOT,
+                        chain: { id: 'chain-2', clockwise: null, shapes: [] },
+                        boundingBox: {
+                            min: { x: 2, y: 2 },
+                            max: { x: 8, y: 8 },
+                        },
+                    },
+                ],
+            };
+
+            const chains = [
+                mockChain,
+                {
+                    id: 'chain-2',
+                    clockwise: null, // Open chain
+                    shapes: [mockChain.shapes[0]],
+                },
+            ];
+
+            const result = await generateCutsForPartTargetWithOperation(
+                mockOperation,
+                'part-1',
+                0,
+                chains,
+                [partWithSlots],
+                [mockTool],
+                0.01
+            );
+
+            expect(result.cuts).toHaveLength(2); // Shell + 1 slot
+            expect(result.cuts[1].name).toContain('Slot 1');
+            expect(result.cuts[1].kerfCompensation).toBe(OffsetDirection.NONE);
+            expect(result.cuts[1].isHole).toBe(false);
+        });
+
+        it('should generate cuts for part with slots and kerf compensation PART (should not offset slots)', async () => {
+            const operationWithPartKerf = {
+                ...mockOperation,
+                targetType: 'parts' as const,
+                kerfCompensation: KerfCompensation.PART,
+            };
+
+            const partWithSlots: Part = {
+                ...mockPart,
+                voids: [],
+                slots: [
+                    {
+                        id: 'slot-1',
+                        type: PartType.SLOT,
+                        chain: { id: 'chain-2', clockwise: null, shapes: [] },
+                        boundingBox: {
+                            min: { x: 2, y: 2 },
+                            max: { x: 8, y: 8 },
+                        },
+                    },
+                ],
+            };
+
+            const chains = [
+                mockChain,
+                {
+                    id: 'chain-2',
+                    clockwise: null, // Open chain
+                    shapes: [mockChain.shapes[0]],
+                },
+            ];
+
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
+                success: true,
+                innerChain: {
+                    id: 'inner-chain',
+                    originalChainId: 'chain-1',
+                    side: 'inner',
+                    closed: true,
+                    continuous: true,
+                    shapes: [mockChain.shapes[0]],
+                    gapFills: [],
+                },
+                outerChain: {
+                    id: 'outer-chain',
+                    originalChainId: 'chain-1',
+                    side: 'outer',
+                    closed: true,
+                    continuous: true,
+                    shapes: [mockChain.shapes[0]],
+                    gapFills: [],
+                },
+                warnings: [],
+                errors: [],
+            });
+
+            const result = await generateCutsForPartTargetWithOperation(
+                operationWithPartKerf,
+                'part-1',
+                0,
+                chains,
+                [partWithSlots],
+                [mockTool],
+                0.01
+            );
+
+            expect(result.cuts).toHaveLength(2); // Shell + 1 slot
+            expect(result.cuts[0].kerfCompensation).toBe(
+                OffsetDirection.OUTSET
+            ); // Shell should be offset
+            expect(result.cuts[1].kerfCompensation).toBe(OffsetDirection.NONE); // Slot should NOT be offset
+            expect(result.cuts[1].isHole).toBe(false);
+        });
+
+        it('should generate cuts for part with slots and kerf compensation INNER', async () => {
+            const operationWithInnerKerf = {
+                ...mockOperation,
+                targetType: 'parts' as const,
+                kerfCompensation: KerfCompensation.INNER,
+            };
+
+            const partWithSlots: Part = {
+                ...mockPart,
+                voids: [],
+                slots: [
+                    {
+                        id: 'slot-1',
+                        type: PartType.SLOT,
+                        chain: { id: 'chain-2', clockwise: null, shapes: [] },
+                        boundingBox: {
+                            min: { x: 2, y: 2 },
+                            max: { x: 8, y: 8 },
+                        },
+                    },
+                ],
+            };
+
+            const chains = [
+                mockChain,
+                {
+                    id: 'chain-2',
+                    clockwise: null, // Open chain
+                    shapes: [mockChain.shapes[0]],
+                },
+            ];
+
+            vi.mocked(offsetChainAdapter).mockResolvedValue({
+                success: true,
+                innerChain: {
+                    id: 'inner-chain',
+                    originalChainId: 'chain-2',
+                    side: 'inner',
+                    closed: false,
+                    continuous: true,
+                    shapes: [mockChain.shapes[0]],
+                    gapFills: [],
+                },
+                outerChain: {
+                    id: 'outer-chain',
+                    originalChainId: 'chain-2',
+                    side: 'outer',
+                    closed: false,
+                    continuous: true,
+                    shapes: [mockChain.shapes[0]],
+                    gapFills: [],
+                },
+                warnings: [],
+                errors: [],
+            });
+
+            const result = await generateCutsForPartTargetWithOperation(
+                operationWithInnerKerf,
+                'part-1',
+                0,
+                chains,
+                [partWithSlots],
+                [mockTool],
+                0.01
+            );
+
+            expect(result.cuts).toHaveLength(2); // Shell + 1 slot
+            expect(result.cuts[1].kerfCompensation).toBe(OffsetDirection.INSET); // Slot should respect INNER
+        });
+
+        it('should generate cuts for part with multiple slots', async () => {
+            const partWithMultipleSlots: Part = {
+                ...mockPart,
+                voids: [],
+                slots: [
+                    {
+                        id: 'slot-1',
+                        type: PartType.SLOT,
+                        chain: { id: 'chain-2', clockwise: null, shapes: [] },
+                        boundingBox: {
+                            min: { x: 2, y: 2 },
+                            max: { x: 4, y: 4 },
+                        },
+                    },
+                    {
+                        id: 'slot-2',
+                        type: PartType.SLOT,
+                        chain: { id: 'chain-3', clockwise: null, shapes: [] },
+                        boundingBox: {
+                            min: { x: 6, y: 6 },
+                            max: { x: 8, y: 8 },
+                        },
+                    },
+                ],
+            };
+
+            const chains = [
+                mockChain,
+                {
+                    id: 'chain-2',
+                    clockwise: null,
+                    shapes: [mockChain.shapes[0]],
+                },
+                {
+                    id: 'chain-3',
+                    clockwise: null,
+                    shapes: [mockChain.shapes[0]],
+                },
+            ];
+
+            const result = await generateCutsForPartTargetWithOperation(
+                mockOperation,
+                'part-1',
+                0,
+                chains,
+                [partWithMultipleSlots],
+                [mockTool],
+                0.01
+            );
+
+            expect(result.cuts).toHaveLength(3); // Shell + 2 slots
+            expect(result.cuts[1].name).toContain('Slot 1');
+            expect(result.cuts[2].name).toContain('Slot 2');
+        });
+
+        it('should generate cuts for part with voids and slots in correct order', async () => {
+            const partWithVoidsAndSlots: Part = {
+                ...mockPart,
+                voids: [
+                    {
+                        id: 'hole-1',
+                        type: PartType.HOLE,
+                        chain: { id: 'chain-2', clockwise: false, shapes: [] },
+                        boundingBox: {
+                            min: { x: 2, y: 2 },
+                            max: { x: 4, y: 4 },
+                        },
+                    },
+                ],
+                slots: [
+                    {
+                        id: 'slot-1',
+                        type: PartType.SLOT,
+                        chain: { id: 'chain-3', clockwise: null, shapes: [] },
+                        boundingBox: {
+                            min: { x: 6, y: 6 },
+                            max: { x: 8, y: 8 },
+                        },
+                    },
+                ],
+            };
+
+            const chains = [
+                mockChain,
+                {
+                    id: 'chain-2',
+                    clockwise: false,
+                    shapes: [mockChain.shapes[0]],
+                },
+                {
+                    id: 'chain-3',
+                    clockwise: null,
+                    shapes: [mockChain.shapes[0]],
+                },
+            ];
+
+            const result = await generateCutsForPartTargetWithOperation(
+                mockOperation,
+                'part-1',
+                0,
+                chains,
+                [partWithVoidsAndSlots],
+                [mockTool],
+                0.01
+            );
+
+            expect(result.cuts).toHaveLength(3); // Shell + 1 void + 1 slot
+            expect(result.cuts[0].name).toContain('Shell');
+            expect(result.cuts[1].name).toContain('Hole 1');
+            expect(result.cuts[2].name).toContain('Slot 1');
+            expect(result.cuts[1].isHole).toBe(true);
+            expect(result.cuts[2].isHole).toBe(false);
         });
     });
 

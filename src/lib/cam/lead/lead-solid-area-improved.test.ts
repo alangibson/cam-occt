@@ -36,7 +36,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE, // Use proper cut direction instead of NONE
@@ -83,7 +83,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const leadOut: LeadConfig = { type: LeadType.ARC, length: 20 }; // Long lead
 
         const result = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.NONE,
@@ -131,7 +131,7 @@ describe('Lead Solid Area Detection - Improved Point-in-Polygon', () => {
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE, // Use proper cut direction instead of NONE

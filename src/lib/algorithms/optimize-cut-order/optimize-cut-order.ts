@@ -9,7 +9,7 @@
  *    - For N cuts, this reduces lead calculations from O(N²) to O(N)
  *
  * 2. Part Lookup Optimization (~15% improvement)
- *    - Builds chainId -> DetectedPart map once at function entry
+ *    - Builds chainId -> Part map once at function entry
  *    - Replaces O(N) linear search with O(1) map lookup
  *    - Eliminates repeated iteration through parts array during TSP
  */
@@ -17,7 +17,7 @@
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
     calculateDistance,
@@ -46,7 +46,7 @@ function processNearestCut(
     nearestResult: { cut: Cut; distance: number },
     chains: Map<string, Chain>,
     currentPoint: Point2D,
-    findPartForChain: (chainId: string) => DetectedPart | undefined,
+    findPartForChain: (chainId: string) => Part | undefined,
     rapids: Rapid[],
     orderedCuts: Cut[],
     unvisited: Set<Cut>,
@@ -87,7 +87,7 @@ function processNearestCut(
  * If the cut has a lead-out, returns the lead-out end point.
  * Otherwise, returns the chain end point.
  */
-function getCutEndPoint(cut: Cut, chain: Chain, part?: DetectedPart): Point2D {
+function getCutEndPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
     // Use cut.cutChain if it exists (it may have been reversed for open chains)
     const chainToUse = cut.cutChain || chain;
 
@@ -155,7 +155,7 @@ interface CutPointsCache {
 function buildCutPointsCache(
     cuts: Cut[],
     chains: Map<string, Chain>,
-    findPartForChain: (chainId: string) => DetectedPart | undefined
+    findPartForChain: (chainId: string) => Part | undefined
 ): Map<string, CutPointsCache> {
     const cache = new Map<string, CutPointsCache>();
 
@@ -181,24 +181,24 @@ function buildCutPointsCache(
 function nearestNeighborTSP(
     cuts: Cut[],
     chains: Map<string, Chain>,
-    parts: DetectedPart[],
+    parts: Part[],
     startPoint: Point2D,
     cutHolesFirst: boolean = false
 ): OptimizationResult {
-    // PERFORMANCE OPTIMIZATION: Build chainId -> DetectedPart map once
+    // PERFORMANCE OPTIMIZATION: Build chainId -> Part map once
     // This replaces O(N) linear search with O(1) lookup
-    const chainToPartMap = new Map<string, DetectedPart>();
+    const chainToPartMap = new Map<string, Part>();
     for (const part of parts) {
         // Map shell chain to part
-        chainToPartMap.set(part.shell.chain.id, part);
+        chainToPartMap.set(part.shell.id, part);
         // Map all hole chains to part
-        for (const hole of part.holes) {
+        for (const hole of part.voids) {
             chainToPartMap.set(hole.chain.id, part);
         }
     }
 
     // Helper function to find the part that contains a given chain (O(1) lookup)
-    function findPartForChain(chainId: string): DetectedPart | undefined {
+    function findPartForChain(chainId: string): Part | undefined {
         return chainToPartMap.get(chainId);
     }
 
@@ -229,7 +229,7 @@ function nearestNeighborTSP(
         let belongsToPart: boolean = false;
         for (const part of parts) {
             // Check if chain is shell
-            if (part.shell.chain.id === chain.id) {
+            if (part.shell.id === chain.id) {
                 if (!cutsByPart.has(part.id)) {
                     cutsByPart.set(part.id, []);
                 }
@@ -239,7 +239,7 @@ function nearestNeighborTSP(
             }
 
             // Check if chain is a hole
-            for (const hole of part.holes) {
+            for (const hole of part.voids) {
                 if (hole.chain.id === chain.id) {
                     if (!cutsByPart.has(part.id)) {
                         cutsByPart.set(part.id, []);
@@ -299,9 +299,7 @@ function nearestNeighborTSP(
 
         // Separate all holes and shells
         for (const [partId, partCuts] of cutsByPart) {
-            const part: DetectedPart | undefined = parts.find(
-                (p) => p.id === partId
-            );
+            const part: Part | undefined = parts.find((p) => p.id === partId);
             if (!part) continue;
 
             for (const cut of partCuts) {
@@ -310,7 +308,7 @@ function nearestNeighborTSP(
                 const chain: Chain | undefined = chains.get(cut.chainId);
                 if (!chain) continue;
 
-                if (chain.id === part.shell.chain.id) {
+                if (chain.id === part.shell.id) {
                     allShellCuts.push(cut);
                 } else {
                     allHoleCuts.push(cut);
@@ -388,9 +386,7 @@ function nearestNeighborTSP(
     } else {
         // Process parts - shell must be last within each part
         for (const [partId, partCuts] of cutsByPart) {
-            const part: DetectedPart | undefined = parts.find(
-                (p) => p.id === partId
-            );
+            const part: Part | undefined = parts.find((p) => p.id === partId);
             if (!part) continue;
 
             // Separate shell cut and hole cuts
@@ -403,7 +399,7 @@ function nearestNeighborTSP(
                 const chain: Chain | undefined = chains.get(cut.chainId);
                 if (!chain) continue;
 
-                if (chain.id === part.shell.chain.id) {
+                if (chain.id === part.shell.id) {
                     shellCut = cut;
                 } else {
                     holeCuts.push(cut);
@@ -460,7 +456,7 @@ function nearestNeighborTSP(
                 } else {
                     // Fallback: calculate if not in cache (shouldn't happen)
                     const chain: Chain = chains.get(shellCut.chainId)!;
-                    const part: DetectedPart | undefined = findPartForChain(
+                    const part: Part | undefined = findPartForChain(
                         shellCut.chainId
                     );
                     cutStart = getCutStartPoint(shellCut, chain, part);
@@ -504,7 +500,7 @@ function nearestNeighborTSP(
 export function optimizeCutOrder(
     cuts: Cut[],
     chains: Map<string, Chain>,
-    parts: DetectedPart[],
+    parts: Part[],
     origin: Point2D = { x: 0, y: 0 },
     cutHolesFirst: boolean = false
 ): OptimizationResult {

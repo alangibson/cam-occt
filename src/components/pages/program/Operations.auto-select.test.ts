@@ -219,25 +219,19 @@ describe('Operations Auto-Selection Feature', () => {
         partStore.setParts([
             {
                 id: 'part-1',
-                shell: {
-                    id: 'shell-1',
-                    chain: { id: 'chain-1', shapes: [], clockwise: true },
-                    type: PartType.SHELL,
-                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-                    holes: [],
-                },
-                holes: [],
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
+                shell: { id: 'chain-1', shapes: [], clockwise: true },
+                voids: [],
+                slots: [],
             },
             {
                 id: 'part-2',
-                shell: {
-                    id: 'shell-2',
-                    chain: { id: 'chain-2', shapes: [], clockwise: true },
-                    type: PartType.SHELL,
-                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-                    holes: [],
-                },
-                holes: [],
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
+                shell: { id: 'chain-2', shapes: [], clockwise: true },
+                voids: [],
+                slots: [],
             },
         ]);
 
@@ -299,14 +293,11 @@ describe('Operations Auto-Selection Feature', () => {
         partStore.setParts([
             {
                 id: 'part-1',
-                shell: {
-                    id: 'shell-1',
-                    chain: { id: 'chain-1', shapes: [], clockwise: true },
-                    type: PartType.SHELL,
-                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-                    holes: [],
-                },
-                holes: [],
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
+                shell: { id: 'chain-1', shapes: [], clockwise: true },
+                voids: [],
+                slots: [],
             },
         ]);
 

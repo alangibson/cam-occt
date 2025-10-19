@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -77,16 +77,13 @@ describe('Lead Concave Area Fix', () => {
         const chain = createComplexConcaveShape();
 
         // Create a part with this complex shape as shell
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part1',
-            shell: {
-                id: 'shell1',
-                chain,
-                type: PartType.SHELL,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
-                holes: [],
-            },
-            holes: [],
+            shell: chain,
+            type: PartType.SHELL,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
+            voids: [],
+            slots: [],
         };
 
         const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
@@ -176,16 +173,13 @@ describe('Lead Concave Area Fix', () => {
 
         const chain: Chain = { id: 'simple_concave', shapes };
 
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part1',
-            shell: {
-                id: 'shell1',
-                chain,
-                type: PartType.SHELL,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-                holes: [],
-            },
-            holes: [],
+            shell: chain,
+            type: PartType.SHELL,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+            voids: [],
+            slots: [],
         };
 
         const leadIn: LeadConfig = { type: LeadType.ARC, length: 3 };

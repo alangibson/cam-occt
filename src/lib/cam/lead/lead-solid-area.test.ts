@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import { type DetectedPart } from '$lib/cam/part/interfaces';
+import { type Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Shape } from '$lib/geometry/shape/interfaces';
@@ -82,23 +82,22 @@ describe('Lead Solid Area Avoidance', () => {
     }
 
     // Helper to check if a point is inside the solid area of a part (between shell and holes)
-    function isPointInSolidArea(point: Point2D, part: DetectedPart): boolean {
+    function isPointInSolidArea(point: Point2D, part: Part): boolean {
         // Point must be inside the shell
-        const shell = part.shell;
         if (
             !isPointInRectangle(
                 point,
-                shell.boundingBox.min.x,
-                shell.boundingBox.min.y,
-                shell.boundingBox.max.x,
-                shell.boundingBox.max.y
+                part.boundingBox.min.x,
+                part.boundingBox.min.y,
+                part.boundingBox.max.x,
+                part.boundingBox.max.y
             )
         ) {
             return false;
         }
 
         // Point must NOT be inside any hole
-        for (const hole of part.holes) {
+        for (const hole of part.voids) {
             if (
                 isPointInRectangle(
                     point,
@@ -133,19 +132,15 @@ describe('Lead Solid Area Avoidance', () => {
                 90
             );
 
-            const part: DetectedPart = {
+            const part: Part = {
                 id: 'part1',
-                shell: {
-                    id: 'shell1',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: {
-                        min: { x: 0, y: 0 },
-                        max: { x: 100, y: 100 },
-                    },
-                    holes: [],
+                shell: shellChain,
+                type: PartType.SHELL,
+                boundingBox: {
+                    min: { x: 0, y: 0 },
+                    max: { x: 100, y: 100 },
                 },
-                holes: [
+                voids: [
                     {
                         id: 'hole1',
                         chain: holeChain,
@@ -154,9 +149,9 @@ describe('Lead Solid Area Avoidance', () => {
                             min: { x: 70, y: 70 },
                             max: { x: 90, y: 90 },
                         },
-                        holes: [],
                     },
                 ],
+                slots: [],
             };
 
             const leadIn: LeadConfig = { type: LeadType.ARC, length: 20 };
@@ -213,19 +208,15 @@ describe('Lead Solid Area Avoidance', () => {
                 70
             );
 
-            const part: DetectedPart = {
+            const part: Part = {
                 id: 'part1',
-                shell: {
-                    id: 'shell1',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: {
-                        min: { x: 0, y: 0 },
-                        max: { x: 100, y: 100 },
-                    },
-                    holes: [],
+                shell: shellChain,
+                type: PartType.SHELL,
+                boundingBox: {
+                    min: { x: 0, y: 0 },
+                    max: { x: 100, y: 100 },
                 },
-                holes: [
+                voids: [
                     {
                         id: 'hole1',
                         chain: holeChain,
@@ -234,9 +225,9 @@ describe('Lead Solid Area Avoidance', () => {
                             min: { x: 30, y: 30 },
                             max: { x: 70, y: 70 },
                         },
-                        holes: [],
                     },
                 ],
+                slots: [],
             };
 
             const leadIn: LeadConfig = { type: LeadType.ARC, length: 10 }; // Shorter lead
@@ -290,19 +281,15 @@ describe('Lead Solid Area Avoidance', () => {
             const hole1Chain = createRectangleChain('hole1', 40, 30, 80, 70);
             const hole2Chain = createRectangleChain('hole2', 120, 30, 160, 70);
 
-            const part: DetectedPart = {
+            const part: Part = {
                 id: 'part1',
-                shell: {
-                    id: 'shell1',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: {
-                        min: { x: 0, y: 0 },
-                        max: { x: 200, y: 100 },
-                    },
-                    holes: [],
+                shell: shellChain,
+                type: PartType.SHELL,
+                boundingBox: {
+                    min: { x: 0, y: 0 },
+                    max: { x: 200, y: 100 },
                 },
-                holes: [
+                voids: [
                     {
                         id: 'hole1',
                         chain: hole1Chain,
@@ -311,7 +298,6 @@ describe('Lead Solid Area Avoidance', () => {
                             min: { x: 40, y: 30 },
                             max: { x: 80, y: 70 },
                         },
-                        holes: [],
                     },
                     {
                         id: 'hole2',
@@ -321,9 +307,9 @@ describe('Lead Solid Area Avoidance', () => {
                             min: { x: 120, y: 30 },
                             max: { x: 160, y: 70 },
                         },
-                        holes: [],
                     },
                 ],
+                slots: [],
             };
 
             // Test leads for both holes with reasonable length

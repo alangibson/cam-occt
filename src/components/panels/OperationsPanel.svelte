@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Operation } from '$lib/stores/operations/interfaces';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { DetectedPart } from '$lib/cam/part/interfaces';
+    import type { Part } from '$lib/cam/part/interfaces';
     import type { Tool } from '$lib/cam/tool/interfaces';
     import { flip } from 'svelte/animate';
     import { CutDirection } from '$lib/cam/cut/enums';
@@ -14,7 +14,7 @@
     // Props
     export let operations: Operation[] = [];
     export let chains: Chain[] = [];
-    export let parts: DetectedPart[] = [];
+    export let parts: Part[] = [];
     export let dragOverIndex: number | null = null;
     export let toolSearchTerms: { [operationId: string]: string } = {};
     export let showToolDropdowns: { [operationId: string]: boolean } = {};
@@ -328,8 +328,8 @@
                                                         >
                                                         <span
                                                             class="target-info"
-                                                            >({part.holes
-                                                                .length} holes)</span
+                                                            >({part.voids
+                                                                .length} voids)</span
                                                         >
                                                         {#if isAssigned}
                                                             <span

@@ -1,10 +1,7 @@
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Drawing } from '$lib/cam/drawing/interfaces';
-import type {
-    DetectedPart,
-    PartDetectionWarning,
-} from '$lib/cam/part/interfaces';
+import type { Part, PartDetectionWarning } from '$lib/cam/part/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type {
     TessellationPoint,
@@ -36,7 +33,7 @@ export interface PersistedState {
     selectedChainId: string | null;
 
     // Parts state
-    parts: DetectedPart[];
+    parts: Part[];
     partWarnings: PartDetectionWarning[];
     highlightedPartId: string | null;
 

@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Shape } from '$lib/geometry/shape/interfaces';
@@ -18,7 +18,7 @@ describe('Lead Tangency Tests', () => {
     function getCutNormal(
         chain: Chain,
         cutDirection: CutDirection,
-        part?: DetectedPart
+        part?: Part
     ): Point2D {
         const result = calculateCutNormal(chain, cutDirection, part);
         return result.normal;
@@ -290,28 +290,21 @@ describe('Lead Tangency Tests', () => {
             const holeChain = createCircleChain({ x: 5, y: 5 }, 1);
             holeChain.id = 'hole-chain'; // Fix: Give unique ID
 
-            const shellPart: DetectedPart = {
+            const shellPart: Part = {
                 id: 'part1',
-                shell: {
-                    id: 'shell1',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
-                    holes: [],
-                },
-                holes: [],
+                shell: shellChain,
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
+                voids: [],
+                slots: [],
             };
 
-            const holeInShellPart: DetectedPart = {
+            const holeInShellPart: Part = {
                 id: 'part2',
-                shell: {
-                    id: 'shell2',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
-                    holes: [],
-                },
-                holes: [
+                shell: shellChain,
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
+                voids: [
                     {
                         id: 'hole1',
                         chain: holeChain,
@@ -320,9 +313,9 @@ describe('Lead Tangency Tests', () => {
                             min: { x: 4, y: 4 },
                             max: { x: 6, y: 6 },
                         },
-                        holes: [],
                     },
                 ],
+                slots: [],
             };
 
             const leadConfig: LeadConfig = { type: LeadType.ARC, length: 2 };

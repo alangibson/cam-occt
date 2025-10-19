@@ -10,7 +10,7 @@ import {
 } from '$lib/geometry/shape/functions';
 
 describe('Tractor Seat Mount Current Behavior', () => {
-    it('should confirm current behavior: detects 11 parts instead of 1 part with holes', async () => {
+    it('should confirm current behavior: detects 11 parts instead of 1 part with voids', async () => {
         // Load the DXF file
         const dxfPath = path.resolve('tests/dxf/Tractor Seat Mount - Left.dxf');
         const dxfContent = readFileSync(dxfPath, 'utf-8');
@@ -75,6 +75,6 @@ describe('Tractor Seat Mount Current Behavior', () => {
 
         // Expected behavior after fix:
         // expect(partResult.parts.length).toBe(1);
-        // expect(partResult.parts[0].holes.length).toBeGreaterThan(0);
+        // expect(partResult.parts[0].voids.length).toBeGreaterThan(0);
     }, 10000);
 });

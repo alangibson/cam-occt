@@ -3,9 +3,9 @@ import { get } from 'svelte/store';
 import { partStore } from '$lib/stores/parts/store';
 import { getChainPartType, getPartChainIds } from '$lib/cam/part/functions';
 import {
-    type DetectedPart,
-    type PartDetectionWarning,
     type Part,
+    type PartDetectionWarning,
+    type PartVoid,
 } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 
@@ -19,8 +19,8 @@ describe('Parts Store', () => {
         partId: string,
         shellChainId: string,
         holeChainIds: string[] = []
-    ): DetectedPart {
-        const holes: Part[] = holeChainIds.map((chainId, index) => ({
+    ): Part {
+        const holes: PartVoid[] = holeChainIds.map((chainId, index) => ({
             id: `hole-${index + 1}`,
             chain: {
                 id: chainId,
@@ -28,22 +28,18 @@ describe('Parts Store', () => {
             },
             type: PartType.HOLE as const,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            holes: [],
         }));
 
         return {
             id: partId,
             shell: {
-                id: `shell-1`,
-                chain: {
-                    id: shellChainId,
-                    shapes: [],
-                },
-                type: PartType.SHELL as const,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
-                holes: holes,
+                id: shellChainId,
+                shapes: [],
             },
-            holes: holes,
+            type: PartType.SHELL as const,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
+            voids: holes,
+            slots: [],
         };
     }
 
@@ -177,38 +173,12 @@ describe('Parts Store', () => {
     describe('Integration with Complex Hierarchies', () => {
         it('should handle nested holes correctly', () => {
             // Create a part with nested structure (holes containing other parts)
-            const complexPart: DetectedPart = {
+            const complexPart: Part = {
                 id: 'complex-part',
-                shell: {
-                    id: 'shell-1',
-                    chain: { id: 'shell-chain', shapes: [] },
-                    type: PartType.SHELL,
-                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 30, y: 30 } },
-                    holes: [
-                        {
-                            id: 'hole-1',
-                            chain: { id: 'hole-chain', shapes: [] },
-                            type: PartType.HOLE,
-                            boundingBox: {
-                                min: { x: 5, y: 5 },
-                                max: { x: 25, y: 25 },
-                            },
-                            holes: [
-                                {
-                                    id: 'nested-hole',
-                                    chain: { id: 'nested-chain', shapes: [] },
-                                    type: PartType.HOLE,
-                                    boundingBox: {
-                                        min: { x: 10, y: 10 },
-                                        max: { x: 20, y: 20 },
-                                    },
-                                    holes: [],
-                                },
-                            ],
-                        },
-                    ],
-                },
-                holes: [
+                shell: { id: 'shell-chain', shapes: [] },
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 30, y: 30 } },
+                voids: [
                     {
                         id: 'hole-1',
                         chain: { id: 'hole-chain', shapes: [] },
@@ -217,33 +187,17 @@ describe('Parts Store', () => {
                             min: { x: 5, y: 5 },
                             max: { x: 25, y: 25 },
                         },
-                        holes: [
-                            {
-                                id: 'nested-hole',
-                                chain: { id: 'nested-chain', shapes: [] },
-                                type: PartType.HOLE,
-                                boundingBox: {
-                                    min: { x: 10, y: 10 },
-                                    max: { x: 20, y: 20 },
-                                },
-                                holes: [],
-                            },
-                        ],
                     },
                 ],
+                slots: [],
             };
 
             const parts = [complexPart];
             const chainIds = getPartChainIds('complex-part', parts);
 
-            expect(chainIds).toEqual([
-                'shell-chain',
-                'hole-chain',
-                'nested-chain',
-            ]);
+            expect(chainIds).toEqual(['shell-chain', 'hole-chain']);
             expect(getChainPartType('shell-chain', parts)).toBe(PartType.SHELL);
             expect(getChainPartType('hole-chain', parts)).toBe(PartType.HOLE);
-            expect(getChainPartType('nested-chain', parts)).toBe(PartType.HOLE);
         });
     });
 

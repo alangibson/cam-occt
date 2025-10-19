@@ -10,7 +10,7 @@ import { partStore } from '$lib/stores/parts/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';
-import type { PartShell } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
@@ -29,20 +29,21 @@ global.DragEvent = class DragEvent extends Event {
 } as unknown as typeof DragEvent;
 
 // Helper to create mock PartShell
-function createMockPartShell(id: string): PartShell {
+function createMockPartShell(id: string): Part {
     const mockChain: Chain = {
         id: `chain-${id}`,
         shapes: [],
     };
     return {
         id: `shell-${id}`,
-        chain: mockChain,
+        shell: mockChain,
         type: PartType.SHELL,
         boundingBox: {
             min: { x: 0, y: 0 },
             max: { x: 10, y: 10 },
         },
-        holes: [],
+        voids: [],
+        slots: [],
     };
 }
 
@@ -533,13 +534,7 @@ describe('Operations Component - Function Coverage', () => {
             });
 
             // Add parts to part store
-            partStore.setParts([
-                {
-                    id: 'part-1',
-                    shell: createMockPartShell('1'),
-                    holes: [],
-                },
-            ]);
+            partStore.setParts([createMockPartShell('1')]);
 
             const partCheckbox = container.querySelector(
                 'input[type="checkbox"][value="part-1"]'
@@ -558,13 +553,7 @@ describe('Operations Component - Function Coverage', () => {
             const { container } = render(Operations);
 
             // Add parts to store
-            partStore.setParts([
-                {
-                    id: 'part-1',
-                    shell: createMockPartShell('1'),
-                    holes: [],
-                },
-            ]);
+            partStore.setParts([createMockPartShell('1')]);
 
             operationsStore.addOperation({
                 name: 'Test Op',

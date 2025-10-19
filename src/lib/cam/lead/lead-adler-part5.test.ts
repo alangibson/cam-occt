@@ -87,7 +87,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         if (!part5) return;
 
         // Debug the shape type and geometry
-        const firstShape = part5.shell.chain.shapes[0];
+        const firstShape = part5.shell.shapes[0];
         // Check the shape type for debugging
         if (firstShape.type === 'polyline') {
             // Debug polyline shape
@@ -99,7 +99,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
 
         const cutNormal: Point2D = { x: 1, y: 0 };
         const result = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.NONE,
@@ -111,7 +111,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
         const leadPoints = convertLeadGeometryToPoints(result.leadIn!);
 
         // Get the polygon representation of the shell for point-in-polygon testing
-        const shellPolygon = getPolygonFromChain(part5.shell.chain);
+        const shellPolygon = getPolygonFromChain(part5.shell);
 
         // Check how many lead points are inside the solid area
         let pointsInside = 0;
@@ -166,14 +166,14 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
             return;
         }
 
-        const shellPolygon = getPolygonFromChain(part5.shell.chain);
+        const shellPolygon = getPolygonFromChain(part5.shell);
         const leadLengths = [5, 10, 15, 20];
 
         for (const length of leadLengths) {
             const leadIn: LeadConfig = { type: LeadType.ARC, length };
             const cutNormal: Point2D = { x: 1, y: 0 };
             const result = calculateLeads(
-                part5.shell.chain,
+                part5.shell,
                 leadIn,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.NONE,

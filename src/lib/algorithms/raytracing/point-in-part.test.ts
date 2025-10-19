@@ -4,52 +4,50 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Part Selection - Point-in-Part Detection', () => {
-    it('should detect point inside shell but outside holes', () => {
-        // Create a simple rectangular part with a hole
+    it('should detect point inside shell but outside voids', () => {
+        // Create a simple rectangular part with a void
         const shell = {
-            chain: {
-                id: 'shell-1',
-                shapes: [
-                    {
-                        id: 'line-1',
-                        type: GeometryType.LINE as const,
-                        geometry: {
-                            start: { x: 0, y: 0 },
-                            end: { x: 100, y: 0 },
-                        },
+            id: 'shell-1',
+            shapes: [
+                {
+                    id: 'line-1',
+                    type: GeometryType.LINE as const,
+                    geometry: {
+                        start: { x: 0, y: 0 },
+                        end: { x: 100, y: 0 },
                     },
-                    {
-                        id: 'line-2',
-                        type: GeometryType.LINE as const,
-                        geometry: {
-                            start: { x: 100, y: 0 },
-                            end: { x: 100, y: 100 },
-                        },
+                },
+                {
+                    id: 'line-2',
+                    type: GeometryType.LINE as const,
+                    geometry: {
+                        start: { x: 100, y: 0 },
+                        end: { x: 100, y: 100 },
                     },
-                    {
-                        id: 'line-3',
-                        type: GeometryType.LINE as const,
-                        geometry: {
-                            start: { x: 100, y: 100 },
-                            end: { x: 0, y: 100 },
-                        },
+                },
+                {
+                    id: 'line-3',
+                    type: GeometryType.LINE as const,
+                    geometry: {
+                        start: { x: 100, y: 100 },
+                        end: { x: 0, y: 100 },
                     },
-                    {
-                        id: 'line-4',
-                        type: GeometryType.LINE as const,
-                        geometry: {
-                            start: { x: 0, y: 100 },
-                            end: { x: 0, y: 0 },
-                        },
+                },
+                {
+                    id: 'line-4',
+                    type: GeometryType.LINE as const,
+                    geometry: {
+                        start: { x: 0, y: 100 },
+                        end: { x: 0, y: 0 },
                     },
-                ],
-            },
+                },
+            ],
         };
 
-        const holes = [
+        const voids = [
             {
                 chain: {
-                    id: 'hole-1',
+                    id: 'void-1',
                     shapes: [
                         {
                             id: 'circle-1',
@@ -61,15 +59,15 @@ describe('Part Selection - Point-in-Part Detection', () => {
             },
         ];
 
-        const part = { shell, holes };
+        const part = { shell, voids };
 
-        // Point inside shell but outside hole - should return true
+        // Point inside shell but outside void - should return true
         const pointInPart: Point2D = { x: 25, y: 25 };
         expect(isPointInsidePart(pointInPart, part)).toBe(true);
 
-        // Point inside hole - should return false
-        const pointInHole: Point2D = { x: 50, y: 50 };
-        expect(isPointInsidePart(pointInHole, part)).toBe(false);
+        // Point inside void - should return false
+        const pointInVoid: Point2D = { x: 50, y: 50 };
+        expect(isPointInsidePart(pointInVoid, part)).toBe(false);
 
         // Point outside shell - should return false
         const pointOutside: Point2D = { x: 150, y: 150 };

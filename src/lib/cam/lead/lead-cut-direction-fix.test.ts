@@ -102,30 +102,30 @@ describe('Lead Cut Direction Fix', () => {
         return points;
     }
 
-    // Helper to check if point is in solid area (inside shell, outside holes)
+    // Helper to check if point is in solid area (inside shell, outside voids)
     function isPointInSolidArea(
         point: { x: number; y: number },
         part: {
-            shell: { chain: { shapes: Shape[] } };
-            holes: { chain: { shapes: Shape[] } }[];
+            shell: { shapes: Shape[] };
+            voids: { chain: { shapes: Shape[] } }[];
         }
     ): boolean {
-        const shellPolygon = getPolygonFromChain(part.shell.chain);
+        const shellPolygon = getPolygonFromChain(part.shell);
 
         // First check if point is inside the shell
         if (!isPointInPolygon(point, shellPolygon)) {
             return false; // Not inside shell, definitely not in solid area
         }
 
-        // Check if point is inside any hole
-        for (const hole of part.holes) {
-            const holePolygon = getPolygonFromChain(hole.chain);
-            if (isPointInPolygon(point, holePolygon)) {
-                return false; // Inside hole, not solid area
+        // Check if point is inside any void
+        for (const voidItem of part.voids) {
+            const voidPolygon = getPolygonFromChain(voidItem.chain);
+            if (isPointInPolygon(point, voidPolygon)) {
+                return false; // Inside void, not solid area
             }
         }
 
-        return true; // Inside shell, outside all holes = solid area
+        return true; // Inside shell, outside all voids = solid area
     }
 
     it('should show improvement for ADLER Part 5 with correct cut direction', async () => {
@@ -143,7 +143,7 @@ describe('Lead Cut Direction Fix', () => {
 
         // Test with no cut direction (old behavior)
         const noCutDirResult = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.NONE,
@@ -153,7 +153,7 @@ describe('Lead Cut Direction Fix', () => {
 
         // Test with clockwise cut direction
         const clockwiseResult = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
@@ -163,7 +163,7 @@ describe('Lead Cut Direction Fix', () => {
 
         // Test with counterclockwise cut direction
         const counterclockwiseResult = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.COUNTERCLOCKWISE,

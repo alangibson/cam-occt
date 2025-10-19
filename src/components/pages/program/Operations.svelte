@@ -7,7 +7,7 @@
     import { onMount } from 'svelte';
     import type { Operation } from '$lib/stores/operations/interfaces';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { DetectedPart } from '$lib/cam/part/interfaces';
+    import type { Part } from '$lib/cam/part/interfaces';
     import {
         DEFAULT_CUT_DIRECTION,
         DEFAULT_KERF_COMPENSATION,
@@ -23,7 +23,7 @@
 
     let operations: Operation[] = [];
     let chains: Chain[] = [];
-    let parts: DetectedPart[] = [];
+    let parts: Part[] = [];
     let draggedOperation: Operation | null = null;
     let dragOverIndex: number | null = null;
 

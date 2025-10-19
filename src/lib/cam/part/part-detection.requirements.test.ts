@@ -20,7 +20,6 @@ import { isChainClosed } from '$lib/geometry/chain/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { detectParts } from './part-detection';
-import { type Part } from './interfaces';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 
 describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
@@ -168,14 +167,10 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         // Count closed chains by detecting which chains became parts or holes
         const closedChainIds = new Set<string>();
         partResult.parts.forEach((part) => {
-            closedChainIds.add(part.shell.chain.id);
-            const addHoles = (holes: Part[]) => {
-                holes.forEach((hole) => {
-                    closedChainIds.add(hole.chain.id);
-                    addHoles(hole.holes);
-                });
-            };
-            addHoles(part.holes);
+            closedChainIds.add(part.shell.id);
+            part.voids.forEach((hole) => {
+                closedChainIds.add(hole.chain.id);
+            });
         });
         const closedChains = normalizedChains.filter((chain) =>
             closedChainIds.has(chain.id)

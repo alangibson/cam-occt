@@ -20,7 +20,7 @@ describe('Lead Solid Area Verification - Catch the Error', () => {
         if (!part5) return;
 
         // Get shell geometry details
-        const shellShape = part5.shell.chain.shapes[0];
+        const shellShape = part5.shell.shapes[0];
 
         if (shellShape.type === 'polyline') {
             const polylineGeom = shellShape.geometry as Polyline;
@@ -40,7 +40,7 @@ describe('Lead Solid Area Verification - Catch the Error', () => {
         }
 
         // Check holes
-        part5.holes.forEach((hole: { chain: { shapes: Shape[] } }) => {
+        part5.voids.forEach((hole: { chain: { shapes: Shape[] } }) => {
             // Process hole
             void hole;
         });

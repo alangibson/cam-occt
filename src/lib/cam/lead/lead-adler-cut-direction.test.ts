@@ -5,7 +5,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
-import { type PartShell } from '$lib/cam/part/interfaces';
+import { type Part } from '$lib/cam/part/interfaces';
 import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
@@ -67,9 +67,9 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     // Helper to check if point is in solid area (inside shell, outside holes)
     function isPointInSolidArea(
         point: { x: number; y: number },
-        part: PartShell
+        part: Part
     ): boolean {
-        const shellPolygon = getPolygonFromChain(part.chain);
+        const shellPolygon = getPolygonFromChain(part.shell);
 
         // First check if point is inside the shell
         if (!isPointInPolygon(point, shellPolygon)) {
@@ -77,7 +77,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         }
 
         // Check if point is inside any hole
-        for (const hole of part.holes) {
+        for (const hole of part.voids) {
             const holePolygon = getPolygonFromChain(hole.chain);
             if (isPointInPolygon(point, holePolygon)) {
                 return false; // Inside hole, not solid area
@@ -117,7 +117,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
             for (const cutDirection of cutDirections) {
                 const cutNormal: Point2D = { x: 1, y: 0 };
                 const result = calculateLeads(
-                    part5.shell.chain,
+                    part5.shell,
                     leadIn,
                     leadOut,
                     cutDirection,
@@ -129,7 +129,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
                 if (result.leadIn) {
                     const points = convertLeadGeometryToPoints(result.leadIn);
                     for (let i: number = 0; i < points.length - 1; i++) {
-                        if (isPointInSolidArea(points[i], part5.shell)) {
+                        if (isPointInSolidArea(points[i], part5)) {
                             solidPoints++;
                         }
                     }
@@ -151,7 +151,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         // Test with very short leads
         const cutNormal: Point2D = { x: 1, y: 0 };
         const shortResult = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             { type: LeadType.ARC, length: 1 },
             { type: LeadType.NONE, length: 0 },
             CutDirection.COUNTERCLOCKWISE,
@@ -163,7 +163,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
             let solidPoints = 0;
             const shortPoints = convertLeadGeometryToPoints(shortResult.leadIn);
             for (let i: number = 0; i < shortPoints.length - 1; i++) {
-                if (isPointInSolidArea(shortPoints[i], part5.shell)) {
+                if (isPointInSolidArea(shortPoints[i], part5)) {
                     solidPoints++;
                 }
             }
@@ -185,12 +185,12 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         if (!part5) return;
 
         // Analyze the shell geometry
-        const shellShape = part5.shell.chain.shapes[0];
+        const shellShape = part5.shell.shapes[0];
         if (shellShape.type === 'polyline') {
             const points = polylineToPoints(shellShape.geometry as Polyline);
 
             // Find the nearest edge of the bounding box to understand constraints
-            const bbox = part5.shell.boundingBox;
+            const bbox = part5.boundingBox;
             const connectionPoint = points[0];
 
             const distToLeft = connectionPoint.x - bbox.min.x;
@@ -211,8 +211,8 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         }
 
         // Analyze hole position relative to connection point
-        if (part5.holes.length > 0) {
-            const holeShape = part5.holes[0].chain.shapes[0];
+        if (part5.voids.length > 0) {
+            const holeShape = part5.voids[0].chain.shapes[0];
             if (holeShape.type === 'polyline') {
                 const holePoints = polylineToPoints(
                     holeShape.geometry as Polyline

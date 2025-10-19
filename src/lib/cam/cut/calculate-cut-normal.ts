@@ -21,7 +21,7 @@
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { CutDirection, NormalSide } from './enums';
 import {
     getChainStartPoint,
@@ -62,7 +62,7 @@ export interface CutNormalResult {
 export function calculateCutNormal(
     chain: Chain,
     cutDirection: CutDirection,
-    part?: DetectedPart,
+    part?: Part,
     kerfCompensation?: OffsetDirection
 ): CutNormalResult {
     // Get the cut start point
@@ -162,7 +162,7 @@ export function getMaterialAvoidanceDirection(
     point: Point2D,
     leftNormal: Point2D,
     rightNormal: Point2D,
-    part?: DetectedPart
+    part?: Part
 ): { direction: Point2D; confidence: 'high' | 'medium' | 'low' } {
     // Test distances for material detection
     const CLOSE_DISTANCE = 1.0;

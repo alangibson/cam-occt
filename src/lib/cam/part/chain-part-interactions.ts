@@ -1,6 +1,6 @@
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
-import type { DetectedPart, Part } from './interfaces';
+import type { Part, PartVoid } from './interfaces';
 
 /**
  * Shared chain interaction handlers for both Prepare and Program stages
@@ -15,14 +15,14 @@ import type { DetectedPart, Part } from './interfaces';
  */
 export function findPartContainingChain(
     chainId: string,
-    parts: DetectedPart[]
-): DetectedPart | undefined {
+    parts: Part[]
+): Part | undefined {
     if (!chainId || !parts) return undefined;
 
     return parts.find(
         (p) =>
-            p.shell.chain.id === chainId ||
-            p.holes.some((h: Part) => h.chain.id === chainId)
+            p.shell.id === chainId ||
+            p.voids.some((h: PartVoid) => h.chain.id === chainId)
     );
 }
 

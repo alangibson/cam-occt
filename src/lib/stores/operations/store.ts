@@ -6,7 +6,7 @@ import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { chainStore } from '$lib/stores/chains/store';
 import { toolStore } from '$lib/stores/tools/store';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import type { Operation, OperationsStore } from './interfaces';
 import { createCutsFromOperation } from './functions';
 
@@ -91,7 +91,7 @@ function createOperationsStore(): OperationsStore {
 
                 // Get required state data
                 const chainsState = get(chainStore);
-                const partsState: { parts: DetectedPart[] } = get(partStore);
+                const partsState: { parts: Part[] } = get(partStore);
                 const tools = get(toolStore);
 
                 // Generate cuts with leads (async, parallelized)

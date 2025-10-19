@@ -101,11 +101,9 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
-            expect(result.parts[0].shell.chain.shapes).toEqual(
-                chains[0].shapes
-            );
-            expect(result.parts[0].holes).toHaveLength(0);
+            expect(result.parts[0].shell.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
+            expect(result.parts[0].voids).toHaveLength(0);
             expect(result.warnings).toHaveLength(0);
         });
 
@@ -117,8 +115,8 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(2);
-            expect(result.parts[0].holes).toHaveLength(0);
-            expect(result.parts[1].holes).toHaveLength(0);
+            expect(result.parts[0].voids).toHaveLength(0);
+            expect(result.parts[1].voids).toHaveLength(0);
             expect(result.warnings).toHaveLength(0);
         });
     });
@@ -132,13 +130,11 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
-            expect(result.parts[0].shell.chain.shapes).toEqual(
-                chains[0].shapes
-            );
-            expect(result.parts[0].holes).toHaveLength(1);
-            expect(result.parts[0].holes[0].chain.id).toBe(chains[1].id);
-            expect(result.parts[0].holes[0].chain.shapes).toEqual(
+            expect(result.parts[0].shell.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
+            expect(result.parts[0].voids).toHaveLength(1);
+            expect(result.parts[0].voids[0].chain.id).toBe(chains[1].id);
+            expect(result.parts[0].voids[0].chain.shapes).toEqual(
                 chains[1].shapes
             );
             expect(result.warnings).toHaveLength(0);
@@ -153,11 +149,9 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
-            expect(result.parts[0].shell.chain.shapes).toEqual(
-                chains[0].shapes
-            );
-            expect(result.parts[0].holes).toHaveLength(2);
+            expect(result.parts[0].shell.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
+            expect(result.parts[0].voids).toHaveLength(2);
             expect(result.warnings).toHaveLength(0);
         });
 
@@ -169,13 +163,11 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
-            expect(result.parts[0].shell.chain.shapes).toEqual(
-                chains[0].shapes
-            );
-            expect(result.parts[0].holes).toHaveLength(1);
-            expect(result.parts[0].holes[0].chain.id).toBe(chains[1].id);
-            expect(result.parts[0].holes[0].chain.shapes).toEqual(
+            expect(result.parts[0].shell.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
+            expect(result.parts[0].voids).toHaveLength(1);
+            expect(result.parts[0].voids[0].chain.id).toBe(chains[1].id);
+            expect(result.parts[0].voids[0].chain.shapes).toEqual(
                 chains[1].shapes
             );
             expect(result.warnings).toHaveLength(0);
@@ -196,7 +188,7 @@ describe('Part Detection Algorithm', () => {
             // Find parts by their geometric properties instead of object identity
             // The outer part should have the largest bounding box (30x30)
             const outerPart = result.parts.find((p) => {
-                const bounds = p.shell.boundingBox;
+                const bounds = p.boundingBox;
                 return (
                     bounds.max.x - bounds.min.x === 30 &&
                     bounds.max.y - bounds.min.y === 30
@@ -205,7 +197,7 @@ describe('Part Detection Algorithm', () => {
 
             // The inner part should have the smallest bounding box (10x10)
             const innerPart = result.parts.find((p) => {
-                const bounds = p.shell.boundingBox;
+                const bounds = p.boundingBox;
                 return (
                     bounds.max.x - bounds.min.x === 10 &&
                     bounds.max.y - bounds.min.y === 10
@@ -214,14 +206,14 @@ describe('Part Detection Algorithm', () => {
 
             expect(outerPart).toBeTruthy();
             expect(innerPart).toBeTruthy();
-            expect(outerPart!.holes).toHaveLength(1);
+            expect(outerPart!.voids).toHaveLength(1);
 
             // The hole should be the middle-sized rectangle (20x20)
-            const hole = outerPart!.holes[0];
+            const hole = outerPart!.voids[0];
             expect(hole.boundingBox.max.x - hole.boundingBox.min.x).toBe(20);
             expect(hole.boundingBox.max.y - hole.boundingBox.min.y).toBe(20);
 
-            expect(innerPart!.holes).toHaveLength(0);
+            expect(innerPart!.voids).toHaveLength(0);
             expect(result.warnings).toHaveLength(0);
         });
 
@@ -239,7 +231,7 @@ describe('Part Detection Algorithm', () => {
             // Find parts by their geometric properties
             // The outer part should have the largest bounding box (40x40)
             const outerPart = result.parts.find((p) => {
-                const bounds = p.shell.boundingBox;
+                const bounds = p.boundingBox;
                 return (
                     bounds.max.x - bounds.min.x === 40 &&
                     bounds.max.y - bounds.min.y === 40
@@ -248,7 +240,7 @@ describe('Part Detection Algorithm', () => {
 
             // The inner part should have the middle-sized bounding box (20x20)
             const innerPart = result.parts.find((p) => {
-                const bounds = p.shell.boundingBox;
+                const bounds = p.boundingBox;
                 return (
                     bounds.max.x - bounds.min.x === 20 &&
                     bounds.max.y - bounds.min.y === 20
@@ -257,11 +249,11 @@ describe('Part Detection Algorithm', () => {
 
             expect(outerPart).toBeTruthy();
             expect(innerPart).toBeTruthy();
-            expect(outerPart!.holes).toHaveLength(1);
-            expect(innerPart!.holes).toHaveLength(1);
+            expect(outerPart!.voids).toHaveLength(1);
+            expect(innerPart!.voids).toHaveLength(1);
 
             // The outer part's hole should be 30x30
-            const outerHole = outerPart!.holes[0];
+            const outerHole = outerPart!.voids[0];
             expect(
                 outerHole.boundingBox.max.x - outerHole.boundingBox.min.x
             ).toBe(30);
@@ -270,7 +262,7 @@ describe('Part Detection Algorithm', () => {
             ).toBe(30);
 
             // The inner part's hole should be 10x10
-            const innerHole = innerPart!.holes[0];
+            const innerHole = innerPart!.voids[0];
             expect(
                 innerHole.boundingBox.max.x - innerHole.boundingBox.min.x
             ).toBe(10);
@@ -347,7 +339,7 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].holes).toHaveLength(1);
+            expect(result.parts[0].voids).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
         });
 
@@ -356,11 +348,9 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain.id).toBe(chains[0].id);
-            expect(result.parts[0].shell.chain.shapes).toEqual(
-                chains[0].shapes
-            );
-            expect(result.parts[0].holes).toHaveLength(0);
+            expect(result.parts[0].shell.id).toBe(chains[0].id);
+            expect(result.parts[0].shell.shapes).toEqual(chains[0].shapes);
+            expect(result.parts[0].voids).toHaveLength(0);
             expect(result.warnings).toHaveLength(0);
         });
     });
@@ -372,7 +362,7 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts([rectChain, circleChain]);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].holes).toHaveLength(1); // Circle should be inside rectangle
+            expect(result.parts[0].voids).toHaveLength(1); // Circle should be inside rectangle
             expect(result.warnings).toHaveLength(0);
         });
 
@@ -384,7 +374,7 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts(chains);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].holes).toHaveLength(1);
+            expect(result.parts[0].voids).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
         });
     });
@@ -396,10 +386,8 @@ describe('Part Detection Algorithm', () => {
 
             const result = await detectParts([closedChain, openChain]);
             expect(result.parts).toHaveLength(1);
-            expect(result.parts[0].shell.chain.id).toBe(closedChain.id);
-            expect(result.parts[0].shell.chain.shapes).toEqual(
-                closedChain.shapes
-            );
+            expect(result.parts[0].shell.id).toBe(closedChain.id);
+            expect(result.parts[0].shell.shapes).toEqual(closedChain.shapes);
             expect(result.warnings).toHaveLength(0); // Open chain doesn't intersect
         });
 

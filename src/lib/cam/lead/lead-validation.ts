@@ -1,6 +1,6 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { LeadType } from './enums';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import {
@@ -35,7 +35,7 @@ const MAX_RECOMMENDED_LEAD_LENGTH = 50;
 export function validateLeadConfiguration(
     config: LeadsConfig,
     chain: Chain,
-    part?: DetectedPart
+    part?: Part
 ): LeadValidationResult {
     const warnings: string[] = [];
     const suggestions: string[] = [];
@@ -257,15 +257,15 @@ function validateChainGeometry(
 function validatePartContext(
     config: LeadsConfig,
     chain: Chain,
-    part: DetectedPart
+    part: Part
 ): LeadValidationResult {
     const warnings: string[] = [];
     const suggestions: string[] = [];
     const isValid: boolean = true;
     let severity: 'info' | 'warning' | 'error' = 'info';
 
-    const isHole: boolean = part.holes.some((h) => h.chain.id === chain.id);
-    const isShell: boolean = part.shell.chain.id === chain.id;
+    const isHole: boolean = part.voids.some((h) => h.chain.id === chain.id);
+    const isShell: boolean = part.shell.id === chain.id;
 
     if (!isHole && !isShell) {
         warnings.push('Chain is not recognized as part of the specified part');
@@ -275,7 +275,7 @@ function validatePartContext(
     }
 
     // Check for potential collision issues with holes
-    if (isShell && part.holes.length > 0) {
+    if (isShell && part.voids.length > 0) {
         const shellBounds: {
             width: number;
             height: number;
@@ -286,7 +286,7 @@ function validatePartContext(
         } = calculateChainBounds(chain);
 
         // Check if leads might intersect with holes
-        for (const hole of part.holes) {
+        for (const hole of part.voids) {
             const holeBounds: {
                 width: number;
                 height: number;

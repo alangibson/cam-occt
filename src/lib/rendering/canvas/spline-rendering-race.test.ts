@@ -54,7 +54,7 @@ describe('Spline Rendering Race Condition', () => {
         const oParts = partDetectionResult.parts.filter((part) => {
             // O parts will have specific characteristics - we need to identify them
             // For this test, we'll take the first part with holes
-            return part.holes.length > 0;
+            return part.voids.length > 0;
         });
 
         expect(oParts.length).toBeGreaterThan(0);
@@ -177,7 +177,7 @@ describe('Spline Rendering Race Condition', () => {
         partStore.setParts(partDetectionResult.parts);
 
         const oParts = partDetectionResult.parts.filter(
-            (part) => part.holes.length > 0
+            (part) => part.voids.length > 0
         );
         expect(oParts.length).toBeGreaterThanOrEqual(2);
 
@@ -343,7 +343,7 @@ describe('Spline Rendering Race Condition', () => {
         partStore.setParts(partDetectionResult.parts);
 
         const oParts = partDetectionResult.parts.filter(
-            (part) => part.holes.length > 0
+            (part) => part.voids.length > 0
         );
         expect(oParts.length).toBeGreaterThanOrEqual(2);
 

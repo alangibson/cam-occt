@@ -9,7 +9,7 @@ import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { DetectedPart, Part } from '$lib/cam/part/interfaces';
+import type { Part, PartVoid, PartSlot } from '$lib/cam/part/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type {
     ChainOffsetResult,
@@ -253,7 +253,7 @@ export async function generateCutsForChainWithOperation(
     index: number,
     chains: Chain[],
     tools: Tool[],
-    parts: DetectedPart[],
+    parts: Part[],
     tolerance: number
 ): Promise<CutGenerationResult> {
     // Use the operation's preferred cut direction
@@ -465,12 +465,12 @@ export async function generateCutsForPartTargetWithOperation(
     targetId: string,
     index: number,
     chains: Chain[],
-    parts: DetectedPart[],
+    parts: Part[],
     tools: Tool[],
     tolerance: number
 ): Promise<CutGenerationResult> {
     // For parts, create cuts for all chains that make up the part
-    const part: DetectedPart | undefined = parts.find((p) => p.id === targetId);
+    const part: Part | undefined = parts.find((p) => p.id === targetId);
 
     // Return empty arrays if part not found
     if (!part) {
@@ -487,7 +487,7 @@ export async function generateCutsForPartTargetWithOperation(
 
     // Create a cut for the shell chain using operation's preferred direction
     const shellChain: Chain | undefined = chains.find(
-        (c) => c.id === part.shell.chain.id
+        (c) => c.id === part.shell.id
     );
     const shellStoredDirection: CutDirection = getChainCutDirection(shellChain);
     const shellCutDirection: CutDirection =
@@ -532,7 +532,7 @@ export async function generateCutsForPartTargetWithOperation(
         if (offsetResult) {
             // Collect warnings for return instead of directly updating stores
             warningsToReturn.push({
-                chainId: part.shell.chain.id,
+                chainId: part.shell.id,
                 operationId: operation.id,
                 offsetWarnings: offsetResult.warnings || [],
                 clearExistingWarnings: true,
@@ -593,7 +593,7 @@ export async function generateCutsForPartTargetWithOperation(
         id: crypto.randomUUID(),
         name: `${operation.name} - Part ${targetId.split('-')[1]} (Shell)`,
         operationId: operation.id,
-        chainId: part.shell.chain.id,
+        chainId: part.shell.id,
         toolId: operation.toolId,
         enabled: true,
         order: index + 1,
@@ -686,7 +686,7 @@ export async function generateCutsForPartTargetWithOperation(
     // Create cuts for all hole chains (including nested holes)
     let cutOrder: number = index + 1;
 
-    async function processHoles(holes: Part[], prefix: string = '') {
+    async function processHoles(holes: PartVoid[], prefix: string = '') {
         for (let holeIndex = 0; holeIndex < holes.length; holeIndex++) {
             const hole = holes[holeIndex];
             // Use operation's preferred cut direction for the hole chain
@@ -887,18 +887,222 @@ export async function generateCutsForPartTargetWithOperation(
             }
 
             cutsToReturn.push(holeCut);
-
-            // Process nested holes if any
-            if (hole.holes && hole.holes.length > 0) {
-                await processHoles(
-                    hole.holes,
-                    `${prefix}(Hole ${holeIndex + 1}) `
-                );
-            }
         }
     }
 
-    await processHoles(part.holes);
+    await processHoles(part.voids);
+
+    // Create cuts for all slot chains
+    async function processSlots(slots: PartSlot[]) {
+        for (let slotIndex = 0; slotIndex < slots.length; slotIndex++) {
+            const slot = slots[slotIndex];
+            // Use operation's preferred cut direction for the slot chain
+            const slotChain: Chain | undefined = chains.find(
+                (c) => c.id === slot.chain.id
+            );
+            const slotStoredDirection: CutDirection =
+                getChainCutDirection(slotChain);
+            const slotCutDirection: CutDirection =
+                slotStoredDirection === CutDirection.NONE
+                    ? CutDirection.NONE
+                    : operation.cutDirection;
+
+            // Convert KerfCompensation to OffsetDirection for slot
+            // Slots should NOT be offset when kerf compensation is PART or NONE
+            let slotKerfCompensation: OffsetDirection = OffsetDirection.NONE;
+            if (operation.kerfCompensation) {
+                switch (operation.kerfCompensation) {
+                    case KerfCompensation.INNER:
+                        slotKerfCompensation = OffsetDirection.INSET;
+                        break;
+                    case KerfCompensation.OUTER:
+                        slotKerfCompensation = OffsetDirection.OUTSET;
+                        break;
+                    case KerfCompensation.PART:
+                        // For slots in part mode, do not offset
+                        slotKerfCompensation = OffsetDirection.NONE;
+                        break;
+                    case KerfCompensation.NONE:
+                    default:
+                        slotKerfCompensation = OffsetDirection.NONE;
+                        break;
+                }
+            }
+
+            // Calculate offset for slot if kerf compensation is enabled
+            let slotCalculatedOffset: OffsetCalculation | undefined = undefined;
+            if (
+                slotKerfCompensation !== OffsetDirection.NONE &&
+                slotChain &&
+                operation.toolId
+            ) {
+                const offsetResult = await calculateChainOffset(
+                    slotChain,
+                    slotKerfCompensation,
+                    operation.toolId,
+                    tools
+                );
+                if (offsetResult) {
+                    // Collect warnings for return instead of directly updating stores
+                    warningsToReturn.push({
+                        chainId: slot.chain.id,
+                        operationId: operation.id,
+                        offsetWarnings: offsetResult.warnings || [],
+                        clearExistingWarnings: true,
+                    });
+
+                    slotCalculatedOffset = {
+                        offsetShapes: offsetResult.offsetShapes,
+                        originalShapes: offsetResult.originalShapes,
+                        direction: slotKerfCompensation,
+                        kerfWidth: offsetResult.kerfWidth,
+                        generatedAt: new Date().toISOString(),
+                        version: '1.0.0',
+                        gapFills: offsetResult.gapFills,
+                    };
+                }
+            }
+
+            // Create execution chain for slot
+            let slotExecutionChain: Chain | undefined = undefined;
+            let slotExecutionClockwise: boolean | null = null;
+            if (slotChain) {
+                const slotCutChainResult = createCutChain(
+                    slotChain,
+                    slotCutDirection,
+                    slotCalculatedOffset?.offsetShapes
+                );
+                slotExecutionChain = slotCutChainResult.cutChain;
+                slotExecutionClockwise = slotCutChainResult.executionClockwise;
+            }
+
+            // Calculate cut normal for slot
+            if (!slotExecutionChain) {
+                throw new Error(
+                    'Cannot create slot cut: slotExecutionChain is undefined'
+                );
+            }
+            const slotCutNormalResult = calculateCutNormal(
+                slotExecutionChain,
+                slotCutDirection,
+                part,
+                slotKerfCompensation
+            );
+
+            // Get kerf width from tool (needed for cutter visualization even when compensation is NONE)
+            let slotKerfWidth: number | undefined = undefined;
+            if (operation.toolId) {
+                const tool = tools.find((t) => t.id === operation.toolId);
+                if (tool) {
+                    const toolKerfWidth = getToolValue(tool, 'kerfWidth');
+                    if (toolKerfWidth) {
+                        slotKerfWidth = toolKerfWidth;
+                    }
+                }
+            }
+
+            // Create slot cut
+            // For slots with PART kerf compensation, disable leads
+            const slotCut: Cut = {
+                id: crypto.randomUUID(),
+                name: `${operation.name} - Part ${targetId.split('-')[1]} (Slot ${slotIndex + 1})`,
+                operationId: operation.id,
+                chainId: slot.chain.id,
+                toolId: operation.toolId,
+                enabled: true,
+                order: cutOrder++,
+                cutDirection: slotCutDirection,
+                executionClockwise: slotExecutionClockwise,
+                leadInConfig: operation.kerfCompensation === KerfCompensation.PART
+                    ? { type: 'none' as const }
+                    : operation.leadInConfig,
+                leadOutConfig: operation.kerfCompensation === KerfCompensation.PART
+                    ? { type: 'none' as const }
+                    : operation.leadOutConfig,
+                kerfCompensation: slotKerfCompensation,
+                kerfWidth: slotKerfWidth,
+                offset: slotCalculatedOffset,
+                cutChain: slotExecutionChain,
+                isHole: false,
+                holeUnderspeedPercent: undefined,
+                normal: slotCutNormalResult.normal,
+                normalConnectionPoint: slotCutNormalResult.connectionPoint,
+                normalSide: slotCutNormalResult.normalSide,
+            };
+
+            // Optimize slot cut start point if enabled
+            if (
+                operation.optimizeStarts &&
+                operation.optimizeStarts !== OptimizeStarts.NONE
+            ) {
+                const optimizedCut = optimizeCutStartPoint(
+                    slotCut,
+                    operation.optimizeStarts,
+                    tolerance
+                );
+                if (optimizedCut) {
+                    // Use the optimized cut with the new start point
+                    Object.assign(slotCut, optimizedCut);
+
+                    // Recalculate normal with the new start point
+                    const newSlotCutNormalResult = calculateCutNormal(
+                        slotCut.cutChain!,
+                        slotCutDirection,
+                        part,
+                        slotKerfCompensation
+                    );
+                    slotCut.normal = newSlotCutNormalResult.normal;
+                    slotCut.normalConnectionPoint =
+                        newSlotCutNormalResult.connectionPoint;
+                    slotCut.normalSide = newSlotCutNormalResult.normalSide;
+
+                    // Update offset shapes to match optimized cutChain
+                    if (slotCut.offset && slotCut.cutChain) {
+                        slotCut.offset.offsetShapes = slotCut.cutChain.shapes;
+                    }
+                }
+            }
+
+            // Calculate leads for slot cut (uses the updated normal if optimization was applied)
+            // Skip leads when kerf compensation is PART
+            if (slotChain && operation.kerfCompensation !== KerfCompensation.PART) {
+                const slotLeadResult = await calculateCutLeads(
+                    slotCut,
+                    operation,
+                    slotChain,
+                    parts
+                );
+
+                // Add leads to the slot cut if they were calculated
+                if (slotLeadResult.leadIn) {
+                    slotCut.leadIn = {
+                        ...slotLeadResult.leadIn,
+                        generatedAt: new Date().toISOString(),
+                        version: '1.0.0',
+                    };
+                }
+
+                if (slotLeadResult.leadOut) {
+                    slotCut.leadOut = {
+                        ...slotLeadResult.leadOut,
+                        generatedAt: new Date().toISOString(),
+                        version: '1.0.0',
+                    };
+                }
+
+                if (slotLeadResult.validation) {
+                    slotCut.leadValidation = {
+                        ...slotLeadResult.validation,
+                        validatedAt: new Date().toISOString(),
+                    };
+                }
+            }
+
+            cutsToReturn.push(slotCut);
+        }
+    }
+
+    await processSlots(part.slots);
 
     return {
         cuts: cutsToReturn,
@@ -913,7 +1117,7 @@ export async function calculateCutLeads(
     cut: Cut,
     operation: Operation,
     chain: Chain,
-    parts: DetectedPart[]
+    parts: Part[]
 ): Promise<CutLeadResult> {
     try {
         // Skip if both leads are disabled
@@ -925,12 +1129,12 @@ export async function calculateCutLeads(
         }
 
         // Get the part if the cut is part of a part
-        let part: DetectedPart | undefined;
+        let part: Part | undefined;
         if (operation.targetType === 'parts') {
             part = parts?.find(
                 (p) =>
-                    p.shell.chain.id === cut.chainId ||
-                    p.holes.some((h: Part) => h.chain.id === cut.chainId)
+                    p.shell.id === cut.chainId ||
+                    p.voids.some((h: PartVoid) => h.chain.id === cut.chainId)
             );
         }
 
@@ -1031,7 +1235,7 @@ export async function calculateOperationLeads(
     operation: Operation,
     cuts: Cut[],
     chains: Chain[],
-    parts: DetectedPart[]
+    parts: Part[]
 ): Promise<Map<string, CutLeadResult>> {
     const leadResults = new Map<string, CutLeadResult>();
 
@@ -1076,7 +1280,7 @@ export async function calculateOperationLeads(
 export async function createCutsFromOperation(
     operation: Operation,
     chains: Chain[],
-    parts: DetectedPart[],
+    parts: Part[],
     tools: Tool[],
     tolerance: number
 ): Promise<CutGenerationResult> {

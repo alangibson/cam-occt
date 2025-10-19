@@ -7,7 +7,7 @@ import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import type { Operation } from '$lib/stores/operations/interfaces';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
@@ -128,7 +128,7 @@ export interface RenderState {
     chains: Chain[];
 
     // Part detection results
-    parts: DetectedPart[];
+    parts: Part[];
 
     // Cut data
     cuts: Cut[];

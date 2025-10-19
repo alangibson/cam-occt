@@ -25,13 +25,14 @@ import { isChainClosed } from '$lib/geometry/chain/functions';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type {
-    DetectedPart,
+    Part,
     PartDetectionParameters,
     PartDetectionResult,
     PartDetectionWarning,
 } from './interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 import { PartType } from './enums';
+import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
 
 /**
  * Detects parts from a collection of chains using geometric containment
@@ -65,8 +66,45 @@ export async function detectParts(
         chainBounds.set(chain.id, calculateChainBoundingBox(chain));
     }
 
-    // Check for open chains that cross boundaries
+    // Build containment hierarchy first to identify part chains
+    // (needed for slot detection)
+    const containmentMap: Map<string, string> = buildContainmentHierarchy(
+        closedChains,
+        tolerance,
+        params
+    );
+
+    const allPartChains: Chain[] = identifyPartChains(
+        closedChains,
+        containmentMap
+    );
+
+    // Detect slots from open chains
+    // A slot is an open chain where both endpoints are inside the same part
+    const slotsByPart: Map<string, Chain[]> = new Map<string, Chain[]>();
+    let slotCounter: number = 1;
+    const nonSlotOpenChains: Chain[] = [];
+
     for (const openChain of openChains) {
+        const containingPartId: string | null = detectSlotContainer(
+            openChain,
+            allPartChains
+        );
+
+        if (containingPartId) {
+            // This is a slot - add it to the part's slot list
+            if (!slotsByPart.has(containingPartId)) {
+                slotsByPart.set(containingPartId, []);
+            }
+            slotsByPart.get(containingPartId)!.push(openChain);
+        } else {
+            // Not a slot - check for boundary crossing issues
+            nonSlotOpenChains.push(openChain);
+        }
+    }
+
+    // Check non-slot open chains for boundary crossing warnings
+    for (const openChain of nonSlotOpenChains) {
         const crossingIssue: string | null = checkOpenChainBoundaryCrossing(
             openChain,
             closedChains,
@@ -81,13 +119,6 @@ export async function detectParts(
         }
     }
 
-    // Build containment hierarchy using JSTS geometric containment
-    const containmentMap: Map<string, string> = buildContainmentHierarchy(
-        closedChains,
-        tolerance,
-        params
-    );
-
     // HIERARCHICAL APPROACH: Support true nesting where parts can exist inside holes
     // Level 0: Root shells (no parent) = parts
     // Level 1: Chains inside parts = holes
@@ -95,13 +126,8 @@ export async function detectParts(
     // Level 3: Chains inside nested parts = holes
     // And so on...
 
-    const allPartChains: Chain[] = identifyPartChains(
-        closedChains,
-        containmentMap
-    );
-
     // Build part structures - each part chain becomes a part
-    const parts: DetectedPart[] = [];
+    const parts: Part[] = [];
     let partCounter: number = 1;
 
     for (const partChain of allPartChains) {
@@ -119,27 +145,29 @@ export async function detectParts(
             }
         }
 
-        // Create part structure with shell and holes
-        const part: DetectedPart = {
+        // Get slots for this part
+        const slotChains: Chain[] = slotsByPart.get(partChain.id) || [];
+        const partSlots = slotChains.map((slotChain) => ({
+            id: `slot-${slotCounter++}`,
+            chain: slotChain,
+            type: PartType.SLOT as const,
+            boundingBox: chainBounds.get(slotChain.id)!,
+        }));
+
+        // Create part structure
+        const part: Part = {
             id: `part-${partCounter}`,
-            shell: {
-                id: `shell-${partCounter}`,
-                chain: partChain,
-                type: PartType.SHELL,
-                boundingBox: chainBounds.get(partChain.id)!,
-                holes: [],
-            },
-            holes: directHoles.map((hole, idx) => ({
+            shell: partChain,
+            type: PartType.SHELL,
+            boundingBox: chainBounds.get(partChain.id)!,
+            voids: directHoles.map((hole, idx) => ({
                 id: `hole-${partCounter}-${idx + 1}`,
                 chain: hole,
                 type: PartType.HOLE,
                 boundingBox: chainBounds.get(hole.id)!,
-                holes: [], // No nested holes in simple part structure
             })),
+            slots: partSlots,
         };
-
-        // Also set the holes on the shell for backward compatibility
-        part.shell.holes = part.holes;
 
         parts.push(part);
         partCounter++;
@@ -275,4 +303,38 @@ function isPointInBoundingBox(
  */
 export function isPartType(value: string): value is PartType {
     return Object.values(PartType).includes(value as PartType);
+}
+
+/**
+ * Detects which part (if any) contains an open chain as a slot
+ * A slot is an open chain where both endpoints are inside the same part shell
+ *
+ * @param openChain - The open chain to test
+ * @param partChains - Array of closed chains that are parts
+ * @returns The chain ID of the containing part, or null if not a slot
+ */
+function detectSlotContainer(
+    openChain: Chain,
+    partChains: Chain[]
+): string | null {
+    const startPoint: Point2D | null = getOpenChainStart(openChain);
+    const endPoint: Point2D | null = getOpenChainEnd(openChain);
+
+    if (!startPoint || !endPoint) return null;
+
+    // Check each part to see if both endpoints are inside
+    for (const partChain of partChains) {
+        const startInside: boolean = isPointInsideChainExact(
+            startPoint,
+            partChain
+        );
+        const endInside: boolean = isPointInsideChainExact(endPoint, partChain);
+
+        // Both endpoints must be inside the same part for it to be a slot
+        if (startInside && endInside) {
+            return partChain.id;
+        }
+    }
+
+    return null;
 }

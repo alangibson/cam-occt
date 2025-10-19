@@ -70,16 +70,16 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         // - Single closed splines are now detected correctly
         // - Result: 16 chains detected (correct!) with 1 shell + 15 holes
 
-        // Verify correct part detection: 1 part with 15 holes
+        // Verify correct part detection: 1 part with 15 voids
         expect(partResult.parts).toHaveLength(1);
         const part = partResult.parts[0];
         expect(part.shell).toBeDefined();
-        expect(part.holes.length).toBe(15); // Now correctly detecting all 15 holes
+        expect(part.voids.length).toBe(15); // Now correctly detecting all 15 voids
 
         // Chain detection is now working correctly - detects all 16 closed chains:
         // - chain-3: shell (14 shapes)
-        // - chains 1,2,4-16: all holes (15 holes total)
-        // - chain-16 is the large missing hole (39 shapes) that was previously undetected
+        // - chains 1,2,4-16: all voids (15 voids total)
+        // - chain-16 is the large missing void (39 shapes) that was previously undetected
         const closedChains = normalizedChains.filter((chain) =>
             isChainClosed(chain, 0.1)
         );

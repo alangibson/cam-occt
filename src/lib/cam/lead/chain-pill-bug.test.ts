@@ -11,14 +11,14 @@ import { LeadType } from './enums';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { calculateLeads } from './lead-calculation';
 import { isArc } from '$lib/geometry/arc/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 
 describe('Chain-Pill DXF Lead Direction Bug', () => {
     let chains: Chain[];
-    let parts: DetectedPart[];
+    let parts: Part[];
     let shapes: Shape[];
 
     beforeAll(async () => {
@@ -81,8 +81,8 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
             // Find part if this chain belongs to one
             const part = parts.find(
                 (p) =>
-                    p.shell.chain.id === chain.id ||
-                    p.holes.some((h) => h.chain.id === chain.id)
+                    p.shell.id === chain.id ||
+                    p.voids.some((h) => h.chain.id === chain.id)
             );
 
             // Calculate leads for CLOCKWISE
@@ -250,7 +250,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
         if (parts.length > 0) {
             console.log('\n--- Testing with Part Context ---');
             const part = parts[0];
-            const chain = part.shell.chain;
+            const chain = part.shell;
 
             const leadConfig = {
                 type: LeadType.ARC,

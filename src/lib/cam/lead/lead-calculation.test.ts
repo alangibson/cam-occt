@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -53,7 +53,7 @@ describe('calculateLeads', () => {
     function getCutNormal(
         chain: Chain,
         cutDirection: CutDirection,
-        part?: DetectedPart
+        part?: Part
     ): Point2D {
         const result = calculateCutNormal(chain, cutDirection, part);
         return result.normal;
@@ -206,16 +206,12 @@ describe('calculateLeads', () => {
             const shellChain = createCircleChain({ x: 5, y: 5 }, 10);
             shellChain.id = 'shell-chain'; // Fix: Give unique ID to distinguish from hole
 
-            const part: DetectedPart = {
+            const part: Part = {
                 id: 'part1',
-                shell: {
-                    id: 'shell1',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-                    holes: [],
-                },
-                holes: [
+                shell: shellChain,
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+                voids: [
                     {
                         id: 'hole1',
                         chain: holeChain,
@@ -224,9 +220,9 @@ describe('calculateLeads', () => {
                             min: { x: 2, y: 2 },
                             max: { x: 8, y: 8 },
                         },
-                        holes: [],
                     },
                 ],
+                slots: [],
             };
 
             const leadIn: LeadConfig = { type: LeadType.ARC, length: 2 };
@@ -267,16 +263,13 @@ describe('calculateLeads', () => {
             const shellChain = createCircleChain({ x: 5, y: 5 }, 3);
             shellChain.id = 'shell-chain'; // Fix: Give unique ID
 
-            const part: DetectedPart = {
+            const part: Part = {
                 id: 'part1',
-                shell: {
-                    id: 'shell1',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
-                    holes: [],
-                },
-                holes: [],
+                shell: shellChain,
+                type: PartType.SHELL,
+                boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
+                voids: [],
+                slots: [],
             };
 
             const leadIn: LeadConfig = { type: LeadType.ARC, length: 2 };

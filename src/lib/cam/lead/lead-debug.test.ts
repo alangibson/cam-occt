@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { convertLeadGeometryToPoints } from './functions';
 
@@ -28,16 +28,13 @@ describe('Lead Direction Debug', () => {
         const noLeadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         // Create a simple part context to make it a shell
-        const simplePart: DetectedPart = {
+        const simplePart: Part = {
             id: 'test-part',
-            shell: {
-                id: 'shell-1',
-                type: PartType.SHELL,
-                chain: squareChain,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-                holes: [],
-            },
-            holes: [],
+            shell: squareChain,
+            type: PartType.SHELL,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+            voids: [],
+            slots: [],
         };
 
         const noneResult = calculateLeads(

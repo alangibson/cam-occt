@@ -1,46 +1,37 @@
-import type { DetectedPart, Part } from './interfaces';
+import type { Part, PartVoid } from './interfaces';
 
 // Helper to get all chain IDs that belong to a specific part
 
-export function getPartChainIds(
-    partId: string,
-    parts: DetectedPart[]
-): string[] {
-    const part: DetectedPart | undefined = parts.find((p) => p.id === partId);
+export function getPartChainIds(partId: string, parts: Part[]): string[] {
+    const part: Part | undefined = parts.find((p) => p.id === partId);
     if (!part) return [];
 
     const chainIds: string[] = [];
 
     // Add shell chain ID
-    chainIds.push(part.shell.chain.id);
+    chainIds.push(part.shell.id);
 
-    // Add all hole chain IDs recursively
-    function addHoleChainIds(holes: Part[]): void {
+    // Add all hole chain IDs
+    function addHoleChainIds(holes: PartVoid[]): void {
         for (const hole of holes) {
             chainIds.push(hole.chain.id);
-            if (hole.holes) {
-                addHoleChainIds(hole.holes);
-            }
         }
     }
 
-    addHoleChainIds(part.holes);
+    addHoleChainIds(part.voids);
 
     return chainIds;
 }
 // Helper to get which part a chain belongs to
 
-export function getChainPartId(
-    chainId: string,
-    parts: DetectedPart[]
-): string | null {
+export function getChainPartId(chainId: string, parts: Part[]): string | null {
     for (const part of parts) {
-        if (part.shell.chain.id === chainId) {
+        if (part.shell.id === chainId) {
             return part.id;
         }
 
         // Check holes recursively
-        if (isChainInHoles(chainId, part.holes)) {
+        if (isChainInHoles(chainId, part.voids)) {
             return part.id;
         }
     }
@@ -50,26 +41,23 @@ export function getChainPartId(
 
 export function getChainPartType(
     chainId: string,
-    parts: DetectedPart[]
+    parts: Part[]
 ): 'shell' | 'hole' | null {
     for (const part of parts) {
-        if (part.shell.chain.id === chainId) {
+        if (part.shell.id === chainId) {
             return 'shell';
         }
 
         // Check holes recursively
-        if (isChainInHoles(chainId, part.holes)) {
+        if (isChainInHoles(chainId, part.voids)) {
             return 'hole';
         }
     }
     return null;
 }
-function isChainInHoles(chainId: string, holes: Part[]): boolean {
+function isChainInHoles(chainId: string, holes: PartVoid[]): boolean {
     for (const hole of holes) {
         if (hole.chain.id === chainId) {
-            return true;
-        }
-        if (hole.holes && isChainInHoles(chainId, hole.holes)) {
             return true;
         }
     }

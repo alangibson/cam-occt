@@ -8,7 +8,7 @@ import { GeometryType } from '$lib/geometry/shape/enums';
 import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import { PartType } from '$lib/cam/part/enums';
-import type { DetectedPart, PartShell } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
 // Mock stores
@@ -52,20 +52,14 @@ describe('DrawingCanvas Part Highlighting', () => {
             clockwise: true,
         };
 
-        // Create a mock shell
-        const mockShell: PartShell = {
-            id: 'shell-1',
-            chain: mockChain,
+        // Create a proper Part
+        const mockPart: Part = {
+            id: testPartId,
+            shell: mockChain,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
-            holes: [],
-        };
-
-        // Create a proper DetectedPart
-        const mockPart: DetectedPart = {
-            id: testPartId,
-            shell: mockShell,
-            holes: [],
+            voids: [],
+            slots: [],
         };
 
         const hitResult: HitTestResult = {
@@ -165,20 +159,14 @@ describe('DrawingCanvas Part Highlighting', () => {
             clockwise: true,
         };
 
-        // Create a mock shell
-        const mockShell2: PartShell = {
-            id: 'shell-2',
-            chain: mockChain2,
+        // Create a proper Part
+        const mockPart2: Part = {
+            id: testPartId,
+            shell: mockChain2,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
-            holes: [],
-        };
-
-        // Create a proper DetectedPart
-        const mockPart2: DetectedPart = {
-            id: testPartId,
-            shell: mockShell2,
-            holes: [],
+            voids: [],
+            slots: [],
         };
 
         const hitResult: HitTestResult = {

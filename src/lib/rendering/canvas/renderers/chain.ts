@@ -24,7 +24,7 @@ import {
     tessellateChain,
 } from '$lib/geometry/chain/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartVoid, PartSlot } from '$lib/cam/part/interfaces';
 import {
     getShapeStartPoint,
     getShapeEndPoint,
@@ -159,20 +159,12 @@ export class ChainRenderer extends BaseRenderer {
         // Build a set of chain IDs that are holes in parts
         const holeChainIds = new Set<string>();
         for (const part of state.parts) {
-            // Add shell holes
-            for (const hole of part.holes) {
-                holeChainIds.add(hole.chain.id);
-            }
-            // Add nested holes recursively
-            const addNestedHoles = (holes: Part[]) => {
-                for (const hole of holes) {
+            // Add all holes
+            if (part.voids && Array.isArray(part.voids)) {
+                for (const hole of part.voids) {
                     holeChainIds.add(hole.chain.id);
-                    if (hole.holes && hole.holes.length > 0) {
-                        addNestedHoles(hole.holes);
-                    }
                 }
-            };
-            addNestedHoles(part.holes);
+            }
         }
 
         // Render all chains
@@ -261,15 +253,15 @@ export class ChainRenderer extends BaseRenderer {
     }
 
     /**
-     * Helper method to draw a part (shell and holes)
+     * Helper method to draw a part (shell, voids, and slots)
      */
     private drawPartShapes(
         ctx: CanvasRenderingContext2D,
-        part: { shell: { chain: Chain }; holes: Part[] },
+        part: { shell: Chain; voids: PartVoid[]; slots: PartSlot[] },
         state: RenderState
     ): void {
         // Draw shell chain
-        for (const chainShape of part.shell.chain.shapes) {
+        for (const chainShape of part.shell.shapes) {
             const shape = state.drawing?.shapes.find(
                 (s) => s.id === chainShape.id
             );
@@ -278,10 +270,27 @@ export class ChainRenderer extends BaseRenderer {
             }
         }
 
-        // Draw all hole chains
-        const drawHoles = (holes: Part[]) => {
-            for (const hole of holes) {
-                for (const chainShape of hole.chain.shapes) {
+        // Draw all void chains
+        if (part.voids && Array.isArray(part.voids)) {
+            const drawVoids = (voids: PartVoid[]) => {
+                for (const voidItem of voids) {
+                    for (const chainShape of voidItem.chain.shapes) {
+                        const shape = state.drawing?.shapes.find(
+                            (s) => s.id === chainShape.id
+                        );
+                        if (shape) {
+                            drawShape(ctx, shape);
+                        }
+                    }
+                }
+            };
+            drawVoids(part.voids);
+        }
+
+        // Draw all slot chains
+        if (part.slots && Array.isArray(part.slots)) {
+            for (const slot of part.slots) {
+                for (const chainShape of slot.chain.shapes) {
                     const shape = state.drawing?.shapes.find(
                         (s) => s.id === chainShape.id
                     );
@@ -289,13 +298,8 @@ export class ChainRenderer extends BaseRenderer {
                         drawShape(ctx, shape);
                     }
                 }
-                // Recursively draw nested holes
-                if (hole.holes && hole.holes.length > 0) {
-                    drawHoles(hole.holes);
-                }
             }
-        };
-        drawHoles(part.holes);
+        }
     }
 
     private renderHighlightedPart(

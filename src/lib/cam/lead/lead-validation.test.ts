@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Shape } from '$lib/geometry/shape/interfaces';
@@ -187,19 +187,15 @@ describe('Lead Validation Pipeline', () => {
                 'shell-chain'
             );
 
-            const part: DetectedPart = {
+            const part: Part = {
                 id: 'part1',
-                shell: {
-                    id: 'shell1',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: {
-                        min: { x: -5, y: -5 },
-                        max: { x: 15, y: 15 },
-                    },
-                    holes: [],
+                type: PartType.SHELL,
+                shell: shellChain,
+                boundingBox: {
+                    min: { x: -5, y: -5 },
+                    max: { x: 15, y: 15 },
                 },
-                holes: [
+                voids: [
                     {
                         id: 'hole1',
                         chain: holeChain,
@@ -208,9 +204,9 @@ describe('Lead Validation Pipeline', () => {
                             min: { x: 3, y: 3 },
                             max: { x: 7, y: 7 },
                         },
-                        holes: [],
                     },
                 ],
+                slots: [],
             };
 
             const config = {
@@ -240,19 +236,16 @@ describe('Lead Validation Pipeline', () => {
                 'shell-chain'
             );
 
-            const part: DetectedPart = {
+            const part: Part = {
                 id: 'part1',
-                shell: {
-                    id: 'shell1',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: {
-                        min: { x: -5, y: -5 },
-                        max: { x: 15, y: 15 },
-                    },
-                    holes: [],
+                type: PartType.SHELL,
+                shell: shellChain,
+                boundingBox: {
+                    min: { x: -5, y: -5 },
+                    max: { x: 15, y: 15 },
                 },
-                holes: [],
+                voids: [],
+                slots: [],
             };
 
             const config = {

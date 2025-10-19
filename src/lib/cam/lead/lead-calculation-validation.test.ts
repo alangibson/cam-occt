@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Shape } from '$lib/geometry/shape/interfaces';
@@ -170,19 +170,15 @@ describe('Lead Calculation with Validation Pipeline', () => {
             const holeChain = createCircleChain({ x: 5, y: 5 }, 2);
             const shellChain = createCircleChain({ x: 5, y: 5 }, 10);
 
-            const part: DetectedPart = {
+            const part: Part = {
                 id: 'part1',
-                shell: {
-                    id: 'shell1',
-                    chain: shellChain,
-                    type: PartType.SHELL,
-                    boundingBox: {
-                        min: { x: -5, y: -5 },
-                        max: { x: 15, y: 15 },
-                    },
-                    holes: [],
+                shell: shellChain,
+                type: PartType.SHELL,
+                boundingBox: {
+                    min: { x: -5, y: -5 },
+                    max: { x: 15, y: 15 },
                 },
-                holes: [
+                voids: [
                     {
                         id: 'hole1',
                         chain: holeChain,
@@ -191,9 +187,9 @@ describe('Lead Calculation with Validation Pipeline', () => {
                             min: { x: 3, y: 3 },
                             max: { x: 7, y: 7 },
                         },
-                        holes: [],
                     },
                 ],
+                slots: [],
             };
 
             const leadIn: LeadConfig = { type: LeadType.ARC, length: 3 };

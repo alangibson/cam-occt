@@ -1,4 +1,4 @@
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
 /**
@@ -7,8 +7,8 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
  */
 export function findPartForChain(
     chain: Chain | string,
-    parts: DetectedPart[]
-): DetectedPart | undefined {
+    parts: Part[]
+): Part | undefined {
     // Handle both Chain objects and chain ID strings
     const chainId = typeof chain === 'string' ? chain : chain.id;
     const originalChainId =
@@ -16,10 +16,10 @@ export function findPartForChain(
 
     // First try to find by original chain ID (handles offset chains)
     for (const part of parts) {
-        if (part.shell.chain.id === originalChainId) {
+        if (part.shell.id === originalChainId) {
             return part;
         }
-        for (const hole of part.holes) {
+        for (const hole of part.voids) {
             if (hole.chain.id === originalChainId) {
                 return part;
             }
@@ -30,10 +30,10 @@ export function findPartForChain(
     // also try the actual chainId as fallback
     if (originalChainId !== chainId) {
         for (const part of parts) {
-            if (part.shell.chain.id === chainId) {
+            if (part.shell.id === chainId) {
                 return part;
             }
-            for (const hole of part.holes) {
+            for (const hole of part.voids) {
                 if (hole.chain.id === chainId) {
                     return part;
                 }
@@ -48,18 +48,18 @@ export function findPartForChain(
  * Determine if a chain (original or offset) is a hole within the given part.
  * Uses originalChainId for offset chains to get correct classification.
  */
-export function isChainHoleInPart(chain: Chain, part: DetectedPart): boolean {
+export function isChainHoleInPart(chain: Chain, part: Part): boolean {
     const lookupId = chain.originalChainId || chain.id;
 
-    return part.holes.some((hole) => hole.chain.id === lookupId);
+    return part.voids.some((hole) => hole.chain.id === lookupId);
 }
 
 /**
  * Determine if a chain (original or offset) is a shell for the given part.
  * Uses originalChainId for offset chains to get correct classification.
  */
-export function isChainShellInPart(chain: Chain, part: DetectedPart): boolean {
+export function isChainShellInPart(chain: Chain, part: Part): boolean {
     const lookupId = chain.originalChainId || chain.id;
 
-    return part.shell.chain.id === lookupId;
+    return part.shell.id === lookupId;
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
@@ -78,7 +78,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
     // Helper to create a rectangular part with center hole
     function createRectangleWithHole(): {
-        part: DetectedPart;
+        part: Part;
         shell: Chain;
         hole: Chain;
     } {
@@ -127,24 +127,20 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         const hole: Chain = createCircleChain({ x: 10, y: 10 }, 3, false);
 
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part1',
-            shell: {
-                id: 'shell1',
-                chain: shell,
-                type: PartType.SHELL,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
-                holes: [],
-            },
-            holes: [
+            shell: shell,
+            type: PartType.SHELL,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
+            voids: [
                 {
                     id: 'hole1',
                     chain: hole,
                     type: PartType.HOLE,
                     boundingBox: { min: { x: 7, y: 7 }, max: { x: 13, y: 13 } },
-                    holes: [],
                 },
             ],
+            slots: [],
         };
 
         return { part, shell, hole };
@@ -161,7 +157,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
     function getCutNormal(
         chain: Chain,
         cutDirection: CutDirection,
-        part?: DetectedPart
+        part?: Part
     ): Point2D {
         const result = calculateCutNormal(chain, cutDirection, part);
         return result.normal;

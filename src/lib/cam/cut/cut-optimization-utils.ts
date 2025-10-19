@@ -5,7 +5,7 @@ import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { type LeadConfig } from '$lib/cam/lead/interfaces';
 import {
@@ -31,7 +31,7 @@ export function findNearestCut(
     cutsToSearch: Cut[],
     chains: Map<string, Chain>,
     unvisited: Set<Cut>,
-    findPartForChain: (chainId: string) => DetectedPart | undefined,
+    findPartForChain: (chainId: string) => Part | undefined,
     cutStartPointsCache?: Map<string, Point2D>
 ): { cut: Cut | null; distance: number } {
     let nearestCut: Cut | null = null;
@@ -113,11 +113,7 @@ export function prepareChainsAndLeadConfigs(
  * Get the effective start point of a cut, accounting for lead-in geometry and offset
  * Extracted from optimize-cut-order.ts to eliminate duplication
  */
-export function getCutStartPoint(
-    cut: Cut,
-    chain: Chain,
-    part?: DetectedPart
-): Point2D {
+export function getCutStartPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
     // Check if cut has lead-in
     if (
         cut.leadInConfig &&

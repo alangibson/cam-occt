@@ -9,13 +9,14 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
-import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline/constants';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
+import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
 
 /**
  * Default sample count for ray-spline intersection approximation
+ * Increased from 50 to 200 to handle complex splines accurately
  */
-const DEFAULT_SPLINE_SAMPLE_COUNT = 50;
+const DEFAULT_SPLINE_SAMPLE_COUNT = 200;
 
 /**
  * Counts how many times a ray crosses a spline
@@ -128,17 +129,17 @@ function findRaySplineIntersectionsApproximate(
 }
 
 /**
- * Sample points along a NURBS spline
+ * Sample points along a NURBS spline using adaptive tessellation
  *
  * @param spline - The spline to sample
- * @param sampleCount - Number of sample points
+ * @param _sampleCount - Ignored, kept for API compatibility
  * @returns Array of points along the spline
  */
-function sampleSplinePoints(spline: Spline, sampleCount: number): Point2D[] {
+function sampleSplinePoints(spline: Spline, _sampleCount: number): Point2D[] {
     const points: Point2D[] = [];
 
     // Handle degenerate cases
-    if (spline.controlPoints.length === 0 || sampleCount < 2) {
+    if (spline.controlPoints.length === 0) {
         return points;
     }
 
@@ -152,104 +153,34 @@ function sampleSplinePoints(spline: Spline, sampleCount: number): Point2D[] {
         return spline.fitPoints.slice();
     }
 
-    // Fallback: use De Boor's algorithm for NURBS evaluation
-    // For now, implement a simple approximation by sampling control polygon
+    // For 2-point splines, return a line
     if (spline.controlPoints.length === 2) {
-        // Linear case
         return [spline.controlPoints[0], spline.controlPoints[1]];
     }
 
-    // Sample uniformly along parameter space
-    for (let i: number = 0; i < sampleCount; i++) {
-        const t: number = i / (sampleCount - 1);
-        const point: Point2D | null = evaluateSplineAtParameter(spline, t);
-        if (point) {
-            points.push(point);
-        }
-    }
+    // Use verb.js adaptive tessellation for proper NURBS evaluation
+    try {
+        const curve = createVerbCurveFromSpline(spline);
 
-    // If evaluation failed, fall back to control points
-    if (points.length === 0) {
+        // Use adaptive tessellation with tolerance
+        // Tolerance of 0.01 provides good accuracy for ray tracing
+        const tolerance = 0.01;
+        const tessellatedPoints: number[][] = curve.tessellate(tolerance);
+
+        // Convert from [x, y, z] to Point2D
+        for (const point3d of tessellatedPoints) {
+            points.push({ x: point3d[0], y: point3d[1] });
+        }
+
+        return points;
+    } catch (error) {
+        // If verb.js fails, fall back to control points
+        console.warn(
+            'verb.js NURBS tessellation failed, falling back to control points:',
+            error instanceof Error ? error.message : String(error)
+        );
         return spline.controlPoints.slice();
     }
-
-    return points;
-}
-
-/**
- * Evaluate a NURBS spline at a given parameter
- * Simplified implementation - TODO: implement full NURBS evaluation
- *
- * @param spline - The spline to evaluate
- * @param t - Parameter value (0 to 1)
- * @returns Point on the spline, or null if evaluation fails
- */
-function evaluateSplineAtParameter(spline: Spline, t: number): Point2D | null {
-    const {
-        controlPoints,
-        degree,
-    }: { controlPoints: Point2D[]; degree: number } = spline;
-
-    if (controlPoints.length === 0 || t < 0 || t > 1) {
-        return null;
-    }
-
-    if (controlPoints.length === 1) {
-        return { ...controlPoints[0] };
-    }
-
-    // For now, implement simple Bézier-like evaluation for cubic cases
-    // eslint-disable-next-line no-magic-numbers
-    if (degree === DEFAULT_SPLINE_DEGREE && controlPoints.length === 4) {
-        return evaluateCubicBezier(controlPoints, t);
-    }
-
-    // For other cases, use simple linear interpolation between control points
-    if (controlPoints.length === 2) {
-        const p0: Point2D = controlPoints[0];
-        const p1: Point2D = controlPoints[1];
-        return {
-            x: p0.x + t * (p1.x - p0.x),
-            y: p0.y + t * (p1.y - p0.y),
-        };
-    }
-
-    // Multi-segment linear approximation
-    const segmentCount: number = controlPoints.length - 1;
-    const segmentT: number = t * segmentCount;
-    const segmentIndex: number = Math.floor(segmentT);
-    const localT: number = segmentT - segmentIndex;
-
-    if (segmentIndex >= segmentCount) {
-        return { ...controlPoints[controlPoints.length - 1] };
-    }
-
-    const p0: Point2D = controlPoints[segmentIndex];
-    const p1: Point2D = controlPoints[segmentIndex + 1];
-
-    return {
-        x: p0.x + localT * (p1.x - p0.x),
-        y: p0.y + localT * (p1.y - p0.y),
-    };
-}
-
-/**
- * Evaluate a cubic Bézier curve at parameter t
- */
-function evaluateCubicBezier(controlPoints: Point2D[], t: number): Point2D {
-    const [p0, p1, p2, p3]: Point2D[] = controlPoints;
-    const u: number = 1 - t;
-    const tt: number = t * t;
-    const uu: number = u * u;
-    const uuu: number = uu * u;
-    const ttt: number = tt * t;
-
-    return {
-        // eslint-disable-next-line no-magic-numbers
-        x: uuu * p0.x + 3 * uu * t * p1.x + 3 * u * tt * p2.x + ttt * p3.x,
-        // eslint-disable-next-line no-magic-numbers
-        y: uuu * p0.y + 3 * uu * t * p1.y + 3 * u * tt * p2.y + ttt * p3.y,
-    };
 }
 
 /**

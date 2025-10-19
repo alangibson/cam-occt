@@ -4,4 +4,5 @@
 export enum PartType {
     SHELL = 'shell',
     HOLE = 'hole',
+    SLOT = 'slot',
 }

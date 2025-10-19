@@ -254,28 +254,28 @@ export function countPointsInsideChainExact(
  */
 export function isPointInsidePart(
     point: Point2D,
-    part: { shell: { chain: Chain }; holes: { chain: Chain }[] },
+    part: { shell: Chain; voids: { chain: Chain }[] },
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
     // For open chains, there's no meaningful "inside" concept
-    if (!isChainClosed(part.shell.chain, CHAIN_CLOSURE_TOLERANCE)) {
+    if (!isChainClosed(part.shell, CHAIN_CLOSURE_TOLERANCE)) {
         return false; // No point can be "inside" an open chain
     }
 
     // Point must be inside the shell
-    if (!isPointInsideChainExact(point, part.shell.chain, config)) {
+    if (!isPointInsideChainExact(point, part.shell, config)) {
         return false;
     }
 
-    // Point must NOT be inside any holes
-    for (const hole of part.holes) {
-        // Also check if hole is closed before testing containment
-        if (isChainClosed(hole.chain, CHAIN_CLOSURE_TOLERANCE)) {
-            if (isPointInsideChainExact(point, hole.chain, config)) {
+    // Point must NOT be inside any voids
+    for (const voidItem of part.voids) {
+        // Also check if void is closed before testing containment
+        if (isChainClosed(voidItem.chain, CHAIN_CLOSURE_TOLERANCE)) {
+            if (isPointInsideChainExact(point, voidItem.chain, config)) {
                 return false;
             }
         }
-        // If hole is open, it can't contain points, so skip the check
+        // If void is open, it can't contain points, so skip the check
     }
 
     return true;

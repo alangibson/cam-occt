@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -82,16 +82,12 @@ describe('Lead Geometry Debug', () => {
         // Test our understanding of the part geometry
         const shellChain = createLineChain({ x: 0, y: 0 }, { x: 100, y: 0 }); // Bottom edge of shell
 
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part1',
-            shell: {
-                id: 'shell1',
-                chain: shellChain,
-                type: PartType.SHELL,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
-                holes: [],
-            },
-            holes: [
+            shell: shellChain,
+            type: PartType.SHELL,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            voids: [
                 {
                     id: 'hole1',
                     chain: createLineChain({ x: 70, y: 70 }, { x: 90, y: 70 }), // Some hole
@@ -100,9 +96,9 @@ describe('Lead Geometry Debug', () => {
                         min: { x: 70, y: 70 },
                         max: { x: 90, y: 90 },
                     },
-                    holes: [],
                 },
             ],
+            slots: [],
         };
 
         // Test specific points

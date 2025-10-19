@@ -97,44 +97,44 @@ describe('Lead Hole Placement Fix', () => {
         return points;
     }
 
-    // Helper to check if point is inside a hole (good for leads)
-    function isPointInHole(
+    // Helper to check if point is inside a void (good for leads)
+    function isPointInVoid(
         point: { x: number; y: number },
-        part: { holes: { chain: { shapes: Shape[] } }[] }
+        part: { voids: { chain: { shapes: Shape[] } }[] }
     ): boolean {
-        for (const hole of part.holes) {
-            const holePolygon = getPolygonFromChain(hole.chain);
-            if (isPointInPolygon(point, holePolygon)) {
-                return true; // Inside hole
+        for (const voidItem of part.voids) {
+            const voidPolygon = getPolygonFromChain(voidItem.chain);
+            if (isPointInPolygon(point, voidPolygon)) {
+                return true; // Inside void
             }
         }
         return false;
     }
 
-    // Helper to check if point is in solid area (inside shell, outside holes)
+    // Helper to check if point is in solid area (inside shell, outside voids)
     function isPointInSolidArea(
         point: { x: number; y: number },
         part: {
-            shell: { chain: { shapes: Shape[] } };
-            holes: { chain: { shapes: Shape[] } }[];
+            shell: { shapes: Shape[] };
+            voids: { chain: { shapes: Shape[] } }[];
         }
     ): boolean {
-        const shellPolygon = getPolygonFromChain(part.shell.chain);
+        const shellPolygon = getPolygonFromChain(part.shell);
 
         // First check if point is inside the shell
         if (!isPointInPolygon(point, shellPolygon)) {
             return false; // Not inside shell, definitely not in solid area
         }
 
-        // Check if point is inside any hole
-        for (const hole of part.holes) {
-            const holePolygon = getPolygonFromChain(hole.chain);
-            if (isPointInPolygon(point, holePolygon)) {
-                return false; // Inside hole, not solid area
+        // Check if point is inside any void
+        for (const voidItem of part.voids) {
+            const voidPolygon = getPolygonFromChain(voidItem.chain);
+            if (isPointInPolygon(point, voidPolygon)) {
+                return false; // Inside void, not solid area
             }
         }
 
-        return true; // Inside shell, outside all holes = solid area
+        return true; // Inside shell, outside all voids = solid area
     }
 
     it('SHOULD PASS: 1-unit lead correctly detects unreachable hole and falls back to default placement', async () => {
@@ -147,12 +147,12 @@ describe('Lead Hole Placement Fix', () => {
         const part5 = partResult.parts[4];
 
         expect(part5).toBeDefined();
-        expect(part5.holes.length).toBe(1); // Part 5 should have 1 hole
+        expect(part5.voids.length).toBe(1); // Part 5 should have 1 hole
 
         if (!part5) return;
 
         // Analyze hole size
-        const holePolygon = getPolygonFromChain(part5.holes[0].chain);
+        const holePolygon = getPolygonFromChain(part5.voids[0].chain);
         let holeMinX = Infinity,
             holeMaxX = -Infinity,
             holeMinY = Infinity,
@@ -169,7 +169,7 @@ describe('Lead Hole Placement Fix', () => {
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
@@ -187,10 +187,10 @@ describe('Lead Hole Placement Fix', () => {
             const point = leadPoints[i];
 
             const inSolid = isPointInSolidArea(point, part5);
-            const inHole = isPointInHole(point, part5);
+            const inVoid = isPointInVoid(point, part5);
             const outside = !isPointInPolygon(
                 point,
-                getPolygonFromChain(part5.shell.chain)
+                getPolygonFromChain(part5.shell)
             );
 
             if (inSolid) {
@@ -200,8 +200,8 @@ describe('Lead Hole Placement Fix', () => {
             if (inSolid) {
                 const classification = inSolid
                     ? 'SOLID'
-                    : inHole
-                      ? 'HOLE'
+                    : inVoid
+                      ? 'VOID'
                       : outside
                         ? 'OUTSIDE'
                         : 'UNKNOWN';
@@ -215,7 +215,7 @@ describe('Lead Hole Placement Fix', () => {
 
         // The algorithm should correctly detect unreachable holes and fall back to default placement
         const warningResult = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
@@ -240,7 +240,7 @@ describe('Lead Hole Placement Fix', () => {
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
-            part5.shell.chain,
+            part5.shell,
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
@@ -281,14 +281,14 @@ describe('Lead Hole Placement Fix', () => {
         if (!part5) return;
 
         // Get connection point (start of shell chain)
-        const shellShape = part5.shell.chain.shapes[0];
+        const shellShape = part5.shell.shapes[0];
         const connectionPoint =
             shellShape.type === 'polyline'
                 ? polylineToPoints(shellShape.geometry as Polyline)[0]
                 : { x: 0, y: 0 }; // fallback
 
         // Get hole center
-        const holePolygon = getPolygonFromChain(part5.holes[0].chain);
+        const holePolygon = getPolygonFromChain(part5.voids[0].chain);
         const holeCenter = {
             x:
                 holePolygon.reduce(
@@ -307,10 +307,10 @@ describe('Lead Hole Placement Fix', () => {
                 (connectionPoint.y - holeCenter.y) ** 2
         );
 
-        // Check if connection point itself is near the hole
-        const connectionInHole = isPointInHole(connectionPoint, part5);
+        // Check if connection point itself is near the void
+        const connectionInVoid = isPointInVoid(connectionPoint, part5);
 
-        if (distanceToHole < 30 && !connectionInHole) {
+        if (distanceToHole < 30 && !connectionInVoid) {
             // Test condition met
         }
     });

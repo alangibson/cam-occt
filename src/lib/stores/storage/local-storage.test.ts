@@ -112,17 +112,14 @@ describe('State Persistence', () => {
             parts: [
                 {
                     id: 'part1',
-                    shell: {
-                        id: 'shell1',
-                        type: PartType.SHELL,
-                        chain: { id: 'chain1', shapes: [] },
-                        boundingBox: {
-                            min: { x: 0, y: 0 },
-                            max: { x: 10, y: 10 },
-                        },
-                        holes: [],
+                    type: PartType.SHELL,
+                    shell: { id: 'chain1', shapes: [] },
+                    boundingBox: {
+                        min: { x: 0, y: 0 },
+                        max: { x: 10, y: 10 },
                     },
-                    holes: [],
+                    voids: [],
+                    slots: [],
                 },
             ],
             partWarnings: [],

@@ -22,7 +22,7 @@ describe('UI Flow Integration Test', () => {
         const partResult = await detectParts(chains);
 
         partResult.parts.forEach((part) => {
-            part.holes.forEach(() => {});
+            part.voids.forEach(() => {});
         });
 
         // Step 4: Test part type detection for each chain
@@ -37,7 +37,7 @@ describe('UI Flow Integration Test', () => {
         // Verify expectations
         expect(partResult.parts).toHaveLength(4); // Should be 4 parts
         expect(
-            partResult.parts.reduce((sum, part) => sum + part.holes.length, 0)
+            partResult.parts.reduce((sum, part) => sum + part.voids.length, 0)
         ).toBe(2); // Should have 2 holes total
 
         // Count shells and holes
@@ -85,7 +85,7 @@ describe('UI Flow Integration Test', () => {
         // Verify expectations for ADLER.dxf
         expect(partResult.parts).toHaveLength(9); // Should be 9 parts
         expect(
-            partResult.parts.reduce((sum, part) => sum + part.holes.length, 0)
+            partResult.parts.reduce((sum, part) => sum + part.voids.length, 0)
         ).toBe(1); // Should have 1 hole total
 
         // Count shells and holes

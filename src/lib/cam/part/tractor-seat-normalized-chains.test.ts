@@ -32,7 +32,7 @@ describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
 
         // Show details for each part
         partResult.parts.forEach((part, _index) => {
-            part.holes.forEach((_hole, _holeIndex) => {});
+            part.voids.forEach((_voidItem, _voidIndex) => {});
         });
 
         // Show warnings
@@ -41,32 +41,31 @@ describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
         }
 
         // The bug: After normalization, the large boundary chain should be closed
-        // and should contain 12 holes (4 round + 8 letter shapes)
-        // But currently only 2 holes are detected
+        // and should contain 12 voids (4 round + 8 letter shapes)
+        // But currently only 2 voids are detected
 
         // Expected behavior (this should pass after fix):
         // expect(partResult.parts.length).toBe(1);
-        // expect(partResult.parts[0].holes.length).toBe(12);
+        // expect(partResult.parts[0].voids.length).toBe(12);
 
         // Current buggy behavior (documenting what we see now):
 
         // Find the main part (should have the most shapes in its shell)
         const mainPart = partResult.parts.reduce((largest, current) =>
-            current.shell.chain.shapes.length >
-            largest.shell.chain.shapes.length
+            current.shell.shapes.length > largest.shell.shapes.length
                 ? current
                 : largest
         );
 
-        if (mainPart && mainPart.holes.length < 12) {
-            // Bug confirmed - fewer holes detected than expected
+        if (mainPart && mainPart.voids.length < 12) {
+            // Bug confirmed - fewer voids detected than expected
         }
 
         // This test documents the current buggy behavior
-        // After fix, we should have 1 part with 12 holes
+        // After fix, we should have 1 part with 12 voids
         if (partResult.parts.length === 1) {
-            // If we get 1 part, check hole count
-            expect(partResult.parts[0].holes.length).toBe(12);
+            // If we get 1 part, check void count
+            expect(partResult.parts[0].voids.length).toBe(12);
         } else {
             // If we get multiple parts, something is wrong with part detection
             expect(partResult.parts.length).toBeGreaterThan(0); // At least some parts should be detected

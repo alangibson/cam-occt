@@ -11,7 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { calculateCutNormal } from './calculate-cut-normal';
 import { CutDirection, NormalSide } from './enums';
-import type { DetectedPart } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/shape/enums';
@@ -25,310 +25,191 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should have shell normal pointing outward and hole normal pointing inward', () => {
         // Part data from actual bug report
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part-7',
+            type: PartType.SHELL,
+            boundingBox: {
+                min: { x: 39.022212, y: 17.837954 },
+                max: { x: 41.875129, y: 23.987954 },
+            },
             shell: {
-                id: 'shell-7',
-                chain: {
-                    id: 'chain-9',
-                    shapes: [
-                        {
-                            id: 'shape_1760015737420_2049-split-2',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 39.022212, y: 20.9129535 },
-                                end: { x: 39.022212, y: 22.48462 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1802',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 39.022212, y: 22.48462 },
-                                    { x: 39.022212, y: 22.962954 },
-                                    { x: 39.144643, y: 23.333092 },
-                                    { x: 39.389504, y: 23.595037 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1803',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 39.389504, y: 23.595037 },
-                                    { x: 39.634365, y: 23.856981 },
-                                    { x: 39.987421, y: 23.987954 },
-                                    { x: 40.448671, y: 23.987954 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1804',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 40.448671, y: 23.987954 },
-                                    { x: 40.909921, y: 23.987954 },
-                                    { x: 41.262976, y: 23.856981 },
-                                    { x: 41.507838, y: 23.595037 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1805',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 41.507838, y: 23.595037 },
-                                    { x: 41.752699, y: 23.333092 },
-                                    { x: 41.875129, y: 22.962954 },
-                                    { x: 41.875129, y: 22.48462 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015737420_2050',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 41.875129, y: 22.48462 },
-                                end: { x: 41.875129, y: 19.341287 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1808',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 41.875129, y: 19.341287 },
-                                    { x: 41.875129, y: 18.862954 },
-                                    { x: 41.752699, y: 18.492815 },
-                                    { x: 41.507838, y: 18.23087 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1809',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 41.507838, y: 18.23087 },
-                                    { x: 41.262976, y: 17.968926 },
-                                    { x: 40.909921, y: 17.837954 },
-                                    { x: 40.448671, y: 17.837954 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1783',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 40.448671, y: 17.837954 },
-                                    { x: 39.987421, y: 17.837954 },
-                                    { x: 39.634365, y: 17.968926 },
-                                    { x: 39.389504, y: 18.23087 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1784',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 39.389504, y: 18.23087 },
-                                    { x: 39.144643, y: 18.492815 },
-                                    { x: 39.022212, y: 18.862954 },
-                                    { x: 39.022212, y: 19.341287 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015737420_2049-split-1',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 39.022212, y: 19.341287 },
-                                end: { x: 39.022212, y: 20.9129535 },
-                            },
-                            layer: '0',
-                        },
-                    ],
-                    clockwise: true,
-                },
-                type: PartType.SHELL,
-                boundingBox: {
-                    min: { x: 39.022212, y: 17.837954 },
-                    max: { x: 41.875129, y: 23.987954 },
-                },
-                holes: [
+                id: 'chain-9',
+                shapes: [
                     {
-                        id: 'hole-7-1',
-                        chain: {
-                            id: 'chain-11',
-                            shapes: [
-                                {
-                                    id: 'shape_1760015737420_2051-split-2',
-                                    type: GeometryType.LINE,
-                                    geometry: {
-                                        start: { x: 40.935546, y: 20.9129535 },
-                                        end: { x: 40.935546, y: 22.544412 },
-                                    },
-                                    layer: '0',
-                                },
-                                {
-                                    id: 'shape_1760015733516_1813',
-                                    type: GeometryType.SPLINE,
-                                    geometry: {
-                                        controlPoints: [
-                                            { x: 40.935546, y: 22.544412 },
-                                            { x: 40.935546, y: 22.937329 },
-                                            { x: 40.773254, y: 23.133787 },
-                                            { x: 40.448671, y: 23.133787 },
-                                        ],
-                                        knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                        weights: [1, 1, 1, 1],
-                                        degree: 3,
-                                        fitPoints: [],
-                                        closed: false,
-                                    },
-                                    layer: '0',
-                                },
-                                {
-                                    id: 'shape_1760015733516_1814',
-                                    type: GeometryType.SPLINE,
-                                    geometry: {
-                                        controlPoints: [
-                                            { x: 40.448671, y: 23.133787 },
-                                            { x: 40.124087, y: 23.133787 },
-                                            { x: 39.961796, y: 22.937329 },
-                                            { x: 39.961796, y: 22.544412 },
-                                        ],
-                                        knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                        weights: [1, 1, 1, 1],
-                                        degree: 3,
-                                        fitPoints: [],
-                                        closed: false,
-                                    },
-                                    layer: '0',
-                                },
-                                {
-                                    id: 'shape_1760015737420_2052',
-                                    type: GeometryType.LINE,
-                                    geometry: {
-                                        start: { x: 39.961796, y: 22.544412 },
-                                        end: { x: 39.961796, y: 19.281495 },
-                                    },
-                                    layer: '0',
-                                },
-                                {
-                                    id: 'shape_1760015733516_1817',
-                                    type: GeometryType.SPLINE,
-                                    geometry: {
-                                        controlPoints: [
-                                            { x: 39.961796, y: 19.281495 },
-                                            { x: 39.961796, y: 18.888579 },
-                                            { x: 40.124087, y: 18.69212 },
-                                            { x: 40.448671, y: 18.69212 },
-                                        ],
-                                        knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                        weights: [1, 1, 1, 1],
-                                        degree: 3,
-                                        fitPoints: [],
-                                        closed: false,
-                                    },
-                                    layer: '0',
-                                },
-                                {
-                                    id: 'shape_1760015733516_1812',
-                                    type: GeometryType.SPLINE,
-                                    geometry: {
-                                        controlPoints: [
-                                            { x: 40.448671, y: 18.69212 },
-                                            { x: 40.773254, y: 18.69212 },
-                                            { x: 40.935546, y: 18.888579 },
-                                            { x: 40.935546, y: 19.281495 },
-                                        ],
-                                        knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                        weights: [1, 1, 1, 1],
-                                        degree: 3,
-                                        fitPoints: [],
-                                        closed: false,
-                                    },
-                                    layer: '0',
-                                },
-                                {
-                                    id: 'shape_1760015737420_2051-split-1',
-                                    type: GeometryType.LINE,
-                                    geometry: {
-                                        start: { x: 40.935546, y: 19.281495 },
-                                        end: { x: 40.935546, y: 20.9129535 },
-                                    },
-                                    layer: '0',
-                                },
+                        id: 'shape_1760015737420_2049-split-2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 39.022212, y: 20.9129535 },
+                            end: { x: 39.022212, y: 22.48462 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1802',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 39.022212, y: 22.48462 },
+                                { x: 39.022212, y: 22.962954 },
+                                { x: 39.144643, y: 23.333092 },
+                                { x: 39.389504, y: 23.595037 },
                             ],
-                            clockwise: false,
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
                         },
-                        type: PartType.HOLE,
-                        boundingBox: {
-                            min: { x: 39.961796, y: 18.69212 },
-                            max: { x: 40.935546, y: 23.133787 },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1803',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 39.389504, y: 23.595037 },
+                                { x: 39.634365, y: 23.856981 },
+                                { x: 39.987421, y: 23.987954 },
+                                { x: 40.448671, y: 23.987954 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
                         },
-                        holes: [],
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1804',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 40.448671, y: 23.987954 },
+                                { x: 40.909921, y: 23.987954 },
+                                { x: 41.262976, y: 23.856981 },
+                                { x: 41.507838, y: 23.595037 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1805',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 41.507838, y: 23.595037 },
+                                { x: 41.752699, y: 23.333092 },
+                                { x: 41.875129, y: 22.962954 },
+                                { x: 41.875129, y: 22.48462 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015737420_2050',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 41.875129, y: 22.48462 },
+                            end: { x: 41.875129, y: 19.341287 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1808',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 41.875129, y: 19.341287 },
+                                { x: 41.875129, y: 18.862954 },
+                                { x: 41.752699, y: 18.492815 },
+                                { x: 41.507838, y: 18.23087 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1809',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 41.507838, y: 18.23087 },
+                                { x: 41.262976, y: 17.968926 },
+                                { x: 40.909921, y: 17.837954 },
+                                { x: 40.448671, y: 17.837954 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1783',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 40.448671, y: 17.837954 },
+                                { x: 39.987421, y: 17.837954 },
+                                { x: 39.634365, y: 17.968926 },
+                                { x: 39.389504, y: 18.23087 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1784',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 39.389504, y: 18.23087 },
+                                { x: 39.144643, y: 18.492815 },
+                                { x: 39.022212, y: 18.862954 },
+                                { x: 39.022212, y: 19.341287 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015737420_2049-split-1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 39.022212, y: 19.341287 },
+                            end: { x: 39.022212, y: 20.9129535 },
+                        },
+                        layer: '0',
                     },
                 ],
+                clockwise: true,
             },
-            holes: [
+            voids: [
                 {
                     id: 'hole-7-1',
                     chain: {
@@ -441,13 +322,13 @@ describe('Cut Normal Direction on Parts', () => {
                         min: { x: 39.961796, y: 18.69212 },
                         max: { x: 40.935546, y: 23.133787 },
                     },
-                    holes: [],
                 },
             ],
+            slots: [],
         };
 
         // Test shell normal
-        const shellChain: Chain = part.shell.chain;
+        const shellChain: Chain = part.shell;
         const shellNormalResult = calculateCutNormal(
             shellChain,
             CutDirection.CLOCKWISE,
@@ -493,7 +374,7 @@ describe('Cut Normal Direction on Parts', () => {
         ).toBe(true);
 
         // Test hole normal
-        const holeChain: Chain = part.holes[0].chain;
+        const holeChain: Chain = part.voids[0].chain;
         const holeNormalResult = calculateCutNormal(
             holeChain,
             CutDirection.COUNTERCLOCKWISE,
@@ -541,201 +422,198 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should have correct normals when using cutChains without clockwise property', () => {
         // Part data (same as above)
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part-7',
-            shell: {
-                id: 'shell-7',
-                chain: {
-                    id: 'chain-9',
-                    shapes: [
-                        {
-                            id: 'shape_1760015737420_2049-split-2',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 39.022212, y: 20.9129535 },
-                                end: { x: 39.022212, y: 22.48462 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1802',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 39.022212, y: 22.48462 },
-                                    { x: 39.022212, y: 22.962954 },
-                                    { x: 39.144643, y: 23.333092 },
-                                    { x: 39.389504, y: 23.595037 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1803',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 39.389504, y: 23.595037 },
-                                    { x: 39.634365, y: 23.856981 },
-                                    { x: 39.987421, y: 23.987954 },
-                                    { x: 40.448671, y: 23.987954 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1804',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 40.448671, y: 23.987954 },
-                                    { x: 40.909921, y: 23.987954 },
-                                    { x: 41.262976, y: 23.856981 },
-                                    { x: 41.507838, y: 23.595037 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1805',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 41.507838, y: 23.595037 },
-                                    { x: 41.752699, y: 23.333092 },
-                                    { x: 41.875129, y: 22.962954 },
-                                    { x: 41.875129, y: 22.48462 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015737420_2050',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 41.875129, y: 22.48462 },
-                                end: { x: 41.875129, y: 19.341287 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1808',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 41.875129, y: 19.341287 },
-                                    { x: 41.875129, y: 18.862954 },
-                                    { x: 41.752699, y: 18.492815 },
-                                    { x: 41.507838, y: 18.23087 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1809',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 41.507838, y: 18.23087 },
-                                    { x: 41.262976, y: 17.968926 },
-                                    { x: 40.909921, y: 17.837954 },
-                                    { x: 40.448671, y: 17.837954 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1783',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 40.448671, y: 17.837954 },
-                                    { x: 39.987421, y: 17.837954 },
-                                    { x: 39.634365, y: 17.968926 },
-                                    { x: 39.389504, y: 18.23087 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015733516_1784',
-                            type: GeometryType.SPLINE,
-                            geometry: {
-                                controlPoints: [
-                                    { x: 39.389504, y: 18.23087 },
-                                    { x: 39.144643, y: 18.492815 },
-                                    { x: 39.022212, y: 18.862954 },
-                                    { x: 39.022212, y: 19.341287 },
-                                ],
-                                knots: [0, 0, 0, 0, 1, 1, 1, 1],
-                                weights: [1, 1, 1, 1],
-                                degree: 3,
-                                fitPoints: [],
-                                closed: false,
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'shape_1760015737420_2049-split-1',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 39.022212, y: 19.341287 },
-                                end: { x: 39.022212, y: 20.9129535 },
-                            },
-                            layer: '0',
-                        },
-                    ],
-                    clockwise: true,
-                },
-                type: PartType.SHELL,
-                boundingBox: {
-                    min: { x: 39.022212, y: 17.837954 },
-                    max: { x: 41.875129, y: 23.987954 },
-                },
-                holes: [],
+            type: PartType.SHELL,
+            boundingBox: {
+                min: { x: 39.022212, y: 17.837954 },
+                max: { x: 41.875129, y: 23.987954 },
             },
-            holes: [],
+            shell: {
+                id: 'chain-9',
+                shapes: [
+                    {
+                        id: 'shape_1760015737420_2049-split-2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 39.022212, y: 20.9129535 },
+                            end: { x: 39.022212, y: 22.48462 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1802',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 39.022212, y: 22.48462 },
+                                { x: 39.022212, y: 22.962954 },
+                                { x: 39.144643, y: 23.333092 },
+                                { x: 39.389504, y: 23.595037 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1803',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 39.389504, y: 23.595037 },
+                                { x: 39.634365, y: 23.856981 },
+                                { x: 39.987421, y: 23.987954 },
+                                { x: 40.448671, y: 23.987954 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1804',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 40.448671, y: 23.987954 },
+                                { x: 40.909921, y: 23.987954 },
+                                { x: 41.262976, y: 23.856981 },
+                                { x: 41.507838, y: 23.595037 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1805',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 41.507838, y: 23.595037 },
+                                { x: 41.752699, y: 23.333092 },
+                                { x: 41.875129, y: 22.962954 },
+                                { x: 41.875129, y: 22.48462 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015737420_2050',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 41.875129, y: 22.48462 },
+                            end: { x: 41.875129, y: 19.341287 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1808',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 41.875129, y: 19.341287 },
+                                { x: 41.875129, y: 18.862954 },
+                                { x: 41.752699, y: 18.492815 },
+                                { x: 41.507838, y: 18.23087 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1809',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 41.507838, y: 18.23087 },
+                                { x: 41.262976, y: 17.968926 },
+                                { x: 40.909921, y: 17.837954 },
+                                { x: 40.448671, y: 17.837954 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1783',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 40.448671, y: 17.837954 },
+                                { x: 39.987421, y: 17.837954 },
+                                { x: 39.634365, y: 17.968926 },
+                                { x: 39.389504, y: 18.23087 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015733516_1784',
+                        type: GeometryType.SPLINE,
+                        geometry: {
+                            controlPoints: [
+                                { x: 39.389504, y: 18.23087 },
+                                { x: 39.144643, y: 18.492815 },
+                                { x: 39.022212, y: 18.862954 },
+                                { x: 39.022212, y: 19.341287 },
+                            ],
+                            knots: [0, 0, 0, 0, 1, 1, 1, 1],
+                            weights: [1, 1, 1, 1],
+                            degree: 3,
+                            fitPoints: [],
+                            closed: false,
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'shape_1760015737420_2049-split-1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 39.022212, y: 19.341287 },
+                            end: { x: 39.022212, y: 20.9129535 },
+                        },
+                        layer: '0',
+                    },
+                ],
+                clockwise: true,
+            },
+            voids: [],
+            slots: [],
         };
 
         // Create shell cutChain WITHOUT clockwise property (as createCutChain does)
         const shellCutChain: Chain = {
             id: 'chain-9-cut',
-            shapes: [...part.shell.chain.shapes], // Copy shapes
+            shapes: [...part.shell.shapes], // Copy shapes
             // NOTE: No clockwise property!
         };
 
@@ -781,60 +659,57 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should apply left/right normal rules based on cut direction', () => {
         // Simplified part for focused testing
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part-test',
-            shell: {
-                id: 'shell-test',
-                chain: {
-                    id: 'chain-test',
-                    shapes: [
-                        {
-                            id: 'line1',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 0, y: 0 },
-                                end: { x: 10, y: 0 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'line2',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 10, y: 0 },
-                                end: { x: 10, y: 10 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'line3',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 10, y: 10 },
-                                end: { x: 0, y: 10 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'line4',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 0, y: 10 },
-                                end: { x: 0, y: 0 },
-                            },
-                            layer: '0',
-                        },
-                    ],
-                    clockwise: true, // Clockwise winding
-                },
-                type: PartType.SHELL,
-                boundingBox: {
-                    min: { x: 0, y: 0 },
-                    max: { x: 10, y: 10 },
-                },
-                holes: [],
+            type: PartType.SHELL,
+            boundingBox: {
+                min: { x: 0, y: 0 },
+                max: { x: 10, y: 10 },
             },
-            holes: [],
+            shell: {
+                id: 'chain-test',
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 10, y: 0 },
+                            end: { x: 10, y: 10 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 10, y: 10 },
+                            end: { x: 0, y: 10 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line4',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 10 },
+                            end: { x: 0, y: 0 },
+                        },
+                        layer: '0',
+                    },
+                ],
+                clockwise: true, // Clockwise winding
+            },
+            voids: [],
+            slots: [],
         };
 
         // Test with CLOCKWISE cut direction on shell
@@ -842,7 +717,7 @@ describe('Cut Normal Direction on Parts', () => {
         // leftNormal = (0,1), rightNormal = (0,-1)
         // Shell + CW should give leftNormal
         const normalCW = calculateCutNormal(
-            part.shell.chain,
+            part.shell,
             CutDirection.CLOCKWISE,
             part
         );
@@ -855,7 +730,7 @@ describe('Cut Normal Direction on Parts', () => {
         // Test with COUNTERCLOCKWISE cut direction on shell
         // Shell + CCW should give rightNormal
         const normalCCW = calculateCutNormal(
-            part.shell.chain,
+            part.shell,
             CutDirection.COUNTERCLOCKWISE,
             part
         );
@@ -871,64 +746,61 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should use originalChainId to identify shell vs hole', () => {
         // Simple rectangular part
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part-bug',
+            type: PartType.SHELL,
+            boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             shell: {
-                id: 'shell-bug',
-                chain: {
-                    id: 'chain-original', // Original chain ID
-                    shapes: [
-                        {
-                            id: 'line1',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 0, y: 0 },
-                                end: { x: 10, y: 0 },
-                            },
-                            layer: '0',
+                id: 'chain-original', // Original chain ID
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
                         },
-                        {
-                            id: 'line2',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 10, y: 0 },
-                                end: { x: 10, y: 10 },
-                            },
-                            layer: '0',
+                        layer: '0',
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 10, y: 0 },
+                            end: { x: 10, y: 10 },
                         },
-                        {
-                            id: 'line3',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 10, y: 10 },
-                                end: { x: 0, y: 10 },
-                            },
-                            layer: '0',
+                        layer: '0',
+                    },
+                    {
+                        id: 'line3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 10, y: 10 },
+                            end: { x: 0, y: 10 },
                         },
-                        {
-                            id: 'line4',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 0, y: 10 },
-                                end: { x: 0, y: 0 },
-                            },
-                            layer: '0',
+                        layer: '0',
+                    },
+                    {
+                        id: 'line4',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 10 },
+                            end: { x: 0, y: 0 },
                         },
-                    ],
-                    clockwise: true,
-                },
-                type: PartType.SHELL,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-                holes: [],
+                        layer: '0',
+                    },
+                ],
+                clockwise: true,
             },
-            holes: [],
+            voids: [],
+            slots: [],
         };
 
         // Create cutChain WITHOUT originalChainId
         // This will NOT be identified as a shell (bug case)
         const cutChainBroken: Chain = {
             id: 'chain-original-cut', // Different ID!
-            shapes: [...part.shell.chain.shapes],
+            shapes: [...part.shell.shapes],
             // No originalChainId set!
         };
 
@@ -946,8 +818,8 @@ describe('Cut Normal Direction on Parts', () => {
         // Create cutChain WITH originalChainId (correct case)
         const cutChainFixed: Chain = {
             id: 'chain-original-cut',
-            shapes: [...part.shell.chain.shapes],
-            originalChainId: part.shell.chain.id, // Set originalChainId!
+            shapes: [...part.shell.shapes],
+            originalChainId: part.shell.id, // Set originalChainId!
         };
 
         const normalFixed = calculateCutNormal(
@@ -970,67 +842,64 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should flip shell normal when INNER kerf compensation is applied', () => {
         // Simple rectangular shell
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part-test',
-            shell: {
-                id: 'shell-test',
-                chain: {
-                    id: 'chain-test',
-                    shapes: [
-                        {
-                            id: 'line1',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 0, y: 0 },
-                                end: { x: 10, y: 0 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'line2',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 10, y: 0 },
-                                end: { x: 10, y: 10 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'line3',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 10, y: 10 },
-                                end: { x: 0, y: 10 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'line4',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 0, y: 10 },
-                                end: { x: 0, y: 0 },
-                            },
-                            layer: '0',
-                        },
-                    ],
-                    clockwise: true,
-                },
-                type: PartType.SHELL,
-                boundingBox: {
-                    min: { x: 0, y: 0 },
-                    max: { x: 10, y: 10 },
-                },
-                holes: [],
+            type: PartType.SHELL,
+            boundingBox: {
+                min: { x: 0, y: 0 },
+                max: { x: 10, y: 10 },
             },
-            holes: [],
+            shell: {
+                id: 'chain-test',
+                shapes: [
+                    {
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 10, y: 0 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 10, y: 0 },
+                            end: { x: 10, y: 10 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 10, y: 10 },
+                            end: { x: 0, y: 10 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line4',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 10 },
+                            end: { x: 0, y: 0 },
+                        },
+                        layer: '0',
+                    },
+                ],
+                clockwise: true,
+            },
+            voids: [],
+            slots: [],
         };
 
         // Test shell without INNER kerf (normal case)
         // Start point (0,0), tangent (1,0)
         // Shell + CW → left normal (0,1) pointing up/outward
         const normalNoKerf = calculateCutNormal(
-            part.shell.chain,
+            part.shell,
             CutDirection.CLOCKWISE,
             part
         );
@@ -1041,7 +910,7 @@ describe('Cut Normal Direction on Parts', () => {
         // Test shell with INNER kerf (should flip)
         // Shell + CW + INNER → right normal (0,-1) pointing down/inward
         const normalWithInnerKerf = calculateCutNormal(
-            part.shell.chain,
+            part.shell,
             CutDirection.CLOCKWISE,
             part,
             OffsetDirection.INSET
@@ -1061,112 +930,56 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should flip hole normal when OUTER kerf compensation is applied', () => {
         // Simple rectangular part with hole
-        const part: DetectedPart = {
+        const part: Part = {
             id: 'part-test',
+            type: PartType.SHELL,
+            boundingBox: {
+                min: { x: 0, y: 0 },
+                max: { x: 20, y: 20 },
+            },
             shell: {
-                id: 'shell-test',
-                chain: {
-                    id: 'chain-shell',
-                    shapes: [
-                        {
-                            id: 'line1',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 0, y: 0 },
-                                end: { x: 20, y: 0 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'line2',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 20, y: 0 },
-                                end: { x: 20, y: 20 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'line3',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 20, y: 20 },
-                                end: { x: 0, y: 20 },
-                            },
-                            layer: '0',
-                        },
-                        {
-                            id: 'line4',
-                            type: GeometryType.LINE,
-                            geometry: {
-                                start: { x: 0, y: 20 },
-                                end: { x: 0, y: 0 },
-                            },
-                            layer: '0',
-                        },
-                    ],
-                    clockwise: true,
-                },
-                type: PartType.SHELL,
-                boundingBox: {
-                    min: { x: 0, y: 0 },
-                    max: { x: 20, y: 20 },
-                },
-                holes: [
+                id: 'chain-shell',
+                shapes: [
                     {
-                        id: 'hole-1',
-                        chain: {
-                            id: 'chain-hole',
-                            shapes: [
-                                {
-                                    id: 'hole-line1',
-                                    type: GeometryType.LINE,
-                                    geometry: {
-                                        start: { x: 5, y: 5 },
-                                        end: { x: 15, y: 5 },
-                                    },
-                                    layer: '0',
-                                },
-                                {
-                                    id: 'hole-line2',
-                                    type: GeometryType.LINE,
-                                    geometry: {
-                                        start: { x: 15, y: 5 },
-                                        end: { x: 15, y: 15 },
-                                    },
-                                    layer: '0',
-                                },
-                                {
-                                    id: 'hole-line3',
-                                    type: GeometryType.LINE,
-                                    geometry: {
-                                        start: { x: 15, y: 15 },
-                                        end: { x: 5, y: 15 },
-                                    },
-                                    layer: '0',
-                                },
-                                {
-                                    id: 'hole-line4',
-                                    type: GeometryType.LINE,
-                                    geometry: {
-                                        start: { x: 5, y: 15 },
-                                        end: { x: 5, y: 5 },
-                                    },
-                                    layer: '0',
-                                },
-                            ],
-                            clockwise: false, // Holes are typically CCW
+                        id: 'line1',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 0 },
+                            end: { x: 20, y: 0 },
                         },
-                        type: PartType.HOLE,
-                        boundingBox: {
-                            min: { x: 5, y: 5 },
-                            max: { x: 15, y: 15 },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line2',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 20, y: 0 },
+                            end: { x: 20, y: 20 },
                         },
-                        holes: [],
+                        layer: '0',
+                    },
+                    {
+                        id: 'line3',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 20, y: 20 },
+                            end: { x: 0, y: 20 },
+                        },
+                        layer: '0',
+                    },
+                    {
+                        id: 'line4',
+                        type: GeometryType.LINE,
+                        geometry: {
+                            start: { x: 0, y: 20 },
+                            end: { x: 0, y: 0 },
+                        },
+                        layer: '0',
                     },
                 ],
+                clockwise: true,
             },
-            holes: [
+            voids: [
                 {
                     id: 'hole-1',
                     chain: {
@@ -1216,12 +1029,12 @@ describe('Cut Normal Direction on Parts', () => {
                         min: { x: 5, y: 5 },
                         max: { x: 15, y: 15 },
                     },
-                    holes: [],
                 },
             ],
+            slots: [],
         };
 
-        const holeChain = part.holes[0].chain;
+        const holeChain = part.voids[0].chain;
 
         // Test hole without OUTER kerf (normal case)
         // Start point (5,5), tangent (1,0)
