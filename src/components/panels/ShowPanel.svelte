@@ -2,7 +2,7 @@
     import AccordionPanel from './AccordionPanel.svelte';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
     import { chainStore } from '$lib/stores/chains/store';
-    import { showLeadNormals, showLeadPaths } from '$lib/stores/leads/store';
+    import { showLeadNormals, showLeadPaths, showLeadKerfs } from '$lib/stores/leads/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import { kerfStore } from '$lib/stores/kerfs/store';
@@ -37,6 +37,7 @@
         // Reset lead visualization
         showLeadNormals.set(false);
         showLeadPaths.set(true);
+        showLeadKerfs.set(false);
 
         // Reset rapid visualization
         rapidStore.setShowRapids(true);
@@ -278,6 +279,14 @@
 
         <div class="show-section">
             <h3 class="section-header">Leads</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    bind:checked={$showLeadKerfs}
+                    class="show-checkbox"
+                />
+                Kerf
+            </label>
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"

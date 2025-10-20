@@ -50,6 +50,18 @@ export interface Kerf {
     /** Lead-out geometry from the source Cut */
     leadOut?: CacheableLead;
 
+    /** Inner kerf chain for lead-in (left side offset) */
+    leadInInnerChain?: Chain;
+
+    /** Outer kerf chain for lead-in (right side offset) */
+    leadInOuterChain?: Chain;
+
+    /** Inner kerf chain for lead-out (left side offset) */
+    leadOutInnerChain?: Chain;
+
+    /** Outer kerf chain for lead-out (right side offset) */
+    leadOutOuterChain?: Chain;
+
     /** ISO timestamp when kerf was generated */
     generatedAt: string;
 

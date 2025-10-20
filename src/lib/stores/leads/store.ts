@@ -3,6 +3,7 @@ import { writable, derived } from 'svelte/store';
 // Visualization flags
 export const showLeadNormals = writable(false);
 export const showLeadPaths = writable(true);
+export const showLeadKerfs = writable(false);
 
 // Selection state
 const selectedLeadIdStore = writable<string | null>(null);
@@ -15,17 +16,20 @@ export const leadStore = derived(
         highlightedLeadIdStore,
         showLeadNormals,
         showLeadPaths,
+        showLeadKerfs,
     ],
     ([
         $selectedLeadId,
         $highlightedLeadId,
         $showLeadNormals,
         $showLeadPaths,
+        $showLeadKerfs,
     ]) => ({
         selectedLeadId: $selectedLeadId,
         highlightedLeadId: $highlightedLeadId,
         showLeadNormals: $showLeadNormals,
         showLeadPaths: $showLeadPaths,
+        showLeadKerfs: $showLeadKerfs,
     })
 );
 

@@ -228,6 +228,66 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<Kerf> {
         validateChainClosure(outerChain, 'outer', cut.name);
     }
 
+    // Calculate kerf for leads separately if they exist
+    let leadInInnerChain: OffsetChain | undefined;
+    let leadInOuterChain: OffsetChain | undefined;
+    let leadOutInnerChain: OffsetChain | undefined;
+    let leadOutOuterChain: OffsetChain | undefined;
+
+    if (leadInPoints.length > 1) {
+        const leadInOffset = await offsetPaths(
+            [leadInPoints],
+            offsetDistance,
+            false, // Leads are always open paths
+            {
+                joinType: JoinType.Round,
+                endType: EndType.Round,
+                arcTolerance: 0.1,
+            }
+        );
+        const leadInInnerShapes = reconstructChain(leadInOffset.inner, false);
+        const leadInOuterShapes = reconstructChain(leadInOffset.outer, false);
+        leadInInnerChain = createOffsetChain(
+            leadInInnerShapes,
+            'left',
+            `${cutChain.id}-leadIn`,
+            false
+        );
+        leadInOuterChain = createOffsetChain(
+            leadInOuterShapes,
+            'right',
+            `${cutChain.id}-leadIn`,
+            false
+        );
+    }
+
+    if (leadOutPoints.length > 1) {
+        const leadOutOffset = await offsetPaths(
+            [leadOutPoints],
+            offsetDistance,
+            false, // Leads are always open paths
+            {
+                joinType: JoinType.Round,
+                endType: EndType.Round,
+                arcTolerance: 0.1,
+            }
+        );
+        const leadOutInnerShapes = reconstructChain(leadOutOffset.inner, false);
+        const leadOutOuterShapes = reconstructChain(leadOutOffset.outer, false);
+        leadOutInnerChain = createOffsetChain(
+            leadOutInnerShapes,
+            'left',
+            `${cutChain.id}-leadOut`,
+            false
+        );
+        leadOutOuterChain = createOffsetChain(
+            leadOutOuterShapes,
+            'right',
+            `${cutChain.id}-leadOut`,
+            false
+        );
+    }
+
     // Create Kerf object with lead geometry from the cut
     const kerf: Kerf = {
         id: crypto.randomUUID(),
@@ -240,6 +300,10 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<Kerf> {
         isClosed,
         leadIn: cut.leadIn,
         leadOut: cut.leadOut,
+        leadInInnerChain,
+        leadInOuterChain,
+        leadOutInnerChain,
+        leadOutOuterChain,
         generatedAt: new Date().toISOString(),
         version: KERF_VERSION,
     };

@@ -122,6 +122,7 @@
     $: highlightedLeadId = leadState.highlightedLeadId;
     $: leadNormals = leadState.showLeadNormals;
     $: leadPaths = leadState.showLeadPaths;
+    $: leadKerfs = leadState.showLeadKerfs;
     $: kerfs = $kerfStore.kerfs;
     $: selectedKerfId = $kerfStore.selectedKerfId;
     $: highlightedKerfId = $kerfStore.highlightedKerfId;
@@ -352,6 +353,7 @@
                 showCutTangentLines,
                 showLeadNormals: leadNormals,
                 showLeadPaths: leadPaths,
+                showLeadKerfs: leadKerfs,
                 showKerfPaths,
             },
             respectLayerVisibility: canvasConfig.respectLayerVisibility,

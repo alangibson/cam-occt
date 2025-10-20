@@ -53,8 +53,8 @@ export class KerfRenderer extends BaseRenderer {
     }
 
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        // Check if we should render kerfs
-        if (!state.visibility.showKerfPaths) {
+        // Check if we should render kerfs or lead kerfs
+        if (!state.visibility.showKerfPaths && !state.visibility.showLeadKerfs) {
             return;
         }
 
@@ -99,56 +99,86 @@ export class KerfRenderer extends BaseRenderer {
                 state.selection.highlightedKerfId &&
                 state.selection.highlightedKerfId === kerf.id;
 
-            // Build complete paths for both chains
-            ctx.beginPath();
+            // Render main kerf paths if showKerfPaths is enabled
+            if (state.visibility.showKerfPaths) {
+                // Build complete paths for both chains
+                ctx.beginPath();
 
-            // Add outer chain to path
-            if (kerf.outerChain && kerf.outerChain.shapes.length > 0) {
-                this.buildChainPath(ctx, kerf.outerChain.shapes);
+                // Add outer chain to path
+                if (kerf.outerChain && kerf.outerChain.shapes.length > 0) {
+                    this.buildChainPath(ctx, kerf.outerChain.shapes);
+                }
+
+                // Add inner chain to path (in same winding direction)
+                if (kerf.innerChain && kerf.innerChain.shapes.length > 0) {
+                    this.buildChainPath(ctx, kerf.innerChain.shapes);
+                }
+
+                // Fill the area between the two paths using evenodd rule
+                // Use different colors based on selection state
+                if (isSelected) {
+                    ctx.fillStyle = SELECTED_KERF_FILL_COLOR;
+                } else if (isHighlighted) {
+                    ctx.fillStyle = HIGHLIGHTED_KERF_FILL_COLOR;
+                } else {
+                    ctx.fillStyle = KERF_FILL_COLOR;
+                }
+                ctx.fill('evenodd');
+
+                // Optionally stroke the boundaries for visibility
+                // Use different colors based on selection state
+                if (isSelected) {
+                    ctx.strokeStyle = SELECTED_KERF_COLOR;
+                } else if (isHighlighted) {
+                    ctx.strokeStyle = HIGHLIGHTED_KERF_COLOR;
+                } else {
+                    ctx.strokeStyle = KERF_COLOR;
+                }
+                ctx.lineWidth =
+                    state.transform.coordinator.screenToWorldDistance(
+                        KERF_LINE_WIDTH
+                    );
+                ctx.setLineDash([]); // Solid line
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+
+                // Render lead-in geometry if present
+                if (kerf.leadIn) {
+                    this.renderLead(ctx, state, kerf.leadIn, LEAD_IN_COLOR);
+                }
+
+                // Render lead-out geometry if present
+                if (kerf.leadOut) {
+                    this.renderLead(ctx, state, kerf.leadOut, LEAD_OUT_COLOR);
+                }
             }
 
-            // Add inner chain to path (in same winding direction)
-            if (kerf.innerChain && kerf.innerChain.shapes.length > 0) {
-                this.buildChainPath(ctx, kerf.innerChain.shapes);
-            }
+            // Render lead kerfs if showLeadKerfs is enabled
+            if (state.visibility.showLeadKerfs) {
+                // Render lead-in kerf
+                if (kerf.leadInInnerChain && kerf.leadInOuterChain) {
+                    this.renderLeadKerf(
+                        ctx,
+                        state,
+                        kerf.leadInInnerChain.shapes,
+                        kerf.leadInOuterChain.shapes,
+                        !!isSelected,
+                        !!isHighlighted
+                    );
+                }
 
-            // Fill the area between the two paths using evenodd rule
-            // Use different colors based on selection state
-            if (isSelected) {
-                ctx.fillStyle = SELECTED_KERF_FILL_COLOR;
-            } else if (isHighlighted) {
-                ctx.fillStyle = HIGHLIGHTED_KERF_FILL_COLOR;
-            } else {
-                ctx.fillStyle = KERF_FILL_COLOR;
-            }
-            ctx.fill('evenodd');
-
-            // Optionally stroke the boundaries for visibility
-            // Use different colors based on selection state
-            if (isSelected) {
-                ctx.strokeStyle = SELECTED_KERF_COLOR;
-            } else if (isHighlighted) {
-                ctx.strokeStyle = HIGHLIGHTED_KERF_COLOR;
-            } else {
-                ctx.strokeStyle = KERF_COLOR;
-            }
-            ctx.lineWidth =
-                state.transform.coordinator.screenToWorldDistance(
-                    KERF_LINE_WIDTH
-                );
-            ctx.setLineDash([]); // Solid line
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            ctx.stroke();
-
-            // Render lead-in geometry if present
-            if (kerf.leadIn) {
-                this.renderLead(ctx, state, kerf.leadIn, LEAD_IN_COLOR);
-            }
-
-            // Render lead-out geometry if present
-            if (kerf.leadOut) {
-                this.renderLead(ctx, state, kerf.leadOut, LEAD_OUT_COLOR);
+                // Render lead-out kerf
+                if (kerf.leadOutInnerChain && kerf.leadOutOuterChain) {
+                    this.renderLeadKerf(
+                        ctx,
+                        state,
+                        kerf.leadOutInnerChain.shapes,
+                        kerf.leadOutOuterChain.shapes,
+                        !!isSelected,
+                        !!isHighlighted
+                    );
+                }
             }
         } finally {
             ctx.restore();
@@ -184,6 +214,66 @@ export class KerfRenderer extends BaseRenderer {
 
         ctx.stroke();
         ctx.restore();
+    }
+
+    /**
+     * Render kerf around a lead (the area between inner and outer offset chains)
+     */
+    private renderLeadKerf(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        innerShapes: Shape[],
+        outerShapes: Shape[],
+        isSelected: boolean,
+        isHighlighted: boolean
+    ): void {
+        if (innerShapes.length === 0 || outerShapes.length === 0) {
+            return;
+        }
+
+        ctx.save();
+
+        try {
+            // Build complete paths for both chains
+            ctx.beginPath();
+
+            // Add outer chain to path
+            this.buildChainPath(ctx, outerShapes);
+
+            // Add inner chain to path (in same winding direction)
+            this.buildChainPath(ctx, innerShapes);
+
+            // Fill the area between the two paths using evenodd rule
+            // Use different colors based on selection state
+            if (isSelected) {
+                ctx.fillStyle = SELECTED_KERF_FILL_COLOR;
+            } else if (isHighlighted) {
+                ctx.fillStyle = HIGHLIGHTED_KERF_FILL_COLOR;
+            } else {
+                ctx.fillStyle = KERF_FILL_COLOR;
+            }
+            ctx.fill('evenodd');
+
+            // Stroke the boundaries for visibility
+            // Use different colors based on selection state
+            if (isSelected) {
+                ctx.strokeStyle = SELECTED_KERF_COLOR;
+            } else if (isHighlighted) {
+                ctx.strokeStyle = HIGHLIGHTED_KERF_COLOR;
+            } else {
+                ctx.strokeStyle = KERF_COLOR;
+            }
+            ctx.lineWidth =
+                state.transform.coordinator.screenToWorldDistance(
+                    KERF_LINE_WIDTH
+                );
+            ctx.setLineDash([]); // Solid line
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            ctx.stroke();
+        } finally {
+            ctx.restore();
+        }
     }
 
     /**

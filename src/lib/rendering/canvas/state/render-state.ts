@@ -92,6 +92,7 @@ export interface VisibilityState {
     showCutTangentLines: boolean;
     showLeadNormals: boolean;
     showLeadPaths: boolean;
+    showLeadKerfs: boolean;
     showKerfPaths: boolean;
 }
 
@@ -222,6 +223,7 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showCutTangentLines: false,
             showLeadNormals: false,
             showLeadPaths: true,
+            showLeadKerfs: false,
             showKerfPaths: false,
         },
         stage: stage || ('import' as WorkflowStage),
