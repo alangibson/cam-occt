@@ -14,6 +14,22 @@ import { toClipper2Paths, fromClipper2Paths } from './convert';
  */
 const SCALE_FACTOR = 1000;
 
+import type { JoinType, EndType } from '$lib/wasm/clipper2z';
+
+/**
+ * Options for configuring Clipper2 offset behavior
+ */
+export interface OffsetOptions {
+    /** Join type for corners (Miter, Round, Square) */
+    joinType?: JoinType;
+    /** End type for open paths (Polygon, Butt, Round, Square) */
+    endType?: EndType;
+    /** Miter limit ratio (for Miter join type) */
+    miterLimit?: number;
+    /** Arc tolerance for round joins (smaller = more precise) */
+    arcTolerance?: number;
+}
+
 /**
  * Offset paths using Clipper2
  *
@@ -24,12 +40,14 @@ const SCALE_FACTOR = 1000;
  * @param pointArrays - Array of point arrays to offset (tessellated shapes)
  * @param distance - Offset distance in original units (positive value)
  * @param isClosed - Whether the chain is closed (affects end treatment)
+ * @param options - Optional configuration for join/end types
  * @returns Object containing inner and outer offset results as point arrays
  */
 export async function offsetPaths(
     pointArrays: Point2D[][],
     distance: number,
-    isClosed: boolean
+    isClosed: boolean,
+    options?: OffsetOptions
 ): Promise<{ inner: Point2D[][]; outer: Point2D[][] }> {
     const clipper = await getClipper2();
     const { InflatePaths64, JoinType, EndType } = clipper;
@@ -51,11 +69,12 @@ export async function offsetPaths(
         }
     }
 
-    // Clipper2 parameters
-    const joinType = JoinType.Miter; // Sharp corners (closest to existing system)
-    const endType = isClosed ? EndType.Polygon : EndType.Butt;
-    const miterLimit = 10.0; // High miter limit to preserve sharp corners even at acute angles
-    const arcTolerance = 0.25; // Precision for round joins (not used with Miter)
+    // Clipper2 parameters with optional overrides
+    const joinType = options?.joinType ?? JoinType.Miter; // Sharp corners (default)
+    const endType =
+        options?.endType ?? (isClosed ? EndType.Polygon : EndType.Butt);
+    const miterLimit = options?.miterLimit ?? 10.0; // High miter limit to preserve sharp corners
+    const arcTolerance = options?.arcTolerance ?? 0.25; // Precision for round joins
 
     // Scale distance to match coordinate scaling
     const scaledDistance = distance * SCALE_FACTOR;

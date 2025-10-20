@@ -20,7 +20,7 @@ describe('getChainPointAt', () => {
 
     it('should return start point when t=0', () => {
         const lineShape: Shape = {
-            id: "test-line",
+            id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },
@@ -40,7 +40,7 @@ describe('getChainPointAt', () => {
 
     it('should return end point when t=1', () => {
         const lineShape: Shape = {
-            id: "test-line",
+            id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },
@@ -60,7 +60,7 @@ describe('getChainPointAt', () => {
 
     it('should return midpoint when t=0.5 for single line', () => {
         const lineShape: Shape = {
-            id: "test-line",
+            id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },
@@ -156,7 +156,7 @@ describe('getChainPointAt', () => {
 
     it('should clamp t values outside [0, 1] range', () => {
         const lineShape: Shape = {
-            id: "test-line",
+            id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },

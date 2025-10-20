@@ -43,6 +43,7 @@ import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import { settingsStore } from '$lib/stores/settings/store';
 import type { SettingsState } from '$lib/config/settings/interfaces';
+import { kerfStore } from '$lib/stores/kerfs/store';
 
 /**
  * Collect current state from all stores
@@ -357,6 +358,7 @@ export function resetApplicationToDefaults(): void {
     cutStore.reset();
     toolStore.reset();
     settingsStore.resetToDefaults();
+    kerfStore.clearKerfs();
 
     // Create default tool after clearing
     toolStore.addTool(createDefaultTool(1));

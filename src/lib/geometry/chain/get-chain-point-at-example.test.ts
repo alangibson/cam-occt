@@ -15,7 +15,7 @@ describe('getChainPointAt - Example Usage', () => {
     it('example: finding equally spaced points along a chain', () => {
         // Create a simple L-shaped chain
         const horizontalLine: Shape = {
-            id: "horizontal",
+            id: 'horizontal',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },
@@ -24,7 +24,7 @@ describe('getChainPointAt - Example Usage', () => {
         };
 
         const verticalLine: Shape = {
-            id: "vertical",
+            id: 'vertical',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 100, y: 0 },
@@ -72,7 +72,7 @@ describe('getChainPointAt - Example Usage', () => {
 
     it('example: finding a point at a specific distance ratio', () => {
         const line: Shape = {
-            id: "line",
+            id: 'line',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },
@@ -95,7 +95,7 @@ describe('getChainPointAt - Example Usage', () => {
     it('example: sampling points for visualization', () => {
         // Create a rectangular chain
         const bottom: Shape = {
-            id: "bottom",
+            id: 'bottom',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 0 },
@@ -104,7 +104,7 @@ describe('getChainPointAt - Example Usage', () => {
         };
 
         const right: Shape = {
-            id: "right",
+            id: 'right',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 100, y: 0 },
@@ -113,7 +113,7 @@ describe('getChainPointAt - Example Usage', () => {
         };
 
         const top: Shape = {
-            id: "top",
+            id: 'top',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 100, y: 50 },
@@ -122,7 +122,7 @@ describe('getChainPointAt - Example Usage', () => {
         };
 
         const left: Shape = {
-            id: "left",
+            id: 'left',
             type: GeometryType.LINE,
             geometry: {
                 start: { x: 0, y: 50 },

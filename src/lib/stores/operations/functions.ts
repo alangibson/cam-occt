@@ -28,6 +28,8 @@ import {
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import { settingsStore } from '$lib/stores/settings/store';
+import { cutToKerf } from '$lib/cam/kerf/functions';
+import { kerfStore } from '$lib/stores/kerfs/store';
 import { get } from 'svelte/store';
 import { MeasurementSystem } from '$lib/config/settings/enums';
 import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
@@ -35,32 +37,8 @@ import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
 /**
  * Get the appropriate tool value based on the current measurement system
  */
-function getToolValue(
-    tool: Tool,
-    field:
-        | 'feedRate'
-        | 'pierceHeight'
-        | 'cutHeight'
-        | 'kerfWidth'
-        | 'puddleJumpHeight'
-        | 'plungeRate'
-): number {
-    const settings = get(settingsStore).settings;
-    const isMetric = settings.measurementSystem === MeasurementSystem.Metric;
-
-    // Check for unit-specific fields
-    const metricField = `${field}Metric` as keyof Tool;
-    const imperialField = `${field}Imperial` as keyof Tool;
-
-    if (isMetric && tool[metricField] !== undefined) {
-        return tool[metricField] as number;
-    } else if (!isMetric && tool[imperialField] !== undefined) {
-        return tool[imperialField] as number;
-    }
-
-    // Fall back to the base field
-    return tool[field];
-}
+// Import getToolValue from shared utility
+import { getToolValue } from '$lib/cam/tool/tool-utils';
 
 /**
  * Get CutDirection from chain's stored clockwise property.
@@ -452,6 +430,17 @@ export async function generateCutsForChainWithOperation(
             ...leadResult.validation,
             validatedAt: new Date().toISOString(),
         };
+    }
+
+    // Generate kerf for this cut
+    const tool = tools.find((t) => t.id === operation.toolId);
+    if (tool && tool.kerfWidth > 0) {
+        try {
+            const kerf = await cutToKerf(cutToReturn, tool);
+            kerfStore.addKerf(kerf);
+        } catch (error) {
+            console.warn('Failed to generate kerf for cut:', error);
+        }
     }
 
     return {
@@ -1013,12 +1002,14 @@ export async function generateCutsForPartTargetWithOperation(
                 order: cutOrder++,
                 cutDirection: slotCutDirection,
                 executionClockwise: slotExecutionClockwise,
-                leadInConfig: operation.kerfCompensation === KerfCompensation.PART
-                    ? { type: 'none' as const }
-                    : operation.leadInConfig,
-                leadOutConfig: operation.kerfCompensation === KerfCompensation.PART
-                    ? { type: 'none' as const }
-                    : operation.leadOutConfig,
+                leadInConfig:
+                    operation.kerfCompensation === KerfCompensation.PART
+                        ? { type: 'none' as const }
+                        : operation.leadInConfig,
+                leadOutConfig:
+                    operation.kerfCompensation === KerfCompensation.PART
+                        ? { type: 'none' as const }
+                        : operation.leadOutConfig,
                 kerfCompensation: slotKerfCompensation,
                 kerfWidth: slotKerfWidth,
                 offset: slotCalculatedOffset,
@@ -1065,7 +1056,10 @@ export async function generateCutsForPartTargetWithOperation(
 
             // Calculate leads for slot cut (uses the updated normal if optimization was applied)
             // Skip leads when kerf compensation is PART
-            if (slotChain && operation.kerfCompensation !== KerfCompensation.PART) {
+            if (
+                slotChain &&
+                operation.kerfCompensation !== KerfCompensation.PART
+            ) {
                 const slotLeadResult = await calculateCutLeads(
                     slotCut,
                     operation,
@@ -1325,6 +1319,19 @@ export async function createCutsFromOperation(
     const allWarnings: CutGenerationResult['warnings'] = results.flatMap(
         (result) => result.warnings
     );
+
+    // Generate kerfs for all cuts
+    const tool = tools.find((t) => t.id === operation.toolId);
+    if (tool && tool.kerfWidth > 0) {
+        for (const cut of allCuts) {
+            try {
+                const kerf = await cutToKerf(cut, tool);
+                kerfStore.addKerf(kerf);
+            } catch (error) {
+                console.warn('Failed to generate kerf for cut:', error);
+            }
+        }
+    }
 
     return {
         cuts: allCuts,

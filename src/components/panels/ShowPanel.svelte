@@ -5,6 +5,7 @@
     import { showLeadNormals, showLeadPaths } from '$lib/stores/leads/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
+    import { kerfStore } from '$lib/stores/kerfs/store';
 
     // Subscribe to the stores
     $: shapeVisualization = $shapeVisualizationStore;
@@ -41,6 +42,9 @@
         // Reset rapid visualization
         rapidStore.setShowRapids(true);
         rapidStore.setShowRapidDirections(false);
+
+        // Reset kerf visualization
+        kerfStore.setShowKerfPaths(false);
     }
 </script>
 
@@ -322,6 +326,20 @@
                     checked={rapidsVisualization.showRapids}
                     onchange={(e) =>
                         rapidStore.setShowRapids(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Paths
+            </label>
+        </div>
+
+        <div class="show-section">
+            <h3 class="section-header">Kerfs</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={$kerfStore.showKerfPaths}
+                    onchange={(e) =>
+                        kerfStore.setShowKerfPaths(e.currentTarget.checked)}
                     class="show-checkbox"
                 />
                 Paths

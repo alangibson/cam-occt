@@ -8,6 +8,7 @@
     import { tessellationStore } from '$lib/stores/tessellation/store';
     import { overlayStore } from '$lib/stores/overlay/store';
     import { rapidStore } from '$lib/stores/rapids/store';
+    import { kerfStore } from '$lib/stores/kerfs/store';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
     import {
         leadStore,
@@ -121,6 +122,8 @@
     $: highlightedLeadId = leadState.highlightedLeadId;
     $: leadNormals = leadState.showLeadNormals;
     $: leadPaths = leadState.showLeadPaths;
+    $: kerfs = $kerfStore.kerfs;
+    $: showKerfPaths = $kerfStore.showKerfPaths;
     $: selectionMode = $settingsStore.settings.selectionMode;
 
     // Compute effective interaction mode based on selection mode and current stage
@@ -343,6 +346,7 @@
                 showCutTangentLines,
                 showLeadNormals: leadNormals,
                 showLeadPaths: leadPaths,
+                showKerfPaths,
             },
             respectLayerVisibility: canvasConfig.respectLayerVisibility,
         });
@@ -383,6 +387,13 @@
     $: if (rapids !== undefined) {
         renderingPipeline.updateState({
             rapids: rapids || [],
+        });
+    }
+
+    // Kerfs data changes
+    $: if (kerfs !== undefined) {
+        renderingPipeline.updateState({
+            kerfs: kerfs || [],
         });
     }
 

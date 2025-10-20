@@ -5,6 +5,7 @@ import type { CutsState, CutsStore } from './interfaces';
 import { checkProgramStageCompletion } from './functions';
 import type { CutLeadResult } from '$lib/stores/operations/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
+import { kerfStore } from '$lib/stores/kerfs/store';
 
 function createCutsStore(): CutsStore {
     const initialState: CutsState = {
@@ -73,6 +74,9 @@ function createCutsStore(): CutsStore {
         },
 
         deleteCut: (id: string) => {
+            // Remove all kerfs based on this cut
+            kerfStore.deleteKerfsByCut(id);
+
             update((state) => {
                 const newCuts: Cut[] = state.cuts.filter(
                     (cut) => cut.id !== id
@@ -96,6 +100,16 @@ function createCutsStore(): CutsStore {
 
         deleteCutsByOperation: (operationId: string) => {
             update((state) => {
+                // Get IDs of cuts that will be deleted
+                const cutsToDelete = state.cuts.filter(
+                    (cut) => cut.operationId === operationId
+                );
+
+                // Remove all kerfs based on these cuts
+                cutsToDelete.forEach((cut) => {
+                    kerfStore.deleteKerfsByCut(cut.id);
+                });
+
                 const newCuts: Cut[] = state.cuts.filter(
                     (cut) => cut.operationId !== operationId
                 );
