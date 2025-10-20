@@ -52,12 +52,28 @@ function createKerfsStore() {
         }));
     }
 
+    function selectKerf(id: string | null) {
+        update((state) => ({
+            ...state,
+            selectedKerfId: id,
+        }));
+    }
+
+    function setHighlightedKerf(id: string | null) {
+        update((state) => ({
+            ...state,
+            highlightedKerfId: id,
+        }));
+    }
+
     return {
         subscribe,
         addKerf,
         setShowKerfPaths,
         clearKerfs,
         deleteKerfsByCut,
+        selectKerf,
+        setHighlightedKerf,
     };
 }
 

@@ -123,6 +123,8 @@
     $: leadNormals = leadState.showLeadNormals;
     $: leadPaths = leadState.showLeadPaths;
     $: kerfs = $kerfStore.kerfs;
+    $: selectedKerfId = $kerfStore.selectedKerfId;
+    $: highlightedKerfId = $kerfStore.highlightedKerfId;
     $: showKerfPaths = $kerfStore.showKerfPaths;
     $: selectionMode = $settingsStore.settings.selectionMode;
 
@@ -139,6 +141,8 @@
             return 'cuts';
         } else if (selectionMode === 'lead') {
             return 'leads';
+        } else if (selectionMode === 'kerf') {
+            return 'kerfs';
         } else {
             // Auto mode: use stage-based interaction
             switch (currentStage) {
@@ -312,6 +316,8 @@
                 highlightedRapidId,
                 selectedLeadId,
                 highlightedLeadId,
+                selectedKerfId,
+                highlightedKerfId,
                 selectedOffsetShape,
                 hoveredPartId,
                 hoveredShape,
@@ -556,6 +562,26 @@
                                 selectLead(null); // Deselect if already selected
                             } else {
                                 selectLead(leadId);
+                            }
+                            return;
+                        }
+                        break;
+
+                    case HitTestType.KERF:
+                        // Handle kerf selection
+                        if (interactionMode === 'kerfs') {
+                            const kerfId = hitResult.id;
+                            // Clear other selections
+                            cutStore.selectCut(null);
+                            selectLead(null);
+                            chainStore.selectChain(null);
+                            partStore.selectPart(null);
+                            drawingStore.clearSelection();
+                            // Toggle kerf selection
+                            if (selectedKerfId === kerfId) {
+                                kerfStore.selectKerf(null); // Deselect if already selected
+                            } else {
+                                kerfStore.selectKerf(kerfId);
                             }
                             return;
                         }

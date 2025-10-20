@@ -18,6 +18,11 @@ import { GeometryType } from '$lib/geometry/shape/enums';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { CacheableLead } from '$lib/cam/lead/interfaces';
+import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
+import {
+    HitTestType,
+    HitTestUtils,
+} from '$lib/rendering/canvas/utils/hit-test';
 
 /**
  * Constants for kerf rendering
@@ -25,9 +30,14 @@ import type { CacheableLead } from '$lib/cam/lead/interfaces';
 const KERF_LINE_WIDTH = 1;
 const KERF_COLOR = '#B8860B'; // Dark yellow (dark goldenrod)
 const KERF_FILL_COLOR = 'rgba(184, 134, 11, 0.3)'; // Semi-transparent dark goldenrod
+const SELECTED_KERF_COLOR = '#ff6600'; // Orange for selected kerf
+const SELECTED_KERF_FILL_COLOR = 'rgba(255, 102, 0, 0.3)'; // Semi-transparent orange
+const HIGHLIGHTED_KERF_COLOR = '#ff9933'; // Light orange for highlighted
+const HIGHLIGHTED_KERF_FILL_COLOR = 'rgba(255, 153, 51, 0.3)'; // Semi-transparent light orange
 const LEAD_LINE_WIDTH = 2;
 const LEAD_IN_COLOR = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue
 const LEAD_OUT_COLOR = 'rgb(133, 18, 0)'; // Red
+const HIT_TOLERANCE_PX = 5;
 
 /**
  * KerfRenderer handles rendering of kerf zones including:
@@ -73,6 +83,14 @@ export class KerfRenderer extends BaseRenderer {
         ctx.save();
 
         try {
+            // Check if this kerf is selected or highlighted
+            const isSelected =
+                state.selection.selectedKerfId &&
+                state.selection.selectedKerfId === kerf.id;
+            const isHighlighted =
+                state.selection.highlightedKerfId &&
+                state.selection.highlightedKerfId === kerf.id;
+
             // Build complete paths for both chains
             ctx.beginPath();
 
@@ -87,11 +105,25 @@ export class KerfRenderer extends BaseRenderer {
             }
 
             // Fill the area between the two paths using evenodd rule
-            ctx.fillStyle = KERF_FILL_COLOR;
+            // Use different colors based on selection state
+            if (isSelected) {
+                ctx.fillStyle = SELECTED_KERF_FILL_COLOR;
+            } else if (isHighlighted) {
+                ctx.fillStyle = HIGHLIGHTED_KERF_FILL_COLOR;
+            } else {
+                ctx.fillStyle = KERF_FILL_COLOR;
+            }
             ctx.fill('evenodd');
 
             // Optionally stroke the boundaries for visibility
-            ctx.strokeStyle = KERF_COLOR;
+            // Use different colors based on selection state
+            if (isSelected) {
+                ctx.strokeStyle = SELECTED_KERF_COLOR;
+            } else if (isHighlighted) {
+                ctx.strokeStyle = HIGHLIGHTED_KERF_COLOR;
+            } else {
+                ctx.strokeStyle = KERF_COLOR;
+            }
             ctx.lineWidth =
                 state.transform.coordinator.screenToWorldDistance(
                     KERF_LINE_WIDTH
@@ -197,5 +229,86 @@ export class KerfRenderer extends BaseRenderer {
             ctx.lineTo(line.start.x, line.start.y);
         }
         ctx.lineTo(line.end.x, line.end.y);
+    }
+
+    /**
+     * Hit test to detect clicks on kerfs
+     */
+    hitWorld(point: Point2D, state: RenderState): HitTestResult | null {
+        // Defensive check for point validity
+        if (
+            !point ||
+            typeof point.x !== 'number' ||
+            typeof point.y !== 'number'
+        ) {
+            console.error('KerfRenderer.hitWorld: invalid point', point);
+            return null;
+        }
+
+        // Check if kerfs are visible
+        if (!state.visibility.showKerfPaths) {
+            return null;
+        }
+
+        // Get kerfs from state
+        const kerfs = state.kerfs || [];
+        if (kerfs.length === 0) {
+            return null;
+        }
+
+        // Calculate hit tolerance in world units
+        const hitTolerance =
+            state.transform.coordinator.screenToWorldDistance(HIT_TOLERANCE_PX);
+
+        // Test each enabled kerf
+        for (const kerf of kerfs) {
+            if (!kerf.enabled) {
+                continue;
+            }
+
+            // Test shapes in inner chain
+            if (kerf.innerChain && kerf.innerChain.shapes.length > 0) {
+                for (const shape of kerf.innerChain.shapes) {
+                    if (
+                        HitTestUtils.isPointNearShape(
+                            point,
+                            shape,
+                            hitTolerance
+                        )
+                    ) {
+                        return {
+                            type: HitTestType.KERF,
+                            id: kerf.id,
+                            distance: hitTolerance,
+                            point,
+                            metadata: {},
+                        };
+                    }
+                }
+            }
+
+            // Test shapes in outer chain
+            if (kerf.outerChain && kerf.outerChain.shapes.length > 0) {
+                for (const shape of kerf.outerChain.shapes) {
+                    if (
+                        HitTestUtils.isPointNearShape(
+                            point,
+                            shape,
+                            hitTolerance
+                        )
+                    ) {
+                        return {
+                            type: HitTestType.KERF,
+                            id: kerf.id,
+                            distance: hitTolerance,
+                            point,
+                            metadata: {},
+                        };
+                    }
+                }
+            }
+        }
+
+        return null;
     }
 }

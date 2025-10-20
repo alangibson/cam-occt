@@ -44,6 +44,8 @@ export interface SelectionState {
     highlightedRapidId: string | null;
     selectedLeadId?: string | null;
     highlightedLeadId?: string | null;
+    selectedKerfId?: string | null;
+    highlightedKerfId?: string | null;
 }
 
 /**
@@ -152,8 +154,8 @@ export interface RenderState {
 
     // Interaction settings
     respectLayerVisibility: boolean;
-    interactionMode: 'shapes' | 'chains' | 'cuts';
-    selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'cut' | 'lead';
+    interactionMode: 'shapes' | 'chains' | 'cuts' | 'kerfs';
+    selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'cut' | 'lead' | 'kerf';
 }
 
 /**
