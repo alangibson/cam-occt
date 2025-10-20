@@ -6,6 +6,7 @@ export interface KerfsStore {
     selectedKerfId: string | null;
     highlightedKerfId: string | null;
     showKerfPaths: boolean;
+    showCutter: boolean;
 }
 
 function createKerfsStore() {
@@ -14,6 +15,7 @@ function createKerfsStore() {
         selectedKerfId: null,
         highlightedKerfId: null,
         showKerfPaths: false,
+        showCutter: false,
     };
 
     const { subscribe, update } = writable<KerfsStore>(initialState);
@@ -35,6 +37,13 @@ function createKerfsStore() {
         update((state) => ({
             ...state,
             showKerfPaths: show,
+        }));
+    }
+
+    function setShowCutter(show: boolean) {
+        update((state) => ({
+            ...state,
+            showCutter: show,
         }));
     }
 
@@ -70,6 +79,7 @@ function createKerfsStore() {
         subscribe,
         addKerf,
         setShowKerfPaths,
+        setShowCutter,
         clearKerfs,
         deleteKerfsByCut,
         selectKerf,

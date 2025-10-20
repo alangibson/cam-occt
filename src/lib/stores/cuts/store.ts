@@ -13,7 +13,6 @@ function createCutsStore(): CutsStore {
         selectedCutId: null,
         highlightedCutId: null,
         showCutNormals: false,
-        showCutter: false,
         showCutDirections: false,
         showCutPaths: true,
         showCutStartPoints: false,
@@ -297,13 +296,6 @@ function createCutsStore(): CutsStore {
             update((state) => ({
                 ...state,
                 showCutNormals: show,
-            }));
-        },
-
-        setShowCutter: (show: boolean) => {
-            update((state) => ({
-                ...state,
-                showCutter: show,
             }));
         },
 

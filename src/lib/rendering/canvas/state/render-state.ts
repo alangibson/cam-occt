@@ -295,7 +295,6 @@ export function cloneRenderState(state: RenderState): RenderState {
                   showCutNormals: state.cutsState.showCutNormals,
                   showCutDirections: state.cutsState.showCutDirections,
                   showCutPaths: state.cutsState.showCutPaths,
-                  showCutter: state.cutsState.showCutter,
                   showCutStartPoints: state.cutsState.showCutStartPoints,
                   showCutEndPoints: state.cutsState.showCutEndPoints,
                   showCutTangentLines: state.cutsState.showCutTangentLines,

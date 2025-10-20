@@ -30,7 +30,6 @@
         cutStore.setShowCutNormals(false);
         cutStore.setShowCutDirections(false);
         cutStore.setShowCutPaths(true);
-        cutStore.setShowCutter(false);
         cutStore.setShowCutStartPoints(false);
         cutStore.setShowCutEndPoints(false);
         cutStore.setShowCutTangentLines(false);
@@ -44,6 +43,7 @@
         rapidStore.setShowRapidDirections(false);
 
         // Reset kerf visualization
+        kerfStore.setShowCutter(false);
         kerfStore.setShowKerfPaths(false);
     }
 </script>
@@ -215,16 +215,6 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={cutsVisualization.showCutter}
-                    onchange={(e) =>
-                        cutStore.setShowCutter(e.currentTarget.checked)}
-                    class="show-checkbox"
-                />
-                Cutter
-            </label>
-            <label class="show-checkbox-label">
-                <input
-                    type="checkbox"
                     checked={cutsVisualization.showCutDirections}
                     onchange={(e) =>
                         cutStore.setShowCutDirections(e.currentTarget.checked)}
@@ -334,6 +324,16 @@
 
         <div class="show-section">
             <h3 class="section-header">Kerfs</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={$kerfStore.showCutter}
+                    onchange={(e) =>
+                        kerfStore.setShowCutter(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Cutter
+            </label>
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"

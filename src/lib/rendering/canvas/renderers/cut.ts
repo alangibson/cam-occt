@@ -74,11 +74,6 @@ export class CutRenderer extends BaseRenderer {
             this.drawCuts(ctx, state);
         }
 
-        // Render cutter path if enabled
-        if (state.visibility.showCutter) {
-            this.drawCutterPath(ctx, state);
-        }
-
         // Then render endpoints on top if enabled
         if (
             state.visibility.showCutStartPoints ||
@@ -268,102 +263,6 @@ export class CutRenderer extends BaseRenderer {
         });
     }
 
-    /**
-     * Draw cutter path visualization (translucent yellow stroke matching kerf width)
-     */
-    private drawCutterPath(
-        ctx: CanvasRenderingContext2D,
-        state: RenderState
-    ): void {
-        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
-
-        state.cutsState.cuts.forEach((cut: Cut) => {
-            // Only draw cutter for enabled cuts with enabled operations
-            if (!isCutEnabledForRendering(cut, state)) {
-                return;
-            }
-
-            // Get kerf width from offset (if exists) or directly from cut
-            const kerfWidth = cut.offset?.kerfWidth || cut.kerfWidth;
-            if (!kerfWidth) {
-                return;
-            }
-
-            // Determine which shapes to render cutter on
-            // Priority: offset shapes > cutChain shapes > original chain shapes
-            let shapesToDraw: Shape[] | null = null;
-
-            if (
-                cut.offset?.offsetShapes &&
-                cut.offset.offsetShapes.length > 0
-            ) {
-                shapesToDraw = cut.offset.offsetShapes;
-            } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
-                shapesToDraw = cut.cutChain.shapes;
-            } else {
-                const chain = state.chains.find((c) => c.id === cut.chainId);
-                if (chain && chain.shapes.length > 0) {
-                    shapesToDraw = chain.shapes;
-                }
-            }
-
-            if (!shapesToDraw || shapesToDraw.length === 0) {
-                return;
-            }
-
-            ctx.save();
-
-            try {
-                // Set translucent yellow stroke with kerf width
-                ctx.strokeStyle = 'rgba(255, 255, 0, 0.4)'; // Translucent yellow
-                ctx.lineWidth = kerfWidth;
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
-                ctx.setLineDash([]); // Solid line
-
-                // Draw all shapes with cutter visualization
-                shapesToDraw.forEach((shape) => {
-                    try {
-                        drawShape(ctx, shape);
-                    } catch (error) {
-                        console.warn(
-                            `Error rendering cutter path shape for cut ${cut.id}:`,
-                            error
-                        );
-                    }
-                });
-
-                // Also draw gap fills if they exist (only for offset cuts)
-                if (cut.offset?.gapFills && cut.offset.gapFills.length > 0) {
-                    for (const gapFill of cut.offset.gapFills) {
-                        // Render filler shape if it exists
-                        if (gapFill.fillerShape) {
-                            try {
-                                drawShape(ctx, gapFill.fillerShape);
-                            } catch (error) {
-                                console.warn(
-                                    `Error rendering cutter path gap filler for cut ${cut.id}:`,
-                                    error
-                                );
-                            }
-                        }
-
-                        // Render modified shapes
-                        for (const modifiedShapeEntry of gapFill.modifiedShapes) {
-                            drawShape(ctx, modifiedShapeEntry.modified);
-                        }
-                    }
-                }
-            } catch (error) {
-                console.error(
-                    `Error rendering cutter path for cut ${cut.id}:`,
-                    error
-                );
-            } finally {
-                ctx.restore();
-            }
-        });
-    }
 
     /**
      * Draw cut start/end points as colored circles

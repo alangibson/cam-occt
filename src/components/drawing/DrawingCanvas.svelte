@@ -113,7 +113,7 @@
     $: showCutNormals = cutsState.showCutNormals;
     $: showCutDirections = cutsState.showCutDirections;
     $: showCutPaths = cutsState.showCutPaths;
-    $: showCutter = cutsState.showCutter;
+    $: showCutter = $kerfStore.showCutter;
     $: showCutStartPoints = cutsState.showCutStartPoints;
     $: showCutEndPoints = cutsState.showCutEndPoints;
     $: showCutTangentLines = cutsState.showCutTangentLines;

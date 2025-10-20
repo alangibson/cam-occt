@@ -19,27 +19,18 @@ import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types
  * This follows the codebase convention: polylines are only used during DXF import,
  * internally they are represented as Chains containing arrays of Line shapes.
  *
- * IMPORTANT: For closed chains, this function expects exactly ONE polygon.
- * Multiple disconnected polygons cannot be represented as a single closed chain.
+ * Each polygon from Clipper2 is automatically closed with a final segment connecting
+ * the last point back to the first point. This ensures proper rendering with canvas
+ * fill operations using the evenodd rule.
  *
- * @param pointArrays - Array of point arrays from Clipper2
- * @param closed - Whether the chains should be marked as closed
- * @returns Array of Shape arrays (each array represents one chain's Line shapes)
- * @throws Error if closed=true and multiple polygons are provided
+ * @param pointArrays - Array of point arrays from Clipper2 (can be multiple polygons)
+ * @param closed - Whether the original chain was closed (used for metadata, not closing logic)
+ * @returns Array of Line shapes representing all polygons concatenated together
  */
 export function reconstructChain(
     pointArrays: Point2D[][],
     closed: boolean
 ): Shape[] {
-    // Validate input for closed chains
-    if (closed && pointArrays.length > 1) {
-        throw new Error(
-            `Cannot reconstruct closed chain from ${pointArrays.length} disconnected polygons. ` +
-                `Clipper2 returned multiple polygons, but a closed chain must be continuous. ` +
-                `This indicates the offset operation produced disconnected geometry.`
-        );
-    }
-
     // Handle empty input
     if (pointArrays.length === 0) {
         return [];
@@ -67,10 +58,10 @@ export function reconstructChain(
             });
         }
 
-        // For closed chains, add final line connecting last point to first
-        // Clipper2 returns implicit closed polygons (last point != first point)
-        // so we must add the closing segment
-        if (closed && points.length > 2) {
+        // Each polygon from Clipper2 is inherently closed and needs a closing segment
+        // This is true regardless of the 'closed' parameter (which indicates whether
+        // the overall chain was closed, not whether individual polygons are closed)
+        if (points.length > 2) {
             const firstPoint = points[0];
             const lastPoint = points[points.length - 1];
 

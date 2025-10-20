@@ -14,7 +14,6 @@ export interface CutsState {
     selectedCutId: string | null;
     highlightedCutId: string | null;
     showCutNormals: boolean;
-    showCutter: boolean;
     showCutDirections: boolean;
     showCutPaths: boolean;
     showCutStartPoints: boolean;
@@ -48,7 +47,6 @@ export interface CutsStore {
     ) => void;
     clearCutOffsetGeometry: (cutId: string) => void;
     setShowCutNormals: (show: boolean) => void;
-    setShowCutter: (show: boolean) => void;
     setShowCutDirections: (show: boolean) => void;
     setShowCutPaths: (show: boolean) => void;
     setShowCutStartPoints: (show: boolean) => void;

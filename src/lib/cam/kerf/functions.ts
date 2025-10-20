@@ -203,7 +203,8 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<Kerf> {
     );
 
     // Reconstruct chains from Clipper2 results
-    // This will throw an error if Clipper2 returned multiple disconnected polygons
+    // Clipper2 may return multiple polygons (e.g., shell + holes combined in one cut)
+    // Each polygon will be properly closed in reconstructChain
     const innerShapes = reconstructChain(inner, isClosedForOffset);
     const outerShapes = reconstructChain(outer, isClosedForOffset);
 

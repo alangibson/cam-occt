@@ -536,7 +536,6 @@ describe('cutStore', () => {
                 selectedCutId: 'restored-cut',
                 highlightedCutId: null,
                 showCutNormals: false,
-                showCutter: false,
                 showCutDirections: false,
                 showCutPaths: false,
                 showCutStartPoints: false,

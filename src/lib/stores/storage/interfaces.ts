@@ -71,7 +71,6 @@ export interface PersistedState {
     selectedCutId: string | null;
     highlightedCutId: string | null;
     showCutNormals: boolean;
-    showCutter: boolean;
     showCutDirections: boolean;
     showCutPaths: boolean;
     showCutStartPoints: boolean;

@@ -177,7 +177,7 @@ describe('offsetPaths', () => {
         expect(closureDistance).toBeLessThan(0.001);
     });
 
-    it('should throw error when reconstructing multiple disconnected polygons as closed chain', async () => {
+    it('should reconstruct multiple disconnected polygons with proper closing segments', async () => {
         // Create two separate squares (disconnected)
         const square1: Point2D[] = [
             { x: 0, y: 0 },
@@ -204,9 +204,17 @@ describe('offsetPaths', () => {
 
         console.log(`Clipper2 returned ${result.inner.length} inner polygons`);
 
-        // Attempting to reconstruct multiple polygons as a closed chain should throw
-        expect(() => reconstructChain(result.inner, isClosed)).toThrow(
-            /Cannot reconstruct closed chain from \d+ disconnected polygons/
-        );
+        // Reconstruct should handle multiple polygons by closing each one individually
+        const shapes = reconstructChain(result.inner, isClosed);
+
+        // Each square has 4 vertices -> 3 edges between consecutive points + 1 closing edge = 4 segments per square
+        // Two squares = 8 segments total (may be more if Clipper2 adds intermediate points)
+        expect(shapes.length).toBeGreaterThanOrEqual(8);
+
+        // All shapes should be lines
+        expect(shapes.every(s => s.type === 'line')).toBe(true);
+
+        // Verify the shapes form closed loops (can check by counting)
+        expect(shapes.length % 2).toBe(0); // Should be even for symmetric offsets
     });
 });
