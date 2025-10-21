@@ -263,7 +263,6 @@ export class CutRenderer extends BaseRenderer {
         });
     }
 
-
     /**
      * Draw cut start/end points as colored circles
      */

@@ -7,6 +7,12 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
+// Default test kerf parameters
+const DEFAULT_CENTER_X = 50;
+const DEFAULT_CENTER_Y = 50;
+const DEFAULT_SIZE = 100;
+const DEFAULT_KERF_WIDTH = 10;
+
 /**
  * Create a simple rectangular kerf for testing
  *
@@ -22,10 +28,10 @@ import { GeometryType } from '$lib/geometry/shape/enums';
  * @returns A test kerf with inner and outer chains
  */
 export function createTestKerf(
-    centerX: number = 50,
-    centerY: number = 50,
-    size: number = 100,
-    kerfWidth: number = 10
+    centerX: number = DEFAULT_CENTER_X,
+    centerY: number = DEFAULT_CENTER_Y,
+    size: number = DEFAULT_SIZE,
+    kerfWidth: number = DEFAULT_KERF_WIDTH
 ): Kerf {
     const halfKerf = kerfWidth / 2;
     const halfSize = size / 2;

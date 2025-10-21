@@ -8,7 +8,7 @@ import type { Shape } from '$lib/geometry/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/stores/operations/enums';
-import { sampleShapesAtDistanceIntervals } from '$lib/geometry/shape/functions';
+import { sampleShapes } from '$lib/geometry/shape/functions';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Operation } from '$lib/stores/operations/interfaces';
 
@@ -146,10 +146,7 @@ describe('Cut Direction End-to-End Integration', () => {
         // Verify: DrawingCanvas would use cutChain.shapes for rendering arrows
         // This simulates what DrawingCanvas.svelte does for chevron rendering
         const shapesToRender = cut.cutChain!.shapes;
-        const chevronSamples = sampleShapesAtDistanceIntervals(
-            shapesToRender,
-            5
-        ); // 5 unit spacing
+        const chevronSamples = sampleShapes(shapesToRender, 5); // 5 unit spacing
 
         // Should sample points in the COUNTERCLOCKWISE direction as requested by user
         expect(chevronSamples.length).toBeGreaterThan(0);

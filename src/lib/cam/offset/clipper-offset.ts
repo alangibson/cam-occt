@@ -8,13 +8,22 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { getClipper2 } from './clipper-init';
 import { toClipper2Paths, fromClipper2Paths } from './convert';
+import type { JoinType, EndType } from '$lib/wasm/clipper2z';
 
 /**
  * Scale factor matching convert.ts
  */
 const SCALE_FACTOR = 1000;
 
-import type { JoinType, EndType } from '$lib/wasm/clipper2z';
+/**
+ * Default miter limit for preserving sharp corners
+ */
+const DEFAULT_MITER_LIMIT = 10.0;
+
+/**
+ * Default arc tolerance for round joins (smaller = more precise)
+ */
+const DEFAULT_ARC_TOLERANCE = 0.25;
 
 /**
  * Options for configuring Clipper2 offset behavior
@@ -73,8 +82,8 @@ export async function offsetPaths(
     const joinType = options?.joinType ?? JoinType.Miter; // Sharp corners (default)
     const endType =
         options?.endType ?? (isClosed ? EndType.Polygon : EndType.Butt);
-    const miterLimit = options?.miterLimit ?? 10.0; // High miter limit to preserve sharp corners
-    const arcTolerance = options?.arcTolerance ?? 0.25; // Precision for round joins
+    const miterLimit = options?.miterLimit ?? DEFAULT_MITER_LIMIT; // High miter limit to preserve sharp corners
+    const arcTolerance = options?.arcTolerance ?? DEFAULT_ARC_TOLERANCE; // Precision for round joins
 
     // Scale distance to match coordinate scaling
     const scaledDistance = distance * SCALE_FACTOR;

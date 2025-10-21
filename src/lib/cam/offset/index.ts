@@ -100,8 +100,8 @@ export async function offsetChain(
         );
 
         // 4. Reconstruct shapes from Clipper2 results
-        const innerShapes = reconstructChain(inner, isClosed);
-        const outerShapes = reconstructChain(outer, isClosed);
+        const innerShapes = reconstructChain(inner);
+        const outerShapes = reconstructChain(outer);
 
         // 5. Build OffsetChain results
         if (isClosed) {

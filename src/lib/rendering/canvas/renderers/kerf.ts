@@ -54,7 +54,10 @@ export class KerfRenderer extends BaseRenderer {
 
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
         // Check if we should render kerfs or lead kerfs
-        if (!state.visibility.showKerfPaths && !state.visibility.showLeadKerfs) {
+        if (
+            !state.visibility.showKerfPaths &&
+            !state.visibility.showLeadKerfs
+        ) {
             return;
         }
 
@@ -92,12 +95,14 @@ export class KerfRenderer extends BaseRenderer {
 
         try {
             // Check if this kerf is selected or highlighted
-            const isSelected =
+            const isSelected = Boolean(
                 state.selection.selectedKerfId &&
-                state.selection.selectedKerfId === kerf.id;
-            const isHighlighted =
+                    state.selection.selectedKerfId === kerf.id
+            );
+            const isHighlighted = Boolean(
                 state.selection.highlightedKerfId &&
-                state.selection.highlightedKerfId === kerf.id;
+                    state.selection.highlightedKerfId === kerf.id
+            );
 
             // Render main kerf paths if showKerfPaths is enabled
             if (state.visibility.showKerfPaths) {
@@ -126,21 +131,7 @@ export class KerfRenderer extends BaseRenderer {
                 ctx.fill('evenodd');
 
                 // Optionally stroke the boundaries for visibility
-                // Use different colors based on selection state
-                if (isSelected) {
-                    ctx.strokeStyle = SELECTED_KERF_COLOR;
-                } else if (isHighlighted) {
-                    ctx.strokeStyle = HIGHLIGHTED_KERF_COLOR;
-                } else {
-                    ctx.strokeStyle = KERF_COLOR;
-                }
-                ctx.lineWidth =
-                    state.transform.coordinator.screenToWorldDistance(
-                        KERF_LINE_WIDTH
-                    );
-                ctx.setLineDash([]); // Solid line
-                ctx.lineCap = 'round';
-                ctx.lineJoin = 'round';
+                this.applyKerfStyles(ctx, state, isSelected, isHighlighted);
                 ctx.stroke();
 
                 // Render lead-in geometry if present
@@ -163,8 +154,8 @@ export class KerfRenderer extends BaseRenderer {
                         state,
                         kerf.leadInInnerChain.shapes,
                         kerf.leadInOuterChain.shapes,
-                        !!isSelected,
-                        !!isHighlighted
+                        isSelected,
+                        isHighlighted
                     );
                 }
 
@@ -175,8 +166,8 @@ export class KerfRenderer extends BaseRenderer {
                         state,
                         kerf.leadOutInnerChain.shapes,
                         kerf.leadOutOuterChain.shapes,
-                        !!isSelected,
-                        !!isHighlighted
+                        isSelected,
+                        isHighlighted
                     );
                 }
             }
@@ -255,25 +246,35 @@ export class KerfRenderer extends BaseRenderer {
             ctx.fill('evenodd');
 
             // Stroke the boundaries for visibility
-            // Use different colors based on selection state
-            if (isSelected) {
-                ctx.strokeStyle = SELECTED_KERF_COLOR;
-            } else if (isHighlighted) {
-                ctx.strokeStyle = HIGHLIGHTED_KERF_COLOR;
-            } else {
-                ctx.strokeStyle = KERF_COLOR;
-            }
-            ctx.lineWidth =
-                state.transform.coordinator.screenToWorldDistance(
-                    KERF_LINE_WIDTH
-                );
-            ctx.setLineDash([]); // Solid line
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            this.applyKerfStyles(ctx, state, isSelected, isHighlighted);
             ctx.stroke();
         } finally {
             ctx.restore();
         }
+    }
+
+    /**
+     * Apply kerf rendering styles based on selection state
+     */
+    private applyKerfStyles(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        isSelected: boolean,
+        isHighlighted: boolean
+    ): void {
+        // Use different colors based on selection state
+        if (isSelected) {
+            ctx.strokeStyle = SELECTED_KERF_COLOR;
+        } else if (isHighlighted) {
+            ctx.strokeStyle = HIGHLIGHTED_KERF_COLOR;
+        } else {
+            ctx.strokeStyle = KERF_COLOR;
+        }
+        ctx.lineWidth =
+            state.transform.coordinator.screenToWorldDistance(KERF_LINE_WIDTH);
+        ctx.setLineDash([]); // Solid line
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
     }
 
     /**
@@ -429,12 +430,17 @@ export class KerfRenderer extends BaseRenderer {
                 // Draw cutter over lead-in if it exists
                 if (cut.leadIn) {
                     try {
-                        const leadInPoints = convertLeadGeometryToPoints(cut.leadIn);
+                        const leadInPoints = convertLeadGeometryToPoints(
+                            cut.leadIn
+                        );
                         if (leadInPoints.length >= 2) {
                             ctx.beginPath();
                             ctx.moveTo(leadInPoints[0].x, leadInPoints[0].y);
                             for (let i = 1; i < leadInPoints.length; i++) {
-                                ctx.lineTo(leadInPoints[i].x, leadInPoints[i].y);
+                                ctx.lineTo(
+                                    leadInPoints[i].x,
+                                    leadInPoints[i].y
+                                );
                             }
                             ctx.stroke();
                         }
@@ -449,12 +455,17 @@ export class KerfRenderer extends BaseRenderer {
                 // Draw cutter over lead-out if it exists
                 if (cut.leadOut) {
                     try {
-                        const leadOutPoints = convertLeadGeometryToPoints(cut.leadOut);
+                        const leadOutPoints = convertLeadGeometryToPoints(
+                            cut.leadOut
+                        );
                         if (leadOutPoints.length >= 2) {
                             ctx.beginPath();
                             ctx.moveTo(leadOutPoints[0].x, leadOutPoints[0].y);
                             for (let i = 1; i < leadOutPoints.length; i++) {
-                                ctx.lineTo(leadOutPoints[i].x, leadOutPoints[i].y);
+                                ctx.lineTo(
+                                    leadOutPoints[i].x,
+                                    leadOutPoints[i].y
+                                );
                             }
                             ctx.stroke();
                         }

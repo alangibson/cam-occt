@@ -62,6 +62,12 @@ export interface Kerf {
     /** Outer kerf chain for lead-out (right side offset) */
     leadOutOuterChain?: Chain;
 
+    /** Whether lead-in kerf overlaps with the cut's underlying chain */
+    leadInKerfOverlapsChain?: boolean;
+
+    /** Whether lead-out kerf overlaps with the cut's underlying chain */
+    leadOutKerfOverlapsChain?: boolean;
+
     /** ISO timestamp when kerf was generated */
     generatedAt: string;
 

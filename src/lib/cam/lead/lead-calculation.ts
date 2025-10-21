@@ -6,10 +6,7 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { normalizeVector } from '$lib/geometry/math/functions';
 import { validateLeadConfiguration } from './lead-validation';
-import {
-    createTangentArc,
-    calculateArcLength,
-} from '$lib/geometry/arc/functions';
+import { createTangentArc, sampleArc } from '$lib/geometry/arc/functions';
 import {
     GEOMETRIC_PRECISION_TOLERANCE,
     HALF_PERCENT,
@@ -17,10 +14,7 @@ import {
     THREE_QUARTERS_PERCENT,
 } from '$lib/geometry/math/constants';
 import { HALF_CIRCLE_DEG } from '$lib/geometry/circle/constants';
-import {
-    OCTAGON_SIDES,
-    SMALL_ANGLE_INCREMENT_DEG,
-} from '$lib/geometry/constants';
+import { SMALL_ANGLE_INCREMENT_DEG } from '$lib/geometry/constants';
 import {
     isPointInsidePart,
     isPointInsideChainExact,
@@ -358,40 +352,6 @@ function rotateCurveDirection(direction: Point2D, angle: number): Point2D {
 }
 
 /**
- * Sample points along an arc geometry for collision testing.
- *
- * @param arc - Arc geometry to sample
- * @returns Array of points along the arc
- */
-function sampleArcPoints(arc: Arc): Point2D[] {
-    const points: Point2D[] = [];
-    const arcLength = calculateArcLength(arc);
-    const segments = Math.max(OCTAGON_SIDES, Math.ceil(arcLength / 2)); // ~2mm segments
-
-    for (let i = 0; i <= segments; i++) {
-        const t = i / segments;
-        let angle: number;
-
-        if (arc.clockwise) {
-            let angularSpan = arc.startAngle - arc.endAngle;
-            if (angularSpan <= 0) angularSpan += 2 * Math.PI;
-            angle = arc.startAngle - t * angularSpan;
-        } else {
-            let angularSpan = arc.endAngle - arc.startAngle;
-            if (angularSpan <= 0) angularSpan += 2 * Math.PI;
-            angle = arc.startAngle + t * angularSpan;
-        }
-
-        points.push({
-            x: arc.center.x + arc.radius * Math.cos(angle),
-            y: arc.center.y + arc.radius * Math.sin(angle),
-        });
-    }
-
-    return points;
-}
-
-/**
  * Check if an arc lead exits the boundary of a hole.
  * For holes, leads must stay entirely within the hole boundary.
  */
@@ -406,7 +366,7 @@ function checkArcExitsHole(
     }
 
     // Sample points along the arc for testing
-    const points = sampleArcPoints(arc);
+    const points = sampleArc(arc);
 
     // Check if any points are outside the hole boundary (excluding connection point)
     for (const leadPoint of points) {
@@ -448,7 +408,7 @@ function isLeadInPart(
     connectionPoint?: Point2D
 ): boolean {
     // Sample points along the arc lead geometry
-    const points = sampleArcPoints(leadGeometry);
+    const points = sampleArc(leadGeometry);
 
     // Check if any points are in solid material (inside shell but outside holes)
     for (const leadPoint of points) {
@@ -485,7 +445,7 @@ function doesArcIntersectChain(
     connectionPoint: Point2D
 ): boolean {
     // Sample points along the arc
-    const points = sampleArcPoints(arc);
+    const points = sampleArc(arc);
 
     // Check if any sampled points are inside the chain
     for (const arcPoint of points) {

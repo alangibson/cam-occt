@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sampleShapesAtDistanceIntervals } from '$lib/geometry/shape/functions';
+import { sampleShapes } from '$lib/geometry/shape/functions';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
@@ -47,10 +47,7 @@ describe('Chevron Arrow Integration Tests', () => {
             expect(shapesToSample[0]).toBe(verticalLine);
             expect(shapesToSample[1]).toBe(horizontalLine);
 
-            const chevronSamples = sampleShapesAtDistanceIntervals(
-                shapesToSample,
-                5
-            );
+            const chevronSamples = sampleShapes(shapesToSample, 5);
 
             expect(chevronSamples.length).toBeGreaterThan(0);
 
@@ -101,10 +98,7 @@ describe('Chevron Arrow Integration Tests', () => {
             expect(shapesToSample[0]).toBe(horizontalLine);
             expect(shapesToSample[1]).toBe(verticalLine);
 
-            const chevronSamples = sampleShapesAtDistanceIntervals(
-                shapesToSample,
-                5
-            );
+            const chevronSamples = sampleShapes(shapesToSample, 5);
 
             expect(chevronSamples.length).toBeGreaterThan(0);
 
@@ -162,14 +156,11 @@ describe('Chevron Arrow Integration Tests', () => {
 
             // Test clockwise direction
             const clockwiseShapes = shapes; // No reversal for clockwise
-            const clockwiseSamples = sampleShapesAtDistanceIntervals(
-                clockwiseShapes,
-                8
-            );
+            const clockwiseSamples = sampleShapes(clockwiseShapes, 8);
 
             // Test counterclockwise direction
             const counterclockwiseShapes = [...shapes].reverse(); // Reverse for counterclockwise
-            const counterclockwiseSamples = sampleShapesAtDistanceIntervals(
+            const counterclockwiseSamples = sampleShapes(
                 counterclockwiseShapes,
                 8
             );
@@ -211,10 +202,7 @@ describe('Chevron Arrow Integration Tests', () => {
             };
 
             // For clockwise cuts on a single line, tool moves from start to end
-            const clockwiseSamples = sampleShapesAtDistanceIntervals(
-                [straightLine],
-                5
-            );
+            const clockwiseSamples = sampleShapes([straightLine], 5);
             expect(clockwiseSamples.length).toBeGreaterThan(0);
 
             // All arrows should point right (positive X direction)
@@ -234,10 +222,7 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const counterclockwiseSamples = sampleShapesAtDistanceIntervals(
-                [reversedLine],
-                5
-            );
+            const counterclockwiseSamples = sampleShapes([reversedLine], 5);
             expect(counterclockwiseSamples.length).toBeGreaterThan(0);
 
             // All arrows should point left (negative X direction) because shape was reversed
@@ -277,10 +262,7 @@ describe('Chevron Arrow Integration Tests', () => {
                     : [testLine];
 
             // For a single shape, reverse doesn't change the array, but the cut direction parameter should
-            const chevronSamples = sampleShapesAtDistanceIntervals(
-                shapesToSample,
-                5
-            );
+            const chevronSamples = sampleShapes(shapesToSample, 5);
 
             expect(chevronSamples.length).toBeGreaterThan(0);
 

@@ -10,7 +10,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Ray, RayIntersection, RayTracingConfig } from './types';
 import { DEFAULT_RAYTRACING_CONFIG } from './types';
-import { createVerbCurveFromSpline } from '$lib/geometry/spline/nurbs';
+import { sampleSpline } from '$lib/geometry/spline/functions';
 
 /**
  * Default sample count for ray-spline intersection approximation
@@ -63,7 +63,7 @@ function countRaySplineCrossingsApproximate(
     spline: Spline,
     config: RayTracingConfig
 ): number {
-    const samples: Point2D[] = sampleSplinePoints(
+    const samples: Point2D[] = sampleSpline(
         spline,
         config.splineSampleCount || DEFAULT_SPLINE_SAMPLE_COUNT
     );
@@ -99,7 +99,7 @@ function findRaySplineIntersectionsApproximate(
     spline: Spline,
     config: RayTracingConfig
 ): RayIntersection[] {
-    const samples: Point2D[] = sampleSplinePoints(
+    const samples: Point2D[] = sampleSpline(
         spline,
         config.splineSampleCount || DEFAULT_SPLINE_SAMPLE_COUNT
     );
@@ -126,61 +126,6 @@ function findRaySplineIntersectionsApproximate(
     }
 
     return intersections.sort((a, b) => a.t - b.t);
-}
-
-/**
- * Sample points along a NURBS spline using adaptive tessellation
- *
- * @param spline - The spline to sample
- * @param _sampleCount - Ignored, kept for API compatibility
- * @returns Array of points along the spline
- */
-function sampleSplinePoints(spline: Spline, _sampleCount: number): Point2D[] {
-    const points: Point2D[] = [];
-
-    // Handle degenerate cases
-    if (spline.controlPoints.length === 0) {
-        return points;
-    }
-
-    // For linear splines (degree 1), just sample control points
-    if (spline.degree <= 1) {
-        return spline.controlPoints.slice();
-    }
-
-    // Use fit points if available (these are often more accurate for visualization)
-    if (spline.fitPoints && spline.fitPoints.length >= 2) {
-        return spline.fitPoints.slice();
-    }
-
-    // For 2-point splines, return a line
-    if (spline.controlPoints.length === 2) {
-        return [spline.controlPoints[0], spline.controlPoints[1]];
-    }
-
-    // Use verb.js adaptive tessellation for proper NURBS evaluation
-    try {
-        const curve = createVerbCurveFromSpline(spline);
-
-        // Use adaptive tessellation with tolerance
-        // Tolerance of 0.01 provides good accuracy for ray tracing
-        const tolerance = 0.01;
-        const tessellatedPoints: number[][] = curve.tessellate(tolerance);
-
-        // Convert from [x, y, z] to Point2D
-        for (const point3d of tessellatedPoints) {
-            points.push({ x: point3d[0], y: point3d[1] });
-        }
-
-        return points;
-    } catch (error) {
-        // If verb.js fails, fall back to control points
-        console.warn(
-            'verb.js NURBS tessellation failed, falling back to control points:',
-            error instanceof Error ? error.message : String(error)
-        );
-        return spline.controlPoints.slice();
-    }
 }
 
 /**
@@ -279,10 +224,3 @@ export function countHorizontalRaySplineCrossings(
 
     return countRaySplineCrossings(ray, spline, config);
 }
-
-// TODO: Future improvements
-// - Implement exact NURBS-ray intersection using subdivision
-// - Add bounding box pre-checks for performance
-// - Handle rational splines (weights) properly
-// - Implement adaptive sampling based on curvature
-// - Add support for conic sections (specific NURBS cases)

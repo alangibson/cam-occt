@@ -20,6 +20,7 @@ import {
     getShapePoints,
     getShapePointAt,
     getShapeLength,
+    sampleShapes,
 } from '$lib/geometry/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE, POLYGON_POINTS_MIN } from './constants';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
@@ -735,4 +736,33 @@ export function getChainPointAt(chain: Chain, t: number): Point2D {
 
     // Fallback: return end point (should only happen due to floating point errors)
     return getChainEndPoint(chain);
+}
+
+/**
+ * Sample points along a chain at regular distance intervals
+ *
+ * Uses sampleShapesAtDistanceInterval to sample the chain's shapes at evenly-spaced
+ * intervals along the path. This is useful for detecting geometric interactions by
+ * converting curves into discrete sample points.
+ *
+ * @param chain - The chain to sample along
+ * @param intervalDistance - The distance between each sample point along the path (in drawing units)
+ * @returns Array of sampled points with their direction vectors at each sample location
+ *
+ * @example
+ * ```typescript
+ * import { sampleChainAtDistanceInterval } from '$lib/geometry/chain/functions';
+ * import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
+ *
+ * const samples = sampleChainAtDistanceInterval(myChain, CONTAINMENT_AREA_TOLERANCE);
+ * for (const sample of samples) {
+ *   console.log('Point:', sample.point, 'Direction:', sample.direction);
+ * }
+ * ```
+ */
+export function sampleChainAtDistanceInterval(
+    chain: Chain,
+    intervalDistance: number
+): { point: Point2D; direction: Point2D }[] {
+    return sampleShapes(chain.shapes, intervalDistance);
 }

@@ -136,7 +136,7 @@ describe('offsetPaths', () => {
         const result = await offsetPaths([square], offsetDistance, isClosed);
 
         // Reconstruct the inner chain
-        const innerShapes = reconstructChain(result.inner, isClosed);
+        const innerShapes = reconstructChain(result.inner);
 
         console.log(`Number of reconstructed shapes: ${innerShapes.length}`);
         console.log(
@@ -205,14 +205,14 @@ describe('offsetPaths', () => {
         console.log(`Clipper2 returned ${result.inner.length} inner polygons`);
 
         // Reconstruct should handle multiple polygons by closing each one individually
-        const shapes = reconstructChain(result.inner, isClosed);
+        const shapes = reconstructChain(result.inner);
 
         // Each square has 4 vertices -> 3 edges between consecutive points + 1 closing edge = 4 segments per square
         // Two squares = 8 segments total (may be more if Clipper2 adds intermediate points)
         expect(shapes.length).toBeGreaterThanOrEqual(8);
 
         // All shapes should be lines
-        expect(shapes.every(s => s.type === 'line')).toBe(true);
+        expect(shapes.every((s) => s.type === 'line')).toBe(true);
 
         // Verify the shapes form closed loops (can check by counting)
         expect(shapes.length % 2).toBe(0); // Should be even for symmetric offsets

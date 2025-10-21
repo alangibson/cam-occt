@@ -11,6 +11,7 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { generateId } from '$lib/domain/id';
 import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 
 /**
  * Reconstruct MetalHead shapes from Clipper2 point arrays
@@ -24,13 +25,9 @@ import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types
  * fill operations using the evenodd rule.
  *
  * @param pointArrays - Array of point arrays from Clipper2 (can be multiple polygons)
- * @param closed - Whether the original chain was closed (used for metadata, not closing logic)
  * @returns Array of Line shapes representing all polygons concatenated together
  */
-export function reconstructChain(
-    pointArrays: Point2D[][],
-    closed: boolean
-): Shape[] {
+export function reconstructChain(pointArrays: Point2D[][]): Shape[] {
     // Handle empty input
     if (pointArrays.length === 0) {
         return [];
@@ -71,7 +68,7 @@ export function reconstructChain(
             const distance = Math.sqrt(dx * dx + dy * dy);
 
             // Only add closing line if points are not already coincident
-            if (distance > 1e-6) {
+            if (distance > INTERSECTION_TOLERANCE) {
                 const line: Line = {
                     start: { x: lastPoint.x, y: lastPoint.y },
                     end: { x: firstPoint.x, y: firstPoint.y },

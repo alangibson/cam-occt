@@ -25,13 +25,13 @@ import {
     createLeadInConfig,
     createLeadOutConfig,
 } from '$lib/cam/lead/functions';
+import { LeadType } from '$lib/cam/lead/enums';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import { settingsStore } from '$lib/stores/settings/store';
 import { cutToKerf } from '$lib/cam/kerf/functions';
 import { kerfStore } from '$lib/stores/kerfs/store';
 import { get } from 'svelte/store';
-import { MeasurementSystem } from '$lib/config/settings/enums';
 import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
 
 /**
@@ -1004,11 +1004,11 @@ export async function generateCutsForPartTargetWithOperation(
                 executionClockwise: slotExecutionClockwise,
                 leadInConfig:
                     operation.kerfCompensation === KerfCompensation.PART
-                        ? { type: 'none' as const }
+                        ? { type: LeadType.NONE, length: 0 }
                         : operation.leadInConfig,
                 leadOutConfig:
                     operation.kerfCompensation === KerfCompensation.PART
-                        ? { type: 'none' as const }
+                        ? { type: LeadType.NONE, length: 0 }
                         : operation.leadOutConfig,
                 kerfCompensation: slotKerfCompensation,
                 kerfWidth: slotKerfWidth,

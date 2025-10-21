@@ -6,7 +6,7 @@ import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import { sampleShapesAtDistanceIntervals } from '$lib/geometry/shape/functions';
+import { sampleShapes } from '$lib/geometry/shape/functions';
 import { isCutEnabledForRendering } from '$lib/rendering/canvas/utils/renderer-utils';
 import { drawChevronArrow } from '$lib/rendering/canvas/utils/chevron-drawing';
 
@@ -97,7 +97,7 @@ export class ChevronRenderer extends BaseRenderer {
             }
 
             // Use the new utility to sample at regular distance intervals
-            const chevronSamples = sampleShapesAtDistanceIntervals(
+            const chevronSamples = sampleShapes(
                 shapesToSample,
                 CHEVRON_SPACING_UNITS
             );
@@ -144,7 +144,7 @@ export class ChevronRenderer extends BaseRenderer {
             if (chain.shapes.length === 0) return;
 
             // Use the new utility to sample at regular distance intervals
-            const chevronSamples = sampleShapesAtDistanceIntervals(
+            const chevronSamples = sampleShapes(
                 chain.shapes,
                 CHEVRON_SPACING_UNITS
             );

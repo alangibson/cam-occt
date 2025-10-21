@@ -156,7 +156,14 @@ export interface RenderState {
     // Interaction settings
     respectLayerVisibility: boolean;
     interactionMode: 'shapes' | 'chains' | 'cuts' | 'kerfs';
-    selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'cut' | 'lead' | 'kerf';
+    selectionMode:
+        | 'auto'
+        | 'chain'
+        | 'shape'
+        | 'part'
+        | 'cut'
+        | 'lead'
+        | 'kerf';
 }
 
 /**

@@ -12,7 +12,7 @@ import {
     moveShape,
     reverseShape,
     rotateShape,
-    sampleShapesAtDistanceIntervals,
+    sampleShapes,
     scaleShape,
     splitShapeAtMidpoint,
     tessellateShape,
@@ -502,7 +502,7 @@ describe('samplePathAtDistanceIntervals', () => {
             };
 
             const shapes = [line];
-            const samples = sampleShapesAtDistanceIntervals(shapes, 5);
+            const samples = sampleShapes(shapes, 5);
 
             // Function now always returns natural direction (from start to end)
             expect(samples.length).toBeGreaterThan(0);
@@ -531,7 +531,7 @@ describe('samplePathAtDistanceIntervals', () => {
             };
 
             const shapes = [line];
-            const samples = sampleShapesAtDistanceIntervals(shapes, 5);
+            const samples = sampleShapes(shapes, 5);
 
             // For clockwise cuts, direction should be natural (pointing right)
             expect(samples.length).toBeGreaterThan(0);
@@ -569,14 +569,8 @@ describe('samplePathAtDistanceIntervals', () => {
                 } as Line,
             };
 
-            const originalSamples = sampleShapesAtDistanceIntervals(
-                [originalLine],
-                5
-            );
-            const reversedSamples = sampleShapesAtDistanceIntervals(
-                [reversedLine],
-                5
-            );
+            const originalSamples = sampleShapes([originalLine], 5);
+            const reversedSamples = sampleShapes([reversedLine], 5);
 
             expect(originalSamples.length).toBeGreaterThan(0);
             expect(reversedSamples.length).toBeGreaterThan(0);
@@ -611,8 +605,8 @@ describe('samplePathAtDistanceIntervals', () => {
 
             const shapes = [horizontalLine, verticalLine];
 
-            const originalSamples = sampleShapesAtDistanceIntervals(shapes, 5);
-            const reversedSamples = sampleShapesAtDistanceIntervals(
+            const originalSamples = sampleShapes(shapes, 5);
+            const reversedSamples = sampleShapes(
                 [verticalLine, horizontalLine],
                 5
             );
@@ -644,7 +638,7 @@ describe('samplePathAtDistanceIntervals', () => {
             };
 
             const shapes = [line];
-            const samples = sampleShapesAtDistanceIntervals(shapes, 5); // Sample every 5 units
+            const samples = sampleShapes(shapes, 5); // Sample every 5 units
 
             // Should have samples at positions ~5, ~10, ~15 (and possibly one more at end)
             expect(samples.length).toBeGreaterThanOrEqual(3);
@@ -665,7 +659,7 @@ describe('samplePathAtDistanceIntervals', () => {
 
         it('should handle edge cases gracefully', () => {
             // Empty shapes array
-            expect(sampleShapesAtDistanceIntervals([], 5)).toEqual([]);
+            expect(sampleShapes([], 5)).toEqual([]);
 
             // Zero interval distance
             const line: Shape = {
@@ -676,10 +670,10 @@ describe('samplePathAtDistanceIntervals', () => {
                     end: { x: 10, y: 0 },
                 } as Line,
             };
-            expect(sampleShapesAtDistanceIntervals([line], 0)).toEqual([]);
+            expect(sampleShapes([line], 0)).toEqual([]);
 
             // Negative interval distance
-            expect(sampleShapesAtDistanceIntervals([line], -5)).toEqual([]);
+            expect(sampleShapes([line], -5)).toEqual([]);
         });
     });
 });
@@ -699,7 +693,7 @@ describe('Cut Direction Regression Tests', () => {
         };
 
         // Function now always returns natural direction
-        const samples = sampleShapesAtDistanceIntervals([line], 5);
+        const samples = sampleShapes([line], 5);
 
         expect(samples.length).toBeGreaterThan(0);
 
