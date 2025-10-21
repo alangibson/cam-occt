@@ -14,6 +14,7 @@ import type { Rapid } from '$lib/cam/rapid/interfaces';
 import { Unit } from '$lib/config/units/units';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { Cut } from '$lib/cam/cut/interfaces';
+import type { Kerf } from '$lib/cam/kerf/interfaces';
 
 /**
  * Transform state for canvas rendering
@@ -43,6 +44,8 @@ export interface SelectionState {
     highlightedRapidId: string | null;
     selectedLeadId?: string | null;
     highlightedLeadId?: string | null;
+    selectedKerfId?: string | null;
+    highlightedKerfId?: string | null;
 }
 
 /**
@@ -89,6 +92,8 @@ export interface VisibilityState {
     showCutTangentLines: boolean;
     showLeadNormals: boolean;
     showLeadPaths: boolean;
+    showLeadKerfs: boolean;
+    showKerfPaths: boolean;
 }
 
 /**
@@ -141,14 +146,24 @@ export interface RenderState {
     // Rapids
     rapids: Rapid[];
 
+    // Kerfs
+    kerfs: Kerf[];
+
     // Overlays
     overlays: Record<WorkflowStage, OverlayState>;
     currentOverlay: OverlayState | null;
 
     // Interaction settings
     respectLayerVisibility: boolean;
-    interactionMode: 'shapes' | 'chains' | 'cuts';
-    selectionMode: 'auto' | 'chain' | 'shape' | 'part' | 'cut' | 'lead';
+    interactionMode: 'shapes' | 'chains' | 'cuts' | 'kerfs';
+    selectionMode:
+        | 'auto'
+        | 'chain'
+        | 'shape'
+        | 'part'
+        | 'cut'
+        | 'lead'
+        | 'kerf';
 }
 
 /**
@@ -215,6 +230,8 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showCutTangentLines: false,
             showLeadNormals: false,
             showLeadPaths: true,
+            showLeadKerfs: false,
+            showKerfPaths: false,
         },
         stage: stage || ('import' as WorkflowStage),
         displayUnit: Unit.MM,
@@ -225,6 +242,7 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
         chainsWithCuts: [],
         operations: [],
         rapids: [],
+        kerfs: [],
         overlays: {
             import: {},
             edit: {},
@@ -286,7 +304,6 @@ export function cloneRenderState(state: RenderState): RenderState {
                   showCutNormals: state.cutsState.showCutNormals,
                   showCutDirections: state.cutsState.showCutDirections,
                   showCutPaths: state.cutsState.showCutPaths,
-                  showCutter: state.cutsState.showCutter,
                   showCutStartPoints: state.cutsState.showCutStartPoints,
                   showCutEndPoints: state.cutsState.showCutEndPoints,
                   showCutTangentLines: state.cutsState.showCutTangentLines,
@@ -295,6 +312,7 @@ export function cloneRenderState(state: RenderState): RenderState {
         chainsWithCuts: [...state.chainsWithCuts],
         operations: [...state.operations],
         rapids: [...state.rapids],
+        kerfs: [...state.kerfs],
         overlays: Object.keys(state.overlays).reduce(
             (acc, key) => {
                 const workflowStage = key as WorkflowStage;

@@ -11,6 +11,7 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { generateId } from '$lib/domain/id';
 import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
+import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 
 /**
  * Reconstruct MetalHead shapes from Clipper2 point arrays
@@ -19,17 +20,27 @@ import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types
  * This follows the codebase convention: polylines are only used during DXF import,
  * internally they are represented as Chains containing arrays of Line shapes.
  *
- * @param pointArrays - Array of point arrays from Clipper2
- * @param closed - Whether the chains should be marked as closed
- * @returns Array of Shape arrays (each array represents one chain's Line shapes)
+ * Each polygon from Clipper2 is automatically closed with a final segment connecting
+ * the last point back to the first point. This ensures proper rendering with canvas
+ * fill operations using the evenodd rule.
+ *
+ * @param pointArrays - Array of point arrays from Clipper2 (can be multiple polygons)
+ * @returns Array of Line shapes representing all polygons concatenated together
  */
-export function reconstructChain(
-    pointArrays: Point2D[][],
-    closed: boolean
-): Shape[] {
+export function reconstructChain(pointArrays: Point2D[][]): Shape[] {
+    // Handle empty input
+    if (pointArrays.length === 0) {
+        return [];
+    }
+
     const allShapes: Shape[] = [];
 
     for (const points of pointArrays) {
+        // Skip empty point arrays
+        if (points.length < 2) {
+            continue;
+        }
+
         // Convert consecutive points to Line shapes
         for (let i = 0; i < points.length - 1; i++) {
             const line: Line = {
@@ -44,21 +55,31 @@ export function reconstructChain(
             });
         }
 
-        // For closed chains, add final line connecting last point to first
-        if (closed && points.length > 2) {
-            const line: Line = {
-                start: {
-                    x: points[points.length - 1].x,
-                    y: points[points.length - 1].y,
-                },
-                end: { x: points[0].x, y: points[0].y },
-            };
+        // Each polygon from Clipper2 is inherently closed and needs a closing segment
+        // This is true regardless of the 'closed' parameter (which indicates whether
+        // the overall chain was closed, not whether individual polygons are closed)
+        if (points.length > 2) {
+            const firstPoint = points[0];
+            const lastPoint = points[points.length - 1];
 
-            allShapes.push({
-                id: generateId(),
-                type: GeometryType.LINE,
-                geometry: line,
-            });
+            // Check if points are already closed (defensive check)
+            const dx = lastPoint.x - firstPoint.x;
+            const dy = lastPoint.y - firstPoint.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+
+            // Only add closing line if points are not already coincident
+            if (distance > INTERSECTION_TOLERANCE) {
+                const line: Line = {
+                    start: { x: lastPoint.x, y: lastPoint.y },
+                    end: { x: firstPoint.x, y: firstPoint.y },
+                };
+
+                allShapes.push({
+                    id: generateId(),
+                    type: GeometryType.LINE,
+                    geometry: line,
+                });
+            }
         }
     }
 

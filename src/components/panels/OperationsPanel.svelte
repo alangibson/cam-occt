@@ -7,7 +7,6 @@
     import { CutDirection } from '$lib/cam/cut/enums';
     import { LeadType } from '$lib/cam/lead/enums';
     import { KerfCompensation } from '$lib/stores/operations/enums';
-    import { OptimizeStarts } from '$lib/cam/cut/enums';
     import { getReactiveUnitSymbol } from '$lib/config/units/units';
     import { settingsStore } from '$lib/stores/settings/store';
 
@@ -651,10 +650,10 @@
                     </div>
 
                     <!-- Divider -->
-                    <div class="operation-divider"></div>
+                    <!-- <div class="operation-divider"></div> -->
 
                     <!-- Optimize Starts Settings -->
-                    <div class="optimize-starts-row">
+                    <!-- <div class="optimize-starts-row">
                         <div class="field-group">
                             <label for="optimize-starts-{operation.id}"
                                 >Optimize Starts:</label
@@ -678,7 +677,7 @@
                                 >
                             </select>
                         </div>
-                    </div>
+                    </div> -->
 
                     <div class="operation-actions">
                         <button
@@ -1159,17 +1158,6 @@
     }
 
     .kerf-compensation-row .field-group {
-        max-width: 200px;
-    }
-
-    /* Optimize starts row styling */
-    .optimize-starts-row {
-        margin-top: 0.75rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .optimize-starts-row .field-group {
         max-width: 200px;
     }
 

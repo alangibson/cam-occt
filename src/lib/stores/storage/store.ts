@@ -43,6 +43,7 @@ import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import { settingsStore } from '$lib/stores/settings/store';
 import type { SettingsState } from '$lib/config/settings/interfaces';
+import { kerfStore } from '$lib/stores/kerfs/store';
 
 /**
  * Collect current state from all stores
@@ -113,7 +114,6 @@ function collectCurrentState(): PersistedState {
         selectedCutId: cuts.selectedCutId, // Cut selection state
         highlightedCutId: cuts.highlightedCutId, // Cut highlight state
         showCutNormals: cuts.showCutNormals, // Cut normals visibility state
-        showCutter: cuts.showCutter, // Cutter visualization visibility state
         showCutDirections: cuts.showCutDirections, // Cut directions visibility state
         showCutPaths: cuts.showCutPaths, // Cut paths visibility state
         showCutStartPoints: cuts.showCutStartPoints, // Cut start points visibility state
@@ -283,7 +283,6 @@ function restoreStateToStores(state: PersistedState): void {
                 selectedCutId: state.selectedCutId || null,
                 highlightedCutId: state.highlightedCutId || null,
                 showCutNormals: state.showCutNormals || false,
-                showCutter: state.showCutter || false,
                 showCutDirections: state.showCutDirections || false,
                 showCutPaths: state.showCutPaths || false,
                 showCutStartPoints: state.showCutStartPoints || false,
@@ -357,6 +356,7 @@ export function resetApplicationToDefaults(): void {
     cutStore.reset();
     toolStore.reset();
     settingsStore.resetToDefaults();
+    kerfStore.clearKerfs();
 
     // Create default tool after clearing
     toolStore.addTool(createDefaultTool(1));

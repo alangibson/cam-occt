@@ -25,41 +25,96 @@ import {
     createLeadInConfig,
     createLeadOutConfig,
 } from '$lib/cam/lead/functions';
+import { LeadType } from '$lib/cam/lead/enums';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import { settingsStore } from '$lib/stores/settings/store';
+import {
+    cutToKerf,
+    adjustCutStartPointForLeadKerfOverlap,
+} from '$lib/cam/kerf/functions';
+import { kerfStore } from '$lib/stores/kerfs/store';
 import { get } from 'svelte/store';
-import { MeasurementSystem } from '$lib/config/settings/enums';
 import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
 
 /**
  * Get the appropriate tool value based on the current measurement system
  */
-function getToolValue(
+// Import getToolValue from shared utility
+import { getToolValue } from '$lib/cam/tool/tool-utils';
+
+/**
+ * Generate kerf for a cut and automatically adjust start point if lead kerf overlaps
+ *
+ * This function:
+ * 1. Generates initial kerf
+ * 2. Checks for lead kerf overlap with original chain
+ * 3. Attempts to adjust start point if overlap detected
+ * 4. Adds final kerf to store
+ *
+ * @param cut - The cut to generate kerf for (may be modified if adjustment succeeds)
+ * @param tool - The tool providing kerf width
+ * @param originalChain - The original chain before any offset
+ * @param tolerance - Tolerance for chain closure detection
+ * @param parts - Array of parts for determining part context (needed for correct normal calculation)
+ */
+async function generateAndAdjustKerf(
+    cut: Cut,
     tool: Tool,
-    field:
-        | 'feedRate'
-        | 'pierceHeight'
-        | 'cutHeight'
-        | 'kerfWidth'
-        | 'puddleJumpHeight'
-        | 'plungeRate'
-): number {
-    const settings = get(settingsStore).settings;
-    const isMetric = settings.measurementSystem === MeasurementSystem.Metric;
+    originalChain: Chain,
+    tolerance: number,
+    parts: Part[]
+): Promise<void> {
+    console.log(`[Operation] Generating kerf for cut "${cut.name}"`);
+    const kerf = await cutToKerf(cut, tool);
 
-    // Check for unit-specific fields
-    const metricField = `${field}Metric` as keyof Tool;
-    const imperialField = `${field}Imperial` as keyof Tool;
+    // Check if lead kerf overlaps the original chain
+    const hasOverlap =
+        kerf.leadInKerfOverlapsChain || kerf.leadOutKerfOverlapsChain;
 
-    if (isMetric && tool[metricField] !== undefined) {
-        return tool[metricField] as number;
-    } else if (!isMetric && tool[imperialField] !== undefined) {
-        return tool[imperialField] as number;
+    console.log(
+        `[Operation] Lead kerf overlap detected for "${cut.name}": ${hasOverlap} (leadIn=${kerf.leadInKerfOverlapsChain}, leadOut=${kerf.leadOutKerfOverlapsChain})`
+    );
+
+    if (hasOverlap) {
+        // Try to adjust start point to avoid overlap
+        console.log(
+            `[Operation] Attempting to adjust start point for cut "${cut.name}"`
+        );
+
+        const adjustedCut = await adjustCutStartPointForLeadKerfOverlap(
+            cut,
+            tool,
+            originalChain,
+            tolerance,
+            parts
+        );
+
+        if (adjustedCut) {
+            // Use the adjusted cut - update the original cut object
+            console.log(
+                `[Operation] ✓ Start point adjustment SUCCEEDED for "${cut.name}"`
+            );
+            Object.assign(cut, adjustedCut);
+
+            // Regenerate kerf with the adjusted cut
+            console.log(`[Operation] Regenerating kerf with adjusted cut`);
+            const adjustedKerf = await cutToKerf(cut, tool);
+            kerfStore.addKerf(adjustedKerf);
+        } else {
+            // No solution found, use original cut but still add kerf for visualization
+            console.warn(
+                `[Operation] ✗ Start point adjustment FAILED for "${cut.name}" - using original cut with overlap`
+            );
+            kerfStore.addKerf(kerf);
+        }
+    } else {
+        // No overlap, add kerf as-is
+        console.log(
+            `[Operation] No overlap detected - adding kerf as-is for "${cut.name}"`
+        );
+        kerfStore.addKerf(kerf);
     }
-
-    // Fall back to the base field
-    return tool[field];
 }
 
 /**
@@ -452,6 +507,31 @@ export async function generateCutsForChainWithOperation(
             ...leadResult.validation,
             validatedAt: new Date().toISOString(),
         };
+    }
+
+    // Generate kerf for this cut
+    const tool = tools.find((t) => t.id === operation.toolId);
+    if (tool && tool.kerfWidth > 0) {
+        try {
+            const originalShapes =
+                cutToReturn.offset?.originalShapes || chain.shapes;
+            const originalChainForKerf: Chain = {
+                id: chain.id,
+                shapes: originalShapes,
+            };
+            await generateAndAdjustKerf(
+                cutToReturn,
+                tool,
+                originalChainForKerf,
+                tolerance,
+                parts
+            );
+        } catch (error) {
+            console.warn(
+                `[Operation] Failed to generate kerf for cut "${cutToReturn.name}":`,
+                error
+            );
+        }
     }
 
     return {
@@ -1013,12 +1093,14 @@ export async function generateCutsForPartTargetWithOperation(
                 order: cutOrder++,
                 cutDirection: slotCutDirection,
                 executionClockwise: slotExecutionClockwise,
-                leadInConfig: operation.kerfCompensation === KerfCompensation.PART
-                    ? { type: 'none' as const }
-                    : operation.leadInConfig,
-                leadOutConfig: operation.kerfCompensation === KerfCompensation.PART
-                    ? { type: 'none' as const }
-                    : operation.leadOutConfig,
+                leadInConfig:
+                    operation.kerfCompensation === KerfCompensation.PART
+                        ? { type: LeadType.NONE, length: 0 }
+                        : operation.leadInConfig,
+                leadOutConfig:
+                    operation.kerfCompensation === KerfCompensation.PART
+                        ? { type: LeadType.NONE, length: 0 }
+                        : operation.leadOutConfig,
                 kerfCompensation: slotKerfCompensation,
                 kerfWidth: slotKerfWidth,
                 offset: slotCalculatedOffset,
@@ -1065,7 +1147,10 @@ export async function generateCutsForPartTargetWithOperation(
 
             // Calculate leads for slot cut (uses the updated normal if optimization was applied)
             // Skip leads when kerf compensation is PART
-            if (slotChain && operation.kerfCompensation !== KerfCompensation.PART) {
+            if (
+                slotChain &&
+                operation.kerfCompensation !== KerfCompensation.PART
+            ) {
                 const slotLeadResult = await calculateCutLeads(
                     slotCut,
                     operation,
@@ -1325,6 +1410,38 @@ export async function createCutsFromOperation(
     const allWarnings: CutGenerationResult['warnings'] = results.flatMap(
         (result) => result.warnings
     );
+
+    // Generate kerfs for all cuts (shells, holes, slots) with overlap detection
+    const tool = tools.find((t) => t.id === operation.toolId);
+    if (tool && tool.kerfWidth > 0) {
+        for (const cut of allCuts) {
+            try {
+                // Get original chain for this cut
+                const chain = chains.find((c) => c.id === cut.chainId);
+                if (chain) {
+                    const originalShapes =
+                        cut.offset?.originalShapes || chain.shapes;
+                    const originalChainForKerf: Chain = {
+                        id: chain.id,
+                        shapes: originalShapes,
+                    };
+                    await generateAndAdjustKerf(
+                        cut,
+                        tool,
+                        originalChainForKerf,
+                        tolerance,
+                        parts
+                    );
+                } else {
+                    console.warn(
+                        `Cannot find chain ${cut.chainId} for cut ${cut.name} - skipping kerf generation`
+                    );
+                }
+            } catch (error) {
+                console.warn('Failed to generate kerf for cut:', error);
+            }
+        }
+    }
 
     return {
         cuts: allCuts,

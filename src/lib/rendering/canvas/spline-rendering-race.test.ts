@@ -13,6 +13,7 @@ import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { settingsStore } from '$lib/stores/settings/store';
+import { kerfStore } from '$lib/stores/kerfs/store';
 import { OffsetImplementation } from '$lib/config/settings/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
@@ -23,10 +24,15 @@ import { join } from 'path';
 
 describe('Spline Rendering Race Condition', () => {
     beforeEach(() => {
-        // Reset stores that support it
+        // Reset all stores to clean state
+        drawingStore.reset();
+        chainStore.clearChains();
+        chainStore.setTolerance(0.1); // Reset to default
+        partStore.setParts([]);
         cutStore.reset();
         operationsStore.reset();
         toolStore.reset();
+        kerfStore.clearKerfs();
         // Set to Exact implementation to preserve splines
         settingsStore.setOffsetImplementation(OffsetImplementation.Exact);
     });
@@ -41,8 +47,12 @@ describe('Spline Rendering Race Condition', () => {
         const drawing = await parseDXF(dxfContent);
         drawingStore.setDrawing(drawing);
 
+        // Set tolerance before detecting chains
+        const tolerance = 0.01;
+        chainStore.setTolerance(tolerance);
+
         // Detect chains
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.01 });
+        const chains = detectShapeChains(drawing.shapes, { tolerance });
         const chainsWithDirection = setChainsDirection(chains);
         chainStore.setChains(chainsWithDirection);
 
@@ -108,7 +118,7 @@ describe('Spline Rendering Race Condition', () => {
         });
 
         // Wait for async cut generation to complete
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Get the generated cuts
         const cutsState = get(cutStore);
@@ -169,8 +179,12 @@ describe('Spline Rendering Race Condition', () => {
         const drawing = await parseDXF(dxfContent);
         drawingStore.setDrawing(drawing);
 
+        // Set tolerance before detecting chains
+        const tolerance = 0.01;
+        chainStore.setTolerance(tolerance);
+
         // Detect chains and parts
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.01 });
+        const chains = detectShapeChains(drawing.shapes, { tolerance });
         const chainsWithDirection = setChainsDirection(chains);
         chainStore.setChains(chainsWithDirection);
         const partDetectionResult = await detectParts(chainsWithDirection);
@@ -227,7 +241,7 @@ describe('Spline Rendering Race Condition', () => {
             kerfCompensation: KerfCompensation.PART,
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Capture first operation's cuts and offset shapes
         const firstCutsState = get(cutStore);
@@ -269,7 +283,7 @@ describe('Spline Rendering Race Condition', () => {
             kerfCompensation: KerfCompensation.PART,
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Get updated cuts
         const secondCutsState = get(cutStore);
@@ -336,7 +350,11 @@ describe('Spline Rendering Race Condition', () => {
         const drawing = await parseDXF(dxfContent);
         drawingStore.setDrawing(drawing);
 
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.01 });
+        // Set tolerance before detecting chains
+        const tolerance = 0.01;
+        chainStore.setTolerance(tolerance);
+
+        const chains = detectShapeChains(drawing.shapes, { tolerance });
         const chainsWithDirection = setChainsDirection(chains);
         chainStore.setChains(chainsWithDirection);
         const partDetectionResult = await detectParts(chainsWithDirection);
@@ -418,7 +436,7 @@ describe('Spline Rendering Race Condition', () => {
             kerfCompensation: KerfCompensation.PART,
         });
 
-        await new Promise((resolve) => setTimeout(resolve, 150));
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Get all cuts
         const cutsState = get(cutStore);

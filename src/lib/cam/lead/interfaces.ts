@@ -16,6 +16,7 @@ export interface Lead {
     type: LeadType;
     normal?: Point2D; // Unit vector pointing in the normal direction (perpendicular to lead tangent)
     connectionPoint?: Point2D; // Where the lead connects to the chain/shape
+    kerfOverlapsChain?: boolean; // Whether the lead kerf overlaps with the cut's underlying chain
 }
 
 export interface LeadResult {

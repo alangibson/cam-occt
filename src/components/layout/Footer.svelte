@@ -94,6 +94,7 @@
                 <option value={SelectionMode.Part}>Part</option>
                 <option value={SelectionMode.Cut}>Cut</option>
                 <option value={SelectionMode.Lead}>Lead</option>
+                <option value={SelectionMode.Kerf}>Kerf</option>
             </select>
         </div>
 

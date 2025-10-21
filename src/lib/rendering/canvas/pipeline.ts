@@ -31,6 +31,7 @@ import { PartRenderer } from './renderers/part';
 import { CutRenderer } from './renderers/cut';
 import { LeadRenderer } from './renderers/lead';
 import { RapidRenderer } from './renderers/rapid';
+import { KerfRenderer } from './renderers/kerf';
 import { ChevronRenderer } from './renderers/chevron';
 import { OverlayRenderer } from './renderers/overlay';
 
@@ -135,6 +136,7 @@ export class RenderingPipeline {
         this.addRenderer(new ChainRenderer(coordinator));
         this.addRenderer(new PartRenderer(coordinator));
         this.addRenderer(new CutRenderer(coordinator));
+        this.addRenderer(new KerfRenderer(coordinator));
         this.addRenderer(new LeadRenderer(coordinator));
         this.addRenderer(new RapidRenderer(coordinator));
         this.addRenderer(new ChevronRenderer(coordinator));

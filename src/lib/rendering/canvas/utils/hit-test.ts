@@ -30,6 +30,7 @@ export enum HitTestType {
     CUT = 'cut',
     RAPID = 'rapid',
     LEAD = 'lead',
+    KERF = 'kerf',
     OVERLAY = 'overlay',
 }
 
@@ -90,6 +91,7 @@ export const DEFAULT_HIT_TEST_PRIORITY: HitTestType[] = [
     HitTestType.CUT,
     HitTestType.OVERLAY,
     HitTestType.LEAD,
+    HitTestType.KERF,
     HitTestType.PART,
     HitTestType.CHAIN,
     HitTestType.SHAPE,

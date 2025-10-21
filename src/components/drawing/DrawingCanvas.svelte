@@ -8,6 +8,7 @@
     import { tessellationStore } from '$lib/stores/tessellation/store';
     import { overlayStore } from '$lib/stores/overlay/store';
     import { rapidStore } from '$lib/stores/rapids/store';
+    import { kerfStore } from '$lib/stores/kerfs/store';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
     import {
         leadStore,
@@ -112,7 +113,7 @@
     $: showCutNormals = cutsState.showCutNormals;
     $: showCutDirections = cutsState.showCutDirections;
     $: showCutPaths = cutsState.showCutPaths;
-    $: showCutter = cutsState.showCutter;
+    $: showCutter = $kerfStore.showCutter;
     $: showCutStartPoints = cutsState.showCutStartPoints;
     $: showCutEndPoints = cutsState.showCutEndPoints;
     $: showCutTangentLines = cutsState.showCutTangentLines;
@@ -121,6 +122,11 @@
     $: highlightedLeadId = leadState.highlightedLeadId;
     $: leadNormals = leadState.showLeadNormals;
     $: leadPaths = leadState.showLeadPaths;
+    $: leadKerfs = leadState.showLeadKerfs;
+    $: kerfs = $kerfStore.kerfs;
+    $: selectedKerfId = $kerfStore.selectedKerfId;
+    $: highlightedKerfId = $kerfStore.highlightedKerfId;
+    $: showKerfPaths = $kerfStore.showKerfPaths;
     $: selectionMode = $settingsStore.settings.selectionMode;
 
     // Compute effective interaction mode based on selection mode and current stage
@@ -136,6 +142,8 @@
             return 'cuts';
         } else if (selectionMode === 'lead') {
             return 'leads';
+        } else if (selectionMode === 'kerf') {
+            return 'kerfs';
         } else {
             // Auto mode: use stage-based interaction
             switch (currentStage) {
@@ -309,6 +317,8 @@
                 highlightedRapidId,
                 selectedLeadId,
                 highlightedLeadId,
+                selectedKerfId,
+                highlightedKerfId,
                 selectedOffsetShape,
                 hoveredPartId,
                 hoveredShape,
@@ -343,6 +353,8 @@
                 showCutTangentLines,
                 showLeadNormals: leadNormals,
                 showLeadPaths: leadPaths,
+                showLeadKerfs: leadKerfs,
+                showKerfPaths,
             },
             respectLayerVisibility: canvasConfig.respectLayerVisibility,
         });
@@ -383,6 +395,13 @@
     $: if (rapids !== undefined) {
         renderingPipeline.updateState({
             rapids: rapids || [],
+        });
+    }
+
+    // Kerfs data changes
+    $: if (kerfs !== undefined) {
+        renderingPipeline.updateState({
+            kerfs: kerfs || [],
         });
     }
 
@@ -545,6 +564,26 @@
                                 selectLead(null); // Deselect if already selected
                             } else {
                                 selectLead(leadId);
+                            }
+                            return;
+                        }
+                        break;
+
+                    case HitTestType.KERF:
+                        // Handle kerf selection
+                        if (interactionMode === 'kerfs') {
+                            const kerfId = hitResult.id;
+                            // Clear other selections
+                            cutStore.selectCut(null);
+                            selectLead(null);
+                            chainStore.selectChain(null);
+                            partStore.selectPart(null);
+                            drawingStore.clearSelection();
+                            // Toggle kerf selection
+                            if (selectedKerfId === kerfId) {
+                                kerfStore.selectKerf(null); // Deselect if already selected
+                            } else {
+                                kerfStore.selectKerf(kerfId);
                             }
                             return;
                         }

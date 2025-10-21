@@ -2,9 +2,14 @@
     import AccordionPanel from './AccordionPanel.svelte';
     import { shapeVisualizationStore } from '$lib/stores/shape/store';
     import { chainStore } from '$lib/stores/chains/store';
-    import { showLeadNormals, showLeadPaths } from '$lib/stores/leads/store';
+    import {
+        showLeadNormals,
+        showLeadPaths,
+        showLeadKerfs,
+    } from '$lib/stores/leads/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
+    import { kerfStore } from '$lib/stores/kerfs/store';
 
     // Subscribe to the stores
     $: shapeVisualization = $shapeVisualizationStore;
@@ -29,7 +34,6 @@
         cutStore.setShowCutNormals(false);
         cutStore.setShowCutDirections(false);
         cutStore.setShowCutPaths(true);
-        cutStore.setShowCutter(false);
         cutStore.setShowCutStartPoints(false);
         cutStore.setShowCutEndPoints(false);
         cutStore.setShowCutTangentLines(false);
@@ -37,10 +41,15 @@
         // Reset lead visualization
         showLeadNormals.set(false);
         showLeadPaths.set(true);
+        showLeadKerfs.set(false);
 
         // Reset rapid visualization
         rapidStore.setShowRapids(true);
         rapidStore.setShowRapidDirections(false);
+
+        // Reset kerf visualization
+        kerfStore.setShowCutter(false);
+        kerfStore.setShowKerfPaths(false);
     }
 </script>
 
@@ -211,16 +220,6 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
-                    checked={cutsVisualization.showCutter}
-                    onchange={(e) =>
-                        cutStore.setShowCutter(e.currentTarget.checked)}
-                    class="show-checkbox"
-                />
-                Cutter
-            </label>
-            <label class="show-checkbox-label">
-                <input
-                    type="checkbox"
                     checked={cutsVisualization.showCutDirections}
                     onchange={(e) =>
                         cutStore.setShowCutDirections(e.currentTarget.checked)}
@@ -287,6 +286,14 @@
             <label class="show-checkbox-label">
                 <input
                     type="checkbox"
+                    bind:checked={$showLeadKerfs}
+                    class="show-checkbox"
+                />
+                Kerf
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
                     bind:checked={$showLeadNormals}
                     class="show-checkbox"
                 />
@@ -322,6 +329,30 @@
                     checked={rapidsVisualization.showRapids}
                     onchange={(e) =>
                         rapidStore.setShowRapids(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Paths
+            </label>
+        </div>
+
+        <div class="show-section">
+            <h3 class="section-header">Kerfs</h3>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={$kerfStore.showCutter}
+                    onchange={(e) =>
+                        kerfStore.setShowCutter(e.currentTarget.checked)}
+                    class="show-checkbox"
+                />
+                Cutter
+            </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={$kerfStore.showKerfPaths}
+                    onchange={(e) =>
+                        kerfStore.setShowKerfPaths(e.currentTarget.checked)}
                     class="show-checkbox"
                 />
                 Paths

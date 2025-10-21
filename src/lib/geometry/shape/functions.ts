@@ -799,10 +799,14 @@ export function getShapeLength(shape: Shape): number {
 
 /**
  * Sample points along an array of shapes at regular distance intervals
+ *
+ * @param shapes - Array of shapes to sample along
+ * @param intervalDistance - The distance between each sample point along the path (in drawing units)
+ * @returns Array of sampled points with their direction vectors at each sample location
  */
-export function sampleShapesAtDistanceIntervals(
+export function sampleShapes(
     shapes: Shape[],
-    intervalDistance: number
+    intervalDistance: number // in drawing units
 ): { point: Point2D; direction: Point2D }[] {
     if (shapes.length === 0 || intervalDistance <= 0) return [];
 

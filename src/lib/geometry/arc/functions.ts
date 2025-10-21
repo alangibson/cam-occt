@@ -8,6 +8,7 @@ import {
 import { FULL_CIRCLE_RADIANS } from '$lib/geometry/circle/constants';
 import {
     DEFAULT_TESSELLATION_SEGMENTS,
+    OCTAGON_SIDES,
     PRECISION_DECIMAL_PLACES,
 } from '$lib/geometry/constants';
 import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line/constants';
@@ -653,4 +654,40 @@ export function createTangentArc(
         endAngle,
         clockwise,
     };
+}
+
+/**
+ * Sample points along an arc geometry for collision testing.
+ *
+ * TODO Should take a distance argument. Don't assume "~2mm segments".
+ *
+ * @param arc - Arc geometry to sample
+ * @returns Array of points along the arc
+ */
+export function sampleArc(arc: Arc): Point2D[] {
+    const points: Point2D[] = [];
+    const arcLength = calculateArcLength(arc);
+    const segments = Math.max(OCTAGON_SIDES, Math.ceil(arcLength / 2)); // ~2mm segments
+
+    for (let i = 0; i <= segments; i++) {
+        const t = i / segments;
+        let angle: number;
+
+        if (arc.clockwise) {
+            let angularSpan = arc.startAngle - arc.endAngle;
+            if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+            angle = arc.startAngle - t * angularSpan;
+        } else {
+            let angularSpan = arc.endAngle - arc.startAngle;
+            if (angularSpan <= 0) angularSpan += 2 * Math.PI;
+            angle = arc.startAngle + t * angularSpan;
+        }
+
+        points.push({
+            x: arc.center.x + arc.radius * Math.cos(angle),
+            y: arc.center.y + arc.radius * Math.sin(angle),
+        });
+    }
+
+    return points;
 }

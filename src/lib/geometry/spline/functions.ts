@@ -22,6 +22,7 @@ import {
     SPLINE_SAMPLE_COUNT,
     SPLINE_TESSELLATION_TOLERANCE,
 } from './constants';
+import { createVerbCurveFromSpline } from './nurbs';
 
 export function getSplineStartPoint(spline: Spline): Point2D {
     // For closed splines, return the first control point directly
@@ -1030,4 +1031,62 @@ export function getSplineTangent(spline: Spline, isStart: boolean): Point2D {
         x: tangentVector[0] / magnitude,
         y: tangentVector[1] / magnitude,
     };
+}
+
+/**
+ * Sample points along a NURBS spline using adaptive tessellation
+ *
+ * TODO this duplicates tessellateSpline since it uses adaptive sampling.
+ * Chang back to unifrom sampling and ray-spline.ts should use tessellateSpline
+ *
+ * @param spline - The spline to sample
+ * @param _sampleCount - Ignored, kept for API compatibility
+ * @returns Array of points along the spline
+ */
+export function sampleSpline(spline: Spline, _sampleCount: number): Point2D[] {
+    const points: Point2D[] = [];
+
+    // Handle degenerate cases
+    if (spline.controlPoints.length === 0) {
+        return points;
+    }
+
+    // For linear splines (degree 1), just sample control points
+    if (spline.degree <= 1) {
+        return spline.controlPoints.slice();
+    }
+
+    // Use fit points if available (these are often more accurate for visualization)
+    if (spline.fitPoints && spline.fitPoints.length >= 2) {
+        return spline.fitPoints.slice();
+    }
+
+    // For 2-point splines, return a line
+    if (spline.controlPoints.length === 2) {
+        return [spline.controlPoints[0], spline.controlPoints[1]];
+    }
+
+    // Use verb.js adaptive tessellation for proper NURBS evaluation
+    try {
+        const curve = createVerbCurveFromSpline(spline);
+
+        // Use adaptive tessellation with tolerance
+        // Tolerance of 0.01 provides good accuracy for ray tracing
+        const tolerance = 0.01;
+        const tessellatedPoints: number[][] = curve.tessellate(tolerance);
+
+        // Convert from [x, y, z] to Point2D
+        for (const point3d of tessellatedPoints) {
+            points.push({ x: point3d[0], y: point3d[1] });
+        }
+
+        return points;
+    } catch (error) {
+        // If verb.js fails, fall back to control points
+        console.warn(
+            'verb.js NURBS tessellation failed, falling back to control points:',
+            error instanceof Error ? error.message : String(error)
+        );
+        return spline.controlPoints.slice();
+    }
 }

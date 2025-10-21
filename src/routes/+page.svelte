@@ -18,6 +18,7 @@
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { ImportUnitSetting } from '$lib/config/settings/enums';
+    import { kerfStore } from '$lib/stores/kerfs/store';
 
     let cleanupAutoSave: (() => void) | null = null;
     let isMenuOpen = false;
@@ -46,6 +47,7 @@
 
         // Clear additional stores that aren't cleared by setDrawing
         prepareStageStore.reset();
+        kerfStore.clearKerfs();
 
         // Reset workflow to import stage
         workflowStore.reset();

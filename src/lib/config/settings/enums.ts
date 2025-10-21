@@ -26,6 +26,7 @@ export enum SelectionMode {
     Part = 'part', // Only parts can be selected/hovered
     Cut = 'cut', // Only cuts can be selected/hovered
     Lead = 'lead',
+    Kerf = 'kerf', // Only kerfs can be selected/hovered
 }
 
 /**
