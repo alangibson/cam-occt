@@ -23,7 +23,7 @@
         highlightRapid,
         clearRapidHighlight,
     } from '$lib/stores/rapids/functions';
-    import { optimizeCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+    import { optimizeCutOrder, generateRapidsFromCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
     import ShowPanel from '$components/panels/ShowPanel.svelte';
     import { applyAutoPreprocessing } from '$lib/preprocessing/auto-preprocess';
@@ -181,27 +181,34 @@
             return;
         }
 
-        // Check if rapid optimization is disabled
-        if (optimizationSettings.rapidOptimizationAlgorithm === 'none') {
-            console.log('Rapid optimization disabled, clearing rapids');
-            rapidStore.clearRapids();
-            return;
-        }
-
         // Create a map of chain IDs to chains for quick lookup
         const chainMap = new SvelteMap<string, Chain>();
         chains.forEach((chain) => {
             chainMap.set(chain.id, chain);
         });
 
-        // Optimize the cut order with cutHolesFirst setting
-        const result = optimizeCutOrder(
-            cuts,
-            chainMap,
-            parts,
-            { x: 0, y: 0 },
-            optimizationSettings.cutHolesFirst
-        );
+        let result;
+
+        // Check if rapid optimization is disabled
+        if (optimizationSettings.rapidOptimizationAlgorithm === 'none') {
+            console.log('Rapid optimization disabled, generating rapids from current cut order');
+            // Generate rapids from existing cut order without optimization
+            result = generateRapidsFromCutOrder(
+                cuts,
+                chainMap,
+                parts,
+                { x: 0, y: 0 }
+            );
+        } else {
+            // Optimize the cut order with cutHolesFirst setting
+            result = optimizeCutOrder(
+                cuts,
+                chainMap,
+                parts,
+                { x: 0, y: 0 },
+                optimizationSettings.cutHolesFirst
+            );
+        }
 
         // Update the cut order in the store with corrected order property
         const orderedCutsWithUpdatedOrder = result.orderedCuts.map(
@@ -216,7 +223,7 @@
         rapidStore.setRapids(result.rapids);
 
         console.log(
-            `Optimized cut order: ${result.orderedCuts.length} cuts, ${result.rapids.length} rapids, total distance: ${result.totalDistance.toFixed(2)} units`
+            `${optimizationSettings.rapidOptimizationAlgorithm === 'none' ? 'Generated' : 'Optimized'} cut order: ${result.orderedCuts.length} cuts, ${result.rapids.length} rapids, total distance: ${result.totalDistance.toFixed(2)} units`
         );
     }
 </script>
@@ -228,6 +235,20 @@
     >
         <svelte:fragment slot="left">
             <LayersPanel />
+
+            {#if parts.length > 0}
+                <PartsPanel {onPartClick} {onPartHover} {onPartHoverEnd} />
+            {/if}
+
+            {#if chains.length > 0}
+                <ChainsPanel {onChainClick} {onChainHover} {onChainHoverEnd} />
+            {/if}
+
+            <div class="arrow-separator">
+                <svg width="100%" height="16" viewBox="0 0 100 16" preserveAspectRatio="none">
+                    <polygon points="50,14 0,0 100,0" fill="#9ca3af" />
+                </svg>
+            </div>
 
             <AccordionPanel title="Cuts ({cuts.length})" isExpanded={false}>
                 <Cuts />
@@ -266,40 +287,6 @@
                     {/if}
                 </div>
             </AccordionPanel>
-
-            {#if parts.length > 0}
-                <PartsPanel {onPartClick} {onPartHover} {onPartHoverEnd} />
-            {/if}
-
-            {#if chains.length > 0}
-                <ChainsPanel {onChainClick} {onChainHover} {onChainHoverEnd} />
-            {/if}
-
-            <AccordionPanel title="Next Stage" isExpanded={true}>
-                <div class="next-stage-content">
-                    <button
-                        class="next-button"
-                        class:disabled={!$workflowStore.canAdvanceTo(
-                            WorkflowStage.SIMULATE
-                        )}
-                        disabled={!$workflowStore.canAdvanceTo(
-                            WorkflowStage.SIMULATE
-                        )}
-                        onclick={handleNext}
-                    >
-                        Next: Simulate Cutting
-                    </button>
-                    <p class="next-help">
-                        {#if !$workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)}
-                            Create at least one operation with cuts to simulate
-                            the cutting process.
-                        {:else}
-                            Review your tool cuts and simulate the cutting
-                            process.
-                        {/if}
-                    </p>
-                </div>
-            </AccordionPanel>
         </svelte:fragment>
 
         <svelte:fragment slot="center">
@@ -328,6 +315,32 @@
             <InspectPanel />
 
             <ShowPanel />
+
+            <AccordionPanel title="Next Stage" isExpanded={true}>
+                <div class="next-stage-content">
+                    <button
+                        class="next-button"
+                        class:disabled={!$workflowStore.canAdvanceTo(
+                            WorkflowStage.SIMULATE
+                        )}
+                        disabled={!$workflowStore.canAdvanceTo(
+                            WorkflowStage.SIMULATE
+                        )}
+                        onclick={handleNext}
+                    >
+                        Next: Simulate Cutting
+                    </button>
+                    <p class="next-help">
+                        {#if !$workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)}
+                            Create at least one operation with cuts to simulate
+                            the cutting process.
+                        {:else}
+                            Review your tool cuts and simulate the cutting
+                            process.
+                        {/if}
+                    </p>
+                </div>
+            </AccordionPanel>
         </svelte:fragment>
     </ThreeColumnLayout>
 </div>
@@ -448,5 +461,9 @@
 
     .add-operation-button:hover {
         background: rgb(0, 83, 135);
+    }
+
+    .arrow-separator {
+        padding: 0;
     }
 </style>

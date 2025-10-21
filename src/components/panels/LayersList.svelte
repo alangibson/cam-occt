@@ -5,34 +5,8 @@
 
     $: drawing = $drawingStore.drawing;
 
-    // Track layer visibility state
-    let layerVisibility: { [layerName: string]: boolean } = {};
-
     // Get unique layers from shapes
     $: layers = drawing ? getUniqueLayers(drawing.shapes) : [];
-
-    // Initialize visibility for new layers
-    $: {
-        layers.forEach((layer) => {
-            if (!(layer.name in layerVisibility)) {
-                layerVisibility[layer.name] = true; // Default to visible
-            }
-        });
-    }
-
-    function toggleLayerVisibility(layerName: string) {
-        layerVisibility[layerName] = !layerVisibility[layerName];
-        // Force reactivity update
-        layerVisibility = { ...layerVisibility };
-
-        // Update the drawing store to hide/show shapes
-        if (drawing) {
-            drawingStore.setLayerVisibility(
-                layerName,
-                layerVisibility[layerName]
-            );
-        }
-    }
 
     function getUniqueLayers(shapes: Shape[]) {
         const layerSet = new SvelteSet<string>();
@@ -69,16 +43,6 @@
         <div class="layers">
             {#each layers as layer (layer.name)}
                 <div class="layer-item">
-                    <button
-                        class="visibility-toggle"
-                        class:visible={layerVisibility[layer.name]}
-                        on:click={() => toggleLayerVisibility(layer.name)}
-                        title={layerVisibility[layer.name]
-                            ? 'Hide layer'
-                            : 'Show layer'}
-                    >
-                        {layerVisibility[layer.name] ? '👁️' : '👁️‍🗨️'}
-                    </button>
                     <span class="layer-name">{layer.name}</span>
                     <span class="layer-count">{layer.shapeCount} shapes</span>
                 </div>
@@ -103,31 +67,6 @@
         align-items: center;
         gap: 0.5rem;
         padding: 0.5rem 0;
-    }
-
-    .visibility-toggle {
-        background: none;
-        border: none;
-        font-size: 1rem;
-        cursor: pointer;
-        padding: 0.25rem;
-        border-radius: 2px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 24px;
-    }
-
-    .visibility-toggle:hover {
-        background-color: #f0f0f0;
-    }
-
-    .visibility-toggle.visible {
-        opacity: 1;
-    }
-
-    .visibility-toggle:not(.visible) {
-        opacity: 0.5;
     }
 
     .layer-name {

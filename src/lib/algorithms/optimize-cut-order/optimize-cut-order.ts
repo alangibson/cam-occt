@@ -488,6 +488,75 @@ function nearestNeighborTSP(
 }
 
 /**
+ * Generate rapids from an ordered list of cuts without optimization.
+ * Creates rapids between consecutive cuts based on their current order.
+ *
+ * @param cuts - Array of cuts in desired order
+ * @param chains - Map of chain IDs to chains
+ * @param parts - Array of detected parts
+ * @param origin - Starting point (usually drawing origin 0,0)
+ * @returns Rapids connecting the cuts in order
+ */
+export function generateRapidsFromCutOrder(
+    cuts: Cut[],
+    chains: Map<string, Chain>,
+    parts: Part[],
+    origin: Point2D = { x: 0, y: 0 }
+): OptimizationResult {
+    if (cuts.length === 0) {
+        return {
+            orderedCuts: [],
+            rapids: [],
+            totalDistance: 0,
+        };
+    }
+
+    // Build chainId -> Part map for O(1) lookups
+    const chainToPartMap = new Map<string, Part>();
+    for (const part of parts) {
+        chainToPartMap.set(part.shell.id, part);
+        for (const hole of part.voids) {
+            chainToPartMap.set(hole.chain.id, part);
+        }
+    }
+
+    function findPartForChain(chainId: string): Part | undefined {
+        return chainToPartMap.get(chainId);
+    }
+
+    // Pre-calculate all cut start/end points
+    const cutPointsCache = buildCutPointsCache(cuts, chains, findPartForChain);
+
+    const rapids: Rapid[] = [];
+    let currentPoint: Point2D = origin;
+    let totalDistance: number = 0;
+
+    // Generate rapids between consecutive cuts in their current order
+    for (const cut of cuts) {
+        const cachedPoints = cutPointsCache.get(cut.id);
+        if (!cachedPoints) continue;
+
+        const distance = calculateDistance(currentPoint, cachedPoints.start);
+
+        rapids.push({
+            id: crypto.randomUUID(),
+            start: currentPoint,
+            end: cachedPoints.start,
+            type: 'rapid',
+        });
+
+        totalDistance += distance;
+        currentPoint = cachedPoints.end;
+    }
+
+    return {
+        orderedCuts: cuts,
+        rapids,
+        totalDistance,
+    };
+}
+
+/**
  * Optimize the cutting order of cuts using a traveling salesman algorithm
  *
  * @param cuts - Array of cuts to optimize
