@@ -6,8 +6,12 @@
 
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { CutLeadResult } from '$lib/stores/operations/interfaces';
+import type { CutLeadResult } from '$lib/cam/pipeline/leads/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
+import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
 
 export interface CutsState {
     cuts: Cut[];
@@ -25,6 +29,13 @@ export interface CutsStore {
     subscribe: (run: (value: CutsState) => void) => () => void;
     addCut: (cut: Cut) => void;
     addCuts: (cuts: Cut[]) => void;
+    addCutsByOperation: (
+        operation: Operation,
+        chains: Chain[],
+        parts: Part[],
+        tools: Tool[],
+        tolerance: number
+    ) => Promise<void>;
     updateCut: (id: string, updates: Partial<Cut>) => void;
     deleteCut: (id: string) => void;
     deleteCutsByOperation: (operationId: string) => void;

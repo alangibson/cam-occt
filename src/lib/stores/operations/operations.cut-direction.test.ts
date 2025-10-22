@@ -7,9 +7,9 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/stores/operations/enums';
+import { KerfCompensation } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Operation } from './interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
 
 // Helper to wait for async cut generation
 async function waitForCuts(expectedCount: number, timeout = 100) {

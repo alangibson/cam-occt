@@ -8,7 +8,7 @@ import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/stores/operations/enums';
+import { KerfCompensation } from '$lib/cam/operation/enums';
 
 // Mock DragEvent for jsdom
 interface MockDragEventInit extends EventInit {

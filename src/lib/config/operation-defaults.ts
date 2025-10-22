@@ -1,5 +1,5 @@
 import { CutDirection } from '$lib/cam/cut/enums';
-import { KerfCompensation } from '$lib/stores/operations/enums';
+import { KerfCompensation } from '$lib/cam/operation/enums';
 
 export const DEFAULT_CUT_DIRECTION = CutDirection.COUNTERCLOCKWISE;
 

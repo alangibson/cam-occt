@@ -5,7 +5,7 @@
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
     import { onMount } from 'svelte';
-    import type { Operation } from '$lib/stores/operations/interfaces';
+    import type { Operation } from '$lib/cam/operation/interface';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { Part } from '$lib/cam/part/interfaces';
     import {

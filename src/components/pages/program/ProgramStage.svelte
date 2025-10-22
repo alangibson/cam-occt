@@ -23,7 +23,10 @@
         highlightRapid,
         clearRapidHighlight,
     } from '$lib/stores/rapids/functions';
-    import { optimizeCutOrder, generateRapidsFromCutOrder } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
+    import {
+        optimizeCutOrder,
+        generateRapidsFromCutOrder,
+    } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
     import ShowPanel from '$components/panels/ShowPanel.svelte';
     import { applyAutoPreprocessing } from '$lib/preprocessing/auto-preprocess';
@@ -191,14 +194,14 @@
 
         // Check if rapid optimization is disabled
         if (optimizationSettings.rapidOptimizationAlgorithm === 'none') {
-            console.log('Rapid optimization disabled, generating rapids from current cut order');
-            // Generate rapids from existing cut order without optimization
-            result = generateRapidsFromCutOrder(
-                cuts,
-                chainMap,
-                parts,
-                { x: 0, y: 0 }
+            console.log(
+                'Rapid optimization disabled, generating rapids from current cut order'
             );
+            // Generate rapids from existing cut order without optimization
+            result = generateRapidsFromCutOrder(cuts, chainMap, parts, {
+                x: 0,
+                y: 0,
+            });
         } else {
             // Optimize the cut order with cutHolesFirst setting
             result = optimizeCutOrder(
@@ -245,7 +248,12 @@
             {/if}
 
             <div class="arrow-separator">
-                <svg width="100%" height="16" viewBox="0 0 100 16" preserveAspectRatio="none">
+                <svg
+                    width="100%"
+                    height="16"
+                    viewBox="0 0 100 16"
+                    preserveAspectRatio="none"
+                >
                     <polygon points="50,14 0,0 100,0" fill="#9ca3af" />
                 </svg>
             </div>

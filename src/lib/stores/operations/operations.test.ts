@@ -2,18 +2,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/stores/operations/enums';
+import { KerfCompensation } from '$lib/cam/operation/enums';
 
 // Now import the modules we need
 import { operationsStore } from './store';
 import { cutStore } from '$lib/stores/cuts/store';
-import type { Operation } from './interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
 
 // Mock the stores before importing the module under test
 vi.mock('../cuts/store', () => ({
     cutStore: {
         deleteCutsByOperation: vi.fn(),
         addCut: vi.fn(),
+        addCutsByOperation: vi.fn(),
         reset: vi.fn(),
         subscribe: vi.fn((callback) => {
             callback({ cuts: [] });

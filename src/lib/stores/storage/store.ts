@@ -36,7 +36,7 @@ import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import { operationsStore } from '$lib/stores/operations/store';
-import type { Operation } from '$lib/stores/operations/interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
 import { cutStore } from '$lib/stores/cuts/store';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import { toolStore, createDefaultTool } from '$lib/stores/tools/store';

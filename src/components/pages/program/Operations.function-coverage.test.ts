@@ -9,7 +9,7 @@ import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/stores/operations/enums';
+import { KerfCompensation } from '$lib/cam/operation/enums';
 import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';

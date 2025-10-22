@@ -9,15 +9,15 @@ import {
     hasValidCachedLeads,
 } from './lead-persistence';
 import type { Cut } from '$lib/cam/cut/interfaces';
-import { calculateCutLeads } from '$lib/stores/operations/functions';
+import { calculateCutLeads } from '$lib/cam/pipeline/leads/lead-orchestration';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/stores/operations/enums';
+import { KerfCompensation } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
-import type { Operation } from '$lib/stores/operations/interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
 import type { LeadResult } from '$lib/cam/lead/interfaces';
 
 // Mock the stores

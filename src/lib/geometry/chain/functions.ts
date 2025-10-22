@@ -48,6 +48,7 @@ import { getLineTangent } from '$lib/geometry/line/functions';
 import { getPolylineTangent } from '$lib/geometry/polyline/functions';
 import { getSplineTangent } from '$lib/geometry/spline/functions';
 import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
+import { CutDirection } from '$lib/cam/cut/enums';
 
 /**
  * Reverses a chain's direction by reversing both the order of shapes
@@ -765,4 +766,21 @@ export function sampleChainAtDistanceInterval(
     intervalDistance: number
 ): { point: Point2D; direction: Point2D }[] {
     return sampleShapes(chain.shapes, intervalDistance);
+}
+
+/**
+ * Get CutDirection from chain's stored clockwise property.
+ * This replaces the unreliable detectCutDirection() calls.
+ *
+ * @param chain - The chain to analyze
+ * @returns The cut direction based on the chain's clockwise property
+ */
+export function getChainCutDirection(chain: Chain | undefined): CutDirection {
+    if (!chain) return CutDirection.NONE;
+
+    return chain.clockwise === true
+        ? CutDirection.CLOCKWISE
+        : chain.clockwise === false
+          ? CutDirection.COUNTERCLOCKWISE
+          : CutDirection.NONE;
 }

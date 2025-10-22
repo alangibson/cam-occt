@@ -1,12 +1,12 @@
 <script lang="ts">
-    import type { Operation } from '$lib/stores/operations/interfaces';
+    import type { Operation } from '$lib/cam/operation/interface';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { Part } from '$lib/cam/part/interfaces';
     import type { Tool } from '$lib/cam/tool/interfaces';
     import { flip } from 'svelte/animate';
     import { CutDirection } from '$lib/cam/cut/enums';
     import { LeadType } from '$lib/cam/lead/enums';
-    import { KerfCompensation } from '$lib/stores/operations/enums';
+    import { KerfCompensation } from '$lib/cam/operation/enums';
     import { getReactiveUnitSymbol } from '$lib/config/units/units';
     import { settingsStore } from '$lib/stores/settings/store';
 

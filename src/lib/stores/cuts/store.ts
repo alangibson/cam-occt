@@ -3,9 +3,14 @@ import type { Shape } from '$lib/geometry/shape/interfaces';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
 import type { CutsState, CutsStore } from './interfaces';
 import { checkProgramStageCompletion } from './functions';
-import type { CutLeadResult } from '$lib/stores/operations/interfaces';
+import type { CutLeadResult } from '$lib/cam/pipeline/leads/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import { kerfStore } from '$lib/stores/kerfs/store';
+import type { Operation } from '$lib/cam/operation/interface';
+import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { Part } from '$lib/cam/part/interfaces';
+import type { Tool } from '$lib/cam/tool/interfaces';
+import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-generation';
 
 function createCutsStore(): CutsStore {
     const initialState: CutsState = {
@@ -61,6 +66,31 @@ function createCutsStore(): CutsStore {
                     cuts: newCuts,
                 };
             });
+        },
+
+        addCutsByOperation: async (
+            operation: Operation,
+            chains: Chain[],
+            parts: Part[],
+            tools: Tool[],
+            tolerance: number
+        ) => {
+            // Remove existing cuts for this operation
+            cutStore.deleteCutsByOperation(operation.id);
+
+            // Generate cuts with leads (async, parallelized)
+            const result = await createCutsFromOperation(
+                operation,
+                chains,
+                parts,
+                tools,
+                tolerance
+            );
+
+            // Store all generated cuts in a single batch update
+            if (result.cuts.length > 0) {
+                cutStore.addCuts(result.cuts);
+            }
         },
 
         updateCut: (id: string, updates: Partial<Cut>) => {

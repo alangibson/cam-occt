@@ -13,7 +13,6 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
@@ -338,6 +337,8 @@ function detectCoincidentPointIssues(chain: Chain): ChainTraversalIssue[] {
 
 /**
  * Gets all significant points from a shape (start, end, center for arcs/circles)
+ * Note: Only includes connectivity-relevant points (start, end, centers).
+ * Does NOT include spline control points as they are internal geometry.
  */
 function getAllShapePoints(shape: Shape): Point2D[] {
     const points: Point2D[] = [];
@@ -366,13 +367,9 @@ function getAllShapePoints(shape: Shape): Point2D[] {
         }
     }
 
-    // For splines, add control points for geometric analysis
-    if (shape.type === 'spline') {
-        const geometry: Spline = shape.geometry as Spline;
-        if (geometry.controlPoints && geometry.controlPoints.length > 0) {
-            points.push(...geometry.controlPoints);
-        }
-    }
+    // Note: Spline control points are NOT included because they are internal
+    // geometry, not connectivity points. Including them causes false positive
+    // "broken_traversal" warnings for long splines with coincident control points.
 
     return points;
 }

@@ -9,7 +9,7 @@ import type { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Part } from '$lib/cam/part/interfaces';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
-import type { Operation } from '$lib/stores/operations/interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 import { Unit } from '$lib/config/units/units';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';

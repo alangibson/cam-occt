@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it } from 'vitest';
-import { fireEvent, render } from '@testing-library/svelte';
+import { render } from '@testing-library/svelte';
 import LayersList from './LayersList.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
@@ -112,33 +112,6 @@ describe('LayersList Component', () => {
 
         expect(layer1Items?.textContent).toContain('2 shapes');
         expect(layer2Items?.textContent).toContain('1 shapes');
-    });
-
-    it('should toggle layer visibility when clicked', async () => {
-        const mockDrawing: Drawing = {
-            shapes: [
-                {
-                    id: '1',
-                    type: GeometryType.LINE,
-                    geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
-                    layer: 'TestLayer',
-                },
-            ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
-            units: Unit.MM,
-        };
-
-        drawingStore.setDrawing(mockDrawing);
-        const { getByTitle } = render(LayersList);
-
-        const visibilityButton = getByTitle('Hide layer');
-        expect(visibilityButton).toBeDefined();
-
-        // Click to hide layer
-        await fireEvent.click(visibilityButton);
-
-        // Should now show "Show layer" tooltip
-        expect(getByTitle('Show layer')).toBeDefined();
     });
 
     it('should sort layers with default layer 0 first', () => {

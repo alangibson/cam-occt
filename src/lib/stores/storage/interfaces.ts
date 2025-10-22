@@ -2,7 +2,7 @@ import type { Rapid } from '$lib/cam/rapid/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Drawing } from '$lib/cam/drawing/interfaces';
 import type { Part, PartDetectionWarning } from '$lib/cam/part/interfaces';
-import type { Operation } from '$lib/stores/operations/interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
 import type {
     TessellationPoint,
     DrawingOverlay,

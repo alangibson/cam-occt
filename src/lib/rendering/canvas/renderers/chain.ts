@@ -156,22 +156,28 @@ export class ChainRenderer extends BaseRenderer {
         ctx.lineJoin = 'round';
         ctx.setLineDash([]);
 
-        // Build a set of chain IDs that are holes in parts
-        const holeChainIds = new Set<string>();
+        // Build a set of chain IDs that are voids or slots in parts
+        const containedChainIds = new Set<string>();
         for (const part of state.parts) {
-            // Add all holes
+            // Add all voids (holes)
             if (part.voids && Array.isArray(part.voids)) {
                 for (const hole of part.voids) {
-                    holeChainIds.add(hole.chain.id);
+                    containedChainIds.add(hole.chain.id);
+                }
+            }
+            // Add all slots
+            if (part.slots && Array.isArray(part.slots)) {
+                for (const slot of part.slots) {
+                    containedChainIds.add(slot.chain.id);
                 }
             }
         }
 
         // Render all chains
         for (const chain of state.chains) {
-            // Use lighter blue for holes, darker blue for shells
-            if (holeChainIds.has(chain.id)) {
-                ctx.strokeStyle = 'rgb(102, 153, 204)'; // Light blue for holes
+            // Use lighter blue for voids and slots, darker blue for shells
+            if (containedChainIds.has(chain.id)) {
+                ctx.strokeStyle = 'rgb(102, 153, 204)'; // Light blue for voids and slots
             } else {
                 ctx.strokeStyle = 'rgb(0, 83, 135)'; // RAL 5005 Signal Blue for shells
             }

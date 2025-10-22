@@ -17,7 +17,7 @@ import { kerfStore } from '$lib/stores/kerfs/store';
 import { OffsetImplementation } from '$lib/config/settings/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/stores/operations/enums';
+import { KerfCompensation } from '$lib/cam/operation/enums';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';

@@ -4,49 +4,7 @@
  * Type definitions for operations and related data structures.
  */
 
-import { CutDirection } from '$lib/cam/cut/enums';
-import type { LeadConfig, Lead } from '$lib/cam/lead/interfaces';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import { KerfCompensation } from '$lib/stores/operations/enums';
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { OptimizeStarts } from '$lib/cam/cut/enums';
-
-export interface OffsetCalculation {
-    offsetShapes: Shape[];
-    originalShapes: Shape[];
-    direction: OffsetDirection;
-    kerfWidth: number;
-    generatedAt: string;
-    version: string;
-    gapFills?: GapFillingResult[];
-}
-
-export interface ChainOffsetResult {
-    offsetShapes: Shape[];
-    originalShapes: Shape[];
-    kerfWidth: number;
-    gapFills?: GapFillingResult[];
-    warnings?: string[];
-}
-
-export interface Operation {
-    id: string;
-    name: string;
-    toolId: string | null; // Reference to tool from tool store
-    targetType: 'parts' | 'chains';
-    targetIds: string[]; // IDs of parts or chains this operation applies to
-    enabled: boolean;
-    order: number; // Execution order
-    cutDirection: CutDirection; // Preferred cut direction
-    leadInConfig: LeadConfig; // Lead-in configuration
-    leadOutConfig: LeadConfig; // Lead-out configuration
-    kerfCompensation?: KerfCompensation; // Kerf compensation type (none, inner, outer, part)
-    holeUnderspeedEnabled?: boolean; // Enable velocity reduction for holes
-    holeUnderspeedPercent?: number; // Velocity percentage for holes (10-100)
-    optimizeStarts?: OptimizeStarts; // Optimize start points (none, midpoint)
-}
+import type { Operation } from '$lib/cam/operation/interface';
 
 export interface OperationsStore {
     subscribe: (run: (value: Operation[]) => void) => () => void;
@@ -61,29 +19,5 @@ export interface OperationsStore {
     getAssignedTargets: (excludeOperationId?: string) => {
         chains: Set<string>;
         parts: Set<string>;
-    };
-}
-export interface CutGenerationResult {
-    cuts: Cut[];
-    warnings: {
-        chainId: string;
-        operationId: string;
-        offsetWarnings: string[];
-        clearExistingWarnings: boolean;
-    }[];
-}
-
-/**
- * Calculated lead geometry data structure
- */
-
-export interface CutLeadResult {
-    leadIn?: Lead;
-    leadOut?: Lead;
-    validation?: {
-        isValid: boolean;
-        warnings: string[];
-        errors: string[];
-        severity: 'info' | 'warning' | 'error';
     };
 }

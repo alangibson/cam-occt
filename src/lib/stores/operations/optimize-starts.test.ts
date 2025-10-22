@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { createCutsFromOperation } from './functions';
-import type { Operation } from './interfaces';
+import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-generation';
+import type { Operation } from '$lib/cam/operation/interface';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
@@ -8,7 +8,7 @@ import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import { KerfCompensation } from '$lib/stores/operations/enums';
+import { KerfCompensation } from '$lib/cam/operation/enums';
 
 describe('Optimize Starts for Operations', () => {
     let mockTool: Tool;

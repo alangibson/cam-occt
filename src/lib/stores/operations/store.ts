@@ -7,8 +7,8 @@ import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { chainStore } from '$lib/stores/chains/store';
 import { toolStore } from '$lib/stores/tools/store';
 import type { Part } from '$lib/cam/part/interfaces';
-import type { Operation, OperationsStore } from './interfaces';
-import { createCutsFromOperation } from './functions';
+import type { OperationsStore } from './interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
 
 function createOperationsStore(): OperationsStore {
     const { subscribe, set, update } = writable<Operation[]>([]);
@@ -17,6 +17,7 @@ function createOperationsStore(): OperationsStore {
         subscribe,
 
         addOperation: (operation: Omit<Operation, 'id'>) => {
+            // Create new Operation
             const newOperation: Operation = {
                 ...operation,
                 id: crypto.randomUUID(),
@@ -25,7 +26,8 @@ function createOperationsStore(): OperationsStore {
             // Add operation to store synchronously
             update((operations) => [...operations, newOperation]);
 
-            // Generate cuts for the new operation if it has targets and is enabled
+            // Generate cuts for the new operation if it has targets and
+            // is enabled
             if (newOperation.enabled && newOperation.targetIds.length > 0) {
                 operationsStore.applyOperation(newOperation.id);
             }
@@ -59,11 +61,14 @@ function createOperationsStore(): OperationsStore {
 
         duplicateOperation: (id: string) => {
             const operations = get({ subscribe });
+
+            // Look up Operation by id
             const operation: Operation | undefined = operations.find(
                 (op) => op.id === id
             );
             if (!operation) return;
 
+            // Create clone Operation
             const newOperation: Operation = {
                 ...operation,
                 id: crypto.randomUUID(),
@@ -74,28 +79,29 @@ function createOperationsStore(): OperationsStore {
             // Add duplicated operation to store synchronously
             update((ops) => [...ops, newOperation]);
 
-            // Generate cuts for the duplicated operation if it has targets and is enabled
+            // Generate cuts for the duplicated operation if it has
+            // targets and is enabled
             if (newOperation.enabled && newOperation.targetIds.length > 0) {
                 operationsStore.applyOperation(newOperation.id);
             }
         },
 
         applyOperation: async (operationId: string) => {
+            // Get required state data
             const operations = get({ subscribe });
+            const chainsState = get(chainStore);
+            const partsState: { parts: Part[] } = get(partStore);
+            const tools = get(toolStore);
+            const cutsState: { cuts: Cut[] } = get(cutStore);
+
+            // Look up Operation by id
             const operation: Operation | undefined = operations.find(
                 (op) => op.id === operationId
             );
+
             if (operation && operation.enabled) {
-                // Remove existing cuts for this operation
-                cutStore.deleteCutsByOperation(operation.id);
-
-                // Get required state data
-                const chainsState = get(chainStore);
-                const partsState: { parts: Part[] } = get(partStore);
-                const tools = get(toolStore);
-
-                // Generate cuts with leads (async, parallelized)
-                const result = await createCutsFromOperation(
+                // Generate and add cuts for this operation
+                await cutStore.addCutsByOperation(
                     operation,
                     chainsState.chains,
                     partsState.parts,
@@ -103,13 +109,7 @@ function createOperationsStore(): OperationsStore {
                     chainsState.tolerance
                 );
 
-                // Store all generated cuts in a single batch update
-                if (result.cuts.length > 0) {
-                    cutStore.addCuts(result.cuts);
-                }
-
                 // Check if any cuts exist and mark program stage as complete
-                const cutsState: { cuts: Cut[] } = get(cutStore);
                 if (cutsState.cuts.length > 0) {
                     workflowStore.completeStage(WorkflowStage.PROGRAM);
                 }
@@ -125,7 +125,6 @@ function createOperationsStore(): OperationsStore {
                 const enabledOperations: Operation[] = operations
                     .filter((op) => op.enabled)
                     .sort((a, b) => a.order - b.order);
-
                 enabledOperations.forEach((operation) => {
                     operationsStore.applyOperation(operation.id);
                 });

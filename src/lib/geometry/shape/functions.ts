@@ -91,6 +91,16 @@ import { generateId } from '$lib/domain/id';
 import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
 import { HIGH_RESOLUTION_CIRCLE_SEGMENTS, MAX_ARC_SEGMENTS } from './constants';
 
+/**
+ * TODO get rid of this giant function. Break it down by use case.
+ *
+ * Converts a shape to an array of Point2D coordinates, with behavior
+ * controlled by options.
+ *
+ * Supports different modes (tessellation, bounds, chain detection,
+ * direction analysis) and resolutions (low, medium, high, adaptive)
+ * to optimize point generation for specific use cases.
+ */
 export function getShapePoints(
     shape: Shape,
     optionsOrForNativeShapes: GetShapePointsOptions | boolean = {}
@@ -379,21 +389,34 @@ export function getShapePoints(
             const spline: Spline = shape.geometry as Spline;
 
             if (mode === 'CHAIN_DETECTION') {
-                // For chain detection, start with fit points or control points as fallback
-                const points: Point2D[] = [];
-
-                // Use fit points if available (most accurate representation)
-                if (spline.fitPoints && spline.fitPoints.length > 0) {
-                    points.push(...spline.fitPoints);
-                } else if (
-                    spline.controlPoints &&
-                    spline.controlPoints.length > 0
-                ) {
-                    // Fallback to control points if no fit points
-                    points.push(...spline.controlPoints);
+                // For chain detection, only return start and end points (connectivity points)
+                // NOT interior fit/control points, as they are internal geometry
+                // Using all points causes disconnected splines to be incorrectly joined
+                // into the same chain if any interior points coincide
+                try {
+                    const start = getSplineStartPoint(spline);
+                    const end = getSplineEndPoint(spline);
+                    return [start, end];
+                } catch {
+                    // Fallback to fit points or control points if NURBS evaluation fails
+                    if (spline.fitPoints && spline.fitPoints.length >= 2) {
+                        return [
+                            spline.fitPoints[0],
+                            spline.fitPoints[spline.fitPoints.length - 1],
+                        ];
+                    } else if (
+                        spline.controlPoints &&
+                        spline.controlPoints.length >= 2
+                    ) {
+                        return [
+                            spline.controlPoints[0],
+                            spline.controlPoints[
+                                spline.controlPoints.length - 1
+                            ],
+                        ];
+                    }
+                    return [];
                 }
-
-                return [...points]; // Copy to prevent mutation
             }
 
             try {

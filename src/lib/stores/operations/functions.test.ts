@@ -1,27 +1,29 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
+import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-generation';
+import { generateCutsForChainsWithOperation } from '$lib/cam/pipeline/operations/chain-operations';
+import { generateCutsForPartsWithOperation } from '$lib/cam/pipeline/operations/part-operations';
+import { calculateChainOffset } from '$lib/cam/pipeline/operations/offset-calculation';
 import {
-    calculateChainOffset,
     calculateOperationLeads,
     calculateCutLeads,
-    createCutChain,
-    createCutsFromOperation,
-    generateCutsForChainWithOperation,
-    generateCutsForPartTargetWithOperation,
+} from '$lib/cam/pipeline/leads/lead-orchestration';
+import { createCutChain } from '$lib/cam/pipeline/chains/functions';
+import {
     getChainCutDirection,
-} from './functions';
+    reverseChain,
+} from '$lib/geometry/chain/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { KerfCompensation } from '$lib/stores/operations/enums';
+import { KerfCompensation } from '$lib/cam/operation/enums';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Operation } from './interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import { reverseChain } from '$lib/geometry/chain/functions';
 import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
@@ -32,6 +34,14 @@ import {
 // Mock dependencies
 vi.mock('$lib/geometry/chain/functions', () => ({
     reverseChain: vi.fn(),
+    getChainCutDirection: vi.fn((chain) => {
+        if (!chain) return CutDirection.NONE;
+        return chain.clockwise === true
+            ? CutDirection.CLOCKWISE
+            : chain.clockwise === false
+              ? CutDirection.COUNTERCLOCKWISE
+              : CutDirection.NONE;
+    }),
     getChainStartPoint: vi.fn(
         (chain) => chain.shapes[0]?.geometry?.start || { x: 0, y: 0 }
     ),
@@ -518,7 +528,7 @@ describe('Operations Functions', () => {
 
     describe('generateCutsForChainWithOperation', () => {
         it('should return empty arrays when chain not found', async () => {
-            const result = await generateCutsForChainWithOperation(
+            const result = await generateCutsForChainsWithOperation(
                 mockOperation,
                 'unknown-chain',
                 0,
@@ -562,7 +572,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await generateCutsForChainWithOperation(
+            const result = await generateCutsForChainsWithOperation(
                 operationWithKerf,
                 'chain-1',
                 0,
@@ -606,7 +616,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await generateCutsForChainWithOperation(
+            const result = await generateCutsForChainsWithOperation(
                 operationWithKerf,
                 'chain-1',
                 0,
@@ -628,7 +638,7 @@ describe('Operations Functions', () => {
                 kerfCompensation: KerfCompensation.PART,
             };
 
-            const result = await generateCutsForChainWithOperation(
+            const result = await generateCutsForChainsWithOperation(
                 operationWithKerf,
                 'chain-1',
                 0,
@@ -645,7 +655,7 @@ describe('Operations Functions', () => {
 
     describe('generateCutsForPartTargetWithOperation', () => {
         it('should return empty arrays when part not found', async () => {
-            const result = await generateCutsForPartTargetWithOperation(
+            const result = await generateCutsForPartsWithOperation(
                 mockOperation,
                 'unknown-part',
                 0,
@@ -699,7 +709,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await generateCutsForPartTargetWithOperation(
+            const result = await generateCutsForPartsWithOperation(
                 operationWithKerf,
                 'part-1',
                 0,
@@ -760,7 +770,7 @@ describe('Operations Functions', () => {
                 },
             ];
 
-            const result = await generateCutsForPartTargetWithOperation(
+            const result = await generateCutsForPartsWithOperation(
                 mockOperation,
                 'part-1',
                 0,
@@ -799,7 +809,7 @@ describe('Operations Functions', () => {
                 },
             ];
 
-            const result = await generateCutsForPartTargetWithOperation(
+            const result = await generateCutsForPartsWithOperation(
                 mockOperation,
                 'part-1',
                 0,
@@ -871,7 +881,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await generateCutsForPartTargetWithOperation(
+            const result = await generateCutsForPartsWithOperation(
                 operationWithPartKerf,
                 'part-1',
                 0,
@@ -945,7 +955,7 @@ describe('Operations Functions', () => {
                 errors: [],
             });
 
-            const result = await generateCutsForPartTargetWithOperation(
+            const result = await generateCutsForPartsWithOperation(
                 operationWithInnerKerf,
                 'part-1',
                 0,
@@ -999,7 +1009,7 @@ describe('Operations Functions', () => {
                 },
             ];
 
-            const result = await generateCutsForPartTargetWithOperation(
+            const result = await generateCutsForPartsWithOperation(
                 mockOperation,
                 'part-1',
                 0,
@@ -1055,7 +1065,7 @@ describe('Operations Functions', () => {
                 },
             ];
 
-            const result = await generateCutsForPartTargetWithOperation(
+            const result = await generateCutsForPartsWithOperation(
                 mockOperation,
                 'part-1',
                 0,

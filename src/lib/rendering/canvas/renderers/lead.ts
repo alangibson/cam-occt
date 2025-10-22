@@ -19,7 +19,7 @@ import {
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
 import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Operation } from '$lib/stores/operations/interfaces';
+import type { Operation } from '$lib/cam/operation/interface';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { LeadConfig, LeadResult } from '$lib/cam/lead/interfaces';
 import { LeadType } from '$lib/cam/lead/enums';
