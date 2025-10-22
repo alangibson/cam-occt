@@ -131,9 +131,7 @@ export class CutRenderer extends BaseRenderer {
                 return;
             }
 
-            const isCutSelected =
-                state.selection.selectedCutId &&
-                state.selection.selectedCutId === cut.id;
+            const isCutSelected = state.selection.selectedCutIds.has(cut.id);
             const isCutHighlighted =
                 state.selection.highlightedCutId &&
                 state.selection.highlightedCutId === cut.id;

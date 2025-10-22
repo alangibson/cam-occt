@@ -33,16 +33,16 @@ export interface SelectionState {
     selectedShapes: Set<string>;
     hoveredShape: string | null;
     selectedOffsetShape: Shape | null;
-    selectedChainId: string | null;
+    selectedChainIds: Set<string>;
     highlightedChainId: string | null;
-    selectedPartId: string | null;
+    selectedPartIds: Set<string>;
     highlightedPartId: string | null;
     hoveredPartId: string | null;
-    selectedCutId: string | null;
+    selectedCutIds: Set<string>;
     highlightedCutId: string | null;
-    selectedRapidId: string | null;
+    selectedRapidIds: Set<string>;
     highlightedRapidId: string | null;
-    selectedLeadId?: string | null;
+    selectedLeadIds?: Set<string>;
     highlightedLeadId?: string | null;
     selectedKerfId?: string | null;
     highlightedKerfId?: string | null;
@@ -163,7 +163,8 @@ export interface RenderState {
         | 'part'
         | 'cut'
         | 'lead'
-        | 'kerf';
+        | 'kerf'
+        | 'rapid';
 }
 
 /**
@@ -183,14 +184,14 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             selectedShapes: new Set(),
             hoveredShape: null,
             selectedOffsetShape: null,
-            selectedChainId: null,
+            selectedChainIds: new Set(),
             highlightedChainId: null,
-            selectedPartId: null,
+            selectedPartIds: new Set(),
             highlightedPartId: null,
             hoveredPartId: null,
-            selectedCutId: null,
+            selectedCutIds: new Set(),
             highlightedCutId: null,
-            selectedRapidId: null,
+            selectedRapidIds: new Set(),
             highlightedRapidId: null,
         },
         hover: {
@@ -282,6 +283,10 @@ export function cloneRenderState(state: RenderState): RenderState {
         selection: {
             ...state.selection,
             selectedShapes: new Set(state.selection.selectedShapes),
+            selectedChainIds: new Set(state.selection.selectedChainIds),
+            selectedPartIds: new Set(state.selection.selectedPartIds),
+            selectedCutIds: new Set(state.selection.selectedCutIds),
+            selectedRapidIds: new Set(state.selection.selectedRapidIds),
         },
         hover: {
             ...state.hover,
@@ -299,7 +304,7 @@ export function cloneRenderState(state: RenderState): RenderState {
         cutsState: state.cutsState
             ? {
                   cuts: [...state.cutsState.cuts],
-                  selectedCutId: state.cutsState.selectedCutId,
+                  selectedCutIds: new Set(state.cutsState.selectedCutIds),
                   highlightedCutId: state.cutsState.highlightedCutId,
                   showCutNormals: state.cutsState.showCutNormals,
                   showCutDirections: state.cutsState.showCutDirections,

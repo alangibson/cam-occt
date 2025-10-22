@@ -15,7 +15,7 @@ import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-genera
 function createCutsStore(): CutsStore {
     const initialState: CutsState = {
         cuts: [],
-        selectedCutId: null,
+        selectedCutIds: new Set(),
         highlightedCutId: null,
         showCutNormals: false,
         showCutDirections: false,
@@ -114,11 +114,13 @@ function createCutsStore(): CutsStore {
                 // Check workflow completion
                 setTimeout(() => checkProgramStageCompletion(newCuts), 0);
 
+                const selectedCutIds = new Set(state.selectedCutIds);
+                selectedCutIds.delete(id);
+
                 return {
                     ...state,
                     cuts: newCuts,
-                    selectedCutId:
-                        state.selectedCutId === id ? null : state.selectedCutId,
+                    selectedCutIds,
                     highlightedCutId:
                         state.highlightedCutId === id
                             ? null
@@ -146,16 +148,16 @@ function createCutsStore(): CutsStore {
                 // Check workflow completion
                 setTimeout(() => checkProgramStageCompletion(newCuts), 0);
 
+                // Remove deleted cuts from selection
+                const selectedCutIds = new Set(state.selectedCutIds);
+                cutsToDelete.forEach((cut) => {
+                    selectedCutIds.delete(cut.id);
+                });
+
                 return {
                     ...state,
                     cuts: newCuts,
-                    selectedCutId: state.cuts.some(
-                        (c) =>
-                            c.operationId === operationId &&
-                            c.id === state.selectedCutId
-                    )
-                        ? null
-                        : state.selectedCutId,
+                    selectedCutIds,
                     highlightedCutId: state.cuts.some(
                         (c) =>
                             c.operationId === operationId &&
@@ -167,11 +169,50 @@ function createCutsStore(): CutsStore {
             });
         },
 
-        selectCut: (cutId: string | null) => {
-            update((state) => ({
-                ...state,
-                selectedCutId: cutId,
-            }));
+        selectCut: (cutId: string | null, multi = false) => {
+            update((state) => {
+                if (cutId === null) {
+                    return {
+                        ...state,
+                        selectedCutIds: new Set(),
+                    };
+                }
+
+                const selectedCutIds = new Set(
+                    multi ? state.selectedCutIds : []
+                );
+                selectedCutIds.add(cutId);
+                return {
+                    ...state,
+                    selectedCutIds,
+                };
+            });
+        },
+
+        deselectCut: (cutId: string) => {
+            update((state) => {
+                const selectedCutIds = new Set(state.selectedCutIds);
+                selectedCutIds.delete(cutId);
+                return {
+                    ...state,
+                    selectedCutIds,
+                };
+            });
+        },
+
+        toggleCutSelection: (cutId: string) => {
+            update((state) => {
+                const selectedCutIds = new Set(state.selectedCutIds);
+                if (selectedCutIds.has(cutId)) {
+                    selectedCutIds.delete(cutId);
+                } else {
+                    selectedCutIds.add(cutId);
+                }
+                return {
+                    ...state,
+                    selectedCutIds,
+                };
+            });
         },
 
         highlightCut: (cutId: string | null) => {

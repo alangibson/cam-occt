@@ -303,6 +303,7 @@ describe('findPartContainingChain', () => {
 vi.mock('$lib/stores/chains/store', () => ({
     chainStore: {
         selectChain: vi.fn(),
+        deselectChain: vi.fn(),
         highlightChain: vi.fn(),
         clearChainHighlight: vi.fn(),
     },
@@ -311,6 +312,7 @@ vi.mock('$lib/stores/chains/store', () => ({
 vi.mock('$lib/stores/parts/store', () => ({
     partStore: {
         selectPart: vi.fn(),
+        deselectPart: vi.fn(),
         hoverPart: vi.fn(),
         clearPartHover: vi.fn(),
     },
@@ -322,22 +324,28 @@ describe('Chain interaction handlers', () => {
     });
 
     describe('handleChainClick', () => {
-        it('should deselect chain when already selected', async () => {
-            handleChainClick('chain-1', 'chain-1');
+        it('should not modify selection when chain is already selected', async () => {
+            handleChainClick('chain-1', new Set(['chain-1']));
 
-            expect(chainStore.selectChain).toHaveBeenCalledWith(null);
+            // Selection is handled by DrawingCanvas, so no store calls expected
+            expect(chainStore.deselectChain).not.toHaveBeenCalled();
+            expect(chainStore.selectChain).not.toHaveBeenCalled();
         });
 
-        it('should select chain when different chain is selected', async () => {
-            handleChainClick('chain-2', 'chain-1');
+        it('should not modify selection when different chain is selected', async () => {
+            handleChainClick('chain-2', new Set(['chain-1']));
 
-            expect(chainStore.selectChain).toHaveBeenCalledWith('chain-2');
+            // Selection is handled by DrawingCanvas, so no store calls expected
+            expect(chainStore.deselectChain).not.toHaveBeenCalled();
+            expect(chainStore.selectChain).not.toHaveBeenCalled();
         });
 
-        it('should select chain when no chain is selected', async () => {
-            handleChainClick('chain-1', null);
+        it('should not modify selection when no chain is selected', async () => {
+            handleChainClick('chain-1', new Set());
 
-            expect(chainStore.selectChain).toHaveBeenCalledWith('chain-1');
+            // Selection is handled by DrawingCanvas, so no store calls expected
+            expect(chainStore.deselectChain).not.toHaveBeenCalled();
+            expect(chainStore.selectChain).not.toHaveBeenCalled();
         });
     });
 
@@ -364,22 +372,28 @@ describe('Part interaction handlers', () => {
     });
 
     describe('handlePartClick', () => {
-        it('should deselect part when already selected', async () => {
-            handlePartClick('part-1', 'part-1');
+        it('should not modify selection when part is already selected', async () => {
+            handlePartClick('part-1', new Set(['part-1']));
 
-            expect(partStore.selectPart).toHaveBeenCalledWith(null);
+            // Selection is handled by DrawingCanvas, so no store calls expected
+            expect(partStore.deselectPart).not.toHaveBeenCalled();
+            expect(partStore.selectPart).not.toHaveBeenCalled();
         });
 
-        it('should select part when different part is selected', async () => {
-            handlePartClick('part-2', 'part-1');
+        it('should not modify selection when different part is selected', async () => {
+            handlePartClick('part-2', new Set(['part-1']));
 
-            expect(partStore.selectPart).toHaveBeenCalledWith('part-2');
+            // Selection is handled by DrawingCanvas, so no store calls expected
+            expect(partStore.deselectPart).not.toHaveBeenCalled();
+            expect(partStore.selectPart).not.toHaveBeenCalled();
         });
 
-        it('should select part when no part is selected', async () => {
-            handlePartClick('part-1', null);
+        it('should not modify selection when no part is selected', async () => {
+            handlePartClick('part-1', new Set());
 
-            expect(partStore.selectPart).toHaveBeenCalledWith('part-1');
+            // Selection is handled by DrawingCanvas, so no store calls expected
+            expect(partStore.deselectPart).not.toHaveBeenCalled();
+            expect(partStore.selectPart).not.toHaveBeenCalled();
         });
     });
 

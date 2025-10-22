@@ -32,7 +32,7 @@ import {
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 
 // Constants for lead rendering
-const HIT_TEST_TOLERANCE = 5;
+const HIT_TEST_TOLERANCE = 5; // Same as chains for consistent hit detection
 const NORMAL_INDICATOR_RADIUS = 3; // Radius of the circle at normal line start
 const DEFAULT_NORMAL_LINE_LENGTH = 30; // Length in screen pixels
 const LEAD_NORMAL_LINE_WIDTH = 1; // Width in screen pixels
@@ -107,7 +107,8 @@ export class LeadRenderer extends BaseRenderer {
             const points = convertLeadGeometryToPoints(leadResult.leadIn);
             if (points.length > 1) {
                 const leadId = `${cut.id}-leadIn`;
-                const isSelected = state.selection?.selectedLeadId === leadId;
+                const isSelected =
+                    state.selection?.selectedLeadIds?.has(leadId) || false;
                 const isHighlighted =
                     state.selection?.highlightedLeadId === leadId;
                 const color =
@@ -122,7 +123,8 @@ export class LeadRenderer extends BaseRenderer {
             const points = convertLeadGeometryToPoints(leadResult.leadOut);
             if (points.length > 1) {
                 const leadId = `${cut.id}-leadOut`;
-                const isSelected = state.selection?.selectedLeadId === leadId;
+                const isSelected =
+                    state.selection?.selectedLeadIds?.has(leadId) || false;
                 const isHighlighted =
                     state.selection?.highlightedLeadId === leadId;
                 const color =
@@ -299,6 +301,11 @@ export class LeadRenderer extends BaseRenderer {
             return null;
         }
 
+        const tolerance =
+            state.transform.coordinator.screenToWorldDistance(
+                HIT_TEST_TOLERANCE
+            );
+
         // Test for hits on lead geometry
         for (const cut of state.cuts) {
             const operation = state.operations.find(
@@ -309,14 +316,23 @@ export class LeadRenderer extends BaseRenderer {
             const leadResult = this.calculateCutLeads(cut, operation, state);
             if (!leadResult) continue;
 
-            // Test lead-in
-            if (leadResult.leadIn) {
-                const points = convertLeadGeometryToPoints(leadResult.leadIn);
-                if (this.isPointNearLeadGeometry(point, points, state)) {
+            // Test lead-in (leads are always Arc geometry)
+            if (leadResult.leadIn?.geometry) {
+                const arc = leadResult.leadIn.geometry;
+                const distance = HitTestUtils.distanceToArc(
+                    point,
+                    arc.center,
+                    arc.radius,
+                    arc.startAngle,
+                    arc.endAngle,
+                    arc.clockwise
+                );
+
+                if (distance <= tolerance) {
                     return {
                         type: HitTestType.LEAD,
                         id: `${cut.id}-leadIn`,
-                        distance: 0,
+                        distance,
                         point: point,
                         metadata: {
                             cutId: cut.id,
@@ -326,14 +342,23 @@ export class LeadRenderer extends BaseRenderer {
                 }
             }
 
-            // Test lead-out
-            if (leadResult.leadOut) {
-                const points = convertLeadGeometryToPoints(leadResult.leadOut);
-                if (this.isPointNearLeadGeometry(point, points, state)) {
+            // Test lead-out (leads are always Arc geometry)
+            if (leadResult.leadOut?.geometry) {
+                const arc = leadResult.leadOut.geometry;
+                const distance = HitTestUtils.distanceToArc(
+                    point,
+                    arc.center,
+                    arc.radius,
+                    arc.startAngle,
+                    arc.endAngle,
+                    arc.clockwise
+                );
+
+                if (distance <= tolerance) {
                     return {
                         type: HitTestType.LEAD,
                         id: `${cut.id}-leadOut`,
-                        distance: 0,
+                        distance,
                         point: point,
                         metadata: {
                             cutId: cut.id,
@@ -345,34 +370,6 @@ export class LeadRenderer extends BaseRenderer {
         }
 
         return null;
-    }
-
-    private isPointNearLeadGeometry(
-        point: Point2D,
-        points: Point2D[],
-        state: RenderState
-    ): boolean {
-        if (points.length < 2) return false;
-
-        const tolerance =
-            state.transform.coordinator.screenToWorldDistance(
-                HIT_TEST_TOLERANCE
-            );
-
-        // Test against each line segment in the lead geometry
-        for (let i = 0; i < points.length - 1; i++) {
-            if (
-                HitTestUtils.distanceToLineSegment(
-                    point,
-                    points[i],
-                    points[i + 1]
-                ) <= tolerance
-            ) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     private drawLeadNormals(

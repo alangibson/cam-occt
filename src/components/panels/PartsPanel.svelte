@@ -9,7 +9,7 @@
 
     // Reactive state
     $: detectedParts = $partStore.parts;
-    $: selectedPartId = $partStore.selectedPartId;
+    $: selectedPartIds = $partStore.selectedPartIds;
     $: hoveredPartId = $partStore.hoveredPartId;
 </script>
 
@@ -18,16 +18,33 @@
         <div class="parts-list">
             {#each detectedParts as part, index (part.id)}
                 <div
-                    class="part-item {selectedPartId === part.id
+                    class="part-item {selectedPartIds.has(part.id)
                         ? 'selected'
                         : ''} {hoveredPartId === part.id ? 'hovered' : ''}"
                     role="button"
                     tabindex="0"
-                    onclick={() => onPartClick && onPartClick(part.id)}
-                    onkeydown={(e) =>
-                        e.key === 'Enter' &&
-                        onPartClick &&
-                        onPartClick(part.id)}
+                    onclick={(e) => {
+                        if (onPartClick) {
+                            // Check for Ctrl/Cmd key for multi-select
+                            if (e.ctrlKey || e.metaKey) {
+                                partStore.togglePartSelection(part.id);
+                            } else {
+                                partStore.selectPart(part.id, false);
+                            }
+                            onPartClick(part.id);
+                        }
+                    }}
+                    onkeydown={(e) => {
+                        if (e.key === 'Enter' && onPartClick) {
+                            // Check for Ctrl/Cmd key for multi-select
+                            if (e.ctrlKey || e.metaKey) {
+                                partStore.togglePartSelection(part.id);
+                            } else {
+                                partStore.selectPart(part.id, false);
+                            }
+                            onPartClick(part.id);
+                        }
+                    }}
                     onmouseenter={() => onPartHover && onPartHover(part.id)}
                     onmouseleave={() => onPartHoverEnd && onPartHoverEnd()}
                 >

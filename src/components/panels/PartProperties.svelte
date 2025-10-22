@@ -6,9 +6,14 @@
 
     // Reactive part data
     $: detectedParts = $partStore.parts;
-    $: selectedPartId = $partStore.selectedPartId;
-    $: selectedPart = selectedPartId
-        ? detectedParts.find((part) => part.id === selectedPartId)
+    $: selectedPartIds = $partStore.selectedPartIds;
+    $: selectedPartId =
+        selectedPartIds.size === 1 ? Array.from(selectedPartIds)[0] : null;
+    $: highlightedPartId = $partStore.highlightedPartId;
+    $: hoveredPartId = $partStore.hoveredPartId;
+    $: activePartId = selectedPartId || highlightedPartId || hoveredPartId;
+    $: selectedPart = activePartId
+        ? detectedParts.find((part) => part.id === activePartId)
         : null;
     $: algorithmParams = $prepareStageStore.algorithmParams;
 

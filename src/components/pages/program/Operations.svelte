@@ -93,28 +93,34 @@
         let targetType: 'parts' | 'chains' = 'parts';
         let targetIds: string[] = [];
 
-        // Check if a part is selected
-        const selectedPartId = $partStore.selectedPartId;
-        if (selectedPartId) {
+        // Priority 1: Check if a single part is highlighted
+        const highlightedPartId = $partStore.highlightedPartId;
+        if (highlightedPartId) {
             targetType = 'parts';
-            targetIds = [selectedPartId];
+            targetIds = [highlightedPartId];
         }
-        // Check if a chain is selected
-        else {
-            const selectedChainId = $chainStore.selectedChainId;
-            if (selectedChainId) {
-                targetType = 'chains';
-                targetIds = [selectedChainId];
+        // Priority 2: For parts - if parts are selected, use those; otherwise use all parts
+        else if (parts.length > 0) {
+            const selectedPartIds = $partStore.selectedPartIds;
+            targetType = 'parts';
+            if (selectedPartIds.size > 0) {
+                targetIds = Array.from(selectedPartIds);
+            } else {
+                // Auto-apply to all parts when no parts are selected
+                targetIds = parts.map((p) => p.id);
             }
-            // If nothing is selected and this is the first operation, default to all parts or all chains
-            else if (operations.length === 0) {
-                if (parts.length > 0) {
-                    targetType = 'parts';
-                    targetIds = parts.map((p) => p.id);
-                } else if (chains.length > 0) {
-                    targetType = 'chains';
-                    targetIds = chains.map((c) => c.id);
-                }
+        }
+        // Priority 3: If no parts, check chains (keep existing chain behavior)
+        else {
+            const selectedChainIds = $chainStore.selectedChainIds;
+            if (selectedChainIds.size > 0) {
+                targetType = 'chains';
+                targetIds = Array.from(selectedChainIds);
+            }
+            // For first operation only, default to all chains if available
+            else if (operations.length === 0 && chains.length > 0) {
+                targetType = 'chains';
+                targetIds = chains.map((c) => c.id);
             }
         }
 

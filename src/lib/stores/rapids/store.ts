@@ -7,7 +7,7 @@ function createRapidsStore(): RapidsStore {
         rapids: [],
         showRapids: true,
         showRapidDirections: false,
-        selectedRapidId: null,
+        selectedRapidIds: new Set(),
         highlightedRapidId: null,
     };
 
@@ -51,10 +51,32 @@ function createRapidsStore(): RapidsStore {
             }));
         },
 
-        selectRapid: (rapidId: string | null) => {
+        selectRapids: (rapidIds: Set<string>) => {
             update((state) => ({
                 ...state,
-                selectedRapidId: rapidId,
+                selectedRapidIds: new Set(rapidIds),
+            }));
+        },
+
+        toggleRapidSelection: (rapidId: string) => {
+            update((state) => {
+                const newSelection = new Set(state.selectedRapidIds);
+                if (newSelection.has(rapidId)) {
+                    newSelection.delete(rapidId);
+                } else {
+                    newSelection.add(rapidId);
+                }
+                return {
+                    ...state,
+                    selectedRapidIds: newSelection,
+                };
+            });
+        },
+
+        clearSelection: () => {
+            update((state) => ({
+                ...state,
+                selectedRapidIds: new Set(),
             }));
         },
 

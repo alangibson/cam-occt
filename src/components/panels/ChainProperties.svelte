@@ -11,14 +11,18 @@
 
     // Reactive chain and analysis data
     $: detectedChains = $chainStore.chains;
-    $: selectedChainId = $chainStore.selectedChainId;
-    $: selectedChain = selectedChainId
-        ? detectedChains.find((chain) => chain.id === selectedChainId)
+    $: selectedChainIds = $chainStore.selectedChainIds;
+    $: selectedChainId =
+        selectedChainIds.size === 1 ? Array.from(selectedChainIds)[0] : null;
+    $: highlightedChainId = $chainStore.highlightedChainId;
+    $: activeChainId = selectedChainId || highlightedChainId;
+    $: selectedChain = activeChainId
+        ? detectedChains.find((chain) => chain.id === activeChainId)
         : null;
     $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
-    $: selectedChainAnalysis = selectedChainId
+    $: selectedChainAnalysis = activeChainId
         ? chainNormalizationResults.find(
-              (result) => result.chainId === selectedChainId
+              (result) => result.chainId === activeChainId
           )
         : null;
     $: algorithmParams = $prepareStageStore.algorithmParams;

@@ -8,7 +8,7 @@ function createPartStore() {
         warnings: [],
         highlightedPartId: null,
         hoveredPartId: null,
-        selectedPartId: null,
+        selectedPartIds: new Set(),
     };
 
     const { subscribe, update } = writable<PartStore>(initialState);
@@ -29,7 +29,7 @@ function createPartStore() {
             warnings: [],
             highlightedPartId: null,
             hoveredPartId: null,
-            selectedPartId: null,
+            selectedPartIds: new Set(),
         }));
     }
 
@@ -64,17 +64,54 @@ function createPartStore() {
     }
 
     // Part selection functions
-    function selectPart(partId: string | null) {
-        update((state) => ({
-            ...state,
-            selectedPartId: partId,
-        }));
+    function selectPart(partId: string | null, multi = false) {
+        update((state) => {
+            if (partId === null) {
+                return {
+                    ...state,
+                    selectedPartIds: new Set(),
+                };
+            }
+
+            const selectedPartIds = new Set(multi ? state.selectedPartIds : []);
+            selectedPartIds.add(partId);
+            return {
+                ...state,
+                selectedPartIds,
+            };
+        });
+    }
+
+    function deselectPart(partId: string) {
+        update((state) => {
+            const selectedPartIds = new Set(state.selectedPartIds);
+            selectedPartIds.delete(partId);
+            return {
+                ...state,
+                selectedPartIds,
+            };
+        });
+    }
+
+    function togglePartSelection(partId: string) {
+        update((state) => {
+            const selectedPartIds = new Set(state.selectedPartIds);
+            if (selectedPartIds.has(partId)) {
+                selectedPartIds.delete(partId);
+            } else {
+                selectedPartIds.add(partId);
+            }
+            return {
+                ...state,
+                selectedPartIds,
+            };
+        });
     }
 
     function clearPartSelection() {
         update((state) => ({
             ...state,
-            selectedPartId: null,
+            selectedPartIds: new Set(),
         }));
     }
 
@@ -87,6 +124,8 @@ function createPartStore() {
         hoverPart,
         clearPartHover,
         selectPart,
+        deselectPart,
+        togglePartSelection,
         clearPartSelection,
     };
 }

@@ -27,15 +27,15 @@ export function findPartContainingChain(
 }
 
 // Chain selection functions
+// Note: This function is called AFTER DrawingCanvas has already handled the selection.
+// DrawingCanvas handles Ctrl/Cmd+click for multi-select, so we don't need to modify
+// the selection here. This function is mainly for future extensibility.
 export function handleChainClick(
-    chainId: string,
-    selectedChainId: string | null
+    _chainId: string,
+    _selectedChainIds: Set<string>
 ) {
-    if (selectedChainId === chainId) {
-        chainStore.selectChain(null); // Deselect if already selected
-    } else {
-        chainStore.selectChain(chainId);
-    }
+    // Selection is already handled by DrawingCanvas
+    // This function can be used for additional side effects if needed
 }
 
 // Chain hover functions
@@ -49,12 +49,15 @@ export function handleChainMouseLeave() {
 }
 
 // Part selection functions
-export function handlePartClick(partId: string, selectedPartId: string | null) {
-    if (selectedPartId === partId) {
-        partStore.selectPart(null);
-    } else {
-        partStore.selectPart(partId);
-    }
+// Note: This function is called AFTER DrawingCanvas has already handled the selection.
+// DrawingCanvas handles Ctrl/Cmd+click for multi-select, so we don't need to modify
+// the selection here. This function is mainly for future extensibility.
+export function handlePartClick(
+    _partId: string,
+    _selectedPartIds: Set<string>
+) {
+    // Selection is already handled by DrawingCanvas
+    // This function can be used for additional side effects if needed
 }
 
 // Part hover functions

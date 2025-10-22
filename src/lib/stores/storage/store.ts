@@ -81,17 +81,18 @@ function collectCurrentState(): PersistedState {
         // Chains state
         chains: chains.chains,
         tolerance: chains.tolerance,
-        selectedChainId: chains.selectedChainId,
+        selectedChainIds: Array.from(chains.selectedChainIds),
 
         // Parts state
         parts: parts.parts,
         partWarnings: parts.warnings,
         highlightedPartId: parts.highlightedPartId,
+        selectedPartIds: Array.from(parts.selectedPartIds),
 
         // Rapids state
         rapids: rapids.rapids,
         showRapids: rapids.showRapids,
-        selectedRapidId: rapids.selectedRapidId,
+        selectedRapidIds: Array.from(rapids.selectedRapidIds),
         highlightedRapidId: rapids.highlightedRapidId,
 
         // UI state
@@ -111,7 +112,7 @@ function collectCurrentState(): PersistedState {
         // Operations, cuts, and tools
         operations: operations,
         cuts: cuts.cuts, // Just the cuts array
-        selectedCutId: cuts.selectedCutId, // Cut selection state
+        selectedCutIds: Array.from(cuts.selectedCutIds), // Cut selection state
         highlightedCutId: cuts.highlightedCutId, // Cut highlight state
         showCutNormals: cuts.showCutNormals, // Cut normals visibility state
         showCutDirections: cuts.showCutDirections, // Cut directions visibility state
@@ -137,14 +138,23 @@ function restoreStateToStores(state: PersistedState): void {
         // Set chain store state
         chainStore.setChains(state.chains);
         chainStore.setTolerance(state.tolerance);
-        if (state.selectedChainId) {
-            chainStore.selectChain(state.selectedChainId);
+        if (state.selectedChainIds && state.selectedChainIds.length > 0) {
+            // Restore all selected chains
+            state.selectedChainIds.forEach((chainId, index) => {
+                chainStore.selectChain(chainId, index > 0); // First is not multi, rest are
+            });
         }
 
         // Set part store state
         partStore.setParts(state.parts, state.partWarnings);
         if (state.highlightedPartId) {
             partStore.highlightPart(state.highlightedPartId);
+        }
+        if (state.selectedPartIds && state.selectedPartIds.length > 0) {
+            // Restore all selected parts
+            state.selectedPartIds.forEach((partId, index) => {
+                partStore.selectPart(partId, index > 0); // First is not multi, rest are
+            });
         }
 
         // Restore drawing state - use special restoration method to avoid resetting downstream stages
@@ -177,8 +187,8 @@ function restoreStateToStores(state: PersistedState): void {
         // Restore rapids state
         rapidStore.setRapids(state.rapids);
         rapidStore.setShowRapids(state.showRapids);
-        if (state.selectedRapidId) {
-            rapidStore.selectRapid(state.selectedRapidId);
+        if (state.selectedRapidIds && state.selectedRapidIds.length > 0) {
+            rapidStore.selectRapids(new Set(state.selectedRapidIds));
         }
         if (state.highlightedRapidId) {
             rapidStore.highlightRapid(state.highlightedRapidId);
@@ -280,7 +290,7 @@ function restoreStateToStores(state: PersistedState): void {
             // Restore cuts with their original IDs and lead geometry
             const cutsState: CutsState = {
                 cuts: state.cuts,
-                selectedCutId: state.selectedCutId || null,
+                selectedCutIds: new Set(state.selectedCutIds || []),
                 highlightedCutId: state.highlightedCutId || null,
                 showCutNormals: state.showCutNormals || false,
                 showCutDirections: state.showCutDirections || false,

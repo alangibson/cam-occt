@@ -4,7 +4,7 @@ export interface RapidsState {
     rapids: Rapid[];
     showRapids: boolean;
     showRapidDirections: boolean;
-    selectedRapidId: string | null;
+    selectedRapidIds: Set<string>;
     highlightedRapidId: string | null;
 }
 
@@ -15,7 +15,9 @@ export interface RapidsStore {
     toggleShowRapids: () => void;
     setShowRapids: (show: boolean) => void;
     setShowRapidDirections: (show: boolean) => void;
-    selectRapid: (rapidId: string | null) => void;
+    selectRapids: (rapidIds: Set<string>) => void;
+    toggleRapidSelection: (rapidId: string) => void;
+    clearSelection: () => void;
     highlightRapid: (rapidId: string | null) => void;
     clearHighlight: () => void;
     reset: () => void;

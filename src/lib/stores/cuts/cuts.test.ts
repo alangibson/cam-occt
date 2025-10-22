@@ -134,7 +134,7 @@ describe('cutStore', () => {
             cutStore.deleteCut('mock-cut-uuid-123');
 
             const state = get(cutStore);
-            expect(state.selectedCutId).toBeNull();
+            expect(state.selectedCutIds.size).toBe(0);
         });
 
         it('should clear highlighted cut if deleted', () => {
@@ -187,7 +187,7 @@ describe('cutStore', () => {
             cutStore.deleteCutsByOperation('op-1');
 
             const state = get(cutStore);
-            expect(state.selectedCutId).toBeNull();
+            expect(state.selectedCutIds.size).toBe(0);
         });
 
         it('should clear highlighted cut if it belongs to deleted operation', () => {
@@ -207,7 +207,7 @@ describe('cutStore', () => {
             cutStore.selectCut('cut-123');
 
             const state = get(cutStore);
-            expect(state.selectedCutId).toBe('cut-123');
+            expect(state.selectedCutIds.has('cut-123')).toBe(true);
         });
 
         it('should clear selection when null passed', () => {
@@ -215,7 +215,7 @@ describe('cutStore', () => {
             cutStore.selectCut(null);
 
             const state = get(cutStore);
-            expect(state.selectedCutId).toBeNull();
+            expect(state.selectedCutIds.size).toBe(0);
         });
     });
 
@@ -505,7 +505,7 @@ describe('cutStore', () => {
 
             const state = get(cutStore);
             expect(state.cuts).toHaveLength(0);
-            expect(state.selectedCutId).toBeNull();
+            expect(state.selectedCutIds.size).toBe(0);
             expect(state.highlightedCutId).toBeNull();
             expect(
                 mockWorkflowStore.invalidateDownstreamStages
@@ -533,7 +533,7 @@ describe('cutStore', () => {
                         normalSide: NormalSide.LEFT,
                     },
                 ],
-                selectedCutId: 'restored-cut',
+                selectedCutIds: new Set(['restored-cut']),
                 highlightedCutId: null,
                 showCutNormals: false,
                 showCutDirections: false,
@@ -566,7 +566,7 @@ describe('helper functions', () => {
             cutStore.selectCut('helper-test-cut');
 
             const state = get(cutStore);
-            expect(state.selectedCutId).toBe('helper-test-cut');
+            expect(state.selectedCutIds.has('helper-test-cut')).toBe(true);
         });
     });
 

@@ -15,7 +15,7 @@ import type { Tool } from '$lib/cam/tool/interfaces';
 
 export interface CutsState {
     cuts: Cut[];
-    selectedCutId: string | null;
+    selectedCutIds: Set<string>;
     highlightedCutId: string | null;
     showCutNormals: boolean;
     showCutDirections: boolean;
@@ -39,7 +39,9 @@ export interface CutsStore {
     updateCut: (id: string, updates: Partial<Cut>) => void;
     deleteCut: (id: string) => void;
     deleteCutsByOperation: (operationId: string) => void;
-    selectCut: (cutId: string | null) => void;
+    selectCut: (cutId: string | null, multi?: boolean) => void;
+    deselectCut: (cutId: string) => void;
+    toggleCutSelection: (cutId: string) => void;
     highlightCut: (cutId: string | null) => void;
     clearHighlight: () => void;
     reorderCuts: (newCuts: Cut[]) => void;

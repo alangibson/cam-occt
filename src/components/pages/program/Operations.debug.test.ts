@@ -25,7 +25,8 @@ describe('Operations Store Functions Debug', () => {
 
         const finalState = get(chainStore);
 
-        expect(finalState.selectedChainId).toBe(testChainId);
+        expect(finalState.selectedChainIds.has(testChainId)).toBe(true);
+        expect(finalState.selectedChainIds.size).toBe(1);
     });
 
     it('should test clearHighlight function', () => {
@@ -43,11 +44,12 @@ describe('Operations Store Functions Debug', () => {
         // First select a chain
         const testChainId = 'chain-debug-456';
         chainStore.selectChain(testChainId);
-        expect(get(chainStore).selectedChainId).toBe(testChainId);
+        expect(get(chainStore).selectedChainIds.has(testChainId)).toBe(true);
+        expect(get(chainStore).selectedChainIds.size).toBe(1);
 
         // Then clear it
         chainStore.selectChain(null);
-        expect(get(chainStore).selectedChainId).toBe(null);
+        expect(get(chainStore).selectedChainIds.size).toBe(0);
     });
 
     it('should verify stores are reactive', () => {
@@ -62,7 +64,7 @@ describe('Operations Store Functions Debug', () => {
         });
 
         const unsubscribeChain = chainStore.subscribe((state) => {
-            if (state.selectedChainId) {
+            if (state.selectedChainIds.size > 0) {
                 chainSelected = true;
             }
         });

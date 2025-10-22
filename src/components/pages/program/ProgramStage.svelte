@@ -19,7 +19,7 @@
     import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import {
-        selectRapid,
+        toggleRapidSelection,
         highlightRapid,
         clearRapidHighlight,
     } from '$lib/stores/rapids/functions';
@@ -50,7 +50,7 @@
     $: parts = $partStore.parts;
     $: cuts = $cutStore.cuts;
     $: rapids = $rapidStore.rapids;
-    $: selectedRapidId = $rapidStore.selectedRapidId;
+    $: selectedRapidIds = $rapidStore.selectedRapidIds;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
     $: optimizationSettings = $settingsStore.settings.optimizationSettings;
 
@@ -141,7 +141,7 @@
     $: {
         if (cuts.length === 0) {
             rapidStore.clearRapids();
-            selectRapid(null);
+            rapidStore.clearSelection();
         }
     }
 
@@ -153,11 +153,7 @@
 
     // Rapid selection functions
     function handleRapidClick(rapidId: string) {
-        if (selectedRapidId === rapidId) {
-            selectRapid(null); // Deselect if already selected
-        } else {
-            selectRapid(rapidId);
-        }
+        toggleRapidSelection(rapidId);
     }
 
     function handleRapidMouseEnter(rapidId: string) {
@@ -267,7 +263,9 @@
                     {#if rapids.length > 0}
                         {#each rapids as rapid, index (rapid.id)}
                             <div
-                                class="rapid-item {selectedRapidId === rapid.id
+                                class="rapid-item {selectedRapidIds.has(
+                                    rapid.id
+                                )
                                     ? 'selected'
                                     : ''} {highlightedRapidId === rapid.id
                                     ? 'highlighted'

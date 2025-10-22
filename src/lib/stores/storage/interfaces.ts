@@ -30,17 +30,18 @@ export interface PersistedState {
     // Chains state
     chains: Chain[];
     tolerance: number;
-    selectedChainId: string | null;
+    selectedChainIds: string[];
 
     // Parts state
     parts: Part[];
     partWarnings: PartDetectionWarning[];
     highlightedPartId: string | null;
+    selectedPartIds: string[];
 
     // Rapids state
     rapids: Rapid[];
     showRapids: boolean;
-    selectedRapidId: string | null;
+    selectedRapidIds: string[];
     highlightedRapidId: string | null;
 
     // UI state
@@ -60,6 +61,7 @@ export interface PersistedState {
     // Operations, cuts, and tools
     operations: Operation[];
     cuts: Cut[];
+    selectedCutIds: string[];
     tools: Tool[];
 
     // Application settings
@@ -68,7 +70,6 @@ export interface PersistedState {
     // Timestamp for debugging
     savedAt: string;
 
-    selectedCutId: string | null;
     highlightedCutId: string | null;
     showCutNormals: boolean;
     showCutDirections: boolean;

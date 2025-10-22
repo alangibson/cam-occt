@@ -84,19 +84,15 @@ export class ChainRenderer extends BaseRenderer {
                 );
             }
 
-            // Render selected part (if any and different from highlighted/hovered)
-            if (
-                state.selection.selectedPartId &&
-                state.selection.selectedPartId !==
-                    state.selection.highlightedPartId &&
-                state.selection.selectedPartId !== state.selection.hoveredPartId
-            ) {
-                this.renderSelectedPart(
-                    ctx,
-                    state,
-                    state.selection.selectedPartId
-                );
-            }
+            // Render selected parts (if any and different from highlighted/hovered)
+            state.selection.selectedPartIds.forEach((partId) => {
+                if (
+                    partId !== state.selection.highlightedPartId &&
+                    partId !== state.selection.hoveredPartId
+                ) {
+                    this.renderSelectedPart(ctx, state, partId);
+                }
+            });
 
             // Render highlighted chain
             if (state.selection.highlightedChainId) {
@@ -107,18 +103,12 @@ export class ChainRenderer extends BaseRenderer {
                 );
             }
 
-            // Render selected chain (if different from highlighted)
-            if (
-                state.selection.selectedChainId &&
-                state.selection.selectedChainId !==
-                    state.selection.highlightedChainId
-            ) {
-                this.renderSelectedChain(
-                    ctx,
-                    state,
-                    state.selection.selectedChainId
-                );
-            }
+            // Render selected chains (if different from highlighted)
+            state.selection.selectedChainIds.forEach((chainId) => {
+                if (chainId !== state.selection.highlightedChainId) {
+                    this.renderSelectedChain(ctx, state, chainId);
+                }
+            });
         }
 
         // Render chain endpoints and tangents based on visibility settings (all stages)

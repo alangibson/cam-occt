@@ -21,8 +21,8 @@
 
     // Get current stage and related state
     $: currentStage = $workflowStore.currentStage;
-    $: selectedChainId = $chainStore.selectedChainId;
-    $: selectedPartId = $partStore.selectedPartId;
+    $: selectedChainIds = $chainStore.selectedChainIds;
+    $: selectedPartIds = $partStore.selectedPartIds;
 
     // Determine canvas properties based on current stage
     $: canvasStage = (() => {
@@ -42,11 +42,11 @@
 
     // Chain and part interaction functions using shared handlers
     function handleChainClick(chainId: string) {
-        sharedHandleChainClick(chainId, selectedChainId);
+        sharedHandleChainClick(chainId, selectedChainIds);
     }
 
     function handlePartClick(partId: string) {
-        sharedHandlePartClick(partId, selectedPartId);
+        sharedHandlePartClick(partId, selectedPartIds);
     }
 
     // Mouse hover functions for highlighting

@@ -106,7 +106,8 @@ describe('State Persistence', () => {
             // Chains state
             chains: [{ id: 'chain1', shapes: [] }],
             tolerance: 0.1,
-            selectedChainId: 'chain1',
+            selectedChainIds: ['chain1'],
+            selectedPartIds: [],
 
             // Parts state
             parts: [
@@ -128,7 +129,7 @@ describe('State Persistence', () => {
             // Rapids state
             rapids: [],
             showRapids: true,
-            selectedRapidId: null,
+            selectedRapidIds: [],
             highlightedRapidId: null,
 
             // UI state
@@ -277,7 +278,7 @@ describe('State Persistence', () => {
 
             // Timestamp
             savedAt: '2023-01-01T00:00:00.000Z',
-            selectedCutId: null,
+            selectedCutIds: [],
             highlightedCutId: null,
             showCutNormals: false,
             showCutDirections: false,
@@ -334,13 +335,14 @@ describe('State Persistence', () => {
             completedStages: [],
             chains: [],
             tolerance: 0.1,
-            selectedChainId: null,
+            selectedChainIds: [],
+            selectedPartIds: [],
             parts: [],
             partWarnings: [],
             highlightedPartId: null,
             rapids: [],
             showRapids: false,
-            selectedRapidId: null,
+            selectedRapidIds: [],
             highlightedRapidId: null,
             showToolTable: false,
             tessellationActive: false,
@@ -381,7 +383,7 @@ describe('State Persistence', () => {
             tools: [],
             applicationSettings: defaultApplicationSettings,
             savedAt: '2023-01-01T00:00:00.000Z',
-            selectedCutId: null,
+            selectedCutIds: [],
             highlightedCutId: null,
             showCutNormals: false,
             showCutDirections: false,

@@ -5,9 +5,13 @@
 
     // Reactive cut data
     $: cuts = $cutStore.cuts;
-    $: selectedCutId = $cutStore.selectedCutId;
-    $: selectedCut = selectedCutId
-        ? cuts.find((cut) => cut.id === selectedCutId)
+    $: selectedCutIds = $cutStore.selectedCutIds;
+    $: selectedCutId =
+        selectedCutIds.size === 1 ? Array.from(selectedCutIds)[0] : null;
+    $: highlightedCutId = $cutStore.highlightedCutId;
+    $: activeCutId = selectedCutId || highlightedCutId;
+    $: selectedCut = activeCutId
+        ? cuts.find((cut) => cut.id === activeCutId)
         : null;
     $: operations = $operationsStore;
     $: selectedOperation =

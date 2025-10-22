@@ -106,7 +106,7 @@ describe('Cuts Component - Function Coverage', () => {
             await fireEvent.click(cutItem!);
 
             const updatedState = get(cutStore);
-            expect(updatedState.selectedCutId).toBe(cutId);
+            expect(updatedState.selectedCutIds.has(cutId)).toBe(true);
         });
 
         it('should deselect cut when clicking already selected cut', async () => {
@@ -138,7 +138,7 @@ describe('Cuts Component - Function Coverage', () => {
             await fireEvent.click(cutItem!);
 
             const finalState = get(cutStore);
-            expect(finalState.selectedCutId).toBe(null);
+            expect(finalState.selectedCutIds.size).toBe(0);
         });
 
         it('should handle keyboard navigation', async () => {

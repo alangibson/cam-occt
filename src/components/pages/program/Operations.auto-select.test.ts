@@ -94,8 +94,8 @@ describe('Operations Auto-Selection Feature', () => {
             toolId: '1',
             targetType: 'chains',
             targetIds: (() => {
-                const selectedId = get(chainStore).selectedChainId;
-                return selectedId ? [selectedId] : [];
+                const selectedIds = get(chainStore).selectedChainIds;
+                return Array.from(selectedIds);
             })(),
             enabled: true,
             order: 1,
@@ -135,7 +135,7 @@ describe('Operations Auto-Selection Feature', () => {
 
         // Simulate operation creation with both part and chain selected (part should have priority)
         const partHighlighted = get(partStore).highlightedPartId;
-        const chainSelected = get(chainStore).selectedChainId;
+        const chainSelectedIds = get(chainStore).selectedChainIds;
 
         operationsStore.addOperation({
             name: 'Test Operation',
@@ -143,8 +143,8 @@ describe('Operations Auto-Selection Feature', () => {
             targetType: partHighlighted ? 'parts' : 'chains',
             targetIds: partHighlighted
                 ? [partHighlighted]
-                : chainSelected
-                  ? [chainSelected]
+                : chainSelectedIds.size > 0
+                  ? Array.from(chainSelectedIds)
                   : [],
             enabled: true,
             order: 1,
@@ -288,7 +288,7 @@ describe('Operations Auto-Selection Feature', () => {
         expect(newOperation.targetIds).toEqual(['chain-1', 'chain-2']);
     });
 
-    it('should not auto-select when creating second operation with nothing selected', async () => {
+    it('should auto-select all parts when creating any operation with nothing selected', async () => {
         // Add some parts
         partStore.setParts([
             {
@@ -309,12 +309,12 @@ describe('Operations Auto-Selection Feature', () => {
         expect(get(operationsStore).length).toBe(1);
         expect(get(operationsStore)[0].targetIds).toEqual(['part-1']);
 
-        // Create second operation with nothing selected (should NOT auto-select)
+        // Create second operation with nothing selected (should ALSO auto-select all parts)
         component.component.addNewOperation({ enabled: false });
         expect(get(operationsStore).length).toBe(2);
 
         const secondOperation = get(operationsStore)[1];
         expect(secondOperation.targetType).toBe('parts');
-        expect(secondOperation.targetIds).toEqual([]); // Should be empty
+        expect(secondOperation.targetIds).toEqual(['part-1']); // Should also contain all parts
     });
 });

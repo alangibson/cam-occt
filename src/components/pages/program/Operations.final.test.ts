@@ -36,14 +36,15 @@ describe('Operations Final Integration Test', () => {
 
         // Step 1: Verify initial state
         const initialState = get(chainStore);
-        expect(initialState.selectedChainId).toBe(null);
+        expect(initialState.selectedChainIds.size).toBe(0);
 
         // Step 2: Simulate mouseenter on cut in Operations apply-to menu
         chainStore.selectChain(testChainId);
 
         // Step 3: Verify store is updated (this should trigger DrawingCanvas re-render)
         const selectedState = get(chainStore);
-        expect(selectedState.selectedChainId).toBe(testChainId);
+        expect(selectedState.selectedChainIds.has(testChainId)).toBe(true);
+        expect(selectedState.selectedChainIds.size).toBe(1);
 
         // Step 4: Simulate hover over different cut
         const secondChainId = 'chain-final-789';
@@ -51,14 +52,15 @@ describe('Operations Final Integration Test', () => {
 
         // Step 5: Verify selection changed
         const changedState = get(chainStore);
-        expect(changedState.selectedChainId).toBe(secondChainId);
+        expect(changedState.selectedChainIds.has(secondChainId)).toBe(true);
+        expect(changedState.selectedChainIds.size).toBe(1);
 
         // Step 6: Simulate mouseleave from cut (hovering away)
         chainStore.selectChain(null);
 
         // Step 7: Verify selection is cleared
         const clearedState = get(chainStore);
-        expect(clearedState.selectedChainId).toBe(null);
+        expect(clearedState.selectedChainIds.size).toBe(0);
     });
 
     it('should handle complex interaction workflow', () => {
@@ -68,22 +70,24 @@ describe('Operations Final Integration Test', () => {
         // User hovers over part in Operations menu
         partStore.highlightPart(partId);
         expect(get(partStore).highlightedPartId).toBe(partId);
-        expect(get(chainStore).selectedChainId).toBe(null);
+        expect(get(chainStore).selectedChainIds.size).toBe(0);
 
         // User then hovers over cut in Operations menu (part should stay highlighted)
         chainStore.selectChain(chainId);
         expect(get(partStore).highlightedPartId).toBe(partId);
-        expect(get(chainStore).selectedChainId).toBe(chainId);
+        expect(get(chainStore).selectedChainIds.has(chainId)).toBe(true);
+        expect(get(chainStore).selectedChainIds.size).toBe(1);
 
         // User hovers away from part but stays on cut
         partStore.clearHighlight();
         expect(get(partStore).highlightedPartId).toBe(null);
-        expect(get(chainStore).selectedChainId).toBe(chainId);
+        expect(get(chainStore).selectedChainIds.has(chainId)).toBe(true);
+        expect(get(chainStore).selectedChainIds.size).toBe(1);
 
         // User hovers away from cut
         chainStore.selectChain(null);
         expect(get(partStore).highlightedPartId).toBe(null);
-        expect(get(chainStore).selectedChainId).toBe(null);
+        expect(get(chainStore).selectedChainIds.size).toBe(0);
     });
 
     it('should verify DrawingCanvas would get the correct data', () => {
@@ -102,7 +106,8 @@ describe('Operations Final Integration Test', () => {
         // Select chain (like Operations component does on cut hover)
         chainStore.selectChain(testChainId);
         chainStoreValue = get(chainStore);
-        expect(chainStoreValue.selectedChainId).toBe(testChainId);
+        expect(chainStoreValue.selectedChainIds.has(testChainId)).toBe(true);
+        expect(chainStoreValue.selectedChainIds.size).toBe(1);
 
         // This is the data that DrawingCanvas reactive statements would receive
 
@@ -114,6 +119,6 @@ describe('Operations Final Integration Test', () => {
         chainStoreValue = get(chainStore);
 
         expect(partStoreValue.highlightedPartId).toBe(null);
-        expect(chainStoreValue.selectedChainId).toBe(null);
+        expect(chainStoreValue.selectedChainIds.size).toBe(0);
     });
 });

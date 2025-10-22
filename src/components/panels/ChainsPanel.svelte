@@ -11,7 +11,7 @@
 
     // Reactive state
     $: detectedChains = $chainStore.chains;
-    $: selectedChainId = $chainStore.selectedChainId;
+    $: selectedChainIds = $chainStore.selectedChainIds;
     $: highlightedChainId = $chainStore.highlightedChainId;
     $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
     $: algorithmParams = $prepareStageStore.algorithmParams;
@@ -22,19 +22,37 @@
         <div class="chain-summary">
             {#each chainNormalizationResults as result (result.chainId)}
                 <div
-                    class="chain-summary-item {selectedChainId ===
-                    result.chainId
+                    class="chain-summary-item {selectedChainIds.has(
+                        result.chainId
+                    )
                         ? 'selected'
                         : ''} {highlightedChainId === result.chainId
                         ? 'highlighted'
                         : ''}"
                     role="button"
                     tabindex="0"
-                    onclick={() => onChainClick && onChainClick(result.chainId)}
-                    onkeydown={(e) =>
-                        e.key === 'Enter' &&
-                        onChainClick &&
-                        onChainClick(result.chainId)}
+                    onclick={(e) => {
+                        if (onChainClick) {
+                            // Check for Ctrl/Cmd key for multi-select
+                            if (e.ctrlKey || e.metaKey) {
+                                chainStore.toggleChainSelection(result.chainId);
+                            } else {
+                                chainStore.selectChain(result.chainId, false);
+                            }
+                            onChainClick(result.chainId);
+                        }
+                    }}
+                    onkeydown={(e) => {
+                        if (e.key === 'Enter' && onChainClick) {
+                            // Check for Ctrl/Cmd key for multi-select
+                            if (e.ctrlKey || e.metaKey) {
+                                chainStore.toggleChainSelection(result.chainId);
+                            } else {
+                                chainStore.selectChain(result.chainId, false);
+                            }
+                            onChainClick(result.chainId);
+                        }
+                    }}
                     onmouseenter={() =>
                         onChainHover && onChainHover(result.chainId)}
                     onmouseleave={() => onChainHoverEnd && onChainHoverEnd()}

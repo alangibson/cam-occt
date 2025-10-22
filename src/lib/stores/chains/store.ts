@@ -7,7 +7,7 @@ function createChainStore() {
     const initialState: ChainStore = {
         chains: [],
         tolerance: 0.1,
-        selectedChainId: null,
+        selectedChainIds: new Set(),
         highlightedChainId: null,
         showChainPaths: true,
         showChainStartPoints: false,
@@ -50,17 +50,56 @@ function createChainStore() {
     }
 
     // Chain selection functions
-    function selectChain(chainId: string | null) {
-        update((state) => ({
-            ...state,
-            selectedChainId: chainId,
-        }));
+    function selectChain(chainId: string | null, multi = false) {
+        update((state) => {
+            if (chainId === null) {
+                return {
+                    ...state,
+                    selectedChainIds: new Set(),
+                };
+            }
+
+            const selectedChainIds = new Set(
+                multi ? state.selectedChainIds : []
+            );
+            selectedChainIds.add(chainId);
+            return {
+                ...state,
+                selectedChainIds,
+            };
+        });
+    }
+
+    function deselectChain(chainId: string) {
+        update((state) => {
+            const selectedChainIds = new Set(state.selectedChainIds);
+            selectedChainIds.delete(chainId);
+            return {
+                ...state,
+                selectedChainIds,
+            };
+        });
+    }
+
+    function toggleChainSelection(chainId: string) {
+        update((state) => {
+            const selectedChainIds = new Set(state.selectedChainIds);
+            if (selectedChainIds.has(chainId)) {
+                selectedChainIds.delete(chainId);
+            } else {
+                selectedChainIds.add(chainId);
+            }
+            return {
+                ...state,
+                selectedChainIds,
+            };
+        });
     }
 
     function clearChainSelection() {
         update((state) => ({
             ...state,
-            selectedChainId: null,
+            selectedChainIds: new Set(),
         }));
     }
 
@@ -135,6 +174,8 @@ function createChainStore() {
         clearChains,
         setTolerance,
         selectChain,
+        deselectChain,
+        toggleChainSelection,
         clearChainSelection,
         highlightChain,
         clearChainHighlight,

@@ -35,7 +35,7 @@ vi.mock('$lib/stores/chains', () => ({
         subscribe: vi.fn((callback) => {
             callback({
                 chains: [],
-                selectedChainId: null,
+                selectedChainIds: new Set(),
             });
             return vi.fn();
         }),
@@ -328,7 +328,7 @@ describe('ProgramStage', () => {
                                     ],
                                 },
                             ],
-                            selectedChainId: 'chain-1',
+                            selectedChainIds: new Set(['chain-1']),
                             highlightedChainId: 'chain-1',
                         });
                         return vi.fn();
@@ -353,7 +353,7 @@ describe('ProgramStage', () => {
                             ],
                             highlightedPartId: 'part-1',
                             hoveredPartId: 'part-1',
-                            selectedPartId: 'part-1',
+                            selectedPartIds: new Set(['part-1']),
                         });
                         return vi.fn();
                     }),

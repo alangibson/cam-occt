@@ -1,7 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { rapidStore } from './store';
-import { clearRapidHighlight, highlightRapid, selectRapid } from './functions';
+import {
+    clearRapidHighlight,
+    highlightRapid,
+    selectRapids,
+    toggleRapidSelection,
+    clearRapidSelection,
+} from './functions';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 describe('rapidStore', () => {
@@ -22,7 +28,7 @@ describe('rapidStore', () => {
 
             expect(state.rapids).toHaveLength(0);
             expect(state.showRapids).toBe(true);
-            expect(state.selectedRapidId).toBeNull();
+            expect(state.selectedRapidIds).toEqual(new Set());
             expect(state.highlightedRapidId).toBeNull();
         });
     });
@@ -87,7 +93,7 @@ describe('rapidStore', () => {
 
             rapidStore.setRapids(rapids);
             rapidStore.setShowRapids(false);
-            rapidStore.selectRapid('rapid-1');
+            rapidStore.selectRapids(new Set(['rapid-1']));
             rapidStore.highlightRapid('rapid-1');
 
             rapidStore.clearRapids();
@@ -95,7 +101,7 @@ describe('rapidStore', () => {
             const state = get(rapidStore);
             expect(state.rapids).toHaveLength(0);
             expect(state.showRapids).toBe(false);
-            expect(state.selectedRapidId).toBe('rapid-1');
+            expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
             expect(state.highlightedRapidId).toBe('rapid-1');
         });
     });
@@ -151,28 +157,91 @@ describe('rapidStore', () => {
         });
     });
 
-    describe('selectRapid', () => {
-        it('should select rapid by id', () => {
-            rapidStore.selectRapid('rapid-1');
+    describe('selectRapids', () => {
+        it('should select rapids by ids', () => {
+            rapidStore.selectRapids(new Set(['rapid-1']));
 
             const state = get(rapidStore);
-            expect(state.selectedRapidId).toBe('rapid-1');
+            expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
         });
 
-        it('should change selection to different rapid', () => {
-            rapidStore.selectRapid('rapid-1');
-            rapidStore.selectRapid('rapid-2');
+        it('should change selection to different rapids', () => {
+            rapidStore.selectRapids(new Set(['rapid-1']));
+            rapidStore.selectRapids(new Set(['rapid-2']));
 
             const state = get(rapidStore);
-            expect(state.selectedRapidId).toBe('rapid-2');
+            expect(state.selectedRapidIds).toEqual(new Set(['rapid-2']));
         });
 
-        it('should clear selection when null passed', () => {
-            rapidStore.selectRapid('rapid-1');
-            rapidStore.selectRapid(null);
+        it('should clear selection when empty set passed', () => {
+            rapidStore.selectRapids(new Set(['rapid-1']));
+            rapidStore.selectRapids(new Set());
 
             const state = get(rapidStore);
-            expect(state.selectedRapidId).toBeNull();
+            expect(state.selectedRapidIds).toEqual(new Set());
+        });
+
+        it('should select multiple rapids', () => {
+            rapidStore.selectRapids(new Set(['rapid-1', 'rapid-2']));
+
+            const state = get(rapidStore);
+            expect(state.selectedRapidIds).toEqual(
+                new Set(['rapid-1', 'rapid-2'])
+            );
+        });
+    });
+
+    describe('toggleRapidSelection', () => {
+        it('should add rapid to selection if not selected', () => {
+            rapidStore.toggleRapidSelection('rapid-1');
+
+            const state = get(rapidStore);
+            expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
+        });
+
+        it('should remove rapid from selection if already selected', () => {
+            rapidStore.selectRapids(new Set(['rapid-1']));
+            rapidStore.toggleRapidSelection('rapid-1');
+
+            const state = get(rapidStore);
+            expect(state.selectedRapidIds).toEqual(new Set());
+        });
+
+        it('should handle multi-select correctly', () => {
+            rapidStore.toggleRapidSelection('rapid-1');
+            rapidStore.toggleRapidSelection('rapid-2');
+
+            const state = get(rapidStore);
+            expect(state.selectedRapidIds).toEqual(
+                new Set(['rapid-1', 'rapid-2'])
+            );
+        });
+
+        it('should toggle individual rapids in multi-select', () => {
+            rapidStore.selectRapids(new Set(['rapid-1', 'rapid-2', 'rapid-3']));
+            rapidStore.toggleRapidSelection('rapid-2');
+
+            const state = get(rapidStore);
+            expect(state.selectedRapidIds).toEqual(
+                new Set(['rapid-1', 'rapid-3'])
+            );
+        });
+    });
+
+    describe('clearSelection', () => {
+        it('should clear all selected rapids', () => {
+            rapidStore.selectRapids(new Set(['rapid-1', 'rapid-2']));
+            rapidStore.clearSelection();
+
+            const state = get(rapidStore);
+            expect(state.selectedRapidIds).toEqual(new Set());
+        });
+
+        it('should handle clearing when no selection exists', () => {
+            rapidStore.clearSelection();
+
+            const state = get(rapidStore);
+            expect(state.selectedRapidIds).toEqual(new Set());
         });
     });
 
@@ -224,7 +293,7 @@ describe('rapidStore', () => {
 
             rapidStore.setRapids(rapids);
             rapidStore.setShowRapids(false);
-            rapidStore.selectRapid('rapid-1');
+            rapidStore.selectRapids(new Set(['rapid-1']));
             rapidStore.highlightRapid('rapid-1');
 
             rapidStore.reset();
@@ -234,7 +303,7 @@ describe('rapidStore', () => {
                 rapids: [],
                 showRapids: true,
                 showRapidDirections: false,
-                selectedRapidId: null,
+                selectedRapidIds: new Set(),
                 highlightedRapidId: null,
             });
         });
@@ -254,20 +323,20 @@ describe('rapidStore', () => {
 
     describe('complex state interactions', () => {
         it('should handle simultaneous selection and highlighting', () => {
-            rapidStore.selectRapid('rapid-1');
+            rapidStore.selectRapids(new Set(['rapid-1']));
             rapidStore.highlightRapid('rapid-2');
 
             const state = get(rapidStore);
-            expect(state.selectedRapidId).toBe('rapid-1');
+            expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
             expect(state.highlightedRapidId).toBe('rapid-2');
         });
 
         it('should handle selection and highlighting of same rapid', () => {
-            rapidStore.selectRapid('rapid-1');
+            rapidStore.selectRapids(new Set(['rapid-1']));
             rapidStore.highlightRapid('rapid-1');
 
             const state = get(rapidStore);
-            expect(state.selectedRapidId).toBe('rapid-1');
+            expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
             expect(state.highlightedRapidId).toBe('rapid-1');
         });
 
@@ -279,14 +348,14 @@ describe('rapidStore', () => {
 
             rapidStore.setRapids(rapids);
             rapidStore.setShowRapids(false);
-            rapidStore.selectRapid('rapid-1');
+            rapidStore.selectRapids(new Set(['rapid-1']));
             rapidStore.highlightRapid('rapid-2');
             rapidStore.clearRapids();
 
             const state = get(rapidStore);
             expect(state.rapids).toHaveLength(0);
             expect(state.showRapids).toBe(false);
-            expect(state.selectedRapidId).toBe('rapid-1');
+            expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
             expect(state.highlightedRapidId).toBe('rapid-2');
         });
     });
@@ -297,20 +366,37 @@ describe('helper functions', () => {
         rapidStore.reset();
     });
 
-    describe('selectRapid helper', () => {
-        it('should select rapid using helper function', () => {
-            selectRapid('helper-rapid-1');
+    describe('selectRapids helper', () => {
+        it('should select rapids using helper function', () => {
+            selectRapids(new Set(['helper-rapid-1']));
 
             const state = get(rapidStore);
-            expect(state.selectedRapidId).toBe('helper-rapid-1');
+            expect(state.selectedRapidIds).toEqual(new Set(['helper-rapid-1']));
         });
 
         it('should clear selection using helper function', () => {
-            selectRapid('helper-rapid-1');
-            selectRapid(null);
+            selectRapids(new Set(['helper-rapid-1']));
+            clearRapidSelection();
 
             const state = get(rapidStore);
-            expect(state.selectedRapidId).toBeNull();
+            expect(state.selectedRapidIds).toEqual(new Set());
+        });
+    });
+
+    describe('toggleRapidSelection helper', () => {
+        it('should toggle rapid using helper function', () => {
+            toggleRapidSelection('helper-rapid-1');
+
+            const state = get(rapidStore);
+            expect(state.selectedRapidIds).toEqual(new Set(['helper-rapid-1']));
+        });
+
+        it('should toggle off using helper function', () => {
+            toggleRapidSelection('helper-rapid-1');
+            toggleRapidSelection('helper-rapid-1');
+
+            const state = get(rapidStore);
+            expect(state.selectedRapidIds).toEqual(new Set());
         });
     });
 
@@ -360,13 +446,13 @@ describe('helper functions', () => {
             ];
 
             rapidStore.setRapids(rapids);
-            selectRapid('rapid-1');
+            selectRapids(new Set(['rapid-1']));
             highlightRapid('rapid-1');
             rapidStore.setShowRapids(false);
 
             const state = get(rapidStore);
             expect(state.rapids).toHaveLength(1);
-            expect(state.selectedRapidId).toBe('rapid-1');
+            expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
             expect(state.highlightedRapidId).toBe('rapid-1');
             expect(state.showRapids).toBe(false);
         });

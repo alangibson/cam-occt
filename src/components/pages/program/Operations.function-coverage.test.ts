@@ -92,11 +92,11 @@ describe('Operations Component - Function Coverage', () => {
     });
 
     describe('addNewOperation function', () => {
-        it('should create operation with selected part', () => {
+        it('should create operation with highlighted part', () => {
             const { component: comp } = render(Operations);
             component = comp;
 
-            partStore.selectPart('part-1');
+            partStore.highlightPart('part-1');
 
             // Call addNewOperation function
             comp.addNewOperation();
@@ -631,7 +631,7 @@ describe('Operations Component - Function Coverage', () => {
 
                 // Verify chain is selected
                 const chainState = get(chainStore);
-                expect(chainState.selectedChainId).toBe('chain-1');
+                expect(chainState.selectedChainIds.has('chain-1')).toBe(true);
             }
         });
     });

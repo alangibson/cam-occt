@@ -6,26 +6,26 @@ export const showLeadPaths = writable(true);
 export const showLeadKerfs = writable(false);
 
 // Selection state
-const selectedLeadIdStore = writable<string | null>(null);
+const selectedLeadIdsStore = writable<Set<string>>(new Set());
 const highlightedLeadIdStore = writable<string | null>(null);
 
 // Exported store with selection state
 export const leadStore = derived(
     [
-        selectedLeadIdStore,
+        selectedLeadIdsStore,
         highlightedLeadIdStore,
         showLeadNormals,
         showLeadPaths,
         showLeadKerfs,
     ],
     ([
-        $selectedLeadId,
+        $selectedLeadIds,
         $highlightedLeadId,
         $showLeadNormals,
         $showLeadPaths,
         $showLeadKerfs,
     ]) => ({
-        selectedLeadId: $selectedLeadId,
+        selectedLeadIds: $selectedLeadIds,
         highlightedLeadId: $highlightedLeadId,
         showLeadNormals: $showLeadNormals,
         showLeadPaths: $showLeadPaths,
@@ -36,8 +36,43 @@ export const leadStore = derived(
 /**
  * Select a lead by its ID (format: {cutId}-leadIn or {cutId}-leadOut)
  */
-export function selectLead(leadId: string | null): void {
-    selectedLeadIdStore.set(leadId);
+export function selectLead(leadId: string | null, multi = false): void {
+    if (leadId === null) {
+        selectedLeadIdsStore.set(new Set());
+        return;
+    }
+
+    selectedLeadIdsStore.update((ids) => {
+        const newIds = new Set(multi ? ids : []);
+        newIds.add(leadId);
+        return newIds;
+    });
+}
+
+/**
+ * Deselect a lead by its ID
+ */
+export function deselectLead(leadId: string): void {
+    selectedLeadIdsStore.update((ids) => {
+        const newIds = new Set(ids);
+        newIds.delete(leadId);
+        return newIds;
+    });
+}
+
+/**
+ * Toggle lead selection
+ */
+export function toggleLeadSelection(leadId: string): void {
+    selectedLeadIdsStore.update((ids) => {
+        const newIds = new Set(ids);
+        if (newIds.has(leadId)) {
+            newIds.delete(leadId);
+        } else {
+            newIds.add(leadId);
+        }
+        return newIds;
+    });
 }
 
 /**
@@ -51,7 +86,7 @@ export function highlightLead(leadId: string | null): void {
  * Clear lead selection
  */
 export function clearLeadSelection(): void {
-    selectedLeadIdStore.set(null);
+    selectedLeadIdsStore.set(new Set());
 }
 
 /**

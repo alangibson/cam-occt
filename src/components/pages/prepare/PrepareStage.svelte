@@ -176,10 +176,8 @@
     $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
 
     // Chain selection state
-    $: _selectedChainId = $chainStore.selectedChainId;
     $: _highlightedChainId = $chainStore.highlightedChainId;
     $: _hoveredPartId = $partStore.hoveredPartId;
-    $: _selectedPartId = $partStore.selectedPartId;
 
     // Tessellation state
 

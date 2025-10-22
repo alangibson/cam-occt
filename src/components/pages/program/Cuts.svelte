@@ -6,7 +6,7 @@
     import type { Cut } from '$lib/cam/cut/interfaces';
 
     let cuts: Cut[] = [];
-    let selectedCutId: string | null = null;
+    let selectedCutIds: Set<string> = new Set();
     let highlightedCutId: string | null = null;
     let draggedCut: Cut | null = null;
     let dragOverIndex: number | null = null;
@@ -14,18 +14,27 @@
     // Subscribe to stores
     cutStore.subscribe((state) => {
         cuts = state.cuts;
-        selectedCutId = state.selectedCutId;
+        selectedCutIds = state.selectedCutIds;
         highlightedCutId = state.highlightedCutId;
     });
 
     // Cuts are now handled by the main persistence system
     // No need for component-level localStorage anymore
 
-    function handleCutClick(cutId: string) {
-        if (selectedCutId === cutId) {
-            cutStore.selectCut(null); // Deselect if already selected
+    function handleCutClick(cutId: string, event?: MouseEvent | KeyboardEvent) {
+        const isMultiSelect = event && (event.ctrlKey || event.metaKey);
+
+        if (isMultiSelect) {
+            // Multi-select mode: toggle cut selection
+            cutStore.toggleCutSelection(cutId);
         } else {
-            cutStore.selectCut(cutId);
+            // Single select mode
+            const cutAlreadySelected = selectedCutIds.has(cutId);
+            if (cutAlreadySelected) {
+                cutStore.selectCut(null); // Deselect if already selected
+            } else {
+                cutStore.selectCut(cutId, false); // Clear others and select this one
+            }
         }
     }
 
@@ -108,7 +117,7 @@
             <div
                 class="cut-item {dragOverIndex === index
                     ? 'drag-over'
-                    : ''} {selectedCutId === cut.id
+                    : ''} {selectedCutIds.has(cut.id)
                     ? 'selected'
                     : ''} {highlightedCutId === cut.id ? 'highlighted' : ''}"
                 role="button"
@@ -120,10 +129,10 @@
                 ondrop={(e) => handleDrop(e, index)}
                 onmouseenter={() => handleCutHover(cut.id)}
                 onmouseleave={() => handleCutHover(null)}
-                onclick={() => handleCutClick(cut.id)}
+                onclick={(e) => handleCutClick(cut.id, e)}
                 onkeydown={(e) =>
                     (e.key === 'Enter' || e.key === ' ') &&
-                    handleCutClick(cut.id)}
+                    handleCutClick(cut.id, e)}
                 tabindex="0"
                 animate:flip={{ duration: 200 }}
             >

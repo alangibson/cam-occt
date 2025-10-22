@@ -5,5 +5,5 @@ export interface PartStore {
     warnings: PartDetectionWarning[];
     highlightedPartId: string | null;
     hoveredPartId: string | null;
-    selectedPartId: string | null;
+    selectedPartIds: Set<string>;
 }

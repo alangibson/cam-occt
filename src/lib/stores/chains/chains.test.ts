@@ -46,7 +46,7 @@ describe('Chain Store', () => {
         const state = get(chainStore);
         expect(state.chains).toEqual([]);
         expect(state.tolerance).toBe(0.1);
-        expect(state.selectedChainId).toBeNull();
+        expect(state.selectedChainIds.size).toBe(0);
         expect(state.highlightedChainId).toBeNull();
     });
 
@@ -107,7 +107,7 @@ describe('Chain Store', () => {
 
             const state = get(chainStore);
             expect(state.highlightedChainId).toBe(testChainId);
-            expect(state.selectedChainId).toBeNull(); // Should not affect selection
+            expect(state.selectedChainIds.size).toBe(0); // Should not affect selection
         });
 
         it('should clear chain highlight', () => {
@@ -131,7 +131,7 @@ describe('Chain Store', () => {
             chainStore.highlightChain(highlightedChainId);
 
             const state = get(chainStore);
-            expect(state.selectedChainId).toBe(selectedChainId);
+            expect(state.selectedChainIds.has(selectedChainId)).toBe(true);
             expect(state.highlightedChainId).toBe(highlightedChainId);
         });
 

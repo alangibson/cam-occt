@@ -44,7 +44,7 @@ export class RapidRenderer extends BaseRenderer {
 
         state.rapids.forEach((rapid) => {
             // Determine visual state
-            const isSelected = state.selection.selectedRapidId === rapid.id;
+            const isSelected = state.selection.selectedRapidIds.has(rapid.id);
             const isHighlighted =
                 state.selection.highlightedRapidId === rapid.id;
             const isHovered = state.hover?.hoveredRapid === rapid.id;

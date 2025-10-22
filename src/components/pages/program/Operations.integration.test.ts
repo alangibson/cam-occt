@@ -41,13 +41,14 @@ describe('Operations Highlighting Integration', () => {
         const testChainId = 'chain-456';
 
         // Verify initial state
-        expect(get(chainStore).selectedChainId).toBe(null);
+        expect(get(chainStore).selectedChainIds.size).toBe(0);
 
         // Simulate hovering over a cut in Operations apply-to menu
         chainStore.selectChain(testChainId);
 
         // Verify chain is selected in store
-        expect(get(chainStore).selectedChainId).toBe(testChainId);
+        expect(get(chainStore).selectedChainIds.has(testChainId)).toBe(true);
+        expect(get(chainStore).selectedChainIds.size).toBe(1);
     });
 
     it('should change chain selection when hovering over different cuts', () => {
@@ -56,13 +57,15 @@ describe('Operations Highlighting Integration', () => {
 
         // Select first chain
         chainStore.selectChain(firstChainId);
-        expect(get(chainStore).selectedChainId).toBe(firstChainId);
+        expect(get(chainStore).selectedChainIds.has(firstChainId)).toBe(true);
+        expect(get(chainStore).selectedChainIds.size).toBe(1);
 
         // Select second chain (simulating hovering over different cut)
         chainStore.selectChain(secondChainId);
 
         // Verify selection changed
-        expect(get(chainStore).selectedChainId).toBe(secondChainId);
+        expect(get(chainStore).selectedChainIds.has(secondChainId)).toBe(true);
+        expect(get(chainStore).selectedChainIds.size).toBe(1);
     });
 
     it('should clear chain selection when hovering away from cuts', () => {
@@ -70,13 +73,14 @@ describe('Operations Highlighting Integration', () => {
 
         // First select a chain
         chainStore.selectChain(testChainId);
-        expect(get(chainStore).selectedChainId).toBe(testChainId);
+        expect(get(chainStore).selectedChainIds.has(testChainId)).toBe(true);
+        expect(get(chainStore).selectedChainIds.size).toBe(1);
 
         // Then clear selection (simulating mouse leave)
         chainStore.selectChain(null);
 
         // Verify selection is cleared
-        expect(get(chainStore).selectedChainId).toBe(null);
+        expect(get(chainStore).selectedChainIds.size).toBe(0);
     });
 
     it('should handle multiple rapid hover changes correctly', () => {
@@ -90,19 +94,21 @@ describe('Operations Highlighting Integration', () => {
         expect(get(partStore).highlightedPartId).toBe(partId1);
 
         chainStore.selectChain(chainId1);
-        expect(get(chainStore).selectedChainId).toBe(chainId1);
+        expect(get(chainStore).selectedChainIds.has(chainId1)).toBe(true);
+        expect(get(chainStore).selectedChainIds.size).toBe(1);
 
         partStore.highlightPart(partId2);
         expect(get(partStore).highlightedPartId).toBe(partId2);
 
         chainStore.selectChain(chainId2);
-        expect(get(chainStore).selectedChainId).toBe(chainId2);
+        expect(get(chainStore).selectedChainIds.has(chainId2)).toBe(true);
+        expect(get(chainStore).selectedChainIds.size).toBe(1);
 
         // Clear both
         partStore.clearHighlight();
         chainStore.selectChain(null);
 
         expect(get(partStore).highlightedPartId).toBe(null);
-        expect(get(chainStore).selectedChainId).toBe(null);
+        expect(get(chainStore).selectedChainIds.size).toBe(0);
     });
 });

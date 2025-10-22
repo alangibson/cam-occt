@@ -252,7 +252,7 @@ describe('Parts Store', () => {
             partStore.selectPart(testPartId);
 
             const state = get(partStore);
-            expect(state.selectedPartId).toBe(testPartId);
+            expect(state.selectedPartIds.has(testPartId)).toBe(true);
             expect(state.highlightedPartId).toBeNull(); // Should not affect highlighting
             expect(state.hoveredPartId).toBeNull(); // Should not affect hovering
         });
@@ -262,11 +262,11 @@ describe('Parts Store', () => {
 
             // First select a part
             partStore.selectPart(testPartId);
-            expect(get(partStore).selectedPartId).toBe(testPartId);
+            expect(get(partStore).selectedPartIds.has(testPartId)).toBe(true);
 
             // Then clear the selection
             partStore.clearPartSelection();
-            expect(get(partStore).selectedPartId).toBeNull();
+            expect(get(partStore).selectedPartIds.size).toBe(0);
         });
 
         it('should allow selection, highlighting, and hovering to coexist', () => {
@@ -280,7 +280,7 @@ describe('Parts Store', () => {
             partStore.hoverPart(hoveredPartId);
 
             const state = get(partStore);
-            expect(state.selectedPartId).toBe(selectedPartId);
+            expect(state.selectedPartIds.has(selectedPartId)).toBe(true);
             expect(state.highlightedPartId).toBe(highlightedPartId);
             expect(state.hoveredPartId).toBe(hoveredPartId);
         });
@@ -289,7 +289,7 @@ describe('Parts Store', () => {
             partStore.selectPart(null);
 
             const state = get(partStore);
-            expect(state.selectedPartId).toBeNull();
+            expect(state.selectedPartIds.size).toBe(0);
         });
     });
 });

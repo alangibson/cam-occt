@@ -13,13 +13,16 @@
     import {
         leadStore,
         selectLead,
+        toggleLeadSelection,
         clearLeadHighlight,
+        highlightLead,
     } from '$lib/stores/leads/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { generateChainEndpoints } from '$lib/stores/chains/functions';
     import { generateShapePoints } from '$lib/stores/shape/functions';
     import {
-        selectRapid,
+        toggleRapidSelection,
+        clearRapidSelection,
         clearRapidHighlight,
     } from '$lib/stores/rapids/functions';
     import {
@@ -29,6 +32,7 @@
     import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
     import type { Shape } from '$lib/geometry/shape/interfaces';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
+    import { SelectionMode } from '$lib/config/settings/enums';
     import { getPhysicalScaleFactor } from '$lib/config/units/units';
     import { RenderingPipeline } from '$lib/rendering/canvas/pipeline';
     import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
@@ -57,12 +61,12 @@
     $: displayUnit = $drawingStore.displayUnit;
     $: layerVisibility = $drawingStore.layerVisibility;
     $: chains = $chainStore.chains;
-    $: selectedChainId = $chainStore.selectedChainId;
+    $: selectedChainIds = $chainStore.selectedChainIds;
     $: highlightedChainId = $chainStore.highlightedChainId;
     $: parts = $partStore.parts;
     $: highlightedPartId = $partStore.highlightedPartId;
     $: hoveredPartId = $partStore.hoveredPartId;
-    $: selectedPartId = $partStore.selectedPartId;
+    $: selectedPartIds = $partStore.selectedPartIds;
     $: cutsState = $cutStore;
     $: operations = $operationsStore;
     // Only show chains as having cuts if their associated operations are enabled
@@ -85,7 +89,7 @@
                   ),
               ]
             : [];
-    $: selectedCutId = cutsState?.selectedCutId;
+    $: selectedCutIds = cutsState?.selectedCutIds;
     $: highlightedCutId = cutsState?.highlightedCutId;
     $: tessellationState = $tessellationStore;
     $: overlayState = $overlayStore;
@@ -93,7 +97,7 @@
     $: rapids = $rapidStore.rapids;
     $: showRapids = $rapidStore.showRapids;
     $: showRapidDirections = $rapidStore.showRapidDirections;
-    $: selectedRapidId = $rapidStore.selectedRapidId;
+    $: selectedRapidIds = $rapidStore.selectedRapidIds;
     $: highlightedRapidId = $rapidStore.highlightedRapidId;
     $: shapeVisualization = $shapeVisualizationStore;
     $: showShapePaths = shapeVisualization.showShapePaths;
@@ -118,7 +122,7 @@
     $: showCutEndPoints = cutsState.showCutEndPoints;
     $: showCutTangentLines = cutsState.showCutTangentLines;
     $: leadState = $leadStore;
-    $: selectedLeadId = leadState.selectedLeadId;
+    $: selectedLeadIds = leadState.selectedLeadIds;
     $: highlightedLeadId = leadState.highlightedLeadId;
     $: leadNormals = leadState.showLeadNormals;
     $: leadPaths = leadState.showLeadPaths;
@@ -132,18 +136,20 @@
     // Compute effective interaction mode based on selection mode and current stage
     $: interactionMode = (() => {
         // If selection mode is explicit (not auto), use it
-        if (selectionMode === 'shape') {
+        if (selectionMode === SelectionMode.Shape) {
             return 'shapes';
-        } else if (selectionMode === 'chain') {
+        } else if (selectionMode === SelectionMode.Chain) {
             return 'chains';
-        } else if (selectionMode === 'part') {
+        } else if (selectionMode === SelectionMode.Part) {
             return 'chains'; // Parts use chain interaction
-        } else if (selectionMode === 'cut') {
+        } else if (selectionMode === SelectionMode.Cut) {
             return 'cuts';
-        } else if (selectionMode === 'lead') {
+        } else if (selectionMode === SelectionMode.Lead) {
             return 'leads';
-        } else if (selectionMode === 'kerf') {
+        } else if (selectionMode === SelectionMode.Kerf) {
             return 'kerfs';
+        } else if (selectionMode === SelectionMode.Rapid) {
+            return 'rapids';
         } else {
             // Auto mode: use stage-based interaction
             switch (currentStage) {
@@ -307,15 +313,15 @@
         renderingPipeline.updateState({
             selection: {
                 selectedShapes,
-                selectedChainId,
+                selectedChainIds,
                 highlightedChainId,
                 highlightedPartId,
-                selectedPartId,
-                selectedCutId: selectedCutId,
+                selectedPartIds,
+                selectedCutIds: selectedCutIds,
                 highlightedCutId: highlightedCutId,
-                selectedRapidId,
+                selectedRapidIds,
                 highlightedRapidId,
-                selectedLeadId,
+                selectedLeadIds,
                 highlightedLeadId,
                 selectedKerfId,
                 highlightedKerfId,
@@ -473,13 +479,13 @@
             if (hitResult) {
                 switch (hitResult.type) {
                     case HitTestType.RAPID:
-                        // Handle rapid selection (only in cuts mode, not in leads mode)
-                        if (interactionMode === 'cuts') {
-                            if (selectedRapidId === hitResult.id) {
-                                selectRapid(null); // Deselect if already selected
-                            } else {
-                                selectRapid(hitResult.id);
-                            }
+                        // Handle rapid selection (allow in chains, rapids, and cuts modes)
+                        if (
+                            interactionMode === 'rapids' ||
+                            interactionMode === 'cuts' ||
+                            interactionMode === 'chains'
+                        ) {
+                            toggleRapidSelection(hitResult.id);
                             return; // Don't process other selections
                         }
                         break;
@@ -500,24 +506,34 @@
                                     .find((c) => c.id === chainId)
                                     ?.shapes.map((s) => s.id) || [];
 
-                            // Check if any shape in the chain is already selected
-                            const chainSelected = chainShapeIds.some(
-                                (id: string) => selectedShapes.has(id)
-                            );
+                            // Check if this chain is already selected
+                            const chainAlreadySelected =
+                                selectedChainIds.has(chainId);
 
-                            if (!e.ctrlKey && !chainSelected) {
-                                drawingStore.clearSelection();
-                            }
-
-                            // Select/deselect all shapes in the chain
-                            chainShapeIds.forEach((id: string) => {
-                                if (!selectedShapes.has(id) || !e.ctrlKey) {
-                                    drawingStore.selectShape(id, true); // Always multi-select for chains
+                            if (e.ctrlKey || e.metaKey) {
+                                // Multi-select mode: toggle chain selection
+                                if (chainAlreadySelected) {
+                                    chainStore.deselectChain(chainId);
+                                    // Deselect shapes in this chain
+                                    chainShapeIds.forEach((id: string) => {
+                                        drawingStore.deselectShape(id);
+                                    });
+                                } else {
+                                    chainStore.selectChain(chainId, true);
+                                    // Select shapes in this chain
+                                    chainShapeIds.forEach((id: string) => {
+                                        drawingStore.selectShape(id, true);
+                                    });
                                 }
-                            });
-
-                            // Store the selected chain ID
-                            chainStore.selectChain(chainId);
+                            } else {
+                                // Single select mode: clear others and select this one
+                                drawingStore.clearSelection();
+                                chainStore.selectChain(chainId, false);
+                                // Select all shapes in the chain
+                                chainShapeIds.forEach((id: string) => {
+                                    drawingStore.selectShape(id, true);
+                                });
+                            }
 
                             // Call the callback
                             onChainClick(chainId);
@@ -528,12 +544,27 @@
                     case HitTestType.PART:
                         // Handle part selection in Program stage
                         if (interactionMode === 'chains' && onPartClick) {
-                            // Clear individual shape selection to avoid styling conflicts
-                            drawingStore.clearSelection();
-                            // Select the part locally for highlighting
-                            partStore.selectPart(hitResult.id);
+                            const partId = hitResult.id;
+                            const partAlreadySelected =
+                                selectedPartIds.has(partId);
+
+                            if (e.ctrlKey || e.metaKey) {
+                                // Multi-select mode: toggle part selection
+                                if (partAlreadySelected) {
+                                    partStore.deselectPart(partId);
+                                } else {
+                                    partStore.selectPart(partId, true);
+                                }
+                            } else {
+                                // Single select mode: clear others and select this one
+                                if (!partAlreadySelected) {
+                                    drawingStore.clearSelection();
+                                    partStore.selectPart(partId, false);
+                                }
+                            }
+
                             // Call the external callback
-                            onPartClick(hitResult.id);
+                            onPartClick(partId);
                             return;
                         }
                         break;
@@ -542,28 +573,45 @@
                         // Handle cut endpoint selection
                         if (interactionMode === 'cuts') {
                             const cutId = hitResult.id;
-                            // Toggle cut selection
-                            if (selectedCutId === cutId) {
-                                cutStore.selectCut(null); // Deselect if already selected
+                            const cutAlreadySelected =
+                                selectedCutIds.has(cutId);
+
+                            if (e.ctrlKey || e.metaKey) {
+                                // Multi-select mode: toggle cut selection
+                                cutStore.toggleCutSelection(cutId);
                             } else {
-                                cutStore.selectCut(cutId);
+                                // Single select mode
+                                if (cutAlreadySelected) {
+                                    cutStore.selectCut(null); // Deselect if already selected
+                                } else {
+                                    cutStore.selectCut(cutId, false); // Clear others and select this one
+                                }
                             }
                             return;
                         }
                         break;
 
                     case HitTestType.LEAD:
-                        // Handle lead selection
+                        // Handle lead selection (allow in chains, leads, and cuts modes)
                         if (
                             interactionMode === 'leads' ||
-                            interactionMode === 'cuts'
+                            interactionMode === 'cuts' ||
+                            interactionMode === 'chains'
                         ) {
                             const leadId = hitResult.id;
-                            // Toggle lead selection
-                            if (selectedLeadId === leadId) {
-                                selectLead(null); // Deselect if already selected
+                            const leadAlreadySelected =
+                                selectedLeadIds.has(leadId);
+
+                            if (e.ctrlKey || e.metaKey) {
+                                // Multi-select mode: toggle lead selection
+                                toggleLeadSelection(leadId);
                             } else {
-                                selectLead(leadId);
+                                // Single select mode
+                                if (leadAlreadySelected) {
+                                    selectLead(null); // Deselect if already selected
+                                } else {
+                                    selectLead(leadId, false); // Clear others and select this one
+                                }
                             }
                             return;
                         }
@@ -624,21 +672,34 @@
                                 chains
                             );
 
-                            // Check if any shape in the chain is already selected
-                            const chainSelected = chainShapeIds.some((id) =>
-                                selectedShapes.has(id)
-                            );
+                            // Check if this chain is already selected
+                            const chainAlreadySelected =
+                                selectedChainIds.has(chainId);
 
-                            if (!e.ctrlKey && !chainSelected) {
-                                drawingStore.clearSelection();
-                            }
-
-                            // Select/deselect all shapes in the chain
-                            chainShapeIds.forEach((id) => {
-                                if (!selectedShapes.has(id) || !e.ctrlKey) {
-                                    drawingStore.selectShape(id, true); // Always multi-select for chains
+                            if (e.ctrlKey || e.metaKey) {
+                                // Multi-select mode: toggle chain selection
+                                if (chainAlreadySelected) {
+                                    chainStore.deselectChain(chainId);
+                                    // Deselect shapes in this chain
+                                    chainShapeIds.forEach((id) => {
+                                        drawingStore.deselectShape(id);
+                                    });
+                                } else {
+                                    chainStore.selectChain(chainId, true);
+                                    // Select shapes in this chain
+                                    chainShapeIds.forEach((id) => {
+                                        drawingStore.selectShape(id, true);
+                                    });
                                 }
-                            });
+                            } else {
+                                // Single select mode: clear others and select this one
+                                drawingStore.clearSelection();
+                                chainStore.selectChain(chainId, false);
+                                // Select all shapes in the chain
+                                chainShapeIds.forEach((id) => {
+                                    drawingStore.selectShape(id, true);
+                                });
+                            }
 
                             onChainClick(chainId);
                         }
@@ -659,10 +720,20 @@
                         );
                         if (cutForChain) {
                             // Handle cut selection - don't select individual shapes
-                            if (selectedCutId === cutForChain.id) {
-                                cutStore.selectCut(null); // Deselect if already selected
+                            const cutAlreadySelected = selectedCutIds.has(
+                                cutForChain.id
+                            );
+
+                            if (e.ctrlKey || e.metaKey) {
+                                // Multi-select mode: toggle cut selection
+                                cutStore.toggleCutSelection(cutForChain.id);
                             } else {
-                                cutStore.selectCut(cutForChain.id);
+                                // Single select mode
+                                if (cutAlreadySelected) {
+                                    cutStore.selectCut(null); // Deselect if already selected
+                                } else {
+                                    cutStore.selectCut(cutForChain.id, false); // Clear others and select this one
+                                }
                             }
                         }
                     }
@@ -683,7 +754,7 @@
                     partStore.selectPart(null);
                     cutStore.selectCut(null);
                     cutStore.clearHighlight();
-                    selectRapid(null);
+                    clearRapidSelection();
                     clearRapidHighlight();
                     selectLead(null);
                     clearLeadHighlight();
@@ -744,33 +815,84 @@
                 const hitResult = renderingPipeline.hitScreen(newMousePos);
 
                 let hoveredShapeId = null;
+                let hoveredChainId: string | null = null;
+                let hoveredPartId: string | null = null;
+                let hoveredCutId: string | null = null;
+                let hoveredRapidId: string | null = null;
+                let hoveredLeadId: string | null = null;
+                let hoveredKerfId: string | null = null;
 
-                if (hitResult && hitResult.type === HitTestType.SHAPE) {
-                    const metadata = hitResult.metadata;
-                    const shape = metadata?.shape;
-                    if (shape) {
-                        // Filter hover based on selection mode
-                        const allowHover =
-                            selectionMode === 'auto' ||
-                            selectionMode === 'shape';
-                        if (allowHover) {
-                            if (interactionMode === 'shapes') {
-                                // Edit mode - show hover for individual shapes
-                                hoveredShapeId = shape.id;
-                            } else if (interactionMode === 'chains') {
-                                // Program mode - show hover for chains (set to actual shape, rendering handles chain highlighting)
-                                hoveredShapeId = shape.id;
-                            } else if (interactionMode === 'cuts') {
-                                // Simulation mode - only hover shapes that are part of selectable cuts
-                                const chainId = getShapeChainId(
-                                    shape.id,
-                                    chains
-                                );
-                                if (
-                                    chainId &&
-                                    chainsWithCuts.includes(chainId)
-                                ) {
+                if (hitResult) {
+                    if (hitResult.type === HitTestType.CHAIN) {
+                        // Direct chain hit - only allow if in chains mode
+                        if (interactionMode === 'chains') {
+                            hoveredChainId = hitResult.id;
+                        }
+                    } else if (hitResult.type === HitTestType.PART) {
+                        // Direct part hit - only allow if in chains mode (parts use chain interaction)
+                        if (interactionMode === 'chains') {
+                            hoveredPartId = hitResult.id;
+                        }
+                    } else if (hitResult.type === HitTestType.CUT) {
+                        // Direct cut hit - only allow if in cuts mode
+                        if (interactionMode === 'cuts') {
+                            hoveredCutId = hitResult.id;
+                        }
+                    } else if (hitResult.type === HitTestType.RAPID) {
+                        // Direct rapid hit - allow in chains, rapids, and cuts modes
+                        if (
+                            interactionMode === 'rapids' ||
+                            interactionMode === 'cuts' ||
+                            interactionMode === 'chains'
+                        ) {
+                            hoveredRapidId = hitResult.id;
+                        }
+                    } else if (hitResult.type === HitTestType.LEAD) {
+                        // Direct lead hit - allow in chains, leads, and cuts modes
+                        if (
+                            interactionMode === 'leads' ||
+                            interactionMode === 'cuts' ||
+                            interactionMode === 'chains'
+                        ) {
+                            hoveredLeadId = hitResult.id;
+                        }
+                    } else if (hitResult.type === HitTestType.KERF) {
+                        // Direct kerf hit - only allow if in kerfs mode
+                        if (interactionMode === 'kerfs') {
+                            hoveredKerfId = hitResult.id;
+                        }
+                    } else if (hitResult.type === HitTestType.SHAPE) {
+                        const metadata = hitResult.metadata;
+                        const shape = metadata?.shape;
+                        if (shape) {
+                            // Filter hover based on selection mode
+                            const allowHover =
+                                selectionMode === 'auto' ||
+                                selectionMode === 'shape';
+                            if (allowHover) {
+                                if (interactionMode === 'shapes') {
+                                    // Edit mode - show hover for individual shapes
                                     hoveredShapeId = shape.id;
+                                } else if (interactionMode === 'chains') {
+                                    // Program mode - show hover for chains
+                                    hoveredShapeId = shape.id;
+                                    // Also highlight the chain this shape belongs to
+                                    hoveredChainId = getShapeChainId(
+                                        shape.id,
+                                        chains
+                                    );
+                                } else if (interactionMode === 'cuts') {
+                                    // Simulation mode - only hover shapes that are part of selectable cuts
+                                    const chainId = getShapeChainId(
+                                        shape.id,
+                                        chains
+                                    );
+                                    if (
+                                        chainId &&
+                                        chainsWithCuts.includes(chainId)
+                                    ) {
+                                        hoveredShapeId = shape.id;
+                                    }
                                 }
                             }
                         }
@@ -778,6 +900,37 @@
                 }
 
                 drawingStore.setHoveredShape(hoveredShapeId);
+
+                // Update chain highlight
+                if (hoveredChainId !== highlightedChainId) {
+                    chainStore.highlightChain(hoveredChainId);
+                }
+
+                // Update part hover/highlight
+                if (hoveredPartId !== $partStore.hoveredPartId) {
+                    partStore.hoverPart(hoveredPartId);
+                }
+
+                // Update cut highlight
+                if (hoveredCutId !== highlightedCutId) {
+                    cutStore.highlightCut(hoveredCutId);
+                }
+
+                // Update rapid highlight
+                if (hoveredRapidId !== highlightedRapidId) {
+                    rapidStore.highlightRapid(hoveredRapidId);
+                }
+
+                // Update lead highlight
+                if (hoveredLeadId !== highlightedLeadId) {
+                    highlightLead(hoveredLeadId);
+                }
+
+                // Update kerf highlight
+                if (hoveredKerfId !== highlightedKerfId) {
+                    kerfStore.setHighlightedKerf(hoveredKerfId);
+                }
+
                 hoverTimeout = null;
             }, 16); // ~60fps throttling (16ms)
         }

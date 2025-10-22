@@ -2,18 +2,20 @@
     import { leadStore, parseLeadId } from '$lib/stores/leads/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
-    import { kerfStore } from '$lib/stores/kerfs/store';
     import { LeadType } from '$lib/cam/lead/enums';
 
     // Reactive lead data
     $: leadState = $leadStore;
-    $: selectedLeadId = leadState.selectedLeadId;
+    $: selectedLeadIds = leadState.selectedLeadIds;
+    $: selectedLeadId =
+        selectedLeadIds.size === 1 ? Array.from(selectedLeadIds)[0] : null;
+    $: highlightedLeadId = leadState.highlightedLeadId;
+    $: activeLeadId = selectedLeadId || highlightedLeadId;
     $: cuts = $cutStore.cuts;
     $: operations = $operationsStore;
-    $: kerfs = $kerfStore.kerfs;
 
     // Parse lead ID and get associated data
-    $: parsedLead = selectedLeadId ? parseLeadId(selectedLeadId) : null;
+    $: parsedLead = activeLeadId ? parseLeadId(activeLeadId) : null;
     $: selectedCut = parsedLead
         ? cuts.find((cut) => cut.id === parsedLead.cutId)
         : null;
@@ -33,16 +35,6 @@
                 ? selectedCut.leadIn
                 : selectedCut.leadOut
             : null;
-    $: selectedKerf =
-        selectedCut && kerfs
-            ? kerfs.find((k) => k.cutId === selectedCut.id)
-            : null;
-    $: kerfOverlapsChain =
-        parsedLead && selectedKerf
-            ? parsedLead.leadType === 'leadIn'
-                ? selectedKerf.leadInKerfOverlapsChain
-                : selectedKerf.leadOutKerfOverlapsChain
-            : false;
 
     function getLeadTypeName(leadType: 'leadIn' | 'leadOut'): string {
         return leadType === 'leadIn' ? 'Lead-In' : 'Lead-Out';
@@ -176,16 +168,6 @@
                 </div>
             {/if}
 
-            {#if kerfOverlapsChain}
-                <div class="property-section-title warning">Kerf Violation</div>
-                <div class="property-row warning-row">
-                    <span class="property-label">Warning:</span>
-                    <span class="property-value warning-text"
-                        >Lead kerf overlaps chain path</span
-                    >
-                </div>
-            {/if}
-
             {#if leadGeometry}
                 <div class="property-section-title">Lead Geometry</div>
 
@@ -297,23 +279,6 @@
         margin-top: 0.5rem;
         padding-top: 0.5rem;
         border-top: 1px solid #e0e0e0;
-    }
-
-    .property-section-title.warning {
-        color: #d32f2f;
-        border-top: 1px solid #ffcdd2;
-    }
-
-    .warning-row {
-        background-color: #fff3e0;
-        padding: 0.5rem;
-        border-radius: 4px;
-        border: 1px solid #ffb74d;
-    }
-
-    .warning-text {
-        color: #e65100;
-        font-weight: 600;
     }
 
     .property-row {
