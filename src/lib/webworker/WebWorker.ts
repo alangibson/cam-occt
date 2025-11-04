@@ -1,8 +1,9 @@
 /**
- * Base class for WebWorker clients using Comlink
+ * Base class for WebWorkers using Comlink
  *
  * Provides type-safe async method dispatching to WebWorkers using Comlink.
  * Results from the last call are cached automatically.
+ * Supports sharing a single worker across multiple class instances.
  *
  * @example
  * // Define service interface
@@ -12,54 +13,73 @@
  * }
  *
  * // Worker file (math.worker.ts)
- * import { WebWorkerService } from './WebWorkerService';
- * class MathServiceImpl extends WebWorkerService implements MathService {
+ * import { WorkerService } from './WorkerService';
+ * class MathServiceImpl extends WorkerService implements MathService {
  *   async add(a: number, b: number) { return a + b; }
  *   async multiply(a: number, b: number) { return a * b; }
  * }
- * WebWorkerService.expose(new MathServiceImpl());
+ * WorkerService.expose(new MathServiceImpl());
  *
- * // Client usage
- * import ComlinkWorker from './math.worker?worker&comlink';
- * const math = await new ComlinkWorker<MathService>();
+ * // Single worker usage
+ * const worker = new Worker(new URL('./math.worker.ts', import.meta.url), { type: 'module' });
+ * const math = new Math(worker);
  * const result = await math.add(2, 3); // 5
- * math[WebWorkerClient.dispose]();
+ * math.dispose();
+ *
+ * // Shared worker usage - multiple classes use the same worker
+ * const worker = new Worker(new URL('./math.worker.ts', import.meta.url), { type: 'module' });
+ * const wrapped = Comlink.wrap<MathService>(worker);
+ * const math1 = new Math(wrapped);  // Each has independent cache
+ * const math2 = new Math(wrapped);  // Shares the same worker
+ * // Disposing math1 won't terminate the worker since it's shared
  */
 
 import * as Comlink from 'comlink';
-import type { CacheEntry, WebWorkerClientOptions } from './types.js';
+import type { CacheEntry, WebWorkerOptions } from './types.js';
 import { WebWorkerError } from './types.js';
 
-export abstract class WebWorkerClient<TService> {
-	protected readonly worker: Worker;
+export abstract class WebWorker<TService> {
+	protected readonly worker: Worker | null;
 	protected readonly wrapped: Comlink.Remote<TService>;
 	private lastCallCache = new Map<string, CacheEntry>();
 	private disposed = false;
 	private enableCache: boolean;
+	private ownsWorker: boolean;
 
 	static readonly dispose = Symbol('dispose');
 
 	/**
-	 * Create a new WebWorker client
-	 * @param worker - The Worker instance to communicate with
+	 * Create a new WebWorker
+	 * @param workerOrWrapped - Either a Worker instance or an already-wrapped Comlink.Remote
 	 * @param options - Optional configuration
 	 */
-	constructor(worker: Worker, options: WebWorkerClientOptions = {}) {
-		this.worker = worker;
+	constructor(workerOrWrapped: Worker | Comlink.Remote<TService>, options: WebWorkerOptions = {}) {
 		this.enableCache = options.enableCache ?? true;
-		this.wrapped = Comlink.wrap<TService>(worker);
 
-		// Set up error handler
-		if (options.onError) {
-			this.worker.onerror = (event: ErrorEvent) => {
-				options.onError!(
-					new WebWorkerError(`Worker error: ${event.message}`, {
-						filename: event.filename,
-						lineno: event.lineno,
-						colno: event.colno
-					})
-				);
-			};
+		// Determine if we received a Worker or a wrapped Remote
+		const isWorker = typeof Worker !== "undefined" && workerOrWrapped instanceof Worker; if (isWorker) {
+			// We own this worker - wrap it and manage its lifecycle
+			this.worker = workerOrWrapped;
+			this.wrapped = Comlink.wrap<TService>(workerOrWrapped);
+			this.ownsWorker = true;
+
+			// Set up error handler
+			if (options.onError) {
+				this.worker.onerror = (event: ErrorEvent) => {
+					options.onError!(
+						new WebWorkerError(`Worker error: ${event.message}`, {
+							filename: event.filename,
+							lineno: event.lineno,
+							colno: event.colno
+						})
+					);
+				};
+			}
+		} else {
+			// Shared worker - we don't own it
+			this.worker = null;
+			this.wrapped = workerOrWrapped;
+			this.ownsWorker = false;
 		}
 	}
 
@@ -72,7 +92,7 @@ export abstract class WebWorkerClient<TService> {
 	 */
 	protected async call<K extends keyof TService>(method: K, ...params: any[]): Promise<any> {
 		if (this.disposed) {
-			throw new WebWorkerError('Worker client has been disposed');
+			throw new WebWorkerError('Worker has been disposed');
 		}
 
 		// Check cache for last call with same method and params
@@ -123,6 +143,7 @@ export abstract class WebWorkerClient<TService> {
 
 	/**
 	 * Dispose of the worker and clean up resources
+	 * Only terminates the worker if this instance owns it (not shared)
 	 */
 	dispose(): void {
 		if (this.disposed) {
@@ -132,10 +153,12 @@ export abstract class WebWorkerClient<TService> {
 		this.disposed = true;
 		this.lastCallCache.clear();
 
-		// Clean up Comlink proxy
-		this.wrapped[Comlink.releaseProxy]();
-
-		// Terminate the worker
-		this.worker.terminate();
+		// Clean up Comlink proxy (but don't terminate shared workers)
+		if (this.ownsWorker) {
+			this.wrapped[Comlink.releaseProxy]();
+			// Only terminate if we own the worker
+			this.worker!.terminate();
+		}
+		// For shared workers, just clean up our local state
 	}
 }

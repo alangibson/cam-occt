@@ -46,9 +46,9 @@ export class WebWorkerError extends Error {
 }
 
 /**
- * Options for creating a WebWorker client
+ * Options for creating a WebWorker
  */
-export interface WebWorkerClientOptions {
+export interface WebWorkerOptions {
 	/**
 	 * Enable caching of the last method call result
 	 * @default true

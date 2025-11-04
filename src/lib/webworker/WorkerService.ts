@@ -1,19 +1,19 @@
 /**
- * Base class for WebWorker services using Comlink
+ * Base class for worker services using Comlink
  *
  * Provides helper methods for worker services.
- * Use WebWorkerService.expose() to expose your service to the main thread.
+ * Use WorkerService.expose() to expose your service to the main thread.
  *
  * @example
  * // math.worker.ts
- * import { WebWorkerService } from './WebWorkerService';
+ * import { WorkerService } from './WorkerService';
  *
  * interface MathService {
  *   add(a: number, b: number): Promise<number>;
  *   multiply(a: number, b: number): Promise<number>;
  * }
  *
- * class MathServiceImpl extends WebWorkerService implements MathService {
+ * class MathServiceImpl extends WorkerService implements MathService {
  *   async add(a: number, b: number): Promise<number> {
  *     this.log('add', a, b);
  *     return a + b;
@@ -26,12 +26,12 @@
  * }
  *
  * // Expose the service using Comlink
- * WebWorkerService.expose(new MathServiceImpl());
+ * WorkerService.expose(new MathServiceImpl());
  */
 
 import * as Comlink from 'comlink';
 
-export abstract class WebWorkerService {
+export abstract class WorkerService {
 	/**
 	 * Expose a service instance to the main thread using Comlink
 	 * @param instance - The service instance to expose

@@ -1,12 +1,12 @@
 /**
  * Example WebWorker service implementation using Comlink
- * This demonstrates how to create a worker service using WebWorkerService base class
+ * This demonstrates how to create a worker service using WorkerService base class
  */
 
-import { WebWorkerService } from '../WebWorkerService.js';
+import { WorkerService } from '../WorkerService.js';
 import type { CalculatorService } from './calculator.service.js';
 
-class CalculatorServiceImpl extends WebWorkerService implements CalculatorService {
+class CalculatorServiceImpl extends WorkerService implements CalculatorService {
 	async add(a: number, b: number): Promise<number> {
 		this.log('add', a, b);
 		return a + b;
@@ -65,4 +65,4 @@ class CalculatorServiceImpl extends WebWorkerService implements CalculatorServic
 }
 
 // Expose the service using Comlink
-WebWorkerService.expose(new CalculatorServiceImpl());
+WorkerService.expose(new CalculatorServiceImpl());

@@ -4,13 +4,13 @@
  * @module webworker
  */
 
-export { WebWorkerClient } from './WebWorkerClient.js';
-export { WebWorkerService } from './WebWorkerService.js';
+export { WebWorker } from './WebWorker.js';
+export { WorkerService } from './WorkerService.js';
 export {
 	WebWorkerError,
 	type AsyncMethods,
 	type MethodParams,
 	type MethodReturnType,
 	type CacheEntry,
-	type WebWorkerClientOptions
+	type WebWorkerOptions
 } from './types.js';

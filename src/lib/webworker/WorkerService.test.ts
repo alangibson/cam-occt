@@ -1,9 +1,9 @@
 /**
- * Tests for WebWorkerService base class with Comlink
+ * Tests for WorkerService base class with Comlink
  */
 
 import { describe, it, expect } from 'vitest';
-import { WebWorkerService } from './WebWorkerService.js';
+import { WorkerService } from './WorkerService.js';
 import * as Comlink from 'comlink';
 
 // Test service interface
@@ -13,7 +13,7 @@ interface TestService {
 }
 
 // Test service implementation
-class TestServiceImpl extends WebWorkerService implements TestService {
+class TestServiceImpl extends WorkerService implements TestService {
 	async add(a: number, b: number): Promise<number> {
 		this.log('add called with', a, b);
 		return a + b;
@@ -25,11 +25,11 @@ class TestServiceImpl extends WebWorkerService implements TestService {
 	}
 }
 
-describe('WebWorkerService', () => {
+describe('WorkerService', () => {
 	describe('Service implementation', () => {
 		it('should create service instance', () => {
 			const service = new TestServiceImpl();
-			expect(service).toBeInstanceOf(WebWorkerService);
+			expect(service).toBeInstanceOf(WorkerService);
 			expect(service).toBeInstanceOf(TestServiceImpl);
 		});
 
@@ -44,8 +44,8 @@ describe('WebWorkerService', () => {
 		it('should expose service via Comlink', () => {
 			// This test just verifies the static method exists and can be called
 			// Actual exposure testing requires a worker context
-			expect(WebWorkerService.expose).toBeDefined();
-			expect(typeof WebWorkerService.expose).toBe('function');
+			expect(WorkerService.expose).toBeDefined();
+			expect(typeof WorkerService.expose).toBe('function');
 		});
 	});
 

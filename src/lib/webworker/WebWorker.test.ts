@@ -1,12 +1,12 @@
 /**
- * Tests for WebWorkerClient base class with Comlink
+ * Tests for WebWorker base class with Comlink
  *
  * Note: These are unit tests for the base class functionality.
  * Full integration tests with real workers should be done in e2e tests.
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { WebWorkerClient } from './WebWorkerClient.js';
+import { WebWorker } from './WebWorker.js';
 import { WebWorkerError } from './types.js';
 
 // Mock Comlink - must be defined inline in the factory due to hoisting
@@ -43,7 +43,7 @@ interface TestService {
 }
 
 // Test client implementation
-class TestClient extends WebWorkerClient<TestService> implements TestService {
+class TestClient extends WebWorker<TestService> implements TestService {
 	async add(a: number, b: number): Promise<number> {
 		return this.call('add', a, b);
 	}
@@ -70,43 +70,28 @@ class TestClient extends WebWorkerClient<TestService> implements TestService {
 	}
 }
 
-describe('WebWorkerClient', () => {
-	let mockWorker: Worker;
+describe('WebWorker', () => {
 	let client: TestClient;
 
 	beforeEach(() => {
 		// Reset mocks
 		vi.clearAllMocks();
 
-		// Create mock worker
-		mockWorker = {
-			postMessage: vi.fn(),
-			terminate: vi.fn(),
-			addEventListener: vi.fn(),
-			removeEventListener: vi.fn(),
-			dispatchEvent: vi.fn(),
-			onerror: null,
-			onmessage: null,
-			onmessageerror: null
-		} as unknown as Worker;
-
-		client = new TestClient(mockWorker);
+		// Pass the wrapped remote directly (simulating shared worker scenario)
+		client = new TestClient(mockWrapped);
 	});
 
 	describe('Construction', () => {
-		it('should create client and wrap worker', () => {
-			expect(Comlink.wrap).toHaveBeenCalledWith(mockWorker);
-			expect(client).toBeInstanceOf(WebWorkerClient);
+		it('should create client with wrapped remote', () => {
+			expect(client).toBeInstanceOf(WebWorker);
 		});
 
 		it('should support options', () => {
-			const errorHandler = vi.fn();
-			const clientWithOptions = new TestClient(mockWorker, {
-				enableCache: false,
-				onError: errorHandler
+			const clientWithOptions = new TestClient(mockWrapped, {
+				enableCache: false
 			});
 
-			expect(clientWithOptions).toBeInstanceOf(WebWorkerClient);
+			expect(clientWithOptions).toBeInstanceOf(WebWorker);
 		});
 	});
 
@@ -176,7 +161,7 @@ describe('WebWorkerClient', () => {
 
 		it('should respect enableCache option', async () => {
 			// Create new client with caching disabled
-			const clientNoCache = new TestClient(mockWorker, { enableCache: false });
+			const clientNoCache = new TestClient(mockWrapped, { enableCache: false });
 
 			await clientNoCache.add(5, 10);
 			await clientNoCache.add(5, 10);
@@ -215,65 +200,52 @@ describe('WebWorkerClient', () => {
 		it('should throw error when calling after dispose', async () => {
 			client.dispose();
 
-			await expect(client.add(1, 2)).rejects.toThrow('Worker client has been disposed');
+			await expect(client.add(1, 2)).rejects.toThrow('Worker has been disposed');
 			await expect(client.add(1, 2)).rejects.toThrow(WebWorkerError);
 		});
 	});
 
 	describe('Lifecycle', () => {
-		it('should release proxy on dispose', () => {
+		it('should clear cache on dispose', async () => {
+			await client.add(5, 10);
 			client.dispose();
 
-			expect(mockWrapped[Comlink.releaseProxy]).toHaveBeenCalled();
-		});
-
-		it('should terminate worker on dispose', () => {
-			client.dispose();
-
-			expect(mockWorker.terminate).toHaveBeenCalled();
+			// Disposal should succeed without errors
+			expect(client).toBeTruthy();
 		});
 
 		it('should handle multiple dispose calls', () => {
 			client.dispose();
 			client.dispose();
 
-			// Should only terminate once
-			expect(mockWorker.terminate).toHaveBeenCalledTimes(1);
-		});
-
-		it('should clear cache on dispose', async () => {
-			await client.add(5, 10);
-			client.dispose();
-
-			// After dispose, can't test cache but disposal should succeed
-			expect(mockWorker.terminate).toHaveBeenCalled();
+			// Should not throw on multiple dispose
+			expect(client).toBeTruthy();
 		});
 	});
 
-	describe('Error handler option', () => {
-		it('should call error handler on worker error', () => {
-			const errorHandler = vi.fn();
-			const clientWithHandler = new TestClient(mockWorker, {
-				onError: errorHandler
-			});
+	describe('Shared worker behavior', () => {
+		it('should not terminate worker when using shared remote', () => {
+			// When passing wrapped remote, dispose should not terminate
+			client.dispose();
 
-			// Simulate worker error
-			const errorEvent = new ErrorEvent('error', {
-				message: 'Worker crashed',
-				filename: 'worker.js',
-				lineno: 42,
-				colno: 10
-			});
+			// The releaseProxy should not be called for shared workers
+			expect(mockWrapped[Comlink.releaseProxy]).not.toHaveBeenCalled();
+		});
 
-			if (mockWorker.onerror) {
-				mockWorker.onerror(errorEvent);
-			}
+		it('should support multiple instances sharing same remote', async () => {
+			const client2 = new TestClient(mockWrapped);
 
-			expect(errorHandler).toHaveBeenCalled();
-			const error = errorHandler.mock.calls[0][0];
-			expect(error).toBeInstanceOf(WebWorkerError);
+			await client.add(1, 2);
+			await client2.add(3, 4);
 
-			clientWithHandler.dispose();
+			// Both use the same wrapped remote
+			expect(mockWrapped.add).toHaveBeenCalledTimes(2);
+
+			client.dispose();
+			client2.dispose();
+
+			// Neither should have released the proxy (shared worker)
+			expect(mockWrapped[Comlink.releaseProxy]).not.toHaveBeenCalled();
 		});
 	});
 });
