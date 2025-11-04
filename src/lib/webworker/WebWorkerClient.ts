@@ -1,7 +1,7 @@
 /**
- * Base class for WebWorker clients on the main thread
+ * Base class for WebWorker clients using Comlink
  *
- * Provides type-safe async method dispatching to WebWorkers using JSON-RPC 2.0 protocol.
+ * Provides type-safe async method dispatching to WebWorkers using Comlink.
  * Results from the last call are cached automatically.
  *
  * @example
@@ -11,190 +11,100 @@
  *   multiply(a: number, b: number): Promise<number>;
  * }
  *
- * // Create client class
- * class MathClient extends WebWorkerClient<MathService> {
- *   async add(a: number, b: number) {
- *     return this.call('add', a, b);
- *   }
- *
- *   async multiply(a: number, b: number) {
- *     return this.call('multiply', a, b);
- *   }
+ * // Worker file (math.worker.ts)
+ * import { WebWorkerService } from './WebWorkerService';
+ * class MathServiceImpl extends WebWorkerService implements MathService {
+ *   async add(a: number, b: number) { return a + b; }
+ *   async multiply(a: number, b: number) { return a * b; }
  * }
+ * WebWorkerService.expose(new MathServiceImpl());
  *
- * // Use it
- * const math = new MathClient(new Worker('./math.worker.ts', { type: 'module' }));
+ * // Client usage
+ * import ComlinkWorker from './math.worker?worker&comlink';
+ * const math = await new ComlinkWorker<MathService>();
  * const result = await math.add(2, 3); // 5
+ * math[WebWorkerClient.dispose]();
  */
 
-import type {
-	JsonRpcRequest,
-	JsonRpcResponse,
-	JsonRpcErrorResponse,
-	CacheEntry
-} from './types.js';
-import { JsonRpcErrorCode, WebWorkerError } from './types.js';
+import * as Comlink from 'comlink';
+import type { CacheEntry, WebWorkerClientOptions } from './types.js';
+import { WebWorkerError } from './types.js';
 
 export abstract class WebWorkerClient<TService> {
-	private worker: Worker;
-	private requestId = 0;
-	private pendingRequests = new Map<
-		number,
-		{
-			resolve: (value: any) => void;
-			reject: (error: Error) => void;
-			method: string;
-			params: any[];
-		}
-	>();
+	protected readonly worker: Worker;
+	protected readonly wrapped: Comlink.Remote<TService>;
 	private lastCallCache = new Map<string, CacheEntry>();
 	private disposed = false;
+	private enableCache: boolean;
+
+	static readonly dispose = Symbol('dispose');
 
 	/**
 	 * Create a new WebWorker client
 	 * @param worker - The Worker instance to communicate with
+	 * @param options - Optional configuration
 	 */
-	constructor(worker: Worker) {
+	constructor(worker: Worker, options: WebWorkerClientOptions = {}) {
 		this.worker = worker;
-		this.worker.onmessage = this.handleMessage.bind(this);
-		this.worker.onerror = this.handleError.bind(this);
-		this.worker.onmessageerror = this.handleMessageError.bind(this);
+		this.enableCache = options.enableCache ?? true;
+		this.wrapped = Comlink.wrap<TService>(worker);
+
+		// Set up error handler
+		if (options.onError) {
+			this.worker.onerror = (event: ErrorEvent) => {
+				options.onError!(
+					new WebWorkerError(`Worker error: ${event.message}`, {
+						filename: event.filename,
+						lineno: event.lineno,
+						colno: event.colno
+					})
+				);
+			};
+		}
 	}
 
 	/**
-	 * Call a method on the worker service
+	 * Call a method on the worker service with caching
 	 * @param method - The method name to call
 	 * @param params - The parameters to pass to the method
 	 * @returns Promise that resolves with the method's return value
 	 * @throws {WebWorkerError} If communication fails or method execution fails
 	 */
-	protected async call<K extends keyof TService>(
-		method: K,
-		...params: any[]
-	): Promise<any> {
+	protected async call<K extends keyof TService>(method: K, ...params: any[]): Promise<any> {
 		if (this.disposed) {
-			throw new WebWorkerError(
-				'Worker client has been disposed',
-				JsonRpcErrorCode.InternalError
-			);
+			throw new WebWorkerError('Worker client has been disposed');
 		}
 
 		// Check cache for last call with same method and params
-		const cacheKey = this.getCacheKey(String(method), params);
-		const cached = this.lastCallCache.get(cacheKey);
-		if (cached) {
-			return cached.result;
-		}
-
-		const id = ++this.requestId;
-		const request: JsonRpcRequest = {
-			jsonrpc: '2.0',
-			method: String(method),
-			params,
-			id
-		};
-
-		return new Promise((resolve, reject) => {
-			this.pendingRequests.set(id, {
-				resolve,
-				reject,
-				method: String(method),
-				params
-			});
-
-			try {
-				this.worker.postMessage(request);
-			} catch (error) {
-				this.pendingRequests.delete(id);
-				const errorMessage =
-					error instanceof Error ? error.message : String(error);
-				reject(
-					new WebWorkerError(
-						`Failed to send message to worker: ${errorMessage}`,
-						JsonRpcErrorCode.InternalError,
-						error
-					)
-				);
+		if (this.enableCache) {
+			const cacheKey = this.getCacheKey(String(method), params);
+			const cached = this.lastCallCache.get(cacheKey);
+			if (cached) {
+				return cached.result;
 			}
-		});
-	}
-
-	/**
-	 * Handle incoming messages from the worker
-	 */
-	private handleMessage(event: MessageEvent<JsonRpcResponse>): void {
-		const response = event.data;
-
-		// Validate JSON-RPC response
-		if (!response || response.jsonrpc !== '2.0' || typeof response.id !== 'number') {
-			console.error('Invalid JSON-RPC response:', response);
-			return;
 		}
 
-		const pending = this.pendingRequests.get(response.id);
-		if (!pending) {
-			console.warn('Received response for unknown request ID:', response.id);
-			return;
+		try {
+			// Call the wrapped method
+			const wrappedMethod = this.wrapped[method] as any;
+			const result = await wrappedMethod(...params);
+
+			// Cache the result
+			if (this.enableCache) {
+				const cacheKey = this.getCacheKey(String(method), params);
+				this.lastCallCache.clear(); // Only keep last call
+				this.lastCallCache.set(cacheKey, {
+					params,
+					result,
+					timestamp: Date.now()
+				});
+			}
+
+			return result;
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : String(error);
+			throw new WebWorkerError(`Worker method call failed: ${errorMessage}`, error);
 		}
-
-		this.pendingRequests.delete(response.id);
-
-		// Check if error response
-		if ('error' in response) {
-			const errorResponse = response as JsonRpcErrorResponse;
-			pending.reject(
-				new WebWorkerError(
-					errorResponse.error.message,
-					errorResponse.error.code,
-					errorResponse.error.data
-				)
-			);
-		} else {
-			// Success - cache the result
-			const cacheKey = this.getCacheKey(pending.method, pending.params);
-			this.lastCallCache.clear(); // Only keep last call
-			this.lastCallCache.set(cacheKey, {
-				params: pending.params,
-				result: response.result,
-				timestamp: Date.now()
-			});
-
-			pending.resolve(response.result);
-		}
-	}
-
-	/**
-	 * Handle worker errors
-	 */
-	private handleError(error: ErrorEvent): void {
-		const workerError = new WebWorkerError(
-			`Worker error: ${error.message}`,
-			JsonRpcErrorCode.InternalError,
-			{ filename: error.filename, lineno: error.lineno, colno: error.colno }
-		);
-
-		// Reject all pending requests
-		for (const [id, pending] of this.pendingRequests) {
-			pending.reject(workerError);
-		}
-		this.pendingRequests.clear();
-	}
-
-	/**
-	 * Handle message deserialization errors
-	 */
-	private handleMessageError(event: MessageEvent): void {
-		const error = new WebWorkerError(
-			'Failed to deserialize message from worker',
-			JsonRpcErrorCode.ParseError,
-			event.data
-		);
-
-		// Reject all pending requests since we can't match the response to a request
-		for (const [id, pending] of this.pendingRequests) {
-			pending.reject(error);
-		}
-		this.pendingRequests.clear();
 	}
 
 	/**
@@ -202,13 +112,6 @@ export abstract class WebWorkerClient<TService> {
 	 */
 	private getCacheKey(method: string, params: any[]): string {
 		return `${method}:${JSON.stringify(params)}`;
-	}
-
-	/**
-	 * Get the number of pending requests
-	 */
-	protected getPendingCount(): number {
-		return this.pendingRequests.size;
 	}
 
 	/**
@@ -227,17 +130,10 @@ export abstract class WebWorkerClient<TService> {
 		}
 
 		this.disposed = true;
-
-		// Reject all pending requests
-		const error = new WebWorkerError(
-			'Worker client disposed',
-			JsonRpcErrorCode.InternalError
-		);
-		for (const [id, pending] of this.pendingRequests) {
-			pending.reject(error);
-		}
-		this.pendingRequests.clear();
 		this.lastCallCache.clear();
+
+		// Clean up Comlink proxy
+		this.wrapped[Comlink.releaseProxy]();
 
 		// Terminate the worker
 		this.worker.terminate();

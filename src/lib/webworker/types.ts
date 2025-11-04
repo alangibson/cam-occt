@@ -1,42 +1,6 @@
 /**
- * JSON-RPC 2.0 message types for WebWorker communication
+ * Type utilities for WebWorker communication with Comlink
  */
-
-export interface JsonRpcRequest {
-	jsonrpc: '2.0';
-	method: string;
-	params: any[];
-	id: number;
-}
-
-export interface JsonRpcSuccessResponse {
-	jsonrpc: '2.0';
-	result: any;
-	id: number;
-}
-
-export interface JsonRpcErrorResponse {
-	jsonrpc: '2.0';
-	error: {
-		code: number;
-		message: string;
-		data?: any;
-	};
-	id: number;
-}
-
-export type JsonRpcResponse = JsonRpcSuccessResponse | JsonRpcErrorResponse;
-
-/**
- * Error codes following JSON-RPC 2.0 specification
- */
-export enum JsonRpcErrorCode {
-	ParseError = -32700,
-	InvalidRequest = -32600,
-	MethodNotFound = -32601,
-	InvalidParams = -32602,
-	InternalError = -32603
-}
 
 /**
  * Extract async method names from a type
@@ -62,9 +26,9 @@ export type MethodReturnType<T, K extends keyof T> = T[K] extends (
 /**
  * Cache entry for method call results
  */
-export interface CacheEntry {
+export interface CacheEntry<T = any> {
 	params: any[];
-	result: any;
+	result: T;
 	timestamp: number;
 }
 
@@ -74,10 +38,25 @@ export interface CacheEntry {
 export class WebWorkerError extends Error {
 	constructor(
 		message: string,
-		public code: JsonRpcErrorCode = JsonRpcErrorCode.InternalError,
 		public data?: any
 	) {
 		super(message);
 		this.name = 'WebWorkerError';
 	}
+}
+
+/**
+ * Options for creating a WebWorker client
+ */
+export interface WebWorkerClientOptions {
+	/**
+	 * Enable caching of the last method call result
+	 * @default true
+	 */
+	enableCache?: boolean;
+
+	/**
+	 * Custom error handler for worker errors
+	 */
+	onError?: (error: Error) => void;
 }

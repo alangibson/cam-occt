@@ -1,5 +1,5 @@
 /**
- * WebWorker base classes for type-safe JSON-RPC communication
+ * WebWorker base classes for type-safe communication using Comlink
  *
  * @module webworker
  */
@@ -7,14 +7,10 @@
 export { WebWorkerClient } from './WebWorkerClient.js';
 export { WebWorkerService } from './WebWorkerService.js';
 export {
-	JsonRpcErrorCode,
 	WebWorkerError,
-	type JsonRpcRequest,
-	type JsonRpcResponse,
-	type JsonRpcSuccessResponse,
-	type JsonRpcErrorResponse,
 	type AsyncMethods,
 	type MethodParams,
 	type MethodReturnType,
-	type CacheEntry
+	type CacheEntry,
+	type WebWorkerClientOptions
 } from './types.js';

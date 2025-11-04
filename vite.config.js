@@ -1,8 +1,12 @@
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { comlink } from 'vite-plugin-comlink';
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [sveltekit(), comlink()],
+	worker: {
+		plugins: () => [comlink()]
+	},
 	optimizeDeps: {
 		include: ['three', 'dxf']
 	},

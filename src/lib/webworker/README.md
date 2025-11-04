@@ -1,18 +1,42 @@
 # WebWorker Base Classes
 
-Type-safe WebWorker communication using JSON-RPC 2.0 protocol with automatic result caching and error handling.
+Type-safe WebWorker communication using Comlink with minimal boilerplate, automatic result caching, and error handling.
 
 ## Features
 
-- **Type Safety**: Full TypeScript type preservation across worker boundary
-- **JSON-RPC 2.0**: Standards-compliant message protocol
-- **Automatic Caching**: Last call result is cached automatically
+- **Type Safety**: Full TypeScript type preservation across worker boundary using Comlink
+- **Minimal Boilerplate**: Use Comlink's automatic wrapping to avoid manual method implementations
+- **Automatic Caching**: Optional last-call result caching
 - **Error Handling**: Comprehensive error handling with typed exceptions
-- **Easy to Use**: Simple base classes for client and service implementation
+- **Vite Integration**: Works seamlessly with vite-plugin-comlink
+- **Two Approaches**: Choose between direct Comlink wrapping (simplest) or base classes (with caching)
+
+## Installation
+
+```bash
+npm install comlink vite-plugin-comlink
+```
+
+Configure Vite (vite.config.js):
+
+```javascript
+import { comlink } from 'vite-plugin-comlink';
+
+export default {
+  plugins: [comlink()],
+  worker: {
+    plugins: () => [comlink()]
+  }
+};
+```
 
 ## Quick Start
 
-### 1. Define Service Interface
+### Approach 1: Direct Comlink Wrapping (Simplest - Recommended)
+
+No base classes needed. Just expose your service and use Comlink directly.
+
+#### 1. Define Service Interface
 
 ```typescript
 // calculator.service.ts
@@ -22,17 +46,14 @@ export interface CalculatorService {
 }
 ```
 
-### 2. Implement Worker Service
+#### 2. Implement Worker Service
 
 ```typescript
 // calculator.worker.ts
-import { WebWorkerService } from '$lib/webworker';
+import * as Comlink from 'comlink';
 import type { CalculatorService } from './calculator.service';
 
-class CalculatorServiceImpl
-  extends WebWorkerService<CalculatorService>
-  implements CalculatorService
-{
+class CalculatorServiceImpl implements CalculatorService {
   async add(a: number, b: number): Promise<number> {
     return a + b;
   }
@@ -42,11 +63,86 @@ class CalculatorServiceImpl
   }
 }
 
-// Initialize the service
-new CalculatorServiceImpl();
+// Expose the service
+Comlink.expose(new CalculatorServiceImpl());
 ```
 
-### 3. Implement Client
+#### 3. Use in Main Thread
+
+**With vite-plugin-comlink:**
+
+```typescript
+import type { CalculatorService } from './calculator.service';
+import ComlinkWorker from './calculator.worker?worker&comlink';
+
+// Create wrapped worker instance
+const calculator = await new ComlinkWorker<CalculatorService>();
+
+// Type-safe async calls
+const sum = await calculator.add(2, 3);        // 5
+const product = await calculator.multiply(4, 5); // 20
+
+// Cleanup
+calculator[Comlink.releaseProxy]();
+```
+
+**Without vite-plugin-comlink:**
+
+```typescript
+import * as Comlink from 'comlink';
+import type { CalculatorService } from './calculator.service';
+
+const worker = new Worker(
+  new URL('./calculator.worker.ts', import.meta.url),
+  { type: 'module' }
+);
+
+const calculator = Comlink.wrap<CalculatorService>(worker);
+
+const sum = await calculator.add(2, 3);
+
+// Cleanup
+calculator[Comlink.releaseProxy]();
+worker.terminate();
+```
+
+### Approach 2: Base Classes (With Caching & Lifecycle Management)
+
+Use when you need automatic result caching or custom lifecycle management.
+
+#### 1. Define Service Interface
+
+```typescript
+// calculator.service.ts
+export interface CalculatorService {
+  add(a: number, b: number): Promise<number>;
+  multiply(a: number, b: number): Promise<number>;
+}
+```
+
+#### 2. Implement Worker Service
+
+```typescript
+// calculator.worker.ts
+import { WebWorkerService } from '$lib/webworker';
+import type { CalculatorService } from './calculator.service';
+
+class CalculatorServiceImpl extends WebWorkerService implements CalculatorService {
+  async add(a: number, b: number): Promise<number> {
+    this.log('add', a, b);  // Optional logging
+    return a + b;
+  }
+
+  async multiply(a: number, b: number): Promise<number> {
+    return a * b;
+  }
+}
+
+// Expose using WebWorkerService
+WebWorkerService.expose(new CalculatorServiceImpl());
+```
+
+#### 3. Implement Client
 
 ```typescript
 // calculator.client.ts
@@ -67,84 +163,37 @@ export class CalculatorClient
 }
 ```
 
-### 4. Use the Client
+#### 4. Use the Client
 
 ```typescript
-// In your application
-const worker = new Worker('./calculator.worker.ts', { type: 'module' });
+const worker = new Worker(
+  new URL('./calculator.worker.ts', import.meta.url),
+  { type: 'module' }
+);
+
 const calculator = new CalculatorClient(worker);
 
-// Type-safe async calls
-const sum = await calculator.add(2, 3);        // 5
-const product = await calculator.multiply(4, 5); // 20
+const result1 = await calculator.add(2, 3);  // Calls worker
+const result2 = await calculator.add(2, 3);  // Returns cached result
 
-// Same call returns cached result (no worker communication)
-const cachedSum = await calculator.add(2, 3);  // 5 (from cache)
-
-// Cleanup
-calculator.dispose();
-```
-
-## Architecture
-
-### Message Flow
-
-```
-┌─────────────┐                    ┌──────────────┐
-│             │                    │              │
-│   Client    │  JSON-RPC Request  │   Worker     │
-│  (Main      │ ──────────────────>│  (Service)   │
-│   Thread)   │                    │              │
-│             │  JSON-RPC Response │              │
-│             │ <──────────────────│              │
-│             │                    │              │
-└─────────────┘                    └──────────────┘
-```
-
-### JSON-RPC 2.0 Format
-
-**Request:**
-```json
-{
-  "jsonrpc": "2.0",
-  "method": "add",
-  "params": [2, 3],
-  "id": 1
-}
-```
-
-**Success Response:**
-```json
-{
-  "jsonrpc": "2.0",
-  "result": 5,
-  "id": 1
-}
-```
-
-**Error Response:**
-```json
-{
-  "jsonrpc": "2.0",
-  "error": {
-    "code": -32603,
-    "message": "Internal error"
-  },
-  "id": 1
-}
+calculator.dispose();  // Clean up
 ```
 
 ## API Reference
 
 ### WebWorkerClient<TService>
 
-Base class for main thread clients.
+Base class for main thread clients with caching support.
 
 #### Constructor
 
 ```typescript
-constructor(worker: Worker)
+constructor(worker: Worker, options?: WebWorkerClientOptions)
 ```
+
+**Options:**
+- `enableCache?: boolean` - Enable/disable caching (default: true)
+- `onError?: (error: Error) => void` - Custom error handler
 
 #### Protected Methods
 
@@ -154,9 +203,6 @@ protected call<K extends keyof TService>(
   method: K,
   ...params: any[]
 ): Promise<any>
-
-// Get number of pending requests
-protected getPendingCount(): number
 
 // Clear the result cache
 protected clearCache(): void
@@ -169,17 +215,16 @@ protected clearCache(): void
 dispose(): void
 ```
 
-### WebWorkerService<TService>
+### WebWorkerService
 
 Base class for worker thread services.
 
-#### Constructor
+#### Static Methods
 
 ```typescript
-constructor()
+// Expose a service instance using Comlink
+static expose<T extends object>(instance: T): void
 ```
-
-Automatically sets up message handling on instantiation.
 
 #### Protected Methods
 
@@ -202,13 +247,18 @@ const result3 = await client.add(4, 5);  // Different params - sends new request
 const result4 = await client.add(2, 3);  // New request (cache was cleared by result3)
 ```
 
+### Disable Caching
+
+```typescript
+const client = new CalculatorClient(worker, { enableCache: false });
+```
+
 ### Manual Cache Control
 
 ```typescript
 class MyClient extends WebWorkerClient<MyService> {
   async someMethod() {
-    // Clear cache manually if needed
-    this.clearCache();
+    this.clearCache();  // Clear cache manually
     return this.call('someMethod');
   }
 }
@@ -216,42 +266,27 @@ class MyClient extends WebWorkerClient<MyService> {
 
 ## Error Handling
 
-### Error Types
-
 All communication errors are thrown as `WebWorkerError`:
 
 ```typescript
-import { WebWorkerError, JsonRpcErrorCode } from '$lib/webworker';
+import { WebWorkerError } from '$lib/webworker';
 
 try {
   await client.someMethod();
 } catch (error) {
   if (error instanceof WebWorkerError) {
-    console.error('Code:', error.code);
-    console.error('Message:', error.message);
-    console.error('Data:', error.data);
+    console.error('Worker error:', error.message);
+    console.error('Additional data:', error.data);
   }
-}
-```
-
-### Error Codes
-
-```typescript
-enum JsonRpcErrorCode {
-  ParseError = -32700,      // Invalid JSON
-  InvalidRequest = -32600,  // Invalid JSON-RPC request
-  MethodNotFound = -32601,  // Method doesn't exist
-  InvalidParams = -32602,   // Invalid method parameters
-  InternalError = -32603    // Internal service error
 }
 ```
 
 ### Service Error Handling
 
-Throw errors in your service methods - they're automatically caught and sent to the client:
+Throw errors in your service methods - they're automatically propagated to the client:
 
 ```typescript
-class MyServiceImpl extends WebWorkerService<MyService> {
+class MyServiceImpl extends WebWorkerService implements MyService {
   async divide(a: number, b: number): Promise<number> {
     if (b === 0) {
       throw new Error('Division by zero');
@@ -261,29 +296,63 @@ class MyServiceImpl extends WebWorkerService<MyService> {
 }
 ```
 
+## Comparison: Direct Comlink vs Base Classes
+
+### Direct Comlink (Approach 1)
+
+**Pros:**
+- Minimal boilerplate
+- No client class needed
+- Works with vite-plugin-comlink
+- Simplest approach
+
+**Cons:**
+- No automatic caching
+- Manual cleanup required
+- Less structure for large projects
+
+**When to use:**
+- Simple worker services
+- No need for caching
+- Minimal code preferred
+
+### Base Classes (Approach 2)
+
+**Pros:**
+- Automatic result caching
+- Structured lifecycle management
+- Consistent patterns for large projects
+- Built-in logging helpers
+
+**Cons:**
+- More boilerplate (client class)
+- Slightly more complex setup
+
+**When to use:**
+- Need result caching
+- Large projects with many workers
+- Want consistent patterns
+- Need lifecycle hooks
+
 ## Best Practices
 
-### 1. Always Define Service Interface
+### 1. Define Service Interfaces
 
 ```typescript
 // ✅ Good - Shared interface for type safety
 interface MathService {
   add(a: number, b: number): Promise<number>;
 }
-
-class MathClient extends WebWorkerClient<MathService> implements MathService { }
-class MathServiceImpl extends WebWorkerService<MathService> implements MathService { }
 ```
 
 ### 2. Clean Up Resources
 
 ```typescript
-// ✅ Good - Always dispose when done
-const client = new MyClient(worker);
+// ✅ Good - Always dispose/cleanup when done
 try {
   await client.doWork();
 } finally {
-  client.dispose();
+  client.dispose();  // or client[Comlink.releaseProxy]()
 }
 ```
 
@@ -296,8 +365,6 @@ try {
 } catch (error) {
   if (error instanceof WebWorkerError) {
     // Handle worker communication error
-  } else {
-    // Handle other errors
   }
 }
 ```
@@ -305,30 +372,14 @@ try {
 ### 4. Use Descriptive Method Names
 
 ```typescript
-// ✅ Good - Clear method names
+// ✅ Good
 interface GeometryService {
   calculateArea(width: number, height: number): Promise<number>;
-  computeDistance(p1: Point, p2: Point): Promise<number>;
 }
 
-// ❌ Bad - Vague method names
+// ❌ Bad
 interface Service {
   calc(a: number, b: number): Promise<number>;
-  process(data: any): Promise<any>;
-}
-```
-
-### 5. Validate Parameters in Service
-
-```typescript
-class GeometryServiceImpl extends WebWorkerService<GeometryService> {
-  async calculateArea(width: number, height: number): Promise<number> {
-    // ✅ Good - Validate inputs
-    if (width <= 0 || height <= 0) {
-      throw new Error('Width and height must be positive');
-    }
-    return width * height;
-  }
 }
 ```
 
@@ -336,8 +387,7 @@ class GeometryServiceImpl extends WebWorkerService<GeometryService> {
 
 See the `examples/` directory for complete working examples:
 
-- **calculator**: Basic math operations
-- Complete with client, worker, and tests
+- **calculator**: Basic math operations with both approaches
 
 ## Testing
 
@@ -366,18 +416,6 @@ Ensure your `tsconfig.json` includes:
     "moduleResolution": "bundler"
   }
 }
-```
-
-## Vite Configuration
-
-For Vite-based projects, workers should be imported correctly:
-
-```typescript
-// Use ?worker suffix for Vite
-const worker = new Worker(
-  new URL('./calculator.worker.ts', import.meta.url),
-  { type: 'module' }
-);
 ```
 
 ## License

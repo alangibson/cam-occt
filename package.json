@@ -74,8 +74,10 @@
     "wrangler": "^4.34.0"
   },
   "dependencies": {
+    "comlink": "^4.4.2",
     "dxf": "^4.6.1",
     "jsts": "^2.12.1",
-    "verb-nurbs": "^3.0.3"
+    "verb-nurbs": "^3.0.3",
+    "vite-plugin-comlink": "^5.3.0"
   }
 }
