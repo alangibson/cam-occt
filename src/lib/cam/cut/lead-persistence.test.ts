@@ -15,7 +15,7 @@ import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { Operation } from '$lib/cam/operation/interface';
 import type { LeadResult } from '$lib/cam/lead/interfaces';

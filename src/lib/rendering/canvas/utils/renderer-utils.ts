@@ -3,10 +3,6 @@
  */
 
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
-import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { Line } from '$lib/geometry/line/interfaces';
-import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 
 /**
@@ -14,72 +10,6 @@ import type { Cut } from '$lib/cam/cut/interfaces';
  */
 const SHADOW_BLUR_PX = 4;
 const DEFAULT_HIT_TOLERANCE_PX = 5;
-
-/**
- * Calculate distance from a point to a shape
- * Note: This is a simplified distance calculation. For proper hit detection,
- * use HitTestUtils.isPointNearShape() which handles all shape types correctly.
- */
-export function calculatePointToShapeDistance(
-    point: Point2D,
-    shape: Shape
-): number {
-    // Enhanced defensive check for undefined or invalid point
-    if (!point) {
-        console.error(
-            'calculatePointToShapeDistance: point is null/undefined',
-            { point, shape }
-        );
-        return Infinity;
-    }
-
-    if (typeof point.x !== 'number' || typeof point.y !== 'number') {
-        console.error(
-            'calculatePointToShapeDistance: point has invalid coordinates',
-            { point, shape }
-        );
-        return Infinity;
-    }
-
-    // Also check shape validity
-    if (!shape || !shape.type) {
-        console.error('calculatePointToShapeDistance: invalid shape', {
-            point,
-            shape,
-        });
-        return Infinity;
-    }
-
-    if (shape.type === 'circle') {
-        const circle = shape.geometry as Circle;
-        if (!circle.center) {
-            console.error(
-                'calculatePointToShapeDistance: circle missing center',
-                { point, shape }
-            );
-            return Infinity;
-        }
-        const dx = point.x - circle.center.x;
-        const dy = point.y - circle.center.y;
-        return Math.sqrt(dx * dx + dy * dy);
-    } else if (shape.type === 'line') {
-        const line = shape.geometry as Line;
-        if (!line.start) {
-            console.error('calculatePointToShapeDistance: line missing start', {
-                point,
-                shape,
-            });
-            return Infinity;
-        }
-        const dx = point.x - line.start.x;
-        const dy = point.y - line.start.y;
-        return Math.sqrt(dx * dx + dy * dy);
-    }
-
-    // For other shape types (arc, polyline, spline, ellipse), return Infinity
-    // This prevents false hits. Proper distance calculation should use HitTestUtils.
-    return Infinity;
-}
 
 /**
  * Check if a cut is enabled and should be rendered

@@ -19,7 +19,7 @@ export interface CutLeadResult {
 /**
  * Lead validation result
  */
-export interface LeadValidation {
+interface LeadValidation {
     /** Whether the leads are valid */
     isValid: boolean;
     /** Warning messages */

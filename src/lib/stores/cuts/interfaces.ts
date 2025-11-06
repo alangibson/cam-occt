@@ -5,7 +5,7 @@
  */
 
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 import type { CutLeadResult } from '$lib/cam/pipeline/leads/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Operation } from '$lib/cam/operation/interface';

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { partStore } from '$lib/stores/parts/store';
-import { getChainPartType, getPartChainIds } from '$lib/cam/part/functions';
+import { getChainPartType, getPartChainIds } from '$lib/test/parts';
 import {
     type Part,
     type PartDetectionWarning,

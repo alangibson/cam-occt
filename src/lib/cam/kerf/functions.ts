@@ -10,7 +10,7 @@ import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Kerf } from './interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
+import type { OffsetChain } from '$lib/cam/offset/types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Part } from '$lib/cam/part/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';

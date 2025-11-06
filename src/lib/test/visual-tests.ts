@@ -11,7 +11,7 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
+import type { OffsetChain } from '$lib/cam/offset/types';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 

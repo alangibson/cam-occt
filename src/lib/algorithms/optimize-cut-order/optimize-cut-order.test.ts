@@ -16,7 +16,7 @@ import { GeometryType } from '$lib/geometry/shape/enums';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 import * as pathOptUtils from '$lib/cam/cut/cut-optimization-utils';
 
 // Mock crypto.randomUUID

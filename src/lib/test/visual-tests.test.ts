@@ -2,9 +2,9 @@ import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, it } from 'vitest';
-import { offsetChain } from '$lib/algorithms/offset-calculation/chain/offset';
+import { offsetChain } from '$lib/cam/offset/index';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
-import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
+import type { OffsetChain } from '$lib/cam/offset/types';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import { generateChainOffsetSVG } from './visual-tests';
 import { GeometryType } from '$lib/geometry/shape/enums';
@@ -56,7 +56,7 @@ describe('visual-tests', () => {
         };
     }
 
-    it('should generate visualization for simple closed rectangle chain', () => {
+    it('should generate visualization for simple closed rectangle chain', async () => {
         // Create a rectangle
         const shapes: Shape[] = [
             createLine(0, 0, 100, 0), // bottom
@@ -73,10 +73,8 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
-            maxExtension: 50,
-            snapThreshold: 0.5,
         });
 
         // Collect all offset chains for visualization
@@ -91,7 +89,7 @@ describe('visual-tests', () => {
         generateChainOffsetSVG(chain, offsets, 'rectangle-chain');
     });
 
-    it('should generate visualization for closed chain with mixed shapes', () => {
+    it('should generate visualization for closed chain with mixed shapes', async () => {
         // Create a rounded rectangle
         const shapes: Shape[] = [
             createLine(20, 0, 80, 0), // bottom
@@ -112,10 +110,8 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
-            maxExtension: 50,
-            snapThreshold: 0.5,
         });
 
         // Collect all offset chains for visualization
@@ -130,7 +126,7 @@ describe('visual-tests', () => {
         generateChainOffsetSVG(chain, offsets, 'rounded-rectangle-chain');
     });
 
-    it('should generate visualization for open L-shaped chain', () => {
+    it('should generate visualization for open L-shaped chain', async () => {
         // Create an L-shaped chain
         const shapes: Shape[] = [
             createLine(0, 0, 100, 0), // horizontal
@@ -145,10 +141,8 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
-            maxExtension: 50,
-            snapThreshold: 0.5,
         });
 
         // Collect all offset chains for visualization
@@ -163,7 +157,7 @@ describe('visual-tests', () => {
         generateChainOffsetSVG(chain, offsets, 'l-shaped-chain');
     });
 
-    it('should generate visualization for open chain with curves', () => {
+    it('should generate visualization for open chain with curves', async () => {
         // Create an S-curve
         const shapes: Shape[] = [
             createLine(0, 50, 30, 50), // start line
@@ -181,10 +175,8 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
-            maxExtension: 50,
-            snapThreshold: 0.5,
         });
 
         // Collect all offset chains for visualization
@@ -202,7 +194,7 @@ describe('visual-tests', () => {
         });
     });
 
-    it('should generate visualization for comprehensive mixed-shape chain', () => {
+    it('should generate visualization for comprehensive mixed-shape chain', async () => {
         // Create a complex open chain with mixed shapes: line, arc, polyline, spline, ellipse arc
         const shapes: Shape[] = [
             createLine(50, 350, 150, 350), // line
@@ -255,10 +247,8 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
-            maxExtension: 50,
-            snapThreshold: 0.5,
         });
 
         // Collect all offset chains for visualization
@@ -276,7 +266,7 @@ describe('visual-tests', () => {
         });
     });
 
-    it('should generate visualization for closed mixed-shape chain', () => {
+    it('should generate visualization for closed mixed-shape chain', async () => {
         // Create a complex closed chain
         const shapes: Shape[] = [
             createLine(100, 50, 200, 50), // bottom line
@@ -322,10 +312,8 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
-            maxExtension: 50,
-            snapThreshold: 0.5,
         });
 
         // Collect all offset chains for visualization
@@ -343,7 +331,7 @@ describe('visual-tests', () => {
         });
     });
 
-    it('should generate visualization for closed mixed-shape chain with flipped arc sweep', () => {
+    it('should generate visualization for closed mixed-shape chain with flipped arc sweep', async () => {
         // Create a complex closed chain with arc that curves in the opposite direction
         // Original arc: center (200,80), goes from (200,50) to (230,80) - curves inward (concave)
         // Flipped arc: center (230,50), goes from (200,50) to (230,80) - curves outward (convex)
@@ -402,10 +390,8 @@ describe('visual-tests', () => {
 
         // Generate actual chain offsets using the chain offset algorithm
         const offsetDistance = 8;
-        const chainOffsetResult = offsetChain(chain, offsetDistance, {
+        const chainOffsetResult = await offsetChain(chain, offsetDistance, {
             tolerance: 0.1,
-            maxExtension: 50,
-            snapThreshold: 0.5,
         });
 
         // Collect all offset chains for visualization

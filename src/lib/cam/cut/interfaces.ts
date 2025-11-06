@@ -1,6 +1,6 @@
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
+import type { GapFillingResult } from './types';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection } from './enums';
 import type {
@@ -9,7 +9,7 @@ import type {
     LeadValidationResult,
 } from '$lib/cam/lead/interfaces';
 import type { NormalSide } from './enums';
-import type { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import type { OffsetDirection } from '$lib/cam/offset/types';
 
 export interface Cut {
     id: string;

@@ -36,34 +36,6 @@ export function isBetween(
 }
 
 /**
- * Normalizes a 2D vector to unit length
- */
-export function normalizeVector2D(vector: Point2D): Point2D {
-    const length: number = Math.sqrt(vector.x * vector.x + vector.y * vector.y);
-    if (length < EPSILON) {
-        return { x: 0, y: 0 };
-    }
-    return {
-        x: vector.x / length,
-        y: vector.y / length,
-    };
-}
-
-/**
- * Computes the dot product of two 2D vectors
- */
-export function dot2D(v1: Point2D, v2: Point2D): number {
-    return v1.x * v2.x + v1.y * v2.y;
-}
-
-/**
- * Computes the cross product of two 2D vectors (returns z-component)
- */
-export function cross2D(v1: Point2D, v2: Point2D): number {
-    return v1.x * v2.y - v1.y * v2.x;
-}
-
-/**
  * Checks if an angle is within an arc's angular range
  * Handles both clockwise and counter-clockwise arcs
  */

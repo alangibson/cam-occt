@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "ignore": [".svelte-kit/**"],
+  "ignoreDependencies": [
+    "@sveltejs/adapter-auto",
+    "@sveltejs/adapter-static",
+    "@testing-library/jest-dom",
+    "@types/three",
+    "@typescript-eslint/eslint-plugin",
+    "@typescript-eslint/parser",
+    "eslint-plugin-path",
+    "jscpd",
+    "tslib",
+    "svelte-eslint-parser",
+    "emscripten"
+  ]
+}

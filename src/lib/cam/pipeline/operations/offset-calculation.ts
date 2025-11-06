@@ -5,16 +5,14 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
-import { offsetChainAdapter } from '$lib/algorithms/offset-calculation/offset-adapter';
+import type { GapFillingResult } from '$lib/cam/cut/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
+import { offsetChain as polylineOffset } from '$lib/cam/offset';
 import {
     DIRECTION_CLOCKWISE,
     DIRECTION_COUNTERCLOCKWISE,
 } from '$lib/geometry/constants';
 import { getToolValue } from '$lib/cam/tool/tool-utils';
-import { settingsStore } from '$lib/stores/settings/store';
-import { get } from 'svelte/store';
 import type { ChainOffsetResult } from './interfaces';
 
 /**
@@ -51,24 +49,20 @@ export async function calculateChainOffset(
     const offsetDistance: number = kerfWidth / 2;
 
     try {
-        // Get offset implementation setting
-        const settings = get(settingsStore).settings;
-
-        // Call offset calculation via adapter
+        // Call polyline offset directly
         // For inset, use negative distance; for outset, use positive
         const direction: number =
             kerfCompensation === OffsetDirection.INSET
                 ? DIRECTION_CLOCKWISE
                 : DIRECTION_COUNTERCLOCKWISE;
-        const offsetResult = await offsetChainAdapter(
+        const offsetResult = await polylineOffset(
             chain,
             offsetDistance * direction,
             {
                 tolerance: 0.1,
                 maxExtension: 50,
                 snapThreshold: 0.5,
-            },
-            settings.offsetImplementation
+            }
         );
 
         if (!offsetResult.success) {

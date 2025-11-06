@@ -13,7 +13,7 @@ import {
     getChainTangent,
     getChainStartPoint,
 } from '$lib/geometry/chain/functions';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 import type { Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 

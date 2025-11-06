@@ -10,7 +10,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { generateId } from '$lib/domain/id';
-import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
+import type { OffsetChain } from './types';
 import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
 
 /**

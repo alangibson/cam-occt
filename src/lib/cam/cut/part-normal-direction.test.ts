@@ -16,7 +16,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { PartType } from '$lib/cam/part/enums';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 
 describe('Cut Normal Direction on Parts', () => {
     /**

@@ -9,7 +9,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 /**
  * Cached tessellation data for rendering optimization
  */
-export interface TessellationCache {
+interface TessellationCache {
     points: Point2D[];
     tolerance: number;
     timestamp: number; // For cache invalidation if needed

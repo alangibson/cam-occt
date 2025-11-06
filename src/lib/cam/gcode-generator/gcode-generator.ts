@@ -30,7 +30,7 @@ const GCODE_TOLERANCE_MM = 0.1;
  */
 const GCODE_TOLERANCE_INCHES = 0.004;
 
-export interface GCodeOptions {
+interface GCodeOptions {
     units: Unit;
     safeZ: number;
     rapidFeedRate: number;

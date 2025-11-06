@@ -32,7 +32,7 @@ import {
 import { detectCutDirection } from '$lib/cam/cut/cut-direction';
 import { CutDirection } from '$lib/cam/cut/enums';
 
-export interface ChainTraversalIssue {
+interface ChainTraversalIssue {
     type:
         | 'coincident_endpoints'
         | 'coincident_startpoints'

@@ -471,20 +471,3 @@ function doesArcIntersectChain(
 
     return false;
 }
-
-/**
- * Check if leads would collide with each other or with cuts.
- * This is a placeholder for the actual collision detection logic.
- */
-export function checkLeadCollisions(
-    _leadResult: LeadResult,
-    _allCuts: object[],
-    _currentCut: object
-): boolean {
-    // TODO: Implement collision detection
-    // - Check if lead-in crosses lead-out
-    // - Check if leads cross other cuts
-    // - Check if leads cross other leads
-
-    return false; // No collisions for now
-}

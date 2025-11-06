@@ -50,17 +50,6 @@ export function selectLead(leadId: string | null, multi = false): void {
 }
 
 /**
- * Deselect a lead by its ID
- */
-export function deselectLead(leadId: string): void {
-    selectedLeadIdsStore.update((ids) => {
-        const newIds = new Set(ids);
-        newIds.delete(leadId);
-        return newIds;
-    });
-}
-
-/**
  * Toggle lead selection
  */
 export function toggleLeadSelection(leadId: string): void {
@@ -80,13 +69,6 @@ export function toggleLeadSelection(leadId: string): void {
  */
 export function highlightLead(leadId: string | null): void {
     highlightedLeadIdStore.set(leadId);
-}
-
-/**
- * Clear lead selection
- */
-export function clearLeadSelection(): void {
-    selectedLeadIdsStore.set(new Set());
 }
 
 /**

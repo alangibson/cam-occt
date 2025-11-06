@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 import type { CutsState, CutsStore } from './interfaces';
 import { checkProgramStageCompletion } from './functions';
 import type { CutLeadResult } from '$lib/cam/pipeline/leads/interfaces';

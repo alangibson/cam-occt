@@ -6,7 +6,7 @@ import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
 import { getChainCutDirection } from '$lib/geometry/chain/functions';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 import type { Part, PartVoid, PartSlot } from '$lib/cam/part/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';

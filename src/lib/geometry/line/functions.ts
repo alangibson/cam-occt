@@ -3,7 +3,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Line } from './interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 import { snapParameter } from '$lib/geometry/math/functions';
-import type { IntersectionResult } from '$lib/algorithms/offset-calculation/chain/types';
+import type { IntersectionResult } from '$lib/cam/offset/types';
 import { TOLERANCE_RELAXATION_MULTIPLIER } from '$lib/geometry/constants';
 import type { SegmentPosition } from './types';
 
@@ -75,7 +75,7 @@ export function calculateLineDirectionAndLength(line: Line): {
 /**
  * Calculates the direction of turn from line p1-p2 to point p3
  */
-export function direction(p1: Point2D, p2: Point2D, p3: Point2D): number {
+function direction(p1: Point2D, p2: Point2D, p3: Point2D): number {
     return (p3.x - p1.x) * (p2.y - p1.y) - (p2.x - p1.x) * (p3.y - p1.y);
 }
 
@@ -303,39 +303,7 @@ export function calculateLineIntersection(
     };
 
     return [result];
-} /**
- * Intersection Base Library
- *
- * Consolidates common intersection functions used across multiple intersection modules.
- * This library extracts shared functionality to eliminate code duplication in the
- * offset-calculation/intersect/ directory.
- *
- * Consolidates duplicates from:
- * - All modules in src/lib/algorithms/offset-calculation/intersect/
- *
- * Based on DECOPY.md section 2.3 Intersection Base Library
- */
-/**
- * Creates a line segment from two points
- * Used across multiple intersection algorithms for segment creation
- */
-
-export function createSegmentLine(start: Point2D, end: Point2D): Line {
-    return {
-        start: { x: start.x, y: start.y },
-        end: { x: end.x, y: end.y },
-    };
 }
-
-/**
- * Get the length of a line
- */
-export function getLineLength(line: Line): number {
-    const dx = line.end.x - line.start.x;
-    const dy = line.end.y - line.start.y;
-    return Math.sqrt(dx * dx + dy * dy);
-}
-
 /**
  * Get the tangent direction of a line (normalized unit vector from start to end)
  */

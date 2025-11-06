@@ -3,16 +3,6 @@
  */
 
 /**
- * Configuration for kerf generation
- */
-export interface KerfGenerationConfig {
-    /** Tolerance for chain closure detection */
-    tolerance: number;
-    /** Whether to attempt start point adjustment on lead kerf overlap */
-    attemptAdjustment?: boolean;
-}
-
-/**
  * Result from kerf generation with adjustment attempt
  */
 export interface KerfGenerationResult {

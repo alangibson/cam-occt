@@ -14,17 +14,14 @@
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type {
-    ChainOffsetParameters,
-    ChainOffsetResult,
-} from '$lib/algorithms/offset-calculation/chain/types';
-import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from '$lib/algorithms/offset-calculation/chain/types';
 import {
     isChainClosed,
     tessellateChainToShapes,
 } from '$lib/geometry/chain/functions';
 import { offsetPaths } from './clipper-offset';
 import { reconstructChain, createOffsetChain } from './reconstruct';
+import type { ChainOffsetParameters, ChainOffsetResult } from './types';
+import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from './defaults';
 
 /**
  * Offset a chain using Clipper2

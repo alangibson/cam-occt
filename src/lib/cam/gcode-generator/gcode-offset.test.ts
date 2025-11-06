@@ -6,7 +6,7 @@ import type { Drawing } from '$lib/cam/drawing/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import { Unit } from '$lib/config/units/units';
 import { LeadType } from '$lib/cam/lead/enums';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
 import { generateGCode } from './gcode-generator';

@@ -1,13 +1,13 @@
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 
-export interface CanvasConfiguration {
+interface CanvasConfiguration {
     respectLayerVisibility: boolean;
     onChainClick: ((chainId: string) => void) | null;
     onPartClick: ((partId: string) => void) | null;
     interactionMode: 'shapes' | 'chains' | 'cuts';
 }
 
-export interface StageEventHandlers {
+interface StageEventHandlers {
     onChainClick?: ((chainId: string) => void) | null;
     onPartClick?: ((partId: string) => void) | null;
 }

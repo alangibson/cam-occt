@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import type { Kerf } from '$lib/cam/kerf/interfaces';
 
-export interface KerfsStore {
+interface KerfsStore {
     kerfs: Kerf[];
     selectedKerfId: string | null;
     highlightedKerfId: string | null;

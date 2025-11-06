@@ -112,7 +112,7 @@ export function getPersistedStateSize(): number {
 /**
  * Debounce utility for auto-saving
  */
-export function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
+function debounce<T extends (...args: Parameters<T>) => ReturnType<T>>(
     func: T,
     delay: number
 ): (...args: Parameters<T>) => void {

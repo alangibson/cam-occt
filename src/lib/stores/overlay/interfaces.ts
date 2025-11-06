@@ -22,7 +22,7 @@ export interface ChainEndpoint {
     chainId: string;
 }
 
-export interface ToolHead {
+interface ToolHead {
     x: number;
     y: number;
     visible: boolean;

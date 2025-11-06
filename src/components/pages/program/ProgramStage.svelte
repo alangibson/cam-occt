@@ -16,6 +16,7 @@
     import { partStore } from '$lib/stores/parts/store';
     import { SvelteMap } from 'svelte/reactivity';
     import type { Chain } from '$lib/geometry/chain/interfaces';
+    import type { Cut } from '$lib/cam/cut/interfaces';
     import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import {
@@ -211,7 +212,7 @@
 
         // Update the cut order in the store with corrected order property
         const orderedCutsWithUpdatedOrder = result.orderedCuts.map(
-            (cut, index) => ({
+            (cut: Cut, index: number) => ({
                 ...cut,
                 order: index + 1,
             })

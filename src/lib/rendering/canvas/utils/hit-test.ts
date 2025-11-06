@@ -37,7 +37,7 @@ export enum HitTestType {
 /**
  * Hit test metadata for different types
  */
-export interface HitTestMetadata {
+interface HitTestMetadata {
     shape?: Shape;
     shapeType?: 'original' | 'offset';
     cutId?: string;

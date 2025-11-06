@@ -436,54 +436,10 @@ export function getShapeBoundingBox(shape: Shape): BoundingBox {
 }
 
 /**
- * Calculates the bounding box of a spline using NURBS sampling
- * @deprecated Use getBoundingBoxForSpline from '$lib/geometry/bounding-box' instead
- */
-export function calculateSplineBoundingBox(spline: Spline): BoundingBox {
-    return getBoundingBoxForShape({
-        type: GeometryType.SPLINE,
-        geometry: spline,
-    } as Shape);
-}
-
-/**
- * Calculates the bounding box of a polyline
- * @deprecated Use getBoundingBoxForPolyline from '$lib/geometry/bounding-box' instead
- */
-export function calculatePolylineBoundingBox(polyline: Polyline): BoundingBox {
-    return getBoundingBoxForShape({
-        type: GeometryType.POLYLINE,
-        geometry: polyline,
-    } as Shape);
-}
-
-/**
  * Get all significant points from a shape for bounding box calculation
  * Consolidated from translate-to-positive.ts and dxf-parser.ts
  */
 export function getShapePointsForBounds(shape: Shape): Point2D[] {
     const bounds = getBoundingBoxForShape(shape);
     return [bounds.min, bounds.max];
-}
-
-/**
- * Checks if one bounding box is completely contained within another
- * Used for quick rejection in geometric containment tests
- *
- * @param inner - The potentially contained bounding box
- * @param outer - The potentially containing bounding box
- * @param margin - Optional margin to allow for numerical tolerance (default: 0)
- * @returns true if inner is fully contained within outer (with margin)
- */
-export function isBBoxContainedInBBox(
-    inner: BoundingBox,
-    outer: BoundingBox,
-    margin: number = 0
-): boolean {
-    return (
-        inner.min.x >= outer.min.x - margin &&
-        inner.max.x <= outer.max.x + margin &&
-        inner.min.y >= outer.min.y - margin &&
-        inner.max.y <= outer.max.y + margin
-    );
 }

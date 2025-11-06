@@ -29,7 +29,7 @@ export interface TransformState {
 /**
  * Selection state for various object types
  */
-export interface SelectionState {
+interface SelectionState {
     selectedShapes: Set<string>;
     hoveredShape: string | null;
     selectedOffsetShape: Shape | null;
@@ -51,7 +51,7 @@ export interface SelectionState {
 /**
  * Hover state for interactive feedback
  */
-export interface HoverState {
+interface HoverState {
     hoveredChain: string | null;
     hoveredPart: string | null;
     hoveredCut: string | null;
@@ -62,7 +62,7 @@ export interface HoverState {
 /**
  * Visibility state for layers and elements
  */
-export interface VisibilityState {
+interface VisibilityState {
     layerVisibility: Record<string, boolean>;
     showRapids: boolean;
     showRapidDirections: boolean;
@@ -99,7 +99,7 @@ export interface VisibilityState {
 /**
  * Overlay configuration for stage-specific visualizations
  */
-export interface OverlayState {
+interface OverlayState {
     shapePoints?: (Point2D & { type?: string })[];
     chainEndpoints?: (Point2D & { type?: string })[];
     tessellationPoints?: Point2D[];

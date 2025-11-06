@@ -7,7 +7,7 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
-export interface ChainDetectionOptions {
+interface ChainDetectionOptions {
     tolerance: number;
 }
 
@@ -161,7 +161,7 @@ class UnionFind {
  * @param tolerance - Tolerance for determining if chain is closed
  * @returns The chain with clockwise property set
  */
-export function setChainDirection(
+function setChainDirection(
     chain: Chain,
     tolerance: number = CHAIN_CLOSURE_TOLERANCE
 ): Chain {

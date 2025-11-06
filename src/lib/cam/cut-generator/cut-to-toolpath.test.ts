@@ -11,7 +11,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { cutToToolPath, cutsToToolPaths } from './cut-to-toolpath';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { getShapePoints } from '$lib/geometry/shape/functions';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 
 // Mock getShapePoints function
 vi.mock('$lib/geometry/shape/functions', async () => {

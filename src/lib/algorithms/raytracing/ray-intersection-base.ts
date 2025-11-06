@@ -15,7 +15,7 @@ import { EPSILON } from '$lib/geometry/math/constants';
 /**
  * Quadratic setup result for ray-circle intersection
  */
-export interface QuadraticSetup {
+interface QuadraticSetup {
     /** Coefficient of t² */
     a: number;
     /** Coefficient of t */

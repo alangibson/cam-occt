@@ -31,19 +31,12 @@ export const THOUSANDTHS_PRECISION_FACTOR = 1000; // For rounding to thousandths
  * Convert millimeters to inches
  * Rounds to thousandths of an inch (3 decimal places)
  */
-export function mmToInch(mm: number): number {
+function mmToInch(mm: number): number {
     const inches = mm / MM_PER_INCH;
     return (
         Math.round(inches * THOUSANDTHS_PRECISION_FACTOR) /
         THOUSANDTHS_PRECISION_FACTOR
     );
-}
-
-/**
- * Convert inches to millimeters
- */
-export function inchToMm(inch: number): number {
-    return inch * MM_PER_INCH;
 }
 
 /**
@@ -156,22 +149,6 @@ export function getReactiveUnitSymbol(
 }
 
 /**
- * Convert Unit enum to MeasurementSystem
- */
-export function unitToMeasurementSystem(unit: Unit): MeasurementSystem {
-    switch (unit) {
-        case Unit.MM:
-            return MeasurementSystem.Metric;
-        case Unit.INCH:
-            return MeasurementSystem.Imperial;
-        case Unit.NONE:
-            return MeasurementSystem.Metric; // Default to metric when no units specified
-        default:
-            return MeasurementSystem.Metric;
-    }
-}
-
-/**
  * Convert MeasurementSystem to Unit enum
  */
 export function measurementSystemToUnit(system: MeasurementSystem): Unit {
@@ -199,11 +176,4 @@ export function convertCoordinates(
     }
 
     return coordinates.map((coord) => convertUnits(coord, fromUnit, toUnit));
-}
-
-/**
- * Type guard for checking if a value is a valid Unit
- */
-export function isUnit(value: string): value is Unit {
-    return Object.values(Unit).includes(value as Unit);
 }

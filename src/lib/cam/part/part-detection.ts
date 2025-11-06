@@ -299,13 +299,6 @@ function isPointInBoundingBox(
 }
 
 /**
- * Type guard for checking if a value is a valid PartType
- */
-export function isPartType(value: string): value is PartType {
-    return Object.values(PartType).includes(value as PartType);
-}
-
-/**
  * Detects which part (if any) contains an open chain as a slot
  * A slot is an open chain where both endpoints are inside the same part shell
  *

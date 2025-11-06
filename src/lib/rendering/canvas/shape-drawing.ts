@@ -24,7 +24,7 @@ import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline/constants';
 /**
  * Draw a line shape
  */
-export function drawLine(ctx: CanvasRenderingContext2D, line: Line): void {
+function drawLine(ctx: CanvasRenderingContext2D, line: Line): void {
     ctx.beginPath();
     ctx.moveTo(line.start.x, line.start.y);
     ctx.lineTo(line.end.x, line.end.y);
@@ -34,10 +34,7 @@ export function drawLine(ctx: CanvasRenderingContext2D, line: Line): void {
 /**
  * Draw a circle shape
  */
-export function drawCircle(
-    ctx: CanvasRenderingContext2D,
-    circle: Circle
-): void {
+function drawCircle(ctx: CanvasRenderingContext2D, circle: Circle): void {
     ctx.beginPath();
     ctx.arc(circle.center.x, circle.center.y, circle.radius, 0, 2 * Math.PI);
     ctx.stroke();
@@ -46,7 +43,7 @@ export function drawCircle(
 /**
  * Draw an arc shape
  */
-export function drawArc(ctx: CanvasRenderingContext2D, arc: Arc): void {
+function drawArc(ctx: CanvasRenderingContext2D, arc: Arc): void {
     ctx.beginPath();
     ctx.arc(
         arc.center.x,
@@ -62,10 +59,7 @@ export function drawArc(ctx: CanvasRenderingContext2D, arc: Arc): void {
 /**
  * Draw a polyline shape
  */
-export function drawPolyline(
-    ctx: CanvasRenderingContext2D,
-    polyline: Polyline
-): void {
+function drawPolyline(ctx: CanvasRenderingContext2D, polyline: Polyline): void {
     if (!polyline.shapes || polyline.shapes.length === 0) return;
 
     // Draw each shape in the polyline using drawLine or drawArc
@@ -84,7 +78,7 @@ export function drawPolyline(
 /**
  * Draw an ellipse shape
  */
-export function drawEllipse(
+function drawEllipse(
     ctx: CanvasRenderingContext2D,
     ellipse: Ellipse,
     _shape: Shape
@@ -120,7 +114,7 @@ export function drawEllipse(
 /**
  * Draw a spline shape
  */
-export function drawSpline(
+function drawSpline(
     ctx: CanvasRenderingContext2D,
     spline: Spline,
     shape: Shape

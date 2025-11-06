@@ -9,7 +9,7 @@ import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import { prepareChainsAndLeadConfigs } from '$lib/cam/cut/cut-optimization-utils';
-import { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import { OffsetDirection } from '$lib/cam/offset/types';
 
 /**
  * Test to validate that the clockwise property fix works in the actual code cuts

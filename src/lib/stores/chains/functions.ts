@@ -79,14 +79,3 @@ export function getChainShapeIds(shapeId: string, chains: Chain[]): string[] {
 export function getChainById(chainId: string, chains: Chain[]): Chain | null {
     return chains.find((chain) => chain.id === chainId) || null;
 }
-
-// Helper to get shape IDs for the selected chain
-export function getSelectedChainShapeIds(
-    selectedChainId: string | null,
-    chains: Chain[]
-): string[] {
-    if (!selectedChainId) return [];
-
-    const chain: Chain | null = getChainById(selectedChainId, chains);
-    return chain ? chain.shapes.map((shape) => shape.id) : [];
-}

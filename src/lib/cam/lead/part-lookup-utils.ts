@@ -2,49 +2,6 @@ import type { Part } from '$lib/cam/part/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
 /**
- * Find the part that contains a given chain, handling both original chains and offset chains.
- * For offset chains, uses the originalChainId to find the correct part.
- */
-export function findPartForChain(
-    chain: Chain | string,
-    parts: Part[]
-): Part | undefined {
-    // Handle both Chain objects and chain ID strings
-    const chainId = typeof chain === 'string' ? chain : chain.id;
-    const originalChainId =
-        typeof chain === 'string' ? chainId : chain.originalChainId || chainId;
-
-    // First try to find by original chain ID (handles offset chains)
-    for (const part of parts) {
-        if (part.shell.id === originalChainId) {
-            return part;
-        }
-        for (const hole of part.voids) {
-            if (hole.chain.id === originalChainId) {
-                return part;
-            }
-        }
-    }
-
-    // If originalChainId lookup failed and it's different from chainId,
-    // also try the actual chainId as fallback
-    if (originalChainId !== chainId) {
-        for (const part of parts) {
-            if (part.shell.id === chainId) {
-                return part;
-            }
-            for (const hole of part.voids) {
-                if (hole.chain.id === chainId) {
-                    return part;
-                }
-            }
-        }
-    }
-
-    return undefined;
-}
-
-/**
  * Determine if a chain (original or offset) is a hole within the given part.
  * Uses originalChainId for offset chains to get correct classification.
  */

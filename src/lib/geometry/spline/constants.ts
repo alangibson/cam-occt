@@ -27,22 +27,6 @@ export const VALIDATION_SAMPLE_COUNT = 50;
 export const SPLINE_TESSELLATION_TOLERANCE: number = 1e-7;
 
 /**
- * Spline complexity weight multiplier
- */
-export const SPLINE_COMPLEXITY_WEIGHT_MULTIPLIER = 1.5;
-
-/**
- * Closed spline complexity multiplier
- */
-export const CLOSED_SPLINE_COMPLEXITY_MULTIPLIER = 1.2;
-
-/**
- * Maximum number of tessellation samples for uniform sampling
- * This limit applies only to uniform sampling, not adaptive
- */
-export const MAX_SPLINE_TESSELLATION_SAMPLES = 1000;
-
-/**
  * Maximum number of adaptive tessellation samples
  * Set to a very high value to effectively remove limits
  * Adaptive tessellation will generate as many points as needed based on curvature
@@ -50,24 +34,9 @@ export const MAX_SPLINE_TESSELLATION_SAMPLES = 1000;
 export const MAX_ADAPTIVE_TESSELLATION_SAMPLES = Number.MAX_SAFE_INTEGER;
 
 /**
- * Standard tessellation timeout in milliseconds
- */
-export const STANDARD_TESSELLATION_TIMEOUT_MS = 5000;
-
-/**
  * High complexity tessellation timeout in milliseconds
  */
 export const HIGH_COMPLEXITY_TIMEOUT_MS = 10000;
-
-/**
- * Tessellation sample multiplier
- */
-export const TESSELLATION_SAMPLE_MULTIPLIER = 3;
-
-/**
- * Default retry count for spline intersection operations
- */
-export const DEFAULT_RETRY_COUNT = 3;
 
 /**
  * Minimum number of samples for spline tessellation
@@ -75,24 +44,13 @@ export const DEFAULT_RETRY_COUNT = 3;
 export const MIN_SPLINE_SAMPLES = 10;
 
 /**
- * Complexity score threshold below which splines use uniform sampling
- * Splines with complexity below this are considered simple enough for basic sampling
- */
-export const SIMPLE_SPLINE_COMPLEXITY_THRESHOLD = 10;
-
-/**
- * Complexity score threshold above which splines require high-complexity handling
- * Used to determine when to use extended timeouts and adaptive sampling
- */
-export const HIGH_SPLINE_COMPLEXITY_THRESHOLD = 50;
-/**
  * Default tessellation configuration
  */
 export const DEFAULT_CONFIG: Required<SplineTessellationConfig> = {
     method: 'verb-nurbs',
     numSamples: 50,
     tolerance: CHAIN_CLOSURE_TOLERANCE,
-    maxSamples: MAX_SPLINE_TESSELLATION_SAMPLES,
+    maxSamples: 1000,
     minSamples: MIN_SPLINE_SAMPLES,
-    timeoutMs: STANDARD_TESSELLATION_TIMEOUT_MS,
+    timeoutMs: 5000,
 };

@@ -24,7 +24,7 @@ const SCALE_FACTOR = 1000;
  * @param clipper - Clipper2 MainModule instance
  * @returns Clipper2 Path64 object
  */
-export function toClipper2Path(points: Point2D[], clipper: MainModule): Path64 {
+function toClipper2Path(points: Point2D[], clipper: MainModule): Path64 {
     const { MakePath64 } = clipper;
     const coords: bigint[] = [];
 

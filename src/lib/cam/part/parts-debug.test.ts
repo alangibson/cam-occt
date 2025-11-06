@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { getChainPartType } from '$lib/cam/part/functions';
 import { type Part } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
+import { getChainPartType } from '$lib/test/parts';
 
 describe('Parts Store Chain Type Detection', () => {
     // Helper function to create test parts matching the real structure

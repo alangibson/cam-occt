@@ -33,7 +33,7 @@ import type { Rapid } from '$lib/cam/rapid/interfaces';
 /**
  * Result of the cut order optimization
  */
-export interface OptimizationResult {
+interface OptimizationResult {
     orderedCuts: Cut[];
     rapids: Rapid[];
     totalDistance: number;

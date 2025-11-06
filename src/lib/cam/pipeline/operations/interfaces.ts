@@ -3,8 +3,8 @@
  */
 
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { GapFillingResult } from '$lib/algorithms/offset-calculation/chain/types';
-import type { OffsetDirection } from '$lib/algorithms/offset-calculation/offset/types';
+import type { GapFillingResult } from '$lib/cam/cut/types';
+import type { OffsetDirection } from '$lib/cam/offset/types';
 import type { Cut } from '$lib/cam/cut/interfaces';
 
 /**

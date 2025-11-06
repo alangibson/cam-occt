@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { doesLeadKerfOverlapChain } from './functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { OffsetChain } from '$lib/algorithms/offset-calculation/chain/types';
+import type { OffsetChain } from '$lib/cam/offset/types';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 

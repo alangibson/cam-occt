@@ -31,11 +31,6 @@ export const HIGH_TESSELLATION_SEGMENTS = 32;
 export const DEFAULT_ARRAY_NOT_FOUND_INDEX = -1;
 
 /**
- * Multiplier for calculating tessellation samples based on shape complexity
- */
-export const TESSELLATION_SAMPLE_MULTIPLIER = 3;
-
-/**
  * Multiplier for relaxing tolerance in intersection and trimming operations
  */
 export const TOLERANCE_RELAXATION_MULTIPLIER = 3;
@@ -44,11 +39,6 @@ export const TOLERANCE_RELAXATION_MULTIPLIER = 3;
  * Small angle increment in degrees for iterative angular calculations
  */
 export const SMALL_ANGLE_INCREMENT_DEG = 5;
-
-/**
- * Very small tolerance for high-precision geometric operations
- */
-export const MICRO_TOLERANCE = 1e-6;
 
 /**
  * Numeric representation for counterclockwise direction in arc calculations
@@ -60,57 +50,10 @@ export const DIRECTION_COUNTERCLOCKWISE = 1;
  */
 export const DIRECTION_CLOCKWISE = -1;
 
-// CHAIN_CLOSURE_TOLERANCE moved to geometry/chain module
-
-// Common numerical constants
-/**
- * Maximum iterations for iterative algorithms to prevent infinite loops
- */
-export const MAX_ITERATIONS = 1000;
-/**
- * High precision tolerance for geometric calculations
- */
-export const HIGH_PRECISION_TOLERANCE = 1e-6;
-/**
- * Confidence threshold for algorithm validation (80%)
- */
-export const CONFIDENCE_THRESHOLD = 0.8;
-/**
- * High confidence threshold for critical validations (95%)
- */
-export const CONFIDENCE_HIGH_THRESHOLD = 0.95;
-// VALIDATION_SAMPLE_COUNT moved to geometry/spline module
-/**
- * Decimal precision for coordinate rounding
- */
-export const DECIMAL_PRECISION = 6;
-
-// Lead calculation constants
-/**
- * Multiplier for calculating reachable distance in lead calculations
- */
-export const LEAD_REACHABLE_DISTANCE_MULTIPLIER = 3;
-
-// Offset calculation constants
 /**
  * Tolerance for area-based containment calculations
  */
 export const CONTAINMENT_AREA_TOLERANCE = 0.001;
-/**
- * Multiplier for snapping tolerance in geometric operations
- */
-export const TOLERANCE_SNAP_MULTIPLIER = 10;
-/**
- * Multiplier for precision tolerance adjustments
- */
-export const PRECISION_TOLERANCE_MULTIPLIER = 10;
-
-// Algorithm switching thresholds
-
-/**
- * Default extension length for shape intersection calculations (mm)
- */
-export const DEFAULT_EXTENSION_LENGTH_MM = 1000;
 
 /**
  * Default origin cross size for canvas background rendering (mm)

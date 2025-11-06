@@ -1,4 +1,3 @@
-import verb from 'verb-nurbs';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -6,28 +5,21 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { VerbCurve } from 'verb-nurbs';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { tessellateEllipse } from '$lib/geometry/ellipse/functions';
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import { tessellateVerbCurve } from '$lib/algorithms/offset-calculation/offset/spline/spline';
+import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { EPSILON } from '$lib/geometry/math/constants';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import { calculateArcPoint, isArc } from '$lib/geometry/arc/functions';
-import {
-    calculateSplineEndTangent,
-    calculateSplineStartTangent,
-} from '$lib/algorithms/offset-calculation/extend/spline';
 import { isLine } from '$lib/geometry/line/functions';
 
 // SVG Builder Constants
 const DEFAULT_PADDING = 50;
 const DEFAULT_SVG_SIZE = 400;
-const DEFAULT_EXTENSION_LENGTH = 100;
 const MIN_SVG_SIZE = 100;
 const LEGEND_CHAR_WIDTH = 8;
 const LEGEND_ITEM_HEIGHT = 20;
@@ -53,16 +45,6 @@ const POLYLINE_COLOR_INDEX = 1;
 const POLYLINE_STROKE_WIDTH_INDEX = 2;
 const POLYLINE_FILL_INDEX = 3;
 const POLYLINE_DASH_INDEX = 4;
-// eslint-disable-next-line no-magic-numbers
-const MAX_ANGLE_EXTENSION = 4 * Math.PI;
-const BEZIER_MID_START = 4;
-const DASH_PATTERN_SHORT = '5,5';
-const BEZIER_CONTROL_POINTS = 4;
-const BEZIER_DEGREE = 3;
-const BEZIER_KNOTS_LENGTH = 8;
-const BEZIER_KNOT_START = 0;
-const BEZIER_KNOT_END = 1;
-const BEZIER_KNOT_END_INDEX = 7;
 const TITLE_OFFSET_BOTTOM = 20;
 const TITLE_FONT_SIZE = '16px';
 const SVG_RECT_STROKE_WIDTH = 0.5;
@@ -463,91 +445,18 @@ export class SVGBuilder {
         strokeWidth: number,
         dashArray?: string
     ) {
-        // Debug: Check for invalid spline data
-        if (!spline.controlPoints || spline.controlPoints.length === 0) {
-            throw new Error('Spline has no control points');
-        }
-
-        // Check for NaN in control points before creating verb curve
-        const hasNaNControlPoints: boolean = spline.controlPoints.some(
-            (p) => isNaN(p.x) || isNaN(p.y)
-        );
-        if (hasNaNControlPoints) {
-            throw new Error('Spline control points contain NaN values');
-        }
-
-        // Create verb curve for tessellation
-        // Ensure we have valid weights - empty array is truthy but invalid
-        const weights: number[] =
-            spline.weights && spline.weights.length > 0
-                ? spline.weights
-                : spline.controlPoints.map(() => 1);
-
-        // Validate and normalize the knot vector for verb-nurbs
-        let normalizedKnots: number[] = [...spline.knots];
-
-        // For simple Bezier curves (degree 3, 4 control points), ensure clamped format
-        if (
-            spline.degree === BEZIER_DEGREE &&
-            spline.controlPoints.length === BEZIER_CONTROL_POINTS
-        ) {
-            if (
-                spline.knots.length === BEZIER_KNOTS_LENGTH &&
-                spline.knots[0] === BEZIER_KNOT_START &&
-                spline.knots[BEZIER_KNOT_END_INDEX] === BEZIER_KNOT_END &&
-                spline.knots
-                    .slice(0, BEZIER_MID_START)
-                    .every((k) => k === BEZIER_KNOT_START) &&
-                spline.knots
-                    .slice(BEZIER_MID_START, BEZIER_KNOTS_LENGTH)
-                    .every((k) => k === BEZIER_KNOT_END)
-            ) {
-                // This is already a proper clamped knot vector for a Bezier curve
-                // But verb-nurbs might expect a specific format
-                // Let's try: [0, 0, 0, 0, 1, 1, 1, 1] - which is correct for clamped NURBS
-                normalizedKnots = [
-                    BEZIER_KNOT_START,
-                    BEZIER_KNOT_START,
-                    BEZIER_KNOT_START,
-                    BEZIER_KNOT_START,
-                    BEZIER_KNOT_END,
-                    BEZIER_KNOT_END,
-                    BEZIER_KNOT_END,
-                    BEZIER_KNOT_END,
-                ];
-            }
-        }
-
-        let verbCurve: VerbCurve;
-        try {
-            verbCurve = verb.geom.NurbsCurve.byKnotsControlPointsWeights(
-                spline.degree,
-                normalizedKnots,
-                spline.controlPoints.map((p) => [p.x, p.y, 0]),
-                weights
-            );
-        } catch (error) {
-            // If the full NURBS construction fails, try simplified approach
-            try {
-                // Use the correct verb API for point interpolation
-                verbCurve = verb.geom.NurbsCurve.byPoints(
-                    spline.controlPoints.map((p) => [p.x, p.y, 0]),
-                    Math.min(spline.degree, spline.controlPoints.length - 1)
-                );
-            } catch (fallbackError) {
-                throw new Error(
-                    `Both verb NURBS construction methods failed. Original: ${error}, Fallback: ${fallbackError}`
-                );
-            }
-        }
-
         // Use fine tolerance for visual output - ensures smooth curves
         // Use 0.1 pixel tolerance for crisp visual representation
         const visualTolerance: number = SPLINE_VISUAL_TOLERANCE;
-        const points: Point2D[] = tessellateVerbCurve(
-            verbCurve,
-            visualTolerance
-        );
+        const result = tessellateSpline(spline, { tolerance: visualTolerance });
+
+        if (!result.success || !result.points) {
+            throw new Error(
+                `Spline tessellation failed: ${result.errors?.join(', ')}`
+            );
+        }
+
+        const points: Point2D[] = result.points;
 
         // Check for NaN in tessellated points
         const hasNaNTessellation: boolean = points.some(
@@ -555,7 +464,7 @@ export class SVGBuilder {
         );
         if (hasNaNTessellation) {
             throw new Error(
-                `Spline tessellation produced NaN. Degree: ${spline.degree}, Knots: ${spline.knots.length}, Control points: ${spline.controlPoints.length}`
+                `Spline tessellation produced NaN. Degree: ${spline.degree}, Knots: ${spline.knots?.length || 0}, Control points: ${spline.controlPoints?.length || 0}`
             );
         }
 
@@ -618,416 +527,6 @@ export class SVGBuilder {
 
     addIntersectionPoint(point: Point2D, color: string, radius: number) {
         this.addCircle({ center: point, radius }, 'black', 1, color);
-    }
-
-    /**
-     * Draw extensions for a line shape as dotted lines
-     */
-    addLineExtensions(
-        line: Line,
-        color: string,
-        strokeWidth: number,
-        extensionLength: number = DEFAULT_EXTENSION_LENGTH
-    ) {
-        // Calculate line direction
-        const lineDir: { x: number; y: number } = {
-            x: line.end.x - line.start.x,
-            y: line.end.y - line.start.y,
-        };
-        const lineLength: number = Math.sqrt(
-            lineDir.x * lineDir.x + lineDir.y * lineDir.y
-        );
-        const lineUnitDir: { x: number; y: number } = {
-            x: lineDir.x / lineLength,
-            y: lineDir.y / lineLength,
-        };
-
-        // Start extension (before line start)
-        const startExtension: Point2D = {
-            x: line.start.x - lineUnitDir.x * extensionLength,
-            y: line.start.y - lineUnitDir.y * extensionLength,
-        };
-        this.addLine(
-            { start: startExtension, end: line.start },
-            color,
-            strokeWidth,
-            DASH_PATTERN_SHORT
-        );
-
-        // End extension (after line end)
-        const endExtension: Point2D = {
-            x: line.end.x + lineUnitDir.x * extensionLength,
-            y: line.end.y + lineUnitDir.y * extensionLength,
-        };
-        this.addLine(
-            { start: line.end, end: endExtension },
-            color,
-            strokeWidth,
-            DASH_PATTERN_SHORT
-        );
-    }
-
-    /**
-     * Draw extensions for a spline shape as dotted tangent lines
-     */
-    addSplineExtensions(
-        spline: Spline,
-        color: string,
-        strokeWidth: number,
-        extensionLength: number = DEFAULT_EXTENSION_LENGTH
-    ) {
-        try {
-            // Get start and end points of spline
-            const startPoint: Point2D = spline.controlPoints[0];
-            const endPoint: Point2D =
-                spline.controlPoints[spline.controlPoints.length - 1];
-
-            // Get tangent directions
-            const startTangent: Point2D = calculateSplineStartTangent(spline);
-            const endTangent: Point2D = calculateSplineEndTangent(spline);
-
-            // Normalize tangents
-            const startTangentLength: number = Math.sqrt(
-                startTangent.x * startTangent.x +
-                    startTangent.y * startTangent.y
-            );
-            const endTangentLength: number = Math.sqrt(
-                endTangent.x * endTangent.x + endTangent.y * endTangent.y
-            );
-
-            const startUnitTangent: Point2D = {
-                x: startTangent.x / startTangentLength,
-                y: startTangent.y / startTangentLength,
-            };
-            const endUnitTangent: Point2D = {
-                x: endTangent.x / endTangentLength,
-                y: endTangent.y / endTangentLength,
-            };
-
-            // Start extension (tangent before spline start)
-            const startExtension: Point2D = {
-                x: startPoint.x - startUnitTangent.x * extensionLength,
-                y: startPoint.y - startUnitTangent.y * extensionLength,
-            };
-            this.addLine(
-                { start: startExtension, end: startPoint },
-                color,
-                strokeWidth,
-                DASH_PATTERN_SHORT
-            );
-
-            // End extension (tangent after spline end)
-            const endExtension: Point2D = {
-                x: endPoint.x + endUnitTangent.x * extensionLength,
-                y: endPoint.y + endUnitTangent.y * extensionLength,
-            };
-            this.addLine(
-                { start: endPoint, end: endExtension },
-                color,
-                strokeWidth,
-                DASH_PATTERN_SHORT
-            );
-        } catch {
-            // Fallback: simple linear extensions using control points
-            const startPoint: Point2D = spline.controlPoints[0];
-            const endPoint: Point2D =
-                spline.controlPoints[spline.controlPoints.length - 1];
-
-            // Approximate tangent from first two control points
-            if (spline.controlPoints.length > 1) {
-                const startTangent: Point2D = {
-                    x: spline.controlPoints[1].x - spline.controlPoints[0].x,
-                    y: spline.controlPoints[1].y - spline.controlPoints[0].y,
-                };
-                const startLength: number = Math.sqrt(
-                    startTangent.x * startTangent.x +
-                        startTangent.y * startTangent.y
-                );
-                const startUnit: Point2D = {
-                    x: startTangent.x / startLength,
-                    y: startTangent.y / startLength,
-                };
-
-                const startExtension: Point2D = {
-                    x: startPoint.x - startUnit.x * extensionLength,
-                    y: startPoint.y - startUnit.y * extensionLength,
-                };
-                this.addLine(
-                    { start: startExtension, end: startPoint },
-                    color,
-                    strokeWidth,
-                    DASH_PATTERN_SHORT
-                );
-            }
-
-            // Approximate tangent from last two control points
-            if (spline.controlPoints.length > 1) {
-                const lastIdx: number = spline.controlPoints.length - 1;
-                const endTangent: Point2D = {
-                    x:
-                        spline.controlPoints[lastIdx].x -
-                        spline.controlPoints[lastIdx - 1].x,
-                    y:
-                        spline.controlPoints[lastIdx].y -
-                        spline.controlPoints[lastIdx - 1].y,
-                };
-                const endLength: number = Math.sqrt(
-                    endTangent.x * endTangent.x + endTangent.y * endTangent.y
-                );
-                const endUnit: Point2D = {
-                    x: endTangent.x / endLength,
-                    y: endTangent.y / endLength,
-                };
-
-                const endExtension: Point2D = {
-                    x: endPoint.x + endUnit.x * extensionLength,
-                    y: endPoint.y + endUnit.y * extensionLength,
-                };
-                this.addLine(
-                    { start: endPoint, end: endExtension },
-                    color,
-                    strokeWidth,
-                    DASH_PATTERN_SHORT
-                );
-            }
-        }
-    }
-
-    /**
-     * Draw extensions for an arc shape as dotted arc segments
-     */
-    addArcExtensions(
-        arc: Arc,
-        color: string,
-        strokeWidth: number,
-        extensionLength: number = DEFAULT_EXTENSION_LENGTH
-    ) {
-        // Calculate angular extension based on extension length and radius
-        // extensionAngle = extensionLength / radius (in radians)
-        // Clamp to a reasonable maximum (e.g., 4π radians = 720°)
-        const extensionAngle: number = Math.min(
-            extensionLength / arc.radius,
-            MAX_ANGLE_EXTENSION
-        );
-
-        let extendedStartAngle: number;
-        let extendedEndAngle: number;
-
-        if (arc.clockwise) {
-            // For clockwise arcs, extend by increasing start angle and decreasing end angle
-            extendedStartAngle = arc.startAngle + extensionAngle;
-            extendedEndAngle = arc.endAngle - extensionAngle;
-        } else {
-            // For counter-clockwise arcs, extend by decreasing start angle and increasing end angle
-            extendedStartAngle = arc.startAngle - extensionAngle;
-            extendedEndAngle = arc.endAngle + extensionAngle;
-        }
-
-        // Draw start extension (from extended start to original start)
-        const startExtensionArc: Arc = {
-            center: arc.center,
-            radius: arc.radius,
-            startAngle: extendedStartAngle,
-            endAngle: arc.startAngle,
-            clockwise: arc.clockwise,
-        };
-        this.addArcWithDash(
-            startExtensionArc,
-            color,
-            strokeWidth,
-            DASH_PATTERN_SHORT
-        );
-
-        // Draw end extension (from original end to extended end)
-        const endExtensionArc: Arc = {
-            center: arc.center,
-            radius: arc.radius,
-            startAngle: arc.endAngle,
-            endAngle: extendedEndAngle,
-            clockwise: arc.clockwise,
-        };
-        this.addArcWithDash(
-            endExtensionArc,
-            color,
-            strokeWidth,
-            DASH_PATTERN_SHORT
-        );
-    }
-
-    /**
-     * Draw an arc with optional dash pattern
-     */
-    addArcWithDash(
-        arc: Arc,
-        color: string,
-        strokeWidth: number,
-        dashArray?: string
-    ) {
-        const startPoint = calculateArcPoint(
-            arc.center,
-            arc.radius,
-            arc.startAngle
-        );
-        const endPoint = calculateArcPoint(
-            arc.center,
-            arc.radius,
-            arc.endAngle
-        );
-        const startX = startPoint.x;
-        const startY = startPoint.y;
-        const endX = endPoint.x;
-        const endY = endPoint.y;
-
-        const largeArcFlag: number =
-            Math.abs(arc.endAngle - arc.startAngle) > Math.PI ? 1 : 0;
-
-        // For CNC to SVG coordinate transformation, we need to handle the sweep direction properly
-        // When Y is flipped, we need to consider both the clockwise flag and the angle direction
-        let sweepFlag: number = arc.clockwise ? 1 : 0;
-
-        // Special case: if startAngle > endAngle (decreasing angles), we need to flip the sweep
-        if (arc.startAngle > arc.endAngle && !arc.clockwise) {
-            sweepFlag = 1;
-        }
-
-        const dashStyle: string = dashArray
-            ? ` stroke-dasharray="${dashArray}"`
-            : '';
-
-        this.elements.push(
-            `<path d="M ${startX} ${this.transformY(startY)} A ${arc.radius} ${arc.radius} 0 ${largeArcFlag} ${sweepFlag} ${endX} ${this.transformY(endY)}" stroke="${color}" stroke-width="${strokeWidth}" fill="none"${dashStyle}/>`
-        );
-    }
-
-    /**
-     * Draw extensions for a polyline shape as dotted lines extending first and last segments
-     */
-    addPolylineExtensions(
-        polyline: Polyline,
-        color: string,
-        strokeWidth: number,
-        extensionLength: number = DEFAULT_EXTENSION_LENGTH
-    ) {
-        const points: Point2D[] = polylineToPoints(polyline);
-        if (points.length < 2) {
-            return; // Cannot extend a polyline with less than 2 points
-        }
-
-        // Don't extend closed polylines - they connect back to themselves
-        if (polyline.closed) {
-            return;
-        }
-
-        // First segment extension (before polyline start)
-        const firstPoint: Point2D = points[0];
-        const secondPoint: Point2D = points[1];
-
-        const firstSegmentDir: Point2D = {
-            x: secondPoint.x - firstPoint.x,
-            y: secondPoint.y - firstPoint.y,
-        };
-        const firstSegmentLength: number = Math.sqrt(
-            firstSegmentDir.x * firstSegmentDir.x +
-                firstSegmentDir.y * firstSegmentDir.y
-        );
-
-        if (firstSegmentLength > 0) {
-            const firstUnitDir: Point2D = {
-                x: firstSegmentDir.x / firstSegmentLength,
-                y: firstSegmentDir.y / firstSegmentLength,
-            };
-
-            const startExtension: Point2D = {
-                x: firstPoint.x - firstUnitDir.x * extensionLength,
-                y: firstPoint.y - firstUnitDir.y * extensionLength,
-            };
-            this.addLine(
-                { start: startExtension, end: firstPoint },
-                color,
-                strokeWidth,
-                DASH_PATTERN_SHORT
-            );
-        }
-
-        // Last segment extension (after polyline end)
-        const lastPoint: Point2D = points[points.length - 1];
-        const secondLastPoint: Point2D = points[points.length - 2];
-
-        const lastSegmentDir: Point2D = {
-            x: lastPoint.x - secondLastPoint.x,
-            y: lastPoint.y - secondLastPoint.y,
-        };
-        const lastSegmentLength: number = Math.sqrt(
-            lastSegmentDir.x * lastSegmentDir.x +
-                lastSegmentDir.y * lastSegmentDir.y
-        );
-
-        if (lastSegmentLength > 0) {
-            const lastUnitDir: Point2D = {
-                x: lastSegmentDir.x / lastSegmentLength,
-                y: lastSegmentDir.y / lastSegmentLength,
-            };
-
-            const endExtension: Point2D = {
-                x: lastPoint.x + lastUnitDir.x * extensionLength,
-                y: lastPoint.y + lastUnitDir.y * extensionLength,
-            };
-            this.addLine(
-                { start: lastPoint, end: endExtension },
-                color,
-                strokeWidth,
-                DASH_PATTERN_SHORT
-            );
-        }
-    }
-
-    /**
-     * Draw extensions for any shape type
-     */
-    addShapeExtensions(
-        shape: Shape,
-        color: string,
-        strokeWidth: number,
-        extensionLength: number = DEFAULT_EXTENSION_LENGTH
-    ) {
-        switch (shape.type) {
-            case GeometryType.LINE:
-                this.addLineExtensions(
-                    shape.geometry as Line,
-                    color,
-                    strokeWidth,
-                    extensionLength
-                );
-                break;
-            case GeometryType.ARC:
-                this.addArcExtensions(
-                    shape.geometry as Arc,
-                    color,
-                    strokeWidth,
-                    extensionLength
-                );
-                break;
-            case GeometryType.SPLINE:
-                this.addSplineExtensions(
-                    shape.geometry as Spline,
-                    color,
-                    strokeWidth,
-                    extensionLength
-                );
-                break;
-            case GeometryType.POLYLINE:
-                this.addPolylineExtensions(
-                    shape.geometry as Polyline,
-                    color,
-                    strokeWidth,
-                    extensionLength
-                );
-                break;
-            // Other shape types (circle, ellipse) could be added here if needed
-            default:
-                // For unsupported shape types, do nothing
-                break;
-        }
     }
 
     addTitle(title: string) {

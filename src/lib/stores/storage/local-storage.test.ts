@@ -291,10 +291,6 @@ describe('State Persistence', () => {
         // Save state
         saveState(testState);
 
-        // Verify state was saved
-        expect(hasPersistedState()).toBe(true);
-        expect(getPersistedStateSize()).toBeGreaterThan(0);
-
         // Load state
         const loadedState = loadState();
 

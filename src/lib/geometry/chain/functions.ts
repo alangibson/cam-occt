@@ -553,7 +553,7 @@ export function isChainGeometricallyContained(
  * Extracts a polygon representation from a chain for geometric operations
  */
 
-export function extractPolygonFromChain(chain: Chain): Point2D[] | null {
+function extractPolygonFromChain(chain: Chain): Point2D[] | null {
     if (!chain || !chain.shapes || chain.shapes.length === 0) {
         return null;
     }

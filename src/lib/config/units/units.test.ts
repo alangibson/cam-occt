@@ -7,7 +7,6 @@ import {
     getPixelsPerUnit,
     getUnitSymbol,
     getReactiveUnitSymbol,
-    unitToMeasurementSystem,
     measurementSystemToUnit,
     convertCoordinates,
 } from './units';
@@ -86,17 +85,6 @@ describe('Units utilities', () => {
             expect(getReactiveUnitSymbol(MeasurementSystem.Metric)).toBe('mm');
             expect(getReactiveUnitSymbol(MeasurementSystem.Imperial)).toBe(
                 'in.'
-            );
-        });
-    });
-
-    describe('unitToMeasurementSystem', () => {
-        it('should convert Unit enum to MeasurementSystem', () => {
-            expect(unitToMeasurementSystem(Unit.MM)).toBe(
-                MeasurementSystem.Metric
-            );
-            expect(unitToMeasurementSystem(Unit.INCH)).toBe(
-                MeasurementSystem.Imperial
             );
         });
     });

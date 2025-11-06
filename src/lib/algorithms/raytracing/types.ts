@@ -54,15 +54,3 @@ export const DEFAULT_RAYTRACING_CONFIG: RayTracingConfig = {
     maxIterations: 100,
     splineSampleCount: 50,
 };
-
-/**
- * Result of counting ray crossings for a shape
- */
-export interface CrossingCount {
-    /** Number of times the ray crosses the shape boundary */
-    count: number;
-    /** Actual intersection points if requested */
-    intersections?: RayIntersection[];
-    /** Any warnings or edge cases detected */
-    warnings?: string[];
-}
