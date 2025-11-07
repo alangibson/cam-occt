@@ -83,6 +83,7 @@ interface VisibilityState {
     showShapeNormals: boolean;
     showShapeWindingDirection: boolean;
     showShapeTangentLines: boolean;
+    showShapeTessellation: boolean;
     showCutNormals: boolean;
     showCutDirections: boolean;
     showCutPaths: boolean;
@@ -222,6 +223,7 @@ export function createEmptyRenderState(stage?: WorkflowStage): RenderState {
             showShapeNormals: false,
             showShapeWindingDirection: false,
             showShapeTangentLines: false,
+            showShapeTessellation: false,
             showCutNormals: false,
             showCutDirections: false,
             showCutPaths: true,

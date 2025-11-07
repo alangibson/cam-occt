@@ -47,8 +47,8 @@ import { getCircleTangent } from '$lib/geometry/circle/functions';
 import { getLineTangent } from '$lib/geometry/line/functions';
 import { getPolylineTangent } from '$lib/geometry/polyline/functions';
 import { getSplineTangent } from '$lib/geometry/spline/functions';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import { CutDirection } from '$lib/cam/cut/enums';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
 /**
  * Reverses a chain's direction by reversing both the order of shapes
@@ -577,7 +577,7 @@ function extractPolygonFromChain(chain: Chain): Point2D[] | null {
                     firstNewPoint
                 );
 
-                if (distance > GEOMETRIC_PRECISION_TOLERANCE) {
+                if (distance > getDefaults().geometry.precisionTolerance) {
                     points.push(...shapePoints);
                 } else {
                     points.push(...shapePoints.slice(1));

@@ -322,3 +322,11 @@ export function getLineTangent(line: Line): Point2D {
         y: dy / length,
     };
 }
+
+/**
+ * Tessellate a line into points
+ * Lines are already defined by two points, so just return start and end
+ */
+export function tessellateLine(line: Line): Point2D[] {
+    return [line.start, line.end];
+}

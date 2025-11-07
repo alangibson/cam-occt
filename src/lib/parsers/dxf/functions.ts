@@ -17,13 +17,15 @@ import {
     HALF_CIRCLE_DEG,
 } from '$lib/geometry/circle/constants';
 import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line/constants';
-import { transformShape } from '$lib/geometry/shape/functions';
+import { transformShape, scaleShape } from '$lib/geometry/shape/functions';
 import {
     DEFAULT_ELLIPSE_START_PARAM,
     DXF_INSUNITS_INCHES,
     DXF_INSUNITS_MILLIMETERS,
     DXF_INSUNITS_CENTIMETERS,
     DXF_INSUNITS_METERS,
+    CENTIMETERS_TO_MILLIMETERS,
+    METERS_TO_MILLIMETERS,
 } from './constants';
 import type { ApplicationSettings } from '$lib/config/settings/interfaces';
 import { ImportUnitSetting } from '$lib/config/settings/enums';
@@ -390,8 +392,9 @@ export async function parseDXF(content: string): Promise<Drawing> {
         maxY: -Infinity,
     };
 
-    // Extract units from DXF header
+    // Extract units from DXF header and convert coordinates to mm if needed
     let drawingUnits: Unit = Unit.NONE; // Default to none when no units specified
+    let coordinateScaleFactor = 1.0; // Scale factor to convert coordinates to mm
 
     if (
         parsed &&
@@ -405,19 +408,24 @@ export async function parseDXF(content: string): Promise<Drawing> {
         switch (insunits) {
             case DXF_INSUNITS_INCHES: // Inches
                 drawingUnits = Unit.INCH;
+                coordinateScaleFactor = 1.0; // Keep as-is
                 break;
             case DXF_INSUNITS_MILLIMETERS: // Millimeters
                 drawingUnits = Unit.MM;
+                coordinateScaleFactor = 1.0; // Keep as-is
                 break;
-            case DXF_INSUNITS_CENTIMETERS: // Centimeters - treat as mm for now
+            case DXF_INSUNITS_CENTIMETERS: // Centimeters - convert to mm
                 drawingUnits = Unit.MM;
+                coordinateScaleFactor = CENTIMETERS_TO_MILLIMETERS;
                 break;
-            case DXF_INSUNITS_METERS: // Meters - treat as mm for now
+            case DXF_INSUNITS_METERS: // Meters - convert to mm
                 drawingUnits = Unit.MM;
+                coordinateScaleFactor = METERS_TO_MILLIMETERS;
                 break;
             default:
                 // For all other units (unitless, feet, etc.), default to mm
                 drawingUnits = Unit.MM;
+                coordinateScaleFactor = 1.0;
                 break;
         }
     }
@@ -455,13 +463,29 @@ export async function parseDXF(content: string): Promise<Drawing> {
                     if (Array.isArray(result)) {
                         // Multiple shapes (decomposed polyline or INSERT entities)
                         result.forEach((shape) => {
-                            shapes.push(shape);
-                            updateBounds(shape, bounds);
+                            // Scale coordinates if needed (cm/m → mm conversion)
+                            const scaledShape =
+                                coordinateScaleFactor !== 1.0
+                                    ? scaleShape(shape, coordinateScaleFactor, {
+                                          x: 0,
+                                          y: 0,
+                                      })
+                                    : shape;
+                            shapes.push(scaledShape);
+                            updateBounds(scaledShape, bounds);
                         });
                     } else {
                         // Single shape
-                        shapes.push(result);
-                        updateBounds(result, bounds);
+                        // Scale coordinates if needed (cm/m → mm conversion)
+                        const scaledShape =
+                            coordinateScaleFactor !== 1.0
+                                ? scaleShape(result, coordinateScaleFactor, {
+                                      x: 0,
+                                      y: 0,
+                                  })
+                                : result;
+                        shapes.push(scaledShape);
+                        updateBounds(scaledShape, bounds);
                     }
                 }
             } catch (error) {

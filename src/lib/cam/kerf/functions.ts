@@ -28,6 +28,7 @@ import {
     reconstructChain,
     createOffsetChain,
 } from '$lib/cam/offset/reconstruct';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import { getClipper2 } from '$lib/cam/offset/clipper-init';
 import { getToolValue } from '$lib/cam/tool/tool-utils';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
@@ -173,12 +174,11 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<Kerf> {
 
     // Tessellate the cut chain to a single polyline for Clipper2
     const CIRCLE_POINTS = 32;
-    const ARC_TOLERANCE = 0.1;
     const DECIMAL_PRECISION = 3;
 
     const shapePointArrays = tessellateChainToShapes(cutChain, {
         circleTessellationPoints: CIRCLE_POINTS,
-        arcTessellationTolerance: ARC_TOLERANCE,
+        tessellationTolerance: getDefaults().geometry.tessellationTolerance,
         decimalPrecision: DECIMAL_PRECISION,
         enableTessellation: false,
     });

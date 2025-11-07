@@ -7,13 +7,8 @@
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { getClipper2 } from './clipper-init';
-import { toClipper2Paths, fromClipper2Paths } from './convert';
+import { toClipper2Paths, fromClipper2Paths, SCALE_FACTOR } from './convert';
 import type { JoinType, EndType } from '$lib/wasm/clipper2z';
-
-/**
- * Scale factor matching convert.ts
- */
-const SCALE_FACTOR = 1000;
 
 /**
  * Default miter limit for preserving sharp corners
@@ -22,8 +17,9 @@ const DEFAULT_MITER_LIMIT = 10.0;
 
 /**
  * Default arc tolerance for round joins (smaller = more precise)
+ * Reduced from 0.25 to 0.01 for smoother offset arcs with fewer points
  */
-const DEFAULT_ARC_TOLERANCE = 0.25;
+const DEFAULT_ARC_TOLERANCE = 0;
 
 /**
  * Options for configuring Clipper2 offset behavior
@@ -79,11 +75,14 @@ export async function offsetPaths(
     }
 
     // Clipper2 parameters with optional overrides
-    const joinType = options?.joinType ?? JoinType.Miter; // Sharp corners (default)
+    const joinType = options?.joinType ?? JoinType.Miter;
     const endType =
         options?.endType ?? (isClosed ? EndType.Polygon : EndType.Butt);
-    const miterLimit = options?.miterLimit ?? DEFAULT_MITER_LIMIT; // High miter limit to preserve sharp corners
-    const arcTolerance = options?.arcTolerance ?? DEFAULT_ARC_TOLERANCE; // Precision for round joins
+    // High miter limit to preserve sharp corners
+    const miterLimit = options?.miterLimit ?? DEFAULT_MITER_LIMIT;
+    // Precision for round joins
+    // const arcTolerance = options?.arcTolerance ?? DEFAULT_ARC_TOLERANCE;
+    const arcTolerance = DEFAULT_ARC_TOLERANCE;
 
     // Scale distance to match coordinate scaling
     const scaledDistance = distance * SCALE_FACTOR;

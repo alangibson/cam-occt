@@ -2,7 +2,7 @@
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
-import { tessellateEllipse } from '$lib/geometry/ellipse/functions';
+import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { writeFileSync } from 'fs';
@@ -331,7 +331,7 @@ function shapeToSVG(shape: Shape): string {
 
         case 'ellipse': {
             const ellipse: Ellipse = shape.geometry as Ellipse;
-            const points: { x: number; y: number }[] = tessellateEllipse(
+            const points: { x: number; y: number }[] = sampleEllipse(
                 ellipse,
                 32
             );

@@ -17,7 +17,6 @@ import {
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Part } from '$lib/cam/part/interfaces';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import {
     CAM_CALCULATION_TOLERANCE_MM,
     DEFAULT_CUT_HEIGHT_MM,
@@ -26,6 +25,7 @@ import {
     DEFAULT_PIERCE_HEIGHT_MM,
 } from '$lib/cam/constants';
 import type { LeadResult } from '$lib/cam/lead/interfaces';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import {
     getToolFeedRate,
     getToolPierceHeight,
@@ -94,7 +94,7 @@ export async function cutToToolPath(
             // Check if the last point of previous shape matches first point of current shape
             const lastPoint: Point2D = points[points.length - 1];
             const firstPoint: Point2D = shapePoints[0];
-            const tolerance: number = GEOMETRIC_PRECISION_TOLERANCE;
+            const tolerance: number = getDefaults().geometry.precisionTolerance;
 
             if (
                 Math.abs(lastPoint.x - firstPoint.x) > tolerance ||

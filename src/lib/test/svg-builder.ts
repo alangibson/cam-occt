@@ -6,7 +6,7 @@ import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import { tessellateEllipse } from '$lib/geometry/ellipse/functions';
+import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { EPSILON } from '$lib/geometry/math/constants';
@@ -485,7 +485,7 @@ export class SVGBuilder {
         dashArray?: string,
         showEndpoints: boolean = true
     ) {
-        const points: Point2D[] = tessellateEllipse(
+        const points: Point2D[] = sampleEllipse(
             ellipse,
             ELLIPSE_TESSELLATION_POINTS
         );

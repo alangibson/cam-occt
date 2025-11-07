@@ -1,10 +1,11 @@
 import { LeadType } from './enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import { generateArcPoints } from '$lib/geometry/arc/functions';
+import { tessellateArc } from '$lib/geometry/arc/functions';
 import type { Lead, LeadConfig } from './interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import { normalizeVector } from '$lib/geometry/math/functions';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
 /**
  * Convert LeadGeometry (Arc) to Point2D array for testing
@@ -16,7 +17,7 @@ export function convertLeadGeometryToPoints(lead: Lead): Point2D[] {
         if (arc.radius <= 0) {
             return [];
         }
-        return generateArcPoints(arc);
+        return tessellateArc(arc, getDefaults().geometry.tessellationTolerance);
     }
     return [];
 }

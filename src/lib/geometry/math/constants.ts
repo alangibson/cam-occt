@@ -21,11 +21,6 @@ export const MACHINE_TOLERANCE: number = 0.05;
 export const INTERSECTION_TOLERANCE: number = 1e-6;
 
 /**
- * Geometric precision tolerance for shape matching and distance calculations
- */
-export const GEOMETRIC_PRECISION_TOLERANCE: number = 0.001;
-
-/**
  * Standard tessellation count for smooth curves
  */
 export const STANDARD_TESSELLATION_COUNT: number = 20;

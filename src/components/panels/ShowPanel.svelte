@@ -129,6 +129,18 @@
                 />
                 Tangents
             </label>
+            <label class="show-checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={shapeVisualization.showShapeTessellation}
+                    onchange={(e) =>
+                        shapeVisualizationStore.setShowShapeTessellation(
+                            e.currentTarget.checked
+                        )}
+                    class="show-checkbox"
+                />
+                Tessellation
+            </label>
         </div>
 
         <div class="show-section">

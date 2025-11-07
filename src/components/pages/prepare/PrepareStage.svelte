@@ -109,7 +109,7 @@
 
     function updateTessellationArcTolerance(value: number) {
         prepareStageStore.updateAlgorithmParam('partDetection', {
-            arcTessellationTolerance: value,
+            tessellationTolerance: value,
         });
     }
 
@@ -1263,7 +1263,7 @@
                             <input
                                 type="number"
                                 value={algorithmParams.partDetection
-                                    .arcTessellationTolerance}
+                                    .tessellationTolerance}
                                 oninput={(e) =>
                                     updateTessellationArcTolerance(
                                         parseFloat(e.currentTarget.value)

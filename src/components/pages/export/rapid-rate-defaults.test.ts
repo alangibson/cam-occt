@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { DefaultsManager } from '$lib/config/defaults-manager';
+import { DefaultsManager } from '$lib/config/defaults/defaults-manager';
 import { MeasurementSystem } from '$lib/config/settings/enums';
 
 describe('Rapid Rate from DefaultsManager', () => {

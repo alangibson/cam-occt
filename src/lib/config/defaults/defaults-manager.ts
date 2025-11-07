@@ -6,7 +6,7 @@
  * for getting defaults based on the current measurement system.
  */
 
-import { MeasurementSystem } from './settings/enums';
+import { MeasurementSystem } from '$lib/config/settings/enums';
 import { get } from 'svelte/store';
 import { settingsStore } from '$lib/stores/settings/store';
 import { CamDefaults } from './cam-defaults';

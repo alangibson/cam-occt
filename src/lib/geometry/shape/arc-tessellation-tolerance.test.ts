@@ -66,7 +66,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
 
         const params: PartDetectionParameters = {
             circleTessellationPoints: 64,
-            arcTessellationTolerance: 0.1,
+            tessellationTolerance: 0.1,
             decimalPrecision: 3,
             enableTessellation: false,
         };
@@ -98,7 +98,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
 
         const params: PartDetectionParameters = {
             circleTessellationPoints: 64,
-            arcTessellationTolerance: 0.01,
+            tessellationTolerance: 0.01,
             decimalPrecision: 3,
             enableTessellation: false,
         };
@@ -128,14 +128,14 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
 
         const paramsCoarse: PartDetectionParameters = {
             circleTessellationPoints: 64,
-            arcTessellationTolerance: 1.0,
+            tessellationTolerance: 1.0,
             decimalPrecision: 3,
             enableTessellation: false,
         };
 
         const paramsFine: PartDetectionParameters = {
             circleTessellationPoints: 64,
-            arcTessellationTolerance: 0.01,
+            tessellationTolerance: 0.01,
             decimalPrecision: 3,
             enableTessellation: false,
         };
@@ -165,7 +165,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
 
         const params: PartDetectionParameters = {
             circleTessellationPoints: 64,
-            arcTessellationTolerance: 0.1,
+            tessellationTolerance: 0.1,
             decimalPrecision: 3,
             enableTessellation: false,
         };
@@ -197,7 +197,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
 
         const params: PartDetectionParameters = {
             circleTessellationPoints: 64,
-            arcTessellationTolerance: 0.1,
+            tessellationTolerance: 0.1,
             decimalPrecision: 3,
             enableTessellation: false,
         };
@@ -229,7 +229,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
 
         const params: PartDetectionParameters = {
             circleTessellationPoints: 64,
-            arcTessellationTolerance: 0.1,
+            tessellationTolerance: 0.1,
             decimalPrecision: 3,
             enableTessellation: false,
         };
@@ -259,7 +259,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
 
         const params: PartDetectionParameters = {
             circleTessellationPoints: 64,
-            arcTessellationTolerance: 0.1,
+            tessellationTolerance: 0.1,
             decimalPrecision: 3,
             enableTessellation: false,
         };
@@ -301,7 +301,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
 
         const params: PartDetectionParameters = {
             circleTessellationPoints: 64,
-            arcTessellationTolerance: 0.001, // Very tight tolerance
+            tessellationTolerance: 0.001, // Very tight tolerance
             decimalPrecision: 3,
             enableTessellation: false,
         };

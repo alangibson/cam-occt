@@ -5,7 +5,7 @@
  * tolerances, optimization settings, and processing parameters.
  */
 
-import { MeasurementSystem } from './settings/enums';
+import { MeasurementSystem } from '$lib/config/settings/enums';
 import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_JOIN_COLINEAR_LINES_PARAMETERS_MM,

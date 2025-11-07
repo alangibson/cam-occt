@@ -7,15 +7,48 @@
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { MainModule, Path64, Paths64 } from '$lib/wasm/clipper2z';
+import { CURVE_TESSELLATION_TOLERANCE_MM } from '$lib/config/defaults/geometry-defaults';
+import { MM_PER_INCH } from '$lib/config/units/units';
+
+/**
+ * Safety margin multiplier to handle accumulated rounding errors
+ * in coordinate scaling operations
+ */
+const SCALE_FACTOR_SAFETY_MARGIN = 10;
+
+/**
+ * Calculate scale factor for coordinate conversion
+ *
+ * Clipper2 uses integer coordinates internally. The scale factor must be large enough
+ * to preserve the precision of our tessellation tolerance. This ensures that points
+ * separated by the tolerance distance don't collapse to the same integer coordinate
+ * after rounding.
+ *
+ * We use the finest tolerance that could be applied (in inches, which is smaller than mm).
+ * This guarantees precision for both metric and imperial units.
+ */
+function calculateScaleFactor(): number {
+    // Convert mm tolerance to inches (smallest unit we support)
+    const toleranceInches = CURVE_TESSELLATION_TOLERANCE_MM / MM_PER_INCH;
+
+    // Scale factor must be at least 1/tolerance to preserve that precision
+    // Add safety margin to handle accumulated rounding errors
+    const minScaleFactor =
+        Math.ceil(1 / toleranceInches) * SCALE_FACTOR_SAFETY_MARGIN;
+
+    return minScaleFactor;
+}
 
 /**
  * Scale factor for coordinate conversion
  *
- * Clipper2 uses integer coordinates internally. We scale floating-point coordinates
- * by this factor before sending to Clipper2, then scale back after receiving results.
- * A factor of 1000 provides precision of 0.001 units.
+ * Dynamically calculated to preserve tessellation tolerance precision.
+ * For 0.001mm tolerance: ~254,000 (preserves precision to ~0.000004")
+ *
+ * IMPORTANT: This must be used consistently for both coordinate conversion
+ * and distance scaling in clipper-offset.ts
  */
-const SCALE_FACTOR = 1000;
+export const SCALE_FACTOR = calculateScaleFactor();
 
 /**
  * Convert MetalHead Point2D array to Clipper2 Path64

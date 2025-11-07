@@ -11,7 +11,7 @@ import type { ChainNormalizationResult } from '$lib/geometry/chain/chain-normali
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { PrepareStageState, PrepareStageStore } from './interfaces';
-import { getDefaults } from '$lib/config/defaults-manager';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import { settingsStore } from '$lib/stores/settings/store';
 
 /**

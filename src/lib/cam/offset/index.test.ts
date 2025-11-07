@@ -284,6 +284,56 @@ describe('Clipper2 Offset System', () => {
             expect(result.success).toBe(true);
         });
 
+        it('handles small inch-unit arcs without jagging (5inchknife.dxf regression)', async () => {
+            // This test validates the fix for jagged arcs in inch units
+            // Problem: 0.277" radius arc with 0.00004" tolerance created too many
+            // tessellation points that collapsed to same integers with SCALE_FACTOR=1000
+            //
+            // The test verifies that offsetting produces valid results and doesn't
+            // throw errors due to coordinate collapse
+            const smallArc: Arc = {
+                center: { x: 10.20460594987444, y: 2.885553532117657 },
+                radius: 0.2766619639725579, // inches
+                startAngle: 0,
+                endAngle: Math.PI / 2, // 90 degree arc
+                clockwise: false,
+            };
+
+            const chain: Chain = {
+                id: 'test-small-arc-inches',
+                shapes: [
+                    {
+                        id: '1',
+                        type: GeometryType.ARC,
+                        geometry: smallArc,
+                    },
+                ],
+            };
+
+            const offsetDistance = 0.05; // inches
+            const result = await offsetChain(chain, offsetDistance);
+
+            // Main validation: offsetting succeeds and produces valid geometry
+            expect(result.success).toBe(true);
+            expect(result.outerChain).toBeDefined();
+
+            // Verify we got actual geometry back (not collapsed to nothing)
+            const outerPoints = getAllPoints(result.outerChain!);
+            expect(outerPoints.length).toBeGreaterThan(2);
+
+            // Validate that points form a reasonable arc-like shape
+            // Check bounding box is roughly correct size
+            const bbox = getBoundingBox(outerPoints);
+            expect(bbox).toBeDefined();
+            if (bbox) {
+                // Offset arc should be larger than original
+                const expectedDiameter = 2 * (smallArc.radius + offsetDistance);
+                // Allow generous tolerance since Clipper2 uses miter joins
+                expect(bbox.width).toBeGreaterThan(expectedDiameter * 0.5);
+                expect(bbox.width).toBeLessThan(expectedDiameter * 2);
+            }
+        });
+
         it('provides meaningful metrics', async () => {
             const chain: Chain = {
                 id: 'test-metrics',

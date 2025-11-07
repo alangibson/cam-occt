@@ -8,6 +8,9 @@ const ARROW_LENGTH_RATIO = 0.15;
 const ARROW_ANGLE_DEGREES = 30;
 const DEGREES_TO_RADIANS = 180;
 
+const TESSELLATION_POINT_SIZE = 3; // Size of tessellation points in screen pixels
+const TESSELLATION_BORDER_WIDTH = 0.5; // Border width for tessellation points
+
 export function drawNormalLine(
     ctx: CanvasRenderingContext2D,
     state: RenderState,
@@ -55,4 +58,50 @@ export function drawNormalLine(
     ctx.stroke();
 
     ctx.restore();
+}
+
+/**
+ * Draw tessellation point with white border and cyan center
+ */
+export function drawTessellationPoint(
+    ctx: CanvasRenderingContext2D,
+    state: RenderState,
+    point: Point2D,
+    pointSize: number,
+    borderWidth: number
+): void {
+    // Draw white background circle (filled, not stroked)
+    ctx.beginPath();
+    ctx.arc(
+        point.x,
+        point.y,
+        pointSize +
+            state.transform.coordinator.screenToWorldDistance(borderWidth),
+        0,
+        2 * Math.PI
+    );
+    ctx.fillStyle = '#ffffff';
+    ctx.fill();
+
+    // Draw cyan center
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, pointSize, 0, 2 * Math.PI);
+    ctx.fillStyle = '#00ffff';
+    ctx.fill();
+}
+
+/**
+ * Get tessellation point size in world coordinates
+ */
+export function getTessellationPointSize(state: RenderState): number {
+    return state.transform.coordinator.screenToWorldDistance(
+        TESSELLATION_POINT_SIZE
+    );
+}
+
+/**
+ * Get tessellation border width constant
+ */
+export function getTessellationBorderWidth(): number {
+    return TESSELLATION_BORDER_WIDTH;
 }

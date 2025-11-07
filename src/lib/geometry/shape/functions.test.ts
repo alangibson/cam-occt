@@ -27,15 +27,15 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { generateCirclePoints } from '$lib/geometry/circle/functions';
-import { generateArcPoints } from '$lib/geometry/arc/functions';
+import { tessellateArc } from '$lib/geometry/arc/functions';
 import {
     polylineToPoints,
     polylineToVertices,
 } from '$lib/geometry/polyline/functions';
 import {
+    sampleEllipse,
     tessellateEllipse,
     getEllipsePointAt,
-    calculateEllipsePoint,
 } from '$lib/geometry/ellipse/functions';
 import {
     tessellateSpline,
@@ -58,9 +58,9 @@ vi.mock('$lib/geometry/ellipse/functions', async (importOriginal) => {
     const original = (await importOriginal()) as Record<string, unknown>;
     return {
         ...original,
+        sampleEllipse: vi.fn(),
         tessellateEllipse: vi.fn(),
         getEllipsePointAt: vi.fn(),
-        calculateEllipsePoint: vi.fn(),
     };
 });
 
@@ -77,7 +77,7 @@ vi.mock('$lib/geometry/arc/functions', async (importOriginal) => {
     const original = (await importOriginal()) as Record<string, unknown>;
     return {
         ...original,
-        generateArcPoints: vi.fn(),
+        tessellateArc: vi.fn(),
     };
 });
 
@@ -146,13 +146,13 @@ describe('getShapePoints', () => {
         expect(points).toBe(mockPoints);
     });
 
-    it('should call generateArcPoints for arc shape', () => {
+    it('should call tessellateArc for arc shape', () => {
         const mockPoints = [
             { x: 5, y: 0 },
             { x: 0, y: 5 },
             { x: -5, y: 0 },
         ];
-        vi.mocked(generateArcPoints).mockReturnValue(mockPoints);
+        vi.mocked(tessellateArc).mockReturnValue(mockPoints);
 
         const arcGeometry: Arc = {
             center: { x: 0, y: 0 },
@@ -169,7 +169,10 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(shape);
-        expect(generateArcPoints).toHaveBeenCalledWith(arcGeometry);
+        expect(tessellateArc).toHaveBeenCalledWith(
+            arcGeometry,
+            expect.any(Number)
+        );
         expect(points).toBe(mockPoints);
     });
 
@@ -204,7 +207,7 @@ describe('getShapePoints', () => {
             { x: -10, y: 0 },
             { x: 0, y: -5 },
         ];
-        vi.mocked(tessellateEllipse).mockReturnValue(mockPoints);
+        (sampleEllipse as ReturnType<typeof vi.fn>).mockReturnValue(mockPoints);
 
         const ellipseGeometry: Ellipse = {
             center: { x: 0, y: 0 },
@@ -219,7 +222,7 @@ describe('getShapePoints', () => {
         };
 
         const points = getShapePoints(shape);
-        expect(tessellateEllipse).toHaveBeenCalledWith(ellipseGeometry, 64);
+        expect(sampleEllipse).toHaveBeenCalledWith(ellipseGeometry, 64);
         expect(points).toBe(mockPoints);
     });
 
@@ -1598,7 +1601,7 @@ describe('tessellateShape', () => {
     const mockParams = {
         enableTessellation: true,
         circleTessellationPoints: 32,
-        arcTessellationTolerance: 0.1,
+        tessellationTolerance: 0.1,
         decimalPrecision: 6,
     };
 
@@ -1636,12 +1639,13 @@ describe('tessellateShape', () => {
         expect(result.length).toBeGreaterThan(2);
     });
 
-    it('should tessellate ellipse arc', () => {
-        // Mock calculateEllipsePoint to return points for ellipse arc
-        vi.mocked(calculateEllipsePoint).mockImplementation(
-            (ellipse, param) => {
-                return { x: 5 * Math.cos(param), y: 3 * Math.sin(param) };
-            }
+    it('should tessellate ellipse arc', async () => {
+        // Import the real tessellateEllipse and use it directly since the code is correct
+        const actual: any = await vi.importActual(
+            '$lib/geometry/ellipse/functions'
+        );
+        (tessellateEllipse as ReturnType<typeof vi.fn>).mockImplementation(
+            actual.tessellateEllipse
         );
 
         const ellipseArc: Shape = {
@@ -1660,12 +1664,13 @@ describe('tessellateShape', () => {
         expect(result.length).toBeGreaterThan(2);
     });
 
-    it('should tessellate full ellipse', () => {
-        // Mock calculateEllipsePoint to return points for full ellipse
-        vi.mocked(calculateEllipsePoint).mockImplementation(
-            (ellipse, param) => {
-                return { x: 5 * Math.cos(param), y: 3 * Math.sin(param) };
-            }
+    it('should tessellate full ellipse', async () => {
+        // Import the real tessellateEllipse and use it directly since the code is correct
+        const actual: any = await vi.importActual(
+            '$lib/geometry/ellipse/functions'
+        );
+        (tessellateEllipse as ReturnType<typeof vi.fn>).mockImplementation(
+            actual.tessellateEllipse
         );
 
         const ellipse: Shape = {
@@ -1873,45 +1878,5 @@ describe('getShapePoints - direction analysis mode', () => {
 
         const result = getShapePoints(ccwArc, { mode: 'DIRECTION_ANALYSIS' });
         expect(result.length).toBeGreaterThan(2);
-    });
-});
-
-describe('tessellateShape - spline handling', () => {
-    it('should handle spline NURBS sampling failure with fallbacks', () => {
-        const spline: Shape = {
-            id: '1',
-            type: GeometryType.SPLINE,
-            geometry: {
-                controlPoints: [
-                    { x: 1, y: 1 },
-                    { x: 2, y: 2 },
-                ],
-                knots: [0, 0, 1, 1],
-                weights: [1, 1],
-                fitPoints: [
-                    { x: 0, y: 0 },
-                    { x: 3, y: 3 },
-                ],
-                degree: 2,
-                closed: false,
-            } as Spline,
-        };
-
-        vi.mocked(tessellateSpline).mockImplementation(() => {
-            throw new Error('NURBS sampling failed');
-        });
-
-        const mockParams = {
-            circleTessellationPoints: 32,
-            arcTessellationTolerance: 0.1,
-            decimalPrecision: 6,
-            enableTessellation: true,
-        };
-
-        const result = tessellateShape(spline, mockParams);
-        expect(result).toEqual([
-            { x: 0, y: 0 },
-            { x: 3, y: 3 },
-        ]); // Should use fitPoints
     });
 });

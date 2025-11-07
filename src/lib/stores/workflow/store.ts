@@ -7,7 +7,7 @@ import { writable, get } from 'svelte/store';
 import { WorkflowStage } from './enums';
 import type { WorkflowState, WorkflowStore } from './interfaces';
 import { validateStageAdvancement, WORKFLOW_ORDER } from './functions';
-import { DefaultsManager } from '$lib/config/defaults-manager';
+import { DefaultsManager } from '$lib/config/defaults/defaults-manager';
 import { settingsStore } from '$lib/stores/settings/store';
 
 /**

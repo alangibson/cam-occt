@@ -26,7 +26,7 @@ import {
     RapidOptimizationAlgorithm,
     OffsetImplementation,
 } from '$lib/config/settings/enums';
-import { DefaultsManager } from '$lib/config/defaults-manager';
+import { DefaultsManager } from '$lib/config/defaults/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { CutterCompensation } from '$lib/cam/cut-generator/enums';
 import { MM_PER_INCH } from '$lib/config/units/units';

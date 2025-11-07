@@ -8,13 +8,13 @@ import { normalizeVector } from '$lib/geometry/math/functions';
 import { validateLeadConfiguration } from './lead-validation';
 import { createTangentArc, sampleArc } from '$lib/geometry/arc/functions';
 import {
-    GEOMETRIC_PRECISION_TOLERANCE,
     HALF_PERCENT,
     QUARTER_PERCENT,
     THREE_QUARTERS_PERCENT,
 } from '$lib/geometry/math/constants';
 import { HALF_CIRCLE_DEG } from '$lib/geometry/circle/constants';
 import { SMALL_ANGLE_INCREMENT_DEG } from '$lib/geometry/constants';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import {
     isPointInsidePart,
     isPointInsideChainExact,
@@ -358,8 +358,11 @@ function rotateCurveDirection(direction: Point2D, angle: number): Point2D {
 function checkArcExitsHole(
     arc: Arc,
     holeChain: Chain,
-    connectionPoint?: Point2D
+    connectionPoint?: Point2D,
+    tolerance?: number
 ): boolean {
+    const effectiveTolerance =
+        tolerance ?? getDefaults().geometry.precisionTolerance;
     // Only check for closed chains - open chains cannot have meaningful containment
     if (!isChainClosed(holeChain, CHAIN_CLOSURE_TOLERANCE)) {
         return false; // Cannot meaningfully check containment for open chains
@@ -373,10 +376,8 @@ function checkArcExitsHole(
         // Skip the connection point as it's expected to be on the boundary
         if (
             connectionPoint &&
-            Math.abs(leadPoint.x - connectionPoint.x) <
-                GEOMETRIC_PRECISION_TOLERANCE &&
-            Math.abs(leadPoint.y - connectionPoint.y) <
-                GEOMETRIC_PRECISION_TOLERANCE
+            Math.abs(leadPoint.x - connectionPoint.x) < effectiveTolerance &&
+            Math.abs(leadPoint.y - connectionPoint.y) < effectiveTolerance
         ) {
             continue;
         }
@@ -405,8 +406,11 @@ function checkArcExitsHole(
 function isLeadInPart(
     leadGeometry: Arc,
     part: Part,
-    connectionPoint?: Point2D
+    connectionPoint?: Point2D,
+    tolerance?: number
 ): boolean {
+    const effectiveTolerance =
+        tolerance ?? getDefaults().geometry.precisionTolerance;
     // Sample points along the arc lead geometry
     const points = sampleArc(leadGeometry);
 
@@ -415,10 +419,8 @@ function isLeadInPart(
         // Skip the connection point as it's expected to be on the boundary
         if (
             connectionPoint &&
-            Math.abs(leadPoint.x - connectionPoint.x) <
-                GEOMETRIC_PRECISION_TOLERANCE &&
-            Math.abs(leadPoint.y - connectionPoint.y) <
-                GEOMETRIC_PRECISION_TOLERANCE
+            Math.abs(leadPoint.x - connectionPoint.x) < effectiveTolerance &&
+            Math.abs(leadPoint.y - connectionPoint.y) < effectiveTolerance
         ) {
             continue;
         }
@@ -442,8 +444,11 @@ function isLeadInPart(
 function doesArcIntersectChain(
     arc: Arc,
     chain: Chain,
-    connectionPoint: Point2D
+    connectionPoint: Point2D,
+    tolerance?: number
 ): boolean {
+    const effectiveTolerance =
+        tolerance ?? getDefaults().geometry.precisionTolerance;
     // Sample points along the arc
     const points = sampleArc(arc);
 
@@ -451,10 +456,8 @@ function doesArcIntersectChain(
     for (const arcPoint of points) {
         // Skip the connection point as it's expected to be on the boundary
         if (
-            Math.abs(arcPoint.x - connectionPoint.x) <
-                GEOMETRIC_PRECISION_TOLERANCE &&
-            Math.abs(arcPoint.y - connectionPoint.y) <
-                GEOMETRIC_PRECISION_TOLERANCE
+            Math.abs(arcPoint.x - connectionPoint.x) < effectiveTolerance &&
+            Math.abs(arcPoint.y - connectionPoint.y) < effectiveTolerance
         ) {
             continue;
         }

@@ -6,7 +6,6 @@ import {
     convertBulgeToArc,
     createArcWithLength,
     createTangentArc,
-    generateArcPoints,
     getArcEndPoint,
     getArcPointAt,
     getArcStartPoint,
@@ -241,7 +240,7 @@ describe('getArcPointAt', () => {
 });
 
 describe('tessellateArc', () => {
-    it('should throw error for less than 2 points', () => {
+    it('should generate at least 2 points (start and end)', () => {
         const arc: Arc = {
             center: { x: 0, y: 0 },
             radius: 10,
@@ -250,15 +249,71 @@ describe('tessellateArc', () => {
             clockwise: false,
         };
 
-        expect(() => tessellateArc(arc, 1)).toThrow(
-            'Arc tessellation requires at least 2 points'
-        );
-        expect(() => tessellateArc(arc, 0)).toThrow(
-            'Arc tessellation requires at least 2 points'
-        );
+        // Even with very large tolerance, should get at least 2 points
+        const points = tessellateArc(arc, 100);
+        expect(points.length).toBeGreaterThanOrEqual(2);
     });
 
-    it('should generate correct number of points', () => {
+    it('should generate adequate points for Imperial unit arcs (radius in inches)', () => {
+        // Test arc with radius in inches, as would occur in Imperial DXF files
+        const arc: Arc = {
+            center: { x: 0, y: 0 },
+            radius: 0.5, // 0.5 inches (12.7mm)
+            startAngle: 0,
+            endAngle: Math.PI / 2, // 90 degree arc
+            clockwise: false,
+        };
+
+        // Tolerance in inches: 0.01mm converted to inches = 0.01 / 25.4 ≈ 0.000394"
+        const toleranceInches = 0.01 / 25.4;
+        const points = tessellateArc(arc, toleranceInches);
+
+        // For 0.5" radius with 0.000394" tolerance:
+        // Should generate many points for smooth curve
+        expect(points.length).toBeGreaterThan(20);
+
+        // Verify start and end points
+        expect(points[0].x).toBeCloseTo(0.5);
+        expect(points[0].y).toBeCloseTo(0);
+        expect(points[points.length - 1].x).toBeCloseTo(0);
+        expect(points[points.length - 1].y).toBeCloseTo(0.5);
+    });
+
+    it('should generate adequate points for small Imperial arcs', () => {
+        // Small arc: 0.05" radius (1.27mm)
+        const arc: Arc = {
+            center: { x: 0, y: 0 },
+            radius: 0.05,
+            startAngle: 0,
+            endAngle: Math.PI, // 180 degrees
+            clockwise: false,
+        };
+
+        const toleranceInches = 0.01 / 25.4; // ~0.000394"
+        const points = tessellateArc(arc, toleranceInches);
+
+        // Even for small arcs, should generate reasonable point count
+        expect(points.length).toBeGreaterThan(10);
+    });
+
+    it('should generate adequate points for large Imperial arcs', () => {
+        // Large arc: 10" radius (254mm)
+        const arc: Arc = {
+            center: { x: 0, y: 0 },
+            radius: 10,
+            startAngle: 0,
+            endAngle: Math.PI / 4, // 45 degrees
+            clockwise: false,
+        };
+
+        const toleranceInches = 0.01 / 25.4; // ~0.000394"
+        const points = tessellateArc(arc, toleranceInches);
+
+        // Large arcs need more points for smooth curve
+        expect(points.length).toBeGreaterThan(30);
+    });
+
+    it('should generate more points with smaller tolerance', () => {
         const arc: Arc = {
             center: { x: 0, y: 0 },
             radius: 10,
@@ -267,8 +322,10 @@ describe('tessellateArc', () => {
             clockwise: false,
         };
 
-        const points = tessellateArc(arc, 5);
-        expect(points).toHaveLength(5);
+        const pointsCoarse = tessellateArc(arc, 1); // Coarse tolerance
+        const pointsFine = tessellateArc(arc, 0.1); // Fine tolerance
+
+        expect(pointsFine.length).toBeGreaterThan(pointsCoarse.length);
     });
 
     it('should start and end at correct points', () => {
@@ -280,7 +337,7 @@ describe('tessellateArc', () => {
             clockwise: false,
         };
 
-        const points = tessellateArc(arc, 10);
+        const points = tessellateArc(arc, 0.5);
         const startPoint = getArcStartPoint(arc);
         const endPoint = getArcEndPoint(arc);
 
@@ -288,19 +345,6 @@ describe('tessellateArc', () => {
         expect(points[0].y).toBeCloseTo(startPoint.y);
         expect(points[points.length - 1].x).toBeCloseTo(endPoint.x);
         expect(points[points.length - 1].y).toBeCloseTo(endPoint.y);
-    });
-
-    it('should use default 10 points when numPoints not specified', () => {
-        const arc: Arc = {
-            center: { x: 0, y: 0 },
-            radius: 10,
-            startAngle: 0,
-            endAngle: Math.PI / 2,
-            clockwise: false,
-        };
-
-        const points = tessellateArc(arc);
-        expect(points).toHaveLength(10);
     });
 
     it('should tessellate clockwise arc correctly', () => {
@@ -312,16 +356,184 @@ describe('tessellateArc', () => {
             clockwise: true,
         };
 
-        const points = tessellateArc(arc, 3);
-        expect(points).toHaveLength(3);
+        const points = tessellateArc(arc, 0.5);
+        expect(points.length).toBeGreaterThanOrEqual(2);
 
         // First point should be at start angle
         expect(points[0].x).toBeCloseTo(0);
         expect(points[0].y).toBeCloseTo(10);
 
         // Last point should be at end angle
-        expect(points[2].x).toBeCloseTo(10);
-        expect(points[2].y).toBeCloseTo(0);
+        expect(points[points.length - 1].x).toBeCloseTo(10);
+        expect(points[points.length - 1].y).toBeCloseTo(0);
+    });
+
+    it('should generate sufficient points when tolerance is much smaller than radius', () => {
+        const arc: Arc = {
+            center: { x: 0, y: 0 },
+            radius: 100,
+            startAngle: 0,
+            endAngle: Math.PI / 2, // Quarter circle
+            clockwise: false,
+        };
+
+        // With tolerance = 0.001 (100x smaller than radius), should get many points
+        const points = tessellateArc(arc, 0.001);
+
+        // For quarter circle with radius=100 and tolerance=0.001:
+        // segmentAngle ≈ 0.00894 rad, numSegments ≈ 176
+        // Should get approximately 177 points (176 segments + 1)
+        expect(points.length).toBeGreaterThan(100);
+    });
+
+    it('should handle tolerance equal to radius gracefully', () => {
+        const arc: Arc = {
+            center: { x: 0, y: 0 },
+            radius: 10,
+            startAngle: 0,
+            endAngle: Math.PI,
+            clockwise: false,
+        };
+
+        // Tolerance equals radius - should still work
+        const points = tessellateArc(arc, 10);
+
+        // Should get at least 2 points and correct start/end
+        expect(points.length).toBeGreaterThanOrEqual(2);
+        expect(points[0].x).toBeCloseTo(10);
+        expect(points[0].y).toBeCloseTo(0);
+        expect(points[points.length - 1].x).toBeCloseTo(-10);
+        expect(points[points.length - 1].y).toBeCloseTo(0);
+    });
+
+    it('should handle tolerance greater than radius', () => {
+        const arc: Arc = {
+            center: { x: 0, y: 0 },
+            radius: 5,
+            startAngle: 0,
+            endAngle: Math.PI / 4,
+            clockwise: false,
+        };
+
+        // Tolerance greater than radius
+        const points = tessellateArc(arc, 10);
+
+        // Should still get at least 2 points
+        expect(points.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it('should produce approximately equidistant chord spacing', () => {
+        // Test arc: 90-degree quarter circle with radius 100
+        const arc: Arc = {
+            center: { x: 0, y: 0 },
+            radius: 100,
+            startAngle: 0,
+            endAngle: Math.PI / 2,
+            clockwise: false,
+        };
+
+        const tolerance = 0.1;
+        const points = tessellateArc(arc, tolerance);
+
+        // Need at least 3 points to measure chord distances
+        expect(points.length).toBeGreaterThanOrEqual(3);
+
+        // Calculate chord distances between consecutive points
+        const chordDistances: number[] = [];
+        for (let i = 0; i < points.length - 1; i++) {
+            const dx = points[i + 1].x - points[i].x;
+            const dy = points[i + 1].y - points[i].y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            chordDistances.push(distance);
+        }
+
+        // All chord distances should be approximately equal
+        const avgChordDistance =
+            chordDistances.reduce((sum, d) => sum + d, 0) /
+            chordDistances.length;
+        const maxDeviation = Math.max(
+            ...chordDistances.map((d) => Math.abs(d - avgChordDistance))
+        );
+
+        // Maximum deviation should be small relative to average distance
+        // Allow 5% variation due to arc curvature effects
+        expect(maxDeviation).toBeLessThan(avgChordDistance * 0.05);
+
+        // Verify average chord distance is in the reasonable ballpark
+        // It should be close to but slightly less than the arc length segment
+        const toleranceRatio = tolerance / arc.radius;
+        const segmentAngle = 2 * Math.acos(1 - toleranceRatio);
+        const expectedChordDistance =
+            2 * arc.radius * Math.sin(segmentAngle / 2);
+
+        // Allow for 3% deviation since actual spacing may be slightly different
+        const deviation = Math.abs(avgChordDistance - expectedChordDistance);
+        expect(deviation).toBeLessThan(expectedChordDistance * 0.03);
+    });
+
+    it('should produce equidistant spacing for large radius arcs', () => {
+        // Large arc to test that spacing doesn't vary too much with radius
+        const arc: Arc = {
+            center: { x: 0, y: 0 },
+            radius: 500,
+            startAngle: 0,
+            endAngle: Math.PI,
+            clockwise: false,
+        };
+
+        const tolerance = 0.5;
+        const points = tessellateArc(arc, tolerance);
+
+        // Calculate chord distances
+        const chordDistances: number[] = [];
+        for (let i = 0; i < points.length - 1; i++) {
+            const dx = points[i + 1].x - points[i].x;
+            const dy = points[i + 1].y - points[i].y;
+            chordDistances.push(Math.sqrt(dx * dx + dy * dy));
+        }
+
+        // Check consistency
+        const avgChordDistance =
+            chordDistances.reduce((sum, d) => sum + d, 0) /
+            chordDistances.length;
+        const maxDeviation = Math.max(
+            ...chordDistances.map((d) => Math.abs(d - avgChordDistance))
+        );
+
+        // All distances should be within 5% of average
+        expect(maxDeviation).toBeLessThan(avgChordDistance * 0.05);
+    });
+
+    it('should produce equidistant spacing for small radius arcs', () => {
+        // Small arc to test consistency
+        const arc: Arc = {
+            center: { x: 0, y: 0 },
+            radius: 10,
+            startAngle: 0,
+            endAngle: Math.PI / 3,
+            clockwise: false,
+        };
+
+        const tolerance = 0.01;
+        const points = tessellateArc(arc, tolerance);
+
+        // Calculate chord distances
+        const chordDistances: number[] = [];
+        for (let i = 0; i < points.length - 1; i++) {
+            const dx = points[i + 1].x - points[i].x;
+            const dy = points[i + 1].y - points[i].y;
+            chordDistances.push(Math.sqrt(dx * dx + dy * dy));
+        }
+
+        const avgChordDistance =
+            chordDistances.reduce((sum, d) => sum + d, 0) /
+            chordDistances.length;
+        const maxDeviation = Math.max(
+            ...chordDistances.map((d) => Math.abs(d - avgChordDistance))
+        );
+
+        // Should maintain equidistant spacing
+        expect(maxDeviation).toBeLessThan(avgChordDistance * 0.05);
     });
 });
 
@@ -355,97 +567,6 @@ describe('isArc', () => {
         };
 
         expect(isArc(notArc as unknown as Geometry)).toBe(false);
-    });
-});
-
-describe('generateArcPoints', () => {
-    it('should generate points with minimum of 16 segments', () => {
-        const arc: Arc = {
-            center: { x: 0, y: 0 },
-            radius: 1,
-            startAngle: 0,
-            endAngle: Math.PI / 4, // Small angle
-            clockwise: false,
-        };
-
-        const points = generateArcPoints(arc);
-        expect(points.length).toBeGreaterThanOrEqual(17); // 16 segments + 1
-    });
-
-    it('should generate more segments for larger arcs', () => {
-        const arc: Arc = {
-            center: { x: 0, y: 0 },
-            radius: 100,
-            startAngle: 0,
-            endAngle: Math.PI,
-            clockwise: false,
-        };
-
-        const points = generateArcPoints(arc);
-        const expectedSegments = Math.ceil((Math.PI * 100) / 5); // totalAngle * radius / 5
-        expect(points.length).toBe(expectedSegments + 1);
-    });
-
-    it('should start and end at correct points', () => {
-        const arc: Arc = {
-            center: { x: 5, y: 5 },
-            radius: 10,
-            startAngle: 0,
-            endAngle: Math.PI / 2,
-            clockwise: false,
-        };
-
-        const points = generateArcPoints(arc);
-
-        // First point should be at start
-        expect(points[0].x).toBeCloseTo(15); // 5 + 10 * cos(0)
-        expect(points[0].y).toBeCloseTo(5); // 5 + 10 * sin(0)
-
-        // Last point should be at end
-        const lastPoint = points[points.length - 1];
-        expect(lastPoint.x).toBeCloseTo(5); // 5 + 10 * cos(π/2)
-        expect(lastPoint.y).toBeCloseTo(15); // 5 + 10 * sin(π/2)
-    });
-
-    it('should handle negative angles', () => {
-        const arc: Arc = {
-            center: { x: 0, y: 0 },
-            radius: 10,
-            startAngle: Math.PI / 2,
-            endAngle: -Math.PI / 2,
-            clockwise: false,
-        };
-
-        const points = generateArcPoints(arc);
-        expect(points.length).toBeGreaterThan(1);
-
-        // Should start at (0, 10)
-        expect(points[0].x).toBeCloseTo(0);
-        expect(points[0].y).toBeCloseTo(10);
-
-        // Should end at (0, -10)
-        const lastPoint = points[points.length - 1];
-        expect(lastPoint.x).toBeCloseTo(0);
-        expect(lastPoint.y).toBeCloseTo(-10);
-    });
-
-    it('should handle zero radius gracefully', () => {
-        const arc: Arc = {
-            center: { x: 5, y: 5 },
-            radius: 0,
-            startAngle: 0,
-            endAngle: Math.PI,
-            clockwise: false,
-        };
-
-        const points = generateArcPoints(arc);
-        expect(points.length).toBeGreaterThan(0);
-
-        // All points should be at center
-        points.forEach((point) => {
-            expect(point.x).toBeCloseTo(5);
-            expect(point.y).toBeCloseTo(5);
-        });
     });
 });
 

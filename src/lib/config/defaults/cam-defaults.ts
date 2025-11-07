@@ -6,7 +6,7 @@
  * All values are converted based on the current measurement system.
  */
 
-import { MeasurementSystem } from './settings/enums';
+import { MeasurementSystem } from '$lib/config/settings/enums';
 import { convertToCurrentSystem } from '$lib/config/units/units';
 import {
     DEFAULT_PIERCE_HEIGHT_MM,

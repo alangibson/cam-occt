@@ -9,10 +9,10 @@ import type {
 } from './interfaces';
 import {
     EPSILON,
-    GEOMETRIC_PRECISION_TOLERANCE,
     STANDARD_TESSELLATION_COUNT,
 } from '$lib/geometry/math/constants';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import {
     DEFAULT_CONFIG,
     DEFAULT_SPLINE_DEGREE,
@@ -397,7 +397,8 @@ function createNurbsCurve(spline: Spline): VerbCurve {
  */
 function ensureSplineClosure(
     points: Point2D[],
-    spline: Spline
+    spline: Spline,
+    tolerance: number
 ): { points: Point2D[]; warnings: string[] } {
     const warnings: string[] = [];
 
@@ -409,64 +410,13 @@ function ensureSplineClosure(
                 Math.pow(lastPoint.y - firstPoint.y, 2)
         );
 
-        if (distance > GEOMETRIC_PRECISION_TOLERANCE) {
+        if (distance > tolerance) {
             points[points.length - 1] = { ...firstPoint };
             warnings.push('Adjusted last point to ensure spline closure');
         }
     }
 
     return { points, warnings };
-}
-
-/**
- * Tessellate using uniform sampling (manual point evaluation)
- * Samples the spline at equally-spaced parameter values
- */
-function tessellateSplineUniform(
-    curve: VerbCurve,
-    spline: Spline,
-    numSamples: number
-): SplineTessellationResult {
-    const tessellatedPoints: number[][] = [];
-
-    // numSamples represents the number of segments, so we need numSamples + 1 points
-    const numPoints = numSamples + 1;
-
-    // Handle edge cases
-    if (numPoints <= 1) {
-        // For single point, just return the start point
-        const point = curve.point(0);
-        tessellatedPoints.push(point);
-    } else {
-        // Normal case: sample numPoints points including endpoints
-        for (let i = 0; i < numPoints; i++) {
-            const u = i / (numPoints - 1); // This ensures u includes 0 and 1
-            const point = curve.point(u);
-            tessellatedPoints.push(point);
-        }
-    }
-
-    // Convert back to 2D points
-    let points2D: Point2D[] = tessellatedPoints.map((p) => ({
-        x: p[0],
-        y: p[1],
-    }));
-
-    // Ensure closure for closed splines
-    const closure = ensureSplineClosure(points2D, spline);
-    points2D = closure.points;
-
-    return {
-        success: true,
-        points: points2D,
-        methodUsed: 'uniform-sampling',
-        warnings: closure.warnings,
-        errors: [],
-        metrics: {
-            duration: 0,
-            sampleCount: points2D.length,
-        },
-    };
 }
 
 /**
@@ -491,7 +441,11 @@ function tessellateSplineAdaptive(
         }));
 
         // Ensure closure for closed splines
-        const closure = ensureSplineClosure(points2D, spline);
+        const closure = ensureSplineClosure(
+            points2D,
+            spline,
+            getDefaults().geometry.precisionTolerance
+        );
         points2D = closure.points;
 
         const duration = performance.now() - startTime;
@@ -663,27 +617,11 @@ export function tessellateSpline(
     }
 
     // Determine which tessellation method to use based on config
-    const method = config.method || DEFAULT_CONFIG.method;
     const tolerance = config.tolerance || DEFAULT_CONFIG.tolerance;
-    const numSamples = config.numSamples || DEFAULT_CONFIG.numSamples;
 
     // Dispatch to appropriate tessellation method
-    if (method === 'adaptive-sampling') {
-        const result = tessellateSplineAdaptive(curve, spline, tolerance);
-
-        // If adaptive fails, fall back to uniform
-        if (!result.success) {
-            console.warn(
-                `[SPLINE] Adaptive tessellation failed, falling back to uniform sampling with ${numSamples} samples`
-            );
-            return tessellateSplineUniform(curve, spline, numSamples);
-        }
-
-        return result;
-    } else {
-        // Use uniform sampling for 'uniform-sampling' and 'verb-nurbs' methods
-        return tessellateSplineUniform(curve, spline, numSamples);
-    }
+    // Use adaptive sampling as the only method (uniform sampling removed)
+    return tessellateSplineAdaptive(curve, spline, tolerance);
 }
 
 /**

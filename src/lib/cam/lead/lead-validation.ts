@@ -3,12 +3,10 @@ import { isChainClosed } from '$lib/geometry/chain/functions';
 import type { Part } from '$lib/cam/part/interfaces';
 import { LeadType } from './enums';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
-import {
-    GEOMETRIC_PRECISION_TOLERANCE,
-    HALF_PERCENT,
-} from '$lib/geometry/math/constants';
+import { HALF_PERCENT } from '$lib/geometry/math/constants';
 import { FULL_CIRCLE_DEG } from '$lib/geometry/circle/constants';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain/constants';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import type { LeadsConfig, LeadValidationResult } from './interfaces';
 import {
     MINIMUM_SHELL_DISTANCE_MM,
@@ -404,7 +402,8 @@ function validateCutDirectionCompatibility(
     // Check if cut direction is specified for closed chains
     const CHAIN_TOLERANCE_SCALE_FACTOR = 100; // Scale factor for chain tolerance
     const tolerance: number =
-        GEOMETRIC_PRECISION_TOLERANCE * CHAIN_TOLERANCE_SCALE_FACTOR;
+        getDefaults().geometry.precisionTolerance *
+        CHAIN_TOLERANCE_SCALE_FACTOR;
     const isClosed: boolean = isChainClosed(chain, tolerance);
 
     if (isClosed && config.cutDirection === CutDirection.NONE) {

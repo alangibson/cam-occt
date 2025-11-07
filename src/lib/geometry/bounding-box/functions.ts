@@ -16,8 +16,8 @@ import {
 } from '$lib/geometry/spline/constants';
 import { calculateArcPoint } from '$lib/geometry/arc/functions';
 import { THREE_HALVES_PI } from './constants';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import type { Chain } from '$lib/geometry/chain/interfaces';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
 export function getBoundingBoxForLine(line: Line): BoundingBox {
     if (
@@ -406,9 +406,10 @@ export function calculateDynamicTolerance(
         const diagonal: number = Math.sqrt(width * width + height * height);
 
         // Use 0.1% of diagonal as tolerance, with reasonable min/max bounds
+        const precisionTolerance = getDefaults().geometry.precisionTolerance;
         const dynamicTolerance: number = Math.max(
-            GEOMETRIC_PRECISION_TOLERANCE,
-            Math.min(1.0, diagonal * GEOMETRIC_PRECISION_TOLERANCE)
+            precisionTolerance,
+            Math.min(1.0, diagonal * precisionTolerance)
         );
         return dynamicTolerance;
     } catch {

@@ -18,6 +18,7 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
         showShapeNormals: false,
         showShapeWindingDirection: false,
         showShapeTangentLines: false,
+        showShapeTessellation: false,
     });
 
     return {
@@ -84,6 +85,16 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
         },
 
         /**
+         * Set shape tessellation visibility
+         */
+        setShowShapeTessellation: (show: boolean) => {
+            update((state) => ({
+                ...state,
+                showShapeTessellation: show,
+            }));
+        },
+
+        /**
          * Reset to defaults
          */
         reset: () => {
@@ -94,6 +105,7 @@ function createShapeVisualizationStore(): ShapeVisualizationStore {
                 showShapeNormals: false,
                 showShapeWindingDirection: false,
                 showShapeTangentLines: false,
+                showShapeTessellation: false,
             });
         },
     };

@@ -36,7 +36,7 @@
     import { getPhysicalScaleFactor } from '$lib/config/units/units';
     import { RenderingPipeline } from '$lib/rendering/canvas/pipeline';
     import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
-    import { getCanvasConfigForStage } from '$lib/config/canvas-config';
+    import { getCanvasConfigForStage } from '$components/drawing/canvas-config';
 
     export let onChainClick: ((chainId: string) => void) | null = null; // Callback for chain clicks
     export let onPartClick: ((partId: string) => void) | null = null; // Callback for part clicks
@@ -106,6 +106,7 @@
     $: showShapeNormals = shapeVisualization.showShapeNormals;
     $: showShapeWindingDirection = shapeVisualization.showShapeWindingDirection;
     $: showShapeTangentLines = shapeVisualization.showShapeTangentLines;
+    $: showShapeTessellation = shapeVisualization.showShapeTessellation;
     $: chainVisualization = $chainStore;
     $: showChainPaths = chainVisualization.showChainPaths;
     $: showChainStartPoints = chainVisualization.showChainStartPoints;
@@ -343,6 +344,7 @@
                 showShapeNormals,
                 showShapeWindingDirection,
                 showShapeTangentLines,
+                showShapeTessellation,
                 showChainPaths,
                 showChainStartPoints,
                 showChainEndPoints,

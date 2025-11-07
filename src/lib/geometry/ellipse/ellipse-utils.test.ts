@@ -8,7 +8,7 @@ import {
     getEllipseStartEndPoints,
     isEllipseClosed,
     isFullEllipse,
-    tessellateEllipse,
+    sampleEllipse,
 } from '$lib/geometry/ellipse/functions';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 
@@ -266,7 +266,7 @@ describe('ellipse-utils', () => {
 
     describe('tessellateEllipse', () => {
         it('should tessellate full ellipse', () => {
-            const result = tessellateEllipse(unitCircle, 8);
+            const result = sampleEllipse(unitCircle, 8);
 
             expect(result).toHaveLength(8);
             // Should be evenly spaced around circle
@@ -279,13 +279,13 @@ describe('ellipse-utils', () => {
         });
 
         it('should tessellate ellipse arc', () => {
-            const result = tessellateEllipse(ellipseArc, 4);
+            const result = sampleEllipse(ellipseArc, 4);
 
             expect(result).toHaveLength(5); // numPoints + 1 for arc
         });
 
         it('should handle full ellipse parameter calculation', () => {
-            const result = tessellateEllipse(horizontalEllipse, 4);
+            const result = sampleEllipse(horizontalEllipse, 4);
 
             expect(result).toHaveLength(4);
             result.forEach((point) => {
@@ -301,7 +301,7 @@ describe('ellipse-utils', () => {
                 endParam: Math.PI / 2, // Crosses 0
             };
 
-            const result = tessellateEllipse(wrappingArc, 4);
+            const result = sampleEllipse(wrappingArc, 4);
 
             expect(result).toHaveLength(5);
             result.forEach((point) => {
@@ -311,13 +311,13 @@ describe('ellipse-utils', () => {
         });
 
         it('should handle zero points gracefully', () => {
-            const result = tessellateEllipse(unitCircle, 0);
+            const result = sampleEllipse(unitCircle, 0);
 
             expect(result).toHaveLength(0);
         });
 
         it('should handle single point tessellation', () => {
-            const result = tessellateEllipse(unitCircle, 1);
+            const result = sampleEllipse(unitCircle, 1);
 
             expect(result).toHaveLength(1);
         });

@@ -12,6 +12,7 @@ export interface ShapeVisualizationState {
     showShapeNormals: boolean;
     showShapeWindingDirection: boolean;
     showShapeTangentLines: boolean;
+    showShapeTessellation: boolean;
 }
 
 export interface ShapeVisualizationStore {
@@ -22,5 +23,6 @@ export interface ShapeVisualizationStore {
     setShowShapeNormals: (show: boolean) => void;
     setShowShapeWindingDirection: (show: boolean) => void;
     setShowShapeTangentLines: (show: boolean) => void;
+    setShowShapeTessellation: (show: boolean) => void;
     reset: () => void;
 }

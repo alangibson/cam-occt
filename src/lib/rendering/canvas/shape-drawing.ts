@@ -17,7 +17,7 @@ import {
     tessellateSpline,
     createAdaptiveTessellationConfig,
 } from '$lib/geometry/spline/functions';
-import { tessellateEllipse } from '$lib/geometry/ellipse/functions';
+import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
 import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline/constants';
 
@@ -84,7 +84,7 @@ function drawEllipse(
     _shape: Shape
 ): void {
     // Tessellate ellipse directly
-    const tessellatedPoints = tessellateEllipse(
+    const tessellatedPoints = sampleEllipse(
         ellipse,
         ELLIPSE_TESSELLATION_POINTS
     );

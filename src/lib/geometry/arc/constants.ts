@@ -1,14 +1,4 @@
 /**
- * Adaptive arc tessellation chord length for precise rendering
- */
-export const ARC_TESSELLATION_CHORD_LENGTH = 5;
-
-/**
- * Default arc tessellation points for standard rendering
- */
-export const DEFAULT_ARC_TESSELLATION_POINTS = 10;
-
-/**
  * Number of quadrants in a quarter circle for arc/lead calculations
  */
 export const QUARTER_CIRCLE_QUADRANTS = 4;
@@ -24,3 +14,9 @@ export const DIRECTION_COUNTERCLOCKWISE = 1;
 export const DIRECTION_CLOCKWISE = -1;
 
 export const PERPENDICULAR_TOLERANCE = 0.01;
+
+/**
+ * Maximum tolerance ratio to prevent numerical issues with acos
+ * When tolerance/radius approaches 1, acos(1 - ratio) approaches 0
+ */
+export const MAX_TOLERANCE_RATIO = 0.9999;

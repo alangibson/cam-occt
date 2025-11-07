@@ -22,6 +22,7 @@ import { offsetPaths } from './clipper-offset';
 import { reconstructChain, createOffsetChain } from './reconstruct';
 import type { ChainOffsetParameters, ChainOffsetResult } from './types';
 import { DEFAULT_CHAIN_OFFSET_PARAMETERS } from './defaults';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
 /**
  * Offset a chain using Clipper2
@@ -62,13 +63,12 @@ export async function offsetChain(
 
         // 2. Tessellate all shapes to polylines
         const CIRCLE_POINTS = 32;
-        const ARC_TOLERANCE = 0.1; // 0.1mm tolerance for arc tessellation
         const DECIMAL_PRECISION = 3;
         const SKIP_LAST_POINT = -1;
 
         const shapePointArrays = tessellateChainToShapes(chain, {
             circleTessellationPoints: CIRCLE_POINTS,
-            arcTessellationTolerance: ARC_TOLERANCE,
+            tessellationTolerance: getDefaults().geometry.tessellationTolerance,
             decimalPrecision: DECIMAL_PRECISION,
             enableTessellation: false,
         });

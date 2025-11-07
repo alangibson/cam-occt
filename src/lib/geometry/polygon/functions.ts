@@ -8,8 +8,8 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { POLYGON_POINTS_MIN } from '$lib/geometry/chain/constants';
 import { doLineSegmentsIntersect } from '$lib/geometry/line/functions';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import { calculateDistanceBetweenPoints } from '$lib/geometry/math/functions';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
 /**
  * Calculate the area of a polygon using the shoelace formula
@@ -117,8 +117,10 @@ export function calculatePolygonCentroid2(polygon: Point2D[]): Point2D | null {
 
 export function removeDuplicatePoints(
     points: Point2D[],
-    tolerance: number = GEOMETRIC_PRECISION_TOLERANCE
+    tolerance?: number
 ): Point2D[] {
+    const effectiveTolerance =
+        tolerance ?? getDefaults().geometry.precisionTolerance;
     if (points.length <= 1) return points;
 
     const result: Point2D[] = [points[0]];
@@ -129,7 +131,7 @@ export function removeDuplicatePoints(
 
         const distance = calculateDistanceBetweenPoints(current, last);
 
-        if (distance > tolerance) {
+        if (distance > effectiveTolerance) {
             result.push(current);
         }
     }

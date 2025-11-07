@@ -13,11 +13,11 @@
         DEFAULT_KERF_COMPENSATION,
         DEFAULT_HOLE_UNDERSPEED,
         DEFAULT_OPERATION_ENABLED,
-    } from '$lib/config/operation-defaults';
+    } from '$lib/config/defaults/operation-defaults';
     import {
         getDefaultLeadInConfig,
         getDefaultLeadOutConfig,
-    } from '$lib/config/lead-defaults';
+    } from '$lib/config/defaults/lead-defaults';
     import OperationsPanel from '$components/panels/OperationsPanel.svelte';
     import { DEFAULT_OPTIMIZE_STARTS } from '$lib/cam/cut/defaults';
 

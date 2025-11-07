@@ -25,13 +25,19 @@ import {
 } from '$lib/stores/chains/functions';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { distanceFromEllipsePerimeter } from '$lib/geometry/ellipse/functions';
-import { drawNormalLine } from './normal-renderer-utils';
+import {
+    drawNormalLine,
+    drawTessellationPoint,
+    getTessellationPointSize,
+    getTessellationBorderWidth,
+} from './normal-renderer-utils';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import { drawChevronArrow } from '$lib/rendering/canvas/utils/chevron-drawing';
 import {
     getShapeNormal,
     getShapeMidpoint,
     getShapePointAt,
+    tessellateShape,
 } from '$lib/geometry/shape/functions';
 import {
     calculateViewportBounds,
@@ -39,6 +45,7 @@ import {
 } from '$lib/rendering/viewport-culling';
 import { DrawingContext } from '$lib/rendering/canvas/utils/context';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 
 // Constants for styling and rendering
 const VIEWPORT_CULLING_THRESHOLD = 100;
@@ -76,9 +83,6 @@ export class ShapeRenderer extends BaseRenderer {
         const shapes = this.getShapes(state);
         if (!shapes || shapes.length === 0) return;
 
-        // Skip rendering if shape paths are disabled
-        if (!state.visibility.showShapePaths) return;
-
         // Create drawing context for coordinate transformation
         const drawingContext = new DrawingContext(ctx, state.transform);
 
@@ -101,45 +105,51 @@ export class ShapeRenderer extends BaseRenderer {
               ).visibleShapes
             : shapes;
 
-        // Render each visible shape
-        shapesToRender.forEach((shape) => {
-            // Check if layer is visible (only if respectLayerVisibility is true)
-            if (state.respectLayerVisibility) {
-                const shapeLayer = shape.layer || '0';
-                const isVisible =
-                    state.visibility.layerVisibility[shapeLayer] !== false;
-                if (!isVisible) return;
-            }
+        // Render shape paths if enabled
+        if (state.visibility.showShapePaths) {
+            // Render each visible shape
+            shapesToRender.forEach((shape) => {
+                // Check if layer is visible (only if respectLayerVisibility is true)
+                if (state.respectLayerVisibility) {
+                    const shapeLayer = shape.layer || '0';
+                    const isVisible =
+                        state.visibility.layerVisibility[shapeLayer] !== false;
+                    if (!isVisible) return;
+                }
 
-            const chainId = getShapeChainId(shape.id, state.chains);
+                const chainId = getShapeChainId(shape.id, state.chains);
 
-            let isSelected = state.selection.selectedShapes.has(shape.id);
-            let isHovered = state.selection.hoveredShape === shape.id;
+                let isSelected = state.selection.selectedShapes.has(shape.id);
+                let isHovered = state.selection.hoveredShape === shape.id;
 
-            // If selection mode is chain or part, check if any shape in the chain is selected/hovered
-            if (
-                (state.selectionMode === 'chain' ||
-                    state.selectionMode === 'part') &&
-                chainId
-            ) {
-                const chainShapeIds = getChainShapeIds(shape.id, state.chains);
-                isSelected = chainShapeIds.some((id) =>
-                    state.selection.selectedShapes.has(id)
+                // If selection mode is chain or part, check if any shape in the chain is selected/hovered
+                if (
+                    (state.selectionMode === 'chain' ||
+                        state.selectionMode === 'part') &&
+                    chainId
+                ) {
+                    const chainShapeIds = getChainShapeIds(
+                        shape.id,
+                        state.chains
+                    );
+                    isSelected = chainShapeIds.some((id) =>
+                        state.selection.selectedShapes.has(id)
+                    );
+                    isHovered = chainShapeIds.some(
+                        (id) => state.selection.hoveredShape === id
+                    );
+                }
+
+                this.drawShapeStyled(
+                    ctx,
+                    shape,
+                    isSelected,
+                    isHovered,
+                    state,
+                    drawingContext
                 );
-                isHovered = chainShapeIds.some(
-                    (id) => state.selection.hoveredShape === id
-                );
-            }
-
-            this.drawShapeStyled(
-                ctx,
-                shape,
-                isSelected,
-                isHovered,
-                state,
-                drawingContext
-            );
-        });
+            });
+        }
 
         // Render shape normals if enabled
         if (state.visibility.showShapeNormals) {
@@ -154,6 +164,11 @@ export class ShapeRenderer extends BaseRenderer {
         // Render shape tangent lines if enabled
         if (state.visibility.showShapeTangentLines) {
             this.drawShapeTangentLines(ctx, state, shapesToRender);
+        }
+
+        // Render shape tessellation if enabled
+        if (state.visibility.showShapeTessellation) {
+            this.drawShapeTessellation(ctx, state, shapesToRender);
         }
     }
 
@@ -333,6 +348,57 @@ export class ShapeRenderer extends BaseRenderer {
         ctx.moveTo(startPoint.x, startPoint.y);
         ctx.lineTo(endPoint.x, endPoint.y);
         ctx.stroke();
+
+        ctx.restore();
+    }
+
+    /**
+     * Draw tessellation points for shapes
+     */
+    private drawShapeTessellation(
+        ctx: CanvasRenderingContext2D,
+        state: RenderState,
+        shapes: Shape[]
+    ): void {
+        ctx.save();
+
+        const pointSize = getTessellationPointSize(state);
+        const borderWidth = getTessellationBorderWidth();
+
+        for (const shape of shapes) {
+            // Check if layer is visible
+            if (state.respectLayerVisibility) {
+                const shapeLayer = shape.layer || '0';
+                const isVisible =
+                    state.visibility.layerVisibility[shapeLayer] !== false;
+                if (!isVisible) continue;
+            }
+
+            // Get tessellation points - use cache if available
+            let tessellationPoints: Point2D[];
+
+            if (shape.tessellationCache) {
+                // Use cached tessellation
+                tessellationPoints = shape.tessellationCache.points;
+            } else {
+                // Compute new tessellation
+                tessellationPoints = tessellateShape(
+                    shape,
+                    DEFAULT_PART_DETECTION_PARAMETERS
+                );
+            }
+
+            // Draw each tessellation point as a small circle
+            for (const point of tessellationPoints) {
+                drawTessellationPoint(
+                    ctx,
+                    state,
+                    point,
+                    pointSize,
+                    borderWidth
+                );
+            }
+        }
 
         ctx.restore();
     }

@@ -11,20 +11,22 @@ import {
     getCirclePointAt,
     getCircleStartPoint,
     reverseCircle,
+    tessellateCircle,
 } from '$lib/geometry/circle/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import {
-    generateArcPoints,
     getArcEndPoint,
     getArcPointAt,
     getArcStartPoint,
     reverseArc,
+    tessellateArc,
 } from '$lib/geometry/arc/functions';
 import {
     getLineEndPoint,
     getLinePointAt,
     getLineStartPoint,
     reverseLine,
+    tessellateLine,
 } from '$lib/geometry/line/functions';
 import { GeometryType } from './enums';
 import {
@@ -41,8 +43,8 @@ import {
     getEllipseStartPoint,
     isEllipseClosed,
     reverseEllipse,
+    sampleEllipse,
     tessellateEllipse,
-    calculateEllipsePoint,
 } from '$lib/geometry/ellipse/functions';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
 import { type PartDetectionParameters } from '$lib/cam/part/interfaces';
@@ -56,12 +58,7 @@ import {
     reversePolyline,
     calculatePolylineLength,
 } from '$lib/geometry/polyline/functions';
-import {
-    DEFAULT_TESSELLATION_SEGMENTS,
-    MIDPOINT_T,
-    OCTAGON_SIDES,
-    QUARTER_CIRCLE_QUADRANTS,
-} from '$lib/geometry/constants';
+import { MIDPOINT_T, QUARTER_CIRCLE_QUADRANTS } from '$lib/geometry/constants';
 import {
     normalizeVector,
     roundToDecimalPlaces,
@@ -74,8 +71,8 @@ import {
 } from '$lib/geometry/chain/constants';
 import { JSTS_MIN_LINEAR_RING_COORDINATES } from '$lib/cam/part/constants';
 import { LEAD_SEGMENT_COUNT } from '$lib/geometry/line/constants';
-import { GEOMETRIC_PRECISION_TOLERANCE } from '$lib/geometry/math/constants';
 import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline/constants';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
 import {
     splitArcAtMidpoint,
@@ -83,7 +80,7 @@ import {
 } from '$lib/cam/cut/cut-optimization-utils';
 import { generateId } from '$lib/domain/id';
 import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
-import { HIGH_RESOLUTION_CIRCLE_SEGMENTS, MAX_ARC_SEGMENTS } from './constants';
+import { HIGH_RESOLUTION_CIRCLE_SEGMENTS } from './constants';
 
 /**
  * TODO get rid of this giant function. Break it down by use case.
@@ -279,8 +276,11 @@ export function getShapePoints(
                 return points;
             }
 
-            // Default to existing generateArcPoints
-            return generateArcPoints(arc);
+            // Default to tolerance-based tessellation
+            return tessellateArc(
+                arc,
+                getDefaults().geometry.tessellationTolerance
+            );
 
         case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
@@ -377,7 +377,7 @@ export function getShapePoints(
                 }
             }
 
-            return tessellateEllipse(ellipse, ELLIPSE_TESSELLATION_POINTS);
+            return sampleEllipse(ellipse, ELLIPSE_TESSELLATION_POINTS);
 
         case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;
@@ -452,77 +452,19 @@ export function tessellateShape(
     switch (shape.type) {
         case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
-            points.push(line.start, line.end);
+            points.push(...tessellateLine(line));
             break;
 
         case GeometryType.CIRCLE:
             const circle: Circle = shape.geometry as Circle;
-            const numPoints: number = params.circleTessellationPoints;
-            for (let i: number = 0; i < numPoints; i++) {
-                const angle: number = (i / numPoints) * 2 * Math.PI;
-                points.push({
-                    x: circle.center.x + circle.radius * Math.cos(angle),
-                    y: circle.center.y + circle.radius * Math.sin(angle),
-                });
-            }
+            points.push(
+                ...tessellateCircle(circle, params.circleTessellationPoints)
+            );
             break;
 
         case GeometryType.ARC:
             const arc: Arc = shape.geometry as Arc;
-
-            // Calculate the angular difference (sweep)
-            let deltaAngle: number = arc.endAngle - arc.startAngle;
-
-            // Adjust deltaAngle based on clockwise flag
-            // DXF arcs are counterclockwise by default unless clockwise flag is set
-            if (arc.clockwise) {
-                // For clockwise arcs, if deltaAngle > 0, we want the long way around
-                if (deltaAngle > 0) {
-                    deltaAngle -= 2 * Math.PI;
-                }
-            } else {
-                // For counterclockwise arcs, if deltaAngle < 0, we want to cross zero
-                if (deltaAngle < 0) {
-                    deltaAngle += 2 * Math.PI;
-                }
-            }
-
-            const arcSpan: number = Math.abs(deltaAngle);
-
-            // Adaptive tessellation based on chord error tolerance
-            // For a circular arc with radius r and tolerance t (max deviation):
-            // The sagitta (chord height) s = r - r*cos(θ/2) where θ is the segment angle
-            // Setting s = t and solving for θ: θ = 2*acos(1 - t/r)
-            // Number of segments = arcSpan / θ = arcSpan / (2*acos(1 - t/r))
-            const tolerance = params.arcTessellationTolerance;
-            const radius = arc.radius;
-
-            // Handle edge cases
-            let numArcPoints: number;
-            if (tolerance >= radius) {
-                // Tolerance is larger than radius - use minimal tessellation (2 points = 1 segment)
-                numArcPoints = 1;
-            } else {
-                // Calculate optimal segment angle for the given tolerance
-                const segmentAngle = 2 * Math.acos(1 - tolerance / radius);
-                // Calculate number of segments needed for the arc span
-                const numSegments = Math.ceil(arcSpan / segmentAngle);
-                // Clamp to reasonable bounds (minimum 1 segment, maximum segments)
-                numArcPoints = Math.max(
-                    1,
-                    Math.min(MAX_ARC_SEGMENTS, numSegments)
-                );
-            }
-
-            for (let i: number = 0; i <= numArcPoints; i++) {
-                const t: number = i / numArcPoints;
-                // Calculate angle using the corrected deltaAngle
-                const theta: number = arc.startAngle + t * deltaAngle;
-                points.push({
-                    x: arc.center.x + arc.radius * Math.cos(theta),
-                    y: arc.center.y + arc.radius * Math.sin(theta),
-                });
-            }
+            points.push(...tessellateArc(arc, params.tessellationTolerance));
             break;
 
         case GeometryType.POLYLINE:
@@ -541,103 +483,25 @@ export function tessellateShape(
 
         case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
-            const majorAxisLength: number = Math.sqrt(
-                ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
-                    ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
-            );
-            const minorAxisLength: number =
-                majorAxisLength * ellipse.minorToMajorRatio;
-            const majorAxisAngle: number = Math.atan2(
-                ellipse.majorAxisEndpoint.y,
-                ellipse.majorAxisEndpoint.x
-            );
-
-            const isArc: boolean =
-                typeof ellipse.startParam === 'number' &&
-                typeof ellipse.endParam === 'number';
-
-            if (
-                isArc &&
-                ellipse.startParam !== undefined &&
-                ellipse.endParam !== undefined
-            ) {
-                // Ellipse arc - use similar logic to circular arcs
-                let deltaParam: number = ellipse.endParam - ellipse.startParam;
-
-                // For ellipses, we assume counterclockwise by default
-                if (deltaParam < 0) {
-                    deltaParam += 2 * Math.PI;
-                }
-
-                const paramSpan: number = Math.abs(deltaParam);
-                const numEllipsePoints: number = Math.max(
-                    OCTAGON_SIDES,
-                    Math.round(
-                        paramSpan / (Math.PI / DEFAULT_TESSELLATION_SEGMENTS)
-                    )
-                );
-
-                for (let i: number = 0; i <= numEllipsePoints; i++) {
-                    const t: number = i / numEllipsePoints;
-                    const param: number = ellipse.startParam + t * deltaParam;
-
-                    points.push(
-                        calculateEllipsePoint(
-                            ellipse,
-                            param,
-                            majorAxisLength,
-                            minorAxisLength,
-                            majorAxisAngle
-                        )
-                    );
-                }
-            } else {
-                // Full ellipse
-                const numEllipsePoints: number = 32;
-                for (let i: number = 0; i < numEllipsePoints; i++) {
-                    const param: number = (i / numEllipsePoints) * 2 * Math.PI;
-
-                    points.push(
-                        calculateEllipsePoint(
-                            ellipse,
-                            param,
-                            majorAxisLength,
-                            minorAxisLength,
-                            majorAxisAngle
-                        )
-                    );
-                }
-            }
+            points.push(...tessellateEllipse(ellipse));
             break;
 
         case GeometryType.SPLINE:
             const spline: Spline = shape.geometry as Spline;
-            try {
-                // Use adaptive tessellation config based on spline complexity
-                // This ensures complex splines with many control points get sufficient detail
-                const config = createAdaptiveTessellationConfig(
-                    spline,
-                    SPLINE_TESSELLATION_TOLERANCE
-                );
+            // Use adaptive tessellation config based on spline complexity
+            // This ensures complex splines with many control points get sufficient detail
+            const config = createAdaptiveTessellationConfig(
+                spline,
+                SPLINE_TESSELLATION_TOLERANCE
+            );
 
-                // Tessellate with adaptive configuration
-                const sampledPoints: Point2D[] = tessellateSpline(
-                    spline,
-                    config
-                ).points;
+            // Tessellate with adaptive configuration
+            const sampledPoints: Point2D[] = tessellateSpline(
+                spline,
+                config
+            ).points;
 
-                points.push(...sampledPoints);
-            } catch {
-                // Fallback to fit points or control points if NURBS evaluation fails
-                if (spline.fitPoints && spline.fitPoints.length > 0) {
-                    points.push(...spline.fitPoints);
-                } else if (
-                    spline.controlPoints &&
-                    spline.controlPoints.length > 0
-                ) {
-                    points.push(...spline.controlPoints);
-                }
-            }
+            points.push(...sampledPoints);
             break;
     }
 
@@ -1373,7 +1237,10 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
         case GeometryType.ELLIPSE:
             const ellipse: Ellipse = shape.geometry as Ellipse;
             // Use the centralized ellipse closed detection logic
-            return isEllipseClosed(ellipse, GEOMETRIC_PRECISION_TOLERANCE);
+            return isEllipseClosed(
+                ellipse,
+                getDefaults().geometry.precisionTolerance
+            );
 
         case GeometryType.SPLINE:
             const splineGeom: Spline = shape.geometry as Spline;

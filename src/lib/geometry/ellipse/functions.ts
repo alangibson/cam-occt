@@ -9,11 +9,13 @@
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Ellipse, EllipseTessellationConfig } from './interfaces';
-import {
-    EPSILON,
-    GEOMETRIC_PRECISION_TOLERANCE,
-} from '$lib/geometry/math/constants';
+import { EPSILON } from '$lib/geometry/math/constants';
 import { MAX_TESSELLATION_POINTS, MIN_TESSELLATION_POINTS } from './constants';
+import {
+    DEFAULT_TESSELLATION_SEGMENTS,
+    OCTAGON_SIDES,
+} from '$lib/geometry/constants';
+import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
 /**
  * Calculate a point on an ellipse at a given parameter value
@@ -105,10 +107,7 @@ export function generateEllipsePoints(
  * Tessellate ellipse with specified number of points
  * Provides a simpler interface to ellipse tessellation
  */
-export function tessellateEllipse(
-    ellipse: Ellipse,
-    numPoints: number
-): Point2D[] {
+export function sampleEllipse(ellipse: Ellipse, numPoints: number): Point2D[] {
     const majorAxisLength = Math.sqrt(
         ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
             ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
@@ -393,10 +392,9 @@ export function isFullEllipse(ellipse: Ellipse): boolean {
  * @param tolerance - Numeric tolerance for comparing parameter values (default: 0.001)
  * @returns true if ellipse is closed (full ellipse), false if open (ellipse arc)
  */
-export function isEllipseClosed(
-    ellipse: Ellipse,
-    tolerance: number = GEOMETRIC_PRECISION_TOLERANCE
-): boolean {
+export function isEllipseClosed(ellipse: Ellipse, tolerance?: number): boolean {
+    const effectiveTolerance =
+        tolerance ?? getDefaults().geometry.precisionTolerance;
     // If no start/end parameters, assume it's a full closed ellipse
     if (
         typeof ellipse.startParam !== 'number' ||
@@ -412,8 +410,8 @@ export function isEllipseClosed(
 
     // Consider it a full ellipse if start is near 0 and end is near 2π
     const isFullEllipse =
-        Math.abs(startParam) < tolerance &&
-        Math.abs(endParam - fullCircle) < tolerance;
+        Math.abs(startParam) < effectiveTolerance &&
+        Math.abs(endParam - fullCircle) < effectiveTolerance;
 
     return isFullEllipse;
 }
@@ -743,4 +741,84 @@ export function validateEllipseGeometry(ellipse: Ellipse): string[] {
     }
 
     return errors;
+}
+
+/**
+ * Tessellate an ellipse into points
+ * Handles both full ellipses and ellipse arcs
+ * @param ellipse Ellipse to tessellate
+ * @returns Array of points representing the tessellated ellipse
+ */
+export function tessellateEllipse(ellipse: Ellipse): Point2D[] {
+    const points: Point2D[] = [];
+
+    const majorAxisLength: number = Math.sqrt(
+        ellipse.majorAxisEndpoint.x * ellipse.majorAxisEndpoint.x +
+            ellipse.majorAxisEndpoint.y * ellipse.majorAxisEndpoint.y
+    );
+    const minorAxisLength: number = majorAxisLength * ellipse.minorToMajorRatio;
+    const majorAxisAngle: number = Math.atan2(
+        ellipse.majorAxisEndpoint.y,
+        ellipse.majorAxisEndpoint.x
+    );
+
+    const isArc: boolean =
+        typeof ellipse.startParam === 'number' &&
+        typeof ellipse.endParam === 'number';
+
+    if (
+        isArc &&
+        ellipse.startParam !== undefined &&
+        ellipse.endParam !== undefined
+    ) {
+        // Ellipse arc - use similar logic to circular arcs
+        let deltaParam: number = ellipse.endParam - ellipse.startParam;
+
+        // For ellipses, we assume counterclockwise by default
+        if (deltaParam < 0) {
+            deltaParam += 2 * Math.PI;
+        }
+
+        const paramSpan: number = Math.abs(deltaParam);
+        // Use OCTAGON_SIDES (8) and DEFAULT_TESSELLATION_SEGMENTS (4) from constants
+        const numEllipsePoints: number = Math.max(
+            OCTAGON_SIDES, // OCTAGON_SIDES
+            Math.round(
+                paramSpan / (Math.PI / DEFAULT_TESSELLATION_SEGMENTS) // DEFAULT_TESSELLATION_SEGMENTS
+            )
+        );
+
+        for (let i: number = 0; i <= numEllipsePoints; i++) {
+            const t: number = i / numEllipsePoints;
+            const param: number = ellipse.startParam + t * deltaParam;
+
+            points.push(
+                calculateEllipsePoint(
+                    ellipse,
+                    param,
+                    majorAxisLength,
+                    minorAxisLength,
+                    majorAxisAngle
+                )
+            );
+        }
+    } else {
+        // Full ellipse
+        const numEllipsePoints: number = 32;
+        for (let i: number = 0; i < numEllipsePoints; i++) {
+            const param: number = (i / numEllipsePoints) * 2 * Math.PI;
+
+            points.push(
+                calculateEllipsePoint(
+                    ellipse,
+                    param,
+                    majorAxisLength,
+                    minorAxisLength,
+                    majorAxisAngle
+                )
+            );
+        }
+    }
+
+    return points;
 }
