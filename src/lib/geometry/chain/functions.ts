@@ -522,7 +522,96 @@ export function isChainContainedInChain(
         console.warn('Error in geometric containment detection:', error);
         return false;
     }
-} /**
+}
+
+/**
+ * Check if one closed chain contains another using Clipper2 boolean operations
+ *
+ * Uses Clipper2's Intersect64 operation: if inner is fully contained in outer,
+ * then Intersect(inner, outer) will equal inner (same area).
+ *
+ * This is more robust than JSTS for complex tessellated spline geometry.
+ *
+ * @param innerChain - The chain to test for containment
+ * @param outerChain - The potential containing chain
+ * @param tolerance - Distance tolerance for chain closure checks
+ * @param params - Part detection parameters for tessellation
+ * @returns Promise<boolean> - True if inner is contained within outer
+ */
+export async function isChainContainedInChainClipper2(
+    innerChain: Chain,
+    outerChain: Chain,
+    tolerance: number,
+    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
+): Promise<boolean> {
+    // Only closed chains can contain other chains
+    if (!isChainClosed(outerChain, tolerance)) {
+        return false;
+    }
+
+    // Import Clipper2 helpers
+    const { getClipper2 } = await import('$lib/cam/offset/clipper-init');
+    const { toClipper2Paths, calculateClipper2PathsArea } = await import(
+        '$lib/cam/offset/convert'
+    );
+
+    try {
+        const clipper = await getClipper2();
+
+        // Tessellate both chains
+        const innerPoints = tessellateChain(innerChain, params);
+        const outerPoints = tessellateChain(outerChain, params);
+
+        // Check minimum points
+        const MIN_POLYGON_POINTS = 3;
+        if (
+            innerPoints.length < MIN_POLYGON_POINTS ||
+            outerPoints.length < MIN_POLYGON_POINTS
+        ) {
+            return false;
+        }
+
+        // Convert to Clipper2 format
+        const innerPaths = toClipper2Paths([innerPoints], clipper);
+        const outerPaths = toClipper2Paths([outerPoints], clipper);
+
+        // Calculate inner area before intersection
+        const innerArea = calculateClipper2PathsArea(innerPaths);
+
+        if (innerArea === 0) {
+            innerPaths.delete();
+            outerPaths.delete();
+            return false;
+        }
+
+        // Perform intersection: if inner is fully inside outer, intersection = inner
+        const intersection = clipper.Intersect64(
+            innerPaths,
+            outerPaths,
+            clipper.FillRule.NonZero
+        );
+
+        // Calculate intersection area
+        const intersectionArea = calculateClipper2PathsArea(intersection);
+
+        // Clean up Clipper2 memory
+        innerPaths.delete();
+        outerPaths.delete();
+        intersection.delete();
+
+        // If intersection area ≈ inner area (within 90%), inner is contained
+        // Use 90% threshold to handle tessellation differences and edge precision
+        // This is more lenient than 95% to handle complex spline geometries
+        const CONTAINMENT_AREA_RATIO_THRESHOLD = 0.9;
+        const areaRatio = intersectionArea / innerArea;
+        return areaRatio > CONTAINMENT_AREA_RATIO_THRESHOLD;
+    } catch (error) {
+        console.warn('Error in Clipper2 containment detection:', error);
+        return false;
+    }
+}
+
+/**
  * Checks if one closed chain is completely contained within another closed chain
  * using proper geometric containment (point-in-polygon testing)
  */

@@ -18,6 +18,28 @@ import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import type { Drawing } from '$lib/cam/drawing/interfaces';
 
+function filterToLargestLayer(shapes: Shape[]): Shape[] {
+    const layerMap = new Map<string, Shape[]>();
+    shapes.forEach((shape) => {
+        const layer = shape.layer || 'NO_LAYER';
+        if (!layerMap.has(layer)) {
+            layerMap.set(layer, []);
+        }
+        layerMap.get(layer)!.push(shape);
+    });
+
+    let largestLayer = '';
+    let maxShapes = 0;
+    for (const [layer, layerShapes] of layerMap.entries()) {
+        if (layerShapes.length > maxShapes) {
+            maxShapes = layerShapes.length;
+            largestLayer = layer;
+        }
+    }
+
+    return layerMap.get(largestLayer) || shapes;
+}
+
 describe('Tractor Seat Mount Part Detection', () => {
     it('should detect 1 part with multiple holes for Tractor Seat Mount - Left.dxf', async () => {
         // Load the DXF file
@@ -27,17 +49,20 @@ describe('Tractor Seat Mount Part Detection', () => {
         // Parse DXF with default options
         const drawing: Drawing = await parseDXF(dxfContent);
 
-        console.log(`Total shapes: ${drawing.shapes.length}`);
+        // Filter to largest layer to eliminate circle-only layers
+        const filteredShapes = filterToLargestLayer(drawing.shapes);
+
+        console.log(`Total shapes: ${filteredShapes.length}`);
         console.log('Shapes by type:', {
-            circles: drawing.shapes.filter((s) => s.type === 'circle').length,
-            lines: drawing.shapes.filter((s) => s.type === 'line').length,
-            arcs: drawing.shapes.filter((s) => s.type === 'arc').length,
-            polylines: drawing.shapes.filter((s) => s.type === 'polyline')
+            circles: filteredShapes.filter((s) => s.type === 'circle').length,
+            lines: filteredShapes.filter((s) => s.type === 'line').length,
+            arcs: filteredShapes.filter((s) => s.type === 'arc').length,
+            polylines: filteredShapes.filter((s) => s.type === 'polyline')
                 .length,
         });
 
         // Detect chains with standard tolerance
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.05 });
+        const chains = detectShapeChains(filteredShapes, { tolerance: 0.05 });
         console.log(`Total chains detected: ${chains.length}`);
 
         // Analyze chain closure for debugging

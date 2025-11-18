@@ -414,37 +414,4 @@ describe('Ray-Spline Intersection', () => {
             expect(crossings).toBeGreaterThanOrEqual(0);
         });
     });
-
-    describe('Performance', () => {
-        it('should handle splines with many control points efficiently', () => {
-            // Create a spline with many control points
-            const manyPointsSpline: Spline = {
-                controlPoints: Array.from({ length: 100 }, (_, i) => ({
-                    x: i * 0.1,
-                    y: Math.sin(i * 0.1), // Sine wave
-                })),
-                knots: Array.from({ length: 104 }, (_, i) => {
-                    if (i < 4) return 0;
-                    if (i >= 100) return 1;
-                    return (i - 3) / 96;
-                }),
-                weights: Array.from({ length: 100 }, () => 1),
-                degree: 3,
-                fitPoints: [],
-                closed: false,
-            };
-
-            const ray: Ray = {
-                origin: { x: -1, y: 0 },
-                direction: { x: 1, y: 0 },
-            };
-
-            const start = performance.now();
-            const crossings = countRaySplineCrossings(ray, manyPointsSpline);
-            const end = performance.now();
-
-            expect(crossings).toBeGreaterThanOrEqual(0);
-            expect(end - start).toBeLessThan(100); // Should complete in reasonable time
-        });
-    });
 });

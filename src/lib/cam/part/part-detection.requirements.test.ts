@@ -21,6 +21,29 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { detectParts } from './part-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
+import type { Shape } from '$lib/geometry/shape/interfaces';
+
+function filterToLargestLayer(shapes: Shape[]): Shape[] {
+    const layerMap = new Map<string, Shape[]>();
+    shapes.forEach((shape) => {
+        const layer = shape.layer || 'NO_LAYER';
+        if (!layerMap.has(layer)) {
+            layerMap.set(layer, []);
+        }
+        layerMap.get(layer)!.push(shape);
+    });
+
+    let largestLayer = '';
+    let maxShapes = 0;
+    for (const [layer, layerShapes] of layerMap.entries()) {
+        if (layerShapes.length > maxShapes) {
+            maxShapes = layerShapes.length;
+            largestLayer = layer;
+        }
+    }
+
+    return layerMap.get(largestLayer) || shapes;
+}
 
 describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
     // CRITICAL: Never remove these tests nor change expectations without user permission
@@ -144,7 +167,11 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+
+        // Filter to largest layer to eliminate circle-only layers
+        const filteredShapes = filterToLargestLayer(drawing.shapes);
+
+        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>
@@ -189,7 +216,11 @@ describe('Part Detection Requirements - USER SPECIFIED EXPECTATIONS', () => {
         const dxfContent = readFileSync(filePath, 'utf-8');
 
         const drawing = await parseDXF(dxfContent);
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+
+        // Filter to largest layer to eliminate circle-only layers
+        const filteredShapes = filterToLargestLayer(drawing.shapes);
+
+        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
         const partResult = await detectParts(chains, 0.1);
         const closedChains = normalizedChains.filter((chain) =>

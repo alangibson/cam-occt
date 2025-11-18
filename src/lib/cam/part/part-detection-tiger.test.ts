@@ -30,24 +30,20 @@ function calculateChainGap(chain: Chain): number {
 }
 
 describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
-    it('demonstrates the actual issue: 15 closed splines form nested structure', async () => {
-        // This test reveals the ACTUAL issue with the tiger DXF
+    it('should correctly detect 1 part with 14 holes using Clipper2 containment', async () => {
+        // This test verifies the FIX for tiger DXF part detection
         //
         // REALITY: The file contains 15 individually-closed splines (start = end for each)
         // These 15 closed loops are NOT connected to each other - there are 9-40mm gaps between them
         //
         // The tiger image is composed of:
-        // - Multiple closed contours that together form the tiger shape
-        // - Each contour is a separate closed spline
-        // - The part detection algorithm sees this as nested containment (parts within holes within parts)
+        // - 1 outer closed spline (the tiger outline)
+        // - 14 inner closed splines (details/holes)
         //
-        // With default tolerance (0.05mm):
+        // With Clipper2 containment detection:
         // - 15 separate closed chains are detected (CORRECT - each spline is closed)
-        // - Containment analysis interprets some as parts, some as holes
-        // - Results in 8 parts due to the nesting structure
-        //
-        // This is NOT a bug - the file genuinely has 15 separate closed loops.
-        // To treat this as "1 part", the user would need to manually merge/union the geometry.
+        // - Containment analysis correctly identifies 1 outer shell with 14 holes
+        // - Results in 1 part as expected
 
         const filePath = join(
             process.cwd(),
@@ -86,10 +82,10 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
             console.log(`  Part ${idx + 1}: ${part.voids.length} holes`);
         });
 
-        // EXPECTED BEHAVIOR: 15 closed chains form a nested structure
-        // The algorithm correctly interprets this as multiple parts
+        // EXPECTED BEHAVIOR with Clipper2: 15 closed chains → 1 part with 14 holes
         expect(chains.length).toBe(15); // Each spline is its own closed chain
-        expect(partResult.parts.length).toBe(8); // Nesting creates 8 parts
+        expect(partResult.parts.length).toBe(1); // Clipper2 correctly identifies 1 part
+        expect(partResult.parts[0].voids.length).toBe(14); // 14 holes in the tiger
     });
 
     it('can force merge into 1 part by using very high tolerance', async () => {

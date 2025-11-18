@@ -21,11 +21,13 @@ import { transformShape, scaleShape } from '$lib/geometry/shape/functions';
 import {
     DEFAULT_ELLIPSE_START_PARAM,
     DXF_INSUNITS_INCHES,
+    DXF_INSUNITS_FEET,
     DXF_INSUNITS_MILLIMETERS,
     DXF_INSUNITS_CENTIMETERS,
     DXF_INSUNITS_METERS,
     CENTIMETERS_TO_MILLIMETERS,
     METERS_TO_MILLIMETERS,
+    FEET_TO_INCHES,
 } from './constants';
 import type { ApplicationSettings } from '$lib/config/settings/interfaces';
 import { ImportUnitSetting } from '$lib/config/settings/enums';
@@ -395,6 +397,7 @@ export async function parseDXF(content: string): Promise<Drawing> {
     // Extract units from DXF header and convert coordinates to mm if needed
     let drawingUnits: Unit = Unit.NONE; // Default to none when no units specified
     let coordinateScaleFactor = 1.0; // Scale factor to convert coordinates to mm
+    let rawInsUnits: number | undefined = undefined; // Store the raw $INSUNITS value
 
     if (
         parsed &&
@@ -404,11 +407,16 @@ export async function parseDXF(content: string): Promise<Drawing> {
     ) {
         const insunits: number | undefined =
             parsed.header.$INSUNITS || parsed.header.insUnits;
+        rawInsUnits = insunits; // Store the raw value
         // Convert DXF $INSUNITS values to our unit system
         switch (insunits) {
             case DXF_INSUNITS_INCHES: // Inches
                 drawingUnits = Unit.INCH;
                 coordinateScaleFactor = 1.0; // Keep as-is
+                break;
+            case DXF_INSUNITS_FEET: // Feet - convert to inches
+                drawingUnits = Unit.INCH;
+                coordinateScaleFactor = FEET_TO_INCHES;
                 break;
             case DXF_INSUNITS_MILLIMETERS: // Millimeters
                 drawingUnits = Unit.MM;
@@ -423,7 +431,7 @@ export async function parseDXF(content: string): Promise<Drawing> {
                 coordinateScaleFactor = METERS_TO_MILLIMETERS;
                 break;
             default:
-                // For all other units (unitless, feet, etc.), default to mm
+                // For all other units (unitless, etc.), default to mm
                 drawingUnits = Unit.MM;
                 coordinateScaleFactor = 1.0;
                 break;
@@ -514,6 +522,7 @@ export async function parseDXF(content: string): Promise<Drawing> {
         shapes,
         bounds: finalBounds,
         units: drawingUnits, // Use detected units from DXF header
+        rawInsUnits, // Include raw $INSUNITS value
     };
 }
 

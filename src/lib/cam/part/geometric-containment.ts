@@ -17,7 +17,6 @@ import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import {
     calculateChainArea,
     isChainClosed,
-    isChainContainedInChain,
 } from '$lib/geometry/chain/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type { PartDetectionParameters } from './interfaces';
@@ -92,12 +91,14 @@ export function detectPolygonContainment(
 /**
  * Build containment hierarchy using area-based sorting and smallest-container selection
  * Based on MetalHeadCAM cut nesting algorithm
+ *
+ * Now uses Clipper2 for robust containment detection of complex tessellated geometry
  */
-export function buildContainmentHierarchy(
+export async function buildContainmentHierarchy(
     chains: Chain[],
     tolerance: number,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
-): Map<string, string> {
+): Promise<Map<string, string>> {
     const containmentMap: Map<string, string> = new Map<string, string>(); // child -> parent
 
     // Only work with closed chains (only they can contain others)
@@ -137,8 +138,11 @@ export function buildContainmentHierarchy(
                 continue;
             }
 
-            // Do full geometric containment check
-            let isContained = isChainContainedInChain(
+            // Do full geometric containment check using Clipper2
+            const { isChainContainedInChainClipper2 } = await import(
+                '$lib/geometry/chain/functions'
+            );
+            let isContained = await isChainContainedInChainClipper2(
                 current.chain,
                 potential.chain,
                 tolerance,

@@ -6,7 +6,8 @@
     } from '$lib/parsers/dxf/functions';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { settingsStore } from '$lib/stores/settings/store';
-    import { Unit, getUnitSymbol } from '$lib/config/units/units';
+    import { Unit } from '$lib/config/units/units';
+    import { formatInsUnits } from '$lib/parsers/dxf/constants';
     import type { Drawing } from '$lib/cam/drawing/interfaces';
 
     const dispatch = createEventDispatcher();
@@ -19,14 +20,16 @@
     let isDragging = false;
     let originalUnits: Unit | null = null;
     let originalDrawing: Drawing | null = null;
+    let rawInsUnits: number | undefined = undefined;
 
     $: fileName = $drawingStore.fileName;
     $: settings = $settingsStore.settings;
 
-    // Reset originalUnits and originalDrawing when no file is loaded
+    // Reset originalUnits, originalDrawing, and rawInsUnits when no file is loaded
     $: if (!fileName) {
         originalUnits = null;
         originalDrawing = null;
+        rawInsUnits = undefined;
     }
 
     // Re-apply unit conversion when settings change
@@ -54,9 +57,10 @@
                     // Parse DXF file
                     const parsedDrawing: Drawing = await parseDXF(content);
 
-                    // Store original drawing and units before conversion
+                    // Store original drawing, units, and raw $INSUNITS before conversion
                     originalDrawing = parsedDrawing;
                     originalUnits = parsedDrawing.units;
+                    rawInsUnits = parsedDrawing.rawInsUnits;
 
                     // Apply unit conversion based on application settings
                     drawing = applyImportUnitConversion(
@@ -132,9 +136,7 @@
     {#if fileName}
         <p class="filename">
             Loaded: {fileName}
-            {#if originalUnits}
-                <span class="units">({getUnitSymbol(originalUnits)})</span>
-            {/if}
+            <span class="units">({formatInsUnits(rawInsUnits)})</span>
         </p>
     {:else}
         <p class="hint">or drag and drop a file here</p>

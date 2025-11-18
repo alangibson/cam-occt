@@ -121,3 +121,41 @@ export function fromClipper2Paths(paths: Paths64): Point2D[][] {
 
     return result;
 }
+
+/**
+ * Calculate the total area of Clipper2 Paths64
+ *
+ * Uses the shoelace formula on each path and sums the areas.
+ * Positive area = counter-clockwise winding, negative = clockwise.
+ * Returns absolute value of total area.
+ *
+ * @param paths - Clipper2 Paths64 object
+ * @returns Total absolute area (scaled back to original units²)
+ */
+export function calculateClipper2PathsArea(paths: Paths64): number {
+    let totalArea = 0;
+    const pathCount = paths.size();
+
+    for (let i = 0; i < pathCount; i++) {
+        const path = paths.get(i);
+        const pointCount = path.size();
+        const MIN_POLYGON_POINTS = 3;
+
+        if (pointCount < MIN_POLYGON_POINTS) continue; // Need at least 3 points for a polygon
+
+        // Shoelace formula for polygon area
+        let pathArea = 0;
+        for (let j = 0; j < pointCount; j++) {
+            const p1 = path.get(j);
+            const p2 = path.get((j + 1) % pointCount);
+
+            // Cross product: x1*y2 - x2*y1
+            pathArea += Number(p1.x * p2.y - p2.x * p1.y);
+        }
+
+        totalArea += Math.abs(pathArea / 2);
+    }
+
+    // Scale back to original units (area scales by SCALE_FACTOR²)
+    return totalArea / (SCALE_FACTOR * SCALE_FACTOR);
+}

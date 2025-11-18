@@ -68,7 +68,7 @@ export async function detectParts(
 
     // Build containment hierarchy first to identify part chains
     // (needed for slot detection)
-    const containmentMap: Map<string, string> = buildContainmentHierarchy(
+    const containmentMap: Map<string, string> = await buildContainmentHierarchy(
         closedChains,
         tolerance,
         params

@@ -134,7 +134,12 @@ export default [
   },
   // WASM loader files that need dynamic imports
   {
-    files: ["src/lib/cam/offset/clipper-init.ts", "src/lib/algorithms/offset-calculation/offset-adapter.ts"],
+    files: [
+      "src/lib/cam/offset/clipper-init.ts",
+      "src/lib/algorithms/offset-calculation/offset-adapter.ts",
+      "src/lib/cam/part/geometric-containment.ts",
+      "src/lib/geometry/chain/functions.ts"
+    ],
     rules: {
       "no-restricted-syntax": "off",
     },

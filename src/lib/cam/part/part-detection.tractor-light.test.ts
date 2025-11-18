@@ -13,6 +13,28 @@ import { join } from 'path';
 import type { Chain as ShapeChain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 
+function filterToLargestLayer(shapes: Shape[]): Shape[] {
+    const layerMap = new Map<string, Shape[]>();
+    shapes.forEach((shape) => {
+        const layer = shape.layer || 'NO_LAYER';
+        if (!layerMap.has(layer)) {
+            layerMap.set(layer, []);
+        }
+        layerMap.get(layer)!.push(shape);
+    });
+
+    let largestLayer = '';
+    let maxShapes = 0;
+    for (const [layer, layerShapes] of layerMap.entries()) {
+        if (layerShapes.length > maxShapes) {
+            maxShapes = layerShapes.length;
+            largestLayer = layer;
+        }
+    }
+
+    return layerMap.get(largestLayer) || shapes;
+}
+
 function calculateChainGapDistanceTest(chain: ShapeChain): number {
     if (chain.shapes.length === 0) return 0;
 
@@ -40,15 +62,18 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         // Parse the DXF file with layer squashing enabled
         const drawing = await parseDXF(dxfContent);
 
+        // Filter to largest layer to eliminate circle-only layers
+        const filteredShapes = filterToLargestLayer(drawing.shapes);
+
         // Log shape types for debugging
         const shapeTypes = new Map<string, number>();
-        drawing.shapes.forEach((shape: Shape) => {
+        filteredShapes.forEach((shape: Shape) => {
             const count = shapeTypes.get(shape.type) || 0;
             shapeTypes.set(shape.type, count + 1);
         });
 
         // Use the standard default tolerance (0.1) as would be used from Program page
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
 
         // CRITICAL: Normalize chains before analysis (matching part detection behavior)
         const normalizedChains = chains.map((chain) => normalizeChain(chain));
@@ -97,8 +122,11 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
         // Parse the DXF file with layer squashing enabled
         const drawing = await parseDXF(dxfContent);
 
+        // Filter to largest layer to eliminate circle-only layers
+        const filteredShapes = filterToLargestLayer(drawing.shapes);
+
         // Use the standard default tolerance (0.1) as would be used from Program page
-        const chains = detectShapeChains(drawing.shapes, { tolerance: 0.1 });
+        const chains = detectShapeChains(filteredShapes, { tolerance: 0.1 });
 
         // Detect parts using the same tolerance as chain detection
         const partResult = await detectParts(chains, 0.1);

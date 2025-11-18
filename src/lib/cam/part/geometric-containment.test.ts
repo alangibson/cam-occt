@@ -173,29 +173,29 @@ describe('detectPolygonContainment', () => {
 });
 
 describe('buildContainmentHierarchy', () => {
-    it('should build hierarchy for nested rectangular chains', () => {
+    it('should build hierarchy for nested rectangular chains', async () => {
         const outerShapes = createRectangle(0, 0, 10, 10);
         const innerShapes = createRectangle(2, 2, 6, 6);
         const outerChain = createTestChain('outer', outerShapes);
         const innerChain = createTestChain('inner', innerShapes);
 
         const chains = [outerChain, innerChain];
-        const hierarchy = buildContainmentHierarchy(chains, 0.1);
+        const hierarchy = await buildContainmentHierarchy(chains, 0.1);
 
         expect(hierarchy.get('inner')).toBe('outer');
     });
 
-    it('should return empty map for single chain', () => {
+    it('should return empty map for single chain', async () => {
         const shapes = createRectangle(0, 0, 10, 10);
         const chain = createTestChain('single', shapes);
         const chains = [chain];
 
-        const hierarchy = buildContainmentHierarchy(chains, 0.1);
+        const hierarchy = await buildContainmentHierarchy(chains, 0.1);
 
         expect(hierarchy.size).toBe(0);
     });
 
-    it('should ignore open chains', () => {
+    it('should ignore open chains', async () => {
         const openShapes: Shape[] = [
             {
                 id: '1',
@@ -211,12 +211,12 @@ describe('buildContainmentHierarchy', () => {
         const closedChain = createTestChain('closed', closedShapes);
 
         const chains = [openChain, closedChain];
-        const hierarchy = buildContainmentHierarchy(chains, 0.1);
+        const hierarchy = await buildContainmentHierarchy(chains, 0.1);
 
         expect(hierarchy.size).toBe(0);
     });
 
-    it('should handle complex nesting scenarios', () => {
+    it('should handle complex nesting scenarios', async () => {
         // Create 3 levels: large outer, medium middle, small inner
         const largeShapes = createRectangle(0, 0, 20, 20);
         const mediumShapes = createRectangle(2, 2, 16, 16);
@@ -227,7 +227,7 @@ describe('buildContainmentHierarchy', () => {
         const smallChain = createTestChain('small', smallShapes);
 
         const chains = [largeChain, mediumChain, smallChain];
-        const hierarchy = buildContainmentHierarchy(chains, 0.1);
+        const hierarchy = await buildContainmentHierarchy(chains, 0.1);
 
         expect(hierarchy.get('medium')).toBe('large');
         expect(hierarchy.get('small')).toBe('medium'); // Should find smallest container
