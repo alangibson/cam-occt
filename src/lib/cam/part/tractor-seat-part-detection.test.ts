@@ -16,7 +16,7 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 
 function filterToLargestLayer(shapes: Shape[]): Shape[] {
     const layerMap = new Map<string, Shape[]>();
@@ -47,7 +47,7 @@ describe('Tractor Seat Mount Part Detection', () => {
         const dxfContent = readFileSync(dxfPath, 'utf-8');
 
         // Parse DXF with default options
-        const drawing: Drawing = await parseDXF(dxfContent);
+        const drawing: DrawingData = await parseDXF(dxfContent);
 
         // Filter to largest layer to eliminate circle-only layers
         const filteredShapes = filterToLargestLayer(drawing.shapes);

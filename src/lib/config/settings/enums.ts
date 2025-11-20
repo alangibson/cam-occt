@@ -37,10 +37,7 @@ export enum PreprocessingStep {
     DecomposePolylines = 'decomposePolylines',
     JoinColinearLines = 'joinColinearLines',
     TranslateToPositive = 'translateToPositive',
-    DetectChains = 'detectChains',
-    NormalizeChains = 'normalizeChains',
     OptimizeStarts = 'optimizeStarts',
-    DetectParts = 'detectParts',
 }
 
 /**

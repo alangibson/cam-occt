@@ -12,7 +12,7 @@ import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
@@ -57,11 +57,12 @@ describe('Lead Fit Feature', () => {
     };
 
     // Create a test part with the chain as shell (to potentially cause lead interference)
-    const testPart: Part = {
+    const testPart: PartData = {
         id: 'test-part-1',
         shell: testChain,
         type: PartType.SHELL,
         boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+        layerName: '0',
         voids: [],
         slots: [],
     };

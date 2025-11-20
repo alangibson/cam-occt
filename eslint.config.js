@@ -154,6 +154,37 @@ export default [
       "@typescript-eslint/no-explicit-any": "off",
     },
   },
+  // Svelte TypeScript runes files
+  {
+    files: ["**/*.svelte.ts"],
+    languageOptions: {
+      parser: svelteParser,
+      parserOptions: {
+        parser: tseslint.parser,
+      },
+      globals: {
+        console: "readonly",
+        window: "readonly",
+        document: "readonly",
+        localStorage: "readonly",
+        sessionStorage: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error", {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_|^\\$\\$",
+        }
+      ],
+      "@typescript-eslint/no-explicit-any": "error",
+      "no-magic-numbers": "off",
+    },
+  },
   // Svelte file overrides
   {
     files: ["**/*.svelte"],

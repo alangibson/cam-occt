@@ -8,7 +8,7 @@ import { GeometryType } from '$lib/geometry/shape/enums';
 import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import { PartType } from '$lib/cam/part/enums';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 
 // Mock stores
@@ -53,13 +53,14 @@ describe('DrawingCanvas Part Highlighting', () => {
         };
 
         // Create a proper Part
-        const mockPart: Part = {
+        const mockPart: PartData = {
             id: testPartId,
             shell: mockChain,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
             voids: [],
             slots: [],
+            layerName: '0',
         };
 
         const hitResult: HitTestResult = {
@@ -160,13 +161,14 @@ describe('DrawingCanvas Part Highlighting', () => {
         };
 
         // Create a proper Part
-        const mockPart2: Part = {
+        const mockPart2: PartData = {
             id: testPartId,
             shell: mockChain2,
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 200, y: 200 } },
             voids: [],
             slots: [],
+            layerName: '0',
         };
 
         const hitResult: HitTestResult = {

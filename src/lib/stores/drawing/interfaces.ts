@@ -4,7 +4,7 @@
  * Type definitions for the drawing store.
  */
 
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
@@ -18,7 +18,6 @@ export interface DrawingState {
     dragStart: Point2D | null;
     scale: number;
     offset: Point2D;
-    fileName: string | null;
     layerVisibility: { [layerName: string]: boolean };
     displayUnit: Unit;
     canvasDimensions: { width: number; height: number } | null;
@@ -26,7 +25,7 @@ export interface DrawingState {
 
 export interface DrawingStore {
     subscribe: (run: (value: DrawingState) => void) => () => void;
-    setDrawing: (drawing: Drawing, fileName?: string) => void;
+    setDrawing: (drawing: Drawing, fileName: string) => void;
     selectShape: (shapeIdOrShape: string | Shape, multi?: boolean) => void;
     deselectShape: (shapeId: string) => void;
     clearSelection: () => void;
@@ -47,7 +46,7 @@ export interface DrawingStore {
     replaceAllShapes: (shapes: Shape[]) => void;
     restoreDrawing: (
         drawing: Drawing,
-        fileName: string | null,
+        fileName: string,
         scale: number,
         offset: Point2D,
         displayUnit: Unit,

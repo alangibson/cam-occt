@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
@@ -78,7 +78,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
     // Helper to create a rectangular part with center hole
     function createRectangleWithHole(): {
-        part: Part;
+        part: PartData;
         shell: Chain;
         hole: Chain;
     } {
@@ -127,7 +127,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         const hole: Chain = createCircleChain({ x: 10, y: 10 }, 3, false);
 
-        const part: Part = {
+        const part: PartData = {
             id: 'part1',
             shell: shell,
             type: PartType.SHELL,
@@ -141,6 +141,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 },
             ],
             slots: [],
+            layerName: '0',
         };
 
         return { part, shell, hole };
@@ -157,7 +158,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
     function getCutNormal(
         chain: Chain,
         cutDirection: CutDirection,
-        part?: Part
+        part?: PartData
     ): Point2D {
         const result = calculateCutNormal(chain, cutDirection, part);
         return result.normal;

@@ -1,5 +1,5 @@
 import { writable } from 'svelte/store';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
@@ -22,7 +22,6 @@ const initialState: DrawingState = {
     dragStart: null,
     scale: 1,
     offset: { x: 0, y: 0 },
-    fileName: null,
     layerVisibility: {},
     displayUnit: Unit.MM,
     canvasDimensions: null,
@@ -33,9 +32,12 @@ function createDrawingStore(): DrawingStore {
 
     return {
         subscribe,
-        setDrawing: (drawing: Drawing, fileName?: string) => {
+        setDrawing: (drawing: Drawing, fileName: string) => {
             // Reset all application state when importing a new file
             resetDownstreamStages('edit');
+
+            // Update the drawing's fileName property
+            drawing.fileName = fileName;
 
             return update((state) => {
                 const displayUnit = drawing.units; // Set display unit from drawing's detected units
@@ -50,7 +52,6 @@ function createDrawingStore(): DrawingStore {
                 return {
                     ...state,
                     drawing,
-                    fileName: fileName || null,
                     displayUnit,
                     scale: zoomToFit.scale,
                     offset: zoomToFit.offset,
@@ -130,9 +131,11 @@ function createDrawingStore(): DrawingStore {
                 // Reset downstream stages when shapes are deleted
                 resetDownstreamStages('edit');
 
+                // Mutate the existing drawing instance
+                state.drawing.shapes = shapes;
+
                 return {
                     ...state,
-                    drawing: { ...state.drawing, shapes },
                     selectedShapes: new Set(),
                 };
             }),
@@ -153,9 +156,11 @@ function createDrawingStore(): DrawingStore {
                 // Reset downstream stages when shapes are moved
                 resetDownstreamStages('edit');
 
+                // Mutate the existing drawing instance
+                state.drawing.shapes = shapes;
+
                 return {
                     ...state,
-                    drawing: { ...state.drawing, shapes },
                 };
             }),
 
@@ -179,9 +184,11 @@ function createDrawingStore(): DrawingStore {
                 // Reset downstream stages when shapes are scaled
                 resetDownstreamStages('edit');
 
+                // Mutate the existing drawing instance
+                state.drawing.shapes = shapes;
+
                 return {
                     ...state,
-                    drawing: { ...state.drawing, shapes },
                 };
             }),
 
@@ -201,9 +208,11 @@ function createDrawingStore(): DrawingStore {
                 // Reset downstream stages when shapes are rotated
                 resetDownstreamStages('edit');
 
+                // Mutate the existing drawing instance
+                state.drawing.shapes = shapes;
+
                 return {
                     ...state,
-                    drawing: { ...state.drawing, shapes },
                 };
             }),
 
@@ -290,9 +299,11 @@ function createDrawingStore(): DrawingStore {
                 // Reset downstream stages when shapes are replaced (this happens during prepare stage operations)
                 resetDownstreamStages(WorkflowStage.PREPARE);
 
+                // Mutate the existing drawing instance
+                state.drawing.shapes = shapes;
+
                 return {
                     ...state,
-                    drawing: { ...state.drawing, shapes },
                     selectedShapes: new Set(), // Clear selection since shape IDs may have changed
                 };
             }),
@@ -300,17 +311,21 @@ function createDrawingStore(): DrawingStore {
         // Special method for restoring state without resetting downstream stages
         restoreDrawing: (
             drawing: Drawing,
-            fileName: string | null,
+            fileName: string,
             scale: number,
             offset: Point2D,
             displayUnit: Unit,
             selectedShapes: Set<string>,
             hoveredShape: string | null
         ) => {
+            // Update the drawing's fileName property
+            if (drawing) {
+                drawing.fileName = fileName;
+            }
+
             return update((state) => ({
                 ...state,
                 drawing,
-                fileName,
                 scale,
                 offset,
                 displayUnit,

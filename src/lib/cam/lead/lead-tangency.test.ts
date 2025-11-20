@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Shape } from '$lib/geometry/shape/interfaces';
@@ -18,7 +18,7 @@ describe('Lead Tangency Tests', () => {
     function getCutNormal(
         chain: Chain,
         cutDirection: CutDirection,
-        part?: Part
+        part?: PartData
     ): Point2D {
         const result = calculateCutNormal(chain, cutDirection, part);
         return result.normal;
@@ -290,20 +290,22 @@ describe('Lead Tangency Tests', () => {
             const holeChain = createCircleChain({ x: 5, y: 5 }, 1);
             holeChain.id = 'hole-chain'; // Fix: Give unique ID
 
-            const shellPart: Part = {
+            const shellPart: PartData = {
                 id: 'part1',
                 shell: shellChain,
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
+                layerName: '0',
                 voids: [],
                 slots: [],
             };
 
-            const holeInShellPart: Part = {
+            const holeInShellPart: PartData = {
                 id: 'part2',
                 shell: shellChain,
                 type: PartType.SHELL,
                 boundingBox: { min: { x: 2, y: 2 }, max: { x: 8, y: 8 } },
+                layerName: '0',
                 voids: [
                     {
                         id: 'hole1',

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
 import { CutterCompensation } from '$lib/cam/cut-generator/enums';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { CutPath } from '$lib/cam/cut-generator/interfaces';
 import { Unit } from '$lib/config/units/units';
 
@@ -37,7 +37,7 @@ describe('GCode Generator - Units', () => {
     };
 
     it('should generate G21 for millimeter units', () => {
-        const mockDrawing: Drawing = {
+        const mockDrawing: DrawingData = {
             units: Unit.MM,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
@@ -53,7 +53,7 @@ describe('GCode Generator - Units', () => {
     });
 
     it('should generate G20 for inch units', () => {
-        const mockDrawing: Drawing = {
+        const mockDrawing: DrawingData = {
             units: Unit.INCH,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
@@ -69,13 +69,13 @@ describe('GCode Generator - Units', () => {
     });
 
     it('should use different tolerance values for different units', () => {
-        const mockDrawingMM: Drawing = {
+        const mockDrawingMM: DrawingData = {
             units: Unit.MM,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         };
 
-        const mockDrawingInch: Drawing = {
+        const mockDrawingInch: DrawingData = {
             units: Unit.INCH,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
@@ -99,7 +99,7 @@ describe('GCode Generator - Units', () => {
     });
 
     it('should maintain unit consistency throughout the G-code', () => {
-        const mockDrawing: Drawing = {
+        const mockDrawing: DrawingData = {
             units: Unit.MM,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
@@ -121,7 +121,7 @@ describe('GCode Generator - Units', () => {
 
     it('should handle unit changes properly', () => {
         // Simulate first generation with mm
-        const mockDrawingMM: Drawing = {
+        const mockDrawingMM: DrawingData = {
             units: Unit.MM,
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
@@ -133,7 +133,7 @@ describe('GCode Generator - Units', () => {
         });
 
         // Simulate unit change to inches
-        const mockDrawingInch: Drawing = {
+        const mockDrawingInch: DrawingData = {
             ...mockDrawingMM,
             units: Unit.INCH,
         };

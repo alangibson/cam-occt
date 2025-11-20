@@ -17,7 +17,7 @@
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { Part, PartData } from '$lib/cam/part/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
     calculateDistance,
@@ -87,7 +87,7 @@ function processNearestCut(
  * If the cut has a lead-out, returns the lead-out end point.
  * Otherwise, returns the chain end point.
  */
-function getCutEndPoint(cut: Cut, chain: Chain, part?: Part): Point2D {
+function getCutEndPoint(cut: Cut, chain: Chain, part?: PartData): Point2D {
     // Use cut.cutChain if it exists (it may have been reversed for open chains)
     const chainToUse = cut.cutChain || chain;
 

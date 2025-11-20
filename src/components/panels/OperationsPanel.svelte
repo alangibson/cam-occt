@@ -1,7 +1,7 @@
 <script lang="ts">
     import type { Operation } from '$lib/cam/operation/interface';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { Part } from '$lib/cam/part/interfaces';
+    import type { Part } from '$lib/cam/part/classes.svelte';
     import type { Tool } from '$lib/cam/tool/interfaces';
     import { flip } from 'svelte/animate';
     import { CutDirection } from '$lib/cam/cut/enums';
@@ -321,9 +321,12 @@
                                                         />
                                                         <span
                                                             class="target-label"
-                                                            >Part {part.id.split(
-                                                                '-'
-                                                            )[1]}</span
+                                                            >Part {(() => {
+                                                                const idParts = part.id.split('-');
+                                                                const layerName = idParts.slice(0, -2).join('-');
+                                                                const partNumber = idParts.slice(-1)[0];
+                                                                return `${layerName}-${partNumber}`;
+                                                            })()}</span
                                                         >
                                                         <span
                                                             class="target-info"
@@ -383,7 +386,7 @@
                                                             class="target-label"
                                                             >Chain {chain.id.split(
                                                                 '-'
-                                                            )[1]}</span
+                                                            ).slice(-1)[0]}</span
                                                         >
                                                         <span
                                                             class="target-info"

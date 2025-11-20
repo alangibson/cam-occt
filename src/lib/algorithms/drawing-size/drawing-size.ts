@@ -1,4 +1,4 @@
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 
@@ -10,7 +10,7 @@ export interface DrawingSize {
 }
 
 export function calculateDrawingSize(
-    drawing: Drawing | null
+    drawing: DrawingData | null
 ): DrawingSize | null {
     if (!drawing || drawing.shapes.length === 0) {
         return null;

@@ -3,6 +3,7 @@ import { get } from 'svelte/store';
 import { workflowStore } from './store';
 import { WorkflowStage } from './enums';
 import { drawingStore } from '$lib/stores/drawing/store';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
 
 // Mock settings store to return all stages enabled (for testing workflow logic)
@@ -63,7 +64,7 @@ describe('Workflow Integration', () => {
                 units: Unit.MM as const,
             };
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
 
             // Edit stage should be completable now
             workflowStore.completeStage(WorkflowStage.EDIT);
@@ -127,8 +128,9 @@ describe('Workflow Integration', () => {
                 shapes: [],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
                 units: Unit.MM as const,
+                fileName: 'test.dxf',
             };
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
 
             // Reset workflow
             workflowStore.reset();

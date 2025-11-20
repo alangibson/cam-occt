@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { calculateDrawingSize } from './drawing-size';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
@@ -10,7 +10,7 @@ describe('calculateDrawingSize', () => {
     });
 
     it('returns null for drawing with no shapes', () => {
-        const drawing: Drawing = {
+        const drawing: DrawingData = {
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
             units: Unit.MM,
@@ -20,7 +20,7 @@ describe('calculateDrawingSize', () => {
     });
 
     it('uses DXF bounds when valid', () => {
-        const drawing: Drawing = {
+        const drawing: DrawingData = {
             shapes: [
                 {
                     id: 'test',
@@ -42,7 +42,7 @@ describe('calculateDrawingSize', () => {
     });
 
     it('falls back to calculated bounds when DXF bounds invalid', () => {
-        const drawing: Drawing = {
+        const drawing: DrawingData = {
             shapes: [
                 {
                     id: 'test',

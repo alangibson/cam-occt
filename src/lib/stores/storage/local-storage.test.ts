@@ -42,10 +42,7 @@ const defaultApplicationSettings = {
         PreprocessingStep.DecomposePolylines,
         PreprocessingStep.JoinColinearLines,
         PreprocessingStep.TranslateToPositive,
-        PreprocessingStep.DetectChains,
-        PreprocessingStep.NormalizeChains,
         PreprocessingStep.OptimizeStarts,
-        PreprocessingStep.DetectParts,
     ],
     optimizationSettings: {
         cutHolesFirst: true,
@@ -121,6 +118,7 @@ describe('State Persistence', () => {
                     },
                     voids: [],
                     slots: [],
+                    layerName: '0',
                 },
             ],
             partWarnings: [],

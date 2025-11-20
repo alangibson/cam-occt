@@ -14,7 +14,6 @@
         saveApplicationState,
         clearApplicationState,
     } from '$lib/stores/storage/store';
-    import { Unit } from '$lib/config/units/units';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { ImportUnitSetting } from '$lib/config/settings/enums';
@@ -38,12 +37,7 @@
         settingsStore.setImportUnitSetting(ImportUnitSetting.Automatic);
 
         // Reset drawing store to empty state (this also clears chains, parts, cuts, operations, rapids, tessellation, overlay)
-        drawingStore.setDrawing({
-            shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-            units: Unit.MM,
-            layers: {},
-        });
+        drawingStore.reset();
 
         // Clear additional stores that aren't cleared by setDrawing
         prepareStageStore.reset();

@@ -1,5 +1,5 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { CutGenerationResult } from './interfaces';

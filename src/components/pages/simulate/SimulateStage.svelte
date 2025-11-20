@@ -21,11 +21,9 @@
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
-    import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { overlayStore } from '$lib/stores/overlay/store';
-    import { partStore } from '$lib/stores/parts/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { onMount, onDestroy } from 'svelte';
     import type { Shape } from '$lib/geometry/shape/interfaces';
@@ -41,9 +39,7 @@
     import type { Cut } from '$lib/cam/cut/interfaces';
     import type { Rapid } from '$lib/cam/rapid/interfaces';
     import type { Tool } from '$lib/cam/tool/interfaces';
-    import type { ChainStore } from '$lib/stores/chains/interfaces';
     import type { DrawingState } from '$lib/stores/drawing/interfaces';
-    import type { PartStore } from '$lib/stores/parts/interfaces';
     import {
         getSplinePointAt,
         tessellateSpline,
@@ -54,7 +50,7 @@
     import { type LeadConfig } from '$lib/cam/lead/interfaces';
     import { MeasurementSystem } from '$lib/config/settings/enums';
     import { type SettingsState } from '$lib/config/settings/interfaces';
-    import type { Part } from '$lib/cam/part/interfaces';
+    import type { PartData } from '$lib/cam/part/interfaces';
     import { LeadType } from '$lib/cam/lead/enums';
     import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
     import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
@@ -67,33 +63,40 @@
     } from '$lib/cam/cut/lead-persistence';
 
     // Props from WorkflowContainer for shared canvas
-    export let sharedCanvas: typeof DrawingCanvasContainer;
-    export let canvasStage: WorkflowStage;
-    export let onChainClick: ((chainId: string) => void) | null = null;
-    export let onPartClick: ((partId: string) => void) | null = null;
+    let {
+        sharedCanvas,
+        canvasStage,
+        onChainClick = null,
+        onPartClick = null,
+    }: {
+        sharedCanvas: typeof DrawingCanvasContainer;
+        canvasStage: WorkflowStage;
+        onChainClick?: ((chainId: string) => void) | null;
+        onPartClick?: ((partId: string) => void) | null;
+    } = $props();
 
     // Resizable columns state
-    let rightColumnWidth = 280; // Default width in pixels
-    let isDraggingRight = false;
-    let startX = 0;
-    let startWidth = 0;
+    let rightColumnWidth = $state(280); // Default width in pixels
+    let isDraggingRight = $state(false);
+    let startX = $state(0);
+    let startWidth = $state(0);
 
     // Simulation state
-    let animationFrame: number | null = null;
-    let isDestroyed = false;
+    let animationFrame: number | null = $state(null);
+    let isDestroyed = $state(false);
 
     // Simulation state
-    let isPlaying = false;
-    let isPaused = false;
-    let currentTime = 0;
-    let totalTime = 0;
-    let currentProgress = 0;
-    let currentOperation = 'Ready';
-    let lastFrameTime = 0;
-    let simulationSpeed = 1; // 1x real-time default
+    let isPlaying = $state(false);
+    let isPaused = $state(false);
+    let currentTime = $state(0);
+    let totalTime = $state(0);
+    let currentProgress = $state(0);
+    let currentOperation = $state('Ready');
+    let lastFrameTime = $state(0);
+    let simulationSpeed = $state(1); // 1x real-time default
 
     // Tool head position and animation data
-    let toolHeadPosition: Point2D = { x: 0, y: 0 };
+    let toolHeadPosition: Point2D = $state({ x: 0, y: 0 });
 
     // Animation data
     let animationSteps: Array<{
@@ -109,17 +112,24 @@
     // Store subscriptions
     let cutStoreState: { cuts: Cut[] } | null = null;
     let rapidStoreState: { rapids: Rapid[] } | null = null;
-    let chainStoreState: ChainStore | null = null;
-    let drawingState: DrawingState | null = null;
+    let drawingState = $state<DrawingState | null>(null);
     let toolStoreState: Tool[] | null = null;
-    let partStoreState: PartStore | null = null;
     let settingsStoreState: SettingsState | null = null;
 
+    // Chains derived from drawing layers
+    const chains = $derived(
+        drawingState?.drawing
+            ? Object.values(drawingState.drawing.layers).flatMap(
+                  (layer) => layer.chains
+              )
+            : []
+    );
+
     // Statistics
-    let totalCutDistance = 0;
-    let totalRapidDistance = 0;
-    let pierceCount = 0;
-    let estimatedCutTime = 0;
+    let totalCutDistance = $state(0);
+    let totalRapidDistance = $state(0);
+    let pierceCount = $state(0);
+    let estimatedCutTime = $state(0);
 
     // Helper function to convert distance from drawing units to display units
     function convertDistanceToDisplayUnit(distance: number): number {
@@ -170,13 +180,13 @@
     }
 
     // Reactive formatted statistics for display - updates when drawingState or values change
-    $: formattedCutDistance = drawingState
-        ? formatDistance(totalCutDistance)
-        : '0.0';
-    $: formattedRapidDistance = drawingState
-        ? formatDistance(totalRapidDistance)
-        : '0.0';
-    $: displayUnit = drawingState?.displayUnit || 'mm';
+    const formattedCutDistance = $derived(
+        drawingState ? formatDistance(totalCutDistance) : '0.0'
+    );
+    const formattedRapidDistance = $derived(
+        drawingState ? formatDistance(totalRapidDistance) : '0.0'
+    );
+    const displayUnit = $derived(drawingState?.displayUnit || 'mm');
 
     // Unsubscribe functions
     let unsubscribers: Array<() => void> = [];
@@ -187,26 +197,32 @@
     }
 
     // Update tool head overlay when position changes
-    $: if (toolHeadPosition) {
-        overlayStore.setToolHead(WorkflowStage.SIMULATE, toolHeadPosition);
-    }
+    $effect(() => {
+        if (toolHeadPosition) {
+            overlayStore.setToolHead(WorkflowStage.SIMULATE, toolHeadPosition);
+        }
+    });
 
     // Auto-complete simulate stage when simulation data is available
-    $: if (
-        (cutStoreState?.cuts && cutStoreState.cuts.length > 0) ||
-        (rapidStoreState?.rapids && rapidStoreState.rapids.length > 0)
-    ) {
-        workflowStore.completeStage(WorkflowStage.SIMULATE);
-    }
+    $effect(() => {
+        if (
+            (cutStoreState?.cuts && cutStoreState.cuts.length > 0) ||
+            (rapidStoreState?.rapids && rapidStoreState.rapids.length > 0)
+        ) {
+            workflowStore.completeStage(WorkflowStage.SIMULATE);
+        }
+    });
 
     // Rebuild animation steps when rapid rate changes
-    $: if (
-        settingsStoreState?.settings.camSettings.rapidRate &&
-        cutStoreState &&
-        rapidStoreState
-    ) {
-        buildAnimationSteps();
-    }
+    $effect(() => {
+        if (
+            settingsStoreState?.settings.camSettings.rapidRate &&
+            cutStoreState &&
+            rapidStoreState
+        ) {
+            buildAnimationSteps();
+        }
+    });
 
     // Setup store subscriptions
     function setupStoreSubscriptions() {
@@ -227,12 +243,6 @@
         );
 
         unsubscribers.push(
-            chainStore.subscribe((state) => {
-                chainStoreState = state;
-            })
-        );
-
-        unsubscribers.push(
             drawingStore.subscribe((state) => {
                 drawingState = state;
             })
@@ -241,12 +251,6 @@
         unsubscribers.push(
             toolStore.subscribe((state) => {
                 toolStoreState = state;
-            })
-        );
-
-        unsubscribers.push(
-            partStore.subscribe((state) => {
-                partStoreState = state;
             })
         );
 
@@ -412,9 +416,7 @@
         if (!shapes) {
             shapes =
                 cut.offset?.offsetShapes ||
-                chainStoreState?.chains?.find(
-                    (c: Chain) => c.id === cut.chainId
-                )?.shapes;
+                chains.find((c: Chain) => c.id === cut.chainId)?.shapes;
         }
 
         if (!shapes || shapes.length === 0) return { x: 0, y: 0 };
@@ -446,9 +448,7 @@
                 const part = findPartForChain(cut.chainId);
 
                 // Use offset shapes if available
-                const chain = chainStoreState?.chains?.find(
-                    (c: Chain) => c.id === cut.chainId
-                );
+                const chain = chains.find((c: Chain) => c.id === cut.chainId);
                 if (!chain) return { x: 0, y: 0 };
 
                 const chainForLeads = cut.offset
@@ -503,8 +503,13 @@
     }
 
     // Helper function to find the part that contains a given chain
-    function findPartForChain(chainId: string): Part | undefined {
-        return findPartContainingChain(chainId, partStoreState?.parts || []);
+    function findPartForChain(chainId: string): PartData | undefined {
+        // Get parts from all layers in the drawing
+        const drawing = $drawingStore.drawing;
+        const parts = drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
+            : [];
+        return findPartContainingChain(chainId, parts);
     }
 
     /**
@@ -517,9 +522,7 @@
     function getCutDistance(cut: Cut): number {
         // Use execution chain if available
         let shapes = cut.cutChain?.shapes;
-        const chain = chainStoreState?.chains?.find(
-            (c: Chain) => c.id === cut.chainId
-        );
+        const chain = chains.find((c: Chain) => c.id === cut.chainId);
 
         // Fallback for backward compatibility
         if (!shapes) {
@@ -891,9 +894,7 @@
 
         // Fallback for backward compatibility
         if (!shapes) {
-            chain = chainStoreState?.chains?.find(
-                (c: Chain) => c.id === cut.chainId
-            );
+            chain = chains.find((c: Chain) => c.id === cut.chainId);
             if (!chain) return;
             shapes =
                 cut.offset?.offsetShapes ||
@@ -1407,21 +1408,21 @@
             <div class="simulation-controls">
                 <button
                     class="control-btn"
-                    on:click={playSimulation}
+                    onclick={playSimulation}
                     disabled={isPlaying && !isPaused}
                 >
                     <span>▶️</span> Play
                 </button>
                 <button
                     class="control-btn"
-                    on:click={pauseSimulation}
+                    onclick={pauseSimulation}
                     disabled={!isPlaying || isPaused}
                 >
                     <span>⏸️</span> Pause
                 </button>
                 <button
                     class="control-btn"
-                    on:click={stopSimulation}
+                    onclick={stopSimulation}
                     disabled={!isPlaying && !isPaused}
                 >
                     <span>⏹️</span> Stop
@@ -1442,12 +1443,14 @@
                 </div>
             </div>
         </div>
-        <svelte:component
-            this={sharedCanvas}
-            currentStage={canvasStage}
-            {onChainClick}
-            {onPartClick}
-        />
+        {#if sharedCanvas}
+            {@const SharedCanvas = sharedCanvas}
+            <SharedCanvas
+                currentStage={canvasStage}
+                {onChainClick}
+                {onPartClick}
+            />
+        {/if}
         <div class="simulation-progress">
             <div class="progress-info">
                 <span
@@ -1480,8 +1483,8 @@
         <!-- Right resize handle -->
         <button
             class="resize-handle resize-handle-left"
-            on:mousedown={handleRightResizeStart}
-            on:keydown={handleRightKeydown}
+            onmousedown={handleRightResizeStart}
+            onkeydown={handleRightKeydown}
             class:dragging={isDraggingRight}
             aria-label="Resize right panel (Arrow keys to adjust)"
             type="button"
@@ -1516,7 +1519,7 @@
 
         <AccordionPanel title="Next Stage" isExpanded={true}>
             <div class="next-stage-content">
-                <button class="next-button" on:click={handleNext}>
+                <button class="next-button" onclick={handleNext}>
                     Next: Export G-code
                 </button>
                 <p class="next-help">

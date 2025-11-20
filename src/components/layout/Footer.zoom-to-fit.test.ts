@@ -5,7 +5,8 @@ import Footer from './Footer.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 
 describe('Footer Fit Button', () => {
     beforeEach(() => {
@@ -30,7 +31,7 @@ describe('Footer Fit Button', () => {
 
     it('should enable the Fit button when a drawing is loaded', () => {
         // Load a test drawing
-        const testDrawing: Drawing = {
+        const testDrawing: DrawingData = {
             shapes: [
                 {
                     id: '1',
@@ -41,11 +42,11 @@ describe('Footer Fit Button', () => {
                 } as any,
             ],
             units: Unit.MM,
-            layers: {},
             bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(testDrawing, 'test.dxf');
+        drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
         const { getByText } = render(Footer);
         const fitButton = getByText('Fit') as HTMLButtonElement;
@@ -55,7 +56,7 @@ describe('Footer Fit Button', () => {
 
     it('should call zoomToFit when the Fit button is clicked', async () => {
         // Load a test drawing
-        const testDrawing: Drawing = {
+        const testDrawing: DrawingData = {
             shapes: [
                 {
                     id: '1',
@@ -66,11 +67,11 @@ describe('Footer Fit Button', () => {
                 } as any,
             ],
             units: Unit.MM,
-            layers: {},
             bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(testDrawing, 'test.dxf');
+        drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
         // Set an initial zoom that's not the zoom-to-fit value
         drawingStore.setViewTransform(2.5, { x: 100, y: 100 });
@@ -94,14 +95,14 @@ describe('Footer Fit Button', () => {
     });
 
     it('should display the Fit button next to the zoom percentage', () => {
-        const testDrawing: Drawing = {
+        const testDrawing: DrawingData = {
             shapes: [],
             units: Unit.MM,
-            layers: {},
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(testDrawing, 'test.dxf');
+        drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
         const { getByText, container } = render(Footer);
         const fitButton = getByText('Fit');
@@ -115,14 +116,14 @@ describe('Footer Fit Button', () => {
     });
 
     it('should show appropriate hover state', () => {
-        const testDrawing: Drawing = {
+        const testDrawing: DrawingData = {
             shapes: [],
             units: Unit.MM,
-            layers: {},
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(testDrawing, 'test.dxf');
+        drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
         const { getByText } = render(Footer);
         const fitButton = getByText('Fit') as HTMLButtonElement;

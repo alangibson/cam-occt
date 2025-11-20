@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { CutterCompensation } from '$lib/cam/cut-generator/enums';
 import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import { Unit } from '$lib/config/units/units';
 import { LeadType } from '$lib/cam/lead/enums';
@@ -60,7 +60,7 @@ describe('G-code generation with offset cuts', () => {
         },
     ];
 
-    const testDrawing: Drawing = {
+    const testDrawing: DrawingData = {
         shapes: testShapes,
         bounds: { min: { x: 0, y: 0 }, max: { x: 30, y: 20 } },
         units: Unit.MM,

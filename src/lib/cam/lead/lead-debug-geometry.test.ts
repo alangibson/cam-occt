@@ -4,7 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -82,7 +82,7 @@ describe('Lead Geometry Debug', () => {
         // Test our understanding of the part geometry
         const shellChain = createLineChain({ x: 0, y: 0 }, { x: 100, y: 0 }); // Bottom edge of shell
 
-        const part: Part = {
+        const part: PartData = {
             id: 'part1',
             shell: shellChain,
             type: PartType.SHELL,
@@ -99,6 +99,7 @@ describe('Lead Geometry Debug', () => {
                 },
             ],
             slots: [],
+            layerName: '0',
         };
 
         // Test specific points

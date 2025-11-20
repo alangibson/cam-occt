@@ -21,7 +21,8 @@ import { KerfCompensation } from '$lib/cam/operation/enums';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Operation } from '$lib/cam/operation/interface';
 import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { offsetChain as polylineOffset } from '$lib/cam/offset';
@@ -171,7 +172,7 @@ describe('Operations Functions', () => {
         normalSide: NormalSide.LEFT,
     };
 
-    const mockPart: Part = {
+    const mockPartData: PartData = {
         id: 'part-1',
         type: PartType.SHELL,
         shell: { id: 'chain-1', clockwise: true, shapes: [] },
@@ -185,7 +186,10 @@ describe('Operations Functions', () => {
             },
         ],
         slots: [],
+        layerName: '0',
     };
+
+    const mockPart = new Part(mockPartData);
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -727,8 +731,8 @@ describe('Operations Functions', () => {
         });
 
         it('should handle multiple holes', async () => {
-            const partWithMultipleHoles: Part = {
-                ...mockPart,
+            const partWithMultipleHolesData: PartData = {
+                ...mockPartData,
                 voids: [
                     {
                         id: 'hole-1',
@@ -755,6 +759,8 @@ describe('Operations Functions', () => {
                 ],
                 slots: [],
             };
+
+            const partWithMultipleHoles = new Part(partWithMultipleHolesData);
 
             const chains = [
                 mockChain,
@@ -784,8 +790,8 @@ describe('Operations Functions', () => {
         });
 
         it('should generate cuts for part with slots and kerf compensation NONE', async () => {
-            const partWithSlots: Part = {
-                ...mockPart,
+            const partWithSlotsData: PartData = {
+                ...mockPartData,
                 voids: [],
                 slots: [
                     {
@@ -799,6 +805,7 @@ describe('Operations Functions', () => {
                     },
                 ],
             };
+            const partWithSlots = new Part(partWithSlotsData);
 
             const chains = [
                 mockChain,
@@ -832,8 +839,8 @@ describe('Operations Functions', () => {
                 kerfCompensation: KerfCompensation.PART,
             };
 
-            const partWithSlots: Part = {
-                ...mockPart,
+            const partWithSlotsData: PartData = {
+                ...mockPartData,
                 voids: [],
                 slots: [
                     {
@@ -847,6 +854,7 @@ describe('Operations Functions', () => {
                     },
                 ],
             };
+            const partWithSlots = new Part(partWithSlotsData);
 
             const chains = [
                 mockChain,
@@ -906,8 +914,8 @@ describe('Operations Functions', () => {
                 kerfCompensation: KerfCompensation.INNER,
             };
 
-            const partWithSlots: Part = {
-                ...mockPart,
+            const partWithSlotsData: PartData = {
+                ...mockPartData,
                 voids: [],
                 slots: [
                     {
@@ -921,6 +929,7 @@ describe('Operations Functions', () => {
                     },
                 ],
             };
+            const partWithSlots = new Part(partWithSlotsData);
 
             const chains = [
                 mockChain,
@@ -970,8 +979,8 @@ describe('Operations Functions', () => {
         });
 
         it('should generate cuts for part with multiple slots', async () => {
-            const partWithMultipleSlots: Part = {
-                ...mockPart,
+            const partWithMultipleSlotsData: PartData = {
+                ...mockPartData,
                 voids: [],
                 slots: [
                     {
@@ -994,6 +1003,7 @@ describe('Operations Functions', () => {
                     },
                 ],
             };
+            const partWithMultipleSlots = new Part(partWithMultipleSlotsData);
 
             const chains = [
                 mockChain,
@@ -1025,8 +1035,8 @@ describe('Operations Functions', () => {
         });
 
         it('should generate cuts for part with voids and slots in correct order', async () => {
-            const partWithVoidsAndSlots: Part = {
-                ...mockPart,
+            const partWithVoidsAndSlotsData: PartData = {
+                ...mockPartData,
                 voids: [
                     {
                         id: 'hole-1',
@@ -1050,6 +1060,7 @@ describe('Operations Functions', () => {
                     },
                 ],
             };
+            const partWithVoidsAndSlots = new Part(partWithVoidsAndSlotsData);
 
             const chains = [
                 mockChain,

@@ -4,7 +4,8 @@ import { render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 // Mock window.prompt and window.alert
@@ -30,7 +31,7 @@ describe('ToolBar Component', () => {
     });
 
     it('should show selection count in delete button', () => {
-        const mockDrawing: Drawing = {
+        const mockDrawing: DrawingData = {
             shapes: [
                 {
                     id: '1',
@@ -47,9 +48,10 @@ describe('ToolBar Component', () => {
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(mockDrawing);
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
         drawingStore.selectShape('1');
         drawingStore.selectShape('2', true);
 
@@ -73,7 +75,7 @@ describe('ToolBar Component', () => {
     });
 
     it('should enable buttons when shapes are selected', () => {
-        const mockDrawing: Drawing = {
+        const mockDrawing: DrawingData = {
             shapes: [
                 {
                     id: '1',
@@ -84,9 +86,10 @@ describe('ToolBar Component', () => {
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(mockDrawing);
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
         drawingStore.selectShape('1');
 
         const { getByText } = render(ToolBar);

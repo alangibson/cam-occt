@@ -3,7 +3,7 @@ import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import { ZOOM_TO_FIT_MARGIN } from './constants';
-import type { Drawing } from './interfaces';
+import type { Drawing } from './classes.svelte';
 
 /**
  * Helper function to calculate zoom-to-fit settings for a drawing

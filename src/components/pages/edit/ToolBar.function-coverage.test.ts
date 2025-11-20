@@ -3,7 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render } from '@testing-library/svelte';
 import ToolBar from './ToolBar.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
@@ -21,7 +22,7 @@ describe('ToolBar Component - Function Coverage', () => {
         mockPrompt.mockReturnValue('1');
     });
 
-    const mockDrawing: Drawing = {
+    const mockDrawing: DrawingData = {
         shapes: [
             {
                 id: '1',
@@ -38,13 +39,14 @@ describe('ToolBar Component - Function Coverage', () => {
         ],
         bounds: { min: { x: 0, y: 0 }, max: { x: 15, y: 15 } },
         units: Unit.MM,
+        fileName: 'test.dxf',
     };
 
     describe('handleScale function', () => {
         it('should prompt for scale factor and scale selected shapes', async () => {
             mockPrompt.mockReturnValue('2.0');
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.selectShape('1');
             drawingStore.selectShape('2', true);
 
@@ -62,7 +64,7 @@ describe('ToolBar Component - Function Coverage', () => {
         it('should not scale when no shapes are selected', async () => {
             mockPrompt.mockReturnValue('2.0');
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.clearSelection();
 
             const { getByText } = render(ToolBar);
@@ -77,7 +79,7 @@ describe('ToolBar Component - Function Coverage', () => {
         it('should handle invalid scale factor input', async () => {
             mockPrompt.mockReturnValue('invalid');
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
@@ -92,7 +94,7 @@ describe('ToolBar Component - Function Coverage', () => {
         it('should handle cancelled prompt', async () => {
             mockPrompt.mockReturnValue(null);
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
@@ -107,7 +109,7 @@ describe('ToolBar Component - Function Coverage', () => {
         it('should handle empty string prompt', async () => {
             mockPrompt.mockReturnValue('');
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
@@ -124,7 +126,7 @@ describe('ToolBar Component - Function Coverage', () => {
         it('should prompt for rotation angle and rotate selected shapes', async () => {
             mockPrompt.mockReturnValue('90');
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
@@ -141,7 +143,7 @@ describe('ToolBar Component - Function Coverage', () => {
         it('should not rotate when no shapes are selected', async () => {
             mockPrompt.mockReturnValue('90');
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.clearSelection();
 
             const { getByText } = render(ToolBar);
@@ -156,7 +158,7 @@ describe('ToolBar Component - Function Coverage', () => {
         it('should handle zero angle', async () => {
             mockPrompt.mockReturnValue('0');
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
@@ -171,7 +173,7 @@ describe('ToolBar Component - Function Coverage', () => {
         it('should convert degrees to radians correctly', async () => {
             mockPrompt.mockReturnValue('180');
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.selectShape('1');
 
             const { getByText } = render(ToolBar);
@@ -186,7 +188,7 @@ describe('ToolBar Component - Function Coverage', () => {
         it('should handle negative angles', async () => {
             mockPrompt.mockReturnValue('-45');
 
-            drawingStore.setDrawing(mockDrawing);
+            drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
             drawingStore.selectShape('1');
 
             const { getByText } = render(ToolBar);

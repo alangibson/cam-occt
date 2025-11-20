@@ -1,11 +1,16 @@
 <script lang="ts">
     import { partStore } from '$lib/stores/parts/store';
+    import { drawingStore } from '$lib/stores/drawing/store';
     import { detectCutDirection } from '$lib/cam/cut/cut-direction';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { CutDirection } from '$lib/cam/cut/enums';
 
     // Reactive part data
-    $: detectedParts = $partStore.parts;
+    $: detectedParts = $drawingStore.drawing
+        ? Object.values($drawingStore.drawing.layers).flatMap(
+              (layer) => layer.parts
+          )
+        : [];
     $: selectedPartIds = $partStore.selectedPartIds;
     $: selectedPartId =
         selectedPartIds.size === 1 ? Array.from(selectedPartIds)[0] : null;

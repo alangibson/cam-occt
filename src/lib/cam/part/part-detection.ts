@@ -25,7 +25,7 @@ import { isChainClosed } from '$lib/geometry/chain/functions';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type {
-    Part,
+    PartData,
     PartDetectionParameters,
     PartDetectionResult,
     PartDetectionWarning,
@@ -33,6 +33,7 @@ import type {
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 import { PartType } from './enums';
 import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
+import { Part } from './classes.svelte';
 
 /**
  * Detects parts from a collection of chains using geometric containment
@@ -40,7 +41,8 @@ import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
 export async function detectParts(
     chains: Chain[],
     tolerance: number = CHAIN_CLOSURE_TOLERANCE,
-    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
+    params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS,
+    layerName: string = '0'
 ): Promise<PartDetectionResult> {
     const warnings: PartDetectionWarning[] = [];
 
@@ -148,28 +150,30 @@ export async function detectParts(
         // Get slots for this part
         const slotChains: Chain[] = slotsByPart.get(partChain.id) || [];
         const partSlots = slotChains.map((slotChain) => ({
-            id: `slot-${slotCounter++}`,
+            id: `${layerName}-slot-${slotCounter++}`,
             chain: slotChain,
             type: PartType.SLOT as const,
             boundingBox: chainBounds.get(slotChain.id)!,
         }));
 
         // Create part structure
-        const part: Part = {
-            id: `part-${partCounter}`,
+        const partData: PartData = {
+            id: `${layerName}-part-${partCounter}`,
             shell: partChain,
             type: PartType.SHELL,
             boundingBox: chainBounds.get(partChain.id)!,
             voids: directHoles.map((hole, idx) => ({
-                id: `hole-${partCounter}-${idx + 1}`,
+                id: `${layerName}-hole-${partCounter}-${idx + 1}`,
                 chain: hole,
                 type: PartType.HOLE,
                 boundingBox: chainBounds.get(hole.id)!,
             })),
             slots: partSlots,
+            layerName: layerName,
         };
 
-        parts.push(part);
+        // Wrap PartData in Part class
+        parts.push(new Part(partData));
         partCounter++;
     }
 

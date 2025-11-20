@@ -11,7 +11,7 @@
 import { describe, it, expect } from 'vitest';
 import { calculateCutNormal } from './calculate-cut-normal';
 import { CutDirection, NormalSide } from './enums';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/shape/enums';
@@ -25,7 +25,7 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should have shell normal pointing outward and hole normal pointing inward', () => {
         // Part data from actual bug report
-        const part: Part = {
+        const part: PartData = {
             id: 'part-7',
             type: PartType.SHELL,
             boundingBox: {
@@ -325,6 +325,7 @@ describe('Cut Normal Direction on Parts', () => {
                 },
             ],
             slots: [],
+            layerName: '0',
         };
 
         // Test shell normal
@@ -422,7 +423,7 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should have correct normals when using cutChains without clockwise property', () => {
         // Part data (same as above)
-        const part: Part = {
+        const part: PartData = {
             id: 'part-7',
             type: PartType.SHELL,
             boundingBox: {
@@ -608,6 +609,7 @@ describe('Cut Normal Direction on Parts', () => {
             },
             voids: [],
             slots: [],
+            layerName: '0',
         };
 
         // Create shell cutChain WITHOUT clockwise property (as createCutChain does)
@@ -659,7 +661,7 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should apply left/right normal rules based on cut direction', () => {
         // Simplified part for focused testing
-        const part: Part = {
+        const part: PartData = {
             id: 'part-test',
             type: PartType.SHELL,
             boundingBox: {
@@ -710,6 +712,7 @@ describe('Cut Normal Direction on Parts', () => {
             },
             voids: [],
             slots: [],
+            layerName: '0',
         };
 
         // Test with CLOCKWISE cut direction on shell
@@ -746,7 +749,7 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should use originalChainId to identify shell vs hole', () => {
         // Simple rectangular part
-        const part: Part = {
+        const part: PartData = {
             id: 'part-bug',
             type: PartType.SHELL,
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
@@ -794,6 +797,7 @@ describe('Cut Normal Direction on Parts', () => {
             },
             voids: [],
             slots: [],
+            layerName: '0',
         };
 
         // Create cutChain WITHOUT originalChainId
@@ -842,7 +846,7 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should flip shell normal when INNER kerf compensation is applied', () => {
         // Simple rectangular shell
-        const part: Part = {
+        const part: PartData = {
             id: 'part-test',
             type: PartType.SHELL,
             boundingBox: {
@@ -893,6 +897,7 @@ describe('Cut Normal Direction on Parts', () => {
             },
             voids: [],
             slots: [],
+            layerName: '0',
         };
 
         // Test shell without INNER kerf (normal case)
@@ -930,7 +935,7 @@ describe('Cut Normal Direction on Parts', () => {
      */
     it('should flip hole normal when OUTER kerf compensation is applied', () => {
         // Simple rectangular part with hole
-        const part: Part = {
+        const part: PartData = {
             id: 'part-test',
             type: PartType.SHELL,
             boundingBox: {
@@ -1032,6 +1037,7 @@ describe('Cut Normal Direction on Parts', () => {
                 },
             ],
             slots: [],
+            layerName: '0',
         };
 
         const holeChain = part.voids[0].chain;

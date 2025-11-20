@@ -1,12 +1,12 @@
 import { writable, get } from 'svelte/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import type { Cut } from '$lib/cam/cut/interfaces';
-import { partStore } from '$lib/stores/parts/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { chainStore } from '$lib/stores/chains/store';
+import { drawingStore } from '$lib/stores/drawing/store';
 import { toolStore } from '$lib/stores/tools/store';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/classes.svelte';
 import type { OperationsStore } from './interfaces';
 import type { Operation } from '$lib/cam/operation/interface';
 
@@ -90,9 +90,23 @@ function createOperationsStore(): OperationsStore {
             // Get required state data
             const operations = get({ subscribe });
             const chainsState = get(chainStore);
-            const partsState: { parts: Part[] } = get(partStore);
+            const drawingState = get(drawingStore);
             const tools = get(toolStore);
             const cutsState: { cuts: Cut[] } = get(cutStore);
+
+            // Get chains from drawing layers
+            const chains = drawingState.drawing
+                ? Object.values(drawingState.drawing.layers).flatMap(
+                      (layer) => layer.chains
+                  )
+                : [];
+
+            // Get parts from drawing layers
+            const parts: Part[] = drawingState.drawing
+                ? Object.values(drawingState.drawing.layers).flatMap(
+                      (layer) => layer.parts
+                  )
+                : [];
 
             // Look up Operation by id
             const operation: Operation | undefined = operations.find(
@@ -103,8 +117,8 @@ function createOperationsStore(): OperationsStore {
                 // Generate and add cuts for this operation
                 await cutStore.addCutsByOperation(
                     operation,
-                    chainsState.chains,
-                    partsState.parts,
+                    chains,
+                    parts,
                     tools,
                     chainsState.tolerance
                 );

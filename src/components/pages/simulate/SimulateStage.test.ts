@@ -37,7 +37,6 @@ describe('SimulateStage store subscription cleanup', () => {
         workflowStore.reset();
         cutStore.reset();
         rapidStore.reset();
-        chainStore.clearChains();
         chainStore.setTolerance(0.1);
     });
 

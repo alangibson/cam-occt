@@ -17,7 +17,7 @@ import { isArc } from '$lib/geometry/arc/functions';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 
 describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     let outputDir: string;
@@ -163,7 +163,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     function getCutNormal(
         chain: Chain,
         cutDirection: CutDirection,
-        part?: Part
+        part?: PartData
     ): Point2D {
         const result = calculateCutNormal(chain, cutDirection, part);
         return result.normal;

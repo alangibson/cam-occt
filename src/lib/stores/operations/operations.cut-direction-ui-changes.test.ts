@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { operationsStore } from './store';
 import { cutStore } from '$lib/stores/cuts/store';
-import { chainStore } from '$lib/stores/chains/store';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import { drawingStore } from '$lib/stores/drawing/store';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Unit } from '$lib/config/units/units';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
@@ -61,12 +63,33 @@ async function waitForCutWithDirection(
     });
 }
 
+// Helper to create a drawing and get auto-detected chain
+function createDrawingWithChain(
+    shapes: Shape[],
+    layerName = 'test-layer'
+): { drawing: Drawing; chainId: string } {
+    const drawingData: DrawingData = {
+        shapes,
+        bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+        units: Unit.MM,
+    };
+
+    const drawing = new Drawing(drawingData);
+    const layer = drawing.layers[layerName];
+
+    if (!layer || layer.chains.length === 0) {
+        throw new Error(`No chains detected in layer ${layerName}`);
+    }
+
+    return { drawing, chainId: layer.chains[0].id };
+}
+
 describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
     beforeEach(() => {
         // Reset all stores
         operationsStore.reset();
         cutStore.reset();
-        chainStore.clearChains();
+        drawingStore.reset();
     });
 
     it('should consistently apply Cut Direction changes when user switches back and forth', async () => {
@@ -77,36 +100,37 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 10, y: 10 } },
+                layer: 'test-layer',
             }, // right
             {
                 id: 'line2',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 10, y: 0 } },
+                layer: 'test-layer',
             }, // down
             {
                 id: 'line3',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 0, y: 0 } },
+                layer: 'test-layer',
             }, // left
             {
                 id: 'line4',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 0, y: 10 } },
+                layer: 'test-layer',
             }, // up
         ];
 
-        const chain: Chain = {
-            id: 'test-chain',
-            shapes: clockwiseSquare,
-        };
-
-        chainStore.setChains([chain]);
+        // Create drawing and get auto-detected chain
+        const { drawing, chainId } = createDrawingWithChain(clockwiseSquare);
+        drawingStore.setDrawing(drawing, 'test.dxf');
 
         // Create initial operation with clockwise cut direction
         const operation: Omit<Operation, 'id'> = {
             name: 'Test Operation',
             targetType: 'chains',
-            targetIds: ['test-chain'],
+            targetIds: [chainId],
             cutDirection: CutDirection.CLOCKWISE,
             toolId: null,
             enabled: true,
@@ -199,36 +223,39 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
+                layer: 'test-layer',
             }, // right
             {
                 id: 'line2',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 10, y: 10 } },
+                layer: 'test-layer',
             }, // up
             {
                 id: 'line3',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 0, y: 10 } },
+                layer: 'test-layer',
             }, // left
             {
                 id: 'line4',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 0, y: 0 } },
+                layer: 'test-layer',
             }, // down
         ];
 
-        const chain: Chain = {
-            id: 'test-chain',
-            shapes: counterclockwiseSquare,
-        };
-
-        chainStore.setChains([chain]);
+        // Create drawing and get auto-detected chain
+        const { drawing, chainId } = createDrawingWithChain(
+            counterclockwiseSquare
+        );
+        drawingStore.setDrawing(drawing, 'test.dxf');
 
         // Create initial operation with counterclockwise cut direction
         const operation: Omit<Operation, 'id'> = {
             name: 'Test Operation',
             targetType: 'chains',
-            targetIds: ['test-chain'],
+            targetIds: [chainId],
             cutDirection: CutDirection.COUNTERCLOCKWISE,
             toolId: null,
             enabled: true,
@@ -259,12 +286,13 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
 
         // Test 1: Initial counterclockwise direction
         // Natural = counterclockwise, desired = counterclockwise → no reversal
+        // After normalization, chain goes: line1 → line2 → line3 → line4 (counterclockwise)
         let cutsState = get(cutStore);
         expect(cutsState.cuts).toHaveLength(1);
         expect(cutsState.cuts[0].cutDirection).toBe(
             CutDirection.COUNTERCLOCKWISE
         );
-        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Normalized order
 
         // Test 2: Change to clockwise
         // Natural = counterclockwise, desired = clockwise → reversal needed
@@ -275,10 +303,10 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
 
         cutsState = get(cutStore);
         expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order (backward: line4 → line3 → line2 → line1)
 
         // Test 3: Change back to counterclockwise
-        // Natural = counterclockwise, desired = counterclockwise → no reversal (should be back to original)
+        // Natural = counterclockwise, desired = counterclockwise → no reversal (should be back to normalized order)
         operationsStore.updateOperation(operationId, {
             cutDirection: CutDirection.COUNTERCLOCKWISE,
         });
@@ -288,7 +316,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         expect(cutsState.cuts[0].cutDirection).toBe(
             CutDirection.COUNTERCLOCKWISE
         );
-        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
+        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to normalized order (line1 → line2 → line3 → line4)
     });
 
     it('should work correctly with multiple rapid direction changes', async () => {
@@ -298,35 +326,36 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 10 }, end: { x: 10, y: 10 } },
+                layer: 'test-layer',
             },
             {
                 id: 'line2',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 10 }, end: { x: 10, y: 0 } },
+                layer: 'test-layer',
             },
             {
                 id: 'line3',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 10, y: 0 }, end: { x: 0, y: 0 } },
+                layer: 'test-layer',
             },
             {
                 id: 'line4',
                 type: GeometryType.LINE,
                 geometry: { start: { x: 0, y: 0 }, end: { x: 0, y: 10 } },
+                layer: 'test-layer',
             },
         ];
 
-        const chain: Chain = {
-            id: 'test-chain',
-            shapes: clockwiseSquare,
-        };
-
-        chainStore.setChains([chain]);
+        // Create drawing and get auto-detected chain
+        const { drawing, chainId } = createDrawingWithChain(clockwiseSquare);
+        drawingStore.setDrawing(drawing, 'test.dxf');
 
         const operation: Omit<Operation, 'id'> = {
             name: 'Test Operation',
             targetType: 'chains',
-            targetIds: ['test-chain'],
+            targetIds: [chainId],
             cutDirection: CutDirection.CLOCKWISE,
             toolId: null,
             enabled: true,

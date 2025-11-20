@@ -1,6 +1,7 @@
 import { parseString } from 'dxf';
+import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
 import { Unit, measurementSystemToUnit } from '$lib/config/units/units';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -11,7 +12,6 @@ import { generateId } from '$lib/domain/id';
 import { generateSegments } from '$lib/geometry/polyline/functions';
 import { normalizeSplineWeights } from '$lib/geometry/spline/functions';
 import { getShapePointsForBounds } from '$lib/geometry/bounding-box/functions';
-import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
 import {
     FULL_CIRCLE_RADIANS,
     HALF_CIRCLE_DEG,
@@ -372,7 +372,37 @@ function convertDXFEntity(
     }
 }
 
-export async function parseDXF(content: string): Promise<Drawing> {
+/**
+ * Convert raw DXF $INSUNITS value to Unit type with coordinate scale factor
+ */
+function convertRawInsUnitsToUnit(rawInsUnits: number | undefined): {
+    unit: Unit;
+    scaleFactor: number;
+} {
+    // No $INSUNITS header at all
+    if (rawInsUnits === undefined) {
+        return { unit: Unit.NONE, scaleFactor: 1.0 };
+    }
+
+    // Known $INSUNITS values
+    switch (rawInsUnits) {
+        case DXF_INSUNITS_INCHES: // Inches
+            return { unit: Unit.INCH, scaleFactor: 1.0 };
+        case DXF_INSUNITS_FEET: // Feet - convert to inches
+            return { unit: Unit.INCH, scaleFactor: FEET_TO_INCHES };
+        case DXF_INSUNITS_MILLIMETERS: // Millimeters
+            return { unit: Unit.MM, scaleFactor: 1.0 };
+        case DXF_INSUNITS_CENTIMETERS: // Centimeters - convert to mm
+            return { unit: Unit.MM, scaleFactor: CENTIMETERS_TO_MILLIMETERS };
+        case DXF_INSUNITS_METERS: // Meters - convert to mm
+            return { unit: Unit.MM, scaleFactor: METERS_TO_MILLIMETERS };
+        default:
+            // Unknown/unsupported $INSUNITS value - default to mm
+            return { unit: Unit.MM, scaleFactor: 1.0 };
+    }
+}
+
+export async function parseDXF(content: string): Promise<DrawingData> {
     let parsed: DXFParsed;
     try {
         parsed = parseString(content);
@@ -395,48 +425,10 @@ export async function parseDXF(content: string): Promise<Drawing> {
     };
 
     // Extract units from DXF header and convert coordinates to mm if needed
-    let drawingUnits: Unit = Unit.NONE; // Default to none when no units specified
-    let coordinateScaleFactor = 1.0; // Scale factor to convert coordinates to mm
-    let rawInsUnits: number | undefined = undefined; // Store the raw $INSUNITS value
-
-    if (
-        parsed &&
-        parsed.header &&
-        (parsed.header.$INSUNITS !== undefined ||
-            parsed.header.insUnits !== undefined)
-    ) {
-        const insunits: number | undefined =
-            parsed.header.$INSUNITS || parsed.header.insUnits;
-        rawInsUnits = insunits; // Store the raw value
-        // Convert DXF $INSUNITS values to our unit system
-        switch (insunits) {
-            case DXF_INSUNITS_INCHES: // Inches
-                drawingUnits = Unit.INCH;
-                coordinateScaleFactor = 1.0; // Keep as-is
-                break;
-            case DXF_INSUNITS_FEET: // Feet - convert to inches
-                drawingUnits = Unit.INCH;
-                coordinateScaleFactor = FEET_TO_INCHES;
-                break;
-            case DXF_INSUNITS_MILLIMETERS: // Millimeters
-                drawingUnits = Unit.MM;
-                coordinateScaleFactor = 1.0; // Keep as-is
-                break;
-            case DXF_INSUNITS_CENTIMETERS: // Centimeters - convert to mm
-                drawingUnits = Unit.MM;
-                coordinateScaleFactor = CENTIMETERS_TO_MILLIMETERS;
-                break;
-            case DXF_INSUNITS_METERS: // Meters - convert to mm
-                drawingUnits = Unit.MM;
-                coordinateScaleFactor = METERS_TO_MILLIMETERS;
-                break;
-            default:
-                // For all other units (unitless, etc.), default to mm
-                drawingUnits = Unit.MM;
-                coordinateScaleFactor = 1.0;
-                break;
-        }
-    }
+    const rawInsUnits: number | undefined =
+        parsed?.header?.$INSUNITS ?? parsed?.header?.insUnits;
+    const { unit: drawingUnits, scaleFactor: coordinateScaleFactor } =
+        convertRawInsUnitsToUnit(rawInsUnits);
 
     // Process blocks first to build block dictionary
     const blocks: Map<string, DXFEntity[]> = new Map<string, DXFEntity[]>();
@@ -522,7 +514,7 @@ export async function parseDXF(content: string): Promise<Drawing> {
         shapes,
         bounds: finalBounds,
         units: drawingUnits, // Use detected units from DXF header
-        rawInsUnits, // Include raw $INSUNITS value
+        rawInsUnits, // Preserve raw DXF $INSUNITS for display purposes
     };
 }
 
@@ -531,9 +523,9 @@ export async function parseDXF(content: string): Promise<Drawing> {
  * This function only changes the unit label without converting geometry values
  */
 export function applyImportUnitConversion(
-    drawing: Drawing,
+    drawing: DrawingData,
     settings: ApplicationSettings
-): Drawing {
+): DrawingData {
     // Determine target unit based on import setting
     let targetUnit: Unit;
 

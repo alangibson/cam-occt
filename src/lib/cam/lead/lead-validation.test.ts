@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Shape } from '$lib/geometry/shape/interfaces';
@@ -187,7 +187,7 @@ describe('Lead Validation Pipeline', () => {
                 'shell-chain'
             );
 
-            const part: Part = {
+            const part: PartData = {
                 id: 'part1',
                 type: PartType.SHELL,
                 shell: shellChain,
@@ -195,6 +195,7 @@ describe('Lead Validation Pipeline', () => {
                     min: { x: -5, y: -5 },
                     max: { x: 15, y: 15 },
                 },
+                layerName: '0',
                 voids: [
                     {
                         id: 'hole1',
@@ -236,7 +237,7 @@ describe('Lead Validation Pipeline', () => {
                 'shell-chain'
             );
 
-            const part: Part = {
+            const part: PartData = {
                 id: 'part1',
                 type: PartType.SHELL,
                 shell: shellChain,
@@ -244,6 +245,7 @@ describe('Lead Validation Pipeline', () => {
                     min: { x: -5, y: -5 },
                     max: { x: 15, y: 15 },
                 },
+                layerName: '0',
                 voids: [],
                 slots: [],
             };

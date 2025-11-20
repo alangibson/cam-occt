@@ -1,6 +1,8 @@
 // Helper to get all chain IDs that belong to a specific part
 
-import type { Part, PartVoid } from '$lib/cam/part/interfaces';
+import type { PartVoid } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/classes.svelte';
+import { PartType } from '$lib/cam/part/enums';
 
 export function getPartChainIds(partId: string, parts: Part[]): string[] {
     const part: Part | undefined = parts.find((p) => p.id === partId);
@@ -27,15 +29,15 @@ export function getPartChainIds(partId: string, parts: Part[]): string[] {
 export function getChainPartType(
     chainId: string,
     parts: Part[]
-): 'shell' | 'hole' | null {
+): PartType.SHELL | PartType.HOLE | null {
     for (const part of parts) {
         if (part.shell.id === chainId) {
-            return 'shell';
+            return PartType.SHELL;
         }
 
         // Check holes recursively
         if (isChainInHoles(chainId, part.voids)) {
-            return 'hole';
+            return PartType.HOLE;
         }
     }
     return null;

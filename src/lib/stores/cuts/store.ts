@@ -8,7 +8,7 @@ import type { Cut } from '$lib/cam/cut/interfaces';
 import { kerfStore } from '$lib/stores/kerfs/store';
 import type { Operation } from '$lib/cam/operation/interface';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-generation';
 

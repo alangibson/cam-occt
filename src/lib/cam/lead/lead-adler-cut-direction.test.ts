@@ -5,7 +5,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { type Chain } from '$lib/geometry/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
-import { type Part } from '$lib/cam/part/interfaces';
+import { type PartData } from '$lib/cam/part/interfaces';
 import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
@@ -67,7 +67,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     // Helper to check if point is in solid area (inside shell, outside holes)
     function isPointInSolidArea(
         point: { x: number; y: number },
-        part: Part
+        part: PartData
     ): boolean {
         const shellPolygon = getPolygonFromChain(part.shell);
 

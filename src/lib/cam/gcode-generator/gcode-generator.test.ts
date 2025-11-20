@@ -1,7 +1,7 @@
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { describe, expect, it } from 'vitest';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { CutPath } from '$lib/cam/cut-generator/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
@@ -11,7 +11,7 @@ import { generateGCode } from './gcode-generator';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 
 describe('generateGCode', () => {
-    const mockDrawing: Drawing = {
+    const mockDrawing: DrawingData = {
         shapes: [],
         bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         units: Unit.MM,

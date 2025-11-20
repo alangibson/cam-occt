@@ -11,14 +11,14 @@ import { LeadType } from './enums';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import { calculateLeads } from './lead-calculation';
 import { isArc } from '$lib/geometry/arc/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 
 describe('Chain-Pill DXF Lead Direction Bug', () => {
     let chains: Chain[];
-    let parts: Part[];
+    let parts: PartData[];
     let shapes: Shape[];
 
     beforeAll(async () => {

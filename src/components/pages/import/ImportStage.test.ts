@@ -3,6 +3,7 @@ import { get } from 'svelte/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { drawingStore } from '$lib/stores/drawing/store';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
 
 // Mock settings store to return all stages enabled (for testing workflow logic)
@@ -38,10 +39,11 @@ describe('ImportStage workflow behavior', () => {
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
+            fileName: 'test.dxf',
         };
 
         // Simulate having imported a file and advanced to edit
-        drawingStore.setDrawing(mockDrawing, 'test.dxf');
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
         workflowStore.completeStage(WorkflowStage.IMPORT);
         workflowStore.setStage(WorkflowStage.EDIT);
 
@@ -91,9 +93,10 @@ describe('ImportStage workflow behavior', () => {
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(mockDrawing, 'first.dxf');
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'first.dxf');
         workflowStore.completeStage(WorkflowStage.IMPORT);
         workflowStore.setStage(WorkflowStage.PROGRAM); // User advanced to program stage
 
@@ -110,7 +113,7 @@ describe('ImportStage workflow behavior', () => {
                 );
 
                 // Simulate loading a new file
-                drawingStore.setDrawing(mockDrawing, 'second.dxf');
+                drawingStore.setDrawing(new Drawing(mockDrawing), 'second.dxf');
 
                 // Should still be on import until the file import event is triggered
                 expect(get(workflowStore).currentStage).toBe(

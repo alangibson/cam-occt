@@ -8,7 +8,8 @@
     import { settingsStore } from '$lib/stores/settings/store';
     import { Unit } from '$lib/config/units/units';
     import { formatInsUnits } from '$lib/parsers/dxf/constants';
-    import type { Drawing } from '$lib/cam/drawing/interfaces';
+    import type { DrawingData } from '$lib/cam/drawing/interfaces';
+    import { Drawing } from '$lib/cam/drawing/classes.svelte';
 
     const dispatch = createEventDispatcher();
 
@@ -19,10 +20,10 @@
     let fileInput: HTMLInputElement;
     let isDragging = false;
     let originalUnits: Unit | null = null;
-    let originalDrawing: Drawing | null = null;
+    let originalDrawing: DrawingData | null = null;
     let rawInsUnits: number | undefined = undefined;
 
-    $: fileName = $drawingStore.fileName;
+    $: fileName = $drawingStore.drawing?.fileName ?? null;
     $: settings = $settingsStore.settings;
 
     // Reset originalUnits, originalDrawing, and rawInsUnits when no file is loaded
@@ -33,12 +34,12 @@
     }
 
     // Re-apply unit conversion when settings change
-    $: if (originalDrawing && settings) {
+    $: if (originalDrawing && settings && fileName) {
         const convertedDrawing = applyImportUnitConversion(
             originalDrawing,
             settings
         );
-        drawingStore.setDrawing(convertedDrawing, fileName || undefined);
+        drawingStore.setDrawing(new Drawing(convertedDrawing), fileName);
     }
 
     async function handleFiles(files: FileList | null) {
@@ -55,7 +56,7 @@
 
                 if (file.name.toLowerCase().endsWith('.dxf')) {
                     // Parse DXF file
-                    const parsedDrawing: Drawing = await parseDXF(content);
+                    const parsedDrawing: DrawingData = await parseDXF(content);
 
                     // Store original drawing, units, and raw $INSUNITS before conversion
                     originalDrawing = parsedDrawing;
@@ -68,7 +69,10 @@
                         settings
                     );
 
-                    drawingStore.setDrawing(drawing, file.name);
+                    // Add fileName to the drawing data
+                    drawing.fileName = file.name;
+
+                    drawingStore.setDrawing(new Drawing(drawing), file.name);
                     dispatch('fileImported', {
                         drawing,
                         fileName: file.name,

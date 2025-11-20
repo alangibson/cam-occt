@@ -8,9 +8,9 @@ import {
     saveApplicationState,
 } from '$lib/stores/storage/store';
 import { drawingStore } from '$lib/stores/drawing/store';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
-import { chainStore } from '$lib/stores/chains/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
@@ -59,21 +59,18 @@ describe('Complete Persistence Integration', () => {
             ],
             bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
             units: Unit.MM,
+            fileName: 'test.dxf',
         };
 
-        const testChain = {
-            id: 'chain-1',
-            shapes: [
-                {
-                    id: 'shape-1',
-                    type: GeometryType.CIRCLE as GeometryType,
-                    geometry: { center: { x: 50, y: 50 }, radius: 25 },
-                },
-            ],
-        };
+        // Create drawing - chains will be auto-detected from shapes
+        const drawing = new Drawing(testDrawing);
+        drawingStore.setDrawing(drawing, 'complete-test.dxf');
 
-        drawingStore.setDrawing(testDrawing, 'complete-test.dxf');
-        chainStore.setChains([testChain]);
+        // Get auto-detected chain from the layer
+        const defaultLayer = drawing.layers['default'];
+        const autoDetectedChains = defaultLayer ? defaultLayer.chains : [];
+        expect(autoDetectedChains.length).toBeGreaterThan(0);
+        const chainId = autoDetectedChains[0].id;
 
         // 2. Progress through workflow stages
         workflowStore.completeStage(WorkflowStage.IMPORT);
@@ -88,7 +85,7 @@ describe('Complete Persistence Integration', () => {
             name: 'Complete Test Cut',
             toolId: 'tool-1',
             targetType: 'chains' as const,
-            targetIds: ['chain-1'],
+            targetIds: [chainId],
             enabled: true,
             order: 1,
             cutDirection: CutDirection.CLOCKWISE,

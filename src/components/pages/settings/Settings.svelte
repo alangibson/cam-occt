@@ -22,20 +22,14 @@
         PreprocessingStep.DecomposePolylines,
         PreprocessingStep.JoinColinearLines,
         PreprocessingStep.TranslateToPositive,
-        PreprocessingStep.DetectChains,
-        PreprocessingStep.NormalizeChains,
         PreprocessingStep.OptimizeStarts,
-        PreprocessingStep.DetectParts,
     ];
 
     const preprocessingStepDisplayNames: Record<PreprocessingStep, string> = {
         [PreprocessingStep.DecomposePolylines]: 'Decompose Polylines',
         [PreprocessingStep.JoinColinearLines]: 'Join Co-linear Lines',
         [PreprocessingStep.TranslateToPositive]: 'Translate to Positive',
-        [PreprocessingStep.DetectChains]: 'Detect Chains',
-        [PreprocessingStep.NormalizeChains]: 'Normalize Chains',
         [PreprocessingStep.OptimizeStarts]: 'Optimize Starts',
-        [PreprocessingStep.DetectParts]: 'Detect Parts',
     };
 
     function handleStageToggle(stage: WorkflowStage) {

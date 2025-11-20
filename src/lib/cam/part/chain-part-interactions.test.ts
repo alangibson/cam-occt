@@ -8,7 +8,8 @@ import {
     handlePartMouseEnter,
     handlePartMouseLeave,
 } from './chain-part-interactions';
-import { type Part, type PartVoid } from './interfaces';
+import { type PartData, type PartVoid } from './interfaces';
+import { Part } from './classes.svelte';
 import { PartType } from './enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { chainStore } from '$lib/stores/chains/store';
@@ -37,7 +38,7 @@ describe('findPartContainingChain', () => {
     function createMockPart(
         shellChainId: string,
         holeChainIds: string[] = []
-    ): Part {
+    ): PartData {
         const holes = holeChainIds.map((holeId) => createMockHole(holeId));
         return {
             id: `part-${shellChainId}`,
@@ -46,18 +47,21 @@ describe('findPartContainingChain', () => {
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
             voids: holes,
             slots: [],
+            layerName: '0',
         };
     }
 
     describe('basic functionality', () => {
         it('should return undefined for empty chainId', () => {
-            const parts = [createMockPart('shell-1')];
+            const partData = createMockPart('shell-1');
+            const parts = [new Part(partData)];
             const result = findPartContainingChain('', parts);
             expect(result).toBeUndefined();
         });
 
         it('should return undefined for null/undefined chainId', () => {
-            const parts = [createMockPart('shell-1')];
+            const partData = createMockPart('shell-1');
+            const parts = [new Part(partData)];
             expect(
                 findPartContainingChain(null as unknown as string, parts)
             ).toBeUndefined();
@@ -85,8 +89,8 @@ describe('findPartContainingChain', () => {
 
         it('should return undefined when chain is not found in any part', () => {
             const parts = [
-                createMockPart('shell-1', ['hole-1', 'hole-2']),
-                createMockPart('shell-2', ['hole-3']),
+                new Part(createMockPart('shell-1', ['hole-1', 'hole-2'])),
+                new Part(createMockPart('shell-2', ['hole-3'])),
             ];
             const result = findPartContainingChain('non-existent-chain', parts);
             expect(result).toBeUndefined();
@@ -96,9 +100,9 @@ describe('findPartContainingChain', () => {
     describe('shell chain matching', () => {
         it('should find part by shell chain ID', () => {
             const parts = [
-                createMockPart('shell-1'),
-                createMockPart('shell-2'),
-                createMockPart('shell-3'),
+                new Part(createMockPart('shell-1')),
+                new Part(createMockPart('shell-2')),
+                new Part(createMockPart('shell-3')),
             ];
 
             const result = findPartContainingChain('shell-2', parts);
@@ -111,9 +115,9 @@ describe('findPartContainingChain', () => {
         it('should return first matching part when multiple parts have same shell chain ID', () => {
             // This shouldn't happen in normal usage, but test the behavior
             const parts = [
-                createMockPart('shell-1'),
-                createMockPart('shell-1'), // Duplicate shell ID
-                createMockPart('shell-2'),
+                new Part(createMockPart('shell-1')),
+                new Part(createMockPart('shell-1')), // Duplicate shell ID
+                new Part(createMockPart('shell-2')),
             ];
 
             const result = findPartContainingChain('shell-1', parts);
@@ -128,9 +132,9 @@ describe('findPartContainingChain', () => {
     describe('hole chain matching', () => {
         it('should find part by hole chain ID', () => {
             const parts = [
-                createMockPart('shell-1', ['hole-1', 'hole-2']),
-                createMockPart('shell-2', ['hole-3', 'hole-4']),
-                createMockPart('shell-3'),
+                new Part(createMockPart('shell-1', ['hole-1', 'hole-2'])),
+                new Part(createMockPart('shell-2', ['hole-3', 'hole-4'])),
+                new Part(createMockPart('shell-3')),
             ];
 
             const result = findPartContainingChain('hole-3', parts);
@@ -145,8 +149,10 @@ describe('findPartContainingChain', () => {
 
         it('should find part with multiple holes', () => {
             const parts = [
-                createMockPart('shell-1', ['hole-1', 'hole-2', 'hole-3']),
-                createMockPart('shell-2', ['hole-4']),
+                new Part(
+                    createMockPart('shell-1', ['hole-1', 'hole-2', 'hole-3'])
+                ),
+                new Part(createMockPart('shell-2', ['hole-4'])),
             ];
 
             const result1 = findPartContainingChain('hole-1', parts);
@@ -163,8 +169,8 @@ describe('findPartContainingChain', () => {
 
         it('should find part when part has no holes', () => {
             const parts = [
-                createMockPart('shell-1'), // No holes
-                createMockPart('shell-2', ['hole-1']),
+                new Part(createMockPart('shell-1')), // No holes
+                new Part(createMockPart('shell-2', ['hole-1'])),
             ];
 
             const result1 = findPartContainingChain('shell-1', parts);
@@ -178,7 +184,7 @@ describe('findPartContainingChain', () => {
 
     describe('edge cases', () => {
         it('should handle case-sensitive chain IDs', () => {
-            const parts = [createMockPart('Shell-1', ['Hole-1'])];
+            const parts = [new Part(createMockPart('Shell-1', ['Hole-1']))];
 
             expect(findPartContainingChain('shell-1', parts)).toBeUndefined();
             expect(findPartContainingChain('Shell-1', parts)).toBeDefined();
@@ -188,8 +194,8 @@ describe('findPartContainingChain', () => {
 
         it('should handle special characters in chain IDs', () => {
             const parts = [
-                createMockPart('shell-1_test', ['hole-1@special']),
-                createMockPart('shell-2-dash', ['hole.dot']),
+                new Part(createMockPart('shell-1_test', ['hole-1@special'])),
+                new Part(createMockPart('shell-2-dash', ['hole.dot'])),
             ];
 
             expect(findPartContainingChain('shell-1_test', parts)?.id).toBe(
@@ -207,7 +213,7 @@ describe('findPartContainingChain', () => {
         });
 
         it('should handle numeric chain IDs', () => {
-            const parts = [createMockPart('123', ['456'])];
+            const parts = [new Part(createMockPart('123', ['456']))];
 
             expect(findPartContainingChain('123', parts)?.id).toBe('part-123');
             expect(findPartContainingChain('456', parts)?.id).toBe('part-123');
@@ -215,8 +221,15 @@ describe('findPartContainingChain', () => {
 
         it('should find part from large collection efficiently', () => {
             // Create many parts to test performance doesn't degrade significantly
-            const parts = Array.from({ length: 100 }, (_, i) =>
-                createMockPart(`shell-${i}`, [`hole-${i}-1`, `hole-${i}-2`])
+            const parts = Array.from(
+                { length: 100 },
+                (_, i) =>
+                    new Part(
+                        createMockPart(`shell-${i}`, [
+                            `hole-${i}-1`,
+                            `hole-${i}-2`,
+                        ])
+                    )
             );
 
             // Find a part in the middle
@@ -233,15 +246,15 @@ describe('findPartContainingChain', () => {
         it('should handle typical ADLER.dxf-like scenario', () => {
             // Simulate ADLER.dxf with 9 parts, one having a hole
             const parts = [
-                createMockPart('chain-1'),
-                createMockPart('chain-2'),
-                createMockPart('chain-3'),
-                createMockPart('chain-4'),
-                createMockPart('chain-5', ['chain-10']), // Part with hole
-                createMockPart('chain-6'),
-                createMockPart('chain-7'),
-                createMockPart('chain-8'),
-                createMockPart('chain-9'),
+                new Part(createMockPart('chain-1')),
+                new Part(createMockPart('chain-2')),
+                new Part(createMockPart('chain-3')),
+                new Part(createMockPart('chain-4')),
+                new Part(createMockPart('chain-5', ['chain-10'])), // Part with hole
+                new Part(createMockPart('chain-6')),
+                new Part(createMockPart('chain-7')),
+                new Part(createMockPart('chain-8')),
+                new Part(createMockPart('chain-9')),
             ];
 
             // Should find shell chains
@@ -264,20 +277,22 @@ describe('findPartContainingChain', () => {
         it('should handle complex part with multiple holes', () => {
             // Simulate a complex part like Tractor Seat Mount with many holes
             const parts = [
-                createMockPart('main-shell', [
-                    'hole-1',
-                    'hole-2',
-                    'hole-3',
-                    'hole-4',
-                    'hole-5',
-                    'hole-6',
-                    'hole-7',
-                    'hole-8',
-                    'hole-9',
-                    'hole-10',
-                    'hole-11',
-                    'hole-12',
-                ]),
+                new Part(
+                    createMockPart('main-shell', [
+                        'hole-1',
+                        'hole-2',
+                        'hole-3',
+                        'hole-4',
+                        'hole-5',
+                        'hole-6',
+                        'hole-7',
+                        'hole-8',
+                        'hole-9',
+                        'hole-10',
+                        'hole-11',
+                        'hole-12',
+                    ])
+                ),
             ];
 
             // Should find the main shell

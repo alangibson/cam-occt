@@ -5,7 +5,6 @@
  */
 
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 import { overlayStore } from '$lib/stores/overlay/store';
 import { tessellationStore } from '$lib/stores/tessellation/store';
@@ -28,7 +27,7 @@ export const resetDownstreamStages = (
     fromStage: 'edit' | WorkflowStage.PREPARE = 'edit'
 ): void => {
     // Clear stage-specific data
-    chainStore.clearChains();
+    // Chains are auto-generated from drawing layers, no need to clear them
     partStore.clearParts();
 
     // Clear other stores

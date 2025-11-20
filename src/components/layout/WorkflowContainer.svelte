@@ -8,8 +8,6 @@
         handleChainMouseEnter,
         handleChainMouseLeave,
         handlePartClick as sharedHandlePartClick,
-        handlePartMouseEnter,
-        handlePartMouseLeave,
     } from '$lib/cam/part/chain-part-interactions';
     import ImportStage from '$components/pages/import/ImportStage.svelte';
     import EditStage from '$components/pages/edit/EditStage.svelte';
@@ -57,14 +55,6 @@
     function handleChainHoverEnd() {
         handleChainMouseLeave();
     }
-
-    function handlePartHover(partId: string) {
-        handlePartMouseEnter(partId);
-    }
-
-    function handlePartHoverEnd() {
-        handlePartMouseLeave();
-    }
 </script>
 
 <div class="workflow-container">
@@ -89,8 +79,6 @@
                 onPartClick={handlePartClick}
                 onChainHover={handleChainHover}
                 onChainHoverEnd={handleChainHoverEnd}
-                onPartHover={handlePartHover}
-                onPartHoverEnd={handlePartHoverEnd}
             />
         {:else if currentStage === 'program'}
             <ProgramStage
@@ -100,8 +88,6 @@
                 onPartClick={handlePartClick}
                 onChainHover={handleChainHover}
                 onChainHoverEnd={handleChainHoverEnd}
-                onPartHover={handlePartHover}
-                onPartHoverEnd={handlePartHoverEnd}
             />
         {:else if currentStage === 'simulate'}
             <SimulateStage

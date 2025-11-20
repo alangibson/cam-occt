@@ -10,7 +10,8 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import type { Part, PartVoid } from '$lib/cam/part/interfaces';
+import type { PartData, PartVoid } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
@@ -85,14 +86,17 @@ describe('Optimize Cut Order', () => {
             boundingBox: createBoundingBox(),
         }));
 
-        return {
+        const partData: PartData = {
             id,
             shell: shellChain,
             type: PartType.SHELL,
             boundingBox: createBoundingBox(),
             voids: holes,
             slots: [],
+            layerName: '0',
         };
+
+        return new Part(partData);
     };
 
     describe('Edge Cases', () => {

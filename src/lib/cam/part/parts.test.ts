@@ -2,8 +2,9 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { partStore } from '$lib/stores/parts/store';
 import { getChainPartType, getPartChainIds } from '$lib/test/parts';
+import { Part } from '$lib/cam/part/classes.svelte';
 import {
-    type Part,
+    type PartData,
     type PartDetectionWarning,
     type PartVoid,
 } from '$lib/cam/part/interfaces';
@@ -30,7 +31,7 @@ describe('Parts Store', () => {
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
         }));
 
-        return {
+        const partData: PartData = {
             id: partId,
             shell: {
                 id: shellChainId,
@@ -40,19 +41,20 @@ describe('Parts Store', () => {
             boundingBox: { min: { x: 0, y: 0 }, max: { x: 20, y: 20 } },
             voids: holes,
             slots: [],
+            layerName: '0',
         };
+
+        return new Part(partData);
     }
 
     describe('Basic Store Operations', () => {
         it('should initialize with empty state', () => {
             const state = get(partStore);
-            expect(state.parts).toEqual([]);
             expect(state.warnings).toEqual([]);
             expect(state.highlightedPartId).toBeNull();
         });
 
-        it('should set parts and warnings', () => {
-            const parts = [createTestPart('part-1', 'chain-1')];
+        it('should set warnings', () => {
             const warnings: PartDetectionWarning[] = [
                 {
                     type: 'overlapping_boundary',
@@ -61,23 +63,19 @@ describe('Parts Store', () => {
                 },
             ];
 
-            partStore.setParts(parts, warnings);
+            partStore.setWarnings(warnings);
 
             const state = get(partStore);
-            expect(state.parts).toEqual(parts);
             expect(state.warnings).toEqual(warnings);
             expect(state.highlightedPartId).toBeNull();
         });
 
         it('should clear parts and reset highlighting', () => {
-            const parts = [createTestPart('part-1', 'chain-1')];
-            partStore.setParts(parts);
             partStore.highlightPart('part-1');
 
             partStore.clearParts();
 
             const state = get(partStore);
-            expect(state.parts).toEqual([]);
             expect(state.warnings).toEqual([]);
             expect(state.highlightedPartId).toBeNull();
         });
@@ -85,11 +83,8 @@ describe('Parts Store', () => {
 
     describe('Part Highlighting', () => {
         beforeEach(() => {
-            const parts = [
-                createTestPart('part-1', 'chain-1', ['chain-2']),
-                createTestPart('part-2', 'chain-3', ['chain-4', 'chain-5']),
-            ];
-            partStore.setParts(parts);
+            // Note: Parts now come from Drawing.layers, not from partStore
+            partStore.clearParts();
         });
 
         it('should highlight a part', () => {
@@ -173,7 +168,7 @@ describe('Parts Store', () => {
     describe('Integration with Complex Hierarchies', () => {
         it('should handle nested holes correctly', () => {
             // Create a part with nested structure (holes containing other parts)
-            const complexPart: Part = {
+            const complexPartData: PartData = {
                 id: 'complex-part',
                 shell: { id: 'shell-chain', shapes: [] },
                 type: PartType.SHELL,
@@ -190,9 +185,10 @@ describe('Parts Store', () => {
                     },
                 ],
                 slots: [],
+                layerName: '0',
             };
 
-            const parts = [complexPart];
+            const parts = [new Part(complexPartData)];
             const chainIds = getPartChainIds('complex-part', parts);
 
             expect(chainIds).toEqual(['shell-chain', 'hole-chain']);

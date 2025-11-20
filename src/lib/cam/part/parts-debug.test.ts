@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { type Part } from '$lib/cam/part/interfaces';
+import { type PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
 import { getChainPartType } from '$lib/test/parts';
 
 describe('Parts Store Chain Type Detection', () => {
     // Helper function to create test parts matching the real structure
-    function createTestPartWithHoles(): Part {
+    function createTestPartWithHoles(): PartData {
         return {
             id: 'part-1',
             shell: {
@@ -41,18 +42,21 @@ describe('Parts Store Chain Type Detection', () => {
                 },
             ],
             slots: [],
+            layerName: '0',
         };
     }
 
     it('should correctly identify shell chains', () => {
-        const parts = [createTestPartWithHoles()];
+        const partData = createTestPartWithHoles();
+        const parts = [new Part(partData)];
 
         const shellType = getChainPartType('chain-shell', parts);
         expect(shellType).toBe(PartType.SHELL);
     });
 
     it('should correctly identify hole chains', () => {
-        const parts = [createTestPartWithHoles()];
+        const partData = createTestPartWithHoles();
+        const parts = [new Part(partData)];
 
         const hole1Type = getChainPartType('chain-hole-1', parts);
         const hole2Type = getChainPartType('chain-hole-2', parts);
@@ -62,7 +66,8 @@ describe('Parts Store Chain Type Detection', () => {
     });
 
     it('should return null for unknown chains', () => {
-        const parts = [createTestPartWithHoles()];
+        const partData = createTestPartWithHoles();
+        const parts = [new Part(partData)];
 
         const unknownType = getChainPartType('unknown-chain', parts);
         expect(unknownType).toBeNull();
@@ -76,8 +81,8 @@ describe('Parts Store Chain Type Detection', () => {
     });
 
     it('should work with multiple parts', () => {
-        const part1 = createTestPartWithHoles();
-        const part2: Part = {
+        const part1Data = createTestPartWithHoles();
+        const part2Data: PartData = {
             id: 'part-2',
             shell: {
                 id: 'chain-shell-2',
@@ -87,9 +92,10 @@ describe('Parts Store Chain Type Detection', () => {
             boundingBox: { min: { x: 30, y: 30 }, max: { x: 50, y: 50 } },
             voids: [],
             slots: [],
+            layerName: '0',
         };
 
-        const parts = [part1, part2];
+        const parts = [new Part(part1Data), new Part(part2Data)];
 
         expect(getChainPartType('chain-shell', parts)).toBe(PartType.SHELL);
         expect(getChainPartType('chain-shell-2', parts)).toBe(PartType.SHELL);

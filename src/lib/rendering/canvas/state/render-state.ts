@@ -2,12 +2,12 @@
  * Centralized render state for the canvas rendering pipeline
  */
 
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { Part } from '$lib/cam/part/classes.svelte';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import type { Operation } from '$lib/cam/operation/interface';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
@@ -112,7 +112,7 @@ interface OverlayState {
  */
 export interface RenderState {
     // Core drawing data
-    drawing: Drawing | null;
+    drawing: DrawingData | null;
 
     // Transform and viewport
     transform: TransformState;

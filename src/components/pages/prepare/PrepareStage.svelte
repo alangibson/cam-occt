@@ -1,127 +1,58 @@
 <script lang="ts">
     import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-    import {
-        analyzeChainTraversal,
-        normalizeChain,
-    } from '$lib/geometry/chain/chain-normalization';
+    import { analyzeChainTraversal } from '$lib/geometry/chain/chain-normalization';
     import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
     import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
     import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
-    import { detectParts } from '$lib/cam/part/part-detection';
-    import { type PartDetectionWarning } from '$lib/cam/part/interfaces';
     import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-    import { isChainClosed } from '$lib/geometry/chain/functions';
-    import { tessellateShape } from '$lib/geometry/shape/functions';
-    import {
-        getShapeEndPoint,
-        getShapeStartPoint,
-    } from '$lib/geometry/shape/functions';
     import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
     import ShowPanel from '$components/panels/ShowPanel.svelte';
     import { partStore } from '$lib/stores/parts/store';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-    import { tessellationStore } from '$lib/stores/tessellation/store';
-    import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { getReactiveUnitSymbol } from '$lib/config/units/units';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import AccordionPanel from '$components/panels/AccordionPanel.svelte';
     import InspectPanel from '$components/panels/InspectPanel.svelte';
-    import PartsPanel from '$components/panels/PartsPanel.svelte';
-    import ChainsPanel from '$components/panels/ChainsPanel.svelte';
     import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
 
     // Props from WorkflowContainer for shared canvas
-    export let sharedCanvas: typeof DrawingCanvasContainer;
-    export let canvasStage: WorkflowStage;
-    export let onChainClick: ((chainId: string) => void) | null = null;
-    export let onPartClick: ((partId: string) => void) | null = null;
-    export let onChainHover: ((chainId: string) => void) | null = null;
-    export let onChainHoverEnd: (() => void) | null = null;
-    export let onPartHover: ((partId: string) => void) | null = null;
-    export let onPartHoverEnd: (() => void) | null = null;
+    let {
+        sharedCanvas,
+        canvasStage,
+        onChainClick = null,
+        onPartClick = null,
+        onChainHover: _onChainHover = null,
+        onChainHoverEnd: _onChainHoverEnd = null,
+    }: {
+        sharedCanvas: typeof DrawingCanvasContainer;
+        canvasStage: WorkflowStage;
+        onChainClick?: ((chainId: string) => void) | null;
+        onPartClick?: ((partId: string) => void) | null;
+        onChainHover?: ((chainId: string) => void) | null;
+        onChainHoverEnd?: (() => void) | null;
+    } = $props();
 
     // Resizable columns state - initialize from store, update local variables during drag
-    let leftColumnWidth = $prepareStageStore.leftColumnWidth;
-    let rightColumnWidth = $prepareStageStore.rightColumnWidth;
-    let isDraggingLeft = false;
-    let isDraggingRight = false;
+    let leftColumnWidth = $state($prepareStageStore.leftColumnWidth);
+    let rightColumnWidth = $state($prepareStageStore.rightColumnWidth);
+    let isDraggingLeft = $state(false);
+    let isDraggingRight = $state(false);
     let startX = 0;
     let startWidth = 0;
 
     // Chain detection parameters
-    let isDetectingChains = false;
-    let isDetectingParts = false;
-    let isNormalizing = false;
-    let isOptimizingStarts = false;
+    let isOptimizingStarts = $state(false);
 
     // Algorithm parameters - use store for persistence
-    $: algorithmParams = $prepareStageStore.algorithmParams;
+    const algorithmParams = $derived($prepareStageStore.algorithmParams);
 
     // Helper functions to update algorithm parameters
     function updateJoinColinearLinesTolerance(value: number) {
         prepareStageStore.updateAlgorithmParam('joinColinearLines', {
             tolerance: value,
-        });
-    }
-
-    function updateChainDetectionTolerance(value: number) {
-        prepareStageStore.updateAlgorithmParam('chainDetection', {
-            tolerance: value,
-        });
-    }
-
-    function _updateNormalizationTolerance(value: number) {
-        prepareStageStore.updateAlgorithmParam('chainNormalization', {
-            traversalTolerance: value,
-        });
-    }
-
-    function _updateNormalizationGap(value: number) {
-        prepareStageStore.updateAlgorithmParam('chainNormalization', {
-            maxTraversalAttempts: value,
-        });
-    }
-
-    function _updateStartPointOptimizationEnabled(_value: boolean) {
-        // This function is not used anymore as splitPosition is a string, not boolean
-        // Keeping for compatibility but will be removed later
-    }
-
-    function _updateStartPointOptimizationDistance(value: number) {
-        prepareStageStore.updateAlgorithmParam('startPointOptimization', {
-            tolerance: value,
-        });
-    }
-
-    function _updatePartDetectionTolerance(_value: number) {
-        // Part detection doesn't have a tolerance parameter
-        // This function should not be used
-    }
-
-    function updateTessellationCirclePoints(value: number) {
-        prepareStageStore.updateAlgorithmParam('partDetection', {
-            circleTessellationPoints: value,
-        });
-    }
-
-    function updateTessellationArcTolerance(value: number) {
-        prepareStageStore.updateAlgorithmParam('partDetection', {
-            tessellationTolerance: value,
-        });
-    }
-
-    function updateNormalizationTraversalTolerance(value: number) {
-        prepareStageStore.updateAlgorithmParam('chainNormalization', {
-            traversalTolerance: value,
-        });
-    }
-
-    function updateNormalizationMaxAttempts(value: number) {
-        prepareStageStore.updateAlgorithmParam('chainNormalization', {
-            maxTraversalAttempts: value,
         });
     }
 
@@ -137,71 +68,33 @@
         });
     }
 
-    function updatePartDetectionDecimalPrecision(value: number) {
-        prepareStageStore.updateAlgorithmParam('partDetection', {
-            decimalPrecision: value,
-        });
-    }
-
-    function updatePartDetectionTessellationEnabled(value: boolean) {
-        prepareStageStore.updateAlgorithmParam('partDetection', {
-            enableTessellation: value,
-        });
-    }
-
     // Reactive chain and part data
-    $: detectedChains = $chainStore.chains;
-    $: detectedParts = $partStore.parts;
-    $: partWarnings = $partStore.warnings;
+    const drawing = $derived($drawingStore.drawing);
+    const detectedChains = $derived(
+        drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
+            : []
+    );
+    const partWarnings = $derived($partStore.warnings);
 
-    // Update Prepare stage overlay when tessellation changes (only when on prepare stage)
-    $: if (
-        $workflowStore.currentStage === WorkflowStage.PREPARE &&
-        $tessellationStore.isActive &&
-        $tessellationStore.points.length > 0
-    ) {
-        // Convert tessellation store points to overlay format
-        const _tessellationPoints = $tessellationStore.points.map((point) => ({
-            x: point.x,
-            y: point.y,
-            shapeId: point.shapeId, // Use existing shapeId from tessellation store
-            chainId: point.chainId,
-        }));
-        // Tessellation points will be automatically displayed by DrawingCanvas reactivity
-    } else if ($workflowStore.currentStage === WorkflowStage.PREPARE) {
-        // Tessellation points clearing handled by DrawingCanvas reactivity
-    }
+    // Tessellation points are automatically displayed by DrawingCanvas reactivity
 
     // Chain normalization analysis - use store for persistence
-    $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
-
-    // Chain selection state
-    $: _highlightedChainId = $chainStore.highlightedChainId;
-    $: _hoveredPartId = $partStore.hoveredPartId;
+    const chainNormalizationResults = $derived(
+        $prepareStageStore.chainNormalizationResults
+    );
 
     // Tessellation state
 
-    // Chain detection state
-    $: chainsDetected = detectedChains.length > 0;
-
-    // Normalization state - check if original state exists AND chains are detected
-    $: normalizationApplied =
-        chainsDetected &&
-        $prepareStageStore.originalShapesBeforeNormalization !== null &&
-        $prepareStageStore.originalChainsBeforeNormalization !== null;
-
     // Optimization state - check if original state exists AND chains are detected
-    $: optimizationApplied =
-        chainsDetected &&
-        $prepareStageStore.originalShapesBeforeOptimization !== null &&
-        $prepareStageStore.originalChainsBeforeOptimization !== null;
-
-    // Parts detection state - use store flag AND chains must be detected
-    $: partsDetectionApplied =
-        chainsDetected && $prepareStageStore.partsDetected;
+    const optimizationApplied = $derived(
+        detectedChains.length > 0 &&
+            $prepareStageStore.originalShapesBeforeOptimization !== null &&
+            $prepareStageStore.originalChainsBeforeOptimization !== null
+    );
 
     // Auto-analyze chains for traversal issues when chains change
-    $: {
+    $effect(() => {
         if (detectedChains.length > 0) {
             const newResults = analyzeChainTraversal(
                 detectedChains,
@@ -212,165 +105,22 @@
             prepareStageStore.clearChainNormalizationResults();
             chainStore.selectChain(null);
         }
-    }
+    });
 
     // Collect all issues from chain normalization
-    $: chainTraversalIssues = chainNormalizationResults.flatMap((result) =>
-        result.issues.map((issue) => ({
-            ...issue,
-            chainCanTraverse: result.canTraverse,
-            chainDescription: result.description,
-        }))
+    const chainTraversalIssues = $derived(
+        chainNormalizationResults.flatMap((result) =>
+            result.issues.map((issue) => ({
+                ...issue,
+                chainCanTraverse: result.canTraverse,
+                chainDescription: result.description,
+            }))
+        )
     );
 
     function handleNext() {
         workflowStore.completeStage(WorkflowStage.PREPARE);
         workflowStore.setStage(WorkflowStage.PROGRAM);
-    }
-
-    function handleDetectChains() {
-        if (chainsDetected && !isDetectingChains) {
-            // Restore drawing to the earliest saved state
-            // Priority: normalization first (if available), then optimization, then current state
-            if ($prepareStageStore.originalShapesBeforeNormalization !== null) {
-                const originalState =
-                    prepareStageStore.restoreOriginalStateFromNormalization();
-                if (originalState) {
-                    drawingStore.replaceAllShapes(originalState.shapes);
-                    console.log(
-                        'Restored drawing to state before normalization'
-                    );
-                }
-            } else if (
-                $prepareStageStore.originalShapesBeforeOptimization !== null
-            ) {
-                const originalState =
-                    prepareStageStore.restoreOriginalStateFromOptimization();
-                if (originalState) {
-                    drawingStore.replaceAllShapes(originalState.shapes);
-                    console.log(
-                        'Restored drawing to state before optimization'
-                    );
-                }
-            }
-
-            // Clear chains and all dependent state
-            chainStore.clearChains();
-            partStore.clearParts();
-            tessellationStore.clearTessellation();
-            prepareStageStore.clearChainNormalizationResults();
-            prepareStageStore.clearOriginalNormalizationState();
-            prepareStageStore.clearOriginalOptimizationState();
-            prepareStageStore.setPartsDetected(false);
-            // Chain endpoints and tessellation points clearing handled by DrawingCanvas reactivity
-            chainStore.selectChain(null);
-            console.log('Cleared all chains and dependent state');
-            return;
-        }
-
-        isDetectingChains = true;
-
-        try {
-            // Get current drawing shapes from drawing store
-            const currentDrawing = $drawingStore.drawing;
-            if (!currentDrawing || !currentDrawing.shapes) {
-                console.warn('No drawing available for chain detection');
-                chainStore.setChains([]);
-                return;
-            }
-
-            // Update tolerance in store
-            chainStore.setTolerance(algorithmParams.chainDetection.tolerance);
-
-            // Detect chains and update store
-            const chains = detectShapeChains(currentDrawing.shapes, {
-                tolerance: algorithmParams.chainDetection.tolerance,
-            });
-            chainStore.setChains(chains);
-
-            console.log(
-                `Detected ${chains.length} chains with ${chains.reduce((sum, chain) => sum + chain.shapes.length, 0)} total shapes`
-            );
-        } catch (error) {
-            console.error('Error detecting chains:', error);
-            chainStore.setChains([]);
-        } finally {
-            isDetectingChains = false;
-        }
-    }
-
-    async function handleNormalizeChains() {
-        // Handle clear operation if normalization has been applied
-        if (normalizationApplied && !isNormalizing) {
-            const originalState =
-                prepareStageStore.restoreOriginalStateFromNormalization();
-            if (originalState) {
-                // Restore original shapes to drawing
-                drawingStore.replaceAllShapes(originalState.shapes);
-
-                // Restore original chains
-                chainStore.setChains(originalState.chains);
-
-                // Clear the saved original state
-                prepareStageStore.clearOriginalNormalizationState();
-
-                // Overlays will be automatically updated by DrawingCanvas reactivity
-
-                console.log('Restored original chains before normalization');
-                return;
-            }
-        }
-
-        const currentDrawing = $drawingStore.drawing;
-        if (!currentDrawing || !currentDrawing.shapes) {
-            console.warn('No drawing available to normalize');
-            return;
-        }
-
-        if (detectedChains.length === 0) {
-            console.warn('No chains detected. Please detect chains first.');
-            return;
-        }
-
-        isNormalizing = true;
-
-        try {
-            // Save original state before normalization
-            prepareStageStore.saveOriginalStateForNormalization(
-                currentDrawing.shapes,
-                detectedChains
-            );
-
-            // Normalize all chains
-            const normalizedChains = detectedChains.map((chain) =>
-                normalizeChain(chain, algorithmParams.chainNormalization)
-            );
-
-            // Flatten normalized chains back to shapes
-            const normalizedShapes = normalizedChains.flatMap(
-                (chain) => chain.shapes
-            );
-
-            // Update the drawing store with normalized shapes
-            drawingStore.replaceAllShapes(normalizedShapes);
-
-            // Re-detect chains after normalization to update the chain store
-            const newChains = detectShapeChains(normalizedShapes, {
-                tolerance: algorithmParams.chainDetection.tolerance,
-            });
-            chainStore.setChains(newChains);
-
-            // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
-            // Overlays will be automatically updated by DrawingCanvas reactivity
-            isNormalizing = false; // Reset flag
-
-            console.log(
-                `Normalized chains. Re-detected ${newChains.length} chains.`
-            );
-        } catch (error) {
-            console.error('Error during chain normalization:', error);
-            isNormalizing = false; // Reset flag on error
-        }
     }
 
     async function handleOptimizeStarts() {
@@ -382,8 +132,7 @@
                 // Restore original shapes to drawing
                 drawingStore.replaceAllShapes(originalState.shapes);
 
-                // Restore original chains
-                chainStore.setChains(originalState.chains);
+                // Chains auto-regenerate from restored shapes in layers
 
                 // Clear the saved original state
                 prepareStageStore.clearOriginalOptimizationState();
@@ -424,136 +173,18 @@
             // Update the drawing store with optimized shapes
             drawingStore.replaceAllShapes(optimizedShapes);
 
-            // Re-detect chains after optimization to update the chain store
-            const newChains = detectShapeChains(optimizedShapes, {
-                tolerance: algorithmParams.chainDetection.tolerance,
-            });
-            chainStore.setChains(newChains);
+            // Chains auto-regenerate from layers after shapes are replaced
 
             // Force update of overlay after a short delay to ensure drawing is updated (only when on prepare stage)
             // Overlays will be automatically updated by DrawingCanvas reactivity
             isOptimizingStarts = false; // Reset flag
 
             console.log(
-                `Optimized start points. Re-detected ${newChains.length} chains.`
+                `Optimized start points. Chains auto-detected: ${detectedChains.length} chains.`
             );
         } catch (error) {
             console.error('Error during start point optimization:', error);
             isOptimizingStarts = false; // Reset flag on error
-        }
-    }
-
-    async function handleDetectParts() {
-        // Handle clear operation if parts have been detected
-        if (partsDetectionApplied && !isDetectingParts) {
-            // Clear parts and reset detection state
-            partStore.clearParts();
-            prepareStageStore.setPartsDetected(false);
-
-            // Clear tessellation if it was enabled
-            tessellationStore.clearTessellation();
-
-            console.log('Cleared detected parts');
-            return;
-        }
-
-        if (detectedChains.length === 0) {
-            console.warn('No chains detected. Please detect chains first.');
-            return;
-        }
-
-        isDetectingParts = true;
-
-        try {
-            // Add warnings for open chains first
-            const openChainWarnings: PartDetectionWarning[] = [];
-            for (const chain of detectedChains) {
-                if (
-                    !isChainClosed(
-                        chain,
-                        algorithmParams.chainDetection.tolerance
-                    )
-                ) {
-                    const firstShape = chain.shapes[0];
-                    const lastShape = chain.shapes[chain.shapes.length - 1];
-                    const firstStart = getShapeStartPoint(firstShape);
-                    const lastEnd = getShapeEndPoint(lastShape);
-
-                    if (firstStart && lastEnd) {
-                        openChainWarnings.push({
-                            type: 'overlapping_boundary',
-                            chainId: chain.id,
-                            message: `Chain ${chain.id} is open. Start: (${firstStart.x.toFixed(2)}, ${firstStart.y.toFixed(2)}), End: (${lastEnd.x.toFixed(2)}, ${lastEnd.y.toFixed(2)})`,
-                        });
-                    }
-                }
-            }
-
-            const partResult = await detectParts(
-                detectedChains,
-                algorithmParams.chainDetection.tolerance,
-                algorithmParams.partDetection
-            );
-
-            // Combine open chain warnings with part detection warnings
-            const allWarnings = [...openChainWarnings, ...partResult.warnings];
-            partStore.setParts(partResult.parts, allWarnings);
-
-            // Mark parts as detected in the store
-            prepareStageStore.setPartsDetected(true);
-
-            // Handle tessellation if enabled
-            if (algorithmParams.partDetection.enableTessellation) {
-                // Generate tessellation points
-                const tessellationPoints: TessellationPoint[] = [];
-
-                for (const chain of detectedChains) {
-                    for (
-                        let shapeIndex = 0;
-                        shapeIndex < chain.shapes.length;
-                        shapeIndex++
-                    ) {
-                        const shape = chain.shapes[shapeIndex];
-                        const shapePoints = tessellateShape(
-                            shape,
-                            algorithmParams.partDetection
-                        );
-
-                        for (
-                            let pointIndex = 0;
-                            pointIndex < shapePoints.length;
-                            pointIndex++
-                        ) {
-                            const point = shapePoints[pointIndex];
-                            tessellationPoints.push({
-                                x: point.x,
-                                y: point.y,
-                                chainId: chain.id,
-                                shapeId: `${chain.id}-shape-${shapeIndex}`,
-                            });
-                        }
-                    }
-                }
-
-                tessellationStore.setTessellation(tessellationPoints);
-                console.log(
-                    `Generated ${tessellationPoints.length} tessellation points for ${detectedChains.length} chains`
-                );
-            } else {
-                // Clear tessellation if disabled
-                tessellationStore.clearTessellation();
-            }
-
-            console.log(
-                `Detected ${partResult.parts.length} parts with ${allWarnings.length} warnings`
-            );
-        } catch (error) {
-            console.error('Error detecting parts:', error);
-            partStore.setParts([], []);
-            prepareStageStore.setPartsDetected(false);
-            tessellationStore.clearTessellation();
-        } finally {
-            isDetectingParts = false;
         }
     }
 
@@ -633,40 +264,13 @@
         console.log('Applying: Translate to Positive');
         handleTranslateToPositive();
 
-        // Detect chains if not already detected
-        if (!chainsDetected) {
-            console.log('Applying: Detect Chains');
-            handleDetectChains();
+        // Optimize starts if not already optimized
+        if (!optimizationApplied && detectedChains.length > 0) {
+            console.log('Applying: Optimize Starts');
+            handleOptimizeStarts();
 
-            // Wait a bit for chain detection to complete
+            // Wait a bit for optimization to complete
             await new Promise((resolve) => setTimeout(resolve, 100));
-        }
-
-        // Check if chains were detected and apply subsequent actions
-        if (detectedChains.length > 0) {
-            // Normalize chains if not already normalized
-            if (!normalizationApplied) {
-                console.log('Applying: Normalize Chains');
-                handleNormalizeChains();
-
-                // Wait a bit for normalization to complete
-                await new Promise((resolve) => setTimeout(resolve, 100));
-            }
-
-            // Optimize starts if not already optimized
-            if (!optimizationApplied) {
-                console.log('Applying: Optimize Starts');
-                handleOptimizeStarts();
-
-                // Wait a bit for optimization to complete
-                await new Promise((resolve) => setTimeout(resolve, 100));
-            }
-
-            // Detect parts if not already detected
-            if (!partsDetectionApplied) {
-                console.log('Applying: Detect Parts');
-                handleDetectParts();
-            }
         }
     }
 
@@ -676,28 +280,10 @@
         const clearActions = [];
 
         // Add clear actions based on current state
-        if (partsDetectionApplied) {
-            clearActions.push({
-                name: 'Clear Parts',
-                handler: handleDetectParts,
-            });
-        }
         if (optimizationApplied) {
             clearActions.push({
                 name: 'Clear Optimization',
                 handler: handleOptimizeStarts,
-            });
-        }
-        if (normalizationApplied) {
-            clearActions.push({
-                name: 'Clear Normalization',
-                handler: handleNormalizeChains,
-            });
-        }
-        if (chainsDetected) {
-            clearActions.push({
-                name: 'Clear Chains',
-                handler: handleDetectChains,
             });
         }
 
@@ -708,10 +294,12 @@
         }
     }
 
-    // Auto-complete prepare stage when chains or parts are detected
-    $: if (detectedChains.length > 0 || detectedParts.length > 0) {
-        workflowStore.completeStage(WorkflowStage.PREPARE);
-    }
+    // Auto-complete prepare stage when chains are detected
+    $effect(() => {
+        if (detectedChains.length > 0) {
+            workflowStore.completeStage(WorkflowStage.PREPARE);
+        }
+    });
 
     // Column widths are now persisted via the prepare stage store - no need for localStorage
 
@@ -811,10 +399,6 @@
                 type="button"
             ></button>
 
-            <PartsPanel {onPartClick} {onPartHover} {onPartHoverEnd} />
-
-            <ChainsPanel {onChainClick} {onChainHover} {onChainHoverEnd} />
-
             <AccordionPanel title="Next Stage" isExpanded={true}>
                 <div class="next-stage-content">
                     <button class="next-button" onclick={handleNext}>
@@ -829,12 +413,14 @@
 
         <!-- Center Column -->
         <div class="center-column">
-            <svelte:component
-                this={sharedCanvas}
-                currentStage={canvasStage}
-                {onChainClick}
-                {onPartClick}
-            />
+            {#if sharedCanvas}
+                {@const SharedCanvas = sharedCanvas}
+                <SharedCanvas
+                    currentStage={canvasStage}
+                    {onChainClick}
+                    {onPartClick}
+                />
+            {/if}
         </div>
 
         <!-- Right Column -->
@@ -862,10 +448,7 @@
                     <button
                         class="header-action-button clear-all-button"
                         onclick={handleClearAll}
-                        disabled={!chainsDetected &&
-                            !normalizationApplied &&
-                            !optimizationApplied &&
-                            !partsDetectionApplied}
+                        disabled={!optimizationApplied}
                         title="Clear all actions in reverse order"
                     >
                         Clear
@@ -972,155 +555,6 @@
                     </div>
                 </details>
 
-                <!-- Detect Chains -->
-                <details class="param-group-details">
-                    <summary class="param-group-summary">
-                        <span class="action-title">Detect Chains</span>
-                        <button
-                            class="apply-button"
-                            class:clear-button={chainsDetected &&
-                                !isDetectingChains}
-                            onclick={(e) => {
-                                e.stopPropagation();
-                                handleDetectChains();
-                            }}
-                            disabled={isDetectingChains}
-                        >
-                            {isDetectingChains
-                                ? 'Detecting...'
-                                : chainsDetected
-                                  ? 'Clear'
-                                  : 'Apply'}
-                        </button>
-                    </summary>
-                    <div class="param-group-content">
-                        <div class="prepare-action-description">
-                            Analyzes shapes to find connected sequences that
-                            form continuous cutting paths.
-                        </div>
-                        <label class="param-label">
-                            Connection Tolerance:
-                            <div class="param-input-with-units">
-                                <input
-                                    type="number"
-                                    value={algorithmParams.chainDetection
-                                        .tolerance}
-                                    oninput={(e) =>
-                                        updateChainDetectionTolerance(
-                                            parseFloat(e.currentTarget.value)
-                                        )}
-                                    min="0.001"
-                                    max="10"
-                                    step="0.001"
-                                    class="param-input"
-                                    title="Distance tolerance for connecting shapes into chains."
-                                />
-                                <span class="param-units">
-                                    {getReactiveUnitSymbol(
-                                        $settingsStore.settings
-                                            .measurementSystem
-                                    )}
-                                </span>
-                            </div>
-                            <div class="param-description">
-                                Maximum distance between shape endpoints to be
-                                considered connected. Higher values will connect
-                                shapes that are further apart, potentially
-                                creating longer chains. Lower values require
-                                more precise endpoint alignment.
-                            </div>
-                        </label>
-                    </div>
-                </details>
-
-                <!-- Normalize Chains -->
-                <details class="param-group-details">
-                    <summary class="param-group-summary">
-                        <span class="action-title">Normalize Chains</span>
-                        <button
-                            class="apply-button"
-                            class:clear-button={normalizationApplied &&
-                                !isNormalizing}
-                            onclick={(e) => {
-                                e.stopPropagation();
-                                handleNormalizeChains();
-                            }}
-                            disabled={isNormalizing ||
-                                detectedChains.length === 0}
-                        >
-                            {isNormalizing
-                                ? 'Normalizing...'
-                                : normalizationApplied
-                                  ? 'Clear'
-                                  : 'Apply'}
-                        </button>
-                    </summary>
-                    <div class="param-group-content">
-                        <div class="prepare-action-description">
-                            Ensures all shapes in chains are oriented
-                            consistently for proper traversal.
-                        </div>
-                        <label class="param-label">
-                            Traversal Tolerance:
-                            <div class="param-input-with-units">
-                                <input
-                                    type="number"
-                                    value={algorithmParams.chainNormalization
-                                        .traversalTolerance}
-                                    oninput={(e) =>
-                                        updateNormalizationTraversalTolerance(
-                                            parseFloat(e.currentTarget.value)
-                                        )}
-                                    min="0.001"
-                                    max="1.0"
-                                    step="0.001"
-                                    class="param-input"
-                                    title="Tolerance for floating point comparison in traversal analysis."
-                                />
-                                <span class="param-units">
-                                    {getReactiveUnitSymbol(
-                                        $settingsStore.settings
-                                            .measurementSystem
-                                    )}
-                                </span>
-                            </div>
-                            <div class="param-description">
-                                Precision tolerance for checking if shape
-                                endpoints align during chain traversal analysis.
-                                Smaller values require more precise alignment
-                                between consecutive shapes. Used to determine if
-                                chains can be traversed end-to-start without
-                                gaps.
-                            </div>
-                        </label>
-
-                        <label class="param-label">
-                            Max Traversal Attempts:
-                            <input
-                                type="number"
-                                value={algorithmParams.chainNormalization
-                                    .maxTraversalAttempts}
-                                oninput={(e) =>
-                                    updateNormalizationMaxAttempts(
-                                        parseFloat(e.currentTarget.value)
-                                    )}
-                                min="1"
-                                max="10"
-                                step="1"
-                                class="param-input"
-                                title="Maximum number of traversal attempts per chain."
-                            />
-                            <div class="param-description">
-                                Limits how many different starting points the
-                                algorithm tries when analyzing chain traversal.
-                                Higher values are more thorough but slower for
-                                complex chains. Lower values improve performance
-                                but may miss valid traversal paths.
-                            </div>
-                        </label>
-                    </div>
-                </details>
-
                 <!-- Optimize Starts -->
                 <details class="param-group-details">
                     <summary class="param-group-summary">
@@ -1200,132 +634,6 @@
                                 values are more permissive for connecting
                                 shapes. Lower values require more precise
                                 geometric alignment.
-                            </div>
-                        </label>
-                    </div>
-                </details>
-
-                <!-- Detect Parts -->
-                <details class="param-group-details">
-                    <summary class="param-group-summary">
-                        <span class="action-title">Detect Parts</span>
-                        <button
-                            class="apply-button"
-                            class:clear-button={partsDetectionApplied &&
-                                !isDetectingParts}
-                            onclick={(e) => {
-                                e.stopPropagation();
-                                handleDetectParts();
-                            }}
-                            disabled={isDetectingParts ||
-                                detectedChains.length === 0}
-                        >
-                            {isDetectingParts
-                                ? 'Detecting...'
-                                : partsDetectionApplied
-                                  ? 'Clear'
-                                  : 'Apply'}
-                        </button>
-                    </summary>
-                    <div class="param-group-content">
-                        <div class="prepare-action-description">
-                            Identifies parts (outer shells with inner holes)
-                            from closed chains for advanced cutting operations.
-                        </div>
-                        <label class="param-label">
-                            Circle Points:
-                            <input
-                                type="number"
-                                value={algorithmParams.partDetection
-                                    .circleTessellationPoints}
-                                oninput={(e) =>
-                                    updateTessellationCirclePoints(
-                                        parseFloat(e.currentTarget.value)
-                                    )}
-                                min="8"
-                                max="128"
-                                step="1"
-                                class="param-input"
-                                title="Number of points to tessellate circles into. Higher = better precision but slower."
-                            />
-                            <div class="param-description">
-                                Number of straight line segments used to
-                                approximate circles for geometric operations.
-                                Higher values provide better accuracy for
-                                containment detection but slower performance.
-                                Increase for complex files with precision
-                                issues.
-                            </div>
-                        </label>
-
-                        <label class="param-label">
-                            Arc Tolerance (mm):
-                            <input
-                                type="number"
-                                value={algorithmParams.partDetection
-                                    .tessellationTolerance}
-                                oninput={(e) =>
-                                    updateTessellationArcTolerance(
-                                        parseFloat(e.currentTarget.value)
-                                    )}
-                                min="0.001"
-                                max="1.0"
-                                step="0.01"
-                                class="param-input"
-                                title="Maximum allowed deviation between arc and tessellated chords in mm."
-                            />
-                            <div class="param-description">
-                                Maximum allowed deviation between the true arc
-                                and tessellated line segments (chord error).
-                                Smaller values create more points for better
-                                precision. Larger values use fewer points for
-                                faster processing. Default: 0.1mm
-                            </div>
-                        </label>
-
-                        <label class="param-label">
-                            Decimal Precision:
-                            <input
-                                type="number"
-                                value={algorithmParams.partDetection
-                                    .decimalPrecision}
-                                oninput={(e) =>
-                                    updatePartDetectionDecimalPrecision(
-                                        parseFloat(e.currentTarget.value)
-                                    )}
-                                min="1"
-                                max="6"
-                                step="1"
-                                class="param-input"
-                                title="Decimal precision for coordinate rounding."
-                            />
-                            <div class="param-description">
-                                Number of decimal places for coordinate rounding
-                                to avoid floating-point errors. Higher values
-                                preserve more precision but may cause numerical
-                                instability. Lower values improve robustness but
-                                may lose fine geometric details.
-                            </div>
-                        </label>
-
-                        <label class="param-label">
-                            <input
-                                type="checkbox"
-                                checked={algorithmParams.partDetection
-                                    .enableTessellation}
-                                onchange={(e) =>
-                                    updatePartDetectionTessellationEnabled(
-                                        e.currentTarget.checked
-                                    )}
-                                class="param-checkbox"
-                                title="Show tessellation visualization points during parts detection."
-                            />
-                            Enable Tessellation Visualization
-                            <div class="param-description">
-                                Shows visualization points along chain paths for
-                                analysis and debugging during parts detection.
-                                This helps visualize how shapes are being
-                                processed for containment analysis.
                             </div>
                         </label>
                     </div>
@@ -1752,11 +1060,6 @@
         outline: none;
         border-color: #8b5cf6;
         box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
-    }
-
-    .param-checkbox {
-        margin-right: 0.5rem;
-        width: auto;
     }
 
     .param-description {

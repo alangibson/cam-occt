@@ -1,7 +1,7 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { normalizeVector } from '$lib/geometry/math/functions';
@@ -46,7 +46,7 @@ export function calculateLeads(
     leadInConfig: LeadConfig,
     leadOutConfig: LeadConfig,
     cutDirection: CutDirection = CutDirection.NONE,
-    part: Part | undefined,
+    part: PartData | undefined,
     cutNormal: Point2D
 ): LeadResult {
     const result: LeadResult = {};
@@ -141,7 +141,7 @@ function calculateLead(
     isHole: boolean,
     isShell: boolean,
     cutDirection: CutDirection,
-    part: Part | undefined,
+    part: PartData | undefined,
     warnings: string[],
     cutNormal: Point2D
 ): Lead | undefined {
@@ -180,7 +180,7 @@ function calculateArcLead(
     isHole: boolean,
     isShell: boolean,
     cutDirection: CutDirection,
-    part: Part | undefined,
+    part: PartData | undefined,
     warnings: string[],
     flipSide: boolean,
     manualAngle: number | undefined,
@@ -405,7 +405,7 @@ function checkArcExitsHole(
  */
 function isLeadInPart(
     leadGeometry: Arc,
-    part: Part,
+    part: PartData,
     connectionPoint?: Point2D,
     tolerance?: number
 ): boolean {

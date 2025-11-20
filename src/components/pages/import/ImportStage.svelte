@@ -2,7 +2,6 @@
     import FileImport from './FileImport.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
     import { overlayStore } from '$lib/stores/overlay/store';
     import { tessellationStore } from '$lib/stores/tessellation/store';
@@ -28,7 +27,7 @@
         workflowStore.reset();
 
         // Clear all stage-specific data
-        chainStore.clearChains();
+        // Chains are auto-generated from drawing layers, no need to clear them
         partStore.clearParts();
         overlayStore.clearAllOverlays();
         tessellationStore.clearTessellation();
@@ -68,13 +67,8 @@
                     : Unit.INCH;
 
             // Update the drawing with concrete units
-            drawingStore.setDrawing(
-                {
-                    ...drawing,
-                    units: targetUnit,
-                },
-                $drawingStore.fileName ?? undefined
-            );
+            drawing.units = targetUnit;
+            drawingStore.setDrawing(drawing, drawing.fileName);
         }
 
         // Advance to next enabled stage when user clicks "Import >"

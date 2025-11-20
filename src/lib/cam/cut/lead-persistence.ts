@@ -7,7 +7,7 @@
  */
 
 import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
@@ -74,7 +74,7 @@ export function getCachedLeadGeometry(cut: Cut): LeadResult {
 export async function calculateLeadPoints(
     cut: Cut,
     chainMap: Map<string, Chain> | undefined,
-    partMap: Map<string, Part> | undefined,
+    partMap: Map<string, PartData> | undefined,
     leadType: 'leadIn' | 'leadOut'
 ): Promise<Point2D[] | undefined> {
     if (!chainMap || !partMap) {
@@ -136,7 +136,7 @@ async function prepareLeadCalculation(
     chainForLeads: Chain;
     leadInConfig: LeadConfig;
     leadOutConfig: LeadConfig;
-    offsetPart?: Part;
+    offsetPart?: PartData;
 }> {
     // Use offset shapes for lead calculation if available
     const chainForLeads = cut.offset
@@ -153,7 +153,7 @@ async function prepareLeadCalculation(
     const leadOutConfig = createLeadOutConfig(cut);
 
     // If using offset geometry, create a Part from offset geometry for proper material avoidance
-    let offsetPart: Part | undefined;
+    let offsetPart: PartData | undefined;
     if (cut.offset) {
         try {
             // Create a single-chain array for part detection on offset geometry

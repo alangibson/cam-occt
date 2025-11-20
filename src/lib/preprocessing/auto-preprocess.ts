@@ -7,29 +7,13 @@
 import { get } from 'svelte/store';
 import { settingsStore } from '$lib/stores/settings/store';
 import { drawingStore } from '$lib/stores/drawing/store';
-import { chainStore } from '$lib/stores/chains/store';
-import { partStore } from '$lib/stores/parts/store';
-import { tessellationStore } from '$lib/stores/tessellation/store';
 import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import { PreprocessingStep } from '$lib/config/settings/enums';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import {
-    normalizeChain,
-    analyzeChainTraversal,
-} from '$lib/geometry/chain/chain-normalization';
 import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
-import { detectParts } from '$lib/cam/part/part-detection';
-import { type PartDetectionWarning } from '$lib/cam/part/interfaces';
-import { isChainClosed } from '$lib/geometry/chain/functions';
-import {
-    getShapeEndPoint,
-    getShapeStartPoint,
-    tessellateShape,
-} from '$lib/geometry/shape/functions';
-import type { TessellationPoint } from '$lib/stores/tessellation/interfaces';
 import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
 
 /**
@@ -118,83 +102,24 @@ async function applyPreprocessingStep(
             }
             break;
 
-        case PreprocessingStep.DetectChains:
-            console.log('Applying: Detect Chains');
-            const currentDrawing2 = get(drawingStore).drawing;
-            if (currentDrawing2 && currentDrawing2.shapes) {
-                // Update tolerance in store
-                chainStore.setTolerance(
-                    algorithmParams.chainDetection.tolerance
-                );
-
-                // Detect chains and update store
-                const chains = detectShapeChains(currentDrawing2.shapes, {
-                    tolerance: algorithmParams.chainDetection.tolerance,
-                });
-                chainStore.setChains(chains);
-
-                console.log(`Detected ${chains.length} chains`);
-            }
-            break;
-
-        case PreprocessingStep.NormalizeChains:
-            console.log('Applying: Normalize Chains');
-            const detectedChains = get(chainStore).chains;
-            if (detectedChains.length === 0) {
-                console.warn('No chains detected. Skipping normalization.');
+        case PreprocessingStep.OptimizeStarts:
+            console.log('Applying: Optimize Starts');
+            const currentDrawing4 = get(drawingStore).drawing;
+            if (!currentDrawing4) {
+                console.warn('No drawing available. Skipping optimization.');
                 return;
             }
 
-            const currentDrawing3 = get(drawingStore).drawing;
-            if (currentDrawing3 && currentDrawing3.shapes) {
-                // Save original state before normalization
-                prepareStageStore.saveOriginalStateForNormalization(
-                    currentDrawing3.shapes,
-                    detectedChains
-                );
-
-                // Normalize all chains
-                const normalizedChains = detectedChains.map((chain) =>
-                    normalizeChain(chain, algorithmParams.chainNormalization)
-                );
-
-                // Flatten normalized chains back to shapes
-                const normalizedShapes = normalizedChains.flatMap(
-                    (chain) => chain.shapes
-                );
-
-                // Update the drawing store with normalized shapes
-                drawingStore.replaceAllShapes(normalizedShapes);
-
-                // Re-detect chains after normalization
-                const newChains = detectShapeChains(normalizedShapes, {
-                    tolerance: algorithmParams.chainDetection.tolerance,
-                });
-                chainStore.setChains(newChains);
-
-                // Update chain normalization analysis
-                const newResults = analyzeChainTraversal(
-                    newChains,
-                    algorithmParams.chainNormalization
-                );
-                prepareStageStore.setChainNormalizationResults(newResults);
-
-                console.log(
-                    `Normalized chains. Re-detected ${newChains.length} chains.`
-                );
-            }
-            break;
-
-        case PreprocessingStep.OptimizeStarts:
-            console.log('Applying: Optimize Starts');
-            const detectedChains2 = get(chainStore).chains;
+            // Get chains from drawing layers
+            const detectedChains2 = Object.values(
+                currentDrawing4.layers
+            ).flatMap((layer) => layer.chains);
             if (detectedChains2.length === 0) {
                 console.warn('No chains detected. Skipping optimization.');
                 return;
             }
 
-            const currentDrawing4 = get(drawingStore).drawing;
-            if (currentDrawing4 && currentDrawing4.shapes) {
+            if (currentDrawing4.shapes) {
                 // Save original state before optimization
                 prepareStageStore.saveOriginalStateForOptimization(
                     currentDrawing4.shapes,
@@ -210,104 +135,18 @@ async function applyPreprocessingStep(
                 // Update the drawing store with optimized shapes
                 drawingStore.replaceAllShapes(optimizedShapes);
 
-                // Re-detect chains after optimization
-                const newChains = detectShapeChains(optimizedShapes, {
-                    tolerance: algorithmParams.chainDetection.tolerance,
-                });
-                chainStore.setChains(newChains);
+                // Chains auto-regenerate from layers after shapes are replaced
+                const updatedDrawing2 = get(drawingStore).drawing;
+                const optimizedChains = updatedDrawing2
+                    ? Object.values(updatedDrawing2.layers).flatMap(
+                          (layer) => layer.chains
+                      )
+                    : [];
 
                 console.log(
-                    `Optimized start points. Re-detected ${newChains.length} chains.`
+                    `Optimized start points. Re-detected ${optimizedChains.length} chains.`
                 );
             }
-            break;
-
-        case PreprocessingStep.DetectParts:
-            console.log('Applying: Detect Parts');
-            const detectedChains3 = get(chainStore).chains;
-            if (detectedChains3.length === 0) {
-                console.warn('No chains detected. Skipping part detection.');
-                return;
-            }
-
-            // Add warnings for open chains first
-            const openChainWarnings: PartDetectionWarning[] = [];
-            for (const chain of detectedChains3) {
-                if (
-                    !isChainClosed(
-                        chain,
-                        algorithmParams.chainDetection.tolerance
-                    )
-                ) {
-                    const firstShape = chain.shapes[0];
-                    const lastShape = chain.shapes[chain.shapes.length - 1];
-                    const firstStart = getShapeStartPoint(firstShape);
-                    const lastEnd = getShapeEndPoint(lastShape);
-
-                    if (firstStart && lastEnd) {
-                        openChainWarnings.push({
-                            type: 'overlapping_boundary',
-                            chainId: chain.id,
-                            message: `Chain ${chain.id} is open. Start: (${firstStart.x.toFixed(2)}, ${firstStart.y.toFixed(2)}), End: (${lastEnd.x.toFixed(2)}, ${lastEnd.y.toFixed(2)})`,
-                        });
-                    }
-                }
-            }
-
-            const partResult = await detectParts(
-                detectedChains3,
-                algorithmParams.chainDetection.tolerance,
-                algorithmParams.partDetection
-            );
-
-            // Combine open chain warnings with part detection warnings
-            const allWarnings = [...openChainWarnings, ...partResult.warnings];
-            partStore.setParts(partResult.parts, allWarnings);
-
-            // Mark parts as detected in the store
-            prepareStageStore.setPartsDetected(true);
-
-            // Handle tessellation if enabled
-            if (algorithmParams.partDetection.enableTessellation) {
-                const tessellationPoints: TessellationPoint[] = [];
-
-                for (const chain of detectedChains3) {
-                    for (
-                        let shapeIndex = 0;
-                        shapeIndex < chain.shapes.length;
-                        shapeIndex++
-                    ) {
-                        const shape = chain.shapes[shapeIndex];
-                        const shapePoints = tessellateShape(
-                            shape,
-                            algorithmParams.partDetection
-                        );
-
-                        for (
-                            let pointIndex = 0;
-                            pointIndex < shapePoints.length;
-                            pointIndex++
-                        ) {
-                            const point = shapePoints[pointIndex];
-                            tessellationPoints.push({
-                                x: point.x,
-                                y: point.y,
-                                chainId: chain.id,
-                                shapeId: `${chain.id}-shape-${shapeIndex}`,
-                            });
-                        }
-                    }
-                }
-
-                tessellationStore.setTessellation(tessellationPoints);
-                console.log(
-                    `Generated ${tessellationPoints.length} tessellation points`
-                );
-            }
-
-            console.log(
-                `Detected ${partResult.parts.length} parts with ${allWarnings.length} warnings`
-            );
             break;
 
         default:

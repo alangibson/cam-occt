@@ -38,9 +38,16 @@
     import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
     import { getCanvasConfigForStage } from '$components/drawing/canvas-config';
 
-    export let onChainClick: ((chainId: string) => void) | null = null; // Callback for chain clicks
-    export let onPartClick: ((partId: string) => void) | null = null; // Callback for part clicks
-    export let currentStage: WorkflowStage; // Current workflow stage for overlay rendering
+    // Properties
+    let {
+        onChainClick = null,
+        onPartClick = null,
+        currentStage,
+    }: {
+        onChainClick?: ((chainId: string) => void) | null;
+        onPartClick?: ((partId: string) => void) | null;
+        currentStage: WorkflowStage;
+    } = $props();
 
     // Canvas elements are now managed by RenderingPipeline/LayerManager
     let coordinator: CoordinateTransformer;
@@ -52,25 +59,33 @@
     // Track previous mouse position for accurate delta calculation during dragging
     let previousDragPos: { x: number; y: number } | null = null;
 
-    $: drawing = $drawingStore.drawing;
-    $: selectedShapes = $drawingStore.selectedShapes;
-    $: hoveredShape = $drawingStore.hoveredShape;
-    $: selectedOffsetShape = $drawingStore.selectedOffsetShape;
-    $: zoomScale = $drawingStore.scale;
-    $: panOffset = $drawingStore.offset;
-    $: displayUnit = $drawingStore.displayUnit;
-    $: layerVisibility = $drawingStore.layerVisibility;
-    $: chains = $chainStore.chains;
-    $: selectedChainIds = $chainStore.selectedChainIds;
-    $: highlightedChainId = $chainStore.highlightedChainId;
-    $: parts = $partStore.parts;
-    $: highlightedPartId = $partStore.highlightedPartId;
-    $: hoveredPartId = $partStore.hoveredPartId;
-    $: selectedPartIds = $partStore.selectedPartIds;
-    $: cutsState = $cutStore;
-    $: operations = $operationsStore;
+    const drawing = $derived($drawingStore.drawing);
+    const selectedShapes = $derived($drawingStore.selectedShapes);
+    const hoveredShape = $derived($drawingStore.hoveredShape);
+    const selectedOffsetShape = $derived($drawingStore.selectedOffsetShape);
+    const zoomScale = $derived($drawingStore.scale);
+    const panOffset = $derived($drawingStore.offset);
+    const displayUnit = $derived($drawingStore.displayUnit);
+    const layerVisibility = $derived($drawingStore.layerVisibility);
+    const chains = $derived(
+        drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
+            : []
+    );
+    const selectedChainIds = $derived($chainStore.selectedChainIds);
+    const highlightedChainId = $derived($chainStore.highlightedChainId);
+    const parts = $derived(
+        drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
+            : []
+    );
+    const highlightedPartId = $derived($partStore.highlightedPartId);
+    const hoveredPartId = $derived($partStore.hoveredPartId);
+    const selectedPartIds = $derived($partStore.selectedPartIds);
+    const cutsState = $derived($cutStore);
+    const operations = $derived($operationsStore);
     // Only show chains as having cuts if their associated operations are enabled
-    $: chainsWithCuts =
+    const chainsWithCuts = $derived(
         cutsState && operations
             ? [
                   ...new Set(
@@ -88,54 +103,71 @@
                           .map((c) => c.chainId)
                   ),
               ]
-            : [];
-    $: selectedCutIds = cutsState?.selectedCutIds;
-    $: highlightedCutId = cutsState?.highlightedCutId;
-    $: tessellationState = $tessellationStore;
-    $: overlayState = $overlayStore;
-    $: currentOverlay = overlayState.overlays[currentStage];
-    $: rapids = $rapidStore.rapids;
-    $: showRapids = $rapidStore.showRapids;
-    $: showRapidDirections = $rapidStore.showRapidDirections;
-    $: selectedRapidIds = $rapidStore.selectedRapidIds;
-    $: highlightedRapidId = $rapidStore.highlightedRapidId;
-    $: shapeVisualization = $shapeVisualizationStore;
-    $: showShapePaths = shapeVisualization.showShapePaths;
-    $: showShapeStartPoints = shapeVisualization.showShapeStartPoints;
-    $: showShapeEndPoints = shapeVisualization.showShapeEndPoints;
-    $: showShapeNormals = shapeVisualization.showShapeNormals;
-    $: showShapeWindingDirection = shapeVisualization.showShapeWindingDirection;
-    $: showShapeTangentLines = shapeVisualization.showShapeTangentLines;
-    $: showShapeTessellation = shapeVisualization.showShapeTessellation;
-    $: chainVisualization = $chainStore;
-    $: showChainPaths = chainVisualization.showChainPaths;
-    $: showChainStartPoints = chainVisualization.showChainStartPoints;
-    $: showChainEndPoints = chainVisualization.showChainEndPoints;
-    $: showChainTangentLines = chainVisualization.showChainTangentLines;
-    $: showChainNormals = chainVisualization.showChainNormals;
-    $: showChainDirections = chainVisualization.showChainDirections;
-    $: showChainTessellation = chainVisualization.showChainTessellation;
-    $: showCutNormals = cutsState.showCutNormals;
-    $: showCutDirections = cutsState.showCutDirections;
-    $: showCutPaths = cutsState.showCutPaths;
-    $: showCutter = $kerfStore.showCutter;
-    $: showCutStartPoints = cutsState.showCutStartPoints;
-    $: showCutEndPoints = cutsState.showCutEndPoints;
-    $: showCutTangentLines = cutsState.showCutTangentLines;
-    $: leadState = $leadStore;
-    $: selectedLeadIds = leadState.selectedLeadIds;
-    $: highlightedLeadId = leadState.highlightedLeadId;
-    $: leadNormals = leadState.showLeadNormals;
-    $: leadPaths = leadState.showLeadPaths;
-    $: leadKerfs = leadState.showLeadKerfs;
-    $: kerfs = $kerfStore.kerfs;
-    $: selectedKerfId = $kerfStore.selectedKerfId;
-    $: highlightedKerfId = $kerfStore.highlightedKerfId;
-    $: showKerfPaths = $kerfStore.showKerfPaths;
-    $: selectionMode = $settingsStore.settings.selectionMode;
+            : []
+    );
+    const selectedCutIds = $derived(cutsState?.selectedCutIds);
+    const highlightedCutId = $derived(cutsState?.highlightedCutId);
+    const tessellationState = $derived($tessellationStore);
+    const overlayState = $derived($overlayStore);
+    const currentOverlay = $derived(overlayState.overlays[currentStage]);
+    const rapids = $derived($rapidStore.rapids);
+    const showRapids = $derived($rapidStore.showRapids);
+    const showRapidDirections = $derived($rapidStore.showRapidDirections);
+    const selectedRapidIds = $derived($rapidStore.selectedRapidIds);
+    const highlightedRapidId = $derived($rapidStore.highlightedRapidId);
+    const shapeVisualization = $derived($shapeVisualizationStore);
+    const showShapePaths = $derived(shapeVisualization.showShapePaths);
+    const showShapeStartPoints = $derived(
+        shapeVisualization.showShapeStartPoints
+    );
+    const showShapeEndPoints = $derived(shapeVisualization.showShapeEndPoints);
+    const showShapeNormals = $derived(shapeVisualization.showShapeNormals);
+    const showShapeWindingDirection = $derived(
+        shapeVisualization.showShapeWindingDirection
+    );
+    const showShapeTangentLines = $derived(
+        shapeVisualization.showShapeTangentLines
+    );
+    const showShapeTessellation = $derived(
+        shapeVisualization.showShapeTessellation
+    );
+    const chainVisualization = $derived($chainStore);
+    const showChainPaths = $derived(chainVisualization.showChainPaths);
+    const showChainStartPoints = $derived(
+        chainVisualization.showChainStartPoints
+    );
+    const showChainEndPoints = $derived(chainVisualization.showChainEndPoints);
+    const showChainTangentLines = $derived(
+        chainVisualization.showChainTangentLines
+    );
+    const showChainNormals = $derived(chainVisualization.showChainNormals);
+    const showChainDirections = $derived(
+        chainVisualization.showChainDirections
+    );
+    const showChainTessellation = $derived(
+        chainVisualization.showChainTessellation
+    );
+    const showCutNormals = $derived(cutsState.showCutNormals);
+    const showCutDirections = $derived(cutsState.showCutDirections);
+    const showCutPaths = $derived(cutsState.showCutPaths);
+    const showCutter = $derived($kerfStore.showCutter);
+    const showCutStartPoints = $derived(cutsState.showCutStartPoints);
+    const showCutEndPoints = $derived(cutsState.showCutEndPoints);
+    const showCutTangentLines = $derived(cutsState.showCutTangentLines);
+    const leadState = $derived($leadStore);
+    const selectedLeadIds = $derived(leadState.selectedLeadIds);
+    const highlightedLeadId = $derived(leadState.highlightedLeadId);
+    const leadNormals = $derived(leadState.showLeadNormals);
+    const leadPaths = $derived(leadState.showLeadPaths);
+    const leadKerfs = $derived(leadState.showLeadKerfs);
+    const kerfs = $derived($kerfStore.kerfs);
+    const selectedKerfId = $derived($kerfStore.selectedKerfId);
+    const highlightedKerfId = $derived($kerfStore.highlightedKerfId);
+    const showKerfPaths = $derived($kerfStore.showKerfPaths);
+    const selectionMode = $derived($settingsStore.settings.selectionMode);
 
     // Compute effective interaction mode based on selection mode and current stage
-    $: interactionMode = (() => {
+    const interactionMode = $derived.by(() => {
         // If selection mode is explicit (not auto), use it
         if (selectionMode === SelectionMode.Shape) {
             return 'shapes';
@@ -164,21 +196,23 @@
                     return 'shapes';
             }
         }
-    })();
-
-    // Calculate unit scale factor for proper unit display
-    $: unitScale = drawing
-        ? getPhysicalScaleFactor(drawing.units, displayUnit)
-        : 1;
-
-    // Get canvas configuration for current stage
-    $: canvasConfig = getCanvasConfigForStage(currentStage, {
-        onChainClick,
-        onPartClick,
     });
 
+    // Calculate unit scale factor for proper unit display
+    const unitScale = $derived(
+        drawing ? getPhysicalScaleFactor(drawing.units, displayUnit) : 1
+    );
+
+    // Get canvas configuration for current stage
+    const canvasConfig = $derived(
+        getCanvasConfigForStage(currentStage, {
+            onChainClick,
+            onPartClick,
+        })
+    );
+
     // Universal overlay management - works for all stages
-    $: {
+    $effect(() => {
         // This will trigger whenever any of these reactive values change
         const shouldUpdate =
             currentStage &&
@@ -186,7 +220,7 @@
         if (shouldUpdate) {
             updateOverlaysForCurrentStage();
         }
-    }
+    });
 
     // Universal overlay update function for any stage
     function updateOverlaysForCurrentStage() {
@@ -264,154 +298,175 @@
     }
 
     // Update coordinate transformer when parameters change
-    $: if (coordinator) {
-        coordinator.updateTransform(zoomScale, panOffset, unitScale);
-    }
+    $effect(() => {
+        if (coordinator) {
+            coordinator.updateTransform(zoomScale, panOffset, unitScale);
+        }
+    });
 
     // Track offset calculation state changes
-    $: offsetCalculationHash = cutsState?.cuts
-        ? cutsState.cuts
-              .map((cut) => ({
-                  id: cut.id,
-                  hasOffset: !!cut.offset,
-                  offsetHash: cut.offset
-                      ? JSON.stringify(
-                            cut.offset.offsetShapes?.map((s: Shape) => s.id) ||
-                                []
-                        )
-                      : null,
-              }))
-              .join('|')
-        : '';
+    const offsetCalculationHash = $derived(
+        cutsState?.cuts
+            ? cutsState.cuts
+                  .map((cut) => ({
+                      id: cut.id,
+                      hasOffset: !!cut.offset,
+                      offsetHash: cut.offset
+                          ? JSON.stringify(
+                                cut.offset.offsetShapes?.map(
+                                    (s: Shape) => s.id
+                                ) || []
+                            )
+                          : null,
+                  }))
+                  .join('|')
+            : ''
+    );
 
     // Geometry changes (shapes, drawing structure)
-    $: if (drawing) {
-        renderingPipeline.updateState({
-            drawing: drawing,
-            selectionMode: selectionMode,
-        });
-    }
+    $effect(() => {
+        if (drawing) {
+            renderingPipeline.updateState({
+                drawing: drawing,
+                selectionMode: selectionMode,
+            });
+        }
+    });
 
     // Transform changes (pan, zoom, units)
-    $: if (
-        zoomScale !== undefined &&
-        panOffset !== undefined &&
-        displayUnit !== undefined
-    ) {
-        renderingPipeline.updateState({
-            transform: {
-                zoomScale: zoomScale,
-                panOffset: panOffset,
-                unitScale: unitScale,
-                coordinator: coordinator,
-            },
-        });
-    }
+    $effect(() => {
+        if (
+            zoomScale !== undefined &&
+            panOffset !== undefined &&
+            displayUnit !== undefined
+        ) {
+            renderingPipeline.updateState({
+                transform: {
+                    zoomScale: zoomScale,
+                    panOffset: panOffset,
+                    unitScale: unitScale,
+                    coordinator: coordinator,
+                },
+            });
+        }
+    });
 
     // Selection, hover, and visibility changes
     // Reactive to all these values to trigger updates when any change
-    $: if (renderingPipeline) {
-        renderingPipeline.updateState({
-            selection: {
-                selectedShapes,
-                selectedChainIds,
-                highlightedChainId,
-                highlightedPartId,
-                selectedPartIds,
-                selectedCutIds: selectedCutIds,
-                highlightedCutId: highlightedCutId,
-                selectedRapidIds,
-                highlightedRapidId,
-                selectedLeadIds,
-                highlightedLeadId,
-                selectedKerfId,
-                highlightedKerfId,
-                selectedOffsetShape,
-                hoveredPartId,
-                hoveredShape,
-            },
-            visibility: {
-                layerVisibility: layerVisibility || {},
-                showRapids,
-                showRapidDirections,
-                showCuts: true,
-                showChains: true,
-                showParts: true,
-                showOverlays: true,
-                showShapePaths,
-                showShapeStartPoints,
-                showShapeEndPoints,
-                showShapeNormals,
-                showShapeWindingDirection,
-                showShapeTangentLines,
-                showShapeTessellation,
-                showChainPaths,
-                showChainStartPoints,
-                showChainEndPoints,
-                showChainTangentLines,
-                showChainNormals,
-                showChainDirections,
-                showChainTessellation,
-                showCutNormals,
-                showCutDirections,
-                showCutPaths,
-                showCutter,
-                showCutStartPoints,
-                showCutEndPoints,
-                showCutTangentLines,
-                showLeadNormals: leadNormals,
-                showLeadPaths: leadPaths,
-                showLeadKerfs: leadKerfs,
-                showKerfPaths,
-            },
-            respectLayerVisibility: canvasConfig.respectLayerVisibility,
-        });
-    }
+    $effect(() => {
+        if (renderingPipeline) {
+            renderingPipeline.updateState({
+                selection: {
+                    selectedShapes,
+                    selectedChainIds,
+                    highlightedChainId,
+                    highlightedPartId,
+                    selectedPartIds,
+                    selectedCutIds: selectedCutIds,
+                    highlightedCutId: highlightedCutId,
+                    selectedRapidIds,
+                    highlightedRapidId,
+                    selectedLeadIds,
+                    highlightedLeadId,
+                    selectedKerfId,
+                    highlightedKerfId,
+                    selectedOffsetShape,
+                    hoveredPartId,
+                    hoveredShape,
+                },
+                visibility: {
+                    layerVisibility: layerVisibility || {},
+                    showRapids,
+                    showRapidDirections,
+                    showCuts: true,
+                    showChains: true,
+                    showParts: true,
+                    showOverlays: true,
+                    showShapePaths,
+                    showShapeStartPoints,
+                    showShapeEndPoints,
+                    showShapeNormals,
+                    showShapeWindingDirection,
+                    showShapeTangentLines,
+                    showShapeTessellation,
+                    showChainPaths,
+                    showChainStartPoints,
+                    showChainEndPoints,
+                    showChainTangentLines,
+                    showChainNormals,
+                    showChainDirections,
+                    showChainTessellation,
+                    showCutNormals,
+                    showCutDirections,
+                    showCutPaths,
+                    showCutter,
+                    showCutStartPoints,
+                    showCutEndPoints,
+                    showCutTangentLines,
+                    showLeadNormals: leadNormals,
+                    showLeadPaths: leadPaths,
+                    showLeadKerfs: leadKerfs,
+                    showKerfPaths,
+                },
+                respectLayerVisibility: canvasConfig.respectLayerVisibility,
+            });
+        }
+    });
 
     // Cut and operation changes
-    $: if (cutsState || operations || offsetCalculationHash) {
-        renderingPipeline.updateState({
-            cuts: cutsState?.cuts || [],
-            cutsState: cutsState,
-            operations: operations,
-            chainsWithCuts: chainsWithCuts,
-        });
-    }
+    $effect(() => {
+        if (cutsState || operations || offsetCalculationHash) {
+            renderingPipeline.updateState({
+                cuts: cutsState?.cuts || [],
+                cutsState: cutsState,
+                operations: operations,
+                chainsWithCuts: chainsWithCuts,
+            });
+        }
+    });
 
     // Overlay and stage changes
-    $: if (
-        tessellationState !== undefined ||
-        currentOverlay !== undefined ||
-        currentStage !== undefined
-    ) {
-        renderingPipeline.updateState({
-            overlays: overlayState?.overlays || {},
-            currentOverlay: currentOverlay,
-            stage: currentStage,
-        });
-    }
+    $effect(() => {
+        if (
+            tessellationState !== undefined ||
+            currentOverlay !== undefined ||
+            currentStage !== undefined
+        ) {
+            renderingPipeline.updateState({
+                overlays: overlayState?.overlays || {},
+                currentOverlay: currentOverlay,
+                stage: currentStage,
+            });
+        }
+    });
 
     // Chains and parts data changes
-    $: if (chains || parts) {
-        renderingPipeline.updateState({
-            chains: chains || [],
-            parts: parts || [],
-        });
-    }
+    $effect(() => {
+        if (chains || parts) {
+            renderingPipeline.updateState({
+                chains: chains || [],
+                parts: parts || [],
+            });
+        }
+    });
 
     // Rapids data changes
-    $: if (rapids !== undefined) {
-        renderingPipeline.updateState({
-            rapids: rapids || [],
-        });
-    }
+    $effect(() => {
+        if (rapids !== undefined) {
+            renderingPipeline.updateState({
+                rapids: rapids || [],
+            });
+        }
+    });
 
     // Kerfs data changes
-    $: if (kerfs !== undefined) {
-        renderingPipeline.updateState({
-            kerfs: kerfs || [],
-        });
-    }
+    $effect(() => {
+        if (kerfs !== undefined) {
+            renderingPipeline.updateState({
+                kerfs: kerfs || [],
+            });
+        }
+    });
 
     onMount(() => {
         // Get container dimensions

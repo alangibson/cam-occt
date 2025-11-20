@@ -5,7 +5,7 @@
 import type { Cut } from '$lib/cam/cut/interfaces';
 import type { Operation } from '$lib/cam/operation/interface';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part, PartVoid } from '$lib/cam/part/interfaces';
+import type { Part, PartData, PartVoid } from '$lib/cam/part/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { prepareChainsAndLeadConfigs } from '$lib/cam/cut/cut-optimization-utils';
 import type { CutLeadResult } from './interfaces';
@@ -29,7 +29,7 @@ export async function calculateCutLeads(
         }
 
         // Get the part if the cut is part of a part
-        let part: Part | undefined;
+        let part: PartData | undefined;
         if (operation.targetType === 'parts') {
             part = parts?.find(
                 (p) =>

@@ -3,11 +3,12 @@
     import { toolStore } from '$lib/stores/tools/store';
     import type { Tool } from '$lib/cam/tool/interfaces';
     import { chainStore } from '$lib/stores/chains/store';
+    import { drawingStore } from '$lib/stores/drawing/store';
     import { partStore } from '$lib/stores/parts/store';
     import { onMount } from 'svelte';
     import type { Operation } from '$lib/cam/operation/interface';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { Part } from '$lib/cam/part/interfaces';
+    import type { Part } from '$lib/cam/part/classes.svelte';
     import {
         DEFAULT_CUT_DIRECTION,
         DEFAULT_KERF_COMPENSATION,
@@ -80,8 +81,22 @@
         operations = value;
         // Operations are now saved by the main persistence system
     });
-    chainStore.subscribe((state) => (chains = state.chains));
-    partStore.subscribe((state) => (parts = state.parts));
+    drawingStore.subscribe((state) => {
+        // Get chains from all layers in the drawing
+        chains = state.drawing
+            ? Object.values(state.drawing.layers).flatMap(
+                  (layer) => layer.chains
+              )
+            : [];
+    });
+    drawingStore.subscribe((state) => {
+        // Get parts from all layers in the drawing
+        parts = state.drawing
+            ? Object.values(state.drawing.layers).flatMap(
+                  (layer) => layer.parts
+              )
+            : [];
+    });
 
     export function addNewOperation(options?: { enabled?: boolean }) {
         const newOrder =
@@ -362,14 +377,19 @@
                 operation.targetIds.includes(p.id)
             );
             return selectedParts
-                .map((p) => `Part ${p.id.split('-')[1]}`)
+                .map((p) => {
+                    const idParts = p.id.split('-');
+                    const layerName = idParts.slice(0, -2).join('-');
+                    const partNumber = idParts.slice(-1)[0];
+                    return `Part ${layerName}-${partNumber}`;
+                })
                 .join(', ');
         } else {
             const selectedChains = chains.filter((c) =>
                 operation.targetIds.includes(c.id)
             );
             return selectedChains
-                .map((c) => `Chain ${c.id.split('-')[1]}`)
+                .map((c) => `Chain ${c.id.split('-').slice(-1)[0]}`)
                 .join(', ');
         }
     }

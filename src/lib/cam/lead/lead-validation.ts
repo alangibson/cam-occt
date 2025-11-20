@@ -1,6 +1,6 @@
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import { isChainClosed } from '$lib/geometry/chain/functions';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import { LeadType } from './enums';
 import { getShapeBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { HALF_PERCENT } from '$lib/geometry/math/constants';
@@ -33,7 +33,7 @@ const MAX_RECOMMENDED_LEAD_LENGTH = 50;
 export function validateLeadConfiguration(
     config: LeadsConfig,
     chain: Chain,
-    part?: Part
+    part?: PartData
 ): LeadValidationResult {
     const warnings: string[] = [];
     const suggestions: string[] = [];
@@ -255,7 +255,7 @@ function validateChainGeometry(
 function validatePartContext(
     config: LeadsConfig,
     chain: Chain,
-    part: Part
+    part: PartData
 ): LeadValidationResult {
     const warnings: string[] = [];
     const suggestions: string[] = [];

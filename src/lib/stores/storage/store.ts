@@ -16,6 +16,7 @@ import { Unit } from '$lib/config/units/units';
 
 // Import all stores
 import { drawingStore } from '$lib/stores/drawing/store';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { DrawingState } from '$lib/stores/drawing/interfaces';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -63,14 +64,22 @@ function collectCurrentState(): PersistedState {
     const tools: Tool[] = get(toolStore);
     const settings: SettingsState = get(settingsStore);
 
+    // Collect chains from drawing layers
+    const allChains =
+        drawing.drawing && drawing.drawing.layers
+            ? Object.values(drawing.drawing.layers).flatMap(
+                  (layer) => layer.chains
+              )
+            : [];
+
     return {
         // Drawing state
-        drawing: drawing.drawing,
+        drawing: drawing.drawing ? drawing.drawing.toData() : null,
         selectedShapes: Array.from(drawing.selectedShapes),
         hoveredShape: drawing.hoveredShape,
         scale: drawing.scale,
         offset: drawing.offset,
-        fileName: drawing.fileName,
+        fileName: drawing.drawing?.fileName ?? '',
         layerVisibility: drawing.layerVisibility,
         displayUnit: drawing.displayUnit as 'mm' | 'inch',
 
@@ -79,12 +88,16 @@ function collectCurrentState(): PersistedState {
         completedStages: Array.from(workflow.completedStages),
 
         // Chains state
-        chains: chains.chains,
+        chains: allChains,
         tolerance: chains.tolerance,
         selectedChainIds: Array.from(chains.selectedChainIds),
 
-        // Parts state
-        parts: parts.parts,
+        // Parts state - get from drawing layers
+        parts: drawing.drawing
+            ? Object.values(drawing.drawing.layers).flatMap(
+                  (layer) => layer.parts
+              )
+            : [],
         partWarnings: parts.warnings,
         highlightedPartId: parts.highlightedPartId,
         selectedPartIds: Array.from(parts.selectedPartIds),
@@ -136,7 +149,7 @@ function collectCurrentState(): PersistedState {
 function restoreStateToStores(state: PersistedState): void {
     try {
         // Set chain store state
-        chainStore.setChains(state.chains);
+        // Chains are auto-generated from drawing layers, no need to set them
         chainStore.setTolerance(state.tolerance);
         if (state.selectedChainIds && state.selectedChainIds.length > 0) {
             // Restore all selected chains
@@ -145,8 +158,8 @@ function restoreStateToStores(state: PersistedState): void {
             });
         }
 
-        // Set part store state
-        partStore.setParts(state.parts, state.partWarnings);
+        // Set part store state (warnings only - parts now come from Drawing.layers)
+        partStore.setWarnings(state.partWarnings);
         if (state.highlightedPartId) {
             partStore.highlightPart(state.highlightedPartId);
         }
@@ -161,8 +174,8 @@ function restoreStateToStores(state: PersistedState): void {
         if (state.drawing) {
             // Use the new restoreDrawing method that doesn't reset downstream stages
             drawingStore.restoreDrawing(
-                state.drawing,
-                state.fileName,
+                new Drawing(state.drawing),
+                state.fileName ?? '',
                 state.scale,
                 state.offset,
                 state.displayUnit === 'mm' ? Unit.MM : Unit.INCH,
@@ -355,7 +368,7 @@ export function resetApplicationToDefaults(): void {
     // Reset all stores to their default states
     drawingStore.reset();
     workflowStore.reset();
-    chainStore.clearChains();
+    // Chains auto-clear when drawing is reset
     partStore.clearParts();
     rapidStore.reset();
     uiStore.hideToolTable();

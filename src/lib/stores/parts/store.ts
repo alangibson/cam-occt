@@ -1,10 +1,9 @@
 import { writable } from 'svelte/store';
 import type { PartStore } from './interfaces';
-import type { Part, PartDetectionWarning } from '$lib/cam/part/interfaces';
+import type { PartDetectionWarning } from '$lib/cam/part/interfaces';
 
 function createPartStore() {
     const initialState: PartStore = {
-        parts: [],
         warnings: [],
         highlightedPartId: null,
         hoveredPartId: null,
@@ -14,10 +13,9 @@ function createPartStore() {
     const { subscribe, update } = writable<PartStore>(initialState);
 
     // Main store functions
-    function setParts(parts: Part[], warnings: PartDetectionWarning[] = []) {
+    function setWarnings(warnings: PartDetectionWarning[] = []) {
         update((state) => ({
             ...state,
-            parts,
             warnings,
         }));
     }
@@ -25,7 +23,6 @@ function createPartStore() {
     function clearParts() {
         update((state) => ({
             ...state,
-            parts: [],
             warnings: [],
             highlightedPartId: null,
             hoveredPartId: null,
@@ -117,7 +114,7 @@ function createPartStore() {
 
     return {
         subscribe,
-        setParts,
+        setWarnings,
         clearParts,
         highlightPart,
         clearHighlight,

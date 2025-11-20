@@ -1,5 +1,6 @@
 <script lang="ts">
     import { chainStore } from '$lib/stores/chains/store';
+    import { drawingStore } from '$lib/stores/drawing/store';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
     import { isChainClosed } from '$lib/geometry/chain/functions';
     import { detectCutDirection } from '$lib/cam/cut/cut-direction';
@@ -10,22 +11,34 @@
     } from '$lib/geometry/shape/functions';
 
     // Reactive chain and analysis data
-    $: detectedChains = $chainStore.chains;
-    $: selectedChainIds = $chainStore.selectedChainIds;
-    $: selectedChainId =
-        selectedChainIds.size === 1 ? Array.from(selectedChainIds)[0] : null;
-    $: highlightedChainId = $chainStore.highlightedChainId;
-    $: activeChainId = selectedChainId || highlightedChainId;
-    $: selectedChain = activeChainId
-        ? detectedChains.find((chain) => chain.id === activeChainId)
-        : null;
-    $: chainNormalizationResults = $prepareStageStore.chainNormalizationResults;
-    $: selectedChainAnalysis = activeChainId
-        ? chainNormalizationResults.find(
-              (result) => result.chainId === activeChainId
-          )
-        : null;
-    $: algorithmParams = $prepareStageStore.algorithmParams;
+    const drawing = $derived($drawingStore.drawing);
+    const detectedChains = $derived(
+        drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
+            : []
+    );
+    const selectedChainIds = $derived($chainStore.selectedChainIds);
+    const selectedChainId = $derived(
+        selectedChainIds.size === 1 ? Array.from(selectedChainIds)[0] : null
+    );
+    const highlightedChainId = $derived($chainStore.highlightedChainId);
+    const activeChainId = $derived(selectedChainId || highlightedChainId);
+    const selectedChain = $derived(
+        activeChainId
+            ? detectedChains.find((chain) => chain.id === activeChainId)
+            : null
+    );
+    const chainNormalizationResults = $derived(
+        $prepareStageStore.chainNormalizationResults
+    );
+    const selectedChainAnalysis = $derived(
+        activeChainId
+            ? chainNormalizationResults.find(
+                  (result) => result.chainId === activeChainId
+              )
+            : null
+    );
+    const algorithmParams = $derived($prepareStageStore.algorithmParams);
 
     async function copyChainToClipboard() {
         if (!selectedChain) return;

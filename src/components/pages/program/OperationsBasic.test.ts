@@ -30,21 +30,26 @@ describe('Operations Component Basic Function Coverage', () => {
                     operation.targetIds.includes(p.id)
                 );
                 return selectedParts
-                    .map((p) => `Part ${p.id.split('-')[1]}`)
+                    .map((p) => {
+                        const idParts = p.id.split('-');
+                        const layerName = idParts.slice(0, -2).join('-');
+                        const partNumber = idParts.slice(-1)[0];
+                        return `Part ${layerName}-${partNumber}`;
+                    })
                     .join(', ');
             } else {
                 const selectedChains = chains.filter((c) =>
                     operation.targetIds.includes(c.id)
                 );
                 return selectedChains
-                    .map((c) => `Chain ${c.id.split('-')[1]}`)
+                    .map((c) => `Chain ${c.id.split('-').slice(-1)[0]}`)
                     .join(', ');
             }
         }
 
         const mockParts = [
-            { id: 'part-1', holes: [] },
-            { id: 'part-2', holes: [] },
+            { id: '0-part-1', holes: [] },
+            { id: '0-part-2', holes: [] },
         ];
 
         const mockChains = [
@@ -65,13 +70,13 @@ describe('Operations Component Basic Function Coverage', () => {
         expect(
             getSelectedTargetsText(
                 {
-                    targetIds: ['part-1', 'part-2'],
+                    targetIds: ['0-part-1', '0-part-2'],
                     targetType: 'parts',
                 },
                 mockParts,
                 mockChains
             )
-        ).toBe('Part 1, Part 2');
+        ).toBe('Part 0-1, Part 0-2');
 
         // Test chains selection
         expect(

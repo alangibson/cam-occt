@@ -8,15 +8,17 @@ import {
     saveApplicationState,
 } from '$lib/stores/storage/store';
 import { drawingStore } from '$lib/stores/drawing/store';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
-import { chainStore } from '$lib/stores/chains/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import { Unit } from '$lib/config/units/units';
 import type { Operation } from '$lib/cam/operation/interface';
+import type { Shape } from '$lib/geometry/shape/interfaces';
 
 // Mock localStorage
 const localStorageMock = {
@@ -63,6 +65,27 @@ vi.mock('../algorithms/lead-calculation', () => ({
     })),
 }));
 
+// Helper to create a drawing and get auto-detected chain
+function createDrawingWithChain(
+    shapes: Shape[],
+    layerName = 'default'
+): { drawing: Drawing; chainId: string } {
+    const drawingData: DrawingData = {
+        shapes,
+        bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+        units: Unit.MM,
+    };
+
+    const drawing = new Drawing(drawingData);
+    const layer = drawing.layers[layerName];
+
+    if (!layer || layer.chains.length === 0) {
+        throw new Error(`No chains detected in layer ${layerName}`);
+    }
+
+    return { drawing, chainId: layer.chains[0].id };
+}
+
 describe('Persistence Integration - Lead Geometry', () => {
     beforeEach(() => {
         localStorageMock.clear();
@@ -70,54 +93,30 @@ describe('Persistence Integration - Lead Geometry', () => {
         // Reset stores that support reset
         cutStore.reset();
         operationsStore.reset();
-        // Note: chainStore doesn't have reset method, so we'll set chains manually in test
+        drawingStore.reset();
     });
 
     it('should persist and restore cuts with lead geometry', async () => {
         // Setup test data - create a drawing with chains
-        const testDrawing = {
-            id: 'test-drawing-1',
-            shapes: [
-                {
-                    id: 'shape-1',
-                    type: GeometryType.CIRCLE as GeometryType,
-                    geometry: { center: { x: 50, y: 50 }, radius: 25 },
-                    layer: 'default',
-                },
-            ],
-            layers: {
-                default: {
-                    shapes: [],
-                    name: 'default',
-                    visible: true,
-                    color: '#000000',
-                },
+        const testShapes: Shape[] = [
+            {
+                id: 'shape-1',
+                type: GeometryType.CIRCLE as GeometryType,
+                geometry: { center: { x: 50, y: 50 }, radius: 25 },
+                layer: 'default',
             },
-            units: Unit.MM,
-            bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
-        };
+        ];
 
-        const testChain = {
-            id: 'chain-1',
-            shapes: [
-                {
-                    id: 'shape-1',
-                    type: GeometryType.CIRCLE as GeometryType,
-                    geometry: { center: { x: 50, y: 50 }, radius: 25 },
-                },
-            ],
-        };
-
-        // Set up the drawing and chains
-        drawingStore.setDrawing(testDrawing, 'test.dxf');
-        chainStore.setChains([testChain]);
+        // Create drawing and get auto-detected chain
+        const { drawing, chainId } = createDrawingWithChain(testShapes);
+        drawingStore.setDrawing(drawing, 'test.dxf');
 
         // Create operation that will generate cuts
         const testOperation: Omit<Operation, 'id'> = {
             name: 'Test Cut',
             toolId: 'tool-1',
             targetType: 'chains',
-            targetIds: ['chain-1'],
+            targetIds: [chainId],
             enabled: true,
             order: 1,
             cutDirection: CutDirection.CLOCKWISE,
@@ -153,7 +152,7 @@ describe('Persistence Integration - Lead Geometry', () => {
 
         const createdCut = cutsState!.cuts[0];
         expect(createdCut.operationId).toBeDefined();
-        expect(createdCut.chainId).toBe('chain-1');
+        expect(createdCut.chainId).toBe(chainId);
 
         // Manually add lead geometry to simulate calculated leads
         cutStore.updateCutLeadGeometry(createdCut.id, {
@@ -229,7 +228,7 @@ describe('Persistence Integration - Lead Geometry', () => {
 
         const restoredCut = restoredState!.cuts[0];
         expect(restoredCut.operationId).toBe(cutWithLeads.operationId);
-        expect(restoredCut.chainId).toBe('chain-1');
+        expect(restoredCut.chainId).toBe(chainId);
 
         // Most importantly - verify lead geometry was persisted and restored
         expect(restoredCut.leadIn).toBeDefined();

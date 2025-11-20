@@ -6,7 +6,8 @@ import { generateAndAdjustKerf } from '$lib/cam/pipeline/kerfs/kerf-generation';
 import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Operation } from '$lib/cam/operation/interface';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
+import { Part } from '$lib/cam/part/classes.svelte';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
@@ -146,13 +147,14 @@ describe('createCutsFromOperation', () => {
             targetType: 'parts',
             targetIds: ['part-1'],
         };
-        const mockPart: Part = {
+        const mockPartData: PartData = {
             id: 'part-1',
             type: PartType.SHELL,
             shell: mockChain,
             voids: [],
             slots: [],
         } as any;
+        const mockPart = new Part(mockPartData);
 
         const mockCut = {
             id: 'cut-1',

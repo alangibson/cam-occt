@@ -40,9 +40,6 @@ export const DEFAULT_SETTINGS: ApplicationSettings = {
     enabledPreprocessingSteps: [
         PreprocessingStep.DecomposePolylines,
         PreprocessingStep.TranslateToPositive,
-        PreprocessingStep.DetectChains,
-        PreprocessingStep.NormalizeChains,
-        PreprocessingStep.DetectParts,
     ],
     optimizationSettings: DEFAULT_OPTIMIZATION_SETTINGS,
     offsetImplementation: OffsetImplementation.Polyline,

@@ -16,7 +16,7 @@ import {
 } from '$lib/cam/cut/lead-persistence';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import {
     CAM_CALCULATION_TOLERANCE_MM,
     DEFAULT_CUT_HEIGHT_MM,
@@ -47,7 +47,7 @@ export async function cutToToolPath(
     tools: Tool[],
     cutterCompensation: CutterCompensation | null,
     chainMap?: Map<string, Chain>,
-    partMap?: Map<string, Part>,
+    partMap?: Map<string, PartData>,
     displayUnit?: Unit
 ): Promise<CutPath> {
     // Use simulation's validated geometry resolution approach
@@ -340,7 +340,7 @@ export async function cutsToToolPaths(
     tools: Tool[],
     cutterCompensation: CutterCompensation | null,
     chainMap?: Map<string, Chain>,
-    partMap?: Map<string, Part>,
+    partMap?: Map<string, PartData>,
     displayUnit?: Unit
 ): Promise<CutPath[]> {
     const toolPaths: CutPath[] = [];

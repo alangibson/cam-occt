@@ -1,8 +1,6 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
     import { cutStore } from '$lib/stores/cuts/store';
-    import { chainStore } from '$lib/stores/chains/store';
-    import { partStore } from '$lib/stores/parts/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { SvelteMap } from 'svelte/reactivity';
     import { CutterCompensation } from '$lib/cam/cut-generator/enums';
@@ -10,28 +8,42 @@
     import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
     import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';
     import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { Part } from '$lib/cam/part/interfaces';
+    import type { PartData } from '$lib/cam/part/interfaces';
     import type { Shape } from '$lib/geometry/shape/interfaces';
     import { Unit } from '$lib/config/units/units';
 
     // Props from parent component
-    export let includeComments: boolean = true;
-    export let cutterCompensation: CutterCompensation | null =
-        CutterCompensation.NONE;
-    export let adaptiveFeedControl: boolean | null = true;
-    export let enableTHC: boolean | null = true;
+    let {
+        includeComments = true,
+        cutterCompensation = CutterCompensation.NONE,
+        adaptiveFeedControl = true,
+        enableTHC = true,
+    }: {
+        includeComments?: boolean;
+        cutterCompensation?: CutterCompensation | null;
+        adaptiveFeedControl?: boolean | null;
+        enableTHC?: boolean | null;
+    } = $props();
 
     const _dispatch = createEventDispatcher();
 
-    $: drawing = $drawingStore.drawing;
-    $: displayUnit = $drawingStore.displayUnit;
-    $: cuts = $cutStore.cuts;
-    $: chains = $chainStore.chains;
-    $: parts = $partStore.parts;
-    $: tools = $toolStore;
+    const drawing = $derived($drawingStore.drawing);
+    const displayUnit = $derived($drawingStore.displayUnit);
+    const cuts = $derived($cutStore.cuts);
+    const chains = $derived(
+        drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
+            : []
+    );
+    const parts = $derived(
+        drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
+            : []
+    );
+    const tools = $derived($toolStore);
 
-    let generatedGCode = '';
-    let isGenerating = false;
+    let generatedGCode = $state('');
+    let isGenerating = $state(false);
 
     async function handleGenerateGCode() {
         if (!drawing) {
@@ -51,7 +63,7 @@
                 chainMap.set(chain.id, chain);
             });
 
-            const partMap = new SvelteMap<string, Part>();
+            const partMap = new SvelteMap<string, PartData>();
             parts.forEach((part) => {
                 // Map parts by their shell chain ID for lead fitting
                 if (part.shell && part.shell.id) {
@@ -106,7 +118,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${$drawingStore.fileName?.replace(/\.[^/.]+$/, '') || 'output'}.ngc`;
+        a.download = `${drawing?.fileName?.replace(/\.[^/.]+$/, '') || 'output'}.ngc`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -139,18 +151,20 @@
     });
 
     // Regenerate when settings or display units change
-    $: if (drawing) {
-        // Include all props and display units in the reactive dependencies
-        void (
-            includeComments &&
-            cutterCompensation &&
-            adaptiveFeedControl &&
-            enableTHC
-        );
-        void displayUnit; // Watch for display unit changes
-        void cuts; // Watch for cut changes
-        handleGenerateGCode();
-    }
+    $effect(() => {
+        if (drawing) {
+            // Include all props and display units in the reactive dependencies
+            void (
+                includeComments &&
+                cutterCompensation &&
+                adaptiveFeedControl &&
+                enableTHC
+            );
+            void displayUnit; // Watch for display unit changes
+            void cuts; // Watch for cut changes
+            handleGenerateGCode();
+        }
+    });
 </script>
 
 <div class="export-container">
@@ -172,18 +186,18 @@
                     </span>
                 </div>
                 <div class="gcode-actions">
-                    <button class="action-button" on:click={copyToClipboard}>
+                    <button class="action-button" onclick={copyToClipboard}>
                         Copy to Clipboard
                     </button>
                     <button
                         class="action-button download-button"
-                        on:click={downloadGCode}
+                        onclick={downloadGCode}
                     >
                         Download
                     </button>
                     <button
                         class="action-button regenerate-button"
-                        on:click={handleGenerateGCode}
+                        onclick={handleGenerateGCode}
                     >
                         Regenerate
                     </button>

@@ -7,31 +7,26 @@
         type DrawingSize,
     } from '$lib/algorithms/drawing-size/drawing-size';
 
-    $: drawing = $drawingStore.drawing;
-    $: scale = $drawingStore.scale;
-    $: fileName = $drawingStore.fileName;
-    $: selectionMode = $settingsStore.settings.selectionMode;
-    let drawingSize: DrawingSize | null = null;
+    const drawing = $derived($drawingStore.drawing);
+    const scale = $derived($drawingStore.scale);
+    const fileName = $derived(drawing?.fileName ?? null);
+    const selectionMode = $derived($settingsStore.settings.selectionMode);
 
-    // Watch for drawing changes
-    let previousDrawing: typeof drawing | null = null;
+    let drawingSize = $state<DrawingSize | null>(null);
 
-    // Manual effect tracking
-    $: {
-        if (drawing !== previousDrawing) {
-            previousDrawing = drawing;
-            if (drawing) {
-                try {
-                    drawingSize = calculateDrawingSize(drawing);
-                } catch (error) {
-                    console.error('Error calculating drawing size:', error);
-                    drawingSize = null;
-                }
-            } else {
+    // Calculate drawing size when drawing changes
+    $effect(() => {
+        if (drawing) {
+            try {
+                drawingSize = calculateDrawingSize(drawing);
+            } catch (error) {
+                console.error('Error calculating drawing size:', error);
                 drawingSize = null;
             }
+        } else {
+            drawingSize = null;
         }
-    }
+    });
 
     function formatSize(size: number, units: string): string {
         return `${size.toFixed(2)} ${units}`;
@@ -86,7 +81,7 @@
                 id="selection-mode"
                 class="selection-dropdown"
                 value={selectionMode}
-                on:change={handleSelectionModeChange}
+                onchange={handleSelectionModeChange}
             >
                 <option value={SelectionMode.Auto}>Auto</option>
                 <option value={SelectionMode.Chain}>Chain</option>
@@ -103,7 +98,7 @@
             <span class="zoom-info">Zoom: {formatZoom(scale)}</span>
             <button
                 class="fit-button"
-                on:click={handleFitClick}
+                onclick={handleFitClick}
                 disabled={!drawing}
                 title="Zoom to fit"
             >
@@ -111,7 +106,7 @@
             </button>
             <button
                 class="fit-button"
-                on:click={handleZoom100Click}
+                onclick={handleZoom100Click}
                 disabled={!drawing}
                 title="Zoom to 100%"
             >

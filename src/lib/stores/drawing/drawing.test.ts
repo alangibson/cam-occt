@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { drawingStore } from './store';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -106,7 +107,7 @@ describe('drawingStore', () => {
         vi.clearAllMocks();
     });
 
-    const createTestDrawing = (): Drawing => ({
+    const createTestDrawing = (): DrawingData => ({
         shapes: [
             {
                 id: 'line-1',
@@ -129,22 +130,20 @@ describe('drawingStore', () => {
             min: { x: 0, y: 0 },
             max: { x: 10, y: 10 },
         },
-        layers: {
-            Layer1: { shapes: [] },
-            Layer2: { shapes: [] },
-        },
         units: Unit.MM,
+        fileName: 'test.dxf',
     });
 
     describe('setDrawing', () => {
         it('should set drawing and reset state', async () => {
-            const drawing = createTestDrawing();
+            const drawingData = createTestDrawing();
+            const drawing = new Drawing(drawingData);
 
             await drawingStore.setDrawing(drawing, 'test.dxf');
 
             const state = get(drawingStore);
             expect(state.drawing).toEqual(drawing);
-            expect(state.fileName).toBe('test.dxf');
+            expect(state.drawing?.fileName).toBe('test.dxf');
             expect(state.displayUnit).toBe(Unit.MM);
             expect(state.scale).toBe(1);
             expect(state.offset).toEqual({ x: 0, y: 0 });
@@ -153,9 +152,10 @@ describe('drawingStore', () => {
         });
 
         it('should reset downstream stages', async () => {
-            const drawing = createTestDrawing();
+            const drawingData = createTestDrawing();
+            const drawing = new Drawing(drawingData);
 
-            await drawingStore.setDrawing(drawing);
+            await drawingStore.setDrawing(drawing, 'test.dxf');
 
             // Wait for async operations to complete
             await new Promise((resolve) => setTimeout(resolve, 10));
@@ -176,18 +176,22 @@ describe('drawingStore', () => {
         });
 
         it('should handle drawing without filename', async () => {
-            const drawing = createTestDrawing();
+            const drawingData = createTestDrawing();
+            const drawing = new Drawing(drawingData);
 
-            await drawingStore.setDrawing(drawing);
+            await drawingStore.setDrawing(drawing, '');
 
             const state = get(drawingStore);
-            expect(state.fileName).toBeNull();
+            expect(state.drawing?.fileName).toBe('');
         });
     });
 
     describe('selectShape', () => {
         beforeEach(async () => {
-            await drawingStore.setDrawing(createTestDrawing());
+            await drawingStore.setDrawing(
+                new Drawing(createTestDrawing()),
+                'test.dxf'
+            );
         });
 
         it('should select single shape', () => {
@@ -221,7 +225,10 @@ describe('drawingStore', () => {
 
     describe('deselectShape', () => {
         beforeEach(async () => {
-            await drawingStore.setDrawing(createTestDrawing());
+            await drawingStore.setDrawing(
+                new Drawing(createTestDrawing()),
+                'test.dxf'
+            );
             drawingStore.selectShape('line-1');
             drawingStore.selectShape('circle-1', true);
         });
@@ -245,7 +252,10 @@ describe('drawingStore', () => {
 
     describe('clearSelection', () => {
         beforeEach(async () => {
-            await drawingStore.setDrawing(createTestDrawing());
+            await drawingStore.setDrawing(
+                new Drawing(createTestDrawing()),
+                'test.dxf'
+            );
             drawingStore.selectShape('line-1');
             drawingStore.selectShape('circle-1', true);
         });
@@ -260,7 +270,10 @@ describe('drawingStore', () => {
 
     describe('deleteSelected', () => {
         beforeEach(async () => {
-            await drawingStore.setDrawing(createTestDrawing());
+            await drawingStore.setDrawing(
+                new Drawing(createTestDrawing()),
+                'test.dxf'
+            );
             drawingStore.selectShape('line-1');
         });
 
@@ -292,7 +305,7 @@ describe('drawingStore', () => {
             // Create a fresh store state with no drawing
             drawingStore.restoreDrawing(
                 null as unknown as Drawing,
-                null,
+                '',
                 1,
                 { x: 0, y: 0 },
                 Unit.MM,
@@ -309,7 +322,10 @@ describe('drawingStore', () => {
 
     describe('moveShapes', () => {
         beforeEach(async () => {
-            await drawingStore.setDrawing(createTestDrawing());
+            await drawingStore.setDrawing(
+                new Drawing(createTestDrawing()),
+                'test.dxf'
+            );
         });
 
         it('should move specified shapes', async () => {
@@ -336,7 +352,7 @@ describe('drawingStore', () => {
         it('should handle no drawing state', async () => {
             drawingStore.restoreDrawing(
                 null as unknown as Drawing,
-                null,
+                '',
                 1,
                 { x: 0, y: 0 },
                 Unit.MM,
@@ -353,7 +369,10 @@ describe('drawingStore', () => {
 
     describe('scaleShapes', () => {
         beforeEach(async () => {
-            await drawingStore.setDrawing(createTestDrawing());
+            await drawingStore.setDrawing(
+                new Drawing(createTestDrawing()),
+                'test.dxf'
+            );
         });
 
         it('should scale specified shapes', async () => {
@@ -385,7 +404,10 @@ describe('drawingStore', () => {
 
     describe('rotateShapes', () => {
         beforeEach(async () => {
-            await drawingStore.setDrawing(createTestDrawing());
+            await drawingStore.setDrawing(
+                new Drawing(createTestDrawing()),
+                'test.dxf'
+            );
         });
 
         it('should rotate specified shapes', async () => {
@@ -505,7 +527,10 @@ describe('drawingStore', () => {
 
     describe('replaceAllShapes', () => {
         beforeEach(async () => {
-            await drawingStore.setDrawing(createTestDrawing());
+            await drawingStore.setDrawing(
+                new Drawing(createTestDrawing()),
+                'test.dxf'
+            );
             drawingStore.selectShape('line-1');
         });
 
@@ -544,7 +569,7 @@ describe('drawingStore', () => {
         it('should handle no drawing state', async () => {
             drawingStore.restoreDrawing(
                 null as unknown as Drawing,
-                null,
+                '',
                 1,
                 { x: 0, y: 0 },
                 Unit.MM,
@@ -561,7 +586,8 @@ describe('drawingStore', () => {
 
     describe('restoreDrawing', () => {
         it('should restore complete drawing state without resetting downstream stages', async () => {
-            const drawing = createTestDrawing();
+            const drawingData = createTestDrawing();
+            const drawing = new Drawing(drawingData);
             const selectedShapes = new Set(['line-1']);
             const scale = 2;
             const offset = { x: 100, y: 50 };
@@ -578,7 +604,7 @@ describe('drawingStore', () => {
 
             const state = get(drawingStore);
             expect(state.drawing).toEqual(drawing);
-            expect(state.fileName).toBe('restored.dxf');
+            expect(state.drawing?.fileName).toBe('restored.dxf');
             expect(state.scale).toBe(scale);
             expect(state.offset).toEqual(offset);
             expect(state.displayUnit).toBe(Unit.INCH);

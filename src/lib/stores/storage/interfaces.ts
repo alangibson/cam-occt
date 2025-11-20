@@ -1,7 +1,7 @@
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
-import type { Part, PartDetectionWarning } from '$lib/cam/part/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import type { PartData, PartDetectionWarning } from '$lib/cam/part/interfaces';
 import type { Operation } from '$lib/cam/operation/interface';
 import type {
     TessellationPoint,
@@ -14,7 +14,7 @@ import type { ApplicationSettings } from '$lib/config/settings/interfaces';
 
 export interface PersistedState {
     // Drawing state
-    drawing: Drawing | null;
+    drawing: DrawingData | null;
     selectedShapes: string[];
     hoveredShape: string | null;
     scale: number;
@@ -33,7 +33,7 @@ export interface PersistedState {
     selectedChainIds: string[];
 
     // Parts state
-    parts: Part[];
+    parts: PartData[];
     partWarnings: PartDetectionWarning[];
     highlightedPartId: string | null;
     selectedPartIds: string[];

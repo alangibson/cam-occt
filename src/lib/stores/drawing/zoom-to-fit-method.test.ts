@@ -3,7 +3,8 @@ import { get } from 'svelte/store';
 import { drawingStore } from './store';
 import { Unit } from '$lib/config/units/units';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 
 describe('DrawingStore zoomToFit method', () => {
     beforeEach(() => {
@@ -12,7 +13,7 @@ describe('DrawingStore zoomToFit method', () => {
     });
 
     it('should calculate zoom-to-fit when called', () => {
-        const testDrawing: Drawing = {
+        const testDrawing: DrawingData = {
             shapes: [
                 {
                     id: '1',
@@ -23,11 +24,11 @@ describe('DrawingStore zoomToFit method', () => {
                 } as any,
             ],
             units: Unit.MM,
-            layers: {},
             bounds: { min: { x: 0, y: 0 }, max: { x: 200, y: 100 } },
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(testDrawing, 'test.dxf');
+        drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
         // Manually set a different zoom and offset
         drawingStore.setViewTransform(0.5, { x: -50, y: -50 });
@@ -46,13 +47,13 @@ describe('DrawingStore zoomToFit method', () => {
         expect(stateAfterFit.offset).not.toEqual({ x: -50, y: -50 });
 
         // The drawing should still be loaded
-        expect(stateAfterFit.drawing).toBe(testDrawing);
+        expect(stateAfterFit.drawing?.shapes).toEqual(testDrawing.shapes);
     });
 
     it('should do nothing when canvas dimensions are not set', () => {
         // Create a fresh store without canvas dimensions by clearing them
         // Since we can't directly modify the store, we test the expected behavior
-        const testDrawing: Drawing = {
+        const testDrawing: DrawingData = {
             shapes: [
                 {
                     id: '1',
@@ -63,11 +64,11 @@ describe('DrawingStore zoomToFit method', () => {
                 } as any,
             ],
             units: Unit.MM,
-            layers: {},
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(testDrawing, 'test.dxf');
+        drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
         // The store should have canvas dimensions from beforeEach
         const state = get(drawingStore);
@@ -82,14 +83,14 @@ describe('DrawingStore zoomToFit method', () => {
     });
 
     it('should handle empty drawings gracefully', () => {
-        const emptyDrawing: Drawing = {
+        const emptyDrawing: DrawingData = {
             shapes: [],
             units: Unit.MM,
-            layers: {},
             bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(emptyDrawing, 'empty.dxf');
+        drawingStore.setDrawing(new Drawing(emptyDrawing), 'empty.dxf');
 
         // Set a custom zoom and offset
         drawingStore.setViewTransform(3, { x: 200, y: 200 });
@@ -109,7 +110,7 @@ describe('DrawingStore zoomToFit method', () => {
     });
 
     it('should be callable multiple times', () => {
-        const testDrawing: Drawing = {
+        const testDrawing: DrawingData = {
             shapes: [
                 {
                     id: '1',
@@ -120,11 +121,11 @@ describe('DrawingStore zoomToFit method', () => {
                 } as any,
             ],
             units: Unit.MM,
-            layers: {},
             bounds: { min: { x: 50, y: 50 }, max: { x: 150, y: 150 } },
+            fileName: 'test.dxf',
         };
 
-        drawingStore.setDrawing(testDrawing, 'test.dxf');
+        drawingStore.setDrawing(new Drawing(testDrawing), 'test.dxf');
 
         // Change zoom and call zoomToFit
         drawingStore.setViewTransform(0.5, { x: -100, y: -100 });

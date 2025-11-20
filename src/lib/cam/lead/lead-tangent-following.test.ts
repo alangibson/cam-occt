@@ -14,7 +14,7 @@ import {
     getChainStartPoint,
 } from '$lib/geometry/chain/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 
 /**
@@ -53,7 +53,7 @@ describe('Lead Tangent Following Invariant', () => {
     }
 
     function createRectangleWithHole(): {
-        part: Part;
+        part: PartData;
         shell: Chain;
         hole: Chain;
     } {
@@ -98,7 +98,7 @@ describe('Lead Tangent Following Invariant', () => {
 
         const hole: Chain = createCircleChain({ x: 100, y: 100 }, 30, false);
 
-        const part: Part = {
+        const part: PartData = {
             id: 'part1',
             shell: shell,
             type: PartType.SHELL,
@@ -115,6 +115,7 @@ describe('Lead Tangent Following Invariant', () => {
                 },
             ],
             slots: [],
+            layerName: '0',
         };
 
         return { part, shell, hole };

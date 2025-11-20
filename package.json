@@ -61,12 +61,12 @@
     "eslint-plugin-svelte": "^3.12.3",
     "jscpd": "^4.0.5",
     "jsdom": "^26.1.0",
+    "knip": "^5.45.0",
     "playwright": "^1.54.1",
     "prettier": "^3.6.2",
     "prettier-plugin-svelte": "^3.4.0",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
-    "knip": "^5.45.0",
     "tslib": "^2.4.1",
     "typescript": "^5.0.0",
     "typescript-eslint": "^8.40.0",
@@ -75,6 +75,7 @@
     "wrangler": "^4.34.0"
   },
   "dependencies": {
+    "@svar-ui/svelte-grid": "^2.3.0",
     "dxf": "^4.6.1",
     "jsts": "^2.12.1",
     "verb-nurbs": "^3.0.3"

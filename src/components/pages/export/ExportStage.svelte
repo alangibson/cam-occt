@@ -165,7 +165,6 @@
                     .cutterCompensation}
                 {adaptiveFeedControl}
                 {enableTHC}
-                on:regenerate={() => {}}
             />
         </div>
 

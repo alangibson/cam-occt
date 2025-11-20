@@ -17,7 +17,7 @@ import {
     distanceFromEllipsePerimeter,
     transformPointToEllipseCoordinates,
 } from '$lib/geometry/ellipse/functions';
-import type { Part } from '$lib/cam/part/interfaces';
+import type { PartData } from '$lib/cam/part/interfaces';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 /**
@@ -43,7 +43,7 @@ interface HitTestMetadata {
     cutId?: string;
     endpoint?: 'start' | 'end';
     rapid?: Rapid;
-    part?: Part;
+    part?: PartData;
     chainId?: string;
     shapeId?: string;
     leadType?: 'leadIn' | 'leadOut';

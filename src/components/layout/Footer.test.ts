@@ -4,7 +4,8 @@ import { render, waitFor } from '@testing-library/svelte';
 import Footer from './Footer.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { calculateDrawingSize } from '$lib/algorithms/drawing-size/drawing-size';
 
@@ -50,7 +51,7 @@ describe('Footer Component', () => {
     });
 
     it('should display drawing size when valid bounds exist', async () => {
-        const mockDrawing: Drawing = {
+        const mockDrawing: DrawingData = {
             shapes: [
                 {
                     id: '1',
@@ -61,6 +62,7 @@ describe('Footer Component', () => {
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
+            fileName: 'test.dxf',
         };
 
         // Mock successful calculation
@@ -71,7 +73,7 @@ describe('Footer Component', () => {
             source: 'calculated',
         }));
 
-        drawingStore.setDrawing(mockDrawing);
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
         const { getByText } = render(Footer);
 
         // Should show the calculated size
@@ -80,7 +82,7 @@ describe('Footer Component', () => {
     });
 
     it('should display drawing size when calculation completes', async () => {
-        const mockDrawing: Drawing = {
+        const mockDrawing: DrawingData = {
             shapes: [
                 {
                     id: '1',
@@ -91,6 +93,7 @@ describe('Footer Component', () => {
             ],
             bounds: { min: { x: 0, y: 0 }, max: { x: 50, y: 30 } },
             units: Unit.MM,
+            fileName: 'test.dxf',
         };
 
         // Mock successful calculation
@@ -101,7 +104,7 @@ describe('Footer Component', () => {
             source: 'calculated',
         }));
 
-        drawingStore.setDrawing(mockDrawing);
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
         const { getByText } = render(Footer);
 
         // Wait for calculation to complete and check parts separately since text is split
@@ -112,10 +115,11 @@ describe('Footer Component', () => {
     });
 
     it('should show error state when size calculation fails', async () => {
-        const mockDrawing: Drawing = {
+        const mockDrawing: DrawingData = {
             shapes: [],
             bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
             units: Unit.MM,
+            fileName: 'test.dxf',
         };
 
         // Mock failed calculation
@@ -123,7 +127,7 @@ describe('Footer Component', () => {
             throw new Error('Calculation failed');
         });
 
-        drawingStore.setDrawing(mockDrawing);
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
 
         // Suppress console error for this test since we expect an error
         const consoleSpy = vi

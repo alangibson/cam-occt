@@ -6,16 +6,19 @@ import { operationsStore } from '$lib/stores/operations/store';
 import { partStore } from '$lib/stores/parts/store';
 import { chainStore } from '$lib/stores/chains/store';
 import { toolStore } from '$lib/stores/tools/store';
+import { drawingStore } from '$lib/stores/drawing/store';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { PartType } from '$lib/cam/part/enums';
+import { GeometryType } from '$lib/geometry/shape/enums';
+import { Unit } from '$lib/config/units/units';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 
 describe('Operations Auto-Selection Feature', () => {
     beforeEach(() => {
         // Clear all stores
         operationsStore.reset();
         partStore.clearParts();
-        chainStore.clearChains();
         chainStore.clearChainSelection();
         toolStore.reset();
 
@@ -215,25 +218,109 @@ describe('Operations Auto-Selection Feature', () => {
     });
 
     it('should default to all parts when nothing is selected but parts exist (first operation only)', async () => {
-        // Add some parts but don't select anything
-        partStore.setParts([
-            {
-                id: 'part-1',
-                type: PartType.SHELL,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-                shell: { id: 'chain-1', shapes: [], clockwise: true },
-                voids: [],
-                slots: [],
-            },
-            {
-                id: 'part-2',
-                type: PartType.SHELL,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-                shell: { id: 'chain-2', shapes: [], clockwise: true },
-                voids: [],
-                slots: [],
-            },
-        ]);
+        // Create a drawing with parts (shell with holes)
+        const mockDrawing: DrawingData = {
+            shapes: [
+                // Part 1: outer shell
+                {
+                    id: 'shape-1',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 0, y: 0 }, end: { x: 40, y: 0 } },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-2',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 40, y: 0 }, end: { x: 40, y: 40 } },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-3',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 40, y: 40 }, end: { x: 0, y: 40 } },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-4',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 0, y: 40 }, end: { x: 0, y: 0 } },
+                    layer: 'Layer1',
+                },
+                // Part 1: hole
+                {
+                    id: 'shape-5',
+                    type: GeometryType.LINE,
+                    geometry: {
+                        start: { x: 10, y: 10 },
+                        end: { x: 20, y: 10 },
+                    },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-6',
+                    type: GeometryType.LINE,
+                    geometry: {
+                        start: { x: 20, y: 10 },
+                        end: { x: 20, y: 20 },
+                    },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-7',
+                    type: GeometryType.LINE,
+                    geometry: {
+                        start: { x: 20, y: 20 },
+                        end: { x: 10, y: 20 },
+                    },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-8',
+                    type: GeometryType.LINE,
+                    geometry: {
+                        start: { x: 10, y: 20 },
+                        end: { x: 10, y: 10 },
+                    },
+                    layer: 'Layer1',
+                },
+                // Part 2: separate shell on different layer
+                {
+                    id: 'shape-9',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 50, y: 0 }, end: { x: 70, y: 0 } },
+                    layer: 'Layer2',
+                },
+                {
+                    id: 'shape-10',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 70, y: 0 }, end: { x: 70, y: 20 } },
+                    layer: 'Layer2',
+                },
+                {
+                    id: 'shape-11',
+                    type: GeometryType.LINE,
+                    geometry: {
+                        start: { x: 70, y: 20 },
+                        end: { x: 50, y: 20 },
+                    },
+                    layer: 'Layer2',
+                },
+                {
+                    id: 'shape-12',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 50, y: 20 }, end: { x: 50, y: 0 } },
+                    layer: 'Layer2',
+                },
+            ],
+            bounds: { min: { x: 0, y: 0 }, max: { x: 70, y: 40 } },
+            units: Unit.MM,
+            fileName: 'test.dxf',
+        };
+
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
+
+        // Wait for part detection to complete (it's async in the Layer class)
+        await new Promise((resolve) => setTimeout(resolve, 100));
 
         // Render the component
         const component = render(Operations);
@@ -251,23 +338,88 @@ describe('Operations Auto-Selection Feature', () => {
 
         const newOperation = operations[0];
         expect(newOperation.targetType).toBe('parts');
-        expect(newOperation.targetIds).toEqual(['part-1', 'part-2']);
+
+        // Get actual part IDs from the drawing
+        const drawing = get(drawingStore).drawing;
+        const actualPartIds = drawing
+            ? Object.values(drawing.layers)
+                  .flatMap((layer) => layer.parts)
+                  .map((part) => part.id)
+            : [];
+
+        expect(newOperation.targetIds).toEqual(actualPartIds);
     });
 
     it('should default to all chains when nothing is selected, no parts exist, but chains exist (first operation only)', async () => {
-        // Add some chains but don't select anything
-        chainStore.setChains([
-            {
-                id: 'chain-1',
-                shapes: [],
-                clockwise: true,
-            },
-            {
-                id: 'chain-2',
-                shapes: [],
-                clockwise: false,
-            },
-        ]);
+        // Set up a drawing with shapes that will create chains
+        const mockDrawing: DrawingData = {
+            shapes: [
+                {
+                    id: 'shape-1',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-2',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 10, y: 0 }, end: { x: 10, y: 10 } },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-3',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 10, y: 10 }, end: { x: 0, y: 10 } },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-4',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 0, y: 10 }, end: { x: 0, y: 0 } },
+                    layer: 'Layer1',
+                },
+                // Second chain on a different layer
+                {
+                    id: 'shape-5',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 20, y: 0 }, end: { x: 30, y: 0 } },
+                    layer: 'Layer2',
+                },
+                {
+                    id: 'shape-6',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 30, y: 0 }, end: { x: 30, y: 10 } },
+                    layer: 'Layer2',
+                },
+                {
+                    id: 'shape-7',
+                    type: GeometryType.LINE,
+                    geometry: {
+                        start: { x: 30, y: 10 },
+                        end: { x: 20, y: 10 },
+                    },
+                    layer: 'Layer2',
+                },
+                {
+                    id: 'shape-8',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 20, y: 10 }, end: { x: 20, y: 0 } },
+                    layer: 'Layer2',
+                },
+            ],
+            bounds: { min: { x: 0, y: 0 }, max: { x: 30, y: 10 } },
+            units: Unit.MM,
+            fileName: 'test.dxf',
+        };
+
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
+
+        // Ensure no parts exist
+        let drawing = get(drawingStore).drawing;
+        const parts = drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
+            : [];
+        expect(parts.length).toBe(0);
 
         // Render the component
         const component = render(Operations);
@@ -285,21 +437,65 @@ describe('Operations Auto-Selection Feature', () => {
 
         const newOperation = operations[0];
         expect(newOperation.targetType).toBe('chains');
-        expect(newOperation.targetIds).toEqual(['chain-1', 'chain-2']);
+        // Get the actual chain IDs from the drawing
+        drawing = get(drawingStore).drawing;
+        const actualChainIds = drawing
+            ? Object.values(drawing.layers).flatMap((layer) =>
+                  layer.chains.map((chain) => chain.id)
+              )
+            : [];
+        expect(newOperation.targetIds.length).toBe(actualChainIds.length);
+        expect(newOperation.targetIds).toEqual(
+            expect.arrayContaining(actualChainIds)
+        );
     });
 
     it('should auto-select all parts when creating any operation with nothing selected', async () => {
-        // Add some parts
-        partStore.setParts([
-            {
-                id: 'part-1',
-                type: PartType.SHELL,
-                boundingBox: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
-                shell: { id: 'chain-1', shapes: [], clockwise: true },
-                voids: [],
-                slots: [],
-            },
-        ]);
+        // Create a simple drawing with one part (single shell, no holes)
+        const mockDrawing: DrawingData = {
+            shapes: [
+                {
+                    id: 'shape-1',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-2',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 10, y: 0 }, end: { x: 10, y: 10 } },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-3',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 10, y: 10 }, end: { x: 0, y: 10 } },
+                    layer: 'Layer1',
+                },
+                {
+                    id: 'shape-4',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 0, y: 10 }, end: { x: 0, y: 0 } },
+                    layer: 'Layer1',
+                },
+            ],
+            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
+            units: Unit.MM,
+            fileName: 'test.dxf',
+        };
+
+        drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');
+
+        // Wait for part detection to complete (it's async in the Layer class)
+        await new Promise((resolve) => setTimeout(resolve, 100));
+
+        // Get the part ID that was created
+        const drawing = get(drawingStore).drawing;
+        const partIds = drawing
+            ? Object.values(drawing.layers)
+                  .flatMap((layer) => layer.parts)
+                  .map((part) => part.id)
+            : [];
 
         // Render the component
         const component = render(Operations);
@@ -307,7 +503,7 @@ describe('Operations Auto-Selection Feature', () => {
         // Create first operation (should auto-select all parts)
         component.component.addNewOperation({ enabled: false });
         expect(get(operationsStore).length).toBe(1);
-        expect(get(operationsStore)[0].targetIds).toEqual(['part-1']);
+        expect(get(operationsStore)[0].targetIds).toEqual(partIds);
 
         // Create second operation with nothing selected (should ALSO auto-select all parts)
         component.component.addNewOperation({ enabled: false });
@@ -315,6 +511,6 @@ describe('Operations Auto-Selection Feature', () => {
 
         const secondOperation = get(operationsStore)[1];
         expect(secondOperation.targetType).toBe('parts');
-        expect(secondOperation.targetIds).toEqual(['part-1']); // Should also contain all parts
+        expect(secondOperation.targetIds).toEqual(partIds); // Should also contain all parts
     });
 });

@@ -7,7 +7,7 @@ import { ShapeRenderer } from './shape';
 import { createEmptyRenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
@@ -108,7 +108,7 @@ describe('ShapeRenderer', () => {
             layer: '0',
         };
 
-        const drawing: Drawing = {
+        const drawing: DrawingData = {
             shapes: [lineShape],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
             units: Unit.MM,
@@ -147,7 +147,7 @@ describe('ShapeRenderer', () => {
             layer: '0',
         };
 
-        const drawing: Drawing = {
+        const drawing: DrawingData = {
             shapes: [circleShape],
             bounds: { min: { x: -50, y: -50 }, max: { x: 50, y: 50 } },
             units: Unit.MM,
@@ -185,7 +185,7 @@ describe('ShapeRenderer', () => {
             layer: 'hidden',
         };
 
-        const drawing: Drawing = {
+        const drawing: DrawingData = {
             shapes: [shape],
             bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
             units: Unit.MM,

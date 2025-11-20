@@ -1,5 +1,5 @@
 import type { Unit } from '$lib/config/units/units';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
@@ -44,7 +44,7 @@ interface GCodeOptions {
 
 export function generateGCode(
     cuts: CutPath[],
-    drawing: Drawing,
+    drawing: DrawingData,
     options: GCodeOptions
 ): string {
     const commands: GCodeCommand[] = [];

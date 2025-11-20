@@ -1,6 +1,6 @@
 import type { Shape } from '$lib/geometry/shape/interfaces';
 
-export interface Layer {
+export interface LayerData {
     shapes: Shape[];
     name?: string;
     visible?: boolean;

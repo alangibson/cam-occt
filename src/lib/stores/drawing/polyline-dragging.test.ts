@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { drawingStore } from './store';
+import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import {
     createPolylineFromVertices,
     polylineToPoints,
     polylineToVertices,
 } from '$lib/geometry/polyline/functions';
-import type { Drawing } from '$lib/cam/drawing/interfaces';
+import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
@@ -31,17 +32,20 @@ describe('Polyline Dragging Bug Fixes', () => {
             const delta: Point2D = { x: 50, y: 25 };
 
             // Set up the drawing store
-            drawingStore.setDrawing({
-                shapes: [polylineShape],
-                bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
-                units: Unit.MM,
-            });
+            drawingStore.setDrawing(
+                new Drawing({
+                    shapes: [polylineShape],
+                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+                    units: Unit.MM,
+                }),
+                'test.dxf'
+            );
 
             // Move the polyline
             drawingStore.moveShapes([polylineShape.id], delta);
 
             // Get the updated drawing
-            let updatedDrawing: Drawing | null = null;
+            let updatedDrawing: DrawingData | null = null;
             const unsubscribe = drawingStore.subscribe((state) => {
                 updatedDrawing = state.drawing;
             });
@@ -93,15 +97,18 @@ describe('Polyline Dragging Bug Fixes', () => {
 
             const delta: Point2D = { x: 10, y: 20 };
 
-            drawingStore.setDrawing({
-                shapes: [simplePolyline],
-                bounds: { min: { x: 0, y: 0 }, max: { x: 50, y: 50 } },
-                units: Unit.MM,
-            });
+            drawingStore.setDrawing(
+                new Drawing({
+                    shapes: [simplePolyline],
+                    bounds: { min: { x: 0, y: 0 }, max: { x: 50, y: 50 } },
+                    units: Unit.MM,
+                }),
+                'test.dxf'
+            );
 
             drawingStore.moveShapes([simplePolyline.id], delta);
 
-            let updatedDrawing: Drawing | null = null;
+            let updatedDrawing: DrawingData | null = null;
             const unsubscribe = drawingStore.subscribe((state) => {
                 updatedDrawing = state.drawing;
             });
@@ -145,15 +152,18 @@ describe('Polyline Dragging Bug Fixes', () => {
             const scaleFactor = 2.0;
             const origin: Point2D = { x: 0, y: 0 };
 
-            drawingStore.setDrawing({
-                shapes: [polylineShape],
-                bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
-                units: Unit.MM,
-            });
+            drawingStore.setDrawing(
+                new Drawing({
+                    shapes: [polylineShape],
+                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
+                    units: Unit.MM,
+                }),
+                'test.dxf'
+            );
 
             drawingStore.scaleShapes([polylineShape.id], scaleFactor, origin);
 
-            let updatedDrawing: Drawing | null = null;
+            let updatedDrawing: DrawingData | null = null;
             const unsubscribe = drawingStore.subscribe((state) => {
                 updatedDrawing = state.drawing;
             });
@@ -198,15 +208,18 @@ describe('Polyline Dragging Bug Fixes', () => {
             const angle: number = Math.PI / 2; // 90 degrees
             const origin: Point2D = { x: 0, y: 0 };
 
-            drawingStore.setDrawing({
-                shapes: [polylineShape],
-                bounds: { min: { x: 100, y: 0 }, max: { x: 200, y: 0 } },
-                units: Unit.MM,
-            });
+            drawingStore.setDrawing(
+                new Drawing({
+                    shapes: [polylineShape],
+                    bounds: { min: { x: 100, y: 0 }, max: { x: 200, y: 0 } },
+                    units: Unit.MM,
+                }),
+                'test.dxf'
+            );
 
             drawingStore.rotateShapes([polylineShape.id], angle, origin);
 
-            let updatedDrawing: Drawing | null = null;
+            let updatedDrawing: DrawingData | null = null;
             const unsubscribe = drawingStore.subscribe((state) => {
                 updatedDrawing = state.drawing;
             });
@@ -253,17 +266,20 @@ describe('Polyline Dragging Bug Fixes', () => {
                 }
             );
 
-            drawingStore.setDrawing({
-                shapes: [complexPolyline],
-                bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
-                units: Unit.MM,
-            });
+            drawingStore.setDrawing(
+                new Drawing({
+                    shapes: [complexPolyline],
+                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+                    units: Unit.MM,
+                }),
+                'test.dxf'
+            );
 
             // Test 1: Move the polyline
             const moveDelta: Point2D = { x: 25, y: 15 };
             drawingStore.moveShapes([complexPolyline.id], moveDelta);
 
-            let currentDrawing: Drawing | null = null;
+            let currentDrawing: DrawingData | null = null;
             const unsubscribe = drawingStore.subscribe((state) => {
                 currentDrawing = state.drawing;
             });

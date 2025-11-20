@@ -5,15 +5,11 @@
     import Cuts from './Cuts.svelte';
     import AccordionPanel from '$components/panels/AccordionPanel.svelte';
     import InspectPanel from '$components/panels/InspectPanel.svelte';
-    import PartsPanel from '$components/panels/PartsPanel.svelte';
-    import ChainsPanel from '$components/panels/ChainsPanel.svelte';
     import OptimizePanel from '$components/panels/OptimizePanel.svelte';
     import LayersPanel from '$components/panels/LayersPanel.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { chainStore } from '$lib/stores/chains/store';
-    import { partStore } from '$lib/stores/parts/store';
     import { SvelteMap } from 'svelte/reactivity';
     import type { Chain } from '$lib/geometry/chain/interfaces';
     import type { Cut } from '$lib/cam/cut/interfaces';
@@ -34,26 +30,43 @@
     import { settingsStore } from '$lib/stores/settings/store';
 
     // Props from WorkflowContainer for shared canvas
-    export let sharedCanvas: typeof DrawingCanvasContainer;
-    export let canvasStage: WorkflowStage;
-    export let onChainClick: ((chainId: string) => void) | null = null;
-    export let onPartClick: ((partId: string) => void) | null = null;
-    export let onChainHover: ((chainId: string) => void) | null = null;
-    export let onChainHoverEnd: (() => void) | null = null;
-    export let onPartHover: ((partId: string) => void) | null = null;
-    export let onPartHoverEnd: (() => void) | null = null;
+    let {
+        sharedCanvas,
+        canvasStage,
+        onChainClick = null,
+        onPartClick = null,
+        onChainHover: _onChainHover = null,
+        onChainHoverEnd: _onChainHoverEnd = null,
+    }: {
+        sharedCanvas: typeof DrawingCanvasContainer;
+        canvasStage: WorkflowStage;
+        onChainClick?: ((chainId: string) => void) | null;
+        onPartClick?: ((partId: string) => void) | null;
+        onChainHover?: ((chainId: string) => void) | null;
+        onChainHoverEnd?: (() => void) | null;
+    } = $props();
 
     let operationsComponent: Operations;
 
     // Subscribe to stores
-    $: drawing = $drawingStore.drawing;
-    $: chains = $chainStore.chains;
-    $: parts = $partStore.parts;
-    $: cuts = $cutStore.cuts;
-    $: rapids = $rapidStore.rapids;
-    $: selectedRapidIds = $rapidStore.selectedRapidIds;
-    $: highlightedRapidId = $rapidStore.highlightedRapidId;
-    $: optimizationSettings = $settingsStore.settings.optimizationSettings;
+    const drawing = $derived($drawingStore.drawing);
+    const chains = $derived(
+        drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
+            : []
+    );
+    const parts = $derived(
+        drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
+            : []
+    );
+    const cuts = $derived($cutStore.cuts);
+    const rapids = $derived($rapidStore.rapids);
+    const selectedRapidIds = $derived($rapidStore.selectedRapidIds);
+    const highlightedRapidId = $derived($rapidStore.highlightedRapidId);
+    const optimizationSettings = $derived(
+        $settingsStore.settings.optimizationSettings
+    );
 
     // Track preprocessing state
     let hasRunPreprocessing = false;
@@ -61,8 +74,10 @@
     // Run preprocessing when stage mounts (only if chains/parts don't exist)
     onMount(async () => {
         const settings = $settingsStore.settings;
-        const currentChains = $chainStore.chains;
-        const currentParts = $partStore.parts;
+        const currentChains = chains;
+        const currentParts = drawing
+            ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
+            : [];
 
         // Only run preprocessing if we don't have chains or parts yet
         // and preprocessing steps are enabled
@@ -97,7 +112,7 @@
     // Automatically recalculate rapids when cuts or optimization settings change
     // We only react to lead-related changes, not order changes to avoid loops
 
-    $: {
+    $effect(() => {
         // Include properties that affect lead geometry and cut start/end positions
         // Sort by ID to make hash order-independent (so reordering cuts doesn't trigger recalculation)
         const cutsHash = cuts
@@ -126,25 +141,23 @@
             previousPathsHash = optimizationHash;
             // Use setTimeout to avoid recursive updates and ensure all stores are synced
             setTimeout(() => {
-                // eslint-disable-next-line svelte/infinite-reactive-loop
                 isOptimizing = true;
                 handleOptimizeCutOrder();
                 // Reset flag after a short delay to allow for store updates
                 setTimeout(() => {
-                    // eslint-disable-next-line svelte/infinite-reactive-loop
                     isOptimizing = false;
                 }, 100);
             }, 0);
         }
-    }
+    });
 
     // Clear rapids when no cuts exist
-    $: {
+    $effect(() => {
         if (cuts.length === 0) {
             rapidStore.clearRapids();
             rapidStore.clearSelection();
         }
-    }
+    });
 
     function handleNext() {
         if ($workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)) {
@@ -236,14 +249,6 @@
         <svelte:fragment slot="left">
             <LayersPanel />
 
-            {#if parts.length > 0}
-                <PartsPanel {onPartClick} {onPartHover} {onPartHoverEnd} />
-            {/if}
-
-            {#if chains.length > 0}
-                <ChainsPanel {onChainClick} {onChainHover} {onChainHoverEnd} />
-            {/if}
-
             <div class="arrow-separator">
                 <svg
                     width="100%"
@@ -294,15 +299,21 @@
                     {/if}
                 </div>
             </AccordionPanel>
+
+            <InspectPanel />
+
+            <ShowPanel />
         </svelte:fragment>
 
         <svelte:fragment slot="center">
-            <svelte:component
-                this={sharedCanvas}
-                currentStage={canvasStage}
-                {onChainClick}
-                {onPartClick}
-            />
+            {#if sharedCanvas}
+                {@const SharedCanvas = sharedCanvas}
+                <SharedCanvas
+                    currentStage={canvasStage}
+                    {onChainClick}
+                    {onPartClick}
+                />
+            {/if}
         </svelte:fragment>
 
         <svelte:fragment slot="right">
@@ -318,10 +329,6 @@
             </AccordionPanel>
 
             <OptimizePanel />
-
-            <InspectPanel />
-
-            <ShowPanel />
 
             <AccordionPanel title="Next Stage" isExpanded={true}>
                 <div class="next-stage-content">
