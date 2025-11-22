@@ -13,7 +13,7 @@ import {
 } from './functions';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Geometry } from '$lib/geometry/shape/types';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
@@ -394,7 +394,7 @@ describe('getBoundingBoxForSpline', () => {
 
 describe('getBoundingBoxForShape', () => {
     it('delegates to appropriate function based on shape type', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
@@ -415,7 +415,7 @@ describe('getBoundingBoxForShape', () => {
             id: 'test-invalid',
             type: 'unknown',
             geometry: {},
-        } as unknown as Shape;
+        } as unknown as ShapeData;
 
         expect(() => getBoundingBoxForShape(invalidShape)).toThrow(
             'Unsupported shape type'
@@ -470,7 +470,7 @@ describe('combineBoundingBoxes', () => {
 
 describe('getBoundingBoxForShapes', () => {
     it('calculates bounding box for multiple shapes', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -861,7 +861,7 @@ describe('Edge Cases - getBoundingBoxForSpline', () => {
 
 describe('Edge Cases - getBoundingBoxForShape', () => {
     it('should throw error for unsupported shape type', () => {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'unknown1',
             type: 'unknown' as unknown as GeometryType,
             geometry: {} as unknown as Geometry,
@@ -912,7 +912,7 @@ describe('calculateDynamicTolerance', () => {
     });
 
     it('should return fallback tolerance when bounding box calculation fails', () => {
-        const invalidShapes: Shape[] = [
+        const invalidShapes: ShapeData[] = [
             {
                 id: 'invalid1',
                 type: GeometryType.CIRCLE,
@@ -925,7 +925,7 @@ describe('calculateDynamicTolerance', () => {
     });
 
     it('should calculate dynamic tolerance based on diagonal', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -940,7 +940,7 @@ describe('calculateDynamicTolerance', () => {
     });
 
     it('should enforce minimum tolerance bound', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -953,7 +953,7 @@ describe('calculateDynamicTolerance', () => {
     });
 
     it('should enforce maximum tolerance bound', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,

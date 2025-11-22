@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
@@ -19,6 +20,13 @@ import { LeadType } from '$lib/cam/lead/enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import * as pathOptUtils from '$lib/cam/cut/cut-optimization-utils';
+import { Chain } from '$lib/geometry/chain/classes';
+import { Shape } from '$lib/geometry/shape/classes';
+
+// Helper to create a Chain map from ChainData entries
+function createChainMap(entries: [string, ChainData][]): Map<string, Chain> {
+    return new Map(entries.map(([id, data]) => [id, new Chain(data)]));
+}
 
 // Mock crypto.randomUUID
 if (typeof crypto === 'undefined') {
@@ -36,28 +44,29 @@ describe('Optimize Cut Order', () => {
     const createCut = (
         id: string,
         chainId: string,
-        options: Partial<Cut> = {}
-    ): Cut => ({
-        id,
-        name: `Cut ${id}`,
-        chainId,
-        operationId: 'op-1',
-        toolId: 'tool-1',
-        enabled: true,
-        order: 1,
-        cutDirection: CutDirection.COUNTERCLOCKWISE,
-        normal: { x: 1, y: 0 },
-        normalConnectionPoint: { x: 0, y: 0 },
-        normalSide: NormalSide.LEFT,
-        ...options,
-    });
+        options: Partial<CutData> = {}
+    ): Cut =>
+        new Cut({
+            id,
+            name: `Cut ${id}`,
+            chainId,
+            operationId: 'op-1',
+            toolId: 'tool-1',
+            enabled: true,
+            order: 1,
+            cutDirection: CutDirection.COUNTERCLOCKWISE,
+            normal: { x: 1, y: 0 },
+            normalConnectionPoint: { x: 0, y: 0 },
+            normalSide: NormalSide.LEFT,
+            ...options,
+        });
 
     // Helper function to create a basic chain with line geometry
     const createLineChain = (
         id: string,
         start = { x: 0, y: 0 },
         end = { x: 10, y: 10 }
-    ): Chain => ({
+    ): ChainData => ({
         id,
         shapes: [
             {
@@ -71,8 +80,8 @@ describe('Optimize Cut Order', () => {
     // Helper function to create a part
     const createDetectedPart = (
         id: string,
-        shellChain: Chain,
-        holeChains: Chain[] = []
+        shellChain: ChainData,
+        holeChains: ChainData[] = []
     ): Part => {
         const createBoundingBox = (): BoundingBox => ({
             min: { x: 0, y: 0 },
@@ -105,7 +114,6 @@ describe('Optimize Cut Order', () => {
             const result = optimizeCutOrder([], chains, []);
 
             expect(result.orderedCuts).toEqual([]);
-            expect(result.rapids).toEqual([]);
             expect(result.totalDistance).toBe(0);
         });
 
@@ -116,7 +124,6 @@ describe('Optimize Cut Order', () => {
             const result = optimizeCutOrder(cuts, chains, []);
 
             expect(result.orderedCuts).toEqual([]);
-            expect(result.rapids).toEqual([]);
             expect(result.totalDistance).toBe(0);
         });
 
@@ -130,7 +137,7 @@ describe('Optimize Cut Order', () => {
                 createCut('cut-1', 'chain-1'),
                 createCut('cut-2', 'nonexistent-chain'),
             ];
-            const chains = new Map([['chain-1', chain1]]);
+            const chains = createChainMap([['chain-1', chain1]]);
 
             const result = optimizeCutOrder(cuts, chains, []);
 
@@ -147,15 +154,19 @@ describe('Optimize Cut Order', () => {
                 { x: 15, y: 15 }
             );
             const cut = createCut('cut-1', 'chain-1');
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([cut], chains, []);
 
             expect(result.orderedCuts).toHaveLength(1);
-            expect(result.orderedCuts[0]).toBe(cut);
-            expect(result.rapids).toHaveLength(1);
-            expect(result.rapids[0].start).toEqual({ x: 0, y: 0 }); // origin
-            expect(result.rapids[0].end).toEqual({ x: 5, y: 5 }); // chain start
+            expect(result.orderedCuts[0].id).toBe(cut.id);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
+            expect(result.orderedCuts[0].rapidIn!.start).toEqual({
+                x: 0,
+                y: 0,
+            }); // origin
+            expect(result.orderedCuts[0].rapidIn!.end).toEqual({ x: 5, y: 5 }); // chain start
             expect(result.totalDistance).toBeGreaterThan(0);
         });
     });
@@ -184,7 +195,7 @@ describe('Optimize Cut Order', () => {
                 createCut('cut-3', 'chain-3'),
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['chain-1', chain1],
                 ['chain-2', chain2],
                 ['chain-3', chain3],
@@ -193,7 +204,10 @@ describe('Optimize Cut Order', () => {
             const result = optimizeCutOrder(cuts, chains, []);
 
             expect(result.orderedCuts).toHaveLength(3);
-            expect(result.rapids).toHaveLength(3);
+            // Rapids are now stored in Cut.rapidIn
+            result.orderedCuts.forEach((cut) =>
+                expect(cut.rapidIn).toBeDefined()
+            );
             expect(result.totalDistance).toBeGreaterThan(0);
 
             // Should pick the closest cut first (chain-1 is closest to origin)
@@ -233,7 +247,7 @@ describe('Optimize Cut Order', () => {
                 createCut('hole-cut-2', 'hole-chain-2'),
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['shell-chain', shellChain],
                 ['hole-chain-1', holeChain1],
                 ['hole-chain-2', holeChain2],
@@ -242,7 +256,10 @@ describe('Optimize Cut Order', () => {
             const result = optimizeCutOrder(cuts, chains, [part]);
 
             expect(result.orderedCuts).toHaveLength(3);
-            expect(result.rapids).toHaveLength(3);
+            // Rapids are now stored in Cut.rapidIn
+            result.orderedCuts.forEach((cut) =>
+                expect(cut.rapidIn).toBeDefined()
+            );
 
             // Shell should be last
             const shellCutIndex = result.orderedCuts.findIndex(
@@ -291,7 +308,7 @@ describe('Optimize Cut Order', () => {
                 createCut('hole-cut-2', 'hole-2'),
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['shell-1', shell1],
                 ['hole-1', hole1],
                 ['shell-2', shell2],
@@ -301,7 +318,10 @@ describe('Optimize Cut Order', () => {
             const result = optimizeCutOrder(cuts, chains, [part1, part2]);
 
             expect(result.orderedCuts).toHaveLength(4);
-            expect(result.rapids).toHaveLength(4);
+            // Rapids are now stored in Cut.rapidIn
+            result.orderedCuts.forEach((cut) =>
+                expect(cut.rapidIn).toBeDefined()
+            );
 
             // Within each part, holes should come before shells
             const cutOrder = result.orderedCuts.map((p) => p.id);
@@ -324,13 +344,14 @@ describe('Optimize Cut Order', () => {
             const part = createDetectedPart('part-1', shellChain, []);
 
             const cuts = [createCut('shell-cut', 'shell-chain')];
-            const chains = new Map([['shell-chain', shellChain]]);
+            const chains = createChainMap([['shell-chain', shellChain]]);
 
             const result = optimizeCutOrder(cuts, chains, [part]);
 
             expect(result.orderedCuts).toHaveLength(1);
             expect(result.orderedCuts[0].id).toBe('shell-cut');
-            expect(result.rapids).toHaveLength(1);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
         });
     });
 
@@ -345,12 +366,13 @@ describe('Optimize Cut Order', () => {
                 leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([cut], chains, []);
 
             expect(result.orderedCuts).toHaveLength(1);
-            expect(result.rapids).toHaveLength(1);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
         });
 
         it('should handle cuts with no lead-out (none type)', () => {
@@ -363,12 +385,13 @@ describe('Optimize Cut Order', () => {
                 leadOutConfig: { type: LeadType.NONE, length: 0 },
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([cut], chains, []);
 
             expect(result.orderedCuts).toHaveLength(1);
-            expect(result.rapids).toHaveLength(1);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
         });
 
         it('should handle cuts with calculated offset', () => {
@@ -377,7 +400,7 @@ describe('Optimize Cut Order', () => {
                 { x: 10, y: 10 },
                 { x: 20, y: 20 }
             );
-            const offsetShape: Shape = {
+            const offsetShapeData: ShapeData = {
                 id: 'offset-shape',
                 type: GeometryType.LINE,
                 geometry: {
@@ -385,6 +408,7 @@ describe('Optimize Cut Order', () => {
                     end: { x: 22, y: 22 },
                 } as Line,
             };
+            const offsetShape = new Shape(offsetShapeData);
 
             const cut = createCut('cut-1', 'chain-1', {
                 offset: {
@@ -397,12 +421,13 @@ describe('Optimize Cut Order', () => {
                 },
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([cut], chains, []);
 
             expect(result.orderedCuts).toHaveLength(1);
-            expect(result.rapids).toHaveLength(1);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
         });
     });
 
@@ -414,12 +439,12 @@ describe('Optimize Cut Order', () => {
                 { x: 20, y: 20 }
             );
             const cut = createCut('cut-1', 'chain-1');
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
             const customOrigin = { x: 100, y: 100 };
 
             const result = optimizeCutOrder([cut], chains, [], customOrigin);
 
-            expect(result.rapids[0].start).toEqual(customOrigin);
+            expect(result.orderedCuts[0].rapidIn!.start).toEqual(customOrigin);
         });
     });
 
@@ -432,7 +457,7 @@ describe('Optimize Cut Order', () => {
                 { x: 2000, y: 2000 }
             );
             const cut = createCut('cut-1', 'chain-1', { enabled: false }); // disabled cut to potentially trigger edge case
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([cut], chains, []);
 
@@ -457,7 +482,7 @@ describe('Optimize Cut Order', () => {
                 createCut('cut-2', 'chain-2'),
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['chain-1', chain1],
                 ['chain-2', chain2],
             ]);
@@ -466,7 +491,10 @@ describe('Optimize Cut Order', () => {
 
             // Should handle the cut removal from arrays correctly
             expect(result.orderedCuts).toHaveLength(2);
-            expect(result.rapids).toHaveLength(2);
+            // Rapids are now stored in Cut.rapidIn
+            result.orderedCuts.forEach((cut) =>
+                expect(cut.rapidIn).toBeDefined()
+            );
         });
 
         it('should handle missing parts in cutsByPart', () => {
@@ -489,7 +517,7 @@ describe('Optimize Cut Order', () => {
                 createCut('hole-cut', 'hole-chain'),
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['shell-chain', shellChain],
                 ['hole-chain', holeChain],
             ]);
@@ -525,7 +553,7 @@ describe('Optimize Cut Order', () => {
                 createCut('hole-cut-2', 'hole2'),
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['shell', shell],
                 ['hole1', hole1],
                 ['hole2', hole2],
@@ -534,7 +562,10 @@ describe('Optimize Cut Order', () => {
             const result = optimizeCutOrder(cuts, chains, [part]);
 
             expect(result.orderedCuts).toHaveLength(3);
-            expect(result.rapids).toHaveLength(3);
+            // Rapids are now stored in Cut.rapidIn
+            result.orderedCuts.forEach((cut) =>
+                expect(cut.rapidIn).toBeDefined()
+            );
         });
     });
 
@@ -551,7 +582,7 @@ describe('Optimize Cut Order', () => {
                 cutDirection: CutDirection.CLOCKWISE,
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             // Mock console.warn to test error handling
             const consoleSpy = vi
@@ -577,7 +608,7 @@ describe('Optimize Cut Order', () => {
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             // Mock console.warn to capture error handling
             const consoleSpy = vi
@@ -602,7 +633,7 @@ describe('Optimize Cut Order', () => {
                 leadOutConfig: { type: LeadType.ARC, length: 5 },
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             // Mock prepareChainsAndLeadConfigs to throw an error
             vi.spyOn(
@@ -626,7 +657,7 @@ describe('Optimize Cut Order', () => {
                 { x: 0, y: 0 },
                 { x: 100, y: 100 }
             );
-            const offsetShape: Shape = {
+            const offsetShapeData2: ShapeData = {
                 id: 'offset-shape',
                 type: GeometryType.LINE,
                 geometry: {
@@ -634,12 +665,13 @@ describe('Optimize Cut Order', () => {
                     end: { x: 102, y: 102 },
                 } as Line,
             };
+            const offsetShape2 = new Shape(offsetShapeData2);
 
             const cut = createCut('cut-1', 'chain-1', {
                 leadOutConfig: { type: LeadType.NONE, length: 0 }, // No lead-out
                 offset: {
-                    offsetShapes: [offsetShape],
-                    originalShapes: [offsetShape],
+                    offsetShapes: [offsetShape2],
+                    originalShapes: [offsetShape2],
                     direction: OffsetDirection.OUTSET,
                     kerfWidth: 2,
                     generatedAt: new Date().toISOString(),
@@ -647,12 +679,13 @@ describe('Optimize Cut Order', () => {
                 },
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([cut], chains, []);
 
             expect(result.orderedCuts).toHaveLength(1);
-            expect(result.rapids).toHaveLength(1);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
         });
 
         it('should fallback to chain end point when no lead-out and no offset', () => {
@@ -666,12 +699,13 @@ describe('Optimize Cut Order', () => {
                 offset: undefined, // No offset
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([simpleCut], chains, []);
 
             expect(result.orderedCuts).toHaveLength(1);
-            expect(result.rapids).toHaveLength(1);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
         });
 
         it('should handle empty offset shapes array', () => {
@@ -692,12 +726,13 @@ describe('Optimize Cut Order', () => {
                 },
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([cut], chains, []);
 
             expect(result.orderedCuts).toHaveLength(1);
-            expect(result.rapids).toHaveLength(1);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
         });
     });
 
@@ -741,7 +776,7 @@ describe('Optimize Cut Order', () => {
                 createCut('shell-cut-2', 'shell2'),
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['shell', shellChain],
                 ['hole1', holeChain1],
                 ['hole2', holeChain2],
@@ -782,7 +817,7 @@ describe('Optimize Cut Order', () => {
                 createCut('shell-cut', 'shell'),
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['shell', shellChain],
                 ['hole', holeChain],
             ]);
@@ -813,7 +848,7 @@ describe('Optimize Cut Order', () => {
                 createCut('cut-missing', 'missing-chain-id'), // This chain doesn't exist
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['chain-1', chain1],
                 // missing-chain-id not included
             ]);
@@ -839,7 +874,7 @@ describe('Optimize Cut Order', () => {
                 createCut('invalid-cut', 'missing-chain'), // Missing chain
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['shell', shellChain],
                 // 'missing-chain' not included
             ]);
@@ -860,7 +895,7 @@ describe('Optimize Cut Order', () => {
             // Create cuts that appear to belong to parts but parts array is manipulated
             const cuts = [createCut('shell-cut', 'shell')];
 
-            const chains = new Map([['shell', shellChain]]);
+            const chains = createChainMap([['shell', shellChain]]);
 
             // Test the continue branch by passing empty parts array but cuts that would match
             const result = optimizeCutOrder(cuts, chains, []);
@@ -888,7 +923,7 @@ describe('Optimize Cut Order', () => {
                 createCut('hole-cut', 'hole'),
             ];
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['shell', shellChain],
                 ['hole', holeChain],
             ]);
@@ -910,7 +945,7 @@ describe('Optimize Cut Order', () => {
     describe('Legacy Tests', () => {
         it('should handle ellipse shapes in chains', () => {
             // Create an ellipse shape
-            const ellipseShape: Shape = {
+            const ellipseShape: ShapeData = {
                 id: 'shape-1',
                 type: GeometryType.ELLIPSE,
                 geometry: {
@@ -923,13 +958,13 @@ describe('Optimize Cut Order', () => {
             };
 
             // Create a chain with the ellipse
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'chain-1',
                 shapes: [ellipseShape],
             };
 
             // Create a cut for the chain
-            const cut: Cut = {
+            const cut = new Cut({
                 id: 'cut-1',
                 name: 'Cut 1',
                 chainId: 'chain-1',
@@ -941,11 +976,11 @@ describe('Optimize Cut Order', () => {
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
                 normalSide: NormalSide.LEFT,
-            };
+            });
 
             // Create a map of chains
             const chains = new Map<string, Chain>();
-            chains.set('chain-1', chain);
+            chains.set('chain-1', new Chain(chain));
 
             // Test with no parts
             const result = optimizeCutOrder([cut], chains, []);
@@ -953,16 +988,20 @@ describe('Optimize Cut Order', () => {
             // Verify the result
             expect(result.orderedCuts).toHaveLength(1);
             expect(result.orderedCuts[0].id).toBe('cut-1');
-            expect(result.rapids).toHaveLength(1);
-            expect(result.rapids[0].type).toBe('rapid');
-            expect(result.rapids[0].start).toEqual({ x: 0, y: 0 }); // From origin
-            expect(result.rapids[0].end.x).toBeCloseTo(80, 1); // 50 + 30 (center + major axis)
-            expect(result.rapids[0].end.y).toBeCloseTo(50, 1); // Center Y
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
+            expect(result.orderedCuts[0].rapidIn!.type).toBe('rapid');
+            expect(result.orderedCuts[0].rapidIn!.start).toEqual({
+                x: 0,
+                y: 0,
+            }); // From origin
+            expect(result.orderedCuts[0].rapidIn!.end.x).toBeCloseTo(80, 1); // 50 + 30 (center + major axis)
+            expect(result.orderedCuts[0].rapidIn!.end.y).toBeCloseTo(50, 1); // Center Y
         });
 
         it('should handle spline shapes in chains', () => {
             // Create a spline shape
-            const splineShape: Shape = {
+            const splineShape: ShapeData = {
                 id: 'shape-1',
                 type: GeometryType.SPLINE,
                 geometry: {
@@ -981,13 +1020,13 @@ describe('Optimize Cut Order', () => {
             };
 
             // Create a chain with the spline
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'chain-1',
                 shapes: [splineShape],
             };
 
             // Create a cut for the chain
-            const cut: Cut = {
+            const cut = new Cut({
                 id: 'cut-1',
                 name: 'Cut 1',
                 chainId: 'chain-1',
@@ -999,11 +1038,11 @@ describe('Optimize Cut Order', () => {
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
                 normalSide: NormalSide.LEFT,
-            };
+            });
 
             // Create a map of chains
             const chains = new Map<string, Chain>();
-            chains.set('chain-1', chain);
+            chains.set('chain-1', new Chain(chain));
 
             // Test with no parts
             const result = optimizeCutOrder([cut], chains, []);
@@ -1011,10 +1050,17 @@ describe('Optimize Cut Order', () => {
             // Verify the result
             expect(result.orderedCuts).toHaveLength(1);
             expect(result.orderedCuts[0].id).toBe('cut-1');
-            expect(result.rapids).toHaveLength(1);
-            expect(result.rapids[0].type).toBe('rapid');
-            expect(result.rapids[0].start).toEqual({ x: 0, y: 0 }); // From origin
-            expect(result.rapids[0].end).toEqual({ x: 10, y: 10 }); // First point of polyline
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
+            expect(result.orderedCuts[0].rapidIn!.type).toBe('rapid');
+            expect(result.orderedCuts[0].rapidIn!.start).toEqual({
+                x: 0,
+                y: 0,
+            }); // From origin
+            expect(result.orderedCuts[0].rapidIn!.end).toEqual({
+                x: 10,
+                y: 10,
+            }); // First point of polyline
         });
 
         it('should handle all shape types without throwing errors', () => {
@@ -1092,39 +1138,44 @@ describe('Optimize Cut Order', () => {
                         break;
                 }
 
-                const shape: Shape = {
+                const shape: ShapeData = {
                     id: `shape-${index}`,
                     type: type as GeometryType,
                     geometry,
                 };
 
-                const chain: Chain = {
+                const chain: ChainData = {
                     id: `chain-${index}`,
                     shapes: [shape],
                 };
 
-                chains.set(chain.id, chain);
+                chains.set(chain.id, new Chain(chain));
 
-                cuts.push({
-                    id: `cut-${index}`,
-                    name: `Cut ${index + 1}`,
-                    chainId: chain.id,
-                    operationId: 'op-1',
-                    toolId: 'tool-1',
-                    enabled: true,
-                    order: index + 1,
-                    cutDirection: CutDirection.COUNTERCLOCKWISE,
-                    normal: { x: 1, y: 0 },
-                    normalConnectionPoint: { x: 0, y: 0 },
-                    normalSide: NormalSide.LEFT,
-                });
+                cuts.push(
+                    new Cut({
+                        id: `cut-${index}`,
+                        name: `Cut ${index + 1}`,
+                        chainId: chain.id,
+                        operationId: 'op-1',
+                        toolId: 'tool-1',
+                        enabled: true,
+                        order: index + 1,
+                        cutDirection: CutDirection.COUNTERCLOCKWISE,
+                        normal: { x: 1, y: 0 },
+                        normalConnectionPoint: { x: 0, y: 0 },
+                        normalSide: NormalSide.LEFT,
+                    })
+                );
             });
 
             // This should not throw any errors
             const result = optimizeCutOrder(cuts, chains, []);
 
             expect(result.orderedCuts).toHaveLength(shapeTypes.length);
-            expect(result.rapids).toHaveLength(shapeTypes.length);
+            // Rapids are now stored in Cut.rapidIn
+            result.orderedCuts.forEach((cut) =>
+                expect(cut.rapidIn).toBeDefined()
+            );
             expect(result.totalDistance).toBeGreaterThan(0);
         });
     });
@@ -1145,7 +1196,7 @@ describe('Optimize Cut Order', () => {
                 executionClockwise: false,
                 leadInConfig: undefined, // No lead-in
                 leadOutConfig: undefined, // No lead-out
-                cutChain: {
+                cutChain: new Chain({
                     id: 'chain-1-cut',
                     shapes: [
                         {
@@ -1157,20 +1208,27 @@ describe('Optimize Cut Order', () => {
                             } as Line,
                         },
                     ],
-                },
+                }),
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([cut], chains, []);
 
             expect(result.orderedCuts).toHaveLength(1);
-            expect(result.rapids).toHaveLength(1);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
 
             // The rapid should connect from origin (0,0) to the START of the CUT
             // Since the cut is reversed, the start should be (20,20), NOT (10,10)
-            expect(result.rapids[0].start).toEqual({ x: 0, y: 0 });
-            expect(result.rapids[0].end).toEqual({ x: 20, y: 20 }); // Should be the reversed start
+            expect(result.orderedCuts[0].rapidIn!.start).toEqual({
+                x: 0,
+                y: 0,
+            });
+            expect(result.orderedCuts[0].rapidIn!.end).toEqual({
+                x: 20,
+                y: 20,
+            }); // Should be the reversed start
         });
 
         it('should connect rapid correctly for open chain with CLOCKWISE direction without leads', () => {
@@ -1187,23 +1245,30 @@ describe('Optimize Cut Order', () => {
                 executionClockwise: true,
                 leadInConfig: undefined, // No lead-in
                 leadOutConfig: undefined, // No lead-out
-                cutChain: {
+                cutChain: new Chain({
                     id: 'chain-1-cut',
-                    shapes: chain.shapes, // Not reversed
-                },
+                    shapes: chain.shapes,
+                }),
             });
 
-            const chains = new Map([['chain-1', chain]]);
+            const chains = createChainMap([['chain-1', chain]]);
 
             const result = optimizeCutOrder([cut], chains, []);
 
             expect(result.orderedCuts).toHaveLength(1);
-            expect(result.rapids).toHaveLength(1);
+            // Rapids are now stored in Cut.rapidIn
+            expect(result.orderedCuts[0].rapidIn).toBeDefined();
 
             // The rapid should connect from origin (0,0) to the START of the CUT
             // Since the cut is NOT reversed, the start should be (10,10)
-            expect(result.rapids[0].start).toEqual({ x: 0, y: 0 });
-            expect(result.rapids[0].end).toEqual({ x: 10, y: 10 });
+            expect(result.orderedCuts[0].rapidIn!.start).toEqual({
+                x: 0,
+                y: 0,
+            });
+            expect(result.orderedCuts[0].rapidIn!.end).toEqual({
+                x: 10,
+                y: 10,
+            });
         });
 
         it('should connect sequential rapids correctly for reversed open chains without leads', () => {
@@ -1228,7 +1293,7 @@ describe('Optimize Cut Order', () => {
                 executionClockwise: false,
                 leadInConfig: undefined,
                 leadOutConfig: undefined,
-                cutChain: {
+                cutChain: new Chain({
                     id: 'chain-1-cut',
                     shapes: [
                         {
@@ -1240,7 +1305,7 @@ describe('Optimize Cut Order', () => {
                             } as Line,
                         },
                     ],
-                },
+                }),
             });
 
             const cut2 = createCut('cut-2', 'chain-2', {
@@ -1248,7 +1313,7 @@ describe('Optimize Cut Order', () => {
                 executionClockwise: false,
                 leadInConfig: undefined,
                 leadOutConfig: undefined,
-                cutChain: {
+                cutChain: new Chain({
                     id: 'chain-2-cut',
                     shapes: [
                         {
@@ -1260,10 +1325,10 @@ describe('Optimize Cut Order', () => {
                             } as Line,
                         },
                     ],
-                },
+                }),
             });
 
-            const chains = new Map([
+            const chains = createChainMap([
                 ['chain-1', chain1],
                 ['chain-2', chain2],
             ]);
@@ -1271,15 +1336,30 @@ describe('Optimize Cut Order', () => {
             const result = optimizeCutOrder([cut1, cut2], chains, []);
 
             expect(result.orderedCuts).toHaveLength(2);
-            expect(result.rapids).toHaveLength(2);
+            // Rapids are now stored in Cut.rapidIn
+            result.orderedCuts.forEach((cut) =>
+                expect(cut.rapidIn).toBeDefined()
+            );
 
             // First rapid: origin (0,0) to start of cut1 (20,20)
-            expect(result.rapids[0].start).toEqual({ x: 0, y: 0 });
-            expect(result.rapids[0].end).toEqual({ x: 20, y: 20 });
+            expect(result.orderedCuts[0].rapidIn!.start).toEqual({
+                x: 0,
+                y: 0,
+            });
+            expect(result.orderedCuts[0].rapidIn!.end).toEqual({
+                x: 20,
+                y: 20,
+            });
 
             // Second rapid: end of cut1 (10,10) to start of cut2 (40,40)
-            expect(result.rapids[1].start).toEqual({ x: 10, y: 10 });
-            expect(result.rapids[1].end).toEqual({ x: 40, y: 40 });
+            expect(result.orderedCuts[1].rapidIn!.start).toEqual({
+                x: 10,
+                y: 10,
+            });
+            expect(result.orderedCuts[1].rapidIn!.end).toEqual({
+                x: 40,
+                y: 40,
+            });
         });
     });
 });

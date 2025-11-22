@@ -7,7 +7,7 @@ import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { sampleEllipse } from '$lib/geometry/ellipse/functions';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { EPSILON } from '$lib/geometry/math/constants';
 import {
@@ -197,7 +197,7 @@ export class SVGBuilder {
 
         // Add green point at arc start and red point at arc end
         if (showEndpoints) {
-            const arcShape: Shape = {
+            const arcShape: ShapeData = {
                 id: `arc-${Date.now()}`,
                 type: GeometryType.ARC,
                 geometry: arc,
@@ -380,7 +380,7 @@ export class SVGBuilder {
 
     // Methods for intersection visualization
     addShape(
-        shape: Shape,
+        shape: ShapeData,
         color: string,
         strokeWidth: number,
         dashArray?: string,
@@ -503,7 +503,7 @@ export class SVGBuilder {
 
         // Add green point at ellipse arc start and red point at ellipse arc end (like addArc does)
         if (isArc && showEndpoints) {
-            const ellipseShape: Shape = {
+            const ellipseShape: ShapeData = {
                 id: `ellipse-${Date.now()}`,
                 type: GeometryType.ELLIPSE,
                 geometry: ellipse,

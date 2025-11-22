@@ -3,18 +3,21 @@ import {
     prepareChainsAndLeadConfigs,
     getCutStartPoint,
 } from './cut-optimization-utils';
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
+import { Cut } from './classes.svelte';
+import { Chain } from '$lib/geometry/chain/classes';
+import { Shape } from '$lib/geometry/shape/classes';
 
 // Test data setup
-const createTestCut = (overrides: Partial<Cut> = {}): Cut => ({
+const createTestCut = (overrides: Partial<CutData> = {}): CutData => ({
     id: 'test-cut',
     name: 'Test Cut',
     operationId: 'test-operation',
@@ -41,7 +44,7 @@ const createTestCut = (overrides: Partial<Cut> = {}): Cut => ({
     ...overrides,
 });
 
-const createTestChain = (overrides: Partial<Chain> = {}): Chain => ({
+const createTestChain = (overrides: Partial<ChainData> = {}): ChainData => ({
     id: 'test-chain',
     shapes: [
         {
@@ -56,7 +59,7 @@ const createTestChain = (overrides: Partial<Chain> = {}): Chain => ({
     ...overrides,
 });
 
-const createTestShape = (start: Point2D, end: Point2D): Shape => ({
+const createTestShape = (start: Point2D, end: Point2D): ShapeData => ({
     id: 'test-line',
     type: GeometryType.LINE,
     geometry: {
@@ -71,15 +74,18 @@ describe('cut-optimization-utils', () => {
             const cut = createTestCut();
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(cut, chain);
+            const result = prepareChainsAndLeadConfigs(
+                new Cut(cut),
+                new Chain(chain)
+            );
 
-            expect(result.leadCalculationChain).toBe(chain);
+            expect(result.leadCalculationChain.id).toBe(chain.id);
             expect(result.leadCalculationChain.id).toBe('test-chain');
         });
 
         it('should create offset chain when offset shapes available', () => {
-            const offsetShapes: Shape[] = [
-                createTestShape({ x: 1, y: 1 }, { x: 11, y: 1 }),
+            const offsetShapes = [
+                new Shape(createTestShape({ x: 1, y: 1 }, { x: 11, y: 1 })),
             ];
 
             const cut = createTestCut({
@@ -94,12 +100,17 @@ describe('cut-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(cut, chain);
+            const result = prepareChainsAndLeadConfigs(
+                new Cut(cut),
+                new Chain(chain)
+            );
 
             expect(result.leadCalculationChain.id).toBe(
                 'test-chain_offset_temp'
             );
-            expect(result.leadCalculationChain.shapes).toBe(offsetShapes);
+            expect(result.leadCalculationChain.shapes.length).toBe(
+                offsetShapes.length
+            );
         });
 
         it('should create correct lead-in config', () => {
@@ -114,7 +125,10 @@ describe('cut-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(cut, chain);
+            const result = prepareChainsAndLeadConfigs(
+                new Cut(cut),
+                new Chain(chain)
+            );
 
             expect(result.leadInConfig.type).toBe(LeadType.ARC);
             expect(result.leadInConfig.length).toBe(10);
@@ -134,7 +148,10 @@ describe('cut-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(cut, chain);
+            const result = prepareChainsAndLeadConfigs(
+                new Cut(cut),
+                new Chain(chain)
+            );
 
             expect(result.leadOutConfig.type).toBe(LeadType.ARC);
             expect(result.leadOutConfig.length).toBe(15);
@@ -149,7 +166,10 @@ describe('cut-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = prepareChainsAndLeadConfigs(cut, chain);
+            const result = prepareChainsAndLeadConfigs(
+                new Cut(cut),
+                new Chain(chain)
+            );
 
             expect(result.leadInConfig.type).toBe(LeadType.NONE);
             expect(result.leadInConfig.length).toBe(0);
@@ -170,7 +190,7 @@ describe('cut-optimization-utils', () => {
             const chain = createTestChain();
 
             // This tests that the function works with valid inputs
-            const result = getCutStartPoint(cut, chain);
+            const result = getCutStartPoint(new Cut(cut), new Chain(chain));
 
             // Just verify the function returns a valid point
             expect(typeof result.x).toBe('number');
@@ -178,8 +198,8 @@ describe('cut-optimization-utils', () => {
         });
 
         it('should use offset chain start point when offset is available and no lead-in', () => {
-            const offsetShapes: Shape[] = [
-                createTestShape({ x: 5, y: 5 }, { x: 15, y: 5 }),
+            const offsetShapes = [
+                new Shape(createTestShape({ x: 5, y: 5 }, { x: 15, y: 5 })),
             ];
 
             const cut = createTestCut({
@@ -199,7 +219,7 @@ describe('cut-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = getCutStartPoint(cut, chain);
+            const result = getCutStartPoint(new Cut(cut), new Chain(chain));
 
             // Should use offset chain start point
             expect(result).toEqual({ x: 5, y: 5 });
@@ -215,7 +235,7 @@ describe('cut-optimization-utils', () => {
             });
             const chain = createTestChain();
 
-            const result = getCutStartPoint(cut, chain);
+            const result = getCutStartPoint(new Cut(cut), new Chain(chain));
 
             // Should use original chain start point
             expect(result).toEqual({ x: 0, y: 0 });

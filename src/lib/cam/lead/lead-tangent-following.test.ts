@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -36,7 +36,7 @@ describe('Lead Tangent Following Invariant', () => {
         radius = 50,
         clockwise = true
     ): Chain {
-        return {
+        return new Chain({
             id: 'circle-chain',
             shapes: [
                 {
@@ -49,7 +49,7 @@ describe('Lead Tangent Following Invariant', () => {
                 },
             ],
             clockwise,
-        };
+        });
     }
 
     function createRectangleWithHole(): {
@@ -57,7 +57,7 @@ describe('Lead Tangent Following Invariant', () => {
         shell: Chain;
         hole: Chain;
     } {
-        const shell: Chain = {
+        const shell: Chain = new Chain({
             id: 'shell',
             shapes: [
                 {
@@ -94,7 +94,7 @@ describe('Lead Tangent Following Invariant', () => {
                 },
             ],
             clockwise: true,
-        };
+        });
 
         const hole: Chain = createCircleChain({ x: 100, y: 100 }, 30, false);
 

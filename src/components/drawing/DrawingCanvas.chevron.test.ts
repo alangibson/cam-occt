@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { sampleShapes } from '$lib/geometry/shape/functions';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
@@ -16,7 +16,7 @@ describe('Chevron Arrow Integration Tests', () => {
             // This test simulates the logic from drawPathChevrons in DrawingCanvas.svelte
             // For counterclockwise cuts, the shapes are reversed before sampling
 
-            const horizontalLine: Shape = {
+            const horizontalLine: ShapeData = {
                 id: 'horizontal-line-ccw',
                 type: GeometryType.LINE,
                 geometry: {
@@ -25,7 +25,7 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const verticalLine: Shape = {
+            const verticalLine: ShapeData = {
                 id: 'vertical-line-ccw',
                 type: GeometryType.LINE,
                 geometry: {
@@ -65,7 +65,7 @@ describe('Chevron Arrow Integration Tests', () => {
         });
 
         it('should handle clockwise cut direction correctly without shape reversal', () => {
-            const horizontalLine: Shape = {
+            const horizontalLine: ShapeData = {
                 id: 'horizontal-line-cw',
                 type: GeometryType.LINE,
                 geometry: {
@@ -74,7 +74,7 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const verticalLine: Shape = {
+            const verticalLine: ShapeData = {
                 id: 'vertical-line-cw',
                 type: GeometryType.LINE,
                 geometry: {
@@ -116,7 +116,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
         it('should produce visually consistent chevron directions for both cut directions', () => {
             // Create a simple square path that could be cut either direction
-            const bottom: Shape = {
+            const bottom: ShapeData = {
                 id: 'bottom-line',
                 type: GeometryType.LINE,
                 geometry: {
@@ -125,7 +125,7 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const right: Shape = {
+            const right: ShapeData = {
                 id: 'right-line',
                 type: GeometryType.LINE,
                 geometry: {
@@ -134,7 +134,7 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const top: Shape = {
+            const top: ShapeData = {
                 id: 'top-line',
                 type: GeometryType.LINE,
                 geometry: {
@@ -143,7 +143,7 @@ describe('Chevron Arrow Integration Tests', () => {
                 } as Line,
             };
 
-            const left: Shape = {
+            const left: ShapeData = {
                 id: 'left-line',
                 type: GeometryType.LINE,
                 geometry: {
@@ -192,7 +192,7 @@ describe('Chevron Arrow Integration Tests', () => {
             // This test verifies that chevrons point in the direction the cutting tool will move
             // which is critical for user understanding of the cut
 
-            const straightLine: Shape = {
+            const straightLine: ShapeData = {
                 id: 'straight-line',
                 type: GeometryType.LINE,
                 geometry: {
@@ -213,7 +213,7 @@ describe('Chevron Arrow Integration Tests', () => {
 
             // For counterclockwise cuts, shapes would be reversed at Cut level (not here)
             // If we were to simulate that reversal here, we'd reverse the line's start/end
-            const reversedLine: Shape = {
+            const reversedLine: ShapeData = {
                 id: 'reversed-line',
                 type: GeometryType.LINE,
                 geometry: {
@@ -240,7 +240,7 @@ describe('Chevron Arrow Integration Tests', () => {
             // 2. But sampleShapesAtDistanceIntervals didn't account for this reversal
             // 3. Result: arrows pointed in wrong direction for counterclockwise cuts
 
-            const testLine: Shape = {
+            const testLine: ShapeData = {
                 id: 'test-line',
                 type: GeometryType.LINE,
                 geometry: {

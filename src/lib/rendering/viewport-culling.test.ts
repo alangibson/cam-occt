@@ -9,7 +9,7 @@ import {
 } from './viewport-culling';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import { getBoundingBoxForShape } from '$lib/geometry/bounding-box/functions';
@@ -29,7 +29,7 @@ describe('viewport-culling', () => {
 
             vi.mocked(getBoundingBoxForShape).mockReturnValue(mockBoundingBox);
 
-            const shape: Shape = {
+            const shape: ShapeData = {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: {
@@ -53,7 +53,7 @@ describe('viewport-culling', () => {
                 throw new Error('Bounding box calculation failed');
             });
 
-            const shape: Shape = {
+            const shape: ShapeData = {
                 id: 'invalid-shape',
                 type: GeometryType.LINE,
                 geometry: {} as Line,
@@ -293,7 +293,7 @@ describe('viewport-culling', () => {
                     max: { x: 60, y: 60 },
                 });
 
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 { id: '1', type: GeometryType.CIRCLE, geometry: {} as Circle },
                 { id: '2', type: GeometryType.CIRCLE, geometry: {} as Circle },
                 { id: '3', type: GeometryType.CIRCLE, geometry: {} as Circle },
@@ -322,7 +322,7 @@ describe('viewport-culling', () => {
                     max: { x: 90, y: 90 },
                 }); // Inside
 
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 { id: '1', type: GeometryType.CIRCLE, geometry: {} as Circle },
                 { id: '2', type: GeometryType.CIRCLE, geometry: {} as Circle },
                 { id: '3', type: GeometryType.CIRCLE, geometry: {} as Circle },
@@ -343,7 +343,7 @@ describe('viewport-culling', () => {
                 max: { x: 130, y: 130 },
             });
 
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 { id: '1', type: GeometryType.CIRCLE, geometry: {} as Circle },
             ];
 
@@ -375,7 +375,7 @@ describe('viewport-culling', () => {
                     max: { x: 20, y: 20 },
                 });
 
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 { id: '1', type: GeometryType.CIRCLE, geometry: {} as Circle },
                 { id: '2', type: GeometryType.CIRCLE, geometry: {} as Circle },
             ];
@@ -411,7 +411,7 @@ describe('viewport-culling', () => {
                     max: { x: 60, y: 60 },
                 });
 
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'first',
                     type: GeometryType.CIRCLE,

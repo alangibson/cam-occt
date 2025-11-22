@@ -1,4 +1,4 @@
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { CutDirection } from './enums';
 import {
@@ -24,7 +24,7 @@ import { calculateSignedArea } from '$lib/geometry/polygon/functions';
  * - Returns 'none' as they don't have a natural cut direction
  */
 export function detectCutDirection(
-    chain: Chain,
+    chain: ChainData,
     tolerance: number = CHAIN_CLOSURE_TOLERANCE
 ): CutDirection {
     if (!chain || !chain.shapes || chain.shapes.length === 0) {

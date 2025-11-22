@@ -14,7 +14,8 @@ import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { Shape } from '$lib/geometry/shape/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
@@ -39,13 +40,13 @@ import {
     getShapePointAt,
     tessellateShape,
 } from '$lib/geometry/shape/functions';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import {
     calculateViewportBounds,
     cullShapesToViewport,
 } from '$lib/rendering/viewport-culling';
 import { DrawingContext } from '$lib/rendering/canvas/utils/context';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 
 // Constants for styling and rendering
 const VIEWPORT_CULLING_THRESHOLD = 100;
@@ -64,12 +65,12 @@ const SHAPE_TANGENT_LINE_WIDTH = 1;
  * Shape renderer that handles all basic geometry rendering
  */
 export class ShapeRenderer extends BaseRenderer {
-    private getShapes: (state: RenderState) => Shape[];
+    private getShapes: (state: RenderState) => ShapeData[];
 
     constructor(
         id: string,
         coordinator: CoordinateTransformer,
-        getShapes: (state: RenderState) => Shape[]
+        getShapes: (state: RenderState) => ShapeData[]
     ) {
         super(id, LayerId.SHAPES, coordinator);
         this.getShapes = getShapes;
@@ -175,7 +176,7 @@ export class ShapeRenderer extends BaseRenderer {
     private drawShapeNormals(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        shapes: Shape[]
+        shapes: ShapeData[]
     ): void {
         for (const shape of shapes) {
             // Check if layer is visible
@@ -208,8 +209,12 @@ export class ShapeRenderer extends BaseRenderer {
      */
     private forEachShapeWithDirection(
         state: RenderState,
-        shapes: Shape[],
-        callback: (shape: Shape, midpoint: Point2D, direction: Point2D) => void
+        shapes: ShapeData[],
+        callback: (
+            shape: ShapeData,
+            midpoint: Point2D,
+            direction: Point2D
+        ) => void
     ): void {
         for (const shape of shapes) {
             // Check if layer is visible
@@ -235,7 +240,7 @@ export class ShapeRenderer extends BaseRenderer {
     private drawShapeWindingDirections(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        shapes: Shape[]
+        shapes: ShapeData[]
     ): void {
         this.forEachShapeWithDirection(
             state,
@@ -268,7 +273,7 @@ export class ShapeRenderer extends BaseRenderer {
     private drawShapeTangentLines(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        shapes: Shape[]
+        shapes: ShapeData[]
     ): void {
         this.forEachShapeWithDirection(
             state,
@@ -282,7 +287,7 @@ export class ShapeRenderer extends BaseRenderer {
     /**
      * Get the direction vector at the midpoint of a shape
      */
-    private getShapeDirectionAtMidpoint(shape: Shape): Point2D | null {
+    private getShapeDirectionAtMidpoint(shape: ShapeData): Point2D | null {
         const MIDPOINT_PARAM = 0.5;
         const DELTA = 0.01; // Small offset for direction calculation
 
@@ -358,7 +363,7 @@ export class ShapeRenderer extends BaseRenderer {
     private drawShapeTessellation(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        shapes: Shape[]
+        shapes: ShapeData[]
     ): void {
         ctx.save();
 
@@ -374,19 +379,11 @@ export class ShapeRenderer extends BaseRenderer {
                 if (!isVisible) continue;
             }
 
-            // Get tessellation points - use cache if available
-            let tessellationPoints: Point2D[];
-
-            if (shape.tessellationCache) {
-                // Use cached tessellation
-                tessellationPoints = shape.tessellationCache.points;
-            } else {
-                // Compute new tessellation
-                tessellationPoints = tessellateShape(
-                    shape,
-                    DEFAULT_PART_DETECTION_PARAMETERS
-                );
-            }
+            // Get tessellation points
+            const tessellationPoints = tessellateShape(
+                shape,
+                DEFAULT_PART_DETECTION_PARAMETERS
+            );
 
             // Draw each tessellation point as a small circle
             for (const point of tessellationPoints) {
@@ -426,7 +423,13 @@ export class ShapeRenderer extends BaseRenderer {
                 if (!isVisible) continue;
             }
 
-            if (HitTestUtils.isPointNearShape(point, shape, tolerance)) {
+            if (
+                HitTestUtils.isPointNearShape(
+                    point,
+                    new Shape(shape),
+                    tolerance
+                )
+            ) {
                 const distance = this.calculateDistanceToShape(point, shape);
                 return {
                     type: HitTestType.SHAPE,
@@ -446,7 +449,7 @@ export class ShapeRenderer extends BaseRenderer {
      */
     private drawShapeStyled(
         ctx: CanvasRenderingContext2D,
-        shape: Shape,
+        shape: ShapeData,
         isSelected: boolean,
         isHovered: boolean,
         state: RenderState,
@@ -481,7 +484,7 @@ export class ShapeRenderer extends BaseRenderer {
     /**
      * Calculate the exact distance from a point to a shape
      */
-    private calculateDistanceToShape(point: Point2D, shape: Shape): number {
+    private calculateDistanceToShape(point: Point2D, shape: ShapeData): number {
         switch (shape.type) {
             case GeometryType.LINE:
                 const line = shape.geometry as Line;

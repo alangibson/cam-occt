@@ -7,12 +7,13 @@ import {
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { Shape } from '$lib/geometry/shape/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import {
@@ -33,7 +34,7 @@ const OFFSET_LINE_WIDTH = 1;
 const SELECTED_OFFSET_LINE_WIDTH = 1;
 const SELECTED_CUT_LINE_WIDTH = 1;
 const HIGHLIGHTED_CUT_LINE_WIDTH = 1;
-const GAP_FILL_LINE_WIDTH = 1;
+// const GAP_FILL_LINE_WIDTH = 1;
 const ENDPOINT_RADIUS_PX = 3;
 const HIT_TOLERANCE_PX = 5;
 
@@ -41,7 +42,10 @@ const HIT_TOLERANCE_PX = 5;
  * Determines which shapes to use for a cut.
  * Priority: offset shapes > cutChain shapes > original chain shapes
  */
-function getShapesForCut(cut: Cut, chains: Chain[]): Shape[] | null {
+function getShapesForCut(
+    cut: CutData,
+    chains: ChainData[]
+): ShapeData[] | null {
     if (cut.offset?.offsetShapes && cut.offset.offsetShapes.length > 0) {
         return cut.offset.offsetShapes;
     } else if (cut.cutChain?.shapes && cut.cutChain.shapes.length > 0) {
@@ -67,7 +71,7 @@ export class CutRenderer extends BaseRenderer {
     }
 
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+        if (!state.cuts || state.cuts.length === 0) return;
 
         // First render cut geometry if enabled
         if (state.visibility.showCutPaths) {
@@ -98,9 +102,9 @@ export class CutRenderer extends BaseRenderer {
      * Uses offset shapes if available, otherwise falls back to cutChain or original chain shapes
      */
     private drawCuts(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+        if (!state.cuts || state.cuts.length === 0) return;
 
-        state.cutsState.cuts.forEach((cut: Cut) => {
+        state.cuts.forEach((cut: CutData) => {
             // Only draw cuts for enabled cuts with enabled operations
             if (!isCutEnabledForRendering(cut, state)) {
                 return;
@@ -108,7 +112,7 @@ export class CutRenderer extends BaseRenderer {
 
             // Determine which shapes to render
             // Priority: offset shapes > cutChain shapes > original chain shapes
-            let shapesToDraw: Shape[] | null = null;
+            let shapesToDraw: ShapeData[] | null = null;
 
             if (
                 cut.offset?.offsetShapes &&
@@ -202,57 +206,6 @@ export class CutRenderer extends BaseRenderer {
                         );
                     }
                 });
-
-                // Render gap fills if they exist (only applies to offset cuts)
-                if (cut.offset?.gapFills && cut.offset.gapFills.length > 0) {
-                    ctx.save();
-
-                    // Use same color logic as offset shapes for consistency
-                    applyCutStyling(
-                        ctx,
-                        state,
-                        !!isCutSelected,
-                        !!isCutHighlighted,
-                        {
-                            selectedDark: cutColors.selectedDark,
-                            highlighted: cutColors.highlighted,
-                            normal: cutColors.offsetGreen,
-                        },
-                        {
-                            selected: SELECTED_CUT_LINE_WIDTH,
-                            highlighted: HIGHLIGHTED_CUT_LINE_WIDTH,
-                            normal: GAP_FILL_LINE_WIDTH,
-                        }
-                    );
-                    ctx.setLineDash([]); // Solid line
-
-                    for (const gapFill of cut.offset.gapFills) {
-                        // Render filler shape if it exists
-                        if (gapFill.fillerShape) {
-                            try {
-                                drawShape(ctx, gapFill.fillerShape);
-                            } catch (error) {
-                                console.warn(
-                                    `Error rendering gap filler shape for cut ${cut.id}:`,
-                                    error
-                                );
-                            }
-                        }
-
-                        // Render modified shapes (these replace the original offset shapes in gap areas)
-                        for (const modifiedShapeEntry of gapFill.modifiedShapes) {
-                            drawShape(ctx, modifiedShapeEntry.modified);
-                        }
-                    }
-
-                    // Reset shadow after gap fills if it was applied
-                    if (isCutHighlighted) {
-                        ctx.shadowColor = 'transparent';
-                        ctx.shadowBlur = 0;
-                    }
-
-                    ctx.restore();
-                }
             } catch (error) {
                 console.error(`Error rendering cut ${cut.id}:`, error);
             } finally {
@@ -268,11 +221,11 @@ export class CutRenderer extends BaseRenderer {
         ctx: CanvasRenderingContext2D,
         state: RenderState
     ): void {
-        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+        if (!state.cuts || state.cuts.length === 0) return;
 
         const pointRadius = screenToWorldDistance(state, ENDPOINT_RADIUS_PX); // Fixed size regardless of zoom
 
-        state.cutsState.cuts.forEach((cut: Cut) => {
+        state.cuts.forEach((cut: CutData) => {
             // Only draw endpoints for enabled cuts with enabled operations
             if (!isCutEnabledForRendering(cut, state)) return;
 
@@ -332,7 +285,7 @@ export class CutRenderer extends BaseRenderer {
         ctx: CanvasRenderingContext2D,
         state: RenderState
     ): void {
-        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+        if (!state.cuts || state.cuts.length === 0) return;
 
         const TANGENT_LINE_LENGTH = 50; // Length in screen pixels
         const TANGENT_LINE_WIDTH = 1;
@@ -340,7 +293,7 @@ export class CutRenderer extends BaseRenderer {
         const ARROW_ANGLE_DENOMINATOR = 6; // Divisor for PI to get 30 degrees
         const ARROW_ANGLE = Math.PI / ARROW_ANGLE_DENOMINATOR;
 
-        state.cutsState.cuts.forEach((cut: Cut) => {
+        state.cuts.forEach((cut: CutData) => {
             // Only draw tangents for enabled cuts with enabled operations
             if (!isCutEnabledForRendering(cut, state)) return;
 
@@ -507,9 +460,9 @@ export class CutRenderer extends BaseRenderer {
         ctx: CanvasRenderingContext2D,
         state: RenderState
     ): void {
-        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+        if (!state.cuts || state.cuts.length === 0) return;
 
-        state.cutsState.cuts.forEach((cut: Cut) => {
+        state.cuts.forEach((cut: CutData) => {
             // Only draw normals for enabled cuts with enabled operations
             if (!isCutEnabledForRendering(cut, state)) return;
 
@@ -546,7 +499,7 @@ export class CutRenderer extends BaseRenderer {
         for (const cut of enabledCuts) {
             // Determine which shapes to test for hit
             // Priority: offset shapes > cutChain shapes > original chain shapes
-            let shapesToTest: Shape[] | null = null;
+            let shapesToTest: ShapeData[] | null = null;
 
             if (
                 cut.offset?.offsetShapes &&
@@ -566,7 +519,13 @@ export class CutRenderer extends BaseRenderer {
 
             // Test shapes for cut hit
             for (const shape of shapesToTest) {
-                if (HitTestUtils.isPointNearShape(point, shape, hitTolerance)) {
+                if (
+                    HitTestUtils.isPointNearShape(
+                        point,
+                        new Shape(shape),
+                        hitTolerance
+                    )
+                ) {
                     return {
                         type: HitTestType.CUT,
                         id: cut.id,

@@ -1,17 +1,24 @@
 <script lang="ts">
     import { rapidStore } from '$lib/stores/rapids/store';
+    import { planStore } from '$lib/stores/plan/store';
 
     // Reactive rapid data
-    $: rapidState = $rapidStore;
-    $: rapids = rapidState.rapids;
-    $: selectedRapidIds = rapidState.selectedRapidIds;
-    $: selectedRapidId =
-        selectedRapidIds.size === 1 ? Array.from(selectedRapidIds)[0] : null;
-    $: highlightedRapidId = rapidState.highlightedRapidId;
-    $: activeRapidId = selectedRapidId || highlightedRapidId;
-    $: selectedRapid = activeRapidId
-        ? rapids.find((rapid) => rapid.id === activeRapidId)
-        : null;
+    const rapidState = $derived($rapidStore);
+    const cuts = $derived($planStore.plan.cuts);
+    const rapids = $derived(
+        cuts.map((cut) => cut.rapidIn).filter((rapid) => rapid !== undefined)
+    );
+    const selectedRapidIds = $derived(rapidState.selectedRapidIds);
+    const selectedRapidId = $derived(
+        selectedRapidIds.size === 1 ? Array.from(selectedRapidIds)[0] : null
+    );
+    const highlightedRapidId = $derived(rapidState.highlightedRapidId);
+    const activeRapidId = $derived(selectedRapidId || highlightedRapidId);
+    const selectedRapid = $derived(
+        activeRapidId
+            ? rapids.find((rapid) => rapid.id === activeRapidId)
+            : null
+    );
 
     // Calculate rapid distance
     function calculateDistance(

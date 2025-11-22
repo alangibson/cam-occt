@@ -37,7 +37,6 @@ describe('ToolBar Component - Function Coverage', () => {
                 layer: '0',
             },
         ],
-        bounds: { min: { x: 0, y: 0 }, max: { x: 15, y: 15 } },
         units: Unit.MM,
         fileName: 'test.dxf',
     };

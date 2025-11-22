@@ -7,10 +7,10 @@ import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import { calculateDrawingSize } from '$lib/algorithms/drawing-size/drawing-size';
+import { calculateDrawingSize } from '$lib/cam/drawing/drawing-size';
 
 // Mock the drawing size calculation
-vi.mock('$lib/algorithms/drawing-size/drawing-size', () => ({
+vi.mock('$lib/cam/drawing/drawing-size', () => ({
     calculateDrawingSize: vi.fn(),
 }));
 
@@ -60,7 +60,6 @@ describe('Footer Component', () => {
                     layer: '0',
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };
@@ -91,7 +90,6 @@ describe('Footer Component', () => {
                     layer: '0',
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 50, y: 30 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };
@@ -117,7 +115,6 @@ describe('Footer Component', () => {
     it('should show error state when size calculation fails', async () => {
         const mockDrawing: DrawingData = {
             shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };

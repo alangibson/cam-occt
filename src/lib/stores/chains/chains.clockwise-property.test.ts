@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Layer - Clockwise Property Detection', () => {
     it('should automatically detect clockwise property for clockwise chain', () => {
         // Create a clockwise square chain (going: right → down → left → up)
-        const clockwiseSquare: Shape[] = [
+        const clockwiseSquare: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -37,8 +37,8 @@ describe('Layer - Clockwise Property Detection', () => {
 
         const drawingData: DrawingData = {
             shapes: clockwiseSquare,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
+            fileName: '',
         };
 
         const drawing = new Drawing(drawingData);
@@ -51,7 +51,7 @@ describe('Layer - Clockwise Property Detection', () => {
 
     it('should automatically detect clockwise property for counterclockwise chain', () => {
         // Create a counterclockwise square chain (going: right → up → left → down)
-        const counterclockwiseSquare: Shape[] = [
+        const counterclockwiseSquare: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -80,8 +80,8 @@ describe('Layer - Clockwise Property Detection', () => {
 
         const drawingData: DrawingData = {
             shapes: counterclockwiseSquare,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
+            fileName: '',
         };
 
         const drawing = new Drawing(drawingData);
@@ -94,7 +94,7 @@ describe('Layer - Clockwise Property Detection', () => {
 
     it('should set clockwise property to null for open chain', () => {
         // Create an open line chain
-        const openLine: Shape[] = [
+        const openLine: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -111,8 +111,8 @@ describe('Layer - Clockwise Property Detection', () => {
 
         const drawingData: DrawingData = {
             shapes: openLine,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 20, y: 0 } },
             units: Unit.MM,
+            fileName: '',
         };
 
         const drawing = new Drawing(drawingData);
@@ -125,7 +125,7 @@ describe('Layer - Clockwise Property Detection', () => {
 
     it('should handle multiple chains with different clockwise properties', () => {
         // Create multiple chains with different orientations
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             // Clockwise square
             {
                 id: 'cw-line1',
@@ -193,8 +193,8 @@ describe('Layer - Clockwise Property Detection', () => {
 
         const drawingData: DrawingData = {
             shapes,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 60, y: 10 } },
             units: Unit.MM,
+            fileName: '',
         };
 
         const drawing = new Drawing(drawingData);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
@@ -17,7 +17,7 @@ describe('Decompose Polylines Algorithm', () => {
                 false,
                 { id: 'poly1', layer: 'test' }
             );
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = decomposePolylines(shapes);
 
@@ -48,7 +48,7 @@ describe('Decompose Polylines Algorithm', () => {
                 true,
                 { id: 'poly1', layer: 'test' }
             );
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = decomposePolylines(shapes);
 
@@ -62,7 +62,7 @@ describe('Decompose Polylines Algorithm', () => {
         });
 
         it('should preserve non-polyline shapes unchanged', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -97,7 +97,7 @@ describe('Decompose Polylines Algorithm', () => {
                 false,
                 { id: 'poly1', layer: 'construction' }
             );
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = decomposePolylines(shapes);
 
@@ -121,7 +121,7 @@ describe('Decompose Polylines Algorithm', () => {
                 false,
                 { id: 'poly1' }
             );
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = decomposePolylines(shapes);
 
@@ -137,7 +137,7 @@ describe('Decompose Polylines Algorithm', () => {
                     id: 'poly1',
                 }
             );
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = decomposePolylines(shapes);
 
@@ -154,7 +154,7 @@ describe('Decompose Polylines Algorithm', () => {
                 true,
                 { id: 'poly1' }
             );
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = decomposePolylines(shapes);
 
@@ -183,7 +183,7 @@ describe('Decompose Polylines Algorithm', () => {
                 { id: 'poly1' }
             );
 
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -227,7 +227,7 @@ describe('Decompose Polylines Algorithm', () => {
                 false,
                 { id: 'poly1' }
             );
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = decomposePolylines(shapes);
 

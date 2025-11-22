@@ -3,7 +3,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -11,7 +11,7 @@ import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import { tessellateSpline } from '$lib/geometry/spline/functions';
+import { Shape } from '$lib/geometry/shape/classes';
 import {
     isFullEllipse,
     distanceFromEllipsePerimeter,
@@ -38,7 +38,7 @@ export enum HitTestType {
  * Hit test metadata for different types
  */
 interface HitTestMetadata {
-    shape?: Shape;
+    shape?: ShapeData;
     shapeType?: 'original' | 'offset';
     cutId?: string;
     endpoint?: 'start' | 'end';
@@ -337,7 +337,11 @@ export class HitTestUtils {
                 // Check each shape in the polyline
                 for (const polylineShape of polyline.shapes) {
                     if (
-                        this.isPointNearShape(point, polylineShape, tolerance)
+                        this.isPointNearShape(
+                            point,
+                            new Shape(polylineShape),
+                            tolerance
+                        )
                     ) {
                         return true;
                     }
@@ -390,18 +394,8 @@ export class HitTestUtils {
             case GeometryType.SPLINE:
                 const spline = shape.geometry as Spline;
 
-                // Use cached tessellation if available, otherwise compute
-                let evaluatedPoints: Point2D[];
-
-                if (shape.tessellationCache) {
-                    // Reuse the rendering cache for consistency and performance
-                    evaluatedPoints = shape.tessellationCache.points;
-                } else {
-                    // Cache doesn't exist yet - compute with fewer points for hit testing
-                    evaluatedPoints = tessellateSpline(spline, {
-                        numSamples: 50,
-                    }).points;
-                }
+                // Get tessellation from cache
+                const evaluatedPoints = shape.tessellation.points;
 
                 if (!evaluatedPoints || evaluatedPoints.length < 2)
                     return false;

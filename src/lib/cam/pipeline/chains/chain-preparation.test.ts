@@ -7,9 +7,10 @@
 import { describe, it, expect } from 'vitest';
 import { createCutChain } from './functions';
 import { getChainCutDirection } from '$lib/geometry/chain/functions';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
+import { Shape } from '$lib/geometry/shape/classes';
 
 describe('getChainCutDirection', () => {
     it('should return NONE for undefined chain', () => {
@@ -17,7 +18,7 @@ describe('getChainCutDirection', () => {
     });
 
     it('should return CLOCKWISE for chain with clockwise=true', () => {
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [],
             clockwise: true,
@@ -26,7 +27,7 @@ describe('getChainCutDirection', () => {
     });
 
     it('should return COUNTERCLOCKWISE for chain with clockwise=false', () => {
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [],
             clockwise: false,
@@ -35,7 +36,7 @@ describe('getChainCutDirection', () => {
     });
 
     it('should return NONE for chain with clockwise=null', () => {
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [],
             clockwise: null,
@@ -44,7 +45,7 @@ describe('getChainCutDirection', () => {
     });
 
     it('should return NONE for chain without clockwise property', () => {
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [],
         };
@@ -64,7 +65,7 @@ describe('createCutChain', () => {
 
     it('should deep clone shapes', () => {
         const shape1 = createTestShape('shape1');
-        const originalChain: Chain = {
+        const originalChain: ChainData = {
             id: 'test-chain',
             shapes: [shape1],
             clockwise: true,
@@ -84,8 +85,8 @@ describe('createCutChain', () => {
 
     it('should use offset shapes when provided', () => {
         const originalShape = createTestShape('original');
-        const offsetShape = createTestShape('offset');
-        const originalChain: Chain = {
+        const offsetShape = new Shape(createTestShape('offset'));
+        const originalChain: ChainData = {
             id: 'test-chain',
             shapes: [originalShape],
             clockwise: true,
@@ -99,7 +100,7 @@ describe('createCutChain', () => {
     });
 
     it('should return executionClockwise=null when userCutDirection is NONE', () => {
-        const originalChain: Chain = {
+        const originalChain: ChainData = {
             id: 'test-chain',
             shapes: [createTestShape('shape1')],
             clockwise: true,
@@ -113,7 +114,7 @@ describe('createCutChain', () => {
     it('should preserve original order for closed chain when directions match', () => {
         const shape1 = createTestShape('shape1');
         const shape2 = createTestShape('shape2');
-        const originalChain: Chain = {
+        const originalChain: ChainData = {
             id: 'test-chain',
             shapes: [shape1, shape2],
             clockwise: true,
@@ -133,7 +134,7 @@ describe('createCutChain', () => {
     it('should reverse chain when user direction is opposite of natural direction', () => {
         const shape1 = createTestShape('shape1');
         const shape2 = createTestShape('shape2');
-        const originalChain: Chain = {
+        const originalChain: ChainData = {
             id: 'test-chain',
             shapes: [shape1, shape2],
             clockwise: true,
@@ -152,7 +153,7 @@ describe('createCutChain', () => {
     });
 
     it('should preserve originalChainId reference', () => {
-        const originalChain: Chain = {
+        const originalChain: ChainData = {
             id: 'original-chain-id',
             shapes: [createTestShape('shape1')],
             clockwise: true,
@@ -168,7 +169,7 @@ describe('createCutChain', () => {
     });
 
     it('should set clockwise property to execution direction', () => {
-        const originalChain: Chain = {
+        const originalChain: ChainData = {
             id: 'test-chain',
             shapes: [createTestShape('shape1')],
             clockwise: true,
@@ -192,7 +193,7 @@ describe('createCutChain', () => {
     it('should handle open chains (clockwise=null) with CLOCKWISE direction', () => {
         const shape1 = createTestShape('shape1');
         const shape2 = createTestShape('shape2');
-        const originalChain: Chain = {
+        const originalChain: ChainData = {
             id: 'test-chain',
             shapes: [shape1, shape2],
             clockwise: null,
@@ -212,7 +213,7 @@ describe('createCutChain', () => {
     it('should handle open chains (clockwise=null) with COUNTERCLOCKWISE direction', () => {
         const shape1 = createTestShape('shape1');
         const shape2 = createTestShape('shape2');
-        const originalChain: Chain = {
+        const originalChain: ChainData = {
             id: 'test-chain',
             shapes: [shape1, shape2],
             clockwise: null,

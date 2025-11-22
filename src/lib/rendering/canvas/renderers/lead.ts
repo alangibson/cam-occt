@@ -18,8 +18,8 @@ import {
     HitTestType,
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { CutData } from '$lib/cam/cut/interfaces';
+import type { OperationData } from '$lib/cam/operation/interface';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { LeadConfig, LeadResult } from '$lib/cam/lead/interfaces';
 import { LeadType } from '$lib/cam/lead/enums';
@@ -88,8 +88,8 @@ export class LeadRenderer extends BaseRenderer {
     private drawCutLeads(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        cut: Cut,
-        operation: Operation
+        cut: CutData,
+        operation: OperationData
     ): void {
         // Skip if both leads are disabled
         const leadInType = cut.leadInConfig?.type || LeadType.NONE;
@@ -136,8 +136,8 @@ export class LeadRenderer extends BaseRenderer {
     }
 
     private calculateCutLeads(
-        cut: Cut,
-        operation: Operation,
+        cut: CutData,
+        operation: OperationData,
         state: RenderState
     ): LeadResult {
         try {
@@ -173,7 +173,6 @@ export class LeadRenderer extends BaseRenderer {
                 return {
                     leadIn,
                     leadOut,
-                    warnings: cut.leadValidation?.warnings || [],
                 };
             }
 
@@ -190,7 +189,7 @@ export class LeadRenderer extends BaseRenderer {
 
                 // Apply cut direction ordering if using fallback chain
                 if (cut.cutDirection === 'counterclockwise') {
-                    chain = { ...chain, shapes: [...chain.shapes].reverse() };
+                    chain?.shapes.reverse();
                 }
             }
 
@@ -265,7 +264,7 @@ export class LeadRenderer extends BaseRenderer {
     }
 
     private shouldHideLeadDuringSimulation(
-        _cut: Cut,
+        _cut: CutData,
         state: RenderState
     ): boolean {
         if (state.stage !== 'simulate') return false;
@@ -277,7 +276,7 @@ export class LeadRenderer extends BaseRenderer {
     }
 
     private getLeadOpacity(
-        _cut: Cut,
+        _cut: CutData,
         leadType: 'leadIn' | 'leadOut',
         state: RenderState
     ): number {
@@ -375,8 +374,8 @@ export class LeadRenderer extends BaseRenderer {
     private drawLeadNormals(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        cut: Cut,
-        operation: Operation
+        cut: CutData,
+        operation: OperationData
     ): void {
         const leadResult = this.calculateCutLeads(cut, operation, state);
         if (!leadResult) return;

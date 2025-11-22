@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { EPSILON } from '$lib/geometry/math/constants';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type {
     Polyline,
     PolylineVertex,
@@ -30,7 +30,7 @@ describe('Bulge Rendering Fixes', () => {
 
             // Check if vertices with bulges are preserved
             let totalBulgedVertices = 0;
-            polylines.forEach((polyline: Shape) => {
+            polylines.forEach((polyline: ShapeData) => {
                 const geometry = polyline.geometry as Polyline;
                 const vertices = polylineToVertices(geometry);
                 const bulgedVertices = vertices.filter(
@@ -66,7 +66,7 @@ describe('Bulge Rendering Fixes', () => {
             expect(lines.length).toBeGreaterThan(0);
 
             // Check arc properties
-            arcs.forEach((arc: Shape) => {
+            arcs.forEach((arc: ShapeData) => {
                 const geometry = arc.geometry as Arc;
                 expect(geometry.center).toBeDefined();
                 expect(geometry.radius).toBeGreaterThan(0);
@@ -148,12 +148,12 @@ describe('Bulge Rendering Fixes', () => {
 
             // With bulges should only have polylines
             expect(
-                withBulges.shapes.every((s: Shape) => s.type === 'polyline')
+                withBulges.shapes.every((s: ShapeData) => s.type === 'polyline')
             ).toBe(true);
 
             // Decomposed should have mixed types
             const decomposedTypes = new Set(
-                decomposed.shapes.map((s: Shape) => s.type)
+                decomposed.shapes.map((s: ShapeData) => s.type)
             );
             expect(decomposedTypes.size).toBeGreaterThan(1);
         });

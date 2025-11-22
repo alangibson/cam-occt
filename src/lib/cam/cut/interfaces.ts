@@ -1,17 +1,13 @@
-import type { Shape } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { GapFillingResult } from './types';
-import type { Chain } from '$lib/geometry/chain/interfaces';
 import { CutDirection } from './enums';
-import type {
-    CacheableLead,
-    LeadConfig,
-    LeadValidationResult,
-} from '$lib/cam/lead/interfaces';
+import type { CacheableLead, LeadConfig } from '$lib/cam/lead/interfaces';
 import type { NormalSide } from './enums';
 import type { OffsetDirection } from '$lib/cam/offset/types';
+import type { Rapid } from '$lib/cam/rapid/interfaces';
+import type { OffsetData } from '$lib/cam/offset/interfaces';
+import type { Chain } from '$lib/geometry/chain/classes';
 
-export interface Cut {
+export interface CutData {
     id: string;
     name: string;
     enabled: boolean;
@@ -53,6 +49,11 @@ export interface Cut {
     // Velocity percentage for hole cutting (10-100)
     holeUnderspeedPercent?: number;
 
+    // Rapids
+    //
+    // Rapid movement into this cut (from previous cut or origin)
+    rapidIn?: Rapid;
+
     // Leads
     //
     // Lead-in configuration
@@ -63,8 +64,6 @@ export interface Cut {
     leadIn?: CacheableLead;
     // Calculated lead geometry (persisted to avoid recalculation)
     leadOut?: CacheableLead;
-    // Lead validation results (persisted)
-    leadValidation?: LeadValidationResult;
 
     // Offsets
     //
@@ -73,13 +72,5 @@ export interface Cut {
     // Kerf compensation fields
     kerfCompensation?: OffsetDirection; // Direction of kerf compensation
     // Calculated offset geometry (persisted to avoid recalculation)
-    offset?: {
-        offsetShapes: Shape[]; // The offset chain shapes
-        originalShapes: Shape[]; // The original unmodified chain shapes
-        direction: OffsetDirection; // The direction that was applied
-        kerfWidth: number; // The kerf width used for calculation
-        generatedAt: string; // ISO timestamp
-        version: string; // Algorithm version for invalidation
-        gapFills?: GapFillingResult[];
-    };
+    offset?: OffsetData;
 }

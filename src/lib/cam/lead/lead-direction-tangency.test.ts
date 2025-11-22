@@ -3,9 +3,10 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { convertLeadGeometryToPoints } from './functions';
 
@@ -15,7 +16,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         center: { x: number; y: number },
         radius: number,
         _clockwise: boolean
-    ): Chain {
+    ): ChainData {
         return {
             id: 'test-circle',
             shapes: [
@@ -38,7 +39,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         width: number,
         height: number,
         clockwise: boolean
-    ): Chain {
+    ): ChainData {
         const vertices = clockwise
             ? [
                   { x, y, bulge: 0 },
@@ -73,7 +74,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
 
     // Helper to get the tangent direction based on cut direction
     function _getExpectedTangentDirection(
-        shape: Shape,
+        shape: ShapeData,
         cutDirection: CutDirection.CLOCKWISE | 'counterclockwise'
     ): number {
         if (shape.type === 'circle') {
@@ -98,7 +99,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         const LeadConfig: LeadConfig = { type: LeadType.ARC, length: 10 };
 
         const clockwiseResult = calculateLeads(
-            clockwiseCircle,
+            new Chain(clockwiseCircle),
             leadInConfig,
             LeadConfig,
             CutDirection.CLOCKWISE,
@@ -119,7 +120,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         const counterclockwiseCircle = createCircleChain(center, radius, false);
 
         const counterclockwiseResult = calculateLeads(
-            counterclockwiseCircle,
+            new Chain(counterclockwiseCircle),
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
@@ -147,7 +148,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         const LeadConfig: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const clockwiseResult = calculateLeads(
-            clockwiseRect,
+            new Chain(clockwiseRect),
             leadInConfig,
             LeadConfig,
             CutDirection.CLOCKWISE,
@@ -179,7 +180,7 @@ describe('Lead Direction and Cut Direction Tangency', () => {
         );
 
         const counterclockwiseResult = calculateLeads(
-            counterclockwiseRect,
+            new Chain(counterclockwiseRect),
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,

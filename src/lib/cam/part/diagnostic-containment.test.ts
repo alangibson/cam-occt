@@ -7,10 +7,10 @@ import { join } from 'path';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { buildContainmentHierarchy } from '$lib/cam/part/geometric-containment';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
-function filterToLargestLayer(shapes: Shape[]): Shape[] {
-    const layerMap = new Map<string, Shape[]>();
+function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
+    const layerMap = new Map<string, ShapeData[]>();
     shapes.forEach((shape) => {
         const layer = shape.layer || 'NO_LAYER';
         if (!layerMap.has(layer)) {

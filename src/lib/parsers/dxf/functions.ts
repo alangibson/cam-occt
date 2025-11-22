@@ -1,17 +1,15 @@
 import { parseString } from 'dxf';
 import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
-import { Unit, measurementSystemToUnit } from '$lib/config/units/units';
+import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { PolylineVertex } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { generateId } from '$lib/domain/id';
 import { generateSegments } from '$lib/geometry/polyline/functions';
 import { normalizeSplineWeights } from '$lib/geometry/spline/functions';
-import { getShapePointsForBounds } from '$lib/geometry/bounding-box/functions';
 import {
     FULL_CIRCLE_RADIANS,
     HALF_CIRCLE_DEG,
@@ -29,31 +27,13 @@ import {
     METERS_TO_MILLIMETERS,
     FEET_TO_INCHES,
 } from './constants';
-import type { ApplicationSettings } from '$lib/config/settings/interfaces';
-import { ImportUnitSetting } from '$lib/config/settings/enums';
 import {
     DEFAULT_SPLINE_DEGREE,
     MIN_CONTROL_POINTS_FOR_SPLINE,
 } from '$lib/geometry/spline/constants';
 import { MIN_VERTICES_FOR_POLYLINE } from '$lib/geometry/polyline/constants';
 
-function updateBounds(
-    shape: Shape,
-    bounds: { minX: number; minY: number; maxX: number; maxY: number }
-): void {
-    const points: Point2D[] = getShapePointsForBounds(shape);
-    points.forEach((p) => {
-        // Only update bounds with finite values
-        if (p && isFinite(p.x) && isFinite(p.y)) {
-            bounds.minX = Math.min(bounds.minX, p.x);
-            bounds.minY = Math.min(bounds.minY, p.y);
-            bounds.maxX = Math.max(bounds.maxX, p.x);
-            bounds.maxY = Math.max(bounds.maxY, p.y);
-        }
-    });
-}
-
-function convertEllipseEntity(entity: DXFEntity): Shape | null {
+function convertEllipseEntity(entity: DXFEntity): ShapeData | null {
     // Handle ELLIPSE entities
     // DXF ellipse format:
     // 10, 20, 30: Center point (x, y, z)
@@ -99,7 +79,7 @@ function convertEllipseEntity(entity: DXFEntity): Shape | null {
     return null;
 }
 
-function convertPolylineEntity(entity: DXFEntity): Shape | null {
+function convertPolylineEntity(entity: DXFEntity): ShapeData | null {
     if (
         entity.vertices &&
         Array.isArray(entity.vertices) &&
@@ -128,7 +108,7 @@ function convertPolylineEntity(entity: DXFEntity): Shape | null {
             const isClosed: boolean = entity.shape || entity.closed || false;
 
             // Generate shapes using the utility function
-            const shapes: Shape[] = generateSegments(vertices, isClosed);
+            const shapes: ShapeData[] = generateSegments(vertices, isClosed);
 
             // Only create polyline if we have valid segments
             if (shapes.length > 0) {
@@ -147,7 +127,7 @@ function convertPolylineEntity(entity: DXFEntity): Shape | null {
     return null;
 }
 
-function convertSplineEntity(entity: DXFEntity): Shape | null {
+function convertSplineEntity(entity: DXFEntity): ShapeData | null {
     // SPLINE entities are NURBS curves
     if (
         entity.controlPoints &&
@@ -186,7 +166,7 @@ function convertSplineEntity(entity: DXFEntity): Shape | null {
     return null;
 }
 
-function convertArcEntity(entity: DXFEntity): Shape | null {
+function convertArcEntity(entity: DXFEntity): ShapeData | null {
     // ARC entities have x, y, r properties (not center/radius)
     if (
         typeof entity.x === 'number' &&
@@ -211,7 +191,7 @@ function convertArcEntity(entity: DXFEntity): Shape | null {
     return null;
 }
 
-function convertCircleEntity(entity: DXFEntity): Shape | null {
+function convertCircleEntity(entity: DXFEntity): ShapeData | null {
     // CIRCLE entities have x, y, r properties (similar to ARCs)
     if (
         typeof entity.x === 'number' &&
@@ -231,7 +211,7 @@ function convertCircleEntity(entity: DXFEntity): Shape | null {
     return null;
 }
 
-function convertLineEntity(entity: DXFEntity): Shape | null {
+function convertLineEntity(entity: DXFEntity): ShapeData | null {
     // Handle LINE entities - can have vertices array or direct start/end points
     if (entity.vertices && entity.vertices.length >= MIN_VERTICES_FOR_LINE) {
         return {
@@ -268,14 +248,14 @@ function convertInsertEntity(
     entity: DXFEntity,
     blocks: Map<string, DXFEntity[]>,
     blockBasePoints: Map<string, { x: number; y: number }>
-): Shape[] | null {
+): ShapeData[] | null {
     const blockName: string | undefined = entity.block || entity.name;
     if (!blockName || !blocks.has(blockName)) {
         return null;
     }
 
     const blockEntities: DXFEntity[] = blocks.get(blockName) || [];
-    const insertedShapes: Shape[] = [];
+    const insertedShapes: ShapeData[] = [];
 
     // Get transformation parameters with defaults
     const insertX: number = entity.x || 0;
@@ -295,19 +275,19 @@ function convertInsertEntity(
 
     // Process each entity in the block
     for (const blockEntity of blockEntities) {
-        const shape: Shape | Shape[] | null = convertDXFEntity(
+        const shape: ShapeData | ShapeData[] | null = convertDXFEntity(
             blockEntity,
             blocks,
             blockBasePoints
         );
         if (shape) {
-            const shapesToTransform: Shape[] = Array.isArray(shape)
+            const shapesToTransform: ShapeData[] = Array.isArray(shape)
                 ? shape
                 : [shape];
 
             // Apply transformation to each shape
             for (const shapeToTransform of shapesToTransform) {
-                const transformedShape: Shape | null = transformShape(
+                const transformedShape: ShapeData | null = transformShape(
                     shapeToTransform,
                     {
                         insertX,
@@ -333,7 +313,7 @@ function convertDXFEntity(
     entity: DXFEntity,
     blocks: Map<string, DXFEntity[]> = new Map(),
     blockBasePoints: Map<string, { x: number; y: number }> = new Map()
-): Shape | Shape[] | null {
+): ShapeData | ShapeData[] | null {
     try {
         switch (entity.type) {
             case 'INSERT':
@@ -403,11 +383,13 @@ function convertRawInsUnitsToUnit(rawInsUnits: number | undefined): {
 }
 
 export async function parseDXF(content: string): Promise<DrawingData> {
+    console.log('[parseDXF] Starting DXF parsing...');
     let parsed: DXFParsed;
     try {
         parsed = parseString(content);
+        console.log('[parseDXF] DXF string parsed successfully');
     } catch (error) {
-        console.error('Failed to parse DXF file:', error);
+        console.error('[parseDXF] Failed to parse DXF file:', error);
         throw new Error(
             `DXF parsing failed: ${error instanceof Error ? (error as Error).message : 'Unknown error'}`
         );
@@ -416,13 +398,7 @@ export async function parseDXF(content: string): Promise<DrawingData> {
     if (!parsed) {
         throw new Error('DXF parser returned null or undefined');
     }
-    const shapes: Shape[] = [];
-    const bounds: { minX: number; minY: number; maxX: number; maxY: number } = {
-        minX: Infinity,
-        minY: Infinity,
-        maxX: -Infinity,
-        maxY: -Infinity,
-    };
+    const shapes: ShapeData[] = [];
 
     // Extract units from DXF header and convert coordinates to mm if needed
     const rawInsUnits: number | undefined =
@@ -430,7 +406,15 @@ export async function parseDXF(content: string): Promise<DrawingData> {
     const { unit: drawingUnits, scaleFactor: coordinateScaleFactor } =
         convertRawInsUnitsToUnit(rawInsUnits);
 
+    console.log(
+        '[parseDXF] Detected units:',
+        drawingUnits,
+        'scale factor:',
+        coordinateScaleFactor
+    );
+
     // Process blocks first to build block dictionary
+    console.log('[parseDXF] Processing blocks...');
     const blocks: Map<string, DXFEntity[]> = new Map<string, DXFEntity[]>();
     const blockBasePoints: Map<string, { x: number; y: number }> = new Map<
         string,
@@ -450,11 +434,19 @@ export async function parseDXF(content: string): Promise<DrawingData> {
         }
     }
 
+    console.log('[parseDXF] Processed', blocks.size, 'blocks');
+
     // Process entities
+    console.log('[parseDXF] Processing entities...');
     if (parsed && parsed.entities) {
+        console.log(
+            '[parseDXF] Found',
+            parsed.entities.length,
+            'entities to process'
+        );
         parsed.entities.forEach((entity: DXFEntity, index: number) => {
             try {
-                const result: Shape | Shape[] | null = convertDXFEntity(
+                const result: ShapeData | ShapeData[] | null = convertDXFEntity(
                     entity,
                     blocks,
                     blockBasePoints
@@ -472,7 +464,6 @@ export async function parseDXF(content: string): Promise<DrawingData> {
                                       })
                                     : shape;
                             shapes.push(scaledShape);
-                            updateBounds(scaledShape, bounds);
                         });
                     } else {
                         // Single shape
@@ -485,7 +476,6 @@ export async function parseDXF(content: string): Promise<DrawingData> {
                                   })
                                 : result;
                         shapes.push(scaledShape);
-                        updateBounds(scaledShape, bounds);
                     }
                 }
             } catch (error) {
@@ -498,70 +488,11 @@ export async function parseDXF(content: string): Promise<DrawingData> {
         });
     }
 
-    // Ensure bounds are valid - if no shapes were processed, set to zero bounds
-    const finalBounds: { min: Point2D; max: Point2D } = {
-        min: {
-            x: isFinite(bounds.minX) ? bounds.minX : 0,
-            y: isFinite(bounds.minY) ? bounds.minY : 0,
-        },
-        max: {
-            x: isFinite(bounds.maxX) ? bounds.maxX : 0,
-            y: isFinite(bounds.maxY) ? bounds.maxY : 0,
-        },
-    };
+    console.log('[parseDXF] Completed. Generated', shapes.length, 'shapes');
 
     return {
         shapes,
-        bounds: finalBounds,
         units: drawingUnits, // Use detected units from DXF header
-        rawInsUnits, // Preserve raw DXF $INSUNITS for display purposes
-    };
-}
-
-/**
- * Apply unit override to a drawing based on application settings
- * This function only changes the unit label without converting geometry values
- */
-export function applyImportUnitConversion(
-    drawing: DrawingData,
-    settings: ApplicationSettings
-): DrawingData {
-    // Determine target unit based on import setting
-    let targetUnit: Unit;
-
-    switch (settings.importUnitSetting) {
-        case ImportUnitSetting.Automatic:
-            // Use the file's detected units - no override
-            return drawing;
-
-        case ImportUnitSetting.Application:
-            // Override to application's measurement system
-            targetUnit = measurementSystemToUnit(settings.measurementSystem);
-            break;
-
-        case ImportUnitSetting.Metric:
-            // Force metric units
-            targetUnit = Unit.MM;
-            break;
-
-        case ImportUnitSetting.Imperial:
-            // Force imperial units
-            targetUnit = Unit.INCH;
-            break;
-
-        default:
-            // Fallback to automatic behavior
-            return drawing;
-    }
-
-    // If no override needed, return original drawing
-    if (drawing.units === targetUnit) {
-        return drawing;
-    }
-
-    // Only change the unit label, keep all geometry values unchanged
-    return {
-        ...drawing,
-        units: targetUnit,
+        fileName: String(Date.now()), // Default timestamp, can be overridden by caller
     };
 }

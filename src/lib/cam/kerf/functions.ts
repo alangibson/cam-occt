@@ -5,13 +5,14 @@
  * the material removal zone of the cutting tool.
  */
 
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { Kerf } from './interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { OffsetChain } from '$lib/cam/offset/types';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import {
@@ -153,7 +154,7 @@ function validateChainClosure(
  * console.log('Includes leads:', kerf.leadIn !== undefined || kerf.leadOut !== undefined);
  * ```
  */
-export async function cutToKerf(cut: Cut, tool: Tool): Promise<Kerf> {
+export async function cutToKerf(cut: CutData, tool: Tool): Promise<Kerf> {
     // Validation
     if (!cut.cutChain) {
         throw new Error('Cut must have a cutChain to generate kerf');
@@ -323,7 +324,7 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<Kerf> {
 
     // Get the original chain shapes (before any offset was applied)
     const originalShapes = cut.offset?.originalShapes || cutChain.shapes;
-    const originalChain: Chain = {
+    const originalChain: ChainData = {
         id: cutChain.id,
         shapes: originalShapes,
     };
@@ -401,7 +402,7 @@ export async function cutToKerf(cut: Cut, tool: Tool): Promise<Kerf> {
  */
 export function doesLeadKerfOverlapChain(
     leadKerfOuterChain: OffsetChain | undefined,
-    originalChain: Chain,
+    originalChain: ChainData,
     distanceInterval: number
 ): boolean {
     // For leads, only the outer chain exists (it's a closed polygon from Clipper2)
@@ -430,7 +431,7 @@ export function doesLeadKerfOverlapChain(
 
     // The outer chain from Clipper2 is already a closed polygon representing the lead kerf
     // Just use it directly as the polygon for ray tracing
-    const leadKerfPolygon: Chain = {
+    const leadKerfPolygon: ChainData = {
         id: leadKerfOuterChain.id,
         shapes: leadKerfOuterChain.shapes,
     };
@@ -482,14 +483,14 @@ export function doesLeadKerfOverlapChain(
  * @returns Adjusted cut with new start point, or null if no solution found
  */
 export async function adjustCutStartPointForLeadKerfOverlap(
-    cut: Cut,
+    cut: CutData,
     tool: Tool,
-    _originalChain: Chain,
+    _originalChain: ChainData,
     tolerance: number,
     parts: Part[],
     stepSize: number = DEFAULT_STEP_SIZE,
     maxAttempts: number = DEFAULT_MAX_ATTEMPTS
-): Promise<Cut | null> {
+): Promise<CutData | null> {
     console.log(
         `[Start Adjust] Starting adjustment for cut "${cut.name}" (max attempts: ${maxAttempts}, step size: ${stepSize})`
     );
@@ -548,14 +549,15 @@ export async function adjustCutStartPointForLeadKerfOverlap(
             }
 
             // Create test cut with rotated chain
-            const testCut: Cut = {
+            const rotatedChainInstance = new Chain(rotatedChain);
+            const testCut: CutData = {
                 ...cut,
-                cutChain: rotatedChain,
+                cutChain: rotatedChainInstance,
             };
 
             // Recalculate normal for new start point WITH part context
             const normalResult = calculateCutNormal(
-                rotatedChain,
+                rotatedChainInstance,
                 cut.cutDirection,
                 part, // Use actual part context for correct normal direction
                 cut.kerfCompensation
@@ -563,7 +565,7 @@ export async function adjustCutStartPointForLeadKerfOverlap(
 
             // Recalculate leads WITH part context
             const leadResult = calculateLeads(
-                rotatedChain,
+                rotatedChainInstance,
                 cut.leadInConfig!,
                 cut.leadOutConfig!,
                 cut.cutDirection,
@@ -641,10 +643,10 @@ export async function adjustCutStartPointForLeadKerfOverlap(
  * @returns Rotated chain
  */
 function rotateChainToPoint(
-    chain: Chain,
+    chain: ChainData,
     _startPoint: Point2D,
     t: number
-): Chain | null {
+): ChainData | null {
     console.log(
         `[Chain Rotate] Rotating chain "${chain.id}" to position t=${t.toFixed(2)}`
     );

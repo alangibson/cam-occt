@@ -1,15 +1,15 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { cutStore } from '$lib/stores/cuts/store';
+    import { planStore } from '$lib/stores/plan/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { SvelteMap } from 'svelte/reactivity';
     import { CutterCompensation } from '$lib/cam/cut-generator/enums';
     import { onMount, createEventDispatcher } from 'svelte';
     import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
     import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';
-    import type { Chain } from '$lib/geometry/chain/interfaces';
+    import type { ChainData } from '$lib/geometry/chain/interfaces';
     import type { PartData } from '$lib/cam/part/interfaces';
-    import type { Shape } from '$lib/geometry/shape/interfaces';
+    import type { ShapeData } from '$lib/geometry/shape/interfaces';
     import { Unit } from '$lib/config/units/units';
 
     // Props from parent component
@@ -29,7 +29,7 @@
 
     const drawing = $derived($drawingStore.drawing);
     const displayUnit = $derived($drawingStore.displayUnit);
-    const cuts = $derived($cutStore.cuts);
+    const cuts = $derived($planStore.plan.cuts);
     const chains = $derived(
         drawing
             ? Object.values(drawing.layers).flatMap((layer) => layer.chains)
@@ -56,8 +56,8 @@
 
         try {
             // Create maps for chain and part data (simulation's approach)
-            const chainShapes = new SvelteMap<string, Shape[]>();
-            const chainMap = new SvelteMap<string, Chain>();
+            const chainShapes = new SvelteMap<string, ShapeData[]>();
+            const chainMap = new SvelteMap<string, ChainData>();
             chains.forEach((chain) => {
                 chainShapes.set(chain.id, chain.shapes);
                 chainMap.set(chain.id, chain);

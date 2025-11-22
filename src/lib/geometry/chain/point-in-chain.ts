@@ -5,7 +5,7 @@
  * Provides perfect accuracy for all shape types including arcs, circles, and splines.
  */
 
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -13,7 +13,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { RayTracingConfig } from '$lib/algorithms/raytracing/types';
 import { DEFAULT_RAYTRACING_CONFIG } from '$lib/algorithms/raytracing/types';
 import { isChainClosed } from '$lib/geometry/chain/functions';
@@ -43,7 +43,7 @@ import {
  */
 export function isPointInsideChainExact(
     point: Point2D,
-    chain: Chain,
+    chain: ChainData,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
     if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
@@ -76,7 +76,7 @@ export function isPointInsideChainExact(
  */
 function countRayShapeCrossings(
     ray: { origin: Point2D; direction: Point2D },
-    shape: Shape,
+    shape: ShapeData,
     config: RayTracingConfig
 ): number {
     // Check if this is a horizontal ray for optimized handling
@@ -180,7 +180,7 @@ function countRayPolylineCrossings(
  */
 export function arePointsInsideChainExact(
     points: Point2D[],
-    chain: Chain,
+    chain: ChainData,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean[] {
     if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
@@ -201,7 +201,7 @@ export function arePointsInsideChainExact(
  */
 export function anyPointInsideChainExact(
     points: Point2D[],
-    chain: Chain,
+    chain: ChainData,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
     if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
@@ -227,7 +227,7 @@ export function anyPointInsideChainExact(
  */
 export function countPointsInsideChainExact(
     points: Point2D[],
-    chain: Chain,
+    chain: ChainData,
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): number {
     if (!isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE)) {
@@ -254,7 +254,7 @@ export function countPointsInsideChainExact(
  */
 export function isPointInsidePart(
     point: Point2D,
-    part: { shell: Chain; voids: { chain: Chain }[] },
+    part: { shell: ChainData; voids: { chain: ChainData }[] },
     config: RayTracingConfig = DEFAULT_RAYTRACING_CONFIG
 ): boolean {
     // For open chains, there's no meaningful "inside" concept

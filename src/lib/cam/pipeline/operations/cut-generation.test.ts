@@ -3,9 +3,10 @@ import { createCutsFromOperation } from './cut-generation';
 import { generateCutsForChainsWithOperation } from './chain-operations';
 import { generateCutsForPartsWithOperation } from './part-operations';
 import { generateAndAdjustKerf } from '$lib/cam/pipeline/kerfs/kerf-generation';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { OperationData } from '$lib/cam/operation/interface';
+import { Operation } from '$lib/cam/operation/classes.svelte';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { GeometryType } from '$lib/geometry/shape/enums';
@@ -13,6 +14,18 @@ import { KerfCompensation } from '$lib/cam/operation/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { PartType } from '$lib/cam/part/enums';
+
+// Helper function to create Operation with resolved references
+function createOperation(
+    data: OperationData,
+    tool: Tool | null,
+    targets: (ChainData | Part)[]
+): Operation {
+    const operation = new Operation(data);
+    operation.setTool(tool);
+    operation.setTargets(targets);
+    return operation;
+}
 
 // Mock dependencies
 vi.mock('./chain-operations', () => ({
@@ -28,7 +41,7 @@ vi.mock('$lib/cam/pipeline/kerfs/kerf-generation', () => ({
 }));
 
 describe('createCutsFromOperation', () => {
-    const mockChain: Chain = {
+    const mockChain: ChainData = {
         id: 'chain-1',
         clockwise: true,
         shapes: [
@@ -56,7 +69,7 @@ describe('createCutsFromOperation', () => {
         kerfWidthImperial: 0.079,
     } as any;
 
-    const mockOperation: Operation = {
+    const mockOperation: OperationData = {
         id: 'op-1',
         name: 'Test Operation',
         enabled: true,
@@ -77,15 +90,15 @@ describe('createCutsFromOperation', () => {
     });
 
     it('should return empty result for disabled operation', async () => {
-        const disabledOp: Operation = { ...mockOperation, enabled: false };
+        const disabledOpData: OperationData = {
+            ...mockOperation,
+            enabled: false,
+        };
+        const disabledOp = createOperation(disabledOpData, mockTool, [
+            mockChain,
+        ]);
 
-        const result = await createCutsFromOperation(
-            disabledOp,
-            [mockChain],
-            [],
-            [mockTool],
-            tolerance
-        );
+        const result = await createCutsFromOperation(disabledOp, tolerance);
 
         expect(result.cuts).toEqual([]);
         expect(result.warnings).toEqual([]);
@@ -93,15 +106,13 @@ describe('createCutsFromOperation', () => {
     });
 
     it('should return empty result for operation with no targets', async () => {
-        const noTargetsOp: Operation = { ...mockOperation, targetIds: [] };
+        const noTargetsOpData: OperationData = {
+            ...mockOperation,
+            targetIds: [],
+        };
+        const noTargetsOp = createOperation(noTargetsOpData, mockTool, []);
 
-        const result = await createCutsFromOperation(
-            noTargetsOp,
-            [mockChain],
-            [],
-            [mockTool],
-            tolerance
-        );
+        const result = await createCutsFromOperation(noTargetsOp, tolerance);
 
         expect(result.cuts).toEqual([]);
         expect(result.warnings).toEqual([]);
@@ -120,29 +131,20 @@ describe('createCutsFromOperation', () => {
             warnings: [],
         });
 
-        const result = await createCutsFromOperation(
-            mockOperation,
-            [mockChain],
-            [],
-            [mockTool],
-            tolerance
-        );
+        const operation = createOperation(mockOperation, mockTool, [mockChain]);
+        const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
         expect(result.cuts[0]).toBe(mockCut);
         expect(generateCutsForChainsWithOperation).toHaveBeenCalledWith(
-            mockOperation,
-            'chain-1',
+            operation,
             0,
-            [mockChain],
-            [mockTool],
-            [],
             tolerance
         );
     });
 
     it('should generate cuts for part operation', async () => {
-        const partOp: Operation = {
+        const partOpData: OperationData = {
             ...mockOperation,
             targetType: 'parts',
             targetIds: ['part-1'],
@@ -167,34 +169,25 @@ describe('createCutsFromOperation', () => {
             warnings: [],
         });
 
-        const result = await createCutsFromOperation(
-            partOp,
-            [mockChain],
-            [mockPart],
-            [mockTool],
-            tolerance
-        );
+        const partOp = createOperation(partOpData, mockTool, [mockPart]);
+        const result = await createCutsFromOperation(partOp, tolerance);
 
         expect(result.cuts).toHaveLength(1);
         expect(result.cuts[0]).toBe(mockCut);
         expect(generateCutsForPartsWithOperation).toHaveBeenCalledWith(
             partOp,
-            'part-1',
             0,
-            [mockChain],
-            [mockPart],
-            [mockTool],
             tolerance
         );
     });
 
     it('should generate cuts for multiple targets', async () => {
-        const multiTargetOp: Operation = {
+        const multiTargetOpData: OperationData = {
             ...mockOperation,
             targetIds: ['chain-1', 'chain-2'],
         };
 
-        const mockChain2: Chain = {
+        const mockChain2: ChainData = {
             id: 'chain-2',
             clockwise: false,
             shapes: [
@@ -228,13 +221,11 @@ describe('createCutsFromOperation', () => {
                 warnings: [],
             });
 
-        const result = await createCutsFromOperation(
-            multiTargetOp,
-            [mockChain, mockChain2],
-            [],
-            [mockTool],
-            tolerance
-        );
+        const multiTargetOp = createOperation(multiTargetOpData, mockTool, [
+            mockChain,
+            mockChain2,
+        ]);
+        const result = await createCutsFromOperation(multiTargetOp, tolerance);
 
         expect(result.cuts).toHaveLength(2);
         expect(result.cuts[0]).toBe(mockCut1);
@@ -243,9 +234,16 @@ describe('createCutsFromOperation', () => {
     });
 
     it('should aggregate warnings from multiple targets', async () => {
-        const multiTargetOp: Operation = {
-            ...mockOperation,
-            targetIds: ['chain-1', 'chain-2'],
+        const mockChain2: ChainData = {
+            id: 'chain-2',
+            clockwise: false,
+            shapes: [
+                {
+                    id: 'shape-2',
+                    type: GeometryType.LINE,
+                    geometry: { start: { x: 0, y: 0 }, end: { x: 50, y: 0 } },
+                } as any,
+            ],
         };
 
         vi.mocked(generateCutsForChainsWithOperation)
@@ -272,13 +270,15 @@ describe('createCutsFromOperation', () => {
                 ],
             });
 
-        const result = await createCutsFromOperation(
-            multiTargetOp,
-            [mockChain],
-            [],
-            [mockTool],
-            tolerance
-        );
+        const multiTargetOpData2: OperationData = {
+            ...mockOperation,
+            targetIds: ['chain-1', 'chain-2'],
+        };
+        const multiTargetOp2 = createOperation(multiTargetOpData2, mockTool, [
+            mockChain,
+            mockChain2,
+        ]);
+        const result = await createCutsFromOperation(multiTargetOp2, tolerance);
 
         expect(result.warnings).toHaveLength(2);
         expect(result.warnings[0].offsetWarnings[0]).toBe('Warning 1');
@@ -296,6 +296,7 @@ describe('createCutsFromOperation', () => {
             },
         } as any;
 
+        vi.mocked(generateCutsForChainsWithOperation).mockReset();
         vi.mocked(generateCutsForChainsWithOperation).mockResolvedValue({
             cuts: [mockCut],
             warnings: [],
@@ -303,13 +304,8 @@ describe('createCutsFromOperation', () => {
 
         vi.mocked(generateAndAdjustKerf).mockResolvedValue({} as any);
 
-        const result = await createCutsFromOperation(
-            mockOperation,
-            [mockChain],
-            [],
-            [mockTool],
-            tolerance
-        );
+        const operation = createOperation(mockOperation, mockTool, [mockChain]);
+        const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
         expect(generateAndAdjustKerf).toHaveBeenCalledWith(
@@ -337,13 +333,10 @@ describe('createCutsFromOperation', () => {
             warnings: [],
         });
 
-        const result = await createCutsFromOperation(
-            mockOperation,
-            [mockChain],
-            [],
-            [noKerfTool],
-            tolerance
-        );
+        const operation = createOperation(mockOperation, noKerfTool, [
+            mockChain,
+        ]);
+        const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
         expect(generateAndAdjustKerf).not.toHaveBeenCalled();
@@ -369,13 +362,8 @@ describe('createCutsFromOperation', () => {
             .spyOn(console, 'warn')
             .mockImplementation(() => {});
 
-        const result = await createCutsFromOperation(
-            mockOperation,
-            [mockChain],
-            [],
-            [mockTool],
-            tolerance
-        );
+        const operation = createOperation(mockOperation, mockTool, [mockChain]);
+        const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
         expect(consoleWarnSpy).toHaveBeenCalledWith(
@@ -387,17 +375,17 @@ describe('createCutsFromOperation', () => {
     });
 
     it('should handle unknown target types', async () => {
-        const unknownTargetOp: Operation = {
+        const unknownTargetOpData: OperationData = {
             ...mockOperation,
             targetType: 'unknown' as any,
             targetIds: ['unknown-1'],
         };
 
+        const unknownTargetOp = createOperation(unknownTargetOpData, mockTool, [
+            mockChain,
+        ]);
         const result = await createCutsFromOperation(
             unknownTargetOp,
-            [mockChain],
-            [],
-            [mockTool],
             tolerance
         );
 
@@ -423,13 +411,8 @@ describe('createCutsFromOperation', () => {
             .spyOn(console, 'warn')
             .mockImplementation(() => {});
 
-        const result = await createCutsFromOperation(
-            mockOperation,
-            [mockChain], // Does not include 'missing-chain'
-            [],
-            [mockTool],
-            tolerance
-        );
+        const operation = createOperation(mockOperation, mockTool, [mockChain]); // Does not include 'missing-chain'
+        const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
         expect(consoleWarnSpy).toHaveBeenCalledWith(

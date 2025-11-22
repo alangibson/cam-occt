@@ -12,7 +12,7 @@ import { describe, it, expect } from 'vitest';
 import { calculateCutNormal } from './calculate-cut-normal';
 import { CutDirection, NormalSide } from './enums';
 import type { PartData } from '$lib/cam/part/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { PartType } from '$lib/cam/part/enums';
@@ -329,7 +329,7 @@ describe('Cut Normal Direction on Parts', () => {
         };
 
         // Test shell normal
-        const shellChain: Chain = part.shell;
+        const shellChain: ChainData = part.shell;
         const shellNormalResult = calculateCutNormal(
             shellChain,
             CutDirection.CLOCKWISE,
@@ -375,7 +375,7 @@ describe('Cut Normal Direction on Parts', () => {
         ).toBe(true);
 
         // Test hole normal
-        const holeChain: Chain = part.voids[0].chain;
+        const holeChain: ChainData = part.voids[0].chain;
         const holeNormalResult = calculateCutNormal(
             holeChain,
             CutDirection.COUNTERCLOCKWISE,
@@ -613,7 +613,7 @@ describe('Cut Normal Direction on Parts', () => {
         };
 
         // Create shell cutChain WITHOUT clockwise property (as createCutChain does)
-        const shellCutChain: Chain = {
+        const shellCutChain: ChainData = {
             id: 'chain-9-cut',
             shapes: [...part.shell.shapes], // Copy shapes
             // NOTE: No clockwise property!
@@ -802,7 +802,7 @@ describe('Cut Normal Direction on Parts', () => {
 
         // Create cutChain WITHOUT originalChainId
         // This will NOT be identified as a shell (bug case)
-        const cutChainBroken: Chain = {
+        const cutChainBroken: ChainData = {
             id: 'chain-original-cut', // Different ID!
             shapes: [...part.shell.shapes],
             // No originalChainId set!
@@ -820,7 +820,7 @@ describe('Cut Normal Direction on Parts', () => {
         expect(normalBroken.normal.y).toBeCloseTo(-1);
 
         // Create cutChain WITH originalChainId (correct case)
-        const cutChainFixed: Chain = {
+        const cutChainFixed: ChainData = {
             id: 'chain-original-cut',
             shapes: [...part.shell.shapes],
             originalChainId: part.shell.id, // Set originalChainId!

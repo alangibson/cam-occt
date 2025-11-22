@@ -1,73 +1,73 @@
 import { describe, expect, it } from 'vitest';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { CutterCompensation } from '$lib/cam/cut-generator/enums';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
 import { Unit } from '$lib/config/units/units';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
 import { generateGCode } from './gcode-generator';
+import { Shape } from '$lib/geometry/shape/classes';
 
 describe('G-code generation with offset cuts', () => {
     // Create test shapes for a simple rectangle
     const testShapes: Shape[] = [
-        {
+        new Shape({
             id: 'line1',
             type: GeometryType.LINE,
             geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 0 } },
-        },
-        {
+        }),
+        new Shape({
             id: 'line2',
             type: GeometryType.LINE,
             geometry: { start: { x: 10, y: 0 }, end: { x: 10, y: 10 } },
-        },
-        {
+        }),
+        new Shape({
             id: 'line3',
             type: GeometryType.LINE,
             geometry: { start: { x: 10, y: 10 }, end: { x: 0, y: 10 } },
-        },
-        {
+        }),
+        new Shape({
             id: 'line4',
             type: GeometryType.LINE,
             geometry: { start: { x: 0, y: 10 }, end: { x: 0, y: 0 } },
-        },
+        }),
     ];
 
     // Create offset shapes (inset by 1 unit)
     const offsetShapes: Shape[] = [
-        {
+        new Shape({
             id: 'offset-line1',
             type: GeometryType.LINE,
             geometry: { start: { x: 1, y: 1 }, end: { x: 9, y: 1 } },
-        },
-        {
+        }),
+        new Shape({
             id: 'offset-line2',
             type: GeometryType.LINE,
             geometry: { start: { x: 9, y: 1 }, end: { x: 9, y: 9 } },
-        },
-        {
+        }),
+        new Shape({
             id: 'offset-line3',
             type: GeometryType.LINE,
             geometry: { start: { x: 9, y: 9 }, end: { x: 1, y: 9 } },
-        },
-        {
+        }),
+        new Shape({
             id: 'offset-line4',
             type: GeometryType.LINE,
             geometry: { start: { x: 1, y: 9 }, end: { x: 1, y: 1 } },
-        },
+        }),
     ];
 
     const testDrawing: DrawingData = {
         shapes: testShapes,
-        bounds: { min: { x: 0, y: 0 }, max: { x: 30, y: 20 } },
         units: Unit.MM,
+        fileName: '',
     };
 
     it('should generate G-code using original geometry when no offset is available', async () => {
-        const testCut: Cut = {
+        const testCut: CutData = {
             id: 'test-cut',
             name: 'Test Cut',
             operationId: 'op-1',
@@ -118,7 +118,7 @@ describe('G-code generation with offset cuts', () => {
     });
 
     it('should generate G-code using offset geometry when available', async () => {
-        const testCut: Cut = {
+        const testCut: CutData = {
             id: 'test-cut',
             name: 'Test Cut',
             operationId: 'op-1',
@@ -183,7 +183,7 @@ describe('G-code generation with offset cuts', () => {
     });
 
     it('should handle lead-in/out with offset cuts', async () => {
-        const testCut: Cut = {
+        const testCut: CutData = {
             id: 'test-cut',
             name: 'Test Cut',
             operationId: 'op-1',
@@ -278,7 +278,7 @@ describe('G-code generation with offset cuts', () => {
     });
 
     it('should generate proper coordinate precision in G-code', async () => {
-        const testCut: Cut = {
+        const testCut: CutData = {
             id: 'test-cut',
             name: 'Test Cut',
             operationId: 'op-1',
@@ -294,14 +294,15 @@ describe('G-code generation with offset cuts', () => {
             normalSide: NormalSide.LEFT,
             offset: {
                 offsetShapes: [
-                    {
+                    new Shape({
                         id: 'precise-line',
                         type: GeometryType.LINE,
                         geometry: {
                             start: { x: 1.123456, y: 2.987654 },
                             end: { x: 3.456789, y: 4.321098 },
                         },
-                    },
+                        layer: '0',
+                    }),
                 ],
                 originalShapes: testShapes,
                 direction: OffsetDirection.INSET,

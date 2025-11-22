@@ -9,17 +9,18 @@ import { detectParts } from '$lib/cam/part/part-detection';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { calculateLeads } from './lead-calculation';
+import { Chain } from '$lib/geometry/chain/classes';
 import { isArc } from '$lib/geometry/arc/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 
 describe('Chain-Pill DXF Lead Direction Bug', () => {
-    let chains: Chain[];
+    let chains: ChainData[];
     let parts: PartData[];
-    let shapes: Shape[];
+    let shapes: ShapeData[];
 
     beforeAll(async () => {
         console.log('\n=== TESTING CHAIN-PILL.DXF LEAD BUG ===');
@@ -32,7 +33,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
         const physicalScale = getPhysicalScaleFactor(drawing.units, Unit.MM);
 
         // Scale shapes
-        shapes = drawing.shapes.map((shape: Shape) =>
+        shapes = drawing.shapes.map((shape: ShapeData) =>
             scaleShape(shape, physicalScale, { x: 0, y: 0 })
         );
 
@@ -87,7 +88,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
 
             // Calculate leads for CLOCKWISE
             const cwResult = calculateLeads(
-                chain,
+                new Chain(chain),
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
@@ -97,7 +98,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
 
             // Calculate leads for COUNTERCLOCKWISE
             const ccwResult = calculateLeads(
-                chain,
+                new Chain(chain),
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
@@ -261,7 +262,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
             };
 
             const cwResult = calculateLeads(
-                chain,
+                new Chain(chain),
                 leadConfig,
                 leadConfig,
                 CutDirection.CLOCKWISE,
@@ -270,7 +271,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
             );
 
             const ccwResult = calculateLeads(
-                chain,
+                new Chain(chain),
                 leadConfig,
                 leadConfig,
                 CutDirection.COUNTERCLOCKWISE,
@@ -311,7 +312,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 };
 
                 const cwResult = calculateLeads(
-                    chain,
+                    new Chain(chain),
                     leadConfig,
                     leadConfig,
                     CutDirection.CLOCKWISE,
@@ -320,7 +321,7 @@ describe('Chain-Pill DXF Lead Direction Bug', () => {
                 );
 
                 const ccwResult = calculateLeads(
-                    chain,
+                    new Chain(chain),
                     leadConfig,
                     leadConfig,
                     CutDirection.COUNTERCLOCKWISE,

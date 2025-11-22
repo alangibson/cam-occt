@@ -1,4 +1,4 @@
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -16,7 +16,7 @@ import {
 } from '$lib/geometry/spline/constants';
 import { calculateArcPoint } from '$lib/geometry/arc/functions';
 import { THREE_HALVES_PI } from './constants';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
 export function getBoundingBoxForLine(line: Line): BoundingBox {
@@ -324,7 +324,7 @@ export function getBoundingBoxForSpline(spline: Spline): BoundingBox {
     };
 }
 
-export function getBoundingBoxForShape(shape: Shape): BoundingBox {
+export function getBoundingBoxForShape(shape: ShapeData): BoundingBox {
     switch (shape.type) {
         case GeometryType.LINE:
             return getBoundingBoxForLine(shape.geometry as Line);
@@ -380,7 +380,7 @@ export function combineBoundingBoxes(boxes: BoundingBox[]): BoundingBox {
     };
 }
 
-export function getBoundingBoxForShapes(shapes: Shape[]): BoundingBox {
+export function getBoundingBoxForShapes(shapes: ShapeData[]): BoundingBox {
     if (shapes.length === 0) {
         throw new Error(
             'Cannot calculate bounding box for empty array of shapes'
@@ -394,7 +394,7 @@ export function getBoundingBoxForShapes(shapes: Shape[]): BoundingBox {
 }
 
 export function calculateDynamicTolerance(
-    shapes: Shape[],
+    shapes: ShapeData[],
     fallbackTolerance: number = SPLINE_TESSELLATION_TOLERANCE
 ): number {
     if (shapes.length === 0) return fallbackTolerance;
@@ -420,7 +420,7 @@ export function calculateDynamicTolerance(
 /**
  * Calculates the bounding box of a chain by aggregating bounds of all shapes
  */
-export function calculateChainBoundingBox(chain: Chain): BoundingBox {
+export function calculateChainBoundingBox(chain: ChainData): BoundingBox {
     const shapeBounds = chain.shapes.map((shape) =>
         getBoundingBoxForShape(shape)
     );
@@ -432,7 +432,7 @@ export function calculateChainBoundingBox(chain: Chain): BoundingBox {
  * @deprecated Use getBoundingBoxForShape from '$lib/geometry/bounding-box' instead
  */
 
-export function getShapeBoundingBox(shape: Shape): BoundingBox {
+export function getShapeBoundingBox(shape: ShapeData): BoundingBox {
     return getBoundingBoxForShape(shape);
 }
 
@@ -440,7 +440,7 @@ export function getShapeBoundingBox(shape: Shape): BoundingBox {
  * Get all significant points from a shape for bounding box calculation
  * Consolidated from translate-to-positive.ts and dxf-parser.ts
  */
-export function getShapePointsForBounds(shape: Shape): Point2D[] {
+export function getShapePointsForBounds(shape: ShapeData): Point2D[] {
     const bounds = getBoundingBoxForShape(shape);
     return [bounds.min, bounds.max];
 }

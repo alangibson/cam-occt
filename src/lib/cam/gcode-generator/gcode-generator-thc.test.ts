@@ -9,7 +9,7 @@ describe('GCode Generator - THC and Paused Motion', () => {
     const mockDrawing: DrawingData = {
         units: Unit.MM,
         shapes: [],
-        bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+        fileName: '',
     };
 
     const mockCut: CutPath = {

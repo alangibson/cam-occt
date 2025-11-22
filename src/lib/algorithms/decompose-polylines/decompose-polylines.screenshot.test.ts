@@ -8,7 +8,7 @@ import type {
     Polyline,
     PolylineVertex,
 } from '$lib/geometry/polyline/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -45,7 +45,7 @@ function createTestCanvas(width: number = 800, height: number = 600) {
 
 // Simple drawing function for shapes
 function drawShapes(
-    shapes: Shape[],
+    shapes: ShapeData[],
     ctx: CanvasRenderingContext2D,
     scale: number = 1
 ) {
@@ -91,7 +91,7 @@ function drawShapes(
 }
 
 // Calculate bounds for shapes
-function calculateShapeBounds(shapes: Shape[]): {
+function calculateShapeBounds(shapes: ShapeData[]): {
     min: { x: number; y: number };
     max: { x: number; y: number };
 } {
@@ -185,7 +185,7 @@ describe('Polylinie.dxf Decomposition Visual Test', () => {
         const decomposedShapes = decomposePolylines(originalDrawing.shapes);
 
         // Log shape details for debugging
-        originalDrawing.shapes.forEach((shape: Shape) => {
+        originalDrawing.shapes.forEach((shape: ShapeData) => {
             if (shape.type === 'polyline') {
                 const geom = shape.geometry as Polyline;
                 if (

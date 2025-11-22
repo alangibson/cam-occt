@@ -3,7 +3,7 @@ import { parseDXF } from './functions';
 import { readFileSync } from 'fs';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
 describe('DXF Parser', () => {
     it('should be able to import the DXF parser module without errors', async () => {
@@ -38,7 +38,9 @@ EOF`;
         expect(drawing.shapes.length).toBeGreaterThan(0);
 
         // Should contain ARC entities
-        const arcShapes = drawing.shapes.filter((s: Shape) => s.type === 'arc');
+        const arcShapes = drawing.shapes.filter(
+            (s: ShapeData) => s.type === 'arc'
+        );
 
         expect(arcShapes.length).toBeGreaterThan(0);
     });
@@ -83,7 +85,7 @@ EOF`;
 
         // Should contain CIRCLE entities
         const circleShapes = drawing.shapes.filter(
-            (s: Shape) => s.type === 'circle'
+            (s: ShapeData) => s.type === 'circle'
         );
 
         if (parsed.entities?.some((e: DXFEntity) => e.type === 'CIRCLE')) {
@@ -104,10 +106,10 @@ EOF`;
 
         // Should contain SPLINE entities (might be converted to other shapes)
         const splineShapes = drawing.shapes.filter(
-            (s: Shape) => s.type === 'spline'
+            (s: ShapeData) => s.type === 'spline'
         );
         const polylineShapes = drawing.shapes.filter(
-            (s: Shape) => s.type === 'polyline'
+            (s: ShapeData) => s.type === 'polyline'
         );
 
         // Either should have splines or converted polylines

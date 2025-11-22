@@ -5,14 +5,16 @@
  * Handles chain direction analysis and cut chain creation with proper ordering.
  */
 
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { Shape } from '$lib/geometry/shape/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import {
     getChainCutDirection,
     reverseChain,
 } from '$lib/geometry/chain/functions';
 import type { CutChainResult } from './interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 
 /**
  * Helper function to create cut chain with deep cloned shapes ordered for execution.
@@ -29,18 +31,27 @@ import type { CutChainResult } from './interfaces';
  * @returns Object containing the cut chain and execution clockwise direction
  */
 export function createCutChain(
-    originalChain: Chain,
+    originalChain: ChainData,
     userCutDirection: CutDirection,
     offsetShapes?: Shape[]
 ): CutChainResult {
     // Determine which shapes to clone (offset shapes take priority)
-    const shapesToClone = offsetShapes || originalChain.shapes;
+    // Get shapes - if originalChain.shapes already returns Shape[], use them directly
+    // Otherwise wrap ShapeData in Shape instances
+    const shapesToClone: Shape[] =
+        offsetShapes ||
+        originalChain.shapes.map((s) =>
+            s instanceof Shape ? s : new Shape(s)
+        );
 
     // Deep clone the shapes array to ensure Cut owns its execution order
-    const clonedShapes: Shape[] = shapesToClone.map((shape) => ({
-        ...shape,
-        geometry: { ...shape.geometry },
-    }));
+    const clonedShapes: ShapeData[] = shapesToClone.map((shape) => {
+        const data = shape.toData();
+        return {
+            ...data,
+            geometry: { ...data.geometry },
+        };
+    });
 
     // Get the natural direction of the ORIGINAL chain (geometric property)
     const naturalDirection = getChainCutDirection(originalChain);
@@ -48,16 +59,16 @@ export function createCutChain(
     // Handle case where user specifies NONE (no direction preference)
     if (userCutDirection === CutDirection.NONE) {
         return {
-            cutChain: {
+            cutChain: new Chain({
                 id: `${originalChain.id}-cut`,
                 shapes: clonedShapes,
-            },
+            }),
             executionClockwise: null,
         };
     }
 
     // Determine final execution order based on user preference vs natural direction
-    let executionShapes: Shape[];
+    let executionShapes: ShapeData[];
     let executionClockwise: boolean;
 
     // For open chains (naturalDirection is NONE), apply user's requested direction
@@ -90,12 +101,12 @@ export function createCutChain(
     }
 
     // Create cut chain with execution-ordered shapes
-    const cutChain: Chain = {
+    const cutChain = new Chain({
         id: `${originalChain.id}-cut`,
         shapes: executionShapes,
         originalChainId: originalChain.id, // Preserve reference to original chain for part lookup
         clockwise: executionClockwise, // Use execution winding direction (accounts for shape reversal)
-    };
+    });
 
     return { cutChain, executionClockwise };
 }

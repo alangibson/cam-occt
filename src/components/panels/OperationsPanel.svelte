@@ -1,6 +1,7 @@
 <script lang="ts">
-    import type { Operation } from '$lib/cam/operation/interface';
-    import type { Chain } from '$lib/geometry/chain/interfaces';
+    import type { OperationData } from '$lib/cam/operation/interface';
+    import { Operation } from '$lib/cam/operation/classes.svelte';
+    import type { ChainData } from '$lib/geometry/chain/interfaces';
     import type { Part } from '$lib/cam/part/classes.svelte';
     import type { Tool } from '$lib/cam/tool/interfaces';
     import { flip } from 'svelte/animate';
@@ -12,7 +13,7 @@
 
     // Props
     export let operations: Operation[] = [];
-    export let chains: Chain[] = [];
+    export let chains: ChainData[] = [];
     export let parts: Part[] = [];
     export let dragOverIndex: number | null = null;
     export let toolSearchTerms: { [operationId: string]: string } = {};
@@ -24,10 +25,10 @@
     export let availableTools: Tool[] = [];
 
     // Event handlers passed as props
-    export let updateOperationField: <K extends keyof Operation>(
+    export let updateOperationField: <K extends keyof OperationData>(
         id: string,
         field: K,
-        value: Operation[K]
+        value: OperationData[K]
     ) => void;
     export let deleteOperation: (id: string) => void;
     export let duplicateOperation: (id: string) => void;
@@ -60,7 +61,7 @@
         operationId: string
     ) => void;
     export let toggleApplyToMenu: (operationId: string) => void;
-    export let getSelectedTargetsText: (operation: Operation) => string;
+    export let getSelectedTargetsText: (operation: OperationData) => string;
     export let handlePartHover: (partId: string | null) => void;
     export let handleChainHover: (chainId: string | null) => void;
     export let isTargetAssignedToOther: (
@@ -322,9 +323,23 @@
                                                         <span
                                                             class="target-label"
                                                             >Part {(() => {
-                                                                const idParts = part.id.split('-');
-                                                                const layerName = idParts.slice(0, -2).join('-');
-                                                                const partNumber = idParts.slice(-1)[0];
+                                                                const idParts =
+                                                                    part.id.split(
+                                                                        '-'
+                                                                    );
+                                                                const layerName =
+                                                                    idParts
+                                                                        .slice(
+                                                                            0,
+                                                                            -2
+                                                                        )
+                                                                        .join(
+                                                                            '-'
+                                                                        );
+                                                                const partNumber =
+                                                                    idParts.slice(
+                                                                        -1
+                                                                    )[0];
                                                                 return `${layerName}-${partNumber}`;
                                                             })()}</span
                                                         >
@@ -384,9 +399,11 @@
                                                         />
                                                         <span
                                                             class="target-label"
-                                                            >Chain {chain.id.split(
-                                                                '-'
-                                                            ).slice(-1)[0]}</span
+                                                            >Chain {chain.id
+                                                                .split('-')
+                                                                .slice(
+                                                                    -1
+                                                                )[0]}</span
                                                         >
                                                         <span
                                                             class="target-info"

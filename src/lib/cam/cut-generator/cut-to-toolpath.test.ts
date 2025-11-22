@@ -1,6 +1,6 @@
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -12,6 +12,8 @@ import { cutToToolPath, cutsToToolPaths } from './cut-to-toolpath';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { getShapePoints } from '$lib/geometry/shape/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
+import { Shape } from '$lib/geometry/shape/classes';
+import { Chain } from '$lib/geometry/chain/classes';
 
 // Mock getShapePoints function
 vi.mock('$lib/geometry/shape/functions', async () => {
@@ -34,7 +36,7 @@ vi.mock('$lib/utils/lead-persistence-utils', () => ({
 const mockGetShapePoints = vi.mocked(getShapePoints);
 
 describe('cutToToolPath', () => {
-    const createMockCut = (overrides: Partial<Cut> = {}): Cut => ({
+    const createMockCut = (overrides: Partial<CutData> = {}): CutData => ({
         id: 'test-cut',
         name: 'Test Cut',
         operationId: 'test-operation',
@@ -59,12 +61,13 @@ describe('cutToToolPath', () => {
         id: string,
         _start: Point2D,
         _end: Point2D
-    ): Shape => ({
-        id,
-        type: GeometryType.LINE,
-        geometry: {} as Line,
-        layer: 'test',
-    });
+    ): Shape =>
+        new Shape({
+            id,
+            type: GeometryType.LINE,
+            geometry: {} as Line,
+            layer: 'test',
+        });
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -137,16 +140,17 @@ describe('cutToToolPath', () => {
 
         it('should use offset shapes when available', async () => {
             const cut = createMockCut({
-                cutChain: {
+                cutChain: new Chain({
                     id: 'test-chain-cut',
                     shapes: [
-                        createMockLine(
-                            'offset1',
-                            { x: 1, y: 1 },
-                            { x: 11, y: 1 }
-                        ),
+                        {
+                            id: 'offset1',
+                            type: GeometryType.LINE,
+                            geometry: {} as Line,
+                            layer: 'test',
+                        },
                     ],
-                },
+                }),
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -168,7 +172,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: Shape[] = [
+            const originalShapes: ShapeData[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -415,16 +419,17 @@ describe('cutToToolPath', () => {
         it('should include lead-in when it connects to offset geometry', async () => {
             // Arc leads will be tessellated, no longer hardcoded line points
             const cut = createMockCut({
-                cutChain: {
+                cutChain: new Chain({
                     id: 'test-chain-cut',
                     shapes: [
-                        createMockLine(
-                            'offset1',
-                            { x: 1, y: 1 },
-                            { x: 11, y: 1 }
-                        ),
+                        {
+                            id: 'offset1',
+                            type: GeometryType.LINE,
+                            geometry: {} as Line,
+                            layer: 'test',
+                        },
                     ],
-                },
+                }),
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -458,7 +463,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: Shape[] = [
+            const originalShapes: ShapeData[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -490,16 +495,17 @@ describe('cutToToolPath', () => {
         it('should exclude lead-in when it does not connect to offset geometry', async () => {
             // Real function will handle this case
             const cut = createMockCut({
-                cutChain: {
+                cutChain: new Chain({
                     id: 'test-chain-cut',
                     shapes: [
-                        createMockLine(
-                            'offset1',
-                            { x: 1, y: 1 },
-                            { x: 11, y: 1 }
-                        ),
+                        {
+                            id: 'offset1',
+                            type: GeometryType.LINE,
+                            geometry: {} as Line,
+                            layer: 'test',
+                        },
                     ],
-                },
+                }),
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -533,7 +539,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: Shape[] = [
+            const originalShapes: ShapeData[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -641,16 +647,17 @@ describe('cutToToolPath', () => {
         it('should include lead-out when it connects to offset geometry', async () => {
             // Arc leads will be tessellated, no longer hardcoded line points
             const cut = createMockCut({
-                cutChain: {
+                cutChain: new Chain({
                     id: 'test-chain-cut',
                     shapes: [
-                        createMockLine(
-                            'offset1',
-                            { x: 1, y: 1 },
-                            { x: 11, y: 1 }
-                        ),
+                        {
+                            id: 'offset1',
+                            type: GeometryType.LINE,
+                            geometry: {} as Line,
+                            layer: 'test',
+                        },
                     ],
-                },
+                }),
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -684,7 +691,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: Shape[] = [
+            const originalShapes: ShapeData[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -715,16 +722,17 @@ describe('cutToToolPath', () => {
 
         it('should exclude lead-out when it does not connect to offset geometry', async () => {
             const cut = createMockCut({
-                cutChain: {
+                cutChain: new Chain({
                     id: 'test-chain-cut',
                     shapes: [
-                        createMockLine(
-                            'offset1',
-                            { x: 1, y: 1 },
-                            { x: 11, y: 1 }
-                        ),
+                        {
+                            id: 'offset1',
+                            type: GeometryType.LINE,
+                            geometry: {} as Line,
+                            layer: 'test',
+                        },
                     ],
-                },
+                }),
                 offset: {
                     offsetShapes: [
                         createMockLine(
@@ -758,7 +766,7 @@ describe('cutToToolPath', () => {
                     version: '1.0',
                 },
             });
-            const originalShapes: Shape[] = [
+            const originalShapes: ShapeData[] = [
                 createMockLine('orig1', { x: 0, y: 0 }, { x: 10, y: 0 }),
             ];
 
@@ -814,7 +822,7 @@ describe('cutToToolPath', () => {
 });
 
 describe('cutsToToolPaths', () => {
-    const createMockCut = (overrides: Partial<Cut> = {}): Cut => ({
+    const createMockCut = (overrides: Partial<CutData> = {}): CutData => ({
         id: 'test-cut',
         name: 'Test Cut',
         operationId: 'test-operation',
@@ -839,12 +847,13 @@ describe('cutsToToolPaths', () => {
         id: string,
         _start: Point2D,
         _end: Point2D
-    ): Shape => ({
-        id,
-        type: GeometryType.LINE,
-        geometry: {} as Line,
-        layer: 'test',
-    });
+    ): Shape =>
+        new Shape({
+            id,
+            type: GeometryType.LINE,
+            geometry: {} as Line,
+            layer: 'test',
+        });
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -852,13 +861,13 @@ describe('cutsToToolPaths', () => {
 
     describe('basic conversion', () => {
         it('should convert multiple cuts in order', async () => {
-            const cuts: Cut[] = [
+            const cuts: CutData[] = [
                 createMockCut({ id: 'cut-2', order: 2 }),
                 createMockCut({ id: 'cut-1', order: 1 }),
                 createMockCut({ id: 'cut-3', order: 3 }),
             ];
 
-            const chainShapes = new Map<string, Shape[]>([
+            const chainShapes = new Map<string, ShapeData[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -886,13 +895,13 @@ describe('cutsToToolPaths', () => {
         });
 
         it('should skip disabled cuts', async () => {
-            const cuts: Cut[] = [
+            const cuts: CutData[] = [
                 createMockCut({ id: 'cut-1', order: 1, enabled: true }),
                 createMockCut({ id: 'cut-2', order: 2, enabled: false }),
                 createMockCut({ id: 'cut-3', order: 3, enabled: true }),
             ];
 
-            const chainShapes = new Map<string, Shape[]>([
+            const chainShapes = new Map<string, ShapeData[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -918,12 +927,12 @@ describe('cutsToToolPaths', () => {
         });
 
         it('should skip cuts with missing chain shapes', async () => {
-            const cuts: Cut[] = [
+            const cuts: CutData[] = [
                 createMockCut({ id: 'cut-1', chainId: 'existing-chain' }),
                 createMockCut({ id: 'cut-2', chainId: 'missing-chain' }),
             ];
 
-            const chainShapes = new Map<string, Shape[]>([
+            const chainShapes = new Map<string, ShapeData[]>([
                 [
                     'existing-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -949,12 +958,12 @@ describe('cutsToToolPaths', () => {
 
     describe('rapid generation', () => {
         it('should generate rapids between tool cuts', async () => {
-            const cuts: Cut[] = [
+            const cuts: CutData[] = [
                 createMockCut({ id: 'cut-1', order: 1 }),
                 createMockCut({ id: 'cut-2', order: 2 }),
             ];
 
-            const chainShapes = new Map<string, Shape[]>([
+            const chainShapes = new Map<string, ShapeData[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -987,7 +996,7 @@ describe('cutsToToolPaths', () => {
         });
 
         it('should use lead-in start point for rapid destination', async () => {
-            const cuts: Cut[] = [
+            const cuts: CutData[] = [
                 createMockCut({ id: 'cut-1', order: 1 }),
                 createMockCut({
                     id: 'cut-2',
@@ -1007,7 +1016,7 @@ describe('cutsToToolPaths', () => {
                 }),
             ];
 
-            const chainShapes = new Map<string, Shape[]>([
+            const chainShapes = new Map<string, ShapeData[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 })],
@@ -1034,12 +1043,12 @@ describe('cutsToToolPaths', () => {
         });
 
         it('should not generate rapid for zero distance moves', async () => {
-            const cuts: Cut[] = [
+            const cuts: CutData[] = [
                 createMockCut({ id: 'cut-1', order: 1 }),
                 createMockCut({ id: 'cut-2', order: 2 }),
             ];
 
-            const chainShapes = new Map<string, Shape[]>([
+            const chainShapes = new Map<string, ShapeData[]>([
                 [
                     'test-chain',
                     [createMockLine('line1', { x: 0, y: 0 }, { x: 0, y: 0 })],
@@ -1060,12 +1069,12 @@ describe('cutsToToolPaths', () => {
         });
 
         it('should not generate rapid for very small movements', async () => {
-            const cuts: Cut[] = [
+            const cuts: CutData[] = [
                 createMockCut({ id: 'cut-1', order: 1 }),
                 createMockCut({ id: 'cut-2', order: 2 }),
             ];
 
-            const chainShapes = new Map<string, Shape[]>([
+            const chainShapes = new Map<string, ShapeData[]>([
                 [
                     'test-chain',
                     [
@@ -1101,8 +1110,8 @@ describe('cutsToToolPaths', () => {
 
     describe('empty input handling', () => {
         it('should handle empty cuts array', async () => {
-            const cuts: Cut[] = [];
-            const chainShapes = new Map<string, Shape[]>();
+            const cuts: CutData[] = [];
+            const chainShapes = new Map<string, ShapeData[]>();
 
             const result = await cutsToToolPaths(
                 cuts,
@@ -1115,8 +1124,8 @@ describe('cutsToToolPaths', () => {
         });
 
         it('should handle empty chainShapes map', async () => {
-            const cuts: Cut[] = [createMockCut()];
-            const chainShapes = new Map<string, Shape[]>();
+            const cuts: CutData[] = [createMockCut()];
+            const chainShapes = new Map<string, ShapeData[]>();
 
             const result = await cutsToToolPaths(
                 cuts,

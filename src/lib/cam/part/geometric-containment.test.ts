@@ -1,8 +1,8 @@
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,
@@ -13,7 +13,7 @@ import { isPointInPolygon } from './constants';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 
 // Helper function to create test chains
-function createTestChain(id: string, shapes: Shape[]): Chain {
+function createTestChain(id: string, shapes: ShapeData[]): ChainData {
     return {
         id,
         shapes,
@@ -26,7 +26,7 @@ function createRectangle(
     y: number,
     width: number,
     height: number
-): Shape[] {
+): ShapeData[] {
     return [
         {
             id: '1',
@@ -196,7 +196,7 @@ describe('buildContainmentHierarchy', () => {
     });
 
     it('should ignore open chains', async () => {
-        const openShapes: Shape[] = [
+        const openShapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,
@@ -292,7 +292,7 @@ describe('identifyShells', () => {
     });
 
     it('should ignore open chains', () => {
-        const openShapes: Shape[] = [
+        const openShapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,
@@ -317,7 +317,7 @@ describe('identifyShells', () => {
     });
 
     it('should return empty array when no shells exist', () => {
-        const openShapes: Shape[] = [
+        const openShapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,

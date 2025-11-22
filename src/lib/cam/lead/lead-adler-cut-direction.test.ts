@@ -3,7 +3,8 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import { type Chain } from '$lib/geometry/chain/interfaces';
+import { type ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { type PartData } from '$lib/cam/part/interfaces';
 import { calculateLeads } from './lead-calculation';
@@ -48,7 +49,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
     }
 
     // Helper to get polygon points from a chain
-    function getPolygonFromChain(chain: Chain): { x: number; y: number }[] {
+    function getPolygonFromChain(chain: ChainData): { x: number; y: number }[] {
         const points: { x: number; y: number }[] = [];
 
         for (const shape of chain.shapes) {
@@ -117,7 +118,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
             for (const cutDirection of cutDirections) {
                 const cutNormal: Point2D = { x: 1, y: 0 };
                 const result = calculateLeads(
-                    part5.shell,
+                    new Chain(part5.shell),
                     leadIn,
                     leadOut,
                     cutDirection,
@@ -151,7 +152,7 @@ describe('ADLER Part 5 Cut Direction Analysis', () => {
         // Test with very short leads
         const cutNormal: Point2D = { x: 1, y: 0 };
         const shortResult = calculateLeads(
-            part5.shell,
+            new Chain(part5.shell),
             { type: LeadType.ARC, length: 1 },
             { type: LeadType.NONE, length: 0 },
             CutDirection.COUNTERCLOCKWISE,

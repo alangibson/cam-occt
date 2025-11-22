@@ -2,7 +2,16 @@ import type { KerfCompensation } from '$lib/cam/operation/enums';
 import type { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import type { LeadConfig } from '$lib/cam/lead/interfaces';
 
-export interface Operation {
+/**
+ * OperationData - Serializable operation data structure
+ *
+ * This interface represents the JSON-serializable form of an operation.
+ * It stores only IDs (toolId, targetIds) for relationships.
+ *
+ * The Operation class wraps this data and provides setters/getters for
+ * resolved objects (Tool, Chain[], Part[]) for use during cut generation.
+ */
+export interface OperationData {
     id: string;
     name: string;
     toolId: string | null; // Reference to tool from tool store

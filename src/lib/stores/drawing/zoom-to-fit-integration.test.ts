@@ -31,7 +31,6 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
                 } as any,
             ],
             units: Unit.MM,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 50 } },
             fileName: 'test.dxf',
         };
 
@@ -64,7 +63,6 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
                 } as any,
             ],
             units: Unit.MM,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 50 } },
             fileName: 'test.dxf',
         };
 
@@ -97,7 +95,6 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
                 } as any,
             ],
             units: Unit.MM,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 200, y: 100 } },
             fileName: 'test.dxf',
         };
 
@@ -120,7 +117,6 @@ describe('Drawing Store Zoom-to-Fit Integration', () => {
         const emptyDrawing: DrawingData = {
             shapes: [],
             units: Unit.MM,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
             fileName: 'test.dxf',
         };
 

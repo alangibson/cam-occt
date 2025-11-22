@@ -6,8 +6,8 @@
 
 import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
 import type { ChainNormalizationResult } from '$lib/geometry/chain/chain-normalization';
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 
 export interface PrepareStageState {
     // Algorithm parameters
@@ -24,10 +24,10 @@ export interface PrepareStageState {
     lastAnalysisTimestamp: number;
 
     // State tracking for undo operations
-    originalShapesBeforeNormalization: Shape[] | null;
-    originalChainsBeforeNormalization: Chain[] | null;
-    originalShapesBeforeOptimization: Shape[] | null;
-    originalChainsBeforeOptimization: Chain[] | null;
+    originalShapesBeforeNormalization: ShapeData[] | null;
+    originalChainsBeforeNormalization: ChainData[] | null;
+    originalShapesBeforeOptimization: ShapeData[] | null;
+    originalChainsBeforeOptimization: ChainData[] | null;
     partsDetected: boolean;
 }
 
@@ -46,21 +46,21 @@ export interface PrepareStageStore {
         chainId: string
     ) => ChainNormalizationResult | null;
     saveOriginalStateForNormalization: (
-        shapes: Shape[],
-        chains: Chain[]
+        shapes: ShapeData[],
+        chains: ChainData[]
     ) => void;
     restoreOriginalStateFromNormalization: () => {
-        shapes: Shape[];
-        chains: Chain[];
+        shapes: ShapeData[];
+        chains: ChainData[];
     } | null;
     clearOriginalNormalizationState: () => void;
     saveOriginalStateForOptimization: (
-        shapes: Shape[],
-        chains: Chain[]
+        shapes: ShapeData[],
+        chains: ChainData[]
     ) => void;
     restoreOriginalStateFromOptimization: () => {
-        shapes: Shape[];
-        chains: Chain[];
+        shapes: ShapeData[];
+        chains: ChainData[];
     } | null;
     clearOriginalOptimizationState: () => void;
     setPartsDetected: (detected: boolean) => void;

@@ -1,14 +1,63 @@
 import { writable, get } from 'svelte/store';
-import { cutStore } from '$lib/stores/cuts/store';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import { planStore } from '$lib/stores/plan/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { chainStore } from '$lib/stores/chains/store';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { toolStore } from '$lib/stores/tools/store';
 import type { Part } from '$lib/cam/part/classes.svelte';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { OperationsStore } from './interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { OperationData } from '$lib/cam/operation/interface';
+import { Operation } from '$lib/cam/operation/classes.svelte';
+
+/**
+ * Helper function to resolve operation IDs to actual objects and set them on the operation
+ */
+function resolveOperationReferences(operation: Operation): void {
+    // Get required state data
+    const drawingState = get(drawingStore);
+    const tools = get(toolStore);
+
+    // Get chains from drawing layers
+    const chains: ChainData[] = drawingState.drawing
+        ? Object.values(drawingState.drawing.layers).flatMap(
+              (layer) => layer.chains
+          )
+        : [];
+
+    // Get parts from drawing layers
+    const parts: Part[] = drawingState.drawing
+        ? Object.values(drawingState.drawing.layers).flatMap(
+              (layer) => layer.parts
+          )
+        : [];
+
+    // Resolve tool
+    const tool = operation.toolId
+        ? tools.find((t) => t.id === operation.toolId) || null
+        : null;
+    operation.setTool(tool);
+
+    // Resolve targets
+    const targets: (ChainData | Part)[] = [];
+    if (operation.targetType === 'chains') {
+        for (const targetId of operation.targetIds) {
+            const chain = chains.find((c) => c.id === targetId);
+            if (chain) {
+                targets.push(chain);
+            }
+        }
+    } else if (operation.targetType === 'parts') {
+        for (const targetId of operation.targetIds) {
+            const part = parts.find((p) => p.id === targetId);
+            if (part) {
+                targets.push(part);
+            }
+        }
+    }
+    operation.setTargets(targets);
+}
 
 function createOperationsStore(): OperationsStore {
     const { subscribe, set, update } = writable<Operation[]>([]);
@@ -16,43 +65,48 @@ function createOperationsStore(): OperationsStore {
     return {
         subscribe,
 
-        addOperation: (operation: Omit<Operation, 'id'>) => {
+        addOperation: (operation: Omit<OperationData, 'id'>) => {
             // Create new Operation
-            const newOperation: Operation = {
+            const newOperation = new Operation({
                 ...operation,
                 id: crypto.randomUUID(),
-            };
+            });
+
+            // Resolve IDs to objects
+            resolveOperationReferences(newOperation);
 
             // Add operation to store synchronously
             update((operations) => [...operations, newOperation]);
-
-            // Generate cuts for the new operation if it has targets and
-            // is enabled
-            if (newOperation.enabled && newOperation.targetIds.length > 0) {
-                operationsStore.applyOperation(newOperation.id);
-            }
         },
 
-        updateOperation: (id: string, updates: Partial<Operation>) => {
+        updateOperation: (id: string, updates: Partial<OperationData>) => {
             // Update store synchronously
-            const newOperations: Operation[] = get({ subscribe }).map((op) =>
-                op.id === id ? { ...op, ...updates } : op
-            );
+            const newOperations: Operation[] = get({ subscribe }).map((op) => {
+                if (op.id === id) {
+                    const updatedOp = new Operation({
+                        ...op.toData(),
+                        ...updates,
+                    });
+                    resolveOperationReferences(updatedOp);
+                    return updatedOp;
+                }
+                return op;
+            });
             set(newOperations);
-
-            // Always regenerate cuts when operation changes
-            const operation: Operation | undefined = newOperations.find(
-                (op) => op.id === id
-            );
-            if (operation) {
-                operationsStore.applyOperation(operation.id);
-            }
         },
 
         deleteOperation: (id: string) => {
-            // Remove all cuts created by this operation
-            cutStore.deleteCutsByOperation(id);
-            update((operations) => operations.filter((op) => op.id !== id));
+            // Get the operation before deleting
+            const operations = get({ subscribe });
+            const operation = operations.find((op) => op.id === id);
+
+            // Remove all cuts created by this operation using Plan
+            if (operation) {
+                const plan = get(planStore).plan;
+                plan.remove(operation);
+            }
+
+            update((ops) => ops.filter((op) => op.id !== id));
         },
 
         reorderOperations: (newOrder: Operation[]) => {
@@ -69,44 +123,25 @@ function createOperationsStore(): OperationsStore {
             if (!operation) return;
 
             // Create clone Operation
-            const newOperation: Operation = {
-                ...operation,
+            const newOperation = new Operation({
+                ...operation.toData(),
                 id: crypto.randomUUID(),
                 name: `${operation.name} (Copy)`,
                 order: Math.max(...operations.map((op) => op.order)) + 1,
-            };
+            });
+
+            // Resolve IDs to objects
+            resolveOperationReferences(newOperation);
 
             // Add duplicated operation to store synchronously
             update((ops) => [...ops, newOperation]);
-
-            // Generate cuts for the duplicated operation if it has
-            // targets and is enabled
-            if (newOperation.enabled && newOperation.targetIds.length > 0) {
-                operationsStore.applyOperation(newOperation.id);
-            }
         },
 
         applyOperation: async (operationId: string) => {
             // Get required state data
             const operations = get({ subscribe });
             const chainsState = get(chainStore);
-            const drawingState = get(drawingStore);
-            const tools = get(toolStore);
-            const cutsState: { cuts: Cut[] } = get(cutStore);
-
-            // Get chains from drawing layers
-            const chains = drawingState.drawing
-                ? Object.values(drawingState.drawing.layers).flatMap(
-                      (layer) => layer.chains
-                  )
-                : [];
-
-            // Get parts from drawing layers
-            const parts: Part[] = drawingState.drawing
-                ? Object.values(drawingState.drawing.layers).flatMap(
-                      (layer) => layer.parts
-                  )
-                : [];
+            const plan = get(planStore).plan;
 
             // Look up Operation by id
             const operation: Operation | undefined = operations.find(
@@ -114,37 +149,31 @@ function createOperationsStore(): OperationsStore {
             );
 
             if (operation && operation.enabled) {
-                // Generate and add cuts for this operation
-                await cutStore.addCutsByOperation(
-                    operation,
-                    chains,
-                    parts,
-                    tools,
-                    chainsState.tolerance
-                );
+                // Generate and add cuts for this operation using Plan
+                await plan.add(operation, chainsState.tolerance);
 
                 // Check if any cuts exist and mark program stage as complete
-                if (cutsState.cuts.length > 0) {
+                if (plan.cuts.length > 0) {
                     workflowStore.completeStage(WorkflowStage.PROGRAM);
                 }
             }
         },
 
-        applyAllOperations: () => {
-            update((operations) => {
-                // Clear existing cuts first
-                cutStore.reset();
+        applyAllOperations: async () => {
+            const operations = get({ subscribe });
 
-                // Apply all enabled operations in order
-                const enabledOperations: Operation[] = operations
-                    .filter((op) => op.enabled)
-                    .sort((a, b) => a.order - b.order);
-                enabledOperations.forEach((operation) => {
-                    operationsStore.applyOperation(operation.id);
-                });
+            // Clear existing cuts first by resetting plan
+            const plan = get(planStore).plan;
+            plan.cuts = [];
 
-                return operations;
-            });
+            // Apply all enabled operations in order
+            const enabledOperations: Operation[] = operations
+                .filter((op) => op.enabled)
+                .sort((a, b) => a.order - b.order);
+
+            for (const operation of enabledOperations) {
+                await operationsStore.applyOperation(operation.id);
+            }
         },
 
         reset: () => set([]),

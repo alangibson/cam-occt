@@ -1,11 +1,12 @@
 import { describe, it } from 'vitest';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
 import { getChainTangent } from '$lib/geometry/chain/functions';
@@ -22,8 +23,8 @@ describe('Material Avoidance Logic Debug', () => {
     };
 
     // Helper to create a simple clockwise rectangle
-    function createClockwiseRectangle(): Chain {
-        const shapes: Shape[] = [
+    function createClockwiseRectangle(): ChainData {
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -71,7 +72,7 @@ describe('Material Avoidance Logic Debug', () => {
 
     describe('Manual material avoidance analysis', () => {
         it('should analyze what the correct normal direction should be', () => {
-            const chain = createClockwiseRectangle();
+            const chain = new Chain(createClockwiseRectangle());
             const startPoint = { x: 0, y: 0 };
 
             console.log('=== Chain Analysis ===');
@@ -179,9 +180,10 @@ describe('Material Avoidance Logic Debug', () => {
 
         it('should test counter-clockwise rectangle to see if the issue is specific to CW', () => {
             // Create CCW rectangle (reverse the order)
-            const ccwChain = createClockwiseRectangle();
-            ccwChain.clockwise = false;
-            ccwChain.shapes = [...ccwChain.shapes].reverse();
+            const ccwChainData = createClockwiseRectangle();
+            ccwChainData.clockwise = false;
+            ccwChainData.shapes = [...ccwChainData.shapes].reverse();
+            const ccwChain = new Chain(ccwChainData);
 
             console.log('\n=== Counter-Clockwise Rectangle Test ===');
 
@@ -201,7 +203,7 @@ describe('Material Avoidance Logic Debug', () => {
         });
 
         it('should test with no cut direction to isolate the default behavior', () => {
-            const chain = createClockwiseRectangle();
+            const chain = new Chain(createClockwiseRectangle());
 
             console.log('\n=== No Cut Direction Test ===');
 

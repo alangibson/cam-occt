@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -21,7 +22,7 @@ describe('Lead Sweep Direction Analysis', () => {
 
     it('should demonstrate the sweep direction issue', () => {
         // Simple circle at origin
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-circle',
             shapes: [
                 {
@@ -45,12 +46,12 @@ describe('Lead Sweep Direction Analysis', () => {
 
         // Test CW cut
         const cwNormal = calculateCutNormal(
-            chain,
+            new Chain(chain),
             CutDirection.CLOCKWISE,
             undefined
         );
         const cwResult = calculateLeads(
-            chain,
+            new Chain(chain),
             leadConfig,
             leadConfig,
             CutDirection.CLOCKWISE,
@@ -60,12 +61,12 @@ describe('Lead Sweep Direction Analysis', () => {
 
         // Test CCW cut
         const ccwNormal = calculateCutNormal(
-            chain,
+            new Chain(chain),
             CutDirection.COUNTERCLOCKWISE,
             undefined
         );
         const ccwResult = calculateLeads(
-            chain,
+            new Chain(chain),
             leadConfig,
             leadConfig,
             CutDirection.COUNTERCLOCKWISE,

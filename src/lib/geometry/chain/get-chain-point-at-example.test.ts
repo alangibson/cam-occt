@@ -6,15 +6,15 @@
 
 import { describe, it, expect } from 'vitest';
 import { getChainPointAt } from './functions';
-import type { Chain } from './interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from './interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('getChainPointAt - Example Usage', () => {
     it('example: finding equally spaced points along a chain', () => {
         // Create a simple L-shaped chain
-        const horizontalLine: Shape = {
+        const horizontalLine: ShapeData = {
             id: 'horizontal',
             type: GeometryType.LINE,
             geometry: {
@@ -23,7 +23,7 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const verticalLine: Shape = {
+        const verticalLine: ShapeData = {
             id: 'vertical',
             type: GeometryType.LINE,
             geometry: {
@@ -32,7 +32,7 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'L-shape',
             shapes: [horizontalLine, verticalLine],
         };
@@ -71,7 +71,7 @@ describe('getChainPointAt - Example Usage', () => {
     });
 
     it('example: finding a point at a specific distance ratio', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: 'line',
             type: GeometryType.LINE,
             geometry: {
@@ -80,7 +80,7 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'simple-line',
             shapes: [line],
         };
@@ -94,7 +94,7 @@ describe('getChainPointAt - Example Usage', () => {
 
     it('example: sampling points for visualization', () => {
         // Create a rectangular chain
-        const bottom: Shape = {
+        const bottom: ShapeData = {
             id: 'bottom',
             type: GeometryType.LINE,
             geometry: {
@@ -103,7 +103,7 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const right: Shape = {
+        const right: ShapeData = {
             id: 'right',
             type: GeometryType.LINE,
             geometry: {
@@ -112,7 +112,7 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const top: Shape = {
+        const top: ShapeData = {
             id: 'top',
             type: GeometryType.LINE,
             geometry: {
@@ -121,7 +121,7 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const left: Shape = {
+        const left: ShapeData = {
             id: 'left',
             type: GeometryType.LINE,
             geometry: {
@@ -130,7 +130,7 @@ describe('getChainPointAt - Example Usage', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'rectangle',
             shapes: [bottom, right, top, left],
         };

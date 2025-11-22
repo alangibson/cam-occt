@@ -3,8 +3,9 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { convertLeadGeometryToPoints } from './functions';
 
@@ -12,8 +13,8 @@ describe('Lead Tangency Debug', () => {
     function createLineChain(
         start: { x: number; y: number },
         end: { x: number; y: number }
-    ): Chain {
-        const shape: Shape = {
+    ): ChainData {
+        const shape: ShapeData = {
             id: 'shape1',
             type: GeometryType.LINE,
             geometry: { start, end },
@@ -33,7 +34,7 @@ describe('Lead Tangency Debug', () => {
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
-            chain,
+            new Chain(chain),
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,

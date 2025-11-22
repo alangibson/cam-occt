@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { Shape } from '$lib/geometry/shape/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import { prepareChainsAndLeadConfigs } from '$lib/cam/cut/cut-optimization-utils';
 import { OffsetDirection } from '$lib/cam/offset/types';
 
@@ -23,8 +25,8 @@ describe('Clockwise Property Fix Validation', () => {
     };
 
     // Helper to create a closed rectangular chain
-    function createClosedRectangleChain(clockwise?: boolean): Chain {
-        const shapes: Shape[] = [
+    function createClosedRectangleChain(clockwise?: boolean): ChainData {
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -72,10 +74,10 @@ describe('Clockwise Property Fix Validation', () => {
 
     // Helper to create a cut with offset data
     function createCutWithOffset(
-        originalChain: Chain,
-        offsetShapes: Shape[]
+        originalChain: ChainData,
+        offsetShapes: ShapeData[]
     ): Cut {
-        return {
+        return new Cut({
             id: 'test-cut',
             name: 'Test Cut',
             operationId: 'test-operation',
@@ -90,14 +92,14 @@ describe('Clockwise Property Fix Validation', () => {
             normalConnectionPoint: { x: 0, y: 0 },
             normalSide: NormalSide.LEFT,
             offset: {
-                offsetShapes,
-                originalShapes: originalChain.shapes,
+                offsetShapes: offsetShapes.map((s) => new Shape(s)),
+                originalShapes: originalChain.shapes.map((s) => new Shape(s)),
                 direction: OffsetDirection.INSET,
                 kerfWidth: 1,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
             },
-        };
+        });
     }
 
     describe('prepareChainsAndLeadConfigs fix validation', () => {
@@ -106,7 +108,7 @@ describe('Clockwise Property Fix Validation', () => {
             const originalChain = createClosedRectangleChain(false);
 
             // Create some offset shapes (content doesn't matter for this test)
-            const offsetShapes: Shape[] = [
+            const offsetShapes: ShapeData[] = [
                 {
                     id: 'offset-line1',
                     type: GeometryType.LINE,
@@ -122,7 +124,10 @@ describe('Clockwise Property Fix Validation', () => {
             const cut = createCutWithOffset(originalChain, offsetShapes);
 
             // Use the fixed prepareChainsAndLeadConfigs function
-            const result = prepareChainsAndLeadConfigs(cut, originalChain);
+            const result = prepareChainsAndLeadConfigs(
+                cut,
+                new Chain(originalChain)
+            );
 
             console.log('Original chain clockwise:', originalChain.clockwise);
             console.log(
@@ -136,8 +141,10 @@ describe('Clockwise Property Fix Validation', () => {
             );
             expect(result.leadCalculationChain.clockwise).toBe(false);
 
-            // Verify that the shapes are from the offset
-            expect(result.leadCalculationChain.shapes).toBe(offsetShapes);
+            // Verify that the shapes are from the offset (compare IDs since Shape[] != ShapeData[])
+            expect(result.leadCalculationChain.shapes.map((s) => s.id)).toEqual(
+                offsetShapes.map((s) => s.id)
+            );
             expect(result.leadCalculationChain.id).toBe(
                 'rectangle-chain_offset_temp'
             );
@@ -145,7 +152,7 @@ describe('Clockwise Property Fix Validation', () => {
 
         it('should preserve clockwise=true property', () => {
             const originalChain = createClosedRectangleChain(true);
-            const offsetShapes: Shape[] = [
+            const offsetShapes: ShapeData[] = [
                 {
                     id: 'offset-line1',
                     type: GeometryType.LINE,
@@ -158,14 +165,17 @@ describe('Clockwise Property Fix Validation', () => {
             ];
 
             const cut = createCutWithOffset(originalChain, offsetShapes);
-            const result = prepareChainsAndLeadConfigs(cut, originalChain);
+            const result = prepareChainsAndLeadConfigs(
+                cut,
+                new Chain(originalChain)
+            );
 
             expect(result.leadCalculationChain.clockwise).toBe(true);
         });
 
         it('should preserve clockwise=undefined property', () => {
             const originalChain = createClosedRectangleChain(undefined);
-            const offsetShapes: Shape[] = [
+            const offsetShapes: ShapeData[] = [
                 {
                     id: 'offset-line1',
                     type: GeometryType.LINE,
@@ -178,7 +188,10 @@ describe('Clockwise Property Fix Validation', () => {
             ];
 
             const cut = createCutWithOffset(originalChain, offsetShapes);
-            const result = prepareChainsAndLeadConfigs(cut, originalChain);
+            const result = prepareChainsAndLeadConfigs(
+                cut,
+                new Chain(originalChain)
+            );
 
             expect(result.leadCalculationChain.clockwise).toBeUndefined();
         });
@@ -190,7 +203,7 @@ describe('Clockwise Property Fix Validation', () => {
             const originalChain = createClosedRectangleChain(false);
 
             // Create offset shapes (simulate inward offset)
-            const offsetShapes: Shape[] = [
+            const offsetShapes: ShapeData[] = [
                 {
                     id: 'offset-line1',
                     type: GeometryType.LINE,
@@ -231,7 +244,7 @@ describe('Clockwise Property Fix Validation', () => {
 
             // Calculate leads on original chain
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -243,7 +256,7 @@ describe('Clockwise Property Fix Validation', () => {
             const cut = createCutWithOffset(originalChain, offsetShapes);
             const { leadCalculationChain } = prepareChainsAndLeadConfigs(
                 cut,
-                originalChain
+                new Chain(originalChain)
             );
 
             // Calculate leads on the fixed offset chain

@@ -3,10 +3,10 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { convertLeadGeometryToPoints } from './functions';
@@ -18,35 +18,36 @@ describe('calculateLeads', () => {
         start: { x: number; y: number },
         end: { x: number; y: number }
     ): Chain {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'shape1',
             type: GeometryType.LINE,
             geometry: { start, end },
             layer: 'layer1',
         };
 
-        return {
+        return new Chain({
             id: 'chain1',
             shapes: [shape],
-        };
+        });
     }
 
     // Helper to create a circle chain
     function createCircleChain(
         center: { x: number; y: number },
-        radius: number
+        radius: number,
+        id: string = 'chain1'
     ): Chain {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'shape1',
             type: GeometryType.CIRCLE,
             geometry: { center, radius },
             layer: 'layer1',
         };
 
-        return {
-            id: 'chain1',
+        return new Chain({
+            id,
             shapes: [shape],
-        };
+        });
     }
 
     // Helper to get cut normal for a chain
@@ -201,10 +202,16 @@ describe('calculateLeads', () => {
 
     describe('part context (holes vs shells)', () => {
         it('should place lead inside for holes', () => {
-            const holeChain = createCircleChain({ x: 5, y: 5 }, 3);
-            holeChain.id = 'hole-chain'; // Fix: Give unique ID to distinguish from shell
-            const shellChain = createCircleChain({ x: 5, y: 5 }, 10);
-            shellChain.id = 'shell-chain'; // Fix: Give unique ID to distinguish from hole
+            const holeChain = createCircleChain(
+                { x: 5, y: 5 },
+                3,
+                'hole-chain'
+            );
+            const shellChain = createCircleChain(
+                { x: 5, y: 5 },
+                10,
+                'shell-chain'
+            );
 
             const part: PartData = {
                 id: 'part1',
@@ -261,8 +268,11 @@ describe('calculateLeads', () => {
         });
 
         it('should place lead outside for shells', () => {
-            const shellChain = createCircleChain({ x: 5, y: 5 }, 3);
-            shellChain.id = 'shell-chain'; // Fix: Give unique ID
+            const shellChain = createCircleChain(
+                { x: 5, y: 5 },
+                3,
+                'shell-chain'
+            );
 
             const part: PartData = {
                 id: 'part1',
@@ -312,25 +322,24 @@ describe('calculateLeads', () => {
 
     describe('edge cases', () => {
         it('should handle empty chain', () => {
-            const chain: Chain = {
+            const chain: Chain = new Chain({
                 id: 'chain1',
                 shapes: [],
-            };
+            });
 
             const leadIn: LeadConfig = { type: LeadType.ARC, length: 5 };
             const leadOut: LeadConfig = { type: LeadType.ARC, length: 5 };
 
-            const result = calculateLeads(
-                chain,
-                leadIn,
-                leadOut,
-                CutDirection.CLOCKWISE,
-                undefined,
-                { x: 1, y: 0 }
-            );
-
-            expect(result.leadIn).toBeUndefined();
-            expect(result.leadOut).toBeUndefined();
+            expect(() => {
+                calculateLeads(
+                    chain,
+                    leadIn,
+                    leadOut,
+                    CutDirection.CLOCKWISE,
+                    undefined,
+                    { x: 1, y: 0 }
+                );
+            }).toThrow('Chain has no shapes');
         });
 
         it('should handle zero length leads', () => {

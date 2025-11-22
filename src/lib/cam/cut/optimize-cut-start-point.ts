@@ -5,10 +5,11 @@
  * Uses the same algorithm as chain start point optimization.
  */
 
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import { OptimizeStarts } from './enums';
 import { optimizeChainStartPoint } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import type { StartPointOptimizationParameters } from '$lib/preprocessing/algorithm-parameters';
+import { Chain } from '$lib/geometry/chain/classes';
 
 /**
  * Optimizes the start point of a cut by optimizing its cutChain.
@@ -19,10 +20,10 @@ import type { StartPointOptimizationParameters } from '$lib/preprocessing/algori
  * @returns A new Cut with optimized cutChain, or null if no optimization was performed
  */
 export function optimizeCutStartPoint(
-    cut: Cut,
+    cut: CutData,
     optimizeMode: OptimizeStarts,
     tolerance: number
-): Cut | null {
+): CutData | null {
     // Skip if optimization is disabled
     if (optimizeMode === OptimizeStarts.NONE) {
         return null;
@@ -55,6 +56,6 @@ export function optimizeCutStartPoint(
     // Return a new cut with the optimized chain
     return {
         ...cut,
-        cutChain: result.optimizedChain,
+        cutChain: new Chain(result.optimizedChain),
     };
 }

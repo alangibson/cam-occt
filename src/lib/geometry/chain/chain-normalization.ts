@@ -10,9 +10,9 @@
  * - Shapes with coincident points that break traversal order
  */
 
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
@@ -56,12 +56,12 @@ export interface ChainNormalizationResult {
  * Normalizes a chain by reordering and reversing shapes for proper traversal
  */
 export function normalizeChain(
-    chain: Chain,
+    chain: ChainData,
     params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM
-): Chain {
+): ChainData {
     const { traversalTolerance }: { traversalTolerance: number } = params;
 
-    let normalizedShapes: Shape[];
+    let normalizedShapes: ShapeData[];
 
     if (chain.shapes.length <= 1) {
         // Single shape - no traversal order needed, but still need to normalize
@@ -75,22 +75,26 @@ export function normalizeChain(
     }
 
     // Create the normalized chain with updated shapes
-    const normalizedChain: Chain = {
-        ...chain,
+    const normalizedChain: ChainData = {
+        id: chain.id,
         shapes: normalizedShapes,
+        clockwise: chain.clockwise,
+        originalChainId: chain.originalChainId,
     };
 
     // Set the chain-level clockwise property based on the final geometry
     const direction = detectCutDirection(normalizedChain, traversalTolerance);
 
     return {
-        ...normalizedChain,
+        id: normalizedChain.id,
+        shapes: normalizedChain.shapes,
         clockwise:
             direction === CutDirection.CLOCKWISE
                 ? true
                 : direction === CutDirection.COUNTERCLOCKWISE
                   ? false
                   : null, // null for open chains
+        originalChainId: normalizedChain.originalChainId,
     };
 }
 
@@ -98,7 +102,7 @@ export function normalizeChain(
  * Analyzes all chains for traversal issues
  */
 export function analyzeChainTraversal(
-    chains: Chain[],
+    chains: ChainData[],
     params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM
 ): ChainNormalizationResult[] {
     return chains.map((chain) => analyzeChainTraversalIssues(chain, params));
@@ -108,7 +112,7 @@ export function analyzeChainTraversal(
  * Analyzes a single chain for traversal issues
  */
 function analyzeChainTraversalIssues(
-    chain: Chain,
+    chain: ChainData,
     params: ChainNormalizationParameters = DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM
 ): ChainNormalizationResult {
     const issues: ChainTraversalIssue[] = [];
@@ -155,7 +159,7 @@ function analyzeChainTraversalIssues(
  * Attempts to traverse a chain following end-to-start connectivity
  */
 function attemptChainTraversal(
-    chain: Chain,
+    chain: ChainData,
     params: ChainNormalizationParameters
 ): { canTraverse: boolean; path: number[] } {
     if (chain.shapes.length === 0) return { canTraverse: true, path: [] };
@@ -187,7 +191,7 @@ function attemptChainTraversal(
  * Attempts traversal starting from a specific shape index
  */
 function attemptTraversalFromStart(
-    chain: Chain,
+    chain: ChainData,
     startIndex: number,
     tolerance: number
 ): { canTraverse: boolean; path: number[] } {
@@ -196,7 +200,7 @@ function attemptTraversalFromStart(
     const usedShapes: Set<number> = new Set<number>([startIndex]);
 
     while (path.length < chain.shapes.length) {
-        const currentShape: Shape = chain.shapes[currentShapeIndex];
+        const currentShape: ShapeData = chain.shapes[currentShapeIndex];
         const currentEndPoint: Point2D = getShapeEndPoint(currentShape);
 
         // Find next shape whose start point connects to current end point
@@ -204,7 +208,7 @@ function attemptTraversalFromStart(
         for (let i: number = 0; i < chain.shapes.length; i++) {
             if (usedShapes.has(i)) continue;
 
-            const candidateShape: Shape = chain.shapes[i];
+            const candidateShape: ShapeData = chain.shapes[i];
             const candidateStartPoint: Point2D =
                 getShapeStartPoint(candidateShape);
 
@@ -232,14 +236,16 @@ function attemptTraversalFromStart(
 /**
  * Detects specific issues that prevent proper traversal
  */
-function detectSpecificTraversalIssues(chain: Chain): ChainTraversalIssue[] {
+function detectSpecificTraversalIssues(
+    chain: ChainData
+): ChainTraversalIssue[] {
     const issues: ChainTraversalIssue[] = [];
     const tolerance: number = CHAIN_CLOSURE_TOLERANCE;
 
     for (let i: number = 0; i < chain.shapes.length; i++) {
         for (let j: number = i + 1; j < chain.shapes.length; j++) {
-            const shape1: Shape = chain.shapes[i];
-            const shape2: Shape = chain.shapes[j];
+            const shape1: ShapeData = chain.shapes[i];
+            const shape2: ShapeData = chain.shapes[j];
 
             const shape1Start: Point2D = getShapeStartPoint(shape1);
             const shape1End: Point2D = getShapeEndPoint(shape1);
@@ -280,16 +286,16 @@ function detectSpecificTraversalIssues(chain: Chain): ChainTraversalIssue[] {
 /**
  * Detects coincident point issues that might indicate connection problems
  */
-function detectCoincidentPointIssues(chain: Chain): ChainTraversalIssue[] {
+function detectCoincidentPointIssues(chain: ChainData): ChainTraversalIssue[] {
     const issues: ChainTraversalIssue[] = [];
     const tolerance: number = CHAIN_CLOSURE_TOLERANCE;
 
     // Look for shapes that have coincident points but are not in proper traversal order
     for (let i: number = 0; i < chain.shapes.length; i++) {
-        const shape1: Shape = chain.shapes[i];
+        const shape1: ShapeData = chain.shapes[i];
 
         for (let j: number = i + 1; j < chain.shapes.length; j++) {
-            const shape2: Shape = chain.shapes[j];
+            const shape2: ShapeData = chain.shapes[j];
 
             // Skip sequent shapes (they should connect)
             // Special case: first and last shapes are sequent if the chain is closed
@@ -299,8 +305,9 @@ function detectCoincidentPointIssues(chain: Chain): ChainTraversalIssue[] {
                 (j === 0 && i === chain.shapes.length - 1)
             ) {
                 // Check if this is a closed chain by seeing if first and last shapes connect
-                const firstShape: Shape = chain.shapes[0];
-                const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
+                const firstShape: ShapeData = chain.shapes[0];
+                const lastShape: ShapeData =
+                    chain.shapes[chain.shapes.length - 1];
                 const firstStart: Point2D = getShapeStartPoint(firstShape);
                 const lastEnd: Point2D = getShapeEndPoint(lastShape);
 
@@ -340,7 +347,7 @@ function detectCoincidentPointIssues(chain: Chain): ChainTraversalIssue[] {
  * Note: Only includes connectivity-relevant points (start, end, centers).
  * Does NOT include spline control points as they are internal geometry.
  */
-function getAllShapePoints(shape: Shape): Point2D[] {
+function getAllShapePoints(shape: ShapeData): Point2D[] {
     const points: Point2D[] = [];
 
     const start: Point2D = getShapeStartPoint(shape);
@@ -388,7 +395,7 @@ function pointsAreClose(p1: Point2D, p2: Point2D, tolerance: number): boolean {
  * Generates a human-readable description of chain analysis results
  */
 function generateChainDescription(
-    chain: Chain,
+    chain: ChainData,
     issues: ChainTraversalIssue[],
     canTraverse: boolean
 ): string {
@@ -408,17 +415,17 @@ function generateChainDescription(
  * Builds an optimal traversal order by trying different starting points and connections
  */
 function buildOptimalTraversalOrder(
-    shapes: Shape[],
+    shapes: ShapeData[],
     tolerance: number
-): Shape[] {
+): ShapeData[] {
     if (shapes.length <= 1) return shapes;
 
-    let bestResult: Shape[] = shapes; // Default fallback
+    let bestResult: ShapeData[] = shapes; // Default fallback
     let bestScore: number = 0; // Number of connected shapes
 
     // Try each shape as a potential starting point
     for (let startIdx: number = 0; startIdx < shapes.length; startIdx++) {
-        const result: Shape[] = buildChainFromStartingShape(
+        const result: ShapeData[] = buildChainFromStartingShape(
             shapes,
             startIdx,
             tolerance
@@ -444,7 +451,7 @@ function buildOptimalTraversalOrder(
         );
 
         for (let startIdx: number = 0; startIdx < shapes.length; startIdx++) {
-            const result: Shape[] = buildChainFromStartingShape(
+            const result: ShapeData[] = buildChainFromStartingShape(
                 shapes,
                 startIdx,
                 relaxedTolerance
@@ -463,7 +470,7 @@ function buildOptimalTraversalOrder(
 
     // If we still don't have all shapes, try to add remaining shapes in order
     if (bestScore < shapes.length) {
-        const remainingShapes: Shape[] = shapes.filter(
+        const remainingShapes: ShapeData[] = shapes.filter(
             (shape) =>
                 !bestResult.some((resultShape) => resultShape.id === shape.id)
         );
@@ -483,11 +490,11 @@ function buildOptimalTraversalOrder(
  * Builds a chain starting from a specific shape index
  */
 function buildChainFromStartingShape(
-    shapes: Shape[],
+    shapes: ShapeData[],
     startIdx: number,
     tolerance: number
-): Shape[] {
-    const result: Shape[] = [];
+): ShapeData[] {
+    const result: ShapeData[] = [];
     const usedIndices: Set<number> = new Set<number>();
 
     // Add the starting shape
@@ -496,7 +503,7 @@ function buildChainFromStartingShape(
 
     // Build the rest of the chain
     while (result.length < shapes.length) {
-        const lastShape: Shape = result[result.length - 1];
+        const lastShape: ShapeData = result[result.length - 1];
         const lastEndPoint: Point2D = getShapeEndPoint(lastShape);
 
         if (!lastEndPoint) break;
@@ -504,7 +511,7 @@ function buildChainFromStartingShape(
         let foundConnection: boolean = false;
         let bestCandidate: {
             index: number;
-            shape: Shape;
+            shape: ShapeData;
             distance: number;
         } | null = null;
 
@@ -512,7 +519,7 @@ function buildChainFromStartingShape(
         for (let i: number = 0; i < shapes.length; i++) {
             if (usedIndices.has(i)) continue;
 
-            const candidateShape: Shape = shapes[i];
+            const candidateShape: ShapeData = shapes[i];
             const candidateStart: Point2D = getShapeStartPoint(candidateShape);
             const candidateEnd: Point2D = getShapeEndPoint(candidateShape);
 
@@ -541,7 +548,8 @@ function buildChainFromStartingShape(
                 );
 
                 if (distance < tolerance) {
-                    const reversedShape: Shape = reverseShape(candidateShape);
+                    const reversedShape: ShapeData =
+                        reverseShape(candidateShape);
                     if (!bestCandidate || distance < bestCandidate.distance) {
                         bestCandidate = {
                             index: i,

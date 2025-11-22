@@ -48,7 +48,6 @@ describe('LayersList Component', () => {
                     layer: 'Layer2',
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };
@@ -81,7 +80,6 @@ describe('LayersList Component', () => {
                     layer: undefined,
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };
@@ -118,7 +116,6 @@ describe('LayersList Component', () => {
                     layer: 'Layer2',
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };
@@ -155,7 +152,6 @@ describe('LayersList Component', () => {
                     layer: '', // Will become layer '0'
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };

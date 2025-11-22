@@ -3,6 +3,7 @@
     import { drawingStore } from '$lib/stores/drawing/store';
     import { chainStore } from '$lib/stores/chains/store';
     import { partStore } from '$lib/stores/parts/store';
+    import { planStore } from '$lib/stores/plan/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { tessellationStore } from '$lib/stores/tessellation/store';
@@ -30,7 +31,7 @@
         getChainShapeIds,
     } from '$lib/stores/chains/functions';
     import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-    import type { Shape } from '$lib/geometry/shape/interfaces';
+    import type { ShapeData } from '$lib/geometry/shape/interfaces';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { SelectionMode } from '$lib/config/settings/enums';
     import { getPhysicalScaleFactor } from '$lib/config/units/units';
@@ -82,14 +83,15 @@
     const highlightedPartId = $derived($partStore.highlightedPartId);
     const hoveredPartId = $derived($partStore.hoveredPartId);
     const selectedPartIds = $derived($partStore.selectedPartIds);
+    const cuts = $derived($planStore.plan.cuts);
     const cutsState = $derived($cutStore);
     const operations = $derived($operationsStore);
     // Only show chains as having cuts if their associated operations are enabled
     const chainsWithCuts = $derived(
-        cutsState && operations
+        cuts && operations
             ? [
                   ...new Set(
-                      cutsState.cuts
+                      cuts
                           .filter((cut) => {
                               // Find the operation for this cut
                               const operation = operations.find(
@@ -110,7 +112,10 @@
     const tessellationState = $derived($tessellationStore);
     const overlayState = $derived($overlayStore);
     const currentOverlay = $derived(overlayState.overlays[currentStage]);
-    const rapids = $derived($rapidStore.rapids);
+    // Extract rapids from cuts
+    const rapids = $derived(
+        cuts.map((cut) => cut.rapidIn).filter((rapid) => rapid !== undefined)
+    );
     const showRapids = $derived($rapidStore.showRapids);
     const showRapidDirections = $derived($rapidStore.showRapidDirections);
     const selectedRapidIds = $derived($rapidStore.selectedRapidIds);
@@ -306,15 +311,15 @@
 
     // Track offset calculation state changes
     const offsetCalculationHash = $derived(
-        cutsState?.cuts
-            ? cutsState.cuts
+        cuts && cuts.length > 0
+            ? cuts
                   .map((cut) => ({
                       id: cut.id,
                       hasOffset: !!cut.offset,
                       offsetHash: cut.offset
                           ? JSON.stringify(
                                 cut.offset.offsetShapes?.map(
-                                    (s: Shape) => s.id
+                                    (s: ShapeData) => s.id
                                 ) || []
                             )
                           : null,
@@ -415,9 +420,9 @@
 
     // Cut and operation changes
     $effect(() => {
-        if (cutsState || operations || offsetCalculationHash) {
+        if (cuts || cutsState || operations || offsetCalculationHash) {
             renderingPipeline.updateState({
-                cuts: cutsState?.cuts || [],
+                cuts: cuts || [],
                 cutsState: cutsState,
                 operations: operations,
                 chainsWithCuts: chainsWithCuts,
@@ -714,11 +719,7 @@
                     drawingStore.selectShape(shape, e.ctrlKey);
                 } else if (interactionMode === 'chains') {
                     // Program mode - allow chain and part selection
-                    const chainId = getShapeChainId(
-                        shape.id,
-                        chains,
-                        cutsState.cuts
-                    );
+                    const chainId = getShapeChainId(shape.id, chains, cuts);
                     if (chainId) {
                         // When clicking on a shape outline, always prefer chain selection
                         if (onChainClick) {
@@ -763,16 +764,12 @@
                     }
                 } else if (interactionMode === 'cuts') {
                     // Simulation mode - only allow cut/rapid selection
-                    const chainId = getShapeChainId(
-                        shape.id,
-                        chains,
-                        cutsState.cuts
-                    );
+                    const chainId = getShapeChainId(shape.id, chains, cuts);
 
                     // Check if this chain has a cut and handle cut selection
                     if (chainId && chainsWithCuts.includes(chainId)) {
                         // Find the cut for this chain
-                        const cutForChain = cutsState.cuts.find(
+                        const cutForChain = cuts.find(
                             (c) => c.chainId === chainId
                         );
                         if (cutForChain) {

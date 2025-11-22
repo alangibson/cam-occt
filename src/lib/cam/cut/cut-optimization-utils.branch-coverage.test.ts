@@ -8,17 +8,20 @@ import {
     splitLineAtMidpoint,
     splitArcAtMidpoint,
 } from './cut-optimization-utils';
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
+import { Cut } from './classes.svelte';
+import { Chain } from '$lib/geometry/chain/classes';
+import { Shape } from '$lib/geometry/shape/classes';
 
 describe('cut-optimization-utils - branch coverage', () => {
     // Mock data
-    const mockChain: Chain = {
+    const mockChain: ChainData = {
         id: 'test-chain',
         shapes: [
             {
@@ -32,7 +35,7 @@ describe('cut-optimization-utils - branch coverage', () => {
         ],
     };
 
-    const mockCut: Cut = {
+    const mockCut: CutData = {
         id: 'test-cut',
         chainId: 'test-chain',
         name: 'Test Cut',
@@ -48,13 +51,14 @@ describe('cut-optimization-utils - branch coverage', () => {
 
     describe('findNearestCut uncovered branches', () => {
         it('should skip cuts not in unvisited set', () => {
+            const cut = new Cut(mockCut);
             const unvisited = new Set<Cut>();
-            const chains = new Map([['test-chain', mockChain]]);
+            const chains = new Map([['test-chain', new Chain(mockChain)]]);
             const findPartForChain = vi.fn().mockReturnValue(undefined);
 
             const result = findNearestCut(
                 { x: 0, y: 0 },
-                [mockCut],
+                [cut],
                 chains,
                 unvisited,
                 findPartForChain
@@ -65,13 +69,14 @@ describe('cut-optimization-utils - branch coverage', () => {
         });
 
         it('should skip cuts with missing chains', () => {
-            const unvisited = new Set([mockCut]);
+            const cut = new Cut(mockCut);
+            const unvisited = new Set([cut]);
             const chains = new Map<string, Chain>(); // Empty map
             const findPartForChain = vi.fn().mockReturnValue(undefined);
 
             const result = findNearestCut(
                 { x: 0, y: 0 },
-                [mockCut],
+                [cut],
                 chains,
                 unvisited,
                 findPartForChain
@@ -84,12 +89,15 @@ describe('cut-optimization-utils - branch coverage', () => {
 
     describe('getCutStartPoint uncovered branches', () => {
         it('should handle cut with lead-in configuration but no lead result', () => {
-            const cutWithLeadIn: Cut = {
+            const cutWithLeadIn: CutData = {
                 ...mockCut,
                 leadInConfig: { type: LeadType.ARC, length: 5.0 },
             };
 
-            const result = getCutStartPoint(cutWithLeadIn, mockChain);
+            const result = getCutStartPoint(
+                new Cut(cutWithLeadIn),
+                new Chain(mockChain)
+            );
 
             // Should fall back to chain start point when no lead-in is calculated
             // The actual result depends on the implementation - we just need to test the branch
@@ -99,18 +107,18 @@ describe('cut-optimization-utils - branch coverage', () => {
         });
 
         it('should handle cut with calculated offset', () => {
-            const cutWithOffset: Cut = {
+            const cutWithOffset: CutData = {
                 ...mockCut,
                 offset: {
                     offsetShapes: [
-                        {
+                        new Shape({
                             id: 'offset-shape-1',
                             type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 1, y: 1 },
                                 end: { x: 11, y: 1 },
                             },
-                        },
+                        }),
                     ],
                     originalShapes: [],
                     direction: OffsetDirection.OUTSET,
@@ -120,7 +128,10 @@ describe('cut-optimization-utils - branch coverage', () => {
                 },
             };
 
-            const result = getCutStartPoint(cutWithOffset, mockChain);
+            const result = getCutStartPoint(
+                new Cut(cutWithOffset),
+                new Chain(mockChain)
+            );
 
             // Should use offset shapes start point
             expect(result).toEqual({ x: 1, y: 1 });
@@ -129,18 +140,18 @@ describe('cut-optimization-utils - branch coverage', () => {
 
     describe('getCutChainStartPoint uncovered branches', () => {
         it('should use offset shapes when available', () => {
-            const cutWithOffset: Cut = {
+            const cutWithOffset: CutData = {
                 ...mockCut,
                 offset: {
                     offsetShapes: [
-                        {
+                        new Shape({
                             id: 'offset-shape-1',
                             type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 2, y: 2 },
                                 end: { x: 12, y: 2 },
                             },
-                        },
+                        }),
                     ],
                     originalShapes: [],
                     direction: OffsetDirection.OUTSET,
@@ -150,30 +161,36 @@ describe('cut-optimization-utils - branch coverage', () => {
                 },
             };
 
-            const result = getCutChainStartPoint(cutWithOffset, mockChain);
+            const result = getCutChainStartPoint(
+                new Cut(cutWithOffset),
+                new Chain(mockChain)
+            );
             expect(result).toEqual({ x: 2, y: 2 });
         });
 
         it('should fallback to chain start point when no offset', () => {
-            const result = getCutChainStartPoint(mockCut, mockChain);
+            const result = getCutChainStartPoint(
+                new Cut(mockCut),
+                new Chain(mockChain)
+            );
             expect(result).toEqual({ x: 0, y: 0 });
         });
     });
 
     describe('getCutChainEndPoint uncovered branches', () => {
         it('should use offset shapes when available', () => {
-            const cutWithOffset: Cut = {
+            const cutWithOffset: CutData = {
                 ...mockCut,
                 offset: {
                     offsetShapes: [
-                        {
+                        new Shape({
                             id: 'offset-shape-1',
                             type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 3, y: 3 },
                                 end: { x: 13, y: 3 },
                             },
-                        },
+                        }),
                     ],
                     originalShapes: [],
                     direction: OffsetDirection.OUTSET,
@@ -183,19 +200,25 @@ describe('cut-optimization-utils - branch coverage', () => {
                 },
             };
 
-            const result = getCutChainEndPoint(cutWithOffset, mockChain);
+            const result = getCutChainEndPoint(
+                new Cut(cutWithOffset),
+                new Chain(mockChain)
+            );
             expect(result).toEqual({ x: 13, y: 3 });
         });
 
         it('should fallback to chain end point when no offset', () => {
-            const result = getCutChainEndPoint(mockCut, mockChain);
+            const result = getCutChainEndPoint(
+                new Cut(mockCut),
+                new Chain(mockChain)
+            );
             expect(result).toEqual({ x: 10, y: 0 });
         });
     });
 
     describe('createSplitShape uncovered branches', () => {
         it('should preserve layer when present', () => {
-            const shapeWithLayer: Shape = {
+            const shapeWithLayer: ShapeData = {
                 id: 'test-shape',
                 type: GeometryType.LINE,
                 geometry: {
@@ -215,29 +238,8 @@ describe('cut-optimization-utils - branch coverage', () => {
             expect(result.layer).toBe('test-layer');
         });
 
-        it('should preserve metadata when present', () => {
-            const shapeWithMetadata: Shape = {
-                id: 'test-shape',
-                type: GeometryType.LINE,
-                geometry: {
-                    start: { x: 0, y: 0 },
-                    end: { x: 10, y: 0 },
-                },
-                metadata: { custom: 'data' },
-            };
-
-            const result = createSplitShape(
-                shapeWithMetadata,
-                '1',
-                GeometryType.LINE,
-                { start: { x: 0, y: 0 }, end: { x: 5, y: 0 } }
-            );
-
-            expect(result.metadata).toEqual({ custom: 'data' });
-        });
-
-        it('should not include layer or metadata when not present', () => {
-            const basicShape: Shape = {
+        it('should not include layer when not present', () => {
+            const basicShape: ShapeData = {
                 id: 'test-shape',
                 type: GeometryType.LINE,
                 geometry: {
@@ -254,13 +256,12 @@ describe('cut-optimization-utils - branch coverage', () => {
             );
 
             expect(result).not.toHaveProperty('layer');
-            expect(result).not.toHaveProperty('metadata');
         });
     });
 
     describe('splitLineAtMidpoint error handling', () => {
         it('should return null for non-line shapes', () => {
-            const nonLineShape: Shape = {
+            const nonLineShape: ShapeData = {
                 id: 'test-arc',
                 type: GeometryType.ARC,
                 geometry: {
@@ -278,7 +279,7 @@ describe('cut-optimization-utils - branch coverage', () => {
 
     describe('splitArcAtMidpoint error handling', () => {
         it('should return null for non-arc shapes', () => {
-            const nonArcShape: Shape = {
+            const nonArcShape: ShapeData = {
                 id: 'test-line',
                 type: GeometryType.LINE,
                 geometry: {

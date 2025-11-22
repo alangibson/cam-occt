@@ -3,12 +3,12 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Geometry Debug', () => {
@@ -17,17 +17,17 @@ describe('Lead Geometry Debug', () => {
         start: { x: number; y: number },
         end: { x: number; y: number }
     ): Chain {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'shape1',
             type: GeometryType.LINE,
             geometry: { start, end },
             layer: 'layer1',
         };
 
-        return {
+        return new Chain({
             id: 'chain1',
             shapes: [shape],
-        };
+        });
     }
 
     // Helper to check if a point is inside a rectangle

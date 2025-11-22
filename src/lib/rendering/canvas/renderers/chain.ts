@@ -18,12 +18,13 @@ import {
 import { getChainById } from '$lib/stores/chains/functions';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { Shape } from '$lib/geometry/shape/classes';
 import {
     getChainTangent,
     tessellateChain,
 } from '$lib/geometry/chain/functions';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { PartVoid, PartSlot } from '$lib/cam/part/interfaces';
 import {
     getShapeStartPoint,
@@ -178,7 +179,7 @@ export class ChainRenderer extends BaseRenderer {
             // Draw all shapes in the chain
             for (const chainShape of chain.shapes) {
                 const shape = state.drawing?.shapes.find(
-                    (s: Shape) => s.id === chainShape.id
+                    (s: ShapeData) => s.id === chainShape.id
                 );
                 if (shape) {
                     drawShape(ctx, shape);
@@ -256,7 +257,7 @@ export class ChainRenderer extends BaseRenderer {
      */
     private drawPartShapes(
         ctx: CanvasRenderingContext2D,
-        part: { shell: Chain; voids: PartVoid[]; slots: PartSlot[] },
+        part: { shell: ChainData; voids: PartVoid[]; slots: PartSlot[] },
         state: RenderState
     ): void {
         // Draw shell chain
@@ -444,7 +445,7 @@ export class ChainRenderer extends BaseRenderer {
     private drawChainTangent(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        chain: Chain,
+        chain: ChainData,
         point: Point2D,
         isStart: boolean
     ): void {
@@ -582,7 +583,11 @@ export class ChainRenderer extends BaseRenderer {
                 );
                 if (
                     shape &&
-                    HitTestUtils.isPointNearShape(point, shape, tolerance)
+                    HitTestUtils.isPointNearShape(
+                        point,
+                        new Shape(shape),
+                        tolerance
+                    )
                 ) {
                     return {
                         type: HitTestType.CHAIN,

@@ -9,7 +9,7 @@ describe('GCode Generator - Temporary Materials', () => {
     const mockDrawing: DrawingData = {
         units: Unit.MM,
         shapes: [],
-        bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+        fileName: '',
     };
 
     it('should generate temporary material with magic comments', () => {

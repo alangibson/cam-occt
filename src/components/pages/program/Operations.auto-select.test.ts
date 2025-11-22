@@ -312,7 +312,6 @@ describe('Operations Auto-Selection Feature', () => {
                     layer: 'Layer2',
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 70, y: 40 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };
@@ -407,7 +406,6 @@ describe('Operations Auto-Selection Feature', () => {
                     layer: 'Layer2',
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 30, y: 10 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };
@@ -479,7 +477,6 @@ describe('Operations Auto-Selection Feature', () => {
                     layer: 'Layer1',
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };

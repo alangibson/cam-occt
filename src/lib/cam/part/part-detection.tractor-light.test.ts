@@ -10,11 +10,11 @@ import {
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { Chain as ShapeChain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData as ShapeChain } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
-function filterToLargestLayer(shapes: Shape[]): Shape[] {
-    const layerMap = new Map<string, Shape[]>();
+function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
+    const layerMap = new Map<string, ShapeData[]>();
     shapes.forEach((shape) => {
         const layer = shape.layer || 'NO_LAYER';
         if (!layerMap.has(layer)) {
@@ -67,7 +67,7 @@ describe('Part Detection - Tractor Light Mount Issue', () => {
 
         // Log shape types for debugging
         const shapeTypes = new Map<string, number>();
-        filteredShapes.forEach((shape: Shape) => {
+        filteredShapes.forEach((shape: ShapeData) => {
             const count = shapeTypes.get(shape.type) || 0;
             shapeTypes.set(shape.type, count + 1);
         });

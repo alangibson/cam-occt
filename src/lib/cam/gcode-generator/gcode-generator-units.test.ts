@@ -40,7 +40,7 @@ describe('GCode Generator - Units', () => {
         const mockDrawing: DrawingData = {
             units: Unit.MM,
             shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            fileName: '',
         };
 
         const gcode = generateGCode([mockCut], mockDrawing, {
@@ -56,7 +56,7 @@ describe('GCode Generator - Units', () => {
         const mockDrawing: DrawingData = {
             units: Unit.INCH,
             shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            fileName: '',
         };
 
         const gcode = generateGCode([mockCut], mockDrawing, {
@@ -72,13 +72,13 @@ describe('GCode Generator - Units', () => {
         const mockDrawingMM: DrawingData = {
             units: Unit.MM,
             shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            fileName: '',
         };
 
         const mockDrawingInch: DrawingData = {
             units: Unit.INCH,
             shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            fileName: '',
         };
 
         const gcodeMetric = generateGCode([mockCut], mockDrawingMM, {
@@ -102,7 +102,7 @@ describe('GCode Generator - Units', () => {
         const mockDrawing: DrawingData = {
             units: Unit.MM,
             shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            fileName: '',
         };
 
         const gcode = generateGCode([mockCut], mockDrawing, {
@@ -124,7 +124,7 @@ describe('GCode Generator - Units', () => {
         const mockDrawingMM: DrawingData = {
             units: Unit.MM,
             shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
+            fileName: '',
         };
 
         const gcodeMetric = generateGCode([mockCut], mockDrawingMM, {

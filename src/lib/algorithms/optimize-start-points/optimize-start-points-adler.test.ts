@@ -1,9 +1,9 @@
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { describe, expect, it } from 'vitest';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { optimizeStartPoints } from './optimize-start-points';
 
 describe('optimizeStartPoints - ADLER.dxf scenario', () => {
@@ -14,12 +14,12 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
 
     it('should optimize multiple closed polyline chains like in ADLER.dxf', () => {
         // Simulate typical ADLER.dxf chains - closed polylines with multiple segments
-        const chains: Chain[] = [];
+        const chains: ChainData[] = [];
 
         // Create 5 closed chains similar to what's in ADLER.dxf
         for (let i: number = 0; i < 5; i++) {
             const xOffset = i * 20;
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: `polyline-${i}-1`,
                     type: GeometryType.POLYLINE,
@@ -64,7 +64,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
         }
 
         // Add a chain with a line segment (which should be preferred for splitting)
-        const mixedChain: Chain = {
+        const mixedChain: ChainData = {
             id: 'chain-mixed',
             shapes: [
                 {
@@ -131,7 +131,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
 
     it('should handle chains where all shapes are complex (no simple shapes to split)', () => {
         // Create a chain with only polylines and splines
-        const complexChain: Chain = {
+        const complexChain: ChainData = {
             id: 'complex-chain',
             shapes: [
                 {
@@ -186,7 +186,7 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
     it('should show why ADLER.dxf chains are not being optimized', () => {
         // Most realistic ADLER.dxf scenario: closed chains made of polylines with bulges
         // that have been converted to polylines
-        const adlerStyleChain: Chain = {
+        const adlerStyleChain: ChainData = {
             id: 'adler-chain',
             shapes: [
                 {
@@ -204,7 +204,6 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
                         ],
                         false
                     ).geometry,
-                    originalType: 'LWPOLYLINE', // This indicates it was converted from DXF
                 },
                 {
                     id: 'converted-polyline-2',
@@ -221,7 +220,6 @@ describe('optimizeStartPoints - ADLER.dxf scenario', () => {
                         ],
                         false
                     ).geometry,
-                    originalType: 'LWPOLYLINE',
                 },
             ],
         };

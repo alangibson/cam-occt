@@ -1,44 +1,52 @@
 import type { DrawingData } from './interfaces';
 import type { LayerData } from '$lib/cam/layer/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 import { Layer } from '$lib/cam/layer/classes.svelte';
 import { Unit } from '$lib/config/units/units';
+import { EMPTY_BOUNDS } from '$lib/geometry/bounding-box/constants';
 
 export class Drawing implements DrawingData {
-    private data: DrawingData;
+    #data: DrawingData;
     #layers?: Record<string, Layer>;
-    fileName = $state<string>('');
 
     constructor(data: DrawingData) {
-        this.data = data;
-        this.fileName = data.fileName ?? '';
+        this.#data = data;
+    }
+
+    get fileName(): string {
+        return this.#data.fileName;
+    }
+
+    set fileName(value: string) {
+        this.#data.fileName = value;
     }
 
     get shapes() {
-        return this.data?.shapes ?? [];
+        return this.#data?.shapes ?? [];
     }
 
-    set shapes(value: Shape[]) {
-        this.data.shapes = value;
+    set shapes(value: ShapeData[]) {
+        this.#data.shapes = value;
         // Clear cached layers when shapes change
         this.#layers = undefined;
     }
 
-    get bounds() {
-        return this.data?.bounds ?? { minX: 0, minY: 0, maxX: 0, maxY: 0 };
-    }
-
-    set bounds(value: BoundingBox) {
-        this.data.bounds = value;
+    get bounds(): BoundingBox {
+        const shapes = this.#data?.shapes ?? [];
+        if (shapes.length === 0) {
+            return EMPTY_BOUNDS;
+        }
+        return getBoundingBoxForShapes(shapes);
     }
 
     get units() {
-        return this.data?.units ?? Unit.MM;
+        return this.#data?.units ?? Unit.MM;
     }
 
     set units(value: Unit) {
-        this.data.units = value;
+        this.#data.units = value;
     }
 
     get layers(): Record<string, Layer> {
@@ -50,7 +58,7 @@ export class Drawing implements DrawingData {
         const layersMap: Record<string, Layer> = {};
 
         // Guard against undefined or missing shapes
-        if (!this.data || !this.data.shapes) {
+        if (!this.#data || !this.#data.shapes) {
             this.#layers = layersMap;
             return layersMap;
         }
@@ -58,7 +66,7 @@ export class Drawing implements DrawingData {
         // Group shapes by layer (as LayerData)
         const layerDataMap: Record<string, LayerData> = {};
 
-        this.data.shapes.forEach((shape) => {
+        this.#data.shapes.forEach((shape) => {
             // Use default layer "0" if shape has no layer or empty layer
             const layerName =
                 shape.layer && shape.layer.trim() !== '' ? shape.layer : '0';
@@ -90,10 +98,8 @@ export class Drawing implements DrawingData {
      */
     toData(): DrawingData {
         return {
-            shapes: this.data.shapes,
-            bounds: this.data.bounds,
-            units: this.data.units,
-            rawInsUnits: this.data.rawInsUnits,
+            shapes: this.#data.shapes,
+            units: this.#data.units,
             fileName: this.fileName,
         };
     }

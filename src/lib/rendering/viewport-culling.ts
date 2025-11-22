@@ -6,7 +6,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { getBoundingBoxForShape } from '$lib/geometry/bounding-box/functions';
 import {
@@ -47,7 +47,7 @@ function convertBoundingBox(bbox: BoundingBox): ShapeBounds {
 /**
  * Calculate tight bounding box for any shape using existing bounding box utilities
  */
-export function calculateShapeBounds(shape: Shape): ShapeBounds {
+export function calculateShapeBounds(shape: ShapeData): ShapeBounds {
     try {
         const bbox = getBoundingBoxForShape(shape);
         return convertBoundingBox(bbox);
@@ -115,11 +115,11 @@ export function calculateViewportBounds(
  * Filter shapes that are visible in viewport
  */
 export function cullShapesToViewport(
-    shapes: Shape[],
+    shapes: ShapeData[],
     viewport: ViewportBounds,
     margin: number = VIEWPORT_CULLING_MARGIN // Extra margin in world units
-): { visibleShapes: Shape[]; culledCount: number } {
-    const visibleShapes: Shape[] = [];
+): { visibleShapes: ShapeData[]; culledCount: number } {
+    const visibleShapes: ShapeData[] = [];
     let culledCount = 0;
 
     for (const shape of shapes) {

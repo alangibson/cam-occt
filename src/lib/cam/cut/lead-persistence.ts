@@ -6,9 +6,10 @@
  * using the offset shapes instead of the original chain geometry.
  */
 
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { type LeadConfig, type LeadResult } from '$lib/cam/lead/interfaces';
@@ -23,7 +24,7 @@ import { detectParts } from '$lib/cam/part/part-detection';
 /**
  * Check if cut has valid cached lead geometry
  */
-export function hasValidCachedLeads(cut: Cut): boolean {
+export function hasValidCachedLeads(cut: CutData): boolean {
     const currentVersion: string = '1.0.0'; // Should match the version in cuts.ts
 
     // Check if we have cached lead geometry
@@ -59,11 +60,10 @@ export function hasValidCachedLeads(cut: Cut): boolean {
 /**
  * Get cached lead geometry for display
  */
-export function getCachedLeadGeometry(cut: Cut): LeadResult {
+export function getCachedLeadGeometry(cut: CutData): LeadResult {
     return {
         leadIn: cut.leadIn,
         leadOut: cut.leadOut,
-        validation: cut.leadValidation,
     };
 }
 
@@ -72,8 +72,8 @@ export function getCachedLeadGeometry(cut: Cut): LeadResult {
  * This function encapsulates the common lead calculation logic used in multiple places
  */
 export async function calculateLeadPoints(
-    cut: Cut,
-    chainMap: Map<string, Chain> | undefined,
+    cut: CutData,
+    chainMap: Map<string, ChainData> | undefined,
     partMap: Map<string, PartData> | undefined,
     leadType: 'leadIn' | 'leadOut'
 ): Promise<Point2D[] | undefined> {
@@ -95,7 +95,7 @@ export async function calculateLeadPoints(
         const effectivePart = offsetPart || part;
 
         const leadResult = calculateLeads(
-            chainForLeads,
+            new Chain(chainForLeads),
             leadInConfig,
             leadOutConfig,
             cut.cutDirection,
@@ -130,10 +130,10 @@ export async function calculateLeadPoints(
  * Moved here to be shared across different modules
  */
 async function prepareLeadCalculation(
-    cut: Cut,
-    chain: Chain
+    cut: CutData,
+    chain: ChainData
 ): Promise<{
-    chainForLeads: Chain;
+    chainForLeads: ChainData;
     leadInConfig: LeadConfig;
     leadOutConfig: LeadConfig;
     offsetPart?: PartData;

@@ -6,11 +6,11 @@ import {
 } from '$lib/cam/lead/functions';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 
 // Helper function to create test cut
-function createTestCut(overrides: Partial<Cut> = {}): Cut {
-    const defaultCut: Cut = {
+function createTestCut(overrides: Partial<CutData> = {}): CutData {
+    const defaultCut: CutData = {
         id: 'test-cut',
         name: 'Test Cut',
         chainId: 'test-chain',

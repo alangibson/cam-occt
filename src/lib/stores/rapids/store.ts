@@ -1,10 +1,8 @@
 import { writable } from 'svelte/store';
 import type { RapidsState, RapidsStore } from './interfaces';
-import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 function createRapidsStore(): RapidsStore {
     const initialState: RapidsState = {
-        rapids: [],
         showRapids: true,
         showRapidDirections: false,
         selectedRapidIds: new Set(),
@@ -15,20 +13,6 @@ function createRapidsStore(): RapidsStore {
 
     return {
         subscribe,
-
-        setRapids: (rapids: Rapid[]) => {
-            update((state) => ({
-                ...state,
-                rapids,
-            }));
-        },
-
-        clearRapids: () => {
-            update((state) => ({
-                ...state,
-                rapids: [],
-            }));
-        },
 
         toggleShowRapids: () => {
             update((state) => ({
@@ -94,7 +78,13 @@ function createRapidsStore(): RapidsStore {
             }));
         },
 
-        reset: () => set(initialState),
+        reset: () =>
+            set({
+                showRapids: true,
+                showRapidDirections: false,
+                selectedRapidIds: new Set(),
+                highlightedRapidId: null,
+            }),
     };
 }
 

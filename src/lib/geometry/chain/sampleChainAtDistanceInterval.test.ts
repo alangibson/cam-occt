@@ -4,14 +4,14 @@
 
 import { describe, it, expect } from 'vitest';
 import { sampleChainAtDistanceInterval } from './functions';
-import type { Chain } from './interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from './interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('sampleChainAtDistanceInterval', () => {
     it('should return empty array for empty chain', () => {
-        const emptyChain: Chain = {
+        const emptyChain: ChainData = {
             id: 'empty-chain',
             shapes: [],
         };
@@ -22,7 +22,7 @@ describe('sampleChainAtDistanceInterval', () => {
     });
 
     it('should return empty array for zero interval distance', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'line-1',
             type: GeometryType.LINE,
             geometry: {
@@ -31,7 +31,7 @@ describe('sampleChainAtDistanceInterval', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [lineShape],
         };
@@ -42,7 +42,7 @@ describe('sampleChainAtDistanceInterval', () => {
     });
 
     it('should sample a simple horizontal line at regular intervals', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'horizontal-line',
             type: GeometryType.LINE,
             geometry: {
@@ -51,7 +51,7 @@ describe('sampleChainAtDistanceInterval', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [lineShape],
         };
@@ -80,7 +80,7 @@ describe('sampleChainAtDistanceInterval', () => {
     });
 
     it('should sample a vertical line correctly', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'vertical-line',
             type: GeometryType.LINE,
             geometry: {
@@ -89,7 +89,7 @@ describe('sampleChainAtDistanceInterval', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [lineShape],
         };
@@ -112,7 +112,7 @@ describe('sampleChainAtDistanceInterval', () => {
     });
 
     it('should sample across multiple connected line segments', () => {
-        const line1: Shape = {
+        const line1: ShapeData = {
             id: 'line-1',
             type: GeometryType.LINE,
             geometry: {
@@ -121,7 +121,7 @@ describe('sampleChainAtDistanceInterval', () => {
             } as Line,
         };
 
-        const line2: Shape = {
+        const line2: ShapeData = {
             id: 'line-2',
             type: GeometryType.LINE,
             geometry: {
@@ -130,7 +130,7 @@ describe('sampleChainAtDistanceInterval', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'l-shape',
             shapes: [line1, line2],
         };
@@ -162,7 +162,7 @@ describe('sampleChainAtDistanceInterval', () => {
     });
 
     it('should handle very small interval distance', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'line',
             type: GeometryType.LINE,
             geometry: {
@@ -171,7 +171,7 @@ describe('sampleChainAtDistanceInterval', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [lineShape],
         };
@@ -191,7 +191,7 @@ describe('sampleChainAtDistanceInterval', () => {
     });
 
     it('should provide normalized direction vectors', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'diagonal-line',
             type: GeometryType.LINE,
             geometry: {
@@ -200,7 +200,7 @@ describe('sampleChainAtDistanceInterval', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [lineShape],
         };
@@ -224,7 +224,7 @@ describe('sampleChainAtDistanceInterval', () => {
 
     it('should handle chain with single point (degenerate case)', () => {
         // Zero-length line
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'point',
             type: GeometryType.LINE,
             geometry: {
@@ -233,7 +233,7 @@ describe('sampleChainAtDistanceInterval', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'degenerate-chain',
             shapes: [lineShape],
         };
@@ -247,7 +247,7 @@ describe('sampleChainAtDistanceInterval', () => {
     it('should work with CONTAINMENT_AREA_TOLERANCE value', () => {
         const CONTAINMENT_AREA_TOLERANCE = 0.001;
 
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'line',
             type: GeometryType.LINE,
             geometry: {
@@ -256,7 +256,7 @@ describe('sampleChainAtDistanceInterval', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: [lineShape],
         };

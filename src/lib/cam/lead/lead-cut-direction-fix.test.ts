@@ -4,6 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
@@ -16,7 +17,7 @@ import {
     polylineToPoints,
 } from '$lib/geometry/polyline/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Cut Direction Fix', () => {
@@ -52,7 +53,7 @@ describe('Lead Cut Direction Fix', () => {
 
     // Helper to get polygon points from a chain
     function getPolygonFromChain(chain: {
-        shapes: Shape[];
+        shapes: ShapeData[];
     }): { x: number; y: number }[] {
         const points: { x: number; y: number }[] = [];
 
@@ -106,8 +107,8 @@ describe('Lead Cut Direction Fix', () => {
     function isPointInSolidArea(
         point: { x: number; y: number },
         part: {
-            shell: { shapes: Shape[] };
-            voids: { chain: { shapes: Shape[] } }[];
+            shell: { shapes: ShapeData[] };
+            voids: { chain: { shapes: ShapeData[] } }[];
         }
     ): boolean {
         const shellPolygon = getPolygonFromChain(part.shell);
@@ -143,7 +144,7 @@ describe('Lead Cut Direction Fix', () => {
 
         // Test with no cut direction (old behavior)
         const noCutDirResult = calculateLeads(
-            part5.shell,
+            new Chain(part5.shell),
             leadIn,
             leadOut,
             CutDirection.NONE,
@@ -153,7 +154,7 @@ describe('Lead Cut Direction Fix', () => {
 
         // Test with clockwise cut direction
         const clockwiseResult = calculateLeads(
-            part5.shell,
+            new Chain(part5.shell),
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
@@ -163,7 +164,7 @@ describe('Lead Cut Direction Fix', () => {
 
         // Test with counterclockwise cut direction
         const counterclockwiseResult = calculateLeads(
-            part5.shell,
+            new Chain(part5.shell),
             leadIn,
             leadOut,
             CutDirection.COUNTERCLOCKWISE,
@@ -231,10 +232,10 @@ describe('Lead Cut Direction Fix', () => {
         ];
 
         const squareShape = createPolylineFromVertices(squareVertices, true);
-        const squareChain = {
+        const squareChain = new Chain({
             id: 'test-square',
             shapes: [squareShape],
-        };
+        });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
         const noLeadOut: LeadConfig = { type: LeadType.NONE, length: 0 };

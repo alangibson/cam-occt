@@ -1,14 +1,14 @@
 import { describe, it, expect } from 'vitest';
 import { getChainPointAt } from './functions';
-import type { Chain } from './interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from './interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('getChainPointAt', () => {
     it('should throw error for empty chain', () => {
-        const emptyChain: Chain = {
+        const emptyChain: ChainData = {
             id: 'empty',
             shapes: [],
         };
@@ -19,7 +19,7 @@ describe('getChainPointAt', () => {
     });
 
     it('should return start point when t=0', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
@@ -28,7 +28,7 @@ describe('getChainPointAt', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'line-chain',
             shapes: [lineShape],
         };
@@ -39,7 +39,7 @@ describe('getChainPointAt', () => {
     });
 
     it('should return end point when t=1', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
@@ -48,7 +48,7 @@ describe('getChainPointAt', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'line-chain',
             shapes: [lineShape],
         };
@@ -59,7 +59,7 @@ describe('getChainPointAt', () => {
     });
 
     it('should return midpoint when t=0.5 for single line', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
@@ -68,7 +68,7 @@ describe('getChainPointAt', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'line-chain',
             shapes: [lineShape],
         };
@@ -79,7 +79,7 @@ describe('getChainPointAt', () => {
     });
 
     it('should handle chain with multiple lines', () => {
-        const line1: Shape = {
+        const line1: ShapeData = {
             id: 'line1',
             type: GeometryType.LINE,
             geometry: {
@@ -88,7 +88,7 @@ describe('getChainPointAt', () => {
             } as Line,
         };
 
-        const line2: Shape = {
+        const line2: ShapeData = {
             id: 'line2',
             type: GeometryType.LINE,
             geometry: {
@@ -97,7 +97,7 @@ describe('getChainPointAt', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'two-line-chain',
             shapes: [line1, line2],
         };
@@ -121,7 +121,7 @@ describe('getChainPointAt', () => {
 
     it('should handle arc in chain', () => {
         // Quarter circle arc from 0° to 90°
-        const arcShape: Shape = {
+        const arcShape: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: {
@@ -133,7 +133,7 @@ describe('getChainPointAt', () => {
             } as Arc,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'arc-chain',
             shapes: [arcShape],
         };
@@ -155,7 +155,7 @@ describe('getChainPointAt', () => {
     });
 
     it('should clamp t values outside [0, 1] range', () => {
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
@@ -164,7 +164,7 @@ describe('getChainPointAt', () => {
             } as Line,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'line-chain',
             shapes: [lineShape],
         };
@@ -181,7 +181,7 @@ describe('getChainPointAt', () => {
     });
 
     it('should handle mixed shape types in chain', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: 'test-line',
             type: GeometryType.LINE,
             geometry: {
@@ -191,7 +191,7 @@ describe('getChainPointAt', () => {
         };
 
         // Quarter circle arc
-        const arc: Shape = {
+        const arc: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: {
@@ -203,7 +203,7 @@ describe('getChainPointAt', () => {
             } as Arc,
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'mixed-chain',
             shapes: [line, arc],
         };

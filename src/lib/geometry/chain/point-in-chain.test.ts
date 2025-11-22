@@ -6,9 +6,9 @@ import {
     isPointInsideChainExact,
 } from './point-in-chain';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { generateId } from '$lib/domain/id';
 
 describe('Point-in-Chain Exact Testing', () => {
@@ -18,8 +18,8 @@ describe('Point-in-Chain Exact Testing', () => {
         y: number,
         width: number,
         height: number
-    ): Chain {
-        const shapes: Shape[] = [
+    ): ChainData {
+        const shapes: ShapeData[] = [
             {
                 id: generateId(),
                 type: GeometryType.LINE,
@@ -58,7 +58,7 @@ describe('Point-in-Chain Exact Testing', () => {
         centerX: number,
         centerY: number,
         radius: number
-    ): Chain {
+    ): ChainData {
         return {
             id: generateId(),
             shapes: [
@@ -77,8 +77,8 @@ describe('Point-in-Chain Exact Testing', () => {
         width: number,
         height: number,
         cornerRadius: number
-    ): Chain {
-        const shapes: Shape[] = [
+    ): ChainData {
+        const shapes: ShapeData[] = [
             // Bottom line
             {
                 id: generateId(),
@@ -235,7 +235,7 @@ describe('Point-in-Chain Exact Testing', () => {
         });
 
         it('should throw error for open chains', () => {
-            const openChain: Chain = {
+            const openChain: ChainData = {
                 id: generateId(),
                 shapes: [
                     {
@@ -350,7 +350,7 @@ describe('Point-in-Chain Exact Testing', () => {
     describe('Complex Shapes', () => {
         it('should handle star-shaped chain with many line segments', () => {
             // Create a simple 8-pointed star (4 outer points, 4 inner points)
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: generateId(),
                     type: GeometryType.LINE,
@@ -399,7 +399,7 @@ describe('Point-in-Chain Exact Testing', () => {
                 },
             ];
 
-            const starChain: Chain = { id: generateId(), shapes };
+            const starChain: ChainData = { id: generateId(), shapes };
 
             // This star has 8 line segments forming a closed star shape
             // For horizontal ray from center (0,0) going right:
@@ -427,7 +427,7 @@ describe('Point-in-Chain Exact Testing', () => {
             const centerRadius = 5;
             const petalRadius = 3;
             const numPetals = 6;
-            const shapes: Shape[] = [];
+            const shapes: ShapeData[] = [];
 
             for (let i: number = 0; i < numPetals; i++) {
                 const angle: number = (i * 2 * Math.PI) / numPetals;
@@ -444,7 +444,7 @@ describe('Point-in-Chain Exact Testing', () => {
                 });
             }
 
-            const flowerChain: Chain = { id: generateId(), shapes };
+            const flowerChain: ChainData = { id: generateId(), shapes };
 
             // Test that the exact algorithm handles disconnected shapes appropriately
             // (throws error for non-chains, which is correct behavior)

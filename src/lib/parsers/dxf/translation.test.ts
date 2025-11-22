@@ -16,11 +16,11 @@ import type {
     PolylineVertex,
 } from '$lib/geometry/polyline/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 
 // Helper function to calculate bounds for translated shapes
-function calculateBounds(shapes: Shape[]) {
+function calculateBounds(shapes: ShapeData[]) {
     if (shapes.length === 0) {
         return { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
     }
@@ -99,10 +99,10 @@ EOF`;
 
             // Check that shapes were translated
             const lineShape = drawing.shapes.find(
-                (s: Shape) => s.type === 'line'
+                (s: ShapeData) => s.type === 'line'
             );
             const circleShape = drawing.shapes.find(
-                (s: Shape) => s.type === 'circle'
+                (s: ShapeData) => s.type === 'circle'
             );
 
             if (lineShape) {
@@ -162,7 +162,9 @@ EOF`;
             };
 
             // Should be identical since already in positive quadrant
-            expect(translatedDrawing.bounds).toEqual(parsed.bounds);
+            expect(translatedDrawing.bounds).toEqual(
+                calculateBounds(parsed.shapes)
+            );
 
             // Check shapes are identical
             expect(translatedDrawing.shapes.length).toBe(parsed.shapes.length);
@@ -220,7 +222,7 @@ EOF`;
             expect(drawing.bounds.min.y).toBe(0);
 
             // All shapes should be in positive quadrant
-            drawing.shapes.forEach((shape: Shape) => {
+            drawing.shapes.forEach((shape: ShapeData) => {
                 switch (shape.type) {
                     case 'line':
                         const line: Line = shape.geometry as Line;
@@ -284,7 +286,7 @@ EOF`;
             };
 
             const polylineShape = drawing.shapes.find(
-                (s: Shape) => s.type === 'polyline'
+                (s: ShapeData) => s.type === 'polyline'
             );
             expect(polylineShape).toBeDefined();
 
@@ -354,7 +356,7 @@ EOF`;
             };
 
             const polylineShape = drawing.shapes.find(
-                (s: Shape) => s.type === 'polyline'
+                (s: ShapeData) => s.type === 'polyline'
             );
             expect(polylineShape).toBeDefined();
 
@@ -429,7 +431,7 @@ EOF`;
             expect(drawing.shapes.length).toBeGreaterThan(1);
 
             // All shapes should be in positive quadrant
-            drawing.shapes.forEach((shape: Shape) => {
+            drawing.shapes.forEach((shape: ShapeData) => {
                 switch (shape.type) {
                     case 'line':
                         const line: Line = shape.geometry as Line;
@@ -487,8 +489,9 @@ EOF`;
             };
 
             // Translation should be (75, 100) to move (-75, -100) to (0, 0)
-            const expectedTranslationX = -originalDrawing.bounds.min.x;
-            const expectedTranslationY = -originalDrawing.bounds.min.y;
+            const originalBounds = calculateBounds(originalDrawing.shapes);
+            const expectedTranslationX = -originalBounds.min.x;
+            const expectedTranslationY = -originalBounds.min.y;
 
             expect(expectedTranslationX).toBe(75);
             expect(expectedTranslationY).toBe(100);
@@ -497,10 +500,10 @@ EOF`;
             expect(translatedDrawing.bounds.min.x).toBe(0);
             expect(translatedDrawing.bounds.min.y).toBe(0);
             expect(translatedDrawing.bounds.max.x).toBe(
-                originalDrawing.bounds.max.x + expectedTranslationX
+                originalBounds.max.x + expectedTranslationX
             );
             expect(translatedDrawing.bounds.max.y).toBe(
-                originalDrawing.bounds.max.y + expectedTranslationY
+                originalBounds.max.y + expectedTranslationY
             );
         });
 
@@ -540,10 +543,10 @@ EOF`;
 
             // Get the two lines
             const originalLines = originalDrawing.shapes.filter(
-                (s: Shape) => s.type === 'line'
+                (s: ShapeData) => s.type === 'line'
             );
             const translatedLines = translatedDrawing.shapes.filter(
-                (s: Shape) => s.type === 'line'
+                (s: ShapeData) => s.type === 'line'
             );
 
             expect(originalLines.length).toBe(2);
@@ -702,10 +705,11 @@ ENDSEC
 EOF`;
 
             const drawing = await parseDXF(mockDXFContent);
+            const bounds = calculateBounds(drawing.shapes);
 
             // Should preserve original negative coordinates
-            expect(drawing.bounds.min.x).toBeLessThan(0);
-            expect(drawing.bounds.min.y).toBeLessThan(0);
+            expect(bounds.min.x).toBeLessThan(0);
+            expect(bounds.min.y).toBeLessThan(0);
 
             const line: Line = drawing.shapes[0].geometry as Line;
             expect(line.start.x).toBe(-50);
@@ -763,7 +767,7 @@ EOF`;
             expect(drawing.bounds.min.x).toBeCloseTo(0, 10);
             expect(drawing.bounds.min.y).toBeCloseTo(0, 10);
 
-            drawing.shapes.forEach((shape: Shape) => {
+            drawing.shapes.forEach((shape: ShapeData) => {
                 const bounds = getShapeBounds(shape);
                 expect(bounds.min.x).toBeGreaterThanOrEqual(-EPSILON); // Allow for floating point precision
                 expect(bounds.min.y).toBeGreaterThanOrEqual(-EPSILON);
@@ -773,7 +777,7 @@ EOF`;
 });
 
 // Helper function to get shape bounds
-function getShapeBounds(shape: Shape) {
+function getShapeBounds(shape: ShapeData) {
     let minX = Infinity,
         minY = Infinity,
         maxX = -Infinity,

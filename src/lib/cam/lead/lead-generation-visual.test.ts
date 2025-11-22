@@ -1,11 +1,12 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { describe, it } from 'vitest';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
@@ -54,26 +55,26 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         };
 
         // Create shapes from both splines
-        const splineShape1: Shape = {
+        const splineShape1: ShapeData = {
             id: 'test-spline-1',
             type: GeometryType.SPLINE,
             geometry: spline1,
         };
 
-        const splineShape2: Shape = {
+        const splineShape2: ShapeData = {
             id: 'test-spline-2',
             type: GeometryType.SPLINE,
             geometry: spline2,
         };
 
         // Create chains for both splines (for lead calculation)
-        const chain1: Chain = {
+        const chain1: ChainData = {
             id: 'test-chain-1',
             shapes: [splineShape1],
             clockwise: null, // null indicates open chain
         };
 
-        const chain2: Chain = {
+        const chain2: ChainData = {
             id: 'test-chain-2',
             shapes: [splineShape2],
             clockwise: null, // null indicates open chain
@@ -97,7 +98,7 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         // Calculate leads for both spline chains
         const cutNormal: Point2D = { x: 1, y: 0 };
         const leadResult1 = calculateLeads(
-            chain1,
+            new Chain(chain1),
             leadInConfig,
             leadOutConfig,
             CutDirection.CLOCKWISE,
@@ -106,7 +107,7 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         );
 
         const leadResult2 = calculateLeads(
-            chain2,
+            new Chain(chain2),
             leadInConfig,
             leadOutConfig,
             CutDirection.CLOCKWISE,
@@ -220,7 +221,7 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         if (leadResult1.leadIn && leadResult1.leadIn.geometry) {
             const leadInGeometry = leadResult1.leadIn.geometry;
             if (isArc(leadInGeometry)) {
-                const leadInShape: Shape = {
+                const leadInShape: ShapeData = {
                     id: 'lead-in-arc-1',
                     type: GeometryType.ARC,
                     geometry: leadInGeometry,
@@ -234,7 +235,7 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         if (leadResult1.leadOut && leadResult1.leadOut.geometry) {
             const leadOutGeometry = leadResult1.leadOut.geometry;
             if (isArc(leadOutGeometry)) {
-                const leadOutShape: Shape = {
+                const leadOutShape: ShapeData = {
                     id: 'lead-out-arc-1',
                     type: GeometryType.ARC,
                     geometry: leadOutGeometry,
@@ -249,7 +250,7 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         if (leadResult2.leadIn && leadResult2.leadIn.geometry) {
             const leadInGeometry = leadResult2.leadIn.geometry;
             if (isArc(leadInGeometry)) {
-                const leadInShape: Shape = {
+                const leadInShape: ShapeData = {
                     id: 'lead-in-arc-2',
                     type: GeometryType.ARC,
                     geometry: leadInGeometry,
@@ -263,7 +264,7 @@ describe('Lead Generation Visual Test with Specific Spline', () => {
         if (leadResult2.leadOut && leadResult2.leadOut.geometry) {
             const leadOutGeometry = leadResult2.leadOut.geometry;
             if (isArc(leadOutGeometry)) {
-                const leadOutShape: Shape = {
+                const leadOutShape: ShapeData = {
                     id: 'lead-out-arc-2',
                     type: GeometryType.ARC,
                     geometry: leadOutGeometry,

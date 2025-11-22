@@ -7,14 +7,14 @@ import {
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { generateId } from '$lib/domain/id';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 
 describe('join-colinear-lines', () => {
     describe('joinColinearLinesInPolyline', () => {
         it('should join two collinear lines in a polyline', () => {
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -23,7 +23,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -47,7 +47,7 @@ describe('join-colinear-lines', () => {
         });
 
         it('should join three collinear lines in a polyline', () => {
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -56,7 +56,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -65,7 +65,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const line3: Shape = {
+            const line3: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -88,7 +88,7 @@ describe('join-colinear-lines', () => {
         });
 
         it('should not join non-collinear lines', () => {
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -97,7 +97,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -119,7 +119,7 @@ describe('join-colinear-lines', () => {
         });
 
         it('should preserve non-line shapes', () => {
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -128,7 +128,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const arc: Shape = {
+            const arc: ShapeData = {
                 id: generateId(),
                 type: GeometryType.ARC,
                 geometry: {
@@ -140,7 +140,7 @@ describe('join-colinear-lines', () => {
                 },
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -175,7 +175,7 @@ describe('join-colinear-lines', () => {
         });
 
         it('should respect tolerance for near-collinear lines', () => {
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -184,7 +184,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -209,7 +209,7 @@ describe('join-colinear-lines', () => {
 
         it('should not be too aggressive - check tolerance against start segment for all joined segments', () => {
             // Create three lines where line1-line2 is collinear, but line3 deviates too much from line1
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -218,7 +218,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -227,7 +227,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const line3: Shape = {
+            const line3: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -258,7 +258,7 @@ describe('join-colinear-lines', () => {
         });
 
         it('should handle lines in reverse direction', () => {
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -267,7 +267,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -296,7 +296,7 @@ describe('join-colinear-lines', () => {
 
     describe('joinColinearLinesInChains', () => {
         it('should join collinear lines in a simple chain', () => {
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -305,7 +305,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: generateId(),
                 type: GeometryType.LINE,
                 geometry: {
@@ -314,7 +314,7 @@ describe('join-colinear-lines', () => {
                 } as Line,
             };
 
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-chain',
                 shapes: [line1, line2],
             };
@@ -332,7 +332,7 @@ describe('join-colinear-lines', () => {
         });
 
         it('should handle multiple chains independently', () => {
-            const chain1: Chain = {
+            const chain1: ChainData = {
                 id: 'chain-1',
                 shapes: [
                     {
@@ -354,7 +354,7 @@ describe('join-colinear-lines', () => {
                 ],
             };
 
-            const chain2: Chain = {
+            const chain2: ChainData = {
                 id: 'chain-2',
                 shapes: [
                     {
@@ -393,7 +393,7 @@ describe('join-colinear-lines', () => {
         });
 
         it('should handle chains with polylines containing collinear lines', () => {
-            const polylineShape: Shape = {
+            const polylineShape: ShapeData = {
                 id: generateId(),
                 type: GeometryType.POLYLINE,
                 geometry: {
@@ -419,7 +419,7 @@ describe('join-colinear-lines', () => {
                 } as Polyline,
             };
 
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-chain',
                 shapes: [polylineShape],
             };
@@ -444,7 +444,7 @@ describe('join-colinear-lines', () => {
         });
 
         it('should preserve chain with no collinear lines', () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-chain',
                 shapes: [
                     {

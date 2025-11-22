@@ -1,13 +1,12 @@
-import type { Rapid } from '$lib/cam/rapid/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { PartData, PartDetectionWarning } from '$lib/cam/part/interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { OperationData } from '$lib/cam/operation/interface';
 import type {
     TessellationPoint,
     DrawingOverlay,
 } from '$lib/stores/overlay/interfaces';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { ApplicationSettings } from '$lib/config/settings/interfaces';
@@ -28,7 +27,7 @@ export interface PersistedState {
     completedStages: string[];
 
     // Chains state
-    chains: Chain[];
+    chains: ChainData[];
     tolerance: number;
     selectedChainIds: string[];
 
@@ -38,8 +37,7 @@ export interface PersistedState {
     highlightedPartId: string | null;
     selectedPartIds: string[];
 
-    // Rapids state
-    rapids: Rapid[];
+    // Rapids UI state (rapids data is now in Cut.rapidIn)
     showRapids: boolean;
     selectedRapidIds: string[];
     highlightedRapidId: string | null;
@@ -59,8 +57,8 @@ export interface PersistedState {
     prepareStageState: PrepareStageState | null;
 
     // Operations, cuts, and tools
-    operations: Operation[];
-    cuts: Cut[];
+    operations: OperationData[];
+    cuts: CutData[];
     selectedCutIds: string[];
     tools: Tool[];
 

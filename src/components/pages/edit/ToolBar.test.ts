@@ -46,7 +46,6 @@ describe('ToolBar Component', () => {
                     layer: '0',
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };
@@ -84,7 +83,6 @@ describe('ToolBar Component', () => {
                     layer: '0',
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             units: Unit.MM,
             fileName: 'test.dxf',
         };

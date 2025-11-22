@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 
 describe('Physical Size Display', () => {
     describe('Real-world DXF physical sizing', () => {
@@ -288,10 +289,11 @@ ENDSEC
 EOF`;
 
             const drawing = await parseDXF(mockDxf);
+            const bounds = getBoundingBoxForShapes(drawing.shapes);
 
             // Drawing bounds should be from (10,20) to (110,70)
-            const drawingWidth = drawing.bounds.max.x - drawing.bounds.min.x; // 100 units
-            const drawingHeight = drawing.bounds.max.y - drawing.bounds.min.y; // 50 units
+            const drawingWidth = bounds.max.x - bounds.min.x; // 100 units
+            const drawingHeight = bounds.max.y - bounds.min.y; // 50 units
 
             expect(drawingWidth).toBeCloseTo(100, 1);
             expect(drawingHeight).toBeCloseTo(50, 1);

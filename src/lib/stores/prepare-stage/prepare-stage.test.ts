@@ -7,7 +7,7 @@ import { get } from 'svelte/store';
 import { prepareStageStore } from './store';
 import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
 describe('Prepare Stage Store', () => {
     beforeEach(() => {
@@ -143,7 +143,7 @@ describe('Prepare Stage Store', () => {
     });
 
     describe('normalization state management', () => {
-        const mockShapes: Shape[] = [
+        const mockShapes: ShapeData[] = [
             {
                 id: 'shape1',
                 type: GeometryType.LINE,
@@ -212,7 +212,7 @@ describe('Prepare Stage Store', () => {
     });
 
     describe('optimization state management', () => {
-        const mockShapes: Shape[] = [
+        const mockShapes: ShapeData[] = [
             {
                 id: 'shape1',
                 type: GeometryType.LINE,

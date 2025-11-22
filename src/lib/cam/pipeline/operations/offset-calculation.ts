@@ -2,10 +2,10 @@
  * Offset calculation for chain kerf compensation
  */
 
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { GapFillingResult } from '$lib/cam/cut/types';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { Shape } from '$lib/geometry/shape/classes';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { offsetChain as polylineOffset } from '$lib/cam/offset';
 import {
@@ -20,7 +20,7 @@ import type { ChainOffsetResult } from './interfaces';
  * Returns offset result with warnings instead of directly updating stores.
  */
 export async function calculateChainOffset(
-    chain: Chain,
+    chain: ChainData,
     kerfCompensation: OffsetDirection,
     toolId: string | null,
     tools: Tool[]
@@ -71,15 +71,12 @@ export async function calculateChainOffset(
         }
 
         // Use the appropriate offset chain based on direction
-        let selectedChain: Shape[];
-        let selectedGapFills: GapFillingResult[] | undefined;
+        let selectedChain: ShapeData[];
 
         if (kerfCompensation === OffsetDirection.INSET) {
             selectedChain = offsetResult.innerChain?.shapes || [];
-            selectedGapFills = offsetResult.innerChain?.gapFills;
         } else {
             selectedChain = offsetResult.outerChain?.shapes || [];
-            selectedGapFills = offsetResult.outerChain?.gapFills;
         }
 
         if (!selectedChain || selectedChain.length === 0) {
@@ -92,13 +89,14 @@ export async function calculateChainOffset(
 
         // offsetChain already returns polylines correctly for single polyline inputs
         // No additional wrapping needed
-        const finalOffsetShapes: Shape[] = selectedChain;
+        const finalOffsetShapes: Shape[] = selectedChain.map(
+            (s) => new Shape(s)
+        );
 
         return {
             offsetShapes: finalOffsetShapes,
-            originalShapes: chain.shapes,
+            originalShapes: chain.shapes.map((s) => new Shape(s)),
             kerfWidth: kerfWidth,
-            gapFills: selectedGapFills,
             warnings: offsetResult.warnings || [],
         };
     } catch (error) {

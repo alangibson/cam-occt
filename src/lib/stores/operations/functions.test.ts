@@ -12,15 +12,18 @@ import {
     getChainCutDirection,
     reverseChain,
 } from '$lib/geometry/chain/functions';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { Shape } from '$lib/geometry/shape/classes';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { OperationData } from '$lib/cam/operation/interface';
+import { Operation } from '$lib/cam/operation/classes.svelte';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
@@ -31,6 +34,18 @@ import {
     createLeadInConfig,
     createLeadOutConfig,
 } from '$lib/cam/lead/functions';
+
+// Helper function to create Operation with resolved references
+function createOperation(
+    data: OperationData,
+    tool: Tool | null,
+    targets: (ChainData | Part)[]
+): Operation {
+    const operation = new Operation(data);
+    operation.setTool(tool);
+    operation.setTargets(targets);
+    return operation;
+}
 
 // Mock dependencies
 vi.mock('$lib/geometry/chain/functions', () => ({
@@ -51,18 +66,19 @@ vi.mock('$lib/geometry/chain/functions', () => ({
         return lastShape?.geometry?.end || { x: 0, y: 0 };
     }),
     getChainPoints: vi.fn((chain) =>
-        chain.shapes.flatMap((s: Shape) => [
+        chain.shapes.flatMap((s: ShapeData) => [
             (s.geometry as { start: { x: number; y: number } }).start,
             (s.geometry as { end: { x: number; y: number } }).end,
         ])
     ),
     tessellateChain: vi.fn((chain) =>
-        chain.shapes.flatMap((s: Shape) => [
+        chain.shapes.flatMap((s: ShapeData) => [
             (s.geometry as { start: { x: number; y: number } }).start,
             (s.geometry as { end: { x: number; y: number } }).end,
         ])
     ),
     getChainTangent: vi.fn(() => ({ x: 1, y: 0 })),
+    isChainClosed: vi.fn((chain) => chain?.closed ?? false),
 }));
 
 vi.mock('$lib/geometry/chain/constants', () => ({
@@ -84,7 +100,7 @@ vi.mock('$lib/cam/lead/functions', () => ({
 }));
 
 describe('Operations Functions', () => {
-    const mockChain: Chain = {
+    const mockChain: ChainData = {
         id: 'chain-1',
         clockwise: true,
         shapes: [
@@ -114,7 +130,7 @@ describe('Operations Functions', () => {
         plungeRate: 500,
     };
 
-    const mockOperation: Operation = {
+    const mockOperation: OperationData = {
         id: 'op-1',
         name: 'Test Operation',
         toolId: 'tool-1',
@@ -142,7 +158,7 @@ describe('Operations Functions', () => {
         holeUnderspeedPercent: 50,
     };
 
-    const mockCut: Cut = {
+    const mockCut: CutData = {
         id: 'cut-1',
         name: 'Test Cut',
         operationId: 'op-1',
@@ -237,7 +253,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -246,7 +261,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 warnings: ['Test warning'],
                 errors: [],
@@ -350,7 +364,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -359,7 +372,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 warnings: [],
                 errors: [],
@@ -385,7 +397,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -394,7 +405,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [],
-                    gapFills: [],
                 },
                 warnings: [],
                 errors: [],
@@ -433,13 +443,13 @@ describe('Operations Functions', () => {
                 [mockTool]
             );
 
-            expect(result).toEqual({
-                offsetShapes: [mockChain.shapes[0]],
-                originalShapes: mockChain.shapes,
-                kerfWidth: 2.0,
-                gapFills: [],
-                warnings: ['Test warning'],
-            });
+            expect(result).not.toBeNull();
+            expect(result!.offsetShapes).toHaveLength(1);
+            expect(result!.offsetShapes[0].id).toBe('shape-1');
+            expect(result!.originalShapes).toHaveLength(1);
+            expect(result!.originalShapes[0].id).toBe('shape-1');
+            expect(result!.kerfWidth).toBe(2.0);
+            expect(result!.warnings).toEqual(['Test warning']);
         });
 
         it('should return successful result for OUTSET direction', async () => {
@@ -450,13 +460,13 @@ describe('Operations Functions', () => {
                 [mockTool]
             );
 
-            expect(result).toEqual({
-                offsetShapes: [mockChain.shapes[0]],
-                originalShapes: mockChain.shapes,
-                kerfWidth: 2.0,
-                gapFills: [],
-                warnings: ['Test warning'],
-            });
+            expect(result).not.toBeNull();
+            expect(result!.offsetShapes).toHaveLength(1);
+            expect(result!.offsetShapes[0].id).toBe('shape-1');
+            expect(result!.originalShapes).toHaveLength(1);
+            expect(result!.originalShapes[0].id).toBe('shape-1');
+            expect(result!.kerfWidth).toBe(2.0);
+            expect(result!.warnings).toEqual(['Test warning']);
         });
     });
 
@@ -518,7 +528,7 @@ describe('Operations Functions', () => {
 
         it('should use offset shapes when provided', () => {
             const offsetShapes = [
-                { ...mockChain.shapes[0], id: 'offset-shape-1' },
+                new Shape({ ...mockChain.shapes[0], id: 'offset-shape-1' }),
             ];
             const result = createCutChain(
                 mockChain,
@@ -532,13 +542,10 @@ describe('Operations Functions', () => {
 
     describe('generateCutsForChainWithOperation', () => {
         it('should return empty arrays when chain not found', async () => {
+            const operation = createOperation(mockOperation, mockTool, []);
             const result = await generateCutsForChainsWithOperation(
-                mockOperation,
-                'unknown-chain',
+                operation,
                 0,
-                [mockChain],
-                [mockTool],
-                [],
                 0.01
             );
 
@@ -547,7 +554,7 @@ describe('Operations Functions', () => {
         });
 
         it('should generate cut for chain with kerf compensation INNER', async () => {
-            const operationWithKerf = {
+            const operationWithKerfData = {
                 ...mockOperation,
                 kerfCompensation: KerfCompensation.INNER,
             };
@@ -561,7 +568,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -570,19 +576,19 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 warnings: [],
                 errors: [],
             });
 
+            const operationWithKerf = createOperation(
+                operationWithKerfData,
+                mockTool,
+                [mockChain]
+            );
             const result = await generateCutsForChainsWithOperation(
                 operationWithKerf,
-                'chain-1',
                 0,
-                [mockChain],
-                [mockTool],
-                [],
                 0.01
             );
 
@@ -591,7 +597,7 @@ describe('Operations Functions', () => {
         });
 
         it('should generate cut for chain with kerf compensation OUTER', async () => {
-            const operationWithKerf = {
+            const operationWithKerfData = {
                 ...mockOperation,
                 kerfCompensation: KerfCompensation.OUTER,
             };
@@ -605,7 +611,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -614,19 +619,19 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 warnings: [],
                 errors: [],
             });
 
+            const operationWithKerf = createOperation(
+                operationWithKerfData,
+                mockTool,
+                [mockChain]
+            );
             const result = await generateCutsForChainsWithOperation(
                 operationWithKerf,
-                'chain-1',
                 0,
-                [mockChain],
-                [mockTool],
-                [],
                 0.01
             );
 
@@ -637,18 +642,19 @@ describe('Operations Functions', () => {
         });
 
         it('should generate cut for chain with kerf compensation PART (treated as NONE for chains)', async () => {
-            const operationWithKerf = {
+            const operationWithKerfData = {
                 ...mockOperation,
                 kerfCompensation: KerfCompensation.PART,
             };
 
+            const operationWithKerf = createOperation(
+                operationWithKerfData,
+                mockTool,
+                [mockChain]
+            );
             const result = await generateCutsForChainsWithOperation(
                 operationWithKerf,
-                'chain-1',
                 0,
-                [mockChain],
-                [mockTool],
-                [],
                 0.01
             );
 
@@ -659,13 +665,10 @@ describe('Operations Functions', () => {
 
     describe('generateCutsForPartTargetWithOperation', () => {
         it('should return empty arrays when part not found', async () => {
+            const operation = createOperation(mockOperation, mockTool, []);
             const result = await generateCutsForPartsWithOperation(
-                mockOperation,
-                'unknown-part',
+                operation,
                 0,
-                [mockChain],
-                [mockPart],
-                [mockTool],
                 0.01
             );
 
@@ -674,13 +677,13 @@ describe('Operations Functions', () => {
         });
 
         it('should generate cuts for part with kerf compensation PART', async () => {
-            const operationWithKerf = {
+            const operationWithKerfData = {
                 ...mockOperation,
                 targetType: 'parts' as const,
                 kerfCompensation: KerfCompensation.PART,
             };
 
-            const chains = [
+            const _chains = [
                 mockChain,
                 {
                     id: 'chain-2',
@@ -698,7 +701,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -707,19 +709,19 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 warnings: [],
                 errors: [],
             });
 
+            const operationWithKerf = createOperation(
+                operationWithKerfData,
+                mockTool,
+                [mockPart]
+            );
             const result = await generateCutsForPartsWithOperation(
                 operationWithKerf,
-                'part-1',
                 0,
-                chains,
-                [mockPart],
-                [mockTool],
                 0.01
             );
 
@@ -762,7 +764,7 @@ describe('Operations Functions', () => {
 
             const partWithMultipleHoles = new Part(partWithMultipleHolesData);
 
-            const chains = [
+            const _chains = [
                 mockChain,
                 {
                     id: 'chain-2',
@@ -776,13 +778,12 @@ describe('Operations Functions', () => {
                 },
             ];
 
+            const operation = createOperation(mockOperation, mockTool, [
+                partWithMultipleHoles,
+            ]);
             const result = await generateCutsForPartsWithOperation(
-                mockOperation,
-                'part-1',
+                operation,
                 0,
-                chains,
-                [partWithMultipleHoles],
-                [mockTool],
                 0.01
             );
 
@@ -807,7 +808,7 @@ describe('Operations Functions', () => {
             };
             const partWithSlots = new Part(partWithSlotsData);
 
-            const chains = [
+            const _chains = [
                 mockChain,
                 {
                     id: 'chain-2',
@@ -816,13 +817,12 @@ describe('Operations Functions', () => {
                 },
             ];
 
+            const operation = createOperation(mockOperation, mockTool, [
+                partWithSlots,
+            ]);
             const result = await generateCutsForPartsWithOperation(
-                mockOperation,
-                'part-1',
+                operation,
                 0,
-                chains,
-                [partWithSlots],
-                [mockTool],
                 0.01
             );
 
@@ -856,7 +856,7 @@ describe('Operations Functions', () => {
             };
             const partWithSlots = new Part(partWithSlotsData);
 
-            const chains = [
+            const _chains = [
                 mockChain,
                 {
                     id: 'chain-2',
@@ -874,7 +874,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -883,19 +882,17 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 warnings: [],
                 errors: [],
             });
 
+            const operation = createOperation(operationWithPartKerf, mockTool, [
+                partWithSlots,
+            ]);
             const result = await generateCutsForPartsWithOperation(
-                operationWithPartKerf,
-                'part-1',
+                operation,
                 0,
-                chains,
-                [partWithSlots],
-                [mockTool],
                 0.01
             );
 
@@ -931,7 +928,7 @@ describe('Operations Functions', () => {
             };
             const partWithSlots = new Part(partWithSlotsData);
 
-            const chains = [
+            const _chains = [
                 mockChain,
                 {
                     id: 'chain-2',
@@ -949,7 +946,6 @@ describe('Operations Functions', () => {
                     closed: false,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -958,19 +954,19 @@ describe('Operations Functions', () => {
                     closed: false,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 warnings: [],
                 errors: [],
             });
 
-            const result = await generateCutsForPartsWithOperation(
+            const operation = createOperation(
                 operationWithInnerKerf,
-                'part-1',
+                mockTool,
+                [partWithSlots]
+            );
+            const result = await generateCutsForPartsWithOperation(
+                operation,
                 0,
-                chains,
-                [partWithSlots],
-                [mockTool],
                 0.01
             );
 
@@ -1005,7 +1001,7 @@ describe('Operations Functions', () => {
             };
             const partWithMultipleSlots = new Part(partWithMultipleSlotsData);
 
-            const chains = [
+            const _chains = [
                 mockChain,
                 {
                     id: 'chain-2',
@@ -1019,13 +1015,12 @@ describe('Operations Functions', () => {
                 },
             ];
 
+            const operation = createOperation(mockOperation, mockTool, [
+                partWithMultipleSlots,
+            ]);
             const result = await generateCutsForPartsWithOperation(
-                mockOperation,
-                'part-1',
+                operation,
                 0,
-                chains,
-                [partWithMultipleSlots],
-                [mockTool],
                 0.01
             );
 
@@ -1062,7 +1057,7 @@ describe('Operations Functions', () => {
             };
             const partWithVoidsAndSlots = new Part(partWithVoidsAndSlotsData);
 
-            const chains = [
+            const _chains = [
                 mockChain,
                 {
                     id: 'chain-2',
@@ -1076,13 +1071,12 @@ describe('Operations Functions', () => {
                 },
             ];
 
+            const operation = createOperation(mockOperation, mockTool, [
+                partWithVoidsAndSlots,
+            ]);
             const result = await generateCutsForPartsWithOperation(
-                mockOperation,
-                'part-1',
+                operation,
                 0,
-                chains,
-                [partWithVoidsAndSlots],
-                [mockTool],
                 0.01
             );
 
@@ -1160,9 +1154,12 @@ describe('Operations Functions', () => {
                 ...mockCut,
                 offset: {
                     offsetShapes: [
-                        { ...mockChain.shapes[0], id: 'offset-shape' },
+                        new Shape({
+                            ...mockChain.shapes[0],
+                            id: 'offset-shape',
+                        }),
                     ],
-                    originalShapes: mockChain.shapes,
+                    originalShapes: mockChain.shapes.map((s) => new Shape(s)),
                     direction: OffsetDirection.INSET,
                     kerfWidth: 2.0,
                     generatedAt: new Date().toISOString(),
@@ -1231,7 +1228,7 @@ describe('Operations Functions', () => {
             );
 
             expect(calculateLeads).toHaveBeenCalledWith(
-                mockChain,
+                expect.any(Chain),
                 expect.anything(),
                 expect.anything(),
                 mockCut.cutDirection,
@@ -1319,7 +1316,7 @@ describe('Operations Functions', () => {
                 mockCut,
                 { ...mockCut, id: 'cut-2', chainId: 'chain-2' },
             ];
-            const chains = [mockChain, { ...mockChain, id: 'chain-2' }];
+            const _chains = [mockChain, { ...mockChain, id: 'chain-2' }];
 
             vi.mocked(createLeadInConfig).mockReturnValue({
                 type: LeadType.ARC,
@@ -1364,7 +1361,7 @@ describe('Operations Functions', () => {
             const result = await calculateOperationLeads(
                 mockOperation,
                 cuts,
-                chains,
+                _chains,
                 [mockPart]
             );
 
@@ -1392,13 +1389,15 @@ describe('Operations Functions', () => {
 
     describe('createCutsFromOperation', () => {
         it('should return empty arrays when operation is disabled', async () => {
-            const disabledOperation = { ...mockOperation, enabled: false };
+            const disabledOperationData = { ...mockOperation, enabled: false };
 
+            const disabledOperation = createOperation(
+                disabledOperationData,
+                mockTool,
+                [mockChain]
+            );
             const result = await createCutsFromOperation(
                 disabledOperation,
-                [mockChain],
-                [mockPart],
-                [mockTool],
                 0.01
             );
 
@@ -1407,13 +1406,15 @@ describe('Operations Functions', () => {
         });
 
         it('should return empty arrays when operation has no target IDs', async () => {
-            const operationNoTargets = { ...mockOperation, targetIds: [] };
+            const operationNoTargetsData = { ...mockOperation, targetIds: [] };
 
+            const operationNoTargets = createOperation(
+                operationNoTargetsData,
+                mockTool,
+                []
+            );
             const result = await createCutsFromOperation(
                 operationNoTargets,
-                [mockChain],
-                [mockPart],
-                [mockTool],
                 0.01
             );
 
@@ -1431,7 +1432,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -1440,19 +1440,15 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 warnings: [],
                 errors: [],
             });
 
-            const result = await createCutsFromOperation(
-                mockOperation,
-                [mockChain],
-                [mockPart],
-                [mockTool],
-                0.01
-            );
+            const operation = createOperation(mockOperation, mockTool, [
+                mockChain,
+            ]);
+            const result = await createCutsFromOperation(operation, 0.01);
 
             expect(result.cuts).toHaveLength(1);
             expect(result.warnings).toHaveLength(0);
@@ -1465,7 +1461,7 @@ describe('Operations Functions', () => {
                 targetIds: ['part-1'],
             };
 
-            const chains = [
+            const _chains = [
                 mockChain,
                 {
                     id: 'chain-2',
@@ -1483,7 +1479,6 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 outerChain: {
                     id: 'outer-chain',
@@ -1492,19 +1487,15 @@ describe('Operations Functions', () => {
                     closed: true,
                     continuous: true,
                     shapes: [mockChain.shapes[0]],
-                    gapFills: [],
                 },
                 warnings: [],
                 errors: [],
             });
 
-            const result = await createCutsFromOperation(
-                operationParts,
-                chains,
-                [mockPart],
-                [mockTool],
-                0.01
-            );
+            const operation = createOperation(operationParts, mockTool, [
+                mockPart,
+            ]);
+            const result = await createCutsFromOperation(operation, 0.01);
 
             expect(result.cuts).toHaveLength(2); // Shell + 1 hole
         });

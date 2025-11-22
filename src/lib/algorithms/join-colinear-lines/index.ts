@@ -1,9 +1,9 @@
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { JoinColinearLinesParameters } from '$lib/preprocessing/algorithm-parameters';
 
 /**
@@ -11,9 +11,9 @@ import type { JoinColinearLinesParameters } from '$lib/preprocessing/algorithm-p
  * This is the main entry point that should be used by the UI
  */
 export function joinColinearLines(
-    chains: Chain[],
+    chains: ChainData[],
     parameters: JoinColinearLinesParameters
-): Chain[] {
+): ChainData[] {
     return joinColinearLinesInChains(chains, parameters.tolerance);
 }
 
@@ -100,7 +100,7 @@ function createJoinedLine(lines: Line[]): Line {
  * @returns Object with collected lines and next index to process
  */
 function collectCollinearLines(
-    shapes: Shape[],
+    shapes: ShapeData[],
     startIndex: number,
     tolerance: number
 ): {
@@ -156,7 +156,7 @@ export function joinColinearLinesInPolyline(
         return polyline;
     }
 
-    const newShapes: Shape[] = [];
+    const newShapes: ShapeData[] = [];
     let i = 0;
 
     while (i < polyline.shapes.length) {
@@ -202,9 +202,9 @@ export function joinColinearLinesInPolyline(
  * Join consecutive collinear lines within each chain
  */
 export function joinColinearLinesInChains(
-    chains: Chain[],
+    chains: ChainData[],
     tolerance: number = MACHINE_TOLERANCE
-): Chain[] {
+): ChainData[] {
     return chains.map((chain) => ({
         ...chain,
         shapes: joinColinearLinesInShapes(chain.shapes, tolerance),
@@ -216,10 +216,10 @@ export function joinColinearLinesInChains(
  * This handles both regular shapes and polylines containing line segments
  */
 function joinColinearLinesInShapes(
-    shapes: Shape[],
+    shapes: ShapeData[],
     tolerance: number
-): Shape[] {
-    const newShapes: Shape[] = [];
+): ShapeData[] {
+    const newShapes: ShapeData[] = [];
     let i = 0;
 
     while (i < shapes.length) {
@@ -252,11 +252,11 @@ function joinColinearLinesInShapes(
  * Returns the processed shapes and the next index to continue from
  */
 function processConsecutiveLines(
-    shapes: Shape[],
+    shapes: ShapeData[],
     startIndex: number,
     tolerance: number
 ): {
-    shapes: Shape[];
+    shapes: ShapeData[];
     nextIndex: number;
 } {
     const currentShape = shapes[startIndex];

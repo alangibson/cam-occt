@@ -12,6 +12,7 @@ import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { rapidStore } from '$lib/stores/rapids/store';
 import { workflowStore } from '$lib/stores/workflow/store';
+import { planStore } from '$lib/stores/plan/store';
 
 // Import workflow store for state management
 interface WorkflowStore {
@@ -41,6 +42,7 @@ export const resetDownstreamStages = (
     cutStore.reset();
     operationsStore.reset();
     rapidStore.reset();
+    planStore.reset();
 
     // Reset workflow completion status for downstream stages
     (workflowStore as WorkflowStore).invalidateDownstreamStages(fromStage);

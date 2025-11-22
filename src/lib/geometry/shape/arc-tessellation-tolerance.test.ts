@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { tessellateShape } from './functions';
-import type { Shape } from './interfaces';
+import type { ShapeData } from './interfaces';
 import { GeometryType } from './enums';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -57,7 +57,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             clockwise: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: arc,
@@ -89,7 +89,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             clockwise: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: arc,
@@ -119,7 +119,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             clockwise: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: arc,
@@ -156,7 +156,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             clockwise: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: arc,
@@ -188,7 +188,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             clockwise: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: arc,
@@ -220,7 +220,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             clockwise: true, // Clockwise arc
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: arc,
@@ -250,7 +250,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             clockwise: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: arc,
@@ -292,7 +292,7 @@ describe('Adaptive Arc Tessellation with Tolerance', () => {
             clockwise: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'test-arc',
             type: GeometryType.ARC,
             geometry: arc,

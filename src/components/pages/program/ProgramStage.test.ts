@@ -61,11 +61,36 @@ vi.mock('$lib/stores/cuts', () => ({
     cutStore: {
         subscribe: vi.fn((callback) => {
             callback({
-                cuts: [],
+                selectedCutIds: new Set(),
+                highlightedCutId: null,
+                showCutNormals: false,
+                showCutDirections: false,
+                showCutPaths: true,
+                showCutStartPoints: false,
+                showCutEndPoints: false,
+                showCutTangentLines: false,
             });
             return vi.fn();
         }),
-        reorderCuts: vi.fn(),
+    },
+}));
+
+vi.mock('$lib/stores/plan', () => ({
+    planStore: {
+        subscribe: vi.fn((callback) => {
+            callback({
+                plan: {
+                    cuts: [],
+                    add: vi.fn(),
+                    update: vi.fn(),
+                    remove: vi.fn(),
+                    updateCuts: vi.fn(),
+                },
+            });
+            return vi.fn();
+        }),
+        reset: vi.fn(),
+        updateCuts: vi.fn(),
     },
 }));
 
@@ -137,16 +162,6 @@ vi.mock('../Operations.svelte', () => ({
             $on: vi.fn(),
             $destroy: vi.fn(),
             addNewOperation: vi.fn(),
-        };
-    },
-}));
-
-vi.mock('../Cuts.svelte', () => ({
-    default: function MockCuts() {
-        return {
-            $set: vi.fn(),
-            $on: vi.fn(),
-            $destroy: vi.fn(),
         };
     },
 }));
@@ -369,29 +384,54 @@ describe('ProgramStage', () => {
                 cutStore: {
                     subscribe: vi.fn((callback) => {
                         callback({
-                            cuts: [
-                                {
-                                    id: 'cut-1',
-                                    name: 'Test Cut',
-                                    enabled: true,
-                                    leadInConfig: {
-                                        type: 'arc',
-                                        length: 5,
-                                        flipSide: false,
-                                        angle: 45,
-                                    },
-                                    leadOutConfig: {
-                                        type: 'line',
-                                        length: 3,
-                                        flipSide: false,
-                                        angle: 90,
-                                    },
-                                },
-                            ],
+                            selectedCutIds: new Set(),
+                            highlightedCutId: null,
+                            showCutNormals: false,
+                            showCutDirections: false,
+                            showCutPaths: true,
+                            showCutStartPoints: false,
+                            showCutEndPoints: false,
+                            showCutTangentLines: false,
                         });
                         return vi.fn();
                     }),
-                    reorderCuts: vi.fn(),
+                },
+            }));
+
+            vi.doMock('$lib/stores/plan', () => ({
+                planStore: {
+                    subscribe: vi.fn((callback) => {
+                        callback({
+                            plan: {
+                                cuts: [
+                                    {
+                                        id: 'cut-1',
+                                        name: 'Test Cut',
+                                        enabled: true,
+                                        leadInConfig: {
+                                            type: 'arc',
+                                            length: 5,
+                                            flipSide: false,
+                                            angle: 45,
+                                        },
+                                        leadOutConfig: {
+                                            type: 'line',
+                                            length: 3,
+                                            flipSide: false,
+                                            angle: 90,
+                                        },
+                                    },
+                                ],
+                                add: vi.fn(),
+                                update: vi.fn(),
+                                remove: vi.fn(),
+                                updateCuts: vi.fn(),
+                            },
+                        });
+                        return vi.fn();
+                    }),
+                    reset: vi.fn(),
+                    updateCuts: vi.fn(),
                 },
             }));
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { detectShapeChains } from './chain-detection';
 import { isShapeClosed } from '$lib/geometry/shape/functions';
@@ -14,7 +14,7 @@ function createEllipse(
     minorToMajorRatio: number,
     startParam?: number,
     endParam?: number
-): Shape {
+): ShapeData {
     const ellipseGeometry: Ellipse = {
         center,
         majorAxisEndpoint,
@@ -146,7 +146,7 @@ describe('Chain Detection - Ellipse Support', () => {
             );
 
             // Create a line that connects to the ellipse arc's start point (30, 0)
-            const line: Shape = {
+            const line: ShapeData = {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: {
@@ -208,7 +208,7 @@ describe('Chain Detection - Ellipse Support', () => {
             );
 
             // Line connecting to arc end point
-            const line: Shape = {
+            const line: ShapeData = {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: {
@@ -218,7 +218,7 @@ describe('Chain Detection - Ellipse Support', () => {
             };
 
             // Circle touching line end point
-            const circle: Shape = {
+            const circle: ShapeData = {
                 id: 'circle1',
                 type: GeometryType.CIRCLE,
                 geometry: {
@@ -236,7 +236,7 @@ describe('Chain Detection - Ellipse Support', () => {
         });
 
         it('should handle complex chain with multiple ellipses', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 createEllipse('ellipse1', { x: 0, y: 0 }, { x: 20, y: 0 }, 1.0), // Full circle-like ellipse
                 createEllipse(
                     'ellipse2',

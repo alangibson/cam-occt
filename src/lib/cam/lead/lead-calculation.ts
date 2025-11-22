@@ -1,11 +1,9 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { normalizeVector } from '$lib/geometry/math/functions';
-import { validateLeadConfiguration } from './lead-validation';
 import { createTangentArc, sampleArc } from '$lib/geometry/arc/functions';
 import {
     HALF_PERCENT,
@@ -27,12 +25,8 @@ import {
 } from '$lib/geometry/chain/functions';
 import { isChainHoleInPart, isChainShellInPart } from './part-lookup-utils';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
-import type {
-    LeadConfig,
-    LeadResult,
-    Lead,
-    LeadValidationResult,
-} from './interfaces';
+import type { LeadConfig, LeadResult, Lead } from './interfaces';
+import type { Chain } from '$lib/geometry/chain/classes';
 
 /**
  * Calculate lead-in and lead-out geometry for a chain.
@@ -51,26 +45,6 @@ export function calculateLeads(
 ): LeadResult {
     const result: LeadResult = {};
     const warnings: string[] = [];
-
-    // 1. VALIDATION PIPELINE - Run comprehensive validation first
-    const validation: LeadValidationResult = validateLeadConfiguration(
-        { leadIn: leadInConfig, leadOut: leadOutConfig, cutDirection },
-        chain,
-        part
-    );
-
-    result.validation = validation;
-
-    // Add validation warnings to the result
-    if (validation.warnings.length > 0) {
-        warnings.push(...validation.warnings);
-    }
-
-    // If validation fails with errors, return early with validation results
-    if (!validation.isValid && validation.severity === 'error') {
-        result.warnings = warnings;
-        return result;
-    }
 
     // Skip if no leads requested
     if (leadInConfig.type === 'none' && leadOutConfig.type === 'none') {
@@ -431,46 +405,4 @@ function isLeadInPart(
         }
     }
     return false; // All lead points are in valid areas
-}
-
-/**
- * Check if an arc intersects with a chain by sampling points along the arc
- * @param arc - Arc geometry to test
- * @param chain - Chain to test intersection against
- * @param connectionPoint - Point where arc connects (excluded from test)
- * @returns true if arc intersects the chain interior
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function doesArcIntersectChain(
-    arc: Arc,
-    chain: Chain,
-    connectionPoint: Point2D,
-    tolerance?: number
-): boolean {
-    const effectiveTolerance =
-        tolerance ?? getDefaults().geometry.precisionTolerance;
-    // Sample points along the arc
-    const points = sampleArc(arc);
-
-    // Check if any sampled points are inside the chain
-    for (const arcPoint of points) {
-        // Skip the connection point as it's expected to be on the boundary
-        if (
-            Math.abs(arcPoint.x - connectionPoint.x) < effectiveTolerance &&
-            Math.abs(arcPoint.y - connectionPoint.y) < effectiveTolerance
-        ) {
-            continue;
-        }
-
-        // If any point on the arc is inside the chain, the arc intersects
-        // Only test if the chain is closed (open chains cannot have meaningful containment)
-        if (
-            isChainClosed(chain, CHAIN_CLOSURE_TOLERANCE) &&
-            isPointInsideChainExact(arcPoint, chain)
-        ) {
-            return true;
-        }
-    }
-
-    return false;
 }

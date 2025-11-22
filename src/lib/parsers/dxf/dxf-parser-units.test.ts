@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from './functions';
 import { Unit } from '$lib/config/units/units';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 
 describe('DXF Parser Units', () => {
     describe('$INSUNITS header parsing', () => {
@@ -376,8 +377,8 @@ EOF`;
             const result = await parseDXF(dxfContent);
 
             expect(result.shapes).toHaveLength(0);
-            expect(result.bounds.min).toEqual({ x: 0, y: 0 });
-            expect(result.bounds.max).toEqual({ x: 0, y: 0 });
+            // Empty shapes array - getBoundingBoxForShapes throws for empty arrays
+            // so we just verify shapes is empty
         });
 
         it('should handle drawing with infinite bounds', async () => {
@@ -402,11 +403,12 @@ ENDSEC
 EOF`;
 
             const result = await parseDXF(dxfContent);
+            const bounds = getBoundingBoxForShapes(result.shapes);
 
-            expect(result.bounds.min.x).toBe(0);
-            expect(result.bounds.min.y).toBe(0);
-            expect(result.bounds.max.x).toBe(10);
-            expect(result.bounds.max.y).toBe(10);
+            expect(bounds.min.x).toBe(0);
+            expect(bounds.min.y).toBe(0);
+            expect(bounds.max.x).toBe(10);
+            expect(bounds.max.y).toBe(10);
         });
     });
 

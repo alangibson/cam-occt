@@ -8,8 +8,8 @@
 import { writable, get } from 'svelte/store';
 import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
 import type { ChainNormalizationResult } from '$lib/geometry/chain/chain-normalization';
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { PrepareStageState, PrepareStageStore } from './interfaces';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import { settingsStore } from '$lib/stores/settings/store';
@@ -162,8 +162,8 @@ function createPrepareStageStore(): PrepareStageStore {
          * Save original state before normalization
          */
         saveOriginalStateForNormalization: (
-            shapes: Shape[],
-            chains: Chain[]
+            shapes: ShapeData[],
+            chains: ChainData[]
         ) => {
             update((state) => ({
                 ...state,
@@ -180,10 +180,11 @@ function createPrepareStageStore(): PrepareStageStore {
          * Restore original state from before normalization
          */
         restoreOriginalStateFromNormalization: (): {
-            shapes: Shape[];
-            chains: Chain[];
+            shapes: ShapeData[];
+            chains: ChainData[];
         } | null => {
-            let result: { shapes: Shape[]; chains: Chain[] } | null = null;
+            let result: { shapes: ShapeData[]; chains: ChainData[] } | null =
+                null;
             update((state) => {
                 if (
                     state.originalShapesBeforeNormalization &&
@@ -222,8 +223,8 @@ function createPrepareStageStore(): PrepareStageStore {
          * Save original state before optimization
          */
         saveOriginalStateForOptimization: (
-            shapes: Shape[],
-            chains: Chain[]
+            shapes: ShapeData[],
+            chains: ChainData[]
         ) => {
             update((state) => ({
                 ...state,
@@ -240,10 +241,11 @@ function createPrepareStageStore(): PrepareStageStore {
          * Restore original state from before optimization
          */
         restoreOriginalStateFromOptimization: (): {
-            shapes: Shape[];
-            chains: Chain[];
+            shapes: ShapeData[];
+            chains: ChainData[];
         } | null => {
-            let result: { shapes: Shape[]; chains: Chain[] } | null = null;
+            let result: { shapes: ShapeData[]; chains: ChainData[] } | null =
+                null;
             update((state) => {
                 if (
                     state.originalShapesBeforeOptimization &&

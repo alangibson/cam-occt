@@ -2,9 +2,11 @@
  * Lead orchestration - manages lead calculation for cuts and operations
  */
 
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
+import type { OperationData } from '$lib/cam/operation/interface';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { Part, PartData, PartVoid } from '$lib/cam/part/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { prepareChainsAndLeadConfigs } from '$lib/cam/cut/cut-optimization-utils';
@@ -14,9 +16,9 @@ import type { CutLeadResult } from './interfaces';
  * Calculate lead geometry for a cut
  */
 export async function calculateCutLeads(
-    cut: Cut,
-    operation: Operation,
-    chain: Chain,
+    cut: CutData,
+    operation: OperationData,
+    chain: ChainData,
     parts: Part[]
 ): Promise<CutLeadResult> {
     try {
@@ -40,7 +42,7 @@ export async function calculateCutLeads(
 
         // Prepare lead calculation chain and configs using shared utility
         const { leadCalculationChain, leadInConfig, leadOutConfig } =
-            prepareChainsAndLeadConfigs(cut, chain);
+            prepareChainsAndLeadConfigs(new Cut(cut), new Chain(chain));
 
         // Calculate leads using the appropriate chain (original or offset)
         // Pass the cut's pre-calculated normal for consistency
@@ -110,23 +112,23 @@ export async function calculateCutLeads(
  * Returns a map of cut IDs to lead geometry results
  */
 export async function calculateOperationLeads(
-    operation: Operation,
-    cuts: Cut[],
-    chains: Chain[],
+    operation: OperationData,
+    cuts: CutData[],
+    chains: ChainData[],
     parts: Part[]
 ): Promise<Map<string, CutLeadResult>> {
     const leadResults = new Map<string, CutLeadResult>();
 
     try {
         // Find all cuts for this operation
-        const operationCuts: Cut[] = cuts.filter(
+        const operationCuts: CutData[] = cuts.filter(
             (c) => c.operationId === operation.id
         );
 
         // Calculate leads for each cut
         const calculations: Promise<void>[] = operationCuts.map(async (cut) => {
-            const chain: Chain | undefined = chains.find(
-                (c: Chain) => c.id === cut.chainId
+            const chain: ChainData | undefined = chains.find(
+                (c: ChainData) => c.id === cut.chainId
             );
             if (chain) {
                 const leadGeometry = await calculateCutLeads(

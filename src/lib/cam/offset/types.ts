@@ -1,6 +1,5 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { GapFillingResult } from '$lib/cam/cut/types';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
 /**
  * Represents which side of the chain an offset is on
@@ -33,16 +32,13 @@ export interface OffsetChain {
     side: OffsetSide;
 
     /** Ordered list of shapes forming the offset chain */
-    shapes: Shape[];
+    shapes: ShapeData[];
 
     /** Whether this offset chain forms a closed loop */
     closed: boolean;
 
     /** Whether all shapes connect properly within tolerance */
     continuous: boolean;
-
-    /** Any gaps that were filled during processing */
-    gapFills?: GapFillingResult[];
 
     /** Any overlaps that were trimmed during processing */
     trimPoints?: TrimPoint[];

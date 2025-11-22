@@ -5,9 +5,11 @@
     import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { partStore } from '$lib/stores/parts/store';
+    import { planStore } from '$lib/stores/plan/store';
     import { onMount } from 'svelte';
-    import type { Operation } from '$lib/cam/operation/interface';
-    import type { Chain } from '$lib/geometry/chain/interfaces';
+    import type { OperationData } from '$lib/cam/operation/interface';
+    import { Operation } from '$lib/cam/operation/classes.svelte';
+    import type { ChainData } from '$lib/geometry/chain/interfaces';
     import type { Part } from '$lib/cam/part/classes.svelte';
     import {
         DEFAULT_CUT_DIRECTION,
@@ -23,10 +25,12 @@
     import { DEFAULT_OPTIMIZE_STARTS } from '$lib/cam/cut/defaults';
 
     let operations: Operation[] = [];
-    let chains: Chain[] = [];
+    let chains: ChainData[] = [];
     let parts: Part[] = [];
     let draggedOperation: Operation | null = null;
     let dragOverIndex: number | null = null;
+    let tolerance = 0.01; // Default tolerance
+    let previousOperations = new Map<string, Operation>();
 
     // Tool search functionality
     let toolSearchTerms: { [operationId: string]: string } = {};
@@ -97,6 +101,37 @@
               )
             : [];
     });
+    chainStore.subscribe((state) => {
+        tolerance = state.tolerance;
+    });
+
+    // Detect new or updated operations and regenerate cuts
+    $: {
+        operations.forEach((op) => {
+            const previousOp = previousOperations.get(op.id);
+
+            // New operation: not in previous map
+            if (!previousOp) {
+                if (op.enabled && op.targetIds.length > 0) {
+                    console.log('[Operations] Applying NEW operation:', op.id);
+                    operationsStore.applyOperation(op.id);
+                }
+            }
+            // Updated operation: different object reference means it was updated
+            else if (previousOp !== op) {
+                if (op.enabled && op.targetIds.length > 0) {
+                    console.log(
+                        '[Operations] Applying UPDATED operation:',
+                        op.id
+                    );
+                    operationsStore.applyOperation(op.id);
+                }
+            }
+        });
+
+        // Update the previous operations map
+        previousOperations = new Map(operations.map((op) => [op.id, op]));
+    }
 
     export function addNewOperation(options?: { enabled?: boolean }) {
         const newOrder =
@@ -160,6 +195,12 @@
     }
 
     function deleteOperation(id: string) {
+        // Remove from plan first
+        const operation = operations.find((op) => op.id === id);
+        if (operation) {
+            $planStore.plan.remove(operation);
+        }
+
         operationsStore.deleteOperation(id);
     }
 
@@ -167,12 +208,18 @@
         operationsStore.duplicateOperation(id);
     }
 
-    function updateOperationField<K extends keyof Operation>(
+    function updateOperationField<K extends keyof OperationData>(
         id: string,
         field: K,
-        value: Operation[K]
+        value: OperationData[K]
     ) {
         operationsStore.updateOperation(id, { [field]: value });
+
+        // Update plan with the modified operation
+        const operation = operations.find((op) => op.id === id);
+        if (operation && operation.enabled) {
+            $planStore.plan.update(operation, tolerance);
+        }
     }
 
     function toggleTargetSelection(operationId: string, targetId: string) {
@@ -244,12 +291,12 @@
         newOperations.splice(draggedIndex, 1);
         newOperations.splice(dropIndex, 0, draggedOperation);
 
-        // Update order values
-        newOperations.forEach((op, index) => {
-            op.order = index + 1;
-        });
+        // Update order values - create new Operation instances with updated order
+        const reorderedOperations = newOperations.map(
+            (op, index) => new Operation({ ...op.toData(), order: index + 1 })
+        );
 
-        operationsStore.reorderOperations(newOperations);
+        operationsStore.reorderOperations(reorderedOperations);
         draggedOperation = null;
         dragOverIndex = null;
     }
@@ -367,7 +414,7 @@
         }
     }
 
-    function getSelectedTargetsText(operation: Operation): string {
+    function getSelectedTargetsText(operation: OperationData): string {
         if (operation.targetIds.length === 0) {
             return 'None selected';
         }

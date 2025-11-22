@@ -5,10 +5,10 @@ import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positi
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
 // Helper function to calculate bounds for translated shapes
-function calculateBounds(shapes: Shape[]) {
+function calculateBounds(shapes: ShapeData[]) {
     if (shapes.length === 0) {
         return { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } };
     }
@@ -281,10 +281,10 @@ EOF`;
             expect(mmDrawing.shapes.length).toBe(inchDrawing.shapes.length);
 
             const mmLine = mmDrawing.shapes.find(
-                (s: Shape) => s.type === 'line'
+                (s: ShapeData) => s.type === 'line'
             )?.geometry as Line;
             const inchLine = inchDrawing.shapes.find(
-                (s: Shape) => s.type === 'line'
+                (s: ShapeData) => s.type === 'line'
             )?.geometry as Line;
 
             expect(mmLine.start.x).toBe(inchLine.start.x);
@@ -293,10 +293,10 @@ EOF`;
             expect(mmLine.end.y).toBe(inchLine.end.y);
 
             const mmCircle = mmDrawing.shapes.find(
-                (s: Shape) => s.type === 'circle'
+                (s: ShapeData) => s.type === 'circle'
             )?.geometry as Circle;
             const inchCircle = inchDrawing.shapes.find(
-                (s: Shape) => s.type === 'circle'
+                (s: ShapeData) => s.type === 'circle'
             )?.geometry as Circle;
 
             expect(mmCircle.center.x).toBe(inchCircle.center.x);

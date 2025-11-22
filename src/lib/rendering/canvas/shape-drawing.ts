@@ -3,23 +3,19 @@
  * Extracted from ShapeRenderer to avoid code duplication
  */
 
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { normalizeAngle } from '$lib/geometry/math/functions';
-import {
-    tessellateSpline,
-    createAdaptiveTessellationConfig,
-} from '$lib/geometry/spline/functions';
 import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
-import { SPLINE_TESSELLATION_TOLERANCE } from '$lib/geometry/spline/constants';
+import { tessellateShape } from '$lib/geometry/shape/functions';
+import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 
 /**
  * Draw a line shape
@@ -81,7 +77,7 @@ function drawPolyline(ctx: CanvasRenderingContext2D, polyline: Polyline): void {
 function drawEllipse(
     ctx: CanvasRenderingContext2D,
     ellipse: Ellipse,
-    _shape: Shape
+    _shape: ShapeData
 ): void {
     // Tessellate ellipse directly
     const tessellatedPoints = sampleEllipse(
@@ -117,35 +113,13 @@ function drawEllipse(
 function drawSpline(
     ctx: CanvasRenderingContext2D,
     spline: Spline,
-    shape: Shape
+    shape: ShapeData
 ): void {
-    const tolerance = SPLINE_TESSELLATION_TOLERANCE;
-
-    // Check if we have a valid cached tessellation
-    let tessellatedPoints: Point2D[];
-
-    if (
-        shape.tessellationCache &&
-        shape.tessellationCache.tolerance === tolerance
-    ) {
-        // Use cached tessellation
-        tessellatedPoints = shape.tessellationCache.points;
-    } else {
-        // Compute new tessellation
-        const config = createAdaptiveTessellationConfig(spline, tolerance);
-        const result = tessellateSpline(spline, config);
-
-        if (!result.success || result.points.length < 2) return;
-
-        tessellatedPoints = result.points;
-
-        // Cache the tessellation on the shape object
-        shape.tessellationCache = {
-            points: tessellatedPoints,
-            tolerance: tolerance,
-            timestamp: Date.now(),
-        };
-    }
+    // Get tessellation
+    const tessellatedPoints = tessellateShape(
+        shape,
+        DEFAULT_PART_DETECTION_PARAMETERS
+    );
 
     if (tessellatedPoints.length < 2) return;
 
@@ -166,7 +140,10 @@ function drawSpline(
 /**
  * Main dispatcher function to draw any shape type
  */
-export function drawShape(ctx: CanvasRenderingContext2D, shape: Shape): void {
+export function drawShape(
+    ctx: CanvasRenderingContext2D,
+    shape: ShapeData
+): void {
     switch (shape.type) {
         case GeometryType.LINE:
             drawLine(ctx, shape.geometry as Line);

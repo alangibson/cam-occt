@@ -4,7 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
 describe('Tractor Seat Mount Debug Analysis', () => {
     it('should analyze why part detection finds 11 parts instead of 1', async () => {
@@ -39,14 +39,14 @@ describe('Tractor Seat Mount Debug Analysis', () => {
 
             // Analyze layers
             const layerStats: Record<string, number> = {};
-            parsed.shapes.forEach((shape: Shape) => {
+            parsed.shapes.forEach((shape: ShapeData) => {
                 const layer = shape.layer || 'NO_LAYER';
                 layerStats[layer] = (layerStats[layer] || 0) + 1;
             });
 
             // Analyze shape types
             const shapeStats: Record<string, number> = {};
-            parsed.shapes.forEach((shape: Shape) => {
+            parsed.shapes.forEach((shape: ShapeData) => {
                 shapeStats[shape.type] = (shapeStats[shape.type] || 0) + 1;
             });
 

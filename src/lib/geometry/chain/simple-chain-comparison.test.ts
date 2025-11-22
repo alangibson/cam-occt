@@ -3,13 +3,13 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import { type Chain } from '$lib/geometry/chain/interfaces';
+import { type ChainData } from '$lib/geometry/chain/interfaces';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
 describe('Simple Chain Comparison - Find Root Differences', () => {
     it('should compare properties of working vs failing chains', async () => {
@@ -84,8 +84,8 @@ describe('Simple Chain Comparison - Find Root Differences', () => {
         const _failingShapeCount = failingChain.shapes.length;
 
         // Check shape type patterns
-        const getShapeTypePattern = (chain: Chain) => {
-            const types = chain.shapes.map((s: Shape) => s.type);
+        const getShapeTypePattern = (chain: ChainData) => {
+            const types = chain.shapes.map((s: ShapeData) => s.type);
             const counts = types.reduce(
                 (c: Record<string, number>, t: string) => {
                     c[t] = (c[t] || 0) + 1;

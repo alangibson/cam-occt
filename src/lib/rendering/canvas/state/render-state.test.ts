@@ -6,7 +6,7 @@ import { describe, it, expect } from 'vitest';
 import { createEmptyRenderState, cloneRenderState } from './render-state';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { Unit } from '$lib/config/units/units';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 
 describe('createEmptyRenderState', () => {
     it('should create state with correct default values', () => {

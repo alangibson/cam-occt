@@ -1,30 +1,32 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { operationsStore } from './store';
+import { planStore } from '$lib/stores/plan/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { drawingStore } from '$lib/stores/drawing/store';
+import { toolStore } from '$lib/stores/tools/store';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { OperationData } from '$lib/cam/operation/interface';
 
 // Helper to wait for async cut generation
 async function waitForCuts(expectedCount: number, timeout = 100) {
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const cutsState = get(cutStore);
-            if (cutsState.cuts.length === expectedCount) {
+            const cuts = get(planStore).plan.cuts;
+            if (cuts.length === expectedCount) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
                 reject(
                     new Error(
-                        `Expected ${expectedCount} cuts, got ${cutsState.cuts.length} after ${timeout}ms`
+                        `Expected ${expectedCount} cuts, got ${cuts.length} after ${timeout}ms`
                     )
                 );
             } else {
@@ -37,13 +39,13 @@ async function waitForCuts(expectedCount: number, timeout = 100) {
 
 // Helper to create a drawing and get auto-detected chain
 function createDrawingWithChain(
-    shapes: Shape[],
+    shapes: ShapeData[],
     layerName = 'test-layer'
 ): { drawing: Drawing; chainId: string } {
     const drawingData: DrawingData = {
         shapes,
-        bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         units: Unit.MM,
+        fileName: '',
     };
 
     const drawing = new Drawing(drawingData);
@@ -62,13 +64,47 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
         operationsStore.reset();
         cutStore.reset();
         drawingStore.reset();
+        toolStore.reset();
+
+        // Add a minimal test tool (no kerf to avoid affecting cut direction tests)
+        toolStore.reorderTools([
+            {
+                id: 'test-tool',
+                toolNumber: 1,
+                toolName: 'Test Tool',
+                kerfWidth: 0, // No kerf for cut direction tests
+                feedRate: 100,
+                pierceHeight: 4.0,
+                pierceDelay: 0.5,
+                cutHeight: 2.0,
+                arcVoltage: 120,
+                kerfWidthMetric: 0,
+                kerfWidthImperial: 0,
+                feedRateMetric: 100,
+                feedRateImperial: 40,
+                pierceHeightMetric: 4.0,
+                pierceHeightImperial: 0.15,
+                cutHeightMetric: 2.0,
+                cutHeightImperial: 0.08,
+                thcEnable: true,
+                gasPressure: 4.5,
+                pauseAtEnd: 0,
+                puddleJumpHeight: 1.0,
+                puddleJumpHeightMetric: 1.0,
+                puddleJumpHeightImperial: 0.04,
+                puddleJumpDelay: 0,
+                plungeRate: 50,
+                plungeRateMetric: 50,
+                plungeRateImperial: 20,
+            },
+        ]);
     });
 
     describe('Clockwise Natural Chain with Different Operation Cut Directions', () => {
         it('should create cutChain in original order when operation wants clockwise (natural = clockwise)', async () => {
             // Create a clockwise square chain (natural winding = clockwise)
             // Going: right → down → left → up (clockwise when Y+ is up)
-            const clockwiseSquare: Shape[] = [
+            const clockwiseSquare: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -101,12 +137,12 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             drawingStore.setDrawing(drawing, 'test.dxf');
 
             // Create operation with clockwise cut direction
-            const operation: Omit<Operation, 'id'> = {
+            const operation: Omit<OperationData, 'id'> = {
                 name: 'Test Clockwise Operation',
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.CLOCKWISE,
-                toolId: null,
+                toolId: 'test-tool',
                 enabled: true,
                 order: 1,
                 leadInConfig: {
@@ -128,14 +164,18 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             operationsStore.addOperation(operation);
 
+            // Get the added operation and apply it
+            const operations = get(operationsStore);
+            await operationsStore.applyOperation(operations[0].id);
+
             // Wait for async cut generation
             await waitForCuts(1);
 
             // Check that cut was created with correct cutChain
-            const cutsState = get(cutStore);
-            expect(cutsState.cuts).toHaveLength(1);
+            const cuts = get(planStore).plan.cuts;
+            expect(cuts).toHaveLength(1);
 
-            const cut = cutsState.cuts[0];
+            const cut = cuts[0];
             expect(cut.cutChain).toBeDefined();
             expect(cut.cutChain!.shapes).toHaveLength(4);
 
@@ -149,7 +189,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
         it('should create cutChain in reversed order when operation wants counterclockwise (natural = clockwise)', async () => {
             // Same clockwise square chain
             // Going: right → down → left → up (clockwise when Y+ is up)
-            const clockwiseSquare: Shape[] = [
+            const clockwiseSquare: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -182,12 +222,12 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             drawingStore.setDrawing(drawing, 'test.dxf');
 
             // Create operation with counterclockwise cut direction
-            const operation: Omit<Operation, 'id'> = {
+            const operation: Omit<OperationData, 'id'> = {
                 name: 'Test Counterclockwise Operation',
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                toolId: null,
+                toolId: 'test-tool',
                 enabled: true,
                 order: 1,
                 leadInConfig: {
@@ -209,11 +249,15 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             operationsStore.addOperation(operation);
 
+            // Get the added operation and apply it
+            const operations = get(operationsStore);
+            await operationsStore.applyOperation(operations[0].id);
+
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cutsState = get(cutStore);
-            const cut = cutsState.cuts[0];
+            const cuts = get(planStore).plan.cuts;
+            const cut = cuts[0];
 
             // Should be in reversed order (reversal needed)
             expect(cut.cutChain!.shapes[0].id).toBe('line4');
@@ -227,7 +271,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
         it('should create cutChain in original order when operation wants counterclockwise (natural = counterclockwise)', async () => {
             // Create a counterclockwise square chain (natural winding = counterclockwise)
             // Going: right → up → left → down (counterclockwise when Y+ is up)
-            const counterclockwiseSquare: Shape[] = [
+            const counterclockwiseSquare: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -260,12 +304,12 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             );
             drawingStore.setDrawing(drawing, 'test.dxf');
 
-            const operation: Omit<Operation, 'id'> = {
+            const operation: Omit<OperationData, 'id'> = {
                 name: 'Test Counterclockwise Operation',
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                toolId: null,
+                toolId: 'test-tool',
                 enabled: true,
                 order: 1,
                 leadInConfig: {
@@ -287,11 +331,15 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             operationsStore.addOperation(operation);
 
+            // Get the added operation and apply it
+            const operations = get(operationsStore);
+            await operationsStore.applyOperation(operations[0].id);
+
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cutsState = get(cutStore);
-            const cut = cutsState.cuts[0];
+            const cuts = get(planStore).plan.cuts;
+            const cut = cuts[0];
 
             // After normalization, chains start from line1 and go counterclockwise
             // Normalized chain: line1 → line2 → line3 → line4
@@ -304,7 +352,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
         it('should create cutChain in reversed order when operation wants clockwise (natural = counterclockwise)', async () => {
             // Same counterclockwise square chain
             // Going: right → up → left → down (counterclockwise when Y+ is up)
-            const counterclockwiseSquare: Shape[] = [
+            const counterclockwiseSquare: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -337,12 +385,12 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             );
             drawingStore.setDrawing(drawing, 'test.dxf');
 
-            const operation: Omit<Operation, 'id'> = {
+            const operation: Omit<OperationData, 'id'> = {
                 name: 'Test Clockwise Operation',
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.CLOCKWISE,
-                toolId: null,
+                toolId: 'test-tool',
                 enabled: true,
                 order: 1,
                 leadInConfig: {
@@ -364,11 +412,15 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             operationsStore.addOperation(operation);
 
+            // Get the added operation and apply it
+            const operations = get(operationsStore);
+            await operationsStore.applyOperation(operations[0].id);
+
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cutsState = get(cutStore);
-            const cut = cutsState.cuts[0];
+            const cuts = get(planStore).plan.cuts;
+            const cut = cuts[0];
 
             // After normalization, the natural chain goes: line1 → line2 → line3 → line4 (counterclockwise)
             // When operation wants clockwise, it should be reversed: line4 → line3 → line2 → line1
@@ -382,7 +434,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
     describe('Circle Chains with Different Cut Directions', () => {
         it('should handle circle chains correctly for both cut directions', async () => {
             // Create a circle (circles have natural direction based on start/end angles)
-            const circle: Shape[] = [
+            const circle: ShapeData[] = [
                 {
                     id: 'circle1',
                     type: GeometryType.CIRCLE,
@@ -399,12 +451,12 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             drawingStore.setDrawing(drawing, 'test.dxf');
 
             // Test clockwise operation
-            const clockwiseOp: Omit<Operation, 'id'> = {
+            const clockwiseOp: Omit<OperationData, 'id'> = {
                 name: 'Clockwise Circle',
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.CLOCKWISE,
-                toolId: null,
+                toolId: 'test-tool',
                 enabled: true,
                 order: 1,
                 leadInConfig: {
@@ -426,24 +478,29 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             operationsStore.addOperation(clockwiseOp);
 
+            // Get the added operation and apply it
+            let operations = get(operationsStore);
+            await operationsStore.applyOperation(operations[0].id);
+
             // Wait for async cut generation
             await waitForCuts(1);
 
-            let cutsState = get(cutStore);
-            expect(cutsState.cuts).toHaveLength(1);
-            expect(cutsState.cuts[0].cutChain).toBeDefined();
-            expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+            const cuts = get(planStore).plan.cuts;
+            expect(cuts).toHaveLength(1);
+            expect(cuts[0].cutChain).toBeDefined();
+            expect(cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
 
             // Clear and test counterclockwise
             operationsStore.reset();
             cutStore.reset();
+            get(planStore).plan.cuts = [];
 
-            const counterclockwiseOp: Omit<Operation, 'id'> = {
+            const counterclockwiseOp: Omit<OperationData, 'id'> = {
                 name: 'Counterclockwise Circle',
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
-                toolId: null,
+                toolId: 'test-tool',
                 enabled: true,
                 order: 2,
                 leadInConfig: {
@@ -465,13 +522,17 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             operationsStore.addOperation(counterclockwiseOp);
 
+            // Get the added operation and apply it
+            operations = get(operationsStore);
+            await operationsStore.applyOperation(operations[0].id);
+
             // Wait for async cut generation
             await waitForCuts(1);
 
-            cutsState = get(cutStore);
-            expect(cutsState.cuts).toHaveLength(1);
-            expect(cutsState.cuts[0].cutChain).toBeDefined();
-            expect(cutsState.cuts[0].cutDirection).toBe(
+            const cutsSecond = get(planStore).plan.cuts;
+            expect(cutsSecond).toHaveLength(1);
+            expect(cutsSecond[0].cutChain).toBeDefined();
+            expect(cutsSecond[0].cutDirection).toBe(
                 CutDirection.COUNTERCLOCKWISE
             );
         });
@@ -480,7 +541,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
     describe('Open Chains', () => {
         it('should handle open chains by respecting operation cut direction', async () => {
             // Create an open line chain
-            const openLine: Shape[] = [
+            const openLine: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -493,12 +554,12 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             const { drawing, chainId } = createDrawingWithChain(openLine);
             drawingStore.setDrawing(drawing, 'test.dxf');
 
-            const operation: Omit<Operation, 'id'> = {
+            const operation: Omit<OperationData, 'id'> = {
                 name: 'Open Line Operation',
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.CLOCKWISE, // This should be applied to open chains
-                toolId: null,
+                toolId: 'test-tool',
                 enabled: true,
                 order: 1,
                 leadInConfig: {
@@ -520,11 +581,15 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             operationsStore.addOperation(operation);
 
+            // Get the added operation and apply it
+            const operations = get(operationsStore);
+            await operationsStore.applyOperation(operations[0].id);
+
             // Wait for async cut generation
             await waitForCuts(1);
 
-            const cutsState = get(cutStore);
-            const cut = cutsState.cuts[0];
+            const cuts = get(planStore).plan.cuts;
+            const cut = cuts[0];
 
             expect(cut.cutDirection).toBe(CutDirection.CLOCKWISE); // Should respect operation's cut direction
             expect(cut.cutChain!.shapes[0].id).toBe('line1'); // Should use original order

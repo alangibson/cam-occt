@@ -12,7 +12,8 @@ import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import { LayerId } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { Kerf } from '$lib/cam/kerf/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { Shape } from '$lib/geometry/shape/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
@@ -24,7 +25,7 @@ import {
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import { isCutEnabledForRendering } from '$lib/rendering/canvas/utils/renderer-utils';
 
 /**
@@ -213,8 +214,8 @@ export class KerfRenderer extends BaseRenderer {
     private renderLeadKerf(
         ctx: CanvasRenderingContext2D,
         state: RenderState,
-        innerShapes: Shape[],
-        outerShapes: Shape[],
+        innerShapes: ShapeData[],
+        outerShapes: ShapeData[],
         isSelected: boolean,
         isHighlighted: boolean
     ): void {
@@ -287,7 +288,7 @@ export class KerfRenderer extends BaseRenderer {
      */
     private buildChainPath(
         ctx: CanvasRenderingContext2D,
-        shapes: Shape[]
+        shapes: ShapeData[]
     ): void {
         if (shapes.length === 0) return;
 
@@ -347,9 +348,9 @@ export class KerfRenderer extends BaseRenderer {
         ctx: CanvasRenderingContext2D,
         state: RenderState
     ): void {
-        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+        if (!state.cuts || state.cuts.length === 0) return;
 
-        state.cutsState.cuts.forEach((cut: Cut) => {
+        state.cuts.forEach((cut: CutData) => {
             // Only draw cutter for enabled cuts with enabled operations
             if (!isCutEnabledForRendering(cut, state)) {
                 return;
@@ -363,7 +364,7 @@ export class KerfRenderer extends BaseRenderer {
 
             // Determine which shapes to render cutter on
             // Priority: offset shapes > cutChain shapes > original chain shapes
-            let shapesToDraw: Shape[] | null = null;
+            let shapesToDraw: ShapeData[] | null = null;
 
             if (
                 cut.offset?.offsetShapes &&
@@ -404,28 +405,6 @@ export class KerfRenderer extends BaseRenderer {
                         );
                     }
                 });
-
-                // Also draw gap fills if they exist (only for offset cuts)
-                if (cut.offset?.gapFills && cut.offset.gapFills.length > 0) {
-                    for (const gapFill of cut.offset.gapFills) {
-                        // Render filler shape if it exists
-                        if (gapFill.fillerShape) {
-                            try {
-                                drawShape(ctx, gapFill.fillerShape);
-                            } catch (error) {
-                                console.warn(
-                                    `Error rendering cutter path gap filler for cut ${cut.id}:`,
-                                    error
-                                );
-                            }
-                        }
-
-                        // Render modified shapes
-                        for (const modifiedShapeEntry of gapFill.modifiedShapes) {
-                            drawShape(ctx, modifiedShapeEntry.modified);
-                        }
-                    }
-                }
 
                 // Draw cutter over lead-in if it exists
                 if (cut.leadIn) {
@@ -528,7 +507,7 @@ export class KerfRenderer extends BaseRenderer {
                     if (
                         HitTestUtils.isPointNearShape(
                             point,
-                            shape,
+                            new Shape(shape),
                             hitTolerance
                         )
                     ) {
@@ -549,7 +528,7 @@ export class KerfRenderer extends BaseRenderer {
                     if (
                         HitTestUtils.isPointNearShape(
                             point,
-                            shape,
+                            new Shape(shape),
                             hitTolerance
                         )
                     ) {

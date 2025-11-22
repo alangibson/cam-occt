@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 
 /**
@@ -21,8 +22,8 @@ describe('Closed Chain Normal Direction Bug', () => {
     };
 
     // Helper to create a closed rectangular chain
-    function createClosedRectangleChain(clockwise?: boolean): Chain {
-        const shapes: Shape[] = [
+    function createClosedRectangleChain(clockwise?: boolean): ChainData {
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -69,7 +70,7 @@ describe('Closed Chain Normal Direction Bug', () => {
     }
 
     // Helper to simulate how offset chains are created (with missing clockwise property)
-    function createOffsetChain(originalChain: Chain): Chain {
+    function createOffsetChain(originalChain: ChainData): ChainData {
         return {
             id: originalChain.id + '_offset_temp',
             shapes: originalChain.shapes.map((shape) => ({
@@ -95,7 +96,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             const cutDirection = CutDirection.CLOCKWISE;
 
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 cutDirection,
@@ -104,7 +105,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             );
 
             const offsetResult = calculateLeads(
-                offsetChain,
+                new Chain(offsetChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 cutDirection,
@@ -172,7 +173,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             const originalChain = createClosedRectangleChain(false);
 
             // Create offset chain that preserves the clockwise property
-            const offsetChainFixed: Chain = {
+            const offsetChainFixed: ChainData = {
                 id: originalChain.id + '_offset_temp',
                 shapes: originalChain.shapes.map((shape) => ({
                     ...shape,
@@ -190,7 +191,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             const cutDirection = CutDirection.CLOCKWISE;
 
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 cutDirection,
@@ -199,7 +200,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             );
 
             const offsetResultFixed = calculateLeads(
-                offsetChainFixed,
+                new Chain(offsetChainFixed),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 cutDirection,
@@ -247,7 +248,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             const cutDirection = CutDirection.COUNTERCLOCKWISE;
 
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 cutDirection,
@@ -256,7 +257,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             );
 
             const offsetResult = calculateLeads(
-                offsetChain,
+                new Chain(offsetChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 cutDirection,
@@ -331,7 +332,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             );
 
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 cutDirection,
@@ -340,7 +341,7 @@ describe('Closed Chain Normal Direction Bug', () => {
             );
 
             const offsetResult = calculateLeads(
-                offsetChain,
+                new Chain(offsetChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 cutDirection,

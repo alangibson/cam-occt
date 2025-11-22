@@ -5,7 +5,7 @@ import { beforeAll, describe, it } from 'vitest';
 import { offsetChain } from '$lib/cam/offset/index';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import type { OffsetChain } from '$lib/cam/offset/types';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { generateChainOffsetSVG } from './visual-tests';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
@@ -24,7 +24,12 @@ describe('visual-tests', () => {
     });
 
     // Helper to create shapes
-    function createLine(x1: number, y1: number, x2: number, y2: number): Shape {
+    function createLine(
+        x1: number,
+        y1: number,
+        x2: number,
+        y2: number
+    ): ShapeData {
         return {
             id: `line-${Math.random()}`,
             type: GeometryType.LINE,
@@ -42,7 +47,7 @@ describe('visual-tests', () => {
         startAngle: number,
         endAngle: number,
         clockwise: boolean = false
-    ): Shape {
+    ): ShapeData {
         return {
             id: `arc-${Math.random()}`,
             type: GeometryType.ARC,
@@ -58,7 +63,7 @@ describe('visual-tests', () => {
 
     it('should generate visualization for simple closed rectangle chain', async () => {
         // Create a rectangle
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLine(0, 0, 100, 0), // bottom
             createLine(100, 0, 100, 50), // right
             createLine(100, 50, 0, 50), // top
@@ -91,7 +96,7 @@ describe('visual-tests', () => {
 
     it('should generate visualization for closed chain with mixed shapes', async () => {
         // Create a rounded rectangle
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLine(20, 0, 80, 0), // bottom
             createArc(80, 20, 20, -Math.PI / 2, 0), // bottom-right corner
             createLine(100, 20, 100, 80), // right
@@ -128,7 +133,7 @@ describe('visual-tests', () => {
 
     it('should generate visualization for open L-shaped chain', async () => {
         // Create an L-shaped chain
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLine(0, 0, 100, 0), // horizontal
             createLine(100, 0, 100, 80), // vertical
         ];
@@ -159,7 +164,7 @@ describe('visual-tests', () => {
 
     it('should generate visualization for open chain with curves', async () => {
         // Create an S-curve
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLine(0, 50, 30, 50), // start line
             createArc(50, 50, 20, Math.PI, 0), // first arc (curves up, counter-clockwise)
             createLine(70, 50, 100, 50), // middle line
@@ -196,7 +201,7 @@ describe('visual-tests', () => {
 
     it('should generate visualization for comprehensive mixed-shape chain', async () => {
         // Create a complex open chain with mixed shapes: line, arc, polyline, spline, ellipse arc
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLine(50, 350, 150, 350), // line
             createArc(150, 320, 30, Math.PI / 2, 0, true), // arc (clockwise)
             createPolylineFromVertices(
@@ -268,7 +273,7 @@ describe('visual-tests', () => {
 
     it('should generate visualization for closed mixed-shape chain', async () => {
         // Create a complex closed chain
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLine(100, 50, 200, 50), // bottom line
             createArc(200, 80, 30, -Math.PI / 2, 0), // bottom-right arc
             createLine(230, 80, 230, 150), // right line
@@ -335,7 +340,7 @@ describe('visual-tests', () => {
         // Create a complex closed chain with arc that curves in the opposite direction
         // Original arc: center (200,80), goes from (200,50) to (230,80) - curves inward (concave)
         // Flipped arc: center (230,50), goes from (200,50) to (230,80) - curves outward (convex)
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLine(100, 50, 200, 50), // bottom line
             {
                 // bottom-right arc (flipped sweep - curves outward)

@@ -1,29 +1,30 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { get } from 'svelte/store';
 import { operationsStore } from '$lib/stores/operations/store';
+import { planStore } from '$lib/stores/plan/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { chainStore } from '$lib/stores/chains/store';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 import { sampleShapes } from '$lib/geometry/shape/functions';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { OperationData } from '$lib/cam/operation/interface';
 
 // Helper to wait for async cut generation
 async function waitForCuts(expectedCount: number, timeout = 200) {
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const cutsState = get(cutStore);
-            if (cutsState.cuts.length === expectedCount) {
+            const cuts = get(planStore).plan.cuts;
+            if (cuts.length === expectedCount) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
                 reject(
                     new Error(
-                        `Expected ${expectedCount} cuts, got ${cutsState.cuts.length} after ${timeout}ms`
+                        `Expected ${expectedCount} cuts, got ${cuts.length} after ${timeout}ms`
                     )
                 );
             } else {
@@ -42,16 +43,13 @@ async function waitForCutWithDirection(
     return new Promise<void>((resolve, reject) => {
         const startTime = Date.now();
         const check = () => {
-            const cutsState = get(cutStore);
-            if (
-                cutsState.cuts.length > 0 &&
-                cutsState.cuts[0].cutDirection === expectedDirection
-            ) {
+            const cuts = get(planStore).plan.cuts;
+            if (cuts.length > 0 && cuts[0].cutDirection === expectedDirection) {
                 resolve();
             } else if (Date.now() - startTime > timeout) {
                 reject(
                     new Error(
-                        `Expected cut with direction ${expectedDirection}, got ${cutsState.cuts[0]?.cutDirection} after ${timeout}ms`
+                        `Expected cut with direction ${expectedDirection}, got ${cuts[0]?.cutDirection} after ${timeout}ms`
                     )
                 );
             } else {
@@ -72,7 +70,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
 
     it('should respect user Cut Direction in Program stage (rendering arrows)', async () => {
         // Create a clockwise square chain (natural winding = clockwise)
-        const clockwiseSquare: Shape[] = [
+        const clockwiseSquare: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -95,7 +93,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
             }, // up
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: clockwiseSquare,
         };
@@ -104,7 +102,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         chainStore.setChains([chain]);
 
         // Test 1: Create operation with COUNTERCLOCKWISE direction (opposite of natural)
-        const operation: Omit<Operation, 'id'> = {
+        const operation: Omit<OperationData, 'id'> = {
             name: 'Test Operation',
             targetType: 'chains',
             targetIds: ['test-chain'],
@@ -132,8 +130,8 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         operationsStore.addOperation(operation);
         await waitForCuts(1);
 
-        const cutsState = get(cutStore);
-        const cut = cutsState.cuts[0];
+        const cuts = get(planStore).plan.cuts;
+        const cut = cuts[0];
 
         // Verify: Cut should have user's desired cut direction
         expect(cut.cutDirection).toBe(CutDirection.COUNTERCLOCKWISE);
@@ -166,7 +164,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
 
     it('should respect user Cut Direction in Simulation stage', async () => {
         // Create a counterclockwise square chain (natural winding = counterclockwise)
-        const counterclockwiseSquare: Shape[] = [
+        const counterclockwiseSquare: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -189,7 +187,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
             }, // down
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: counterclockwiseSquare,
         };
@@ -198,7 +196,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         chainStore.setChains([chain]);
 
         // Create operation with CLOCKWISE direction (opposite of natural)
-        const operation: Omit<Operation, 'id'> = {
+        const operation: Omit<OperationData, 'id'> = {
             name: 'Test Operation',
             targetType: 'chains',
             targetIds: ['test-chain'],
@@ -226,8 +224,8 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         operationsStore.addOperation(operation);
         await waitForCuts(1);
 
-        const cutsState = get(cutStore);
-        const cut = cutsState.cuts[0];
+        const cuts = get(planStore).plan.cuts;
+        const cut = cuts[0];
 
         // Verify: Cut should have user's desired cut direction
         expect(cut.cutDirection).toBe(CutDirection.CLOCKWISE);
@@ -248,7 +246,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
 
     it('should handle direction changes dynamically', async () => {
         // Create a clockwise square chain
-        const clockwiseSquare: Shape[] = [
+        const clockwiseSquare: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -271,7 +269,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
             },
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'test-chain',
             shapes: clockwiseSquare,
         };
@@ -279,7 +277,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         // @ts-expect-error - setChains no longer exists, test needs refactoring
         chainStore.setChains([chain]);
 
-        const operation: Omit<Operation, 'id'> = {
+        const operation: Omit<OperationData, 'id'> = {
             name: 'Test Operation',
             targetType: 'chains',
             targetIds: ['test-chain'],
@@ -311,9 +309,9 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         const operationId = operations[0].id;
 
         // Initial state: clockwise (natural = clockwise, desired = clockwise → original order)
-        let cutsState = get(cutStore);
-        expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
+        let cuts = get(planStore).plan.cuts;
+        expect(cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+        expect(cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Original order
 
         // Change to counterclockwise: should reverse the cutChain
         operationsStore.updateOperation(operationId, {
@@ -321,11 +319,9 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         });
         await waitForCutWithDirection(CutDirection.COUNTERCLOCKWISE);
 
-        cutsState = get(cutStore);
-        expect(cutsState.cuts[0].cutDirection).toBe(
-            CutDirection.COUNTERCLOCKWISE
-        );
-        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
+        cuts = get(planStore).plan.cuts;
+        expect(cuts[0].cutDirection).toBe(CutDirection.COUNTERCLOCKWISE);
+        expect(cuts[0].cutChain!.shapes[0].id).toBe('line4'); // Reversed order
 
         // Change back to clockwise: should restore original order
         operationsStore.updateOperation(operationId, {
@@ -333,8 +329,8 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         });
         await waitForCutWithDirection(CutDirection.CLOCKWISE);
 
-        cutsState = get(cutStore);
-        expect(cutsState.cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
-        expect(cutsState.cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
+        cuts = get(planStore).plan.cuts;
+        expect(cuts[0].cutDirection).toBe(CutDirection.CLOCKWISE);
+        expect(cuts[0].cutChain!.shapes[0].id).toBe('line1'); // Back to original order
     });
 });

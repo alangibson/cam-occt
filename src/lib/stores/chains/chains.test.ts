@@ -1,12 +1,12 @@
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { get } from 'svelte/store';
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { chainStore } from './store';
 import { getChainById, getChainShapeIds, getShapeChainId } from './functions';
 
 describe('Chain Store', () => {
-    const mockChains: Chain[] = [
+    const mockChains: ChainData[] = [
         {
             id: 'chain-1',
             shapes: [

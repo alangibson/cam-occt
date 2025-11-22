@@ -8,7 +8,7 @@ import {
     polylineToVertices,
 } from '$lib/geometry/polyline/functions';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
 
@@ -16,7 +16,7 @@ describe('Polyline Dragging Bug Fixes', () => {
     describe('moveShape function', () => {
         it('should move polylines with bulges correctly', () => {
             // Create a polyline with bulge data (similar to ADLER.dxf)
-            const polylineShape: Shape = createPolylineFromVertices(
+            const polylineShape: ShapeData = createPolylineFromVertices(
                 [
                     { x: 0, y: 0, bulge: 0.5 }, // Arc segment
                     { x: 100, y: 0, bulge: 0 }, // Straight segment
@@ -35,8 +35,8 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing(
                 new Drawing({
                     shapes: [polylineShape],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 }),
                 'test.dxf'
             );
@@ -83,7 +83,7 @@ describe('Polyline Dragging Bug Fixes', () => {
 
         it('should handle polylines without vertices array', () => {
             // Create a simple polyline without bulge data
-            const simplePolyline: Shape = createPolylineFromVertices(
+            const simplePolyline: ShapeData = createPolylineFromVertices(
                 [
                     { x: 0, y: 0 },
                     { x: 50, y: 50 },
@@ -100,8 +100,8 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing(
                 new Drawing({
                     shapes: [simplePolyline],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 50, y: 50 } },
                     units: Unit.MM,
+                    fileName: '',
                 }),
                 'test.dxf'
             );
@@ -137,7 +137,7 @@ describe('Polyline Dragging Bug Fixes', () => {
 
     describe('Scale and rotate operations', () => {
         it('should scale polylines with bulges correctly', () => {
-            const polylineShape: Shape = createPolylineFromVertices(
+            const polylineShape: ShapeData = createPolylineFromVertices(
                 [
                     { x: 0, y: 0, bulge: 1.0 }, // Semicircle
                     { x: 100, y: 0, bulge: 0 },
@@ -155,8 +155,8 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing(
                 new Drawing({
                     shapes: [polylineShape],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 0 } },
                     units: Unit.MM,
+                    fileName: '',
                 }),
                 'test.dxf'
             );
@@ -193,7 +193,7 @@ describe('Polyline Dragging Bug Fixes', () => {
         });
 
         it('should rotate polylines with bulges correctly', () => {
-            const polylineShape: Shape = createPolylineFromVertices(
+            const polylineShape: ShapeData = createPolylineFromVertices(
                 [
                     { x: 100, y: 0, bulge: 0.5 },
                     { x: 200, y: 0, bulge: 0 },
@@ -211,8 +211,8 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing(
                 new Drawing({
                     shapes: [polylineShape],
-                    bounds: { min: { x: 100, y: 0 }, max: { x: 200, y: 0 } },
                     units: Unit.MM,
+                    fileName: '',
                 }),
                 'test.dxf'
             );
@@ -251,7 +251,7 @@ describe('Polyline Dragging Bug Fixes', () => {
     describe('Integration test', () => {
         it('should handle complete move/scale/rotate workflow for ADLER.dxf-like polylines', () => {
             // Simulate a complex polyline similar to what might be found in ADLER.dxf
-            const complexPolyline: Shape = createPolylineFromVertices(
+            const complexPolyline: ShapeData = createPolylineFromVertices(
                 [
                     { x: 0, y: 0, bulge: 0.2 }, // Slight arc
                     { x: 50, y: 0, bulge: -0.5 }, // CW arc
@@ -269,8 +269,8 @@ describe('Polyline Dragging Bug Fixes', () => {
             drawingStore.setDrawing(
                 new Drawing({
                     shapes: [complexPolyline],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 }),
                 'test.dxf'
             );

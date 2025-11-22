@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { workflowStore } from '$lib/stores/workflow/store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
+import { planStore } from '$lib/stores/plan/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { rapidStore } from '$lib/stores/rapids/store';
 import { chainStore } from '$lib/stores/chains/store';
@@ -9,6 +10,7 @@ import { operationsStore } from '$lib/stores/operations/store';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { uiStore } from '$lib/stores/ui/store';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 
 // Mock settings store to return all stages enabled (for testing workflow logic)
 vi.mock('$lib/stores/settings/store', () => ({
@@ -97,29 +99,22 @@ describe('SimulateStage store subscription cleanup', () => {
         workflowStore.completeStage(WorkflowStage.PROGRAM);
 
         // Add test data
-        cutStore.addCut({
-            id: 'test-cut-1',
-            name: 'Test Cut',
-            operationId: 'test-op',
-            chainId: 'test-chain',
-            toolId: 'test-tool',
-            enabled: true,
-            order: 1,
-            feedRate: 1000,
-            cutDirection: CutDirection.COUNTERCLOCKWISE,
-            normal: { x: 1, y: 0 },
-            normalConnectionPoint: { x: 0, y: 0 },
-            normalSide: NormalSide.LEFT,
-        });
-
-        rapidStore.setRapids([
-            {
-                id: 'test-rapid',
-                start: { x: 0, y: 0 },
-                end: { x: 10, y: 10 },
-                type: 'rapid',
-            },
-        ]);
+        get(planStore).plan.cuts.push(
+            new Cut({
+                id: 'test-cut-1',
+                name: 'Test Cut',
+                operationId: 'test-op',
+                chainId: 'test-chain',
+                toolId: 'test-tool',
+                enabled: true,
+                order: 1,
+                feedRate: 1000,
+                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
+            })
+        );
 
         // Navigate to simulate
         workflowStore.setStage(WorkflowStage.SIMULATE);

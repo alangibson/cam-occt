@@ -10,7 +10,8 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { convertLeadGeometryToPoints } from './functions';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
@@ -18,7 +19,7 @@ import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Lead Fit Feature', () => {
     // Create a simple test chain (square)
-    const testChain: Chain = {
+    const testChain: ChainData = {
         id: 'test-chain-1',
         shapes: [
             {
@@ -81,7 +82,7 @@ describe('Lead Fit Feature', () => {
         };
 
         const result = calculateLeads(
-            testChain,
+            new Chain(testChain),
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
@@ -117,7 +118,7 @@ describe('Lead Fit Feature', () => {
         };
 
         const result = calculateLeads(
-            testChain,
+            new Chain(testChain),
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
@@ -152,7 +153,7 @@ describe('Lead Fit Feature', () => {
         };
 
         const result = calculateLeads(
-            testChain,
+            new Chain(testChain),
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,
@@ -179,7 +180,7 @@ describe('Lead Fit Feature', () => {
         };
 
         const result = calculateLeads(
-            testChain,
+            new Chain(testChain),
             leadInConfig,
             LeadConfig,
             CutDirection.COUNTERCLOCKWISE,

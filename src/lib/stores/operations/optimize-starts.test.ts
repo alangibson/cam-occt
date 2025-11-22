@@ -1,19 +1,33 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-generation';
-import type { Operation } from '$lib/cam/operation/interface';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { OperationData } from '$lib/cam/operation/interface';
+import { Operation } from '$lib/cam/operation/classes.svelte';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { Part } from '$lib/cam/part/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { KerfCompensation } from '$lib/cam/operation/enums';
+
+// Helper function to create Operation with resolved references
+function createOperation(
+    data: OperationData,
+    tool: Tool | null,
+    targets: (ChainData | Part)[]
+): Operation {
+    const operation = new Operation(data);
+    operation.setTool(tool);
+    operation.setTargets(targets);
+    return operation;
+}
 
 describe('Optimize Starts for Operations', () => {
     let mockTool: Tool;
-    let squareChain: Chain;
-    let operation: Operation;
+    let squareChain: ChainData;
+    let operation: OperationData;
 
     beforeEach(() => {
         // Create a tool
@@ -40,7 +54,7 @@ describe('Optimize Starts for Operations', () => {
         // Right: (10,0) -> (10,10)
         // Top: (10,10) -> (0,10)
         // Left: (0,10) -> (0,0)
-        const bottomLine: Shape = {
+        const bottomLine: ShapeData = {
             id: 'line-bottom',
             type: GeometryType.LINE,
             geometry: {
@@ -49,7 +63,7 @@ describe('Optimize Starts for Operations', () => {
             } as Line,
         };
 
-        const rightLine: Shape = {
+        const rightLine: ShapeData = {
             id: 'line-right',
             type: GeometryType.LINE,
             geometry: {
@@ -58,7 +72,7 @@ describe('Optimize Starts for Operations', () => {
             } as Line,
         };
 
-        const topLine: Shape = {
+        const topLine: ShapeData = {
             id: 'line-top',
             type: GeometryType.LINE,
             geometry: {
@@ -67,7 +81,7 @@ describe('Optimize Starts for Operations', () => {
             } as Line,
         };
 
-        const leftLine: Shape = {
+        const leftLine: ShapeData = {
             id: 'line-left',
             type: GeometryType.LINE,
             geometry: {
@@ -113,13 +127,8 @@ describe('Optimize Starts for Operations', () => {
 
     it('should split the first line and start at its midpoint when Optimize Starts is set to Midpoint', async () => {
         // Generate cuts from the operation
-        const result = await createCutsFromOperation(
-            operation,
-            [squareChain],
-            [], // no parts
-            [mockTool],
-            0.01 // tolerance
-        );
+        const op = createOperation(operation, mockTool, [squareChain]);
+        const result = await createCutsFromOperation(op, 0.01);
 
         // Should generate one cut
         expect(result.cuts).toHaveLength(1);
@@ -165,13 +174,8 @@ describe('Optimize Starts for Operations', () => {
         operation.optimizeStarts = OptimizeStarts.NONE;
 
         // Generate cuts from the operation
-        const result = await createCutsFromOperation(
-            operation,
-            [squareChain],
-            [], // no parts
-            [mockTool],
-            0.01 // tolerance
-        );
+        const op = createOperation(operation, mockTool, [squareChain]);
+        const result = await createCutsFromOperation(op, 0.01);
 
         // Should generate one cut
         expect(result.cuts).toHaveLength(1);

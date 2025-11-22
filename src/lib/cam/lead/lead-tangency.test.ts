@@ -3,11 +3,12 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
@@ -16,7 +17,7 @@ import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 describe('Lead Tangency Tests', () => {
     // Helper to get cut normal for a chain
     function getCutNormal(
-        chain: Chain,
+        chain: ChainData,
         cutDirection: CutDirection,
         part?: PartData
     ): Point2D {
@@ -29,35 +30,36 @@ describe('Lead Tangency Tests', () => {
         start: { x: number; y: number },
         end: { x: number; y: number }
     ): Chain {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'shape1',
             type: GeometryType.LINE,
             geometry: { start, end },
             layer: 'layer1',
         };
 
-        return {
+        return new Chain({
             id: 'chain1',
             shapes: [shape],
-        };
+        });
     }
 
     // Helper to create a circle chain
     function createCircleChain(
         center: { x: number; y: number },
-        radius: number
+        radius: number,
+        id: string = 'chain1'
     ): Chain {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'shape1',
             type: GeometryType.CIRCLE,
             geometry: { center, radius },
             layer: 'layer1',
         };
 
-        return {
-            id: 'chain1',
+        return new Chain({
+            id,
             shapes: [shape],
-        };
+        });
     }
 
     // Helper to calculate angle between two vectors
@@ -285,10 +287,16 @@ describe('Lead Tangency Tests', () => {
 
         it('should create properly curved lead for shell vs hole', () => {
             // Test that shell leads curve outward and hole leads curve inward
-            const shellChain = createCircleChain({ x: 5, y: 5 }, 3);
-            shellChain.id = 'shell-chain'; // Fix: Give unique ID
-            const holeChain = createCircleChain({ x: 5, y: 5 }, 1);
-            holeChain.id = 'hole-chain'; // Fix: Give unique ID
+            const shellChain = createCircleChain(
+                { x: 5, y: 5 },
+                3,
+                'shell-chain'
+            );
+            const holeChain = createCircleChain(
+                { x: 5, y: 5 },
+                1,
+                'hole-chain'
+            );
 
             const shellPart: PartData = {
                 id: 'part1',

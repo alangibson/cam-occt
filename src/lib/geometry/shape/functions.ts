@@ -1,4 +1,5 @@
-import type { GetShapePointsOptions, Shape } from './interfaces';
+import type { GetShapePointsOptions, ShapeData } from './interfaces';
+import { Shape } from './classes';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -82,6 +83,14 @@ import { generateId } from '$lib/domain/id';
 import { SCALING_AVERAGE_DIVISOR } from '$lib/parsers/dxf/constants';
 import { HIGH_RESOLUTION_CIRCLE_SEGMENTS } from './constants';
 
+/** Input type that accepts both Shape class instances and ShapeData */
+type ShapeInput = Shape | ShapeData;
+
+/** Convert ShapeInput to ShapeData */
+function toShapeData(shape: ShapeInput): ShapeData {
+    return shape instanceof Shape ? shape.toData() : shape;
+}
+
 /**
  * TODO get rid of this giant function. Break it down by use case.
  *
@@ -93,9 +102,10 @@ import { HIGH_RESOLUTION_CIRCLE_SEGMENTS } from './constants';
  * to optimize point generation for specific use cases.
  */
 export function getShapePoints(
-    shape: Shape,
+    shapeInput: ShapeInput,
     optionsOrForNativeShapes: GetShapePointsOptions | boolean = {}
 ): Point2D[] {
+    const shape = toShapeData(shapeInput);
     // Handle backward compatibility: if boolean is passed, convert to options
     const options: GetShapePointsOptions =
         typeof optionsOrForNativeShapes === 'boolean'
@@ -444,9 +454,10 @@ export function getShapePoints(
  * Based on MetalHeadCAM reference implementation
  */
 export function tessellateShape(
-    shape: Shape,
+    shapeInput: ShapeInput,
     params: PartDetectionParameters
 ): Point2D[] {
+    const shape = toShapeData(shapeInput);
     const points: Point2D[] = [];
 
     switch (shape.type) {
@@ -511,7 +522,8 @@ export function tessellateShape(
 /**
  * Get the starting point of a shape
  */
-export function getShapeStartPoint(shape: Shape): Point2D {
+export function getShapeStartPoint(shapeInput: ShapeInput): Point2D {
+    const shape = toShapeData(shapeInput);
     switch (shape.type) {
         case 'line':
             return getLineStartPoint(shape.geometry as Line);
@@ -533,7 +545,8 @@ export function getShapeStartPoint(shape: Shape): Point2D {
 /**
  * Get the ending point of a shape
  */
-export function getShapeEndPoint(shape: Shape): Point2D {
+export function getShapeEndPoint(shapeInput: ShapeInput): Point2D {
+    const shape = toShapeData(shapeInput);
     switch (shape.type) {
         case 'line':
             return getLineEndPoint(shape.geometry as Line);
@@ -555,8 +568,9 @@ export function getShapeEndPoint(shape: Shape): Point2D {
 /**
  * Reverses a shape (swaps start and end points)
  */
-export function reverseShape(shape: Shape): Shape {
-    const reversed: Shape = { ...shape };
+export function reverseShape(shapeInput: ShapeInput): ShapeData {
+    const shape = toShapeData(shapeInput);
+    const reversed: ShapeData = { ...shape };
     switch (shape.type) {
         case 'line':
             reversed.geometry = reverseLine(shape.geometry as Line);
@@ -582,7 +596,8 @@ export function reverseShape(shape: Shape): Shape {
 /**
  * Get a point on a shape at parameter t (0-1)
  */
-export function getShapePointAt(shape: Shape, t: number): Point2D {
+export function getShapePointAt(shapeInput: ShapeInput, t: number): Point2D {
+    const shape = toShapeData(shapeInput);
     switch (shape.type) {
         case 'line':
             return getLinePointAt(shape.geometry as Line, t);
@@ -604,7 +619,8 @@ export function getShapePointAt(shape: Shape, t: number): Point2D {
 /**
  * Calculate the total length of a shape
  */
-export function getShapeLength(shape: Shape): number {
+export function getShapeLength(shapeInput: ShapeInput): number {
+    const shape = toShapeData(shapeInput);
     switch (shape.type) {
         case 'line':
             const line = shape.geometry as Line;
@@ -686,7 +702,7 @@ export function getShapeLength(shape: Shape): number {
  * @returns Array of sampled points with their direction vectors at each sample location
  */
 export function sampleShapes(
-    shapes: Shape[],
+    shapes: ShapeInput[],
     intervalDistance: number // in drawing units
 ): { point: Point2D; direction: Point2D }[] {
     if (shapes.length === 0 || intervalDistance <= 0) return [];
@@ -737,11 +753,12 @@ export function sampleShapes(
 /**
  * Gets the normal vector at a point on a shape
  *
- * @param shape - Shape to get normal from
+ * @param shapeInput - Shape to get normal from
  * @param t - Parameter value (0-1) where to get the normal
  * @returns Normalized normal vector pointing outward/rightward
  */
-export function getShapeNormal(shape: Shape, t: number): Point2D {
+export function getShapeNormal(shapeInput: ShapeInput, t: number): Point2D {
+    const shape = toShapeData(shapeInput);
     // Get two nearby points to calculate tangent
     const delta: number = 0.001;
     const t1: number = Math.max(0, t - delta);
@@ -771,23 +788,24 @@ export function getShapeNormal(shape: Shape, t: number): Point2D {
 /**
  * Gets the midpoint of a shape at a given parameter
  *
- * @param shape - Shape to get midpoint from
+ * @param shapeInput - Shape to get midpoint from
  * @param t - Parameter value (0-1), defaults to 0.5
  * @returns Point at the given parameter
  */
 export function getShapeMidpoint(
-    shape: Shape,
+    shapeInput: ShapeInput,
     t: number = MIDPOINT_T
 ): Point2D {
-    return getShapePointAt(shape, t);
+    return getShapePointAt(shapeInput, t);
 }
 
 export function scaleShape(
-    shape: Shape,
+    shapeInput: ShapeInput,
     scaleFactor: number,
     origin: Point2D
-): Shape {
-    const scaled: Shape = { ...shape };
+): ShapeData {
+    const shape = toShapeData(shapeInput);
+    const scaled: ShapeData = { ...shape };
 
     const scalePoint: (p: Point2D) => Point2D = (p: Point2D): Point2D => ({
         x: origin.x + (p.x - origin.x) * scaleFactor,
@@ -877,11 +895,11 @@ export function scaleShape(
 }
 
 export function rotateShape(
-    shape: Shape,
+    shape: ShapeData,
     angle: number,
     origin: Point2D
-): Shape {
-    const rotated: Shape = { ...shape };
+): ShapeData {
+    const rotated: ShapeData = { ...shape };
 
     const rotatePoint: (p: Point2D) => Point2D = (p: Point2D): Point2D => {
         const cos: number = Math.cos(angle);
@@ -989,8 +1007,8 @@ export function rotateShape(
     return rotated;
 }
 
-export function moveShape(shape: Shape, delta: Point2D): Shape {
-    const moved: Shape = { ...shape };
+export function moveShape(shape: ShapeData, delta: Point2D): ShapeData {
+    const moved: ShapeData = { ...shape };
 
     switch (shape.type) {
         case 'line':
@@ -1076,8 +1094,8 @@ export function moveShape(shape: Shape, delta: Point2D): Shape {
  * @returns True if inner shape is contained within outer shape
  */
 export function isShapeContainedInShape(
-    inner: Shape,
-    outer: Shape,
+    inner: ShapeData,
+    outer: ShapeData,
     tolerance: number = CHAIN_CLOSURE_TOLERANCE,
     params: PartDetectionParameters = DEFAULT_PART_DETECTION_PARAMETERS
 ): boolean {
@@ -1194,7 +1212,7 @@ export function isShapeContainedInShape(
 /**
  * Checks if a single shape forms a closed loop
  */
-export function isShapeClosed(shape: Shape, tolerance: number): boolean {
+export function isShapeClosed(shape: ShapeData, tolerance: number): boolean {
     switch (shape.type) {
         case GeometryType.CIRCLE:
             // Circles are always closed
@@ -1291,7 +1309,9 @@ export function isShapeClosed(shape: Shape, tolerance: number): boolean {
  * Split a shape at its midpoint, creating two shapes
  * Extracted from optimize-start-points.ts to eliminate duplication
  */
-export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
+export function splitShapeAtMidpoint(
+    shape: ShapeData
+): [ShapeData, ShapeData] | null {
     if (shape.type === GeometryType.LINE) {
         return splitLineAtMidpoint(shape);
     } else if (shape.type === GeometryType.ARC) {
@@ -1302,7 +1322,7 @@ export function splitShapeAtMidpoint(shape: Shape): [Shape, Shape] | null {
 }
 
 export function transformShape(
-    shape: Shape,
+    shape: ShapeData,
     transform: {
         insertX: number;
         insertY: number;
@@ -1312,7 +1332,7 @@ export function transformShape(
         blockBaseX: number;
         blockBaseY: number;
     }
-): Shape | null {
+): ShapeData | null {
     const {
         insertX,
         insertY,
@@ -1322,7 +1342,7 @@ export function transformShape(
         blockBaseX,
         blockBaseY,
     } = transform;
-    const clonedShape: Shape = JSON.parse(JSON.stringify(shape));
+    const clonedShape: ShapeData = JSON.parse(JSON.stringify(shape));
 
     const transformPoint: (p: Point2D) => Point2D = (p: Point2D): Point2D => {
         // Step 1: Translate by negative block base point (block origin)
@@ -1439,7 +1459,7 @@ export function transformShape(
 }
 
 // Helper function to get the origin point of a shape
-export function getShapeOrigin(shape: Shape): Point2D | null {
+export function getShapeOrigin(shape: ShapeData): Point2D | null {
     switch (shape.type) {
         case 'line':
             const line: Line = shape.geometry as Line;

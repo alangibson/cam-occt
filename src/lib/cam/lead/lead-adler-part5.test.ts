@@ -4,6 +4,7 @@ import { join } from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
@@ -12,7 +13,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('ADLER.dxf Part 5 Lead Fix', () => {
@@ -48,7 +49,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
 
     // Helper to get polygon points from a chain
     function getPolygonFromChain(chain: {
-        shapes: Shape[];
+        shapes: ShapeData[];
     }): { x: number; y: number }[] {
         const points: { x: number; y: number }[] = [];
 
@@ -99,7 +100,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
 
         const cutNormal: Point2D = { x: 1, y: 0 };
         const result = calculateLeads(
-            part5.shell,
+            new Chain(part5.shell),
             leadIn,
             leadOut,
             CutDirection.NONE,
@@ -173,7 +174,7 @@ describe('ADLER.dxf Part 5 Lead Fix', () => {
             const leadIn: LeadConfig = { type: LeadType.ARC, length };
             const cutNormal: Point2D = { x: 1, y: 0 };
             const result = calculateLeads(
-                part5.shell,
+                new Chain(part5.shell),
                 leadIn,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.NONE,

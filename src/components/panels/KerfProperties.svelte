@@ -1,6 +1,6 @@
 <script lang="ts">
     import { kerfStore } from '$lib/stores/kerfs/store';
-    import { cutStore } from '$lib/stores/cuts/store';
+    import { planStore } from '$lib/stores/plan/store';
 
     // Reactive kerf data
     $: kerfs = $kerfStore.kerfs;
@@ -10,7 +10,7 @@
         : null;
 
     // Get the associated cut for reference
-    $: cuts = $cutStore.cuts;
+    $: cuts = $planStore.plan.cuts;
     $: associatedCut =
         selectedKerf && cuts && cuts.length > 0
             ? cuts.find((cut) => cut.id === selectedKerf.cutId)

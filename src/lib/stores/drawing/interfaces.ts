@@ -5,7 +5,7 @@
  */
 
 import type { Drawing } from '$lib/cam/drawing/classes.svelte';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
 
@@ -13,7 +13,7 @@ export interface DrawingState {
     drawing: Drawing | null;
     selectedShapes: Set<string>;
     hoveredShape: string | null;
-    selectedOffsetShape: Shape | null;
+    selectedOffsetShape: ShapeData | null;
     isDragging: boolean;
     dragStart: Point2D | null;
     scale: number;
@@ -26,7 +26,7 @@ export interface DrawingState {
 export interface DrawingStore {
     subscribe: (run: (value: DrawingState) => void) => () => void;
     setDrawing: (drawing: Drawing, fileName: string) => void;
-    selectShape: (shapeIdOrShape: string | Shape, multi?: boolean) => void;
+    selectShape: (shapeIdOrShape: string | ShapeData, multi?: boolean) => void;
     deselectShape: (shapeId: string) => void;
     clearSelection: () => void;
     deleteSelected: () => void;
@@ -43,7 +43,7 @@ export interface DrawingStore {
     setLayerVisibility: (layerName: string, visible: boolean) => void;
     setHoveredShape: (shapeId: string | null) => void;
     setDisplayUnit: (unit: Unit) => void;
-    replaceAllShapes: (shapes: Shape[]) => void;
+    replaceAllShapes: (shapes: ShapeData[]) => void;
     restoreDrawing: (
         drawing: Drawing,
         fileName: string,
@@ -53,7 +53,7 @@ export interface DrawingStore {
         selectedShapes: Set<string>,
         hoveredShape: string | null
     ) => void;
-    selectOffsetShape: (shape: Shape | null) => void;
+    selectOffsetShape: (shape: ShapeData | null) => void;
     clearOffsetShapeSelection: () => void;
     reset: () => void;
 }

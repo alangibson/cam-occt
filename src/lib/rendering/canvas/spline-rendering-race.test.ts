@@ -10,6 +10,7 @@ import { drawingStore } from '$lib/stores/drawing/store';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
+import { planStore } from '$lib/stores/plan/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { operationsStore } from '$lib/stores/operations/store';
 import { toolStore } from '$lib/stores/tools/store';
@@ -17,7 +18,7 @@ import { kerfStore } from '$lib/stores/kerfs/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/cam/operation/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -120,8 +121,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Get the generated cuts
-        const cutsState = get(cutStore);
-        const generatedCuts = cutsState.cuts;
+        const generatedCuts = get(planStore).plan.cuts;
 
         expect(generatedCuts.length).toBeGreaterThan(0);
 
@@ -148,7 +148,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         }
 
         // Check that offset shapes were created (polyline offsetter converts all to line segments)
-        const allOffsetShapes: Shape[] = generatedCuts
+        const allOffsetShapes: ShapeData[] = generatedCuts
             .filter((cut) => cut.offset?.offsetShapes)
             .flatMap((cut) => cut.offset!.offsetShapes);
 
@@ -240,9 +240,8 @@ describe.skip('Spline Rendering Race Condition', () => {
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Capture first operation's cuts and offset shapes
-        const firstCutsState = get(cutStore);
-        const firstCuts = [...firstCutsState.cuts];
-        const firstOffsetShapes: Map<string, Shape[]> = new Map();
+        const firstCuts = [...get(planStore).plan.cuts];
+        const firstOffsetShapes: Map<string, ShapeData[]> = new Map();
 
         for (const cut of firstCuts) {
             if (cut.offset?.offsetShapes) {
@@ -282,8 +281,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         await new Promise((resolve) => setTimeout(resolve, 300));
 
         // Get updated cuts
-        const secondCutsState = get(cutStore);
-        const allCuts = secondCutsState.cuts;
+        const allCuts = get(planStore).plan.cuts;
 
         console.log(`After second operation: ${allCuts.length} total cuts`);
 
@@ -446,11 +444,11 @@ describe.skip('Spline Rendering Race Condition', () => {
         await new Promise((resolve) => setTimeout(resolve, 500));
 
         // Get all cuts
-        const cutsState = get(cutStore);
-        const allCuts = cutsState.cuts;
+        const allCuts = get(planStore).plan.cuts;
 
         // Collect all offset shapes from all cuts
-        const allOffsetShapes: Array<{ cutName: string; shape: Shape }> = [];
+        const allOffsetShapes: Array<{ cutName: string; shape: ShapeData }> =
+            [];
 
         for (const cut of allCuts) {
             if (cut.offset?.offsetShapes) {

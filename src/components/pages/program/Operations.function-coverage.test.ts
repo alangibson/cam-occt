@@ -12,7 +12,7 @@ import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 // Mock DragEvent for jsdom
@@ -30,7 +30,7 @@ global.DragEvent = class DragEvent extends Event {
 
 // Helper to create mock PartShell
 function _createMockPartShell(id: string): PartData {
-    const mockChain: Chain = {
+    const mockChain: ChainData = {
         id: `chain-${id}`,
         shapes: [],
     };

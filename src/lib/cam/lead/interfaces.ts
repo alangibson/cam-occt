@@ -1,4 +1,3 @@
-import type { CutDirection } from '$lib/cam/cut/enums';
 import type { LeadType } from './enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { LeadGeometryType } from './types';
@@ -23,24 +22,9 @@ export interface LeadResult {
     leadIn?: Lead;
     leadOut?: Lead;
     warnings?: string[];
-    validation?: LeadValidationResult;
 }
 
 export interface CacheableLead extends Lead {
     generatedAt: string; // ISO timestamp
     version: string; // Algorithm version for invalidation
-}
-
-export interface LeadValidationResult {
-    isValid: boolean;
-    warnings: string[];
-    suggestions?: string[];
-    severity: 'info' | 'warning' | 'error';
-    validatedAt?: string; // ISO timestamp
-}
-
-export interface LeadsConfig {
-    leadIn: LeadConfig;
-    leadOut: LeadConfig;
-    cutDirection: CutDirection;
 }

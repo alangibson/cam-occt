@@ -2,10 +2,9 @@
  * Interfaces for offset calculation pipeline
  */
 
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { GapFillingResult } from '$lib/cam/cut/types';
+import type { Shape } from '$lib/geometry/shape/classes';
 import type { OffsetDirection } from '$lib/cam/offset/types';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { Cut } from '$lib/cam/cut/classes.svelte';
 
 /**
  * Result from chain offset calculation
@@ -14,7 +13,6 @@ export interface ChainOffsetResult {
     offsetShapes: Shape[];
     originalShapes: Shape[];
     kerfWidth: number;
-    gapFills?: GapFillingResult[];
     warnings: string[];
 }
 
@@ -25,7 +23,6 @@ export interface OffsetCalculation {
     kerfWidth: number;
     generatedAt: string;
     version: string;
-    gapFills?: GapFillingResult[];
 }
 
 export interface CutGenerationResult {

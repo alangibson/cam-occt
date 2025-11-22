@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest';
 import { offsetChain } from './index';
 import { getClipper2 } from './clipper-init';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -14,7 +14,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 /**
  * Helper to extract all points from a chain's shapes
  */
-function getAllPoints(chain: Chain): Point2D[] {
+function getAllPoints(chain: ChainData): Point2D[] {
     const points: Point2D[] = [];
     for (const shape of chain.shapes) {
         if (shape.type === GeometryType.LINE) {
@@ -62,7 +62,7 @@ describe('Clipper2 Offset System', () => {
 
     describe('offsetChain - Closed Chains', () => {
         it('offsets closed square chain', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-square',
                 shapes: [
                     {
@@ -119,7 +119,7 @@ describe('Clipper2 Offset System', () => {
         });
 
         it('offsets closed chain with arc', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-arc-chain',
                 shapes: [
                     {
@@ -156,7 +156,7 @@ describe('Clipper2 Offset System', () => {
 
     describe('offsetChain - Open Chains', () => {
         it('offsets open line chain', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-line',
                 shapes: [
                     {
@@ -182,7 +182,7 @@ describe('Clipper2 Offset System', () => {
         });
 
         it('offsets multi-segment open chain', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-polyline',
                 shapes: [
                     {
@@ -222,7 +222,7 @@ describe('Clipper2 Offset System', () => {
 
     describe('offsetChain - Edge Cases', () => {
         it('handles zero distance', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-zero',
                 shapes: [
                     {
@@ -243,7 +243,7 @@ describe('Clipper2 Offset System', () => {
         });
 
         it('handles small offset distance', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-small',
                 shapes: [
                     {
@@ -265,7 +265,7 @@ describe('Clipper2 Offset System', () => {
         });
 
         it('handles large offset distance', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-large',
                 shapes: [
                     {
@@ -299,7 +299,7 @@ describe('Clipper2 Offset System', () => {
                 clockwise: false,
             };
 
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-small-arc-inches',
                 shapes: [
                     {
@@ -335,7 +335,7 @@ describe('Clipper2 Offset System', () => {
         });
 
         it('provides meaningful metrics', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-metrics',
                 shapes: [
                     {
@@ -361,7 +361,7 @@ describe('Clipper2 Offset System', () => {
 
     describe('Output Format', () => {
         it('always outputs line shapes', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-output',
                 shapes: [
                     {
@@ -394,7 +394,7 @@ describe('Clipper2 Offset System', () => {
         });
 
         it('generates unique IDs for output shapes', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-ids',
                 shapes: [
                     {
@@ -422,7 +422,7 @@ describe('Clipper2 Offset System', () => {
     describe('Geometric Verification - Closed Chains', () => {
         it('correctly offsets a 100x100 square by 10 units', async () => {
             // Create a 100x100 square (clockwise from bottom-left)
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'square-100',
                 shapes: [
                     {
@@ -501,7 +501,7 @@ describe('Clipper2 Offset System', () => {
 
         it('correctly offsets a rectangle with different width/height', async () => {
             // Create a 200x50 rectangle
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'rect-200x50',
                 shapes: [
                     {
@@ -565,7 +565,7 @@ describe('Clipper2 Offset System', () => {
 
         it('handles offset that completely shrinks a small shape', async () => {
             // Create a 10x10 square and offset by 10 (should shrink to nothing)
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'tiny-square',
                 shapes: [
                     {
@@ -619,7 +619,7 @@ describe('Clipper2 Offset System', () => {
 
         it('correctly offsets a triangle', async () => {
             // Create an equilateral-ish triangle
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'triangle',
                 shapes: [
                     {
@@ -672,7 +672,7 @@ describe('Clipper2 Offset System', () => {
 
     describe('Geometric Verification - Open Chains', () => {
         it('correctly offsets a horizontal line', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'h-line',
                 shapes: [
                     {
@@ -712,7 +712,7 @@ describe('Clipper2 Offset System', () => {
         });
 
         it('correctly offsets an L-shaped path', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'l-shape',
                 shapes: [
                     {
@@ -756,7 +756,7 @@ describe('Clipper2 Offset System', () => {
         });
 
         it('correctly offsets a zigzag path', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'zigzag',
                 shapes: [
                     {
@@ -807,7 +807,7 @@ describe('Clipper2 Offset System', () => {
 
     describe('Arc Tessellation Verification', () => {
         it('tessellates arcs into smooth polylines', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'arc-circle',
                 shapes: [
                     {
@@ -855,7 +855,7 @@ describe('Clipper2 Offset System', () => {
 
     describe('Error Handling', () => {
         it('handles empty chain gracefully', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'empty',
                 shapes: [],
             };
@@ -868,7 +868,7 @@ describe('Clipper2 Offset System', () => {
         });
 
         it('handles negative offset distance', async () => {
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'negative-test',
                 shapes: [
                     {

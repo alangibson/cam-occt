@@ -1,6 +1,7 @@
 <script lang="ts">
     import AccordionPanel from './AccordionPanel.svelte';
     import ShapeProperties from './ShapeProperties.svelte';
+    import LayerProperties from './LayerProperties.svelte';
     import ChainProperties from './ChainProperties.svelte';
     import PartProperties from './PartProperties.svelte';
     import CutProperties from './CutProperties.svelte';
@@ -14,70 +15,119 @@
     import { kerfStore } from '$lib/stores/kerfs/store';
     import { rapidStore } from '$lib/stores/rapids/store';
     import { drawingStore } from '$lib/stores/drawing/store';
+    import { layerStore } from '$lib/stores/layers/store.svelte';
 
-    $: selectedChainIds = $chainStore.selectedChainIds;
-    $: selectedChainId =
-        selectedChainIds.size === 1 ? Array.from(selectedChainIds)[0] : null;
-    $: highlightedChainId = $chainStore.highlightedChainId;
-    $: hasChainSelection = !!(selectedChainId || highlightedChainId);
-
-    $: selectedPartIds = $partStore.selectedPartIds;
-    $: selectedPartId =
-        selectedPartIds.size === 1 ? Array.from(selectedPartIds)[0] : null;
-    $: highlightedPartId = $partStore.highlightedPartId;
-    $: hoveredPartId = $partStore.hoveredPartId;
-    $: hasPartSelection = !!(
-        selectedPartId ||
-        highlightedPartId ||
-        hoveredPartId
+    const selectedChainIds = $derived($chainStore.selectedChainIds);
+    const selectedChainId = $derived(
+        selectedChainIds.size === 1 ? Array.from(selectedChainIds)[0] : null
+    );
+    const highlightedChainId = $derived($chainStore.highlightedChainId);
+    const hasChainSelection = $derived(
+        !!(selectedChainId || highlightedChainId)
     );
 
-    $: selectedCutIds = $cutStore.selectedCutIds;
-    $: selectedCutId =
-        selectedCutIds.size === 1 ? Array.from(selectedCutIds)[0] : null;
-    $: highlightedCutId = $cutStore.highlightedCutId;
-    $: hasCutSelection = !!(selectedCutId || highlightedCutId);
+    // Debug log for chain selection
+    $effect(() => {
+        console.log('[InspectPanel] Chain selection changed:', {
+            selectedChainIds: Array.from(selectedChainIds),
+            selectedChainId,
+            highlightedChainId,
+            hasChainSelection,
+        });
+    });
 
-    $: selectedLeadIds = $leadStore.selectedLeadIds;
-    $: selectedLeadId =
-        selectedLeadIds.size === 1 ? Array.from(selectedLeadIds)[0] : null;
-    $: highlightedLeadId = $leadStore.highlightedLeadId;
-    $: hasLeadSelection = !!(selectedLeadId || highlightedLeadId);
-
-    $: selectedKerfId = $kerfStore.selectedKerfId;
-
-    $: selectedRapidIds = $rapidStore.selectedRapidIds;
-    $: selectedRapidId =
-        selectedRapidIds.size === 1 ? Array.from(selectedRapidIds)[0] : null;
-    $: highlightedRapidId = $rapidStore.highlightedRapidId;
-    $: hasRapidSelection = !!(selectedRapidId || highlightedRapidId);
-
-    $: selectedShapes = $drawingStore.selectedShapes;
-    $: hoveredShape = $drawingStore.hoveredShape;
-    $: selectedOffsetShape = $drawingStore.selectedOffsetShape;
-    $: hasShapeSelection = !!(
-        selectedShapes.size > 0 ||
-        hoveredShape ||
-        selectedOffsetShape
+    const selectedPartIds = $derived($partStore.selectedPartIds);
+    const selectedPartId = $derived(
+        selectedPartIds.size === 1 ? Array.from(selectedPartIds)[0] : null
     );
+    const highlightedPartId = $derived($partStore.highlightedPartId);
+    const hoveredPartId = $derived($partStore.hoveredPartId);
+    const hasPartSelection = $derived(
+        !!(selectedPartId || highlightedPartId || hoveredPartId)
+    );
+
+    const selectedCutIds = $derived($cutStore.selectedCutIds);
+    const selectedCutId = $derived(
+        selectedCutIds.size === 1 ? Array.from(selectedCutIds)[0] : null
+    );
+    const highlightedCutId = $derived($cutStore.highlightedCutId);
+    const hasCutSelection = $derived(!!(selectedCutId || highlightedCutId));
+
+    const selectedLeadIds = $derived($leadStore.selectedLeadIds);
+    const selectedLeadId = $derived(
+        selectedLeadIds.size === 1 ? Array.from(selectedLeadIds)[0] : null
+    );
+    const highlightedLeadId = $derived($leadStore.highlightedLeadId);
+    const hasLeadSelection = $derived(!!(selectedLeadId || highlightedLeadId));
+
+    const selectedKerfId = $derived($kerfStore.selectedKerfId);
+
+    const selectedRapidIds = $derived($rapidStore.selectedRapidIds);
+    const selectedRapidId = $derived(
+        selectedRapidIds.size === 1 ? Array.from(selectedRapidIds)[0] : null
+    );
+    const highlightedRapidId = $derived($rapidStore.highlightedRapidId);
+    const hasRapidSelection = $derived(
+        !!(selectedRapidId || highlightedRapidId)
+    );
+
+    const selectedShapes = $derived($drawingStore.selectedShapes);
+    const hoveredShape = $derived($drawingStore.hoveredShape);
+    const selectedOffsetShape = $derived($drawingStore.selectedOffsetShape);
+    const hasShapeSelection = $derived(
+        !!(selectedShapes.size > 0 || hoveredShape || selectedOffsetShape)
+    );
+
+    const selectedLayerId = $derived(layerStore.selectedLayerId);
+    const highlightedLayerId = $derived(layerStore.highlightedLayerId);
+    const hasLayerSelection = $derived(
+        !!(selectedLayerId || highlightedLayerId)
+    );
+
+    $effect(() => {
+        console.log('[InspectPanel] Selection state:', {
+            hasLeadSelection,
+            hasRapidSelection,
+            selectedKerfId,
+            hasCutSelection,
+            hasPartSelection,
+            hasChainSelection,
+            hasShapeSelection,
+            hasLayerSelection,
+        });
+    });
 </script>
 
-<AccordionPanel title="Inspect" isExpanded={false}>
+<AccordionPanel title="Inspect" isExpanded={true}>
     {#if hasLeadSelection}
+        {console.log('[InspectPanel] Rendering LeadProperties')}
         <LeadProperties />
     {:else if hasRapidSelection}
+        {console.log('[InspectPanel] Rendering RapidProperties')}
         <RapidProperties />
     {:else if selectedKerfId}
+        {console.log(
+            '[InspectPanel] Rendering KerfProperties, selectedKerfId:',
+            selectedKerfId
+        )}
         <KerfProperties />
     {:else if hasCutSelection}
+        {console.log('[InspectPanel] Rendering CutProperties')}
         <CutProperties />
     {:else if hasPartSelection}
+        {console.log('[InspectPanel] Rendering PartProperties')}
         <PartProperties />
     {:else if hasChainSelection}
+        {console.log('[InspectPanel] Rendering ChainProperties')}
         <ChainProperties />
     {:else if hasShapeSelection}
+        {console.log('[InspectPanel] Rendering ShapeProperties')}
         <ShapeProperties />
+    {:else if hasLayerSelection}
+        {console.log('[InspectPanel] Rendering LayerProperties')}
+        <LayerProperties />
     {:else}
+        {console.log('[InspectPanel] Rendering nothing selected')}
         <p class="no-selection">Nothing selected</p>
     {/if}
 </AccordionPanel>

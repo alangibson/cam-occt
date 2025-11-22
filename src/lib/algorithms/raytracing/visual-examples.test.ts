@@ -13,8 +13,8 @@
 
 import { describe, expect, test } from 'vitest';
 import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
@@ -43,13 +43,13 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
          */
 
         // Create a full circle
-        const circleShape: Shape = {
+        const circleShape: ShapeData = {
             id: 'reference-circle',
             type: GeometryType.CIRCLE,
             geometry: { center: { x: 0, y: 0 }, radius: 50 },
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'circle-offset-test',
             shapes: [circleShape],
         };
@@ -117,13 +117,13 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
          * even for points very close to the curved boundaries.
          */
 
-        const bottomLineShape: Shape = {
+        const bottomLineShape: ShapeData = {
             id: 'bottom-line',
             type: GeometryType.LINE,
             geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 0 } },
         };
 
-        const rightArcShape: Shape = {
+        const rightArcShape: ShapeData = {
             id: 'right-arc',
             type: GeometryType.ARC,
             geometry: {
@@ -135,13 +135,13 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             },
         };
 
-        const topLineShape: Shape = {
+        const topLineShape: ShapeData = {
             id: 'top-line',
             type: GeometryType.LINE,
             geometry: { start: { x: 100, y: 20 }, end: { x: 0, y: 20 } },
         };
 
-        const leftArcShape: Shape = {
+        const leftArcShape: ShapeData = {
             id: 'left-arc',
             type: GeometryType.ARC,
             geometry: {
@@ -153,7 +153,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             },
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'rounded-rectangle',
             shapes: [
                 bottomLineShape,
@@ -224,13 +224,13 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
          * offset distances accurately.
          */
 
-        const circleShape: Shape = {
+        const circleShape: ShapeData = {
             id: 'precision-circle',
             type: GeometryType.CIRCLE,
             geometry: { center: { x: 0, y: 0 }, radius: 10 },
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'precision-circle',
             shapes: [circleShape],
         };
@@ -285,7 +285,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
          * 100% consistency.
          */
 
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'bottom-edge',
                 type: GeometryType.LINE,
@@ -314,7 +314,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             },
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'consistency-test',
             shapes,
         };
@@ -351,7 +351,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
          * a single closed shape.
          */
 
-        const circle: Shape = {
+        const circle: ShapeData = {
             id: 'test-circle',
             type: GeometryType.CIRCLE,
             geometry: {
@@ -360,7 +360,7 @@ describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
             },
         };
 
-        const circleChain: Chain = {
+        const circleChain: ChainData = {
             id: 'circle-shape',
             shapes: [circle],
         };

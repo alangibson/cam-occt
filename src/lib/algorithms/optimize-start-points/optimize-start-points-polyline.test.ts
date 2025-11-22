@@ -7,9 +7,9 @@ import {
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 
 describe('optimizeStartPoints - polyline splitting', () => {
@@ -19,7 +19,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
     };
 
     it('should split a 2-point polyline at its midpoint', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createPolylineFromVertices(
                 [
                     { x: 0, y: 0 },
@@ -38,7 +38,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
             ),
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain1',
             shapes,
         };
@@ -77,7 +77,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
 
     it('should split a multi-point polyline at its path midpoint', () => {
         // Create a polyline that forms an L shape
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createPolylineFromVertices(
                 [
                     { x: 0, y: 0 },
@@ -94,10 +94,10 @@ describe('optimizeStartPoints - polyline splitting', () => {
                     start: { x: 10, y: 10 },
                     end: { x: 0, y: 0 },
                 } as Line,
-            } as Shape,
+            } as ShapeData,
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'L-chain',
             shapes,
         };
@@ -112,10 +112,10 @@ describe('optimizeStartPoints - polyline splitting', () => {
 
         // The line from (10,10) to (0,0) has length √200 ≈ 14.14
         // Midpoint would be at (5, 5)
-        const firstHalf: Shape | undefined = splitLines.find((s) =>
+        const firstHalf: ShapeData | undefined = splitLines.find((s) =>
             s.id.includes('split-1')
         );
-        const secondHalf: Shape | undefined = splitLines.find((s) =>
+        const secondHalf: ShapeData | undefined = splitLines.find((s) =>
             s.id.includes('split-2')
         );
 
@@ -135,7 +135,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
 
     it('should split a complex polyline at the correct midpoint along its path', () => {
         // Create a polyline with uneven segment lengths
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createPolylineFromVertices(
                 [
                     { x: 0, y: 0 },
@@ -156,7 +156,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
             ),
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'complex-chain',
             shapes,
         };
@@ -196,7 +196,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
 
     it('should preserve arcs when splitting polylines with arc segments', () => {
         // Create a polyline with both line and arc segments (like from DXF bulge data)
-        const polylineWithArcs: Shape = {
+        const polylineWithArcs: ShapeData = {
             id: 'polyline-with-arcs',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -233,7 +233,7 @@ describe('optimizeStartPoints - polyline splitting', () => {
             },
         };
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain-with-arcs',
             shapes: [polylineWithArcs],
         };

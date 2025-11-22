@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
 import { isChainClosed } from '$lib/geometry/chain/functions';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 
 describe('optimizeStartPoints - closed polylines', () => {
@@ -24,7 +24,7 @@ describe('optimizeStartPoints - closed polylines', () => {
             { id: 'closed-polyline-1' }
         );
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain-1',
             shapes: [closedPolyline],
         };
@@ -45,7 +45,7 @@ describe('optimizeStartPoints - closed polylines', () => {
 
     it('should handle ADLER.dxf scenario - multiple single closed polyline chains', () => {
         // Simulate typical ADLER.dxf structure - each chain contains one closed polyline
-        const chains: Chain[] = [];
+        const chains: ChainData[] = [];
 
         for (let i: number = 0; i < 3; i++) {
             const closedPolyline = createPolylineFromVertices(
@@ -95,7 +95,7 @@ describe('optimizeStartPoints - closed polylines', () => {
             { id: 'open-polyline-1' }
         );
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'open-chain',
             shapes: [openPolyline],
         };
@@ -123,7 +123,7 @@ describe('optimizeStartPoints - closed polylines', () => {
             { id: 'geo-closed-polyline' }
         ); // No explicit closed flag, relies on geometric closure
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'geo-closed-chain',
             shapes: [geometricallyClosedPolyline],
         };

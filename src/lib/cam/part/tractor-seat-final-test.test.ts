@@ -4,10 +4,10 @@ import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
-function filterToLargestLayer(shapes: Shape[]): Shape[] {
-    const layerMap = new Map<string, Shape[]>();
+function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
+    const layerMap = new Map<string, ShapeData[]>();
     shapes.forEach((shape) => {
         const layer = shape.layer || 'NO_LAYER';
         if (!layerMap.has(layer)) {

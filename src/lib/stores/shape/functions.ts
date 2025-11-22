@@ -1,5 +1,5 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import {
     getShapeEndPoint,
     getShapeOrigin,
@@ -9,7 +9,7 @@ import type { ShapePoint } from '$lib/stores/overlay/interfaces';
 
 // Helper functions to generate shape overlay data
 export function generateShapePoints(
-    shapes: Shape[],
+    shapes: ShapeData[],
     selectedShapeIds: Set<string>
 ): ShapePoint[] {
     const points: ShapePoint[] = [];

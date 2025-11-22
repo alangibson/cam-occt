@@ -25,9 +25,30 @@
     const activeChainId = $derived(selectedChainId || highlightedChainId);
     const selectedChain = $derived(
         activeChainId
-            ? detectedChains.find((chain) => chain.id === activeChainId)
+            ? detectedChains.find((chain) => {
+                  console.log(
+                      '[ChainProperties] Looking for chain:',
+                      activeChainId,
+                      'current:',
+                      chain.id
+                  );
+                  return chain.id === activeChainId;
+              })
             : null
     );
+
+    $effect(() => {
+        console.log(
+            '[ChainProperties] activeChainId:',
+            activeChainId,
+            'selectedChain:',
+            selectedChain?.id,
+            'detectedChains:',
+            detectedChains.map(c => c.id),
+            'selectedChainAnalysis:',
+            selectedChainAnalysis
+        );
+    });
     const chainNormalizationResults = $derived(
         $prepareStageStore.chainNormalizationResults
     );
@@ -53,13 +74,14 @@
 </script>
 
 <div class="chain-properties">
-    {#if selectedChain && selectedChainAnalysis}
+    {#if selectedChain}
         <div class="property-group">
             <div class="property-row">
                 <span class="property-label">Name:</span>
                 <span class="property-value">{selectedChain.id}</span>
             </div>
 
+            {#if selectedChainAnalysis}
             <div class="property-row">
                 <span class="property-label">Traversable:</span>
                 <span
@@ -70,6 +92,7 @@
                     {selectedChainAnalysis.canTraverse ? 'Yes' : 'No'}
                 </span>
             </div>
+            {/if}
 
             <div class="property-row">
                 <span class="property-label">Status:</span>
@@ -113,12 +136,14 @@
                 >
             </div>
 
+            {#if selectedChainAnalysis}
             <div class="property-row">
                 <span class="property-label">Issues:</span>
                 <span class="property-value"
                     >{selectedChainAnalysis.issues.length}</span
                 >
             </div>
+            {/if}
         </div>
 
         {#if selectedChain.shapes.length > 0}
@@ -160,7 +185,7 @@
             </div>
         {/if}
 
-        {#if selectedChainAnalysis.issues.length > 0}
+        {#if selectedChainAnalysis && selectedChainAnalysis.issues.length > 0}
             <div class="chain-issues">
                 <h4 class="issues-title">Issues:</h4>
                 {#each selectedChainAnalysis.issues as issue, issueIndex (issueIndex)}
@@ -185,6 +210,9 @@
                 Copy
             </button>
         </div>
+    {:else}
+        <p class="debug-info">activeChainId: {activeChainId}</p>
+        <p class="debug-info">detectedChains: {detectedChains.length}</p>
     {/if}
 </div>
 

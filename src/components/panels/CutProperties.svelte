@@ -1,10 +1,11 @@
 <script lang="ts">
+    import { planStore } from '$lib/stores/plan/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { CutDirection } from '$lib/cam/cut/enums';
 
     // Reactive cut data
-    $: cuts = $cutStore.cuts;
+    $: cuts = $planStore.plan.cuts;
     $: selectedCutIds = $cutStore.selectedCutIds;
     $: selectedCutId =
         selectedCutIds.size === 1 ? Array.from(selectedCutIds)[0] : null;
@@ -172,17 +173,6 @@
             {/if}
         </div>
 
-        {#if selectedCut.leadValidation && selectedCut.leadValidation.warnings.length > 0}
-            <div class="lead-warnings">
-                <h4 class="warnings-title">Lead Warnings:</h4>
-                {#each selectedCut.leadValidation.warnings as warning, i (i)}
-                    <div class="warning-item">
-                        <span class="warning-text">{warning}</span>
-                    </div>
-                {/each}
-            </div>
-        {/if}
-
         <div class="button-row">
             <button
                 class="copy-button"
@@ -241,38 +231,6 @@
     .property-value.disabled {
         color: rgb(133, 18, 0);
         font-weight: 600;
-    }
-
-    .lead-warnings {
-        background-color: #fef2f2;
-        border: 1px solid #fecaca;
-        border-radius: 0.375rem;
-        padding: 0.75rem;
-        margin-top: 1rem;
-    }
-
-    .warnings-title {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: #374151;
-        margin: 0 0 0.5rem 0;
-    }
-
-    .warning-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-
-    .warning-item:last-child {
-        margin-bottom: 0;
-    }
-
-    .warning-text {
-        font-size: 0.75rem;
-        color: rgb(133, 18, 0);
-        line-height: 1.4;
     }
 
     .button-row {

@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
@@ -9,7 +9,7 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { OffsetChain } from '$lib/cam/offset/types';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
@@ -55,7 +55,7 @@ const DEFAULT_VIS_OPTIONS: Required<VisualizationOptions> = {
  * @param options - Visualization options
  */
 export function generateChainOffsetSVG(
-    chain: Chain,
+    chain: ChainData,
     offsets: OffsetChain[],
     filename: string,
     options?: VisualizationOptions
@@ -90,7 +90,7 @@ export function generateChainOffsetSVG(
 /**
  * Aggregate shape bounds into overall bounds
  */
-function aggregateShapeBounds(shapes: Shape[]): {
+function aggregateShapeBounds(shapes: ShapeData[]): {
     minX: number;
     minY: number;
     maxX: number;
@@ -116,7 +116,7 @@ function aggregateShapeBounds(shapes: Shape[]): {
  * Calculate bounds of all shapes
  */
 function calculateBounds(
-    chain: Chain,
+    chain: ChainData,
     offsets: OffsetChain[]
 ): { minX: number; minY: number; maxX: number; maxY: number } {
     let minX: number = Infinity,
@@ -166,7 +166,7 @@ function calculateScale(
  * Generate complete SVG content
  */
 function generateSVG(
-    chain: Chain,
+    chain: ChainData,
     offsets: OffsetChain[],
     bounds: { minX: number; minY: number; maxX: number; maxY: number },
     scale: number,
@@ -219,18 +219,6 @@ function generateSVG(
             svg += '\n    <g fill="green" stroke="none">';
             for (const trim of offset.trimPoints) {
                 svg += `\n      <circle cx="${trim.point.x}" cy="${trim.point.y}" r="3" />`;
-            }
-            svg += '\n    </g>';
-        }
-
-        // Draw gap fills
-        if (offset.gapFills) {
-            svg += '\n    <!-- Gap Fills -->';
-            svg += '\n    <g stroke="orange" stroke-width="2" fill="none">';
-            for (const gap of offset.gapFills) {
-                if (gap.fillerShape) {
-                    svg += '\n      ' + shapeToSVG(gap.fillerShape);
-                }
             }
             svg += '\n    </g>';
         }
@@ -293,7 +281,7 @@ function generateGrid(
 /**
  * Convert a shape to SVG path
  */
-function shapeToSVG(shape: Shape): string {
+function shapeToSVG(shape: ShapeData): string {
     switch (shape.type) {
         case 'line': {
             const line: Line = shape.geometry as Line;
@@ -350,7 +338,7 @@ function shapeToSVG(shape: Shape): string {
 /**
  * Convert arc to SVG path
  */
-function arcToSVG(shape: Shape): string {
+function arcToSVG(shape: ShapeData): string {
     const arc: Arc = shape.geometry as Arc;
     const start: { x: number; y: number } = {
         x: arc.center.x + arc.radius * Math.cos(arc.startAngle),

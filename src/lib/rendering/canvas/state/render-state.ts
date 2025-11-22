@@ -3,18 +3,18 @@
  */
 
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { OperationData } from '$lib/cam/operation/interface';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 import { Unit } from '$lib/config/units/units';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Kerf } from '$lib/cam/kerf/interfaces';
+import type { Chain } from '$lib/geometry/chain/classes';
 
 /**
  * Transform state for canvas rendering
@@ -32,7 +32,7 @@ export interface TransformState {
 interface SelectionState {
     selectedShapes: Set<string>;
     hoveredShape: string | null;
-    selectedOffsetShape: Shape | null;
+    selectedOffsetShape: ShapeData | null;
     selectedChainIds: Set<string>;
     highlightedChainId: string | null;
     selectedPartIds: Set<string>;
@@ -137,12 +137,12 @@ export interface RenderState {
     parts: Part[];
 
     // Cut data
-    cuts: Cut[];
+    cuts: CutData[];
     cutsState: CutsState | null;
     chainsWithCuts: string[]; // Chain IDs that have cuts
 
     // Operations
-    operations: Operation[];
+    operations: OperationData[];
 
     // Rapids
     rapids: Rapid[];
@@ -305,7 +305,6 @@ export function cloneRenderState(state: RenderState): RenderState {
         cuts: [...state.cuts],
         cutsState: state.cutsState
             ? {
-                  cuts: [...state.cutsState.cuts],
                   selectedCutIds: new Set(state.cutsState.selectedCutIds),
                   highlightedCutId: state.cutsState.highlightedCutId,
                   showCutNormals: state.cutsState.showCutNormals,

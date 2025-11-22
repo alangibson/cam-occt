@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import { isArc } from '$lib/geometry/arc/functions';
@@ -23,18 +23,18 @@ describe('getLeadCurveDirection (indirect testing)', () => {
         start: Point2D = { x: 0, y: 0 },
         end: Point2D = { x: 10, y: 0 }
     ): Chain {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'line1',
             type: GeometryType.LINE,
             geometry: { start, end } as Line,
             layer: 'layer1',
         };
 
-        return {
+        return new Chain({
             id: 'chain1',
             shapes: [shape],
             clockwise: true,
-        };
+        });
     }
 
     // Helper to create a vertical line chain
@@ -42,18 +42,18 @@ describe('getLeadCurveDirection (indirect testing)', () => {
         start: Point2D = { x: 0, y: 0 },
         end: Point2D = { x: 0, y: 10 }
     ): Chain {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'line1',
             type: GeometryType.LINE,
             geometry: { start, end } as Line,
             layer: 'layer1',
         };
 
-        return {
+        return new Chain({
             id: 'chain1',
             shapes: [shape],
             clockwise: true,
-        };
+        });
     }
 
     // Helper to create a circle chain
@@ -62,18 +62,18 @@ describe('getLeadCurveDirection (indirect testing)', () => {
         radius: number = 3,
         clockwise: boolean = true
     ): Chain {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'circle1',
             type: GeometryType.CIRCLE,
             geometry: { center, radius } as Circle,
             layer: 'layer1',
         };
 
-        return {
+        return new Chain({
             id: 'chain1',
             shapes: [shape],
             clockwise,
-        };
+        });
     }
 
     // Helper to create a rectangular part with center hole
@@ -82,7 +82,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
         shell: Chain;
         hole: Chain;
     } {
-        const shell: Chain = {
+        const shell: Chain = new Chain({
             id: 'shell',
             shapes: [
                 {
@@ -123,7 +123,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                 },
             ],
             clockwise: true,
-        };
+        });
 
         const hole: Chain = createCircleChain({ x: 10, y: 10 }, 3, false);
 
@@ -323,7 +323,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
             const { part } = createRectangleWithHole();
 
             // Place the chain start very close to a boundary where only one direction is valid
-            const edgeChain: Chain = {
+            const edgeChain: Chain = new Chain({
                 id: 'edge-chain',
                 shapes: [
                     {
@@ -337,7 +337,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                     },
                 ],
                 clockwise: true,
-            };
+            });
 
             const result = calculateLeads(
                 edgeChain,
@@ -764,7 +764,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
 
         it('should handle point coincidence at chain boundaries', () => {
             // Test with a closed chain where start/end points are the same
-            const closedChain: Chain = {
+            const closedChain: Chain = new Chain({
                 id: 'closed',
                 shapes: [
                     {
@@ -787,7 +787,7 @@ describe('getLeadCurveDirection (indirect testing)', () => {
                     },
                 ],
                 clockwise: true,
-            };
+            });
 
             const result = calculateLeads(
                 closedChain,

@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import { type Chain } from '$lib/geometry/chain/interfaces';
+import { type ChainData } from '$lib/geometry/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import {
@@ -14,12 +14,12 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 
-function filterToLargestLayer(shapes: Shape[]): Shape[] {
-    const layerMap = new Map<string, Shape[]>();
+function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
+    const layerMap = new Map<string, ShapeData[]>();
     shapes.forEach((shape) => {
         const layer = shape.layer || 'NO_LAYER';
         if (!layerMap.has(layer)) {
@@ -143,7 +143,7 @@ describe('Tractor Seat Mount Part Detection', () => {
 });
 
 // Helper functions copied from part-detection.ts for testing
-function calculateClosureTolerance(chain: Chain): number {
+function calculateClosureTolerance(chain: ChainData): number {
     // Base tolerance for precision errors
     const baseTolerance = 0.01;
 
@@ -167,7 +167,7 @@ function calculateClosureTolerance(chain: Chain): number {
     return cappedTolerance;
 }
 
-function calculateChainBoundingBox(chain: Chain): BoundingBox {
+function calculateChainBoundingBox(chain: ChainData): BoundingBox {
     let minX = Infinity,
         maxX = -Infinity,
         minY = Infinity,
@@ -187,7 +187,7 @@ function calculateChainBoundingBox(chain: Chain): BoundingBox {
     };
 }
 
-function getShapeBoundingBox(shape: Shape): BoundingBox {
+function getShapeBoundingBox(shape: ShapeData): BoundingBox {
     switch (shape.type) {
         case 'line':
             const line = shape.geometry as Line;

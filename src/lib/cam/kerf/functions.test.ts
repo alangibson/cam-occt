@@ -1,14 +1,16 @@
 import { describe, it, expect } from 'vitest';
 import { cutToKerf } from './functions';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
+import { Chain } from '$lib/geometry/chain/classes';
+import { Shape } from '$lib/geometry/shape/classes';
 
 describe('cutToKerf', () => {
     // Helper to create a simple rectangular cut
@@ -17,8 +19,8 @@ describe('cutToKerf', () => {
         y: number,
         width: number,
         height: number
-    ): Cut {
-        const chain: Chain = {
+    ): CutData {
+        const chain: ChainData = {
             id: crypto.randomUUID(),
             shapes: [
                 {
@@ -66,7 +68,7 @@ describe('cutToKerf', () => {
             chainId: chain.id,
             toolId: crypto.randomUUID(),
             cutDirection: CutDirection.CLOCKWISE,
-            cutChain: chain,
+            cutChain: new Chain(chain),
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x, y },
             normalSide: NormalSide.RIGHT,
@@ -74,8 +76,12 @@ describe('cutToKerf', () => {
     }
 
     // Helper to create a circular cut
-    function createCircularCut(cx: number, cy: number, radius: number): Cut {
-        const chain: Chain = {
+    function createCircularCut(
+        cx: number,
+        cy: number,
+        radius: number
+    ): CutData {
+        const chain: ChainData = {
             id: crypto.randomUUID(),
             shapes: [
                 {
@@ -99,7 +105,7 @@ describe('cutToKerf', () => {
             chainId: chain.id,
             toolId: crypto.randomUUID(),
             cutDirection: CutDirection.CLOCKWISE,
-            cutChain: chain,
+            cutChain: new Chain(chain),
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: cx + radius, y: cy },
             normalSide: NormalSide.RIGHT,
@@ -387,7 +393,7 @@ describe('cutToKerf', () => {
     it('should NOT detect overlap when lead is outside original chain', async () => {
         // Real-world test case: lead that should NOT overlap with the original chain
         // This is a spline chain from actual DXF with a lead-in that's positioned correctly
-        const originalChain: Chain = {
+        const originalChain: ChainData = {
             id: 'chain-14',
             shapes: [
                 {
@@ -440,7 +446,7 @@ describe('cutToKerf', () => {
         };
 
         // Create a cut using this chain
-        const cut: Cut = {
+        const cut: CutData = {
             id: '03eb0715-b65d-417e-ab98-deabcf70eb60',
             name: 'Operation 1 - Part 1 (Hole 8)',
             enabled: true,
@@ -449,15 +455,15 @@ describe('cutToKerf', () => {
             chainId: 'chain-14',
             toolId: 'tool-1',
             cutDirection: CutDirection.CLOCKWISE,
-            cutChain: originalChain,
+            cutChain: new Chain(originalChain),
             normal: { x: -0.21847234485073125, y: 0.9758431403332317 },
             normalConnectionPoint: { x: 7.6655, y: 10.9635 },
             normalSide: NormalSide.LEFT,
             isHole: true, // This is a hole
             // Store original chain
             offset: {
-                originalShapes: originalChain.shapes,
-                offsetShapes: originalChain.shapes, // No actual offset for this test
+                originalShapes: originalChain.shapes.map((s) => new Shape(s)),
+                offsetShapes: originalChain.shapes.map((s) => new Shape(s)), // No actual offset for this test
                 direction: 'none' as any,
                 kerfWidth: 0.002,
                 generatedAt: new Date().toISOString(),
@@ -497,43 +503,48 @@ describe('cutToKerf', () => {
 
         // Simulate an offset of 10mm inward (cut path is inside the original)
         // Store the original shapes
+        const offsetShapes = [
+            // Offset rectangle 10mm inward to (10,10) to (90,90)
+            new Shape({
+                id: crypto.randomUUID(),
+                type: GeometryType.LINE,
+                geometry: {
+                    start: { x: 10, y: 10 },
+                    end: { x: 90, y: 10 },
+                } as Line,
+                layer: '0',
+            }),
+            new Shape({
+                id: crypto.randomUUID(),
+                type: GeometryType.LINE,
+                geometry: {
+                    start: { x: 90, y: 10 },
+                    end: { x: 90, y: 90 },
+                } as Line,
+                layer: '0',
+            }),
+            new Shape({
+                id: crypto.randomUUID(),
+                type: GeometryType.LINE,
+                geometry: {
+                    start: { x: 90, y: 90 },
+                    end: { x: 10, y: 90 },
+                } as Line,
+                layer: '0',
+            }),
+            new Shape({
+                id: crypto.randomUUID(),
+                type: GeometryType.LINE,
+                geometry: {
+                    start: { x: 10, y: 90 },
+                    end: { x: 10, y: 10 },
+                } as Line,
+                layer: '0',
+            }),
+        ];
         cut.offset = {
             originalShapes: cut.cutChain!.shapes, // Original rectangle at (0,0) to (100,100)
-            offsetShapes: [
-                // Offset rectangle 10mm inward to (10,10) to (90,90)
-                {
-                    id: crypto.randomUUID(),
-                    type: GeometryType.LINE,
-                    geometry: {
-                        start: { x: 10, y: 10 },
-                        end: { x: 90, y: 10 },
-                    } as Line,
-                },
-                {
-                    id: crypto.randomUUID(),
-                    type: GeometryType.LINE,
-                    geometry: {
-                        start: { x: 90, y: 10 },
-                        end: { x: 90, y: 90 },
-                    } as Line,
-                },
-                {
-                    id: crypto.randomUUID(),
-                    type: GeometryType.LINE,
-                    geometry: {
-                        start: { x: 90, y: 90 },
-                        end: { x: 10, y: 90 },
-                    } as Line,
-                },
-                {
-                    id: crypto.randomUUID(),
-                    type: GeometryType.LINE,
-                    geometry: {
-                        start: { x: 10, y: 90 },
-                        end: { x: 10, y: 10 },
-                    } as Line,
-                },
-            ],
+            offsetShapes,
             direction: 'inset' as any,
             kerfWidth: 10.0,
             generatedAt: new Date().toISOString(),
@@ -541,10 +552,10 @@ describe('cutToKerf', () => {
         };
 
         // Update cutChain to use the offset shapes
-        cut.cutChain = {
+        cut.cutChain = new Chain({
             id: cut.cutChain!.id,
-            shapes: cut.offset.offsetShapes,
-        };
+            shapes: cut.offset!.offsetShapes.map((s) => s.toData()),
+        });
 
         // Add a lead-in that extends outward from the offset cut path
         // Connection point at (10, 50) - the offset edge

@@ -18,7 +18,7 @@ import {
     tessellateShape,
 } from './functions';
 import { GeometryType } from './enums';
-import type { Shape } from './interfaces';
+import type { ShapeData } from './interfaces';
 import type { Geometry } from './types';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
@@ -90,7 +90,7 @@ vi.mock('$lib/geometry/circle/functions', async (importOriginal) => {
 });
 
 // Helper function to create test circle
-function createCircle(x: number, y: number, radius: number): Shape {
+function createCircle(x: number, y: number, radius: number): ShapeData {
     return {
         id: '1',
         type: GeometryType.CIRCLE,
@@ -108,7 +108,7 @@ describe('getShapePoints', () => {
             end: { x: 10, y: 10 },
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'line1',
             type: GeometryType.LINE,
             geometry: lineGeometry,
@@ -135,7 +135,7 @@ describe('getShapePoints', () => {
             radius: 5,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'circle1',
             type: GeometryType.CIRCLE,
             geometry: circleGeometry,
@@ -162,7 +162,7 @@ describe('getShapePoints', () => {
             clockwise: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'arc1',
             type: GeometryType.ARC,
             geometry: arcGeometry,
@@ -189,7 +189,7 @@ describe('getShapePoints', () => {
             shapes: [],
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'polyline1',
             type: GeometryType.POLYLINE,
             geometry: polylineGeometry,
@@ -215,7 +215,7 @@ describe('getShapePoints', () => {
             minorToMajorRatio: 0.5,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'ellipse1',
             type: GeometryType.ELLIPSE,
             geometry: ellipseGeometry,
@@ -255,7 +255,7 @@ describe('getShapePoints', () => {
             closed: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'spline1',
             type: GeometryType.SPLINE,
             geometry: splineGeometry,
@@ -291,7 +291,7 @@ describe('getShapePoints', () => {
             closed: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'spline2',
             type: GeometryType.SPLINE,
             geometry: splineGeometry,
@@ -321,7 +321,7 @@ describe('getShapePoints', () => {
             closed: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'spline3',
             type: GeometryType.SPLINE,
             geometry: splineGeometry,
@@ -345,7 +345,7 @@ describe('getShapePoints', () => {
             closed: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'spline4',
             type: GeometryType.SPLINE,
             geometry: splineGeometry,
@@ -369,7 +369,7 @@ describe('getShapePoints', () => {
             closed: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'spline5',
             type: GeometryType.SPLINE,
             geometry: splineGeometry,
@@ -380,7 +380,7 @@ describe('getShapePoints', () => {
     });
 
     it('should return empty array for unknown shape type', () => {
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'unknown1',
             type: 'unknown' as unknown as GeometryType,
             geometry: {} as unknown as Line,
@@ -396,7 +396,7 @@ describe('getShapePoints', () => {
             end: { x: 15, y: 25 },
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'line2',
             type: GeometryType.LINE,
             geometry: lineGeometry,
@@ -415,7 +415,7 @@ describe('getShapePoints', () => {
             end: { x: 5, y: 5 },
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'line3',
             type: GeometryType.LINE,
             geometry: lineGeometry,
@@ -449,7 +449,7 @@ describe('getShapePoints', () => {
             closed: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'spline6',
             type: GeometryType.SPLINE,
             geometry: splineGeometry,
@@ -480,7 +480,7 @@ describe('getShapePoints', () => {
             closed: false,
         };
 
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'spline7',
             type: GeometryType.SPLINE,
             geometry: splineGeometry,
@@ -495,7 +495,7 @@ describe('samplePathAtDistanceIntervals', () => {
     describe('Cut Direction Handling', () => {
         it('should produce correct direction vectors in natural shape direction', () => {
             // Create a simple horizontal line from (0,0) to (10,0)
-            const line: Shape = {
+            const line: ShapeData = {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: {
@@ -524,7 +524,7 @@ describe('samplePathAtDistanceIntervals', () => {
 
         it('should produce correct direction vectors for clockwise cuts on simple line', () => {
             // Create a simple horizontal line from (0,0) to (10,0)
-            const line: Shape = {
+            const line: ShapeData = {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: {
@@ -553,7 +553,7 @@ describe('samplePathAtDistanceIntervals', () => {
 
         it('should produce opposite directions when shapes are in opposite order', () => {
             // Create a vertical line and its reverse
-            const originalLine: Shape = {
+            const originalLine: ShapeData = {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: {
@@ -563,7 +563,7 @@ describe('samplePathAtDistanceIntervals', () => {
             };
 
             // For counterclockwise behavior, reverse the line's start/end
-            const reversedLine: Shape = {
+            const reversedLine: ShapeData = {
                 id: 'line1-reversed',
                 type: GeometryType.LINE,
                 geometry: {
@@ -588,7 +588,7 @@ describe('samplePathAtDistanceIntervals', () => {
 
         it('should handle multi-shape paths correctly', () => {
             // Create an L-shaped path: horizontal line then vertical line
-            const horizontalLine: Shape = {
+            const horizontalLine: ShapeData = {
                 id: 'horizontalLine',
                 type: GeometryType.LINE,
                 geometry: {
@@ -597,7 +597,7 @@ describe('samplePathAtDistanceIntervals', () => {
                 } as Line,
             };
 
-            const verticalLine: Shape = {
+            const verticalLine: ShapeData = {
                 id: 'verticalLine',
                 type: GeometryType.LINE,
                 geometry: {
@@ -631,7 +631,7 @@ describe('samplePathAtDistanceIntervals', () => {
     describe('Regular Distance Sampling', () => {
         it('should sample at regular intervals', () => {
             // Create a 20-unit long line
-            const line: Shape = {
+            const line: ShapeData = {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: {
@@ -665,7 +665,7 @@ describe('samplePathAtDistanceIntervals', () => {
             expect(sampleShapes([], 5)).toEqual([]);
 
             // Zero interval distance
-            const line: Shape = {
+            const line: ShapeData = {
                 id: 'line1',
                 type: GeometryType.LINE,
                 geometry: {
@@ -686,7 +686,7 @@ describe('Cut Direction Regression Tests', () => {
         // With the new architecture, samplePathAtDistanceIntervals always returns natural directions
         // The cut direction handling is moved to the Cut level via execution chains
 
-        const line: Shape = {
+        const line: ShapeData = {
             id: 'line1',
             type: GeometryType.LINE,
             geometry: {
@@ -729,7 +729,7 @@ describe('isShapeContainedInShape', () => {
     });
 
     it('should handle open shapes (lines)', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -743,7 +743,7 @@ describe('isShapeContainedInShape', () => {
     });
 
     it('should return false for insufficient tessellation points', () => {
-        const mockShape: Shape = {
+        const mockShape: ShapeData = {
             id: '1',
             type: GeometryType.CIRCLE,
             geometry: {
@@ -761,7 +761,7 @@ describe('isShapeContainedInShape', () => {
 
     it('should handle errors during JSTS processing', () => {
         // Create a malformed shape that might cause JSTS errors
-        const malformedShape: Shape = {
+        const malformedShape: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -783,7 +783,7 @@ describe('isShapeContainedInShape', () => {
 
 describe('getShapeStartPoint', () => {
     it('should get start point for line', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -797,7 +797,7 @@ describe('getShapeStartPoint', () => {
     });
 
     it('should throw error for unknown shape type', () => {
-        const unknownShape: Shape = {
+        const unknownShape: ShapeData = {
             id: '1',
             // @ts-expect-error - Testing error case
             type: 'unknown',
@@ -812,7 +812,7 @@ describe('getShapeStartPoint', () => {
 
 describe('getShapeEndPoint', () => {
     it('should get end point for line', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -826,7 +826,7 @@ describe('getShapeEndPoint', () => {
     });
 
     it('should throw error for unknown shape type', () => {
-        const unknownShape: Shape = {
+        const unknownShape: ShapeData = {
             id: '1',
             // @ts-expect-error - Testing error case
             type: 'unknown',
@@ -841,7 +841,7 @@ describe('getShapeEndPoint', () => {
 
 describe('getShapePointAt', () => {
     it('should get point at parameter for line', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -855,7 +855,7 @@ describe('getShapePointAt', () => {
     });
 
     it('should throw error for unknown shape type', () => {
-        const unknownShape: Shape = {
+        const unknownShape: ShapeData = {
             id: '1',
             // @ts-expect-error - Testing error case
             type: 'unknown',
@@ -870,7 +870,7 @@ describe('getShapePointAt', () => {
 
 describe('getShapeLength', () => {
     it('should calculate length for line', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -884,7 +884,7 @@ describe('getShapeLength', () => {
     });
 
     it('should calculate length for circle', () => {
-        const circle: Shape = {
+        const circle: ShapeData = {
             id: '1',
             type: GeometryType.CIRCLE,
             geometry: {
@@ -898,7 +898,7 @@ describe('getShapeLength', () => {
     });
 
     it('should calculate length for arc with large angular span', () => {
-        const arc: Shape = {
+        const arc: ShapeData = {
             id: '1',
             type: GeometryType.ARC,
             geometry: {
@@ -914,7 +914,7 @@ describe('getShapeLength', () => {
     });
 
     it('should calculate length for polyline with nested shapes', () => {
-        const nestedShape: Shape = {
+        const nestedShape: ShapeData = {
             id: 'nested',
             type: GeometryType.LINE,
             geometry: {
@@ -923,7 +923,7 @@ describe('getShapeLength', () => {
             },
         };
 
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -937,7 +937,7 @@ describe('getShapeLength', () => {
     });
 
     it('should return 0 for polyline with no shapes', () => {
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -951,7 +951,7 @@ describe('getShapeLength', () => {
     });
 
     it('should calculate length for spline using NURBS sampling', () => {
-        const spline: Shape = {
+        const spline: ShapeData = {
             id: '1',
             type: GeometryType.SPLINE,
             geometry: {
@@ -986,7 +986,7 @@ describe('getShapeLength', () => {
     });
 
     it('should return 0 for spline when NURBS sampling fails', () => {
-        const spline: Shape = {
+        const spline: ShapeData = {
             id: '1',
             type: GeometryType.SPLINE,
             geometry: {
@@ -1017,7 +1017,7 @@ describe('getShapeLength', () => {
             };
         });
 
-        const ellipse: Shape = {
+        const ellipse: ShapeData = {
             id: '1',
             type: GeometryType.ELLIPSE,
             geometry: {
@@ -1034,7 +1034,7 @@ describe('getShapeLength', () => {
     });
 
     it('should calculate length for full ellipse using Ramanujan approximation', () => {
-        const ellipse: Shape = {
+        const ellipse: ShapeData = {
             id: '1',
             type: GeometryType.ELLIPSE,
             geometry: {
@@ -1049,7 +1049,7 @@ describe('getShapeLength', () => {
     });
 
     it('should return 0 for unknown shape type', () => {
-        const unknownShape: Shape = {
+        const unknownShape: ShapeData = {
             id: '1',
             // @ts-expect-error - Testing default case
             type: 'unknown',
@@ -1063,7 +1063,7 @@ describe('getShapeLength', () => {
 
 describe('getShapeNormal', () => {
     it('should calculate normal vector at midpoint', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -1080,7 +1080,7 @@ describe('getShapeNormal', () => {
 
 describe('getShapeMidpoint', () => {
     it('should get midpoint with default parameter', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -1094,7 +1094,7 @@ describe('getShapeMidpoint', () => {
     });
 
     it('should get midpoint with custom parameter', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -1110,7 +1110,7 @@ describe('getShapeMidpoint', () => {
 
 describe('reverseShape', () => {
     it('should reverse line shape', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -1127,7 +1127,7 @@ describe('reverseShape', () => {
     });
 
     it('should handle unknown shape type by returning unchanged', () => {
-        const unknownShape: Shape = {
+        const unknownShape: ShapeData = {
             id: '1',
             // @ts-expect-error - Testing default case
             type: 'unknown',
@@ -1141,7 +1141,7 @@ describe('reverseShape', () => {
 
 describe('scaleShape', () => {
     it('should scale line shape', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -1158,7 +1158,7 @@ describe('scaleShape', () => {
     });
 
     it('should scale circle/arc shape', () => {
-        const circle: Shape = {
+        const circle: ShapeData = {
             id: '1',
             type: GeometryType.CIRCLE,
             geometry: {
@@ -1175,7 +1175,7 @@ describe('scaleShape', () => {
     });
 
     it('should scale polyline with line segments', () => {
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -1201,7 +1201,7 @@ describe('scaleShape', () => {
     });
 
     it('should scale polyline with arc segments', () => {
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -1231,7 +1231,7 @@ describe('scaleShape', () => {
     });
 
     it('should scale ellipse shape', () => {
-        const ellipse: Shape = {
+        const ellipse: ShapeData = {
             id: '1',
             type: GeometryType.ELLIPSE,
             geometry: {
@@ -1250,7 +1250,7 @@ describe('scaleShape', () => {
     });
 
     it('should scale spline shape', () => {
-        const spline: Shape = {
+        const spline: ShapeData = {
             id: '1',
             type: GeometryType.SPLINE,
             geometry: {
@@ -1283,7 +1283,7 @@ describe('scaleShape', () => {
 
 describe('rotateShape', () => {
     it('should rotate line shape', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -1300,7 +1300,7 @@ describe('rotateShape', () => {
     });
 
     it('should rotate arc shape', () => {
-        const arc: Shape = {
+        const arc: ShapeData = {
             id: '1',
             type: GeometryType.ARC,
             geometry: {
@@ -1319,7 +1319,7 @@ describe('rotateShape', () => {
     });
 
     it('should rotate polyline with arc segments', () => {
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -1349,7 +1349,7 @@ describe('rotateShape', () => {
     });
 
     it('should rotate polyline with circle segments', () => {
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -1381,7 +1381,7 @@ describe('rotateShape', () => {
 
 describe('moveShape', () => {
     it('should move line shape', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -1398,7 +1398,7 @@ describe('moveShape', () => {
     });
 
     it('should move circle/arc shape', () => {
-        const circle: Shape = {
+        const circle: ShapeData = {
             id: '1',
             type: GeometryType.CIRCLE,
             geometry: {
@@ -1415,7 +1415,7 @@ describe('moveShape', () => {
     });
 
     it('should move ellipse shape', () => {
-        const ellipse: Shape = {
+        const ellipse: ShapeData = {
             id: '1',
             type: GeometryType.ELLIPSE,
             geometry: {
@@ -1441,7 +1441,7 @@ describe('isShapeClosed', () => {
     });
 
     it('should return false for arc', () => {
-        const arc: Shape = {
+        const arc: ShapeData = {
             id: '1',
             type: GeometryType.ARC,
             geometry: {
@@ -1455,7 +1455,7 @@ describe('isShapeClosed', () => {
     });
 
     it('should return false for line', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -1467,7 +1467,7 @@ describe('isShapeClosed', () => {
     });
 
     it('should return true for polyline with closed flag', () => {
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -1496,7 +1496,7 @@ describe('isShapeClosed', () => {
     });
 
     it('should return false for polyline with insufficient points', () => {
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -1511,7 +1511,7 @@ describe('isShapeClosed', () => {
     });
 
     it('should handle spline with NURBS evaluation failure', () => {
-        const spline: Shape = {
+        const spline: ShapeData = {
             id: '1',
             type: GeometryType.SPLINE,
             geometry: {
@@ -1543,7 +1543,7 @@ describe('isShapeClosed', () => {
     });
 
     it('should throw error for unknown shape type', () => {
-        const unknownShape: Shape = {
+        const unknownShape: ShapeData = {
             id: '1',
             // @ts-expect-error - Testing error case
             type: 'unknown',
@@ -1558,7 +1558,7 @@ describe('isShapeClosed', () => {
 
 describe('splitShapeAtMidpoint', () => {
     it('should split line at midpoint', () => {
-        const line: Shape = {
+        const line: ShapeData = {
             id: '1',
             type: GeometryType.LINE,
             geometry: {
@@ -1573,7 +1573,7 @@ describe('splitShapeAtMidpoint', () => {
     });
 
     it('should split arc at midpoint', () => {
-        const arc: Shape = {
+        const arc: ShapeData = {
             id: '1',
             type: GeometryType.ARC,
             geometry: {
@@ -1606,7 +1606,7 @@ describe('tessellateShape', () => {
     };
 
     it('should tessellate arc with clockwise direction', () => {
-        const clockwiseArc: Shape = {
+        const clockwiseArc: ShapeData = {
             id: '1',
             type: GeometryType.ARC,
             geometry: {
@@ -1623,7 +1623,7 @@ describe('tessellateShape', () => {
     });
 
     it('should tessellate arc with counterclockwise direction (negative deltaAngle)', () => {
-        const ccwArc: Shape = {
+        const ccwArc: ShapeData = {
             id: '1',
             type: GeometryType.ARC,
             geometry: {
@@ -1648,7 +1648,7 @@ describe('tessellateShape', () => {
             actual.tessellateEllipse
         );
 
-        const ellipseArc: Shape = {
+        const ellipseArc: ShapeData = {
             id: '1',
             type: GeometryType.ELLIPSE,
             geometry: {
@@ -1673,7 +1673,7 @@ describe('tessellateShape', () => {
             actual.tessellateEllipse
         );
 
-        const ellipse: Shape = {
+        const ellipse: ShapeData = {
             id: '1',
             type: GeometryType.ELLIPSE,
             geometry: {
@@ -1688,7 +1688,7 @@ describe('tessellateShape', () => {
     });
 
     it('should tessellate polyline using vertices when available', () => {
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -1709,7 +1709,7 @@ describe('tessellateShape', () => {
     });
 
     it('should tessellate polyline using points when vertices are null', () => {
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: '1',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -1732,7 +1732,7 @@ describe('tessellateShape', () => {
 
 describe('getShapePoints for native shapes', () => {
     it('should return single point for circle when forNativeShapes is true', () => {
-        const circle: Shape = {
+        const circle: ShapeData = {
             id: '1',
             type: GeometryType.CIRCLE,
             geometry: {
@@ -1746,7 +1746,7 @@ describe('getShapePoints for native shapes', () => {
     });
 
     it('should return start and end points for arc when forNativeShapes is true', () => {
-        const arc: Shape = {
+        const arc: ShapeData = {
             id: '1',
             type: GeometryType.ARC,
             geometry: {
@@ -1765,7 +1765,7 @@ describe('getShapePoints for native shapes', () => {
     });
 
     it('should handle spline NURBS sampling failure with fitPoints fallback', () => {
-        const spline: Shape = {
+        const spline: ShapeData = {
             id: '1',
             type: GeometryType.SPLINE,
             geometry: {
@@ -1793,7 +1793,7 @@ describe('getShapePoints for native shapes', () => {
     });
 
     it('should handle spline NURBS sampling failure with controlPoints fallback', () => {
-        const spline: Shape = {
+        const spline: ShapeData = {
             id: '1',
             type: GeometryType.SPLINE,
             geometry: {
@@ -1821,7 +1821,7 @@ describe('getShapePoints for native shapes', () => {
     });
 
     it('should return empty array for spline when all sampling fails', () => {
-        const spline: Shape = {
+        const spline: ShapeData = {
             id: '1',
             type: GeometryType.SPLINE,
             geometry: {
@@ -1845,7 +1845,7 @@ describe('getShapePoints for native shapes', () => {
 
 describe('getShapePoints - direction analysis mode', () => {
     it('should handle arc with clockwise property correctly', () => {
-        const clockwiseArc: Shape = {
+        const clockwiseArc: ShapeData = {
             id: '1',
             type: GeometryType.ARC,
             geometry: {
@@ -1864,7 +1864,7 @@ describe('getShapePoints - direction analysis mode', () => {
     });
 
     it('should handle arc with counterclockwise property correctly', () => {
-        const ccwArc: Shape = {
+        const ccwArc: ShapeData = {
             id: '1',
             type: GeometryType.ARC,
             geometry: {

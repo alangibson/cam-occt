@@ -1,69 +1,159 @@
 <script lang="ts">
-    import { createEventDispatcher } from 'svelte';
-    import {
-        parseDXF,
-        applyImportUnitConversion,
-    } from '$lib/parsers/dxf/functions';
+    import { untrack } from 'svelte';
+    import { parseDXF } from '$lib/parsers/dxf/functions';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { settingsStore } from '$lib/stores/settings/store';
-    import { Unit } from '$lib/config/units/units';
-    import { formatInsUnits } from '$lib/parsers/dxf/constants';
+    import { Unit, measurementSystemToUnit } from '$lib/config/units/units';
     import type { DrawingData } from '$lib/cam/drawing/interfaces';
     import { Drawing } from '$lib/cam/drawing/classes.svelte';
+    import type { ApplicationSettings } from '$lib/config/settings/interfaces';
+    import { ImportUnitSetting } from '$lib/config/settings/enums';
 
-    const dispatch = createEventDispatcher();
+    /**
+     * Apply unit override to a drawing based on application settings
+     * This function only changes the unit label without converting geometry values
+     */
+    function applyImportUnitConversion(
+        drawing: DrawingData,
+        settings: ApplicationSettings
+    ): DrawingData {
+        // Determine target unit based on import setting
+        let targetUnit: Unit;
 
-    function handleImportClick() {
-        dispatch('importAdvance');
+        switch (settings.importUnitSetting) {
+            case ImportUnitSetting.Automatic:
+                // Use the file's detected units - no override
+                return drawing;
+
+            case ImportUnitSetting.Application:
+                // Override to application's measurement system
+                targetUnit = measurementSystemToUnit(
+                    settings.measurementSystem
+                );
+                break;
+
+            case ImportUnitSetting.Metric:
+                // Force metric units
+                targetUnit = Unit.MM;
+                break;
+
+            case ImportUnitSetting.Imperial:
+                // Force imperial units
+                targetUnit = Unit.INCH;
+                break;
+
+            default:
+                // Fallback to automatic behavior
+                return drawing;
+        }
+
+        // If no override needed, return original drawing
+        if (drawing.units === targetUnit) {
+            return drawing;
+        }
+
+        // Only change the unit label, keep all geometry values unchanged
+        return {
+            ...drawing,
+            units: targetUnit,
+        };
     }
 
-    let fileInput: HTMLInputElement;
-    let isDragging = false;
-    let originalUnits: Unit | null = null;
-    let originalDrawing: DrawingData | null = null;
-    let rawInsUnits: number | undefined = undefined;
-
-    $: fileName = $drawingStore.drawing?.fileName ?? null;
-    $: settings = $settingsStore.settings;
-
-    // Reset originalUnits, originalDrawing, and rawInsUnits when no file is loaded
-    $: if (!fileName) {
-        originalUnits = null;
-        originalDrawing = null;
-        rawInsUnits = undefined;
+    interface Props {
+        onimportAdvance?: () => void;
+        onfileImported?: (detail: {
+            drawing: DrawingData;
+            fileName: string;
+            originalUnits: Unit | null;
+        }) => void;
     }
 
-    // Re-apply unit conversion when settings change
-    $: if (originalDrawing && settings && fileName) {
-        const convertedDrawing = applyImportUnitConversion(
-            originalDrawing,
-            settings
-        );
-        drawingStore.setDrawing(new Drawing(convertedDrawing), fileName);
-    }
+    let { onimportAdvance, onfileImported }: Props = $props();
+
+    let fileInput: HTMLInputElement | undefined = $state();
+    let isDragging = $state(false);
+    let originalUnits: Unit | null = $state(null);
+    let originalDrawing: DrawingData | null = $state(null);
+    let settingsEffectInitialized = $state(false);
+
+    let fileName = $derived($drawingStore.drawing?.fileName ?? null);
+    let settings = $derived($settingsStore.settings);
+
+    // Reset originalUnits and originalDrawing when no file is loaded
+    $effect(() => {
+        if (!fileName) {
+            originalUnits = null;
+            originalDrawing = null;
+            settingsEffectInitialized = false;
+        }
+    });
+
+    // Re-apply unit conversion when settings change (not on initial import)
+    $effect(() => {
+        // Only track settings as the dependency
+        const currentSettings = settings;
+
+        untrack(() => {
+            if (originalDrawing && currentSettings && fileName) {
+                if (settingsEffectInitialized) {
+                    const convertedDrawing = applyImportUnitConversion(
+                        originalDrawing,
+                        currentSettings
+                    );
+                    drawingStore.setDrawing(
+                        new Drawing(convertedDrawing),
+                        fileName
+                    );
+                } else {
+                    settingsEffectInitialized = true;
+                }
+            }
+        });
+    });
 
     async function handleFiles(files: FileList | null) {
-        if (!files || files.length === 0) return;
+        console.log('[handleFiles] Starting file handling...');
+        if (!files || files.length === 0) {
+            console.log('[handleFiles] No files provided, returning');
+            return;
+        }
 
         const file = files[0];
+        console.log(
+            '[handleFiles] Processing file:',
+            file.name,
+            'size:',
+            file.size,
+            'bytes'
+        );
         const reader = new FileReader();
 
         reader.onload = async (e) => {
+            console.log('[handleFiles] File read complete, parsing content...');
             const content = e.target?.result as string;
 
             try {
                 let drawing;
 
                 if (file.name.toLowerCase().endsWith('.dxf')) {
+                    console.log(
+                        '[handleFiles] Detected DXF file, calling parseDXF...'
+                    );
                     // Parse DXF file
                     const parsedDrawing: DrawingData = await parseDXF(content);
+                    console.log(
+                        '[handleFiles] DXF parsed, shapes:',
+                        parsedDrawing.shapes.length,
+                        'units:',
+                        parsedDrawing.units
+                    );
 
-                    // Store original drawing, units, and raw $INSUNITS before conversion
+                    // Store original drawing and units before conversion
                     originalDrawing = parsedDrawing;
                     originalUnits = parsedDrawing.units;
-                    rawInsUnits = parsedDrawing.rawInsUnits;
 
                     // Apply unit conversion based on application settings
+                    console.log('[handleFiles] Applying unit conversion...');
                     drawing = applyImportUnitConversion(
                         parsedDrawing,
                         settings
@@ -72,22 +162,31 @@
                     // Add fileName to the drawing data
                     drawing.fileName = file.name;
 
+                    console.log('[handleFiles] Setting drawing in store...');
                     drawingStore.setDrawing(new Drawing(drawing), file.name);
-                    dispatch('fileImported', {
+                    onfileImported?.({
                         drawing,
                         fileName: file.name,
                         originalUnits,
                     });
+                    console.log(
+                        '[handleFiles] File import completed successfully'
+                    );
                 } else {
+                    console.log(
+                        '[handleFiles] Unsupported file format:',
+                        file.name
+                    );
                     alert('Unsupported file format. Please use DXF files.');
                     return;
                 }
             } catch (error) {
-                console.error('Error parsing file:', error);
+                console.error('[handleFiles] Error parsing file:', error);
                 alert('Error parsing file. Please check the file format.');
             }
         };
 
+        console.log('[handleFiles] Reading file as text...');
         reader.readAsText(file);
     }
 
@@ -110,9 +209,9 @@
 <div
     class="file-import"
     class:dragging={isDragging}
-    on:drop={handleDrop}
-    on:dragover={handleDragOver}
-    on:dragleave={handleDragLeave}
+    ondrop={handleDrop}
+    ondragover={handleDragOver}
+    ondragleave={handleDragLeave}
     role="region"
     aria-label="File import area"
 >
@@ -120,18 +219,18 @@
         bind:this={fileInput}
         type="file"
         accept=".dxf"
-        on:change={(e) => handleFiles(e.currentTarget.files)}
+        onchange={(e) => handleFiles(e.currentTarget.files)}
         style="display: none;"
     />
 
     <div class="button-container">
-        <button class="import-button" on:click={() => fileInput.click()}>
+        <button class="import-button" onclick={() => fileInput?.click()}>
             Open DXF
         </button>
         <button
             class="advance-button"
             disabled={!fileName}
-            on:click={handleImportClick}
+            onclick={() => onimportAdvance?.()}
         >
             Import
         </button>
@@ -140,7 +239,7 @@
     {#if fileName}
         <p class="filename">
             Loaded: {fileName}
-            <span class="units">({formatInsUnits(rawInsUnits)})</span>
+            <span class="units">({originalUnits})</span>
         </p>
     {:else}
         <p class="hint">or drag and drop a file here</p>

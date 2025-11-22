@@ -2,7 +2,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { describe, expect, it } from 'vitest';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { CutPath } from '$lib/cam/cut-generator/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { CutterCompensation } from '$lib/cam/cut-generator/enums';
@@ -13,8 +13,8 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 describe('generateGCode', () => {
     const mockDrawing: DrawingData = {
         shapes: [],
-        bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
         units: Unit.MM,
+        fileName: '',
     };
 
     const mockCut: CutPath = {
@@ -316,7 +316,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle native spline commands when enabled', () => {
-            const splineShape: Shape = {
+            const splineShape: ShapeData = {
                 id: 'spline1',
                 type: GeometryType.SPLINE,
                 layer: 'test',
@@ -352,7 +352,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle native arc commands when enabled', () => {
-            const arcShape: Shape = {
+            const arcShape: ShapeData = {
                 id: 'arc1',
                 type: GeometryType.ARC,
                 layer: 'test',
@@ -384,7 +384,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle native circle commands when enabled', () => {
-            const circleShape: Shape = {
+            const circleShape: ShapeData = {
                 id: 'circle1',
                 type: GeometryType.CIRCLE,
                 layer: 'test',
@@ -415,7 +415,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle native circle hole commands with correct direction', () => {
-            const circleShape: Shape = {
+            const circleShape: ShapeData = {
                 id: 'circle1',
                 type: GeometryType.CIRCLE,
                 layer: 'test',
@@ -447,7 +447,7 @@ describe('generateGCode', () => {
         });
 
         it('should handle incomplete spline data with fallback', () => {
-            const incompleteSpline: Shape = {
+            const incompleteSpline: ShapeData = {
                 id: 'incomplete-spline',
                 type: GeometryType.SPLINE,
                 layer: 'test',

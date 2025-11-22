@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
+import { get } from 'svelte/store';
+import { planStore } from '$lib/stores/plan/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { chainStore } from '$lib/stores/chains/store';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe.skip('SimulateStage Cut Direction', () => {
@@ -16,7 +19,7 @@ describe.skip('SimulateStage Cut Direction', () => {
 
     it('should trace circles clockwise when cut direction is clockwise', () => {
         // Create a circle shape
-        const circleShape: Shape = {
+        const circleShape: ShapeData = {
             id: 'circle-1',
             type: GeometryType.CIRCLE,
             geometry: {
@@ -26,7 +29,7 @@ describe.skip('SimulateStage Cut Direction', () => {
         };
 
         // Create a chain with the circle
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain-1',
             shapes: [circleShape],
         };
@@ -36,35 +39,39 @@ describe.skip('SimulateStage Cut Direction', () => {
         chainStore.setChains([chain]);
 
         // Create cuts with different cut directions
-        cutStore.addCut({
-            id: 'cut-clockwise-1',
-            name: 'Clockwise Circle',
-            operationId: 'op-1',
-            chainId: 'chain-1',
-            toolId: 'tool-1',
-            enabled: true,
-            order: 1,
-            cutDirection: CutDirection.CLOCKWISE,
-            feedRate: 1000,
-            normal: { x: 1, y: 0 },
-            normalConnectionPoint: { x: 0, y: 0 },
-            normalSide: NormalSide.LEFT,
-        });
+        get(planStore).plan.cuts.push(
+            new Cut({
+                id: 'cut-clockwise-1',
+                name: 'Clockwise Circle',
+                operationId: 'op-1',
+                chainId: 'chain-1',
+                toolId: 'tool-1',
+                enabled: true,
+                order: 1,
+                cutDirection: CutDirection.CLOCKWISE,
+                feedRate: 1000,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
+            })
+        );
 
-        cutStore.addCut({
-            id: 'cut-counter-1',
-            name: 'Counterclockwise Circle',
-            operationId: 'op-2',
-            chainId: 'chain-1',
-            toolId: 'tool-1',
-            enabled: true,
-            order: 2,
-            cutDirection: CutDirection.COUNTERCLOCKWISE,
-            feedRate: 1000,
-            normal: { x: 1, y: 0 },
-            normalConnectionPoint: { x: 0, y: 0 },
-            normalSide: NormalSide.LEFT,
-        });
+        get(planStore).plan.cuts.push(
+            new Cut({
+                id: 'cut-counter-1',
+                name: 'Counterclockwise Circle',
+                operationId: 'op-2',
+                chainId: 'chain-1',
+                toolId: 'tool-1',
+                enabled: true,
+                order: 2,
+                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                feedRate: 1000,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
+            })
+        );
 
         // Access the internal getPositionOnShape function from the SimulateStage component
         // For testing purposes, we'll verify the mathematical correctness directly
@@ -92,7 +99,7 @@ describe.skip('SimulateStage Cut Direction', () => {
 
     it('should trace ellipses clockwise when cut direction is clockwise', () => {
         // Create an ellipse shape
-        const ellipseShape: Shape = {
+        const ellipseShape: ShapeData = {
             id: 'ellipse-1',
             type: GeometryType.ELLIPSE,
             geometry: {
@@ -103,7 +110,7 @@ describe.skip('SimulateStage Cut Direction', () => {
         };
 
         // Create a chain with the ellipse
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain-2',
             shapes: [ellipseShape],
         };
@@ -113,35 +120,39 @@ describe.skip('SimulateStage Cut Direction', () => {
         chainStore.setChains([chain]);
 
         // Create cuts with different cut directions
-        cutStore.addCut({
-            id: 'cut-clockwise-2',
-            name: 'Clockwise Ellipse',
-            operationId: 'op-3',
-            chainId: 'chain-2',
-            toolId: 'tool-1',
-            enabled: true,
-            order: 3,
-            cutDirection: CutDirection.CLOCKWISE,
-            feedRate: 1000,
-            normal: { x: 1, y: 0 },
-            normalConnectionPoint: { x: 0, y: 0 },
-            normalSide: NormalSide.LEFT,
-        });
+        get(planStore).plan.cuts.push(
+            new Cut({
+                id: 'cut-clockwise-2',
+                name: 'Clockwise Ellipse',
+                operationId: 'op-3',
+                chainId: 'chain-2',
+                toolId: 'tool-1',
+                enabled: true,
+                order: 3,
+                cutDirection: CutDirection.CLOCKWISE,
+                feedRate: 1000,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
+            })
+        );
 
-        cutStore.addCut({
-            id: 'cut-counter-2',
-            name: 'Counterclockwise Ellipse',
-            operationId: 'op-4',
-            chainId: 'chain-2',
-            toolId: 'tool-1',
-            enabled: true,
-            order: 4,
-            cutDirection: CutDirection.COUNTERCLOCKWISE,
-            feedRate: 1000,
-            normal: { x: 1, y: 0 },
-            normalConnectionPoint: { x: 0, y: 0 },
-            normalSide: NormalSide.LEFT,
-        });
+        get(planStore).plan.cuts.push(
+            new Cut({
+                id: 'cut-counter-2',
+                name: 'Counterclockwise Ellipse',
+                operationId: 'op-4',
+                chainId: 'chain-2',
+                toolId: 'tool-1',
+                enabled: true,
+                order: 4,
+                cutDirection: CutDirection.COUNTERCLOCKWISE,
+                feedRate: 1000,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
+            })
+        );
 
         // TODO: Once getPositionOnShape is updated to accept cut direction,
         // verify that the ellipse is traced in the correct direction
@@ -149,7 +160,7 @@ describe.skip('SimulateStage Cut Direction', () => {
 
     it('should handle cut direction "none" for open chains', () => {
         // Create a line shape (open chain)
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'line-1',
             type: GeometryType.LINE,
             geometry: {
@@ -159,7 +170,7 @@ describe.skip('SimulateStage Cut Direction', () => {
         };
 
         // Create an open chain
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain-3',
             shapes: [lineShape],
         };
@@ -169,20 +180,22 @@ describe.skip('SimulateStage Cut Direction', () => {
         chainStore.setChains([chain]);
 
         // Create cut with "none" cut direction
-        cutStore.addCut({
-            id: 'cut-open-1',
-            name: 'Open Line',
-            operationId: 'op-5',
-            chainId: 'chain-3',
-            toolId: 'tool-1',
-            enabled: true,
-            order: 5,
-            cutDirection: CutDirection.NONE,
-            feedRate: 1000,
-            normal: { x: 1, y: 0 },
-            normalConnectionPoint: { x: 0, y: 0 },
-            normalSide: NormalSide.LEFT,
-        });
+        get(planStore).plan.cuts.push(
+            new Cut({
+                id: 'cut-open-1',
+                name: 'Open Line',
+                operationId: 'op-5',
+                chainId: 'chain-3',
+                toolId: 'tool-1',
+                enabled: true,
+                order: 5,
+                cutDirection: CutDirection.NONE,
+                feedRate: 1000,
+                normal: { x: 1, y: 0 },
+                normalConnectionPoint: { x: 0, y: 0 },
+                normalSide: NormalSide.LEFT,
+            })
+        );
 
         // Open chains should always trace from start to end regardless of cut direction
         // TODO: Verify this behavior once implementation is fixed

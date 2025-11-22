@@ -13,8 +13,9 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
+import { Chain } from '$lib/geometry/chain/classes';
 
 describe('Lead Hole Placement Fix', () => {
     // Helper to check if a point is inside a polygon using ray casting
@@ -49,7 +50,7 @@ describe('Lead Hole Placement Fix', () => {
 
     // Helper to get polygon points from a chain
     function getPolygonFromChain(chain: {
-        shapes: Shape[];
+        shapes: ShapeData[];
     }): { x: number; y: number }[] {
         const points: { x: number; y: number }[] = [];
 
@@ -100,7 +101,7 @@ describe('Lead Hole Placement Fix', () => {
     // Helper to check if point is inside a void (good for leads)
     function isPointInVoid(
         point: { x: number; y: number },
-        part: { voids: { chain: { shapes: Shape[] } }[] }
+        part: { voids: { chain: { shapes: ShapeData[] } }[] }
     ): boolean {
         for (const voidItem of part.voids) {
             const voidPolygon = getPolygonFromChain(voidItem.chain);
@@ -115,8 +116,8 @@ describe('Lead Hole Placement Fix', () => {
     function isPointInSolidArea(
         point: { x: number; y: number },
         part: {
-            shell: { shapes: Shape[] };
-            voids: { chain: { shapes: Shape[] } }[];
+            shell: { shapes: ShapeData[] };
+            voids: { chain: { shapes: ShapeData[] } }[];
         }
     ): boolean {
         const shellPolygon = getPolygonFromChain(part.shell);
@@ -169,7 +170,7 @@ describe('Lead Hole Placement Fix', () => {
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
-            part5.shell,
+            new Chain(part5.shell),
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
@@ -215,7 +216,7 @@ describe('Lead Hole Placement Fix', () => {
 
         // The algorithm should correctly detect unreachable holes and fall back to default placement
         const warningResult = calculateLeads(
-            part5.shell,
+            new Chain(part5.shell),
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,
@@ -240,7 +241,7 @@ describe('Lead Hole Placement Fix', () => {
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
-            part5.shell,
+            new Chain(part5.shell),
             leadIn,
             leadOut,
             CutDirection.CLOCKWISE,

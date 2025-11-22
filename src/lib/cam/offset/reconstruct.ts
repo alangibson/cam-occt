@@ -5,7 +5,7 @@
  * Clipper2 returns point arrays which are converted to chains of Line shapes.
  */
 
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
@@ -27,13 +27,13 @@ import { INTERSECTION_TOLERANCE } from '$lib/geometry/math/constants';
  * @param pointArrays - Array of point arrays from Clipper2 (can be multiple polygons)
  * @returns Array of Line shapes representing all polygons concatenated together
  */
-export function reconstructChain(pointArrays: Point2D[][]): Shape[] {
+export function reconstructChain(pointArrays: Point2D[][]): ShapeData[] {
     // Handle empty input
     if (pointArrays.length === 0) {
         return [];
     }
 
-    const allShapes: Shape[] = [];
+    const allShapes: ShapeData[] = [];
 
     for (const points of pointArrays) {
         // Skip empty point arrays
@@ -99,7 +99,7 @@ export function reconstructChain(pointArrays: Point2D[][]): Shape[] {
  * @returns Complete OffsetChain object
  */
 export function createOffsetChain(
-    shapes: Shape[],
+    shapes: ShapeData[],
     side: 'inner' | 'outer' | 'left' | 'right',
     originalChainId: string,
     closed: boolean
@@ -111,7 +111,6 @@ export function createOffsetChain(
         shapes,
         closed,
         continuous: true, // Clipper2 guarantees continuous offsets
-        gapFills: [], // Not applicable - Clipper2 handles gap filling internally
         trimPoints: [], // Not applicable - Clipper2 handles trimming internally
         intersectionPoints: [], // Not applicable - Clipper2 handles intersections internally
     };

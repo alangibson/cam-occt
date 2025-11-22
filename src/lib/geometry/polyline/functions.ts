@@ -1,4 +1,4 @@
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -24,7 +24,7 @@ function createBulgeOrLineShape(
     start: PolylineVertex,
     end: Point2D,
     bulge?: number
-): Shape {
+): ShapeData {
     if (bulge !== undefined && bulge !== 0) {
         const arc: Arc | null = convertBulgeToArc(bulge, start, end);
         if (arc) {
@@ -53,10 +53,8 @@ export function createPolylineFromVertices(
     options: {
         id?: string;
         layer?: string;
-        originalType?: string;
-        metadata?: Record<string, string | number | boolean>;
     } = {}
-): Shape {
+): ShapeData {
     if (!vertices || vertices.length === 0) {
         throw new Error('Polyline must have at least one vertex');
     }
@@ -99,7 +97,7 @@ export function createPolylineFromVertices(
     }
 
     // Generate shapes array from vertices
-    const shapes: Shape[] = generateSegments(polylineVertices, closed);
+    const shapes: ShapeData[] = generateSegments(polylineVertices, closed);
 
     const geometry: Polyline = {
         closed,
@@ -111,8 +109,6 @@ export function createPolylineFromVertices(
         type: GeometryType.POLYLINE,
         geometry,
         ...(options.layer && { layer: options.layer }),
-        ...(options.originalType && { originalType: options.originalType }),
-        ...(options.metadata && { metadata: options.metadata }),
     };
 }
 
@@ -132,8 +128,8 @@ export function getPolylineEndPoint(polyline: Polyline): Point2D {
 export function generateSegments(
     vertices: PolylineVertex[],
     closed: boolean = false
-): Shape[] {
-    const segments: Shape[] = [];
+): ShapeData[] {
+    const segments: ShapeData[] = [];
     const sourcePoints: PolylineVertex[] = vertices;
 
     if (sourcePoints.length < 2) {
@@ -382,7 +378,7 @@ export function reversePolyline(polyline: Polyline): Polyline {
     }
 
     // Reverse the shapes array
-    const reversedShapes: Shape[] = [...polyline.shapes]
+    const reversedShapes: ShapeData[] = [...polyline.shapes]
         .reverse()
         .map((shape) => {
             const segment: Line | Arc | Circle | Polyline | Ellipse | Spline =

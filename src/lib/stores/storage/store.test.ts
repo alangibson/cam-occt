@@ -273,7 +273,6 @@ vi.mock('svelte/store', () => ({
         }
         if (store === rapidStore) {
             return {
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -387,8 +386,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -406,7 +405,6 @@ describe('storage/store', () => {
                 partWarnings: [],
                 highlightedPartId: null,
                 selectedPartIds: [],
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -457,8 +455,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -476,7 +474,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: 'part-456',
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -523,8 +520,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -542,7 +539,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -597,8 +593,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -616,7 +612,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: ['rapid-1'],
                 highlightedRapidId: 'rapid-2',
@@ -666,8 +661,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -685,7 +680,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -733,8 +727,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -752,7 +746,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -805,8 +798,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -824,7 +817,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -883,8 +875,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -902,7 +894,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -962,8 +953,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -981,7 +972,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -1046,8 +1036,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -1065,7 +1055,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -1124,8 +1113,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -1143,7 +1132,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -1201,8 +1189,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -1220,7 +1208,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -1279,8 +1266,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -1298,7 +1285,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -1357,8 +1343,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -1376,7 +1362,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,
@@ -1436,8 +1421,8 @@ describe('storage/store', () => {
             const mockState: PersistedState = {
                 drawing: {
                     shapes: [],
-                    bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                     units: Unit.MM,
+                    fileName: '',
                 },
                 selectedShapes: [],
                 hoveredShape: null,
@@ -1455,7 +1440,6 @@ describe('storage/store', () => {
                 parts: [],
                 partWarnings: [],
                 highlightedPartId: null,
-                rapids: [],
                 showRapids: false,
                 selectedRapidIds: [],
                 highlightedRapidId: null,

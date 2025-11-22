@@ -4,6 +4,7 @@ import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { convertLeadGeometryToPoints } from './functions';
@@ -19,10 +20,10 @@ describe('Lead Direction Debug', () => {
             { x: 0, y: 0, bulge: 0 },
         ];
 
-        const squareChain = {
+        const squareChain = new Chain({
             id: 'test-square',
             shapes: [createPolylineFromVertices(squareVertices, true)],
-        };
+        });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
         const noLeadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
@@ -111,10 +112,10 @@ describe('Lead Direction Debug', () => {
             { x: 0, y: 0, bulge: 0 },
         ];
 
-        const squareChain = {
+        const squareChain = new Chain({
             id: 'test-square',
             shapes: [createPolylineFromVertices(squareVertices, true)],
-        };
+        });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 5 };
         const noLeadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
@@ -179,14 +180,14 @@ describe('Lead Direction Debug', () => {
             { x: 0, y: 0, bulge: 0 },
         ];
 
-        const originalChain = {
+        const originalChain = new Chain({
             id: 'test-square',
             shapes: [
                 createPolylineFromVertices(squareVertices, true, {
                     id: 'square-1',
                 }),
             ],
-        };
+        });
 
         const leadConfig: LeadConfig = { type: LeadType.ARC, length: 2 }; // Shorter length to avoid validation warnings
         const noLeadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
@@ -201,11 +202,10 @@ describe('Lead Direction Debug', () => {
             { x: 1, y: 0 }
         );
 
-        // This test documents that leads should be generated even with validation warnings
+        // This test documents that leads should be generated properly
         // The fix ensures that when offset geometry exists, leads are calculated properly
         // without causing a visual jump in the UI
         expect(originalResult).toBeDefined();
-        expect(originalResult.validation).toBeDefined();
 
         // The key insight is that the issue occurs in the timing between:
         // 1. Path creation with offset geometry

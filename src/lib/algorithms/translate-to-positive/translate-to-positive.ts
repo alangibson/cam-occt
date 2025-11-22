@@ -1,5 +1,5 @@
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -16,7 +16,7 @@ import { getShapePointsForBounds } from '$lib/geometry/bounding-box/functions';
  * so that the minimum coordinates are at (0, 0), ensuring all geometry is in
  * the positive quadrant for consistent CAM processing.
  */
-export function translateToPositiveQuadrant(shapes: Shape[]): Shape[] {
+export function translateToPositiveQuadrant(shapes: ShapeData[]): ShapeData[] {
     if (shapes.length === 0) return shapes;
 
     // Calculate bounding box
@@ -46,8 +46,8 @@ export function translateToPositiveQuadrant(shapes: Shape[]): Shape[] {
 /**
  * Translate a single shape by the given offsets
  */
-function translateShape(shape: Shape, dx: number, dy: number): Shape {
-    const translated: Shape = { ...shape };
+function translateShape(shape: ShapeData, dx: number, dy: number): ShapeData {
+    const translated: ShapeData = { ...shape };
 
     switch (shape.type) {
         case GeometryType.LINE:
@@ -77,7 +77,7 @@ function translateShape(shape: Shape, dx: number, dy: number): Shape {
         case GeometryType.POLYLINE:
             const polyline: Polyline = shape.geometry as Polyline;
             // Translate shapes instead of points/vertices (new polyline structure)
-            const translatedShapes: Shape[] = polyline.shapes.map(
+            const translatedShapes: ShapeData[] = polyline.shapes.map(
                 (polylineShape) => {
                     const segment: Line | Arc = polylineShape.geometry as
                         | Line

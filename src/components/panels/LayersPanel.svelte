@@ -3,6 +3,6 @@
     import LayersList from './LayersList.svelte';
 </script>
 
-<AccordionPanel title="Layers" isExpanded={false}>
+<AccordionPanel title="Layers" isExpanded={true}>
     <LayersList />
 </AccordionPanel>

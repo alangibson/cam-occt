@@ -2,15 +2,15 @@
  * Part operations module - handles cut generation for parts (shells, holes, and slots)
  */
 
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
 import { getChainCutDirection } from '$lib/geometry/chain/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import type { PartVoid, PartSlot } from '$lib/cam/part/interfaces';
-import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import { LeadType } from '$lib/cam/lead/enums';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
@@ -18,37 +18,42 @@ import { getToolValue } from '$lib/cam/tool/tool-utils';
 import { calculateChainOffset } from '$lib/cam/pipeline/operations/offset-calculation';
 import { calculateCutLeads } from '$lib/cam/pipeline/leads/lead-orchestration';
 import type { OffsetCalculation, CutGenerationResult } from './interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { Operation } from '$lib/cam/operation/classes.svelte';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 
 /**
  * Generate cuts for a part target with an operation
  * Creates cuts for shell, holes, and slots
- * @param operation - The operation defining cut parameters
- * @param targetId - The part ID to cut
+ * @param operation - The operation defining cut parameters (contains tool and targets)
  * @param index - Index of this target in the operation's target list
- * @param chains - All available chains
- * @param parts - All available parts
- * @param tools - All available tools
  * @param tolerance - Tolerance for geometric operations
  * @returns Promise of cut generation result with cuts and warnings
  */
 export async function generateCutsForPartsWithOperation(
     operation: Operation,
-    targetId: string,
     index: number,
-    chains: Chain[],
-    parts: Part[],
-    tools: Tool[],
     tolerance: number
 ): Promise<CutGenerationResult> {
-    // For parts, create cuts for all chains that make up the part
-    const part: Part | undefined = parts.find((p) => p.id === targetId);
+    // Get part from operation targets
+    const part = operation.targets[index] as Part;
+    const tool = operation.tool;
 
-    // Return empty arrays if part not found
-    if (!part) {
+    // Return empty arrays if part not found or tool missing
+    if (!part || !tool) {
         return { cuts: [], warnings: [] };
     }
+
+    const targetId = part.id;
+
+    // Get all parts from operation targets (for lead calculations)
+    const parts: Part[] = operation.targets.filter(
+        (t) => !('shapes' in t)
+    ) as Part[];
+
+    // Get all chains from part
+    const chains: ChainData[] = [part.shell];
+    chains.push(...part.voids.map((v) => v.chain));
+    chains.push(...part.slots.map((s) => s.chain));
 
     const cutsToReturn: Cut[] = [];
     const warningsToReturn: {
@@ -59,7 +64,7 @@ export async function generateCutsForPartsWithOperation(
     }[] = [];
 
     // Create a cut for the shell chain using operation's preferred direction
-    const shellChain: Chain | undefined = chains.find(
+    const shellChain: ChainData | undefined = chains.find(
         (c) => c.id === part.shell.id
     );
     const shellStoredDirection: CutDirection = getChainCutDirection(shellChain);
@@ -91,16 +96,12 @@ export async function generateCutsForPartsWithOperation(
 
     // Calculate offset for shell if kerf compensation is enabled
     let shellCalculatedOffset: OffsetCalculation | undefined = undefined;
-    if (
-        shellKerfCompensation !== OffsetDirection.NONE &&
-        shellChain &&
-        operation.toolId
-    ) {
+    if (shellKerfCompensation !== OffsetDirection.NONE && shellChain && tool) {
         const offsetResult = await calculateChainOffset(
             shellChain,
             shellKerfCompensation,
-            operation.toolId,
-            tools
+            tool.id,
+            [tool]
         );
         if (offsetResult) {
             // Collect warnings for return instead of directly updating stores
@@ -118,7 +119,6 @@ export async function generateCutsForPartsWithOperation(
                 kerfWidth: offsetResult.kerfWidth,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
-                gapFills: offsetResult.gapFills,
             };
         }
     }
@@ -151,23 +151,20 @@ export async function generateCutsForPartsWithOperation(
 
     // Get kerf width from tool (needed for cutter visualization even when compensation is NONE)
     let shellKerfWidth: number | undefined = undefined;
-    if (operation.toolId) {
-        const tool = tools.find((t) => t.id === operation.toolId);
-        if (tool) {
-            const toolKerfWidth = getToolValue(tool, 'kerfWidth');
-            if (toolKerfWidth) {
-                shellKerfWidth = toolKerfWidth;
-            }
+    if (tool) {
+        const toolKerfWidth = getToolValue(tool, 'kerfWidth');
+        if (toolKerfWidth) {
+            shellKerfWidth = toolKerfWidth;
         }
     }
 
     // Create shell cut
-    const shellCut: Cut = {
+    const shellCut = new Cut({
         id: crypto.randomUUID(),
         name: `${operation.name} - Part ${targetId.split('-')[1]} (Shell)`,
         operationId: operation.id,
         chainId: part.shell.id,
-        toolId: operation.toolId,
+        toolId: tool.id,
         enabled: true,
         order: index + 1,
         cutDirection: shellCutDirection,
@@ -185,7 +182,7 @@ export async function generateCutsForPartsWithOperation(
         normal: shellCutNormalResult.normal,
         normalConnectionPoint: shellCutNormalResult.connectionPoint,
         normalSide: shellCutNormalResult.normalSide,
-    };
+    });
 
     // Optimize shell cut start point if enabled
     if (
@@ -215,7 +212,7 @@ export async function generateCutsForPartsWithOperation(
 
             // Update offset shapes to match optimized cutChain
             if (shellCut.offset && shellCut.cutChain) {
-                shellCut.offset.offsetShapes = shellCut.cutChain.shapes;
+                shellCut.offset!.offsetShapes = shellCut.cutChain.shapes;
             }
         }
     }
@@ -245,13 +242,6 @@ export async function generateCutsForPartsWithOperation(
                 version: '1.0.0',
             };
         }
-
-        if (shellLeadResult.validation) {
-            shellCut.leadValidation = {
-                ...shellLeadResult.validation,
-                validatedAt: new Date().toISOString(),
-            };
-        }
     }
 
     cutsToReturn.push(shellCut);
@@ -263,7 +253,7 @@ export async function generateCutsForPartsWithOperation(
         for (let holeIndex = 0; holeIndex < holes.length; holeIndex++) {
             const hole = holes[holeIndex];
             // Use operation's preferred cut direction for the hole chain
-            const holeChain: Chain | undefined = chains.find(
+            const holeChain: ChainData | undefined = chains.find(
                 (c) => c.id === hole.chain.id
             );
             const holeStoredDirection: CutDirection =
@@ -299,13 +289,13 @@ export async function generateCutsForPartsWithOperation(
             if (
                 holeKerfCompensation !== OffsetDirection.NONE &&
                 holeChain &&
-                operation.toolId
+                tool
             ) {
                 const offsetResult = await calculateChainOffset(
                     holeChain,
                     holeKerfCompensation,
-                    operation.toolId,
-                    tools
+                    tool.id,
+                    [tool]
                 );
                 if (offsetResult) {
                     // Collect warnings for return instead of directly updating stores
@@ -323,7 +313,6 @@ export async function generateCutsForPartsWithOperation(
                         kerfWidth: offsetResult.kerfWidth,
                         generatedAt: new Date().toISOString(),
                         version: '1.0.0',
-                        gapFills: offsetResult.gapFills,
                     };
                 }
             }
@@ -356,23 +345,20 @@ export async function generateCutsForPartsWithOperation(
 
             // Get kerf width from tool (needed for cutter visualization even when compensation is NONE)
             let holeKerfWidth: number | undefined = undefined;
-            if (operation.toolId) {
-                const tool = tools.find((t) => t.id === operation.toolId);
-                if (tool) {
-                    const toolKerfWidth = getToolValue(tool, 'kerfWidth');
-                    if (toolKerfWidth) {
-                        holeKerfWidth = toolKerfWidth;
-                    }
+            if (tool) {
+                const toolKerfWidth = getToolValue(tool, 'kerfWidth');
+                if (toolKerfWidth) {
+                    holeKerfWidth = toolKerfWidth;
                 }
             }
 
             // Create hole cut
-            const holeCut: Cut = {
+            const holeCut = new Cut({
                 id: crypto.randomUUID(),
                 name: `${operation.name} - Part ${targetId.split('-')[1]} ${prefix}(Hole ${holeIndex + 1})`,
                 operationId: operation.id,
                 chainId: hole.chain.id,
-                toolId: operation.toolId,
+                toolId: tool?.id || null,
                 enabled: true,
                 order: cutOrder++,
                 cutDirection: holeCutDirection,
@@ -390,7 +376,7 @@ export async function generateCutsForPartsWithOperation(
                 normal: holeCutNormalResult.normal,
                 normalConnectionPoint: holeCutNormalResult.connectionPoint,
                 normalSide: holeCutNormalResult.normalSide,
-            };
+            });
 
             // Optimize hole cut start point if enabled
             if (
@@ -420,7 +406,7 @@ export async function generateCutsForPartsWithOperation(
 
                     // Update offset shapes to match optimized cutChain
                     if (holeCut.offset && holeCut.cutChain) {
-                        holeCut.offset.offsetShapes = holeCut.cutChain.shapes;
+                        holeCut.offset!.offsetShapes = holeCut.cutChain.shapes;
                     }
                 }
             }
@@ -450,13 +436,6 @@ export async function generateCutsForPartsWithOperation(
                         version: '1.0.0',
                     };
                 }
-
-                if (holeLeadResult.validation) {
-                    holeCut.leadValidation = {
-                        ...holeLeadResult.validation,
-                        validatedAt: new Date().toISOString(),
-                    };
-                }
             }
 
             cutsToReturn.push(holeCut);
@@ -470,7 +449,7 @@ export async function generateCutsForPartsWithOperation(
         for (let slotIndex = 0; slotIndex < slots.length; slotIndex++) {
             const slot = slots[slotIndex];
             // Use operation's preferred cut direction for the slot chain
-            const slotChain: Chain | undefined = chains.find(
+            const slotChain: ChainData | undefined = chains.find(
                 (c) => c.id === slot.chain.id
             );
             const slotStoredDirection: CutDirection =
@@ -507,13 +486,13 @@ export async function generateCutsForPartsWithOperation(
             if (
                 slotKerfCompensation !== OffsetDirection.NONE &&
                 slotChain &&
-                operation.toolId
+                tool
             ) {
                 const offsetResult = await calculateChainOffset(
                     slotChain,
                     slotKerfCompensation,
-                    operation.toolId,
-                    tools
+                    tool.id,
+                    [tool]
                 );
                 if (offsetResult) {
                     // Collect warnings for return instead of directly updating stores
@@ -531,7 +510,6 @@ export async function generateCutsForPartsWithOperation(
                         kerfWidth: offsetResult.kerfWidth,
                         generatedAt: new Date().toISOString(),
                         version: '1.0.0',
-                        gapFills: offsetResult.gapFills,
                     };
                 }
             }
@@ -564,24 +542,21 @@ export async function generateCutsForPartsWithOperation(
 
             // Get kerf width from tool (needed for cutter visualization even when compensation is NONE)
             let slotKerfWidth: number | undefined = undefined;
-            if (operation.toolId) {
-                const tool = tools.find((t) => t.id === operation.toolId);
-                if (tool) {
-                    const toolKerfWidth = getToolValue(tool, 'kerfWidth');
-                    if (toolKerfWidth) {
-                        slotKerfWidth = toolKerfWidth;
-                    }
+            if (tool) {
+                const toolKerfWidth = getToolValue(tool, 'kerfWidth');
+                if (toolKerfWidth) {
+                    slotKerfWidth = toolKerfWidth;
                 }
             }
 
             // Create slot cut
             // For slots with PART kerf compensation, disable leads
-            const slotCut: Cut = {
+            const slotCut = new Cut({
                 id: crypto.randomUUID(),
                 name: `${operation.name} - Part ${targetId.split('-')[1]} (Slot ${slotIndex + 1})`,
                 operationId: operation.id,
                 chainId: slot.chain.id,
-                toolId: operation.toolId,
+                toolId: tool?.id || null,
                 enabled: true,
                 order: cutOrder++,
                 cutDirection: slotCutDirection,
@@ -603,7 +578,7 @@ export async function generateCutsForPartsWithOperation(
                 normal: slotCutNormalResult.normal,
                 normalConnectionPoint: slotCutNormalResult.connectionPoint,
                 normalSide: slotCutNormalResult.normalSide,
-            };
+            });
 
             // Optimize slot cut start point if enabled
             if (
@@ -633,7 +608,7 @@ export async function generateCutsForPartsWithOperation(
 
                     // Update offset shapes to match optimized cutChain
                     if (slotCut.offset && slotCut.cutChain) {
-                        slotCut.offset.offsetShapes = slotCut.cutChain.shapes;
+                        slotCut.offset!.offsetShapes = slotCut.cutChain.shapes;
                     }
                 }
             }
@@ -665,13 +640,6 @@ export async function generateCutsForPartsWithOperation(
                         ...slotLeadResult.leadOut,
                         generatedAt: new Date().toISOString(),
                         version: '1.0.0',
-                    };
-                }
-
-                if (slotLeadResult.validation) {
-                    slotCut.leadValidation = {
-                        ...slotLeadResult.validation,
-                        validatedAt: new Date().toISOString(),
                     };
                 }
             }

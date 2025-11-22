@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { optimizeStartPoints } from './optimize-start-points';
 
 describe('optimizeStartPoints', () => {
@@ -16,7 +16,7 @@ describe('optimizeStartPoints', () => {
 
     it('should split a line at its midpoint for a closed chain', () => {
         // Create a simple closed triangular chain with lines
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -43,7 +43,7 @@ describe('optimizeStartPoints', () => {
             },
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain1',
             shapes,
         };
@@ -68,7 +68,7 @@ describe('optimizeStartPoints', () => {
 
     it('should split an arc when no lines are available', () => {
         // Create a closed chain with only an arc and polylines
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'arc1',
                 type: GeometryType.ARC,
@@ -100,7 +100,7 @@ describe('optimizeStartPoints', () => {
             ),
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain1',
             shapes,
         };
@@ -135,7 +135,7 @@ describe('optimizeStartPoints', () => {
 
     it('should prefer lines over complex shapes for splitting', () => {
         // Create a closed chain with a spline and a line
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'spline1',
                 type: GeometryType.SPLINE,
@@ -162,7 +162,7 @@ describe('optimizeStartPoints', () => {
             },
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain1',
             shapes,
         };
@@ -186,7 +186,7 @@ describe('optimizeStartPoints', () => {
 
     it('should not modify open chains', () => {
         // Create an open chain
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -205,7 +205,7 @@ describe('optimizeStartPoints', () => {
             },
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain1',
             shapes,
         };
@@ -222,7 +222,7 @@ describe('optimizeStartPoints', () => {
 
     it('should not modify single-shape chains', () => {
         // Create a single-shape chain (circle)
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'circle1',
                 type: GeometryType.CIRCLE,
@@ -233,7 +233,7 @@ describe('optimizeStartPoints', () => {
             },
         ];
 
-        const chain: Chain = {
+        const chain: ChainData = {
             id: 'chain1',
             shapes,
         };
@@ -247,7 +247,7 @@ describe('optimizeStartPoints', () => {
 
     it('should handle multiple chains correctly', () => {
         // Create two chains, one closed and one open
-        const chain1: Chain = {
+        const chain1: ChainData = {
             id: 'chain1',
             shapes: [
                 {
@@ -269,7 +269,7 @@ describe('optimizeStartPoints', () => {
             ],
         };
 
-        const chain2: Chain = {
+        const chain2: ChainData = {
             id: 'chain2',
             shapes: [
                 {

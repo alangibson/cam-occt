@@ -10,8 +10,8 @@ import { generateShapePoints } from '$lib/stores/shape/functions';
 import { overlayStore } from './store';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
 describe('overlayStore', () => {
@@ -204,7 +204,7 @@ describe('generateShapePoints', () => {
         y1: number,
         x2: number,
         y2: number
-    ): Shape => ({
+    ): ShapeData => ({
         id,
         type: GeometryType.LINE,
         geometry: {
@@ -218,7 +218,7 @@ describe('generateShapePoints', () => {
         cx: number,
         cy: number,
         r: number
-    ): Shape => ({
+    ): ShapeData => ({
         id,
         type: GeometryType.CIRCLE,
         geometry: {
@@ -234,7 +234,7 @@ describe('generateShapePoints', () => {
         r: number,
         startAngle: number,
         endAngle: number
-    ): Shape => ({
+    ): ShapeData => ({
         id,
         type: GeometryType.ARC,
         geometry: {
@@ -246,7 +246,7 @@ describe('generateShapePoints', () => {
     });
 
     it('should generate points for selected line shapes', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLineShape('line-1', 0, 0, 10, 10),
             createLineShape('line-2', 20, 20, 30, 30),
         ];
@@ -270,7 +270,7 @@ describe('generateShapePoints', () => {
     });
 
     it('should generate points for selected circle shapes', () => {
-        const shapes: Shape[] = [createCircleShape('circle-1', 5, 5, 10)];
+        const shapes: ShapeData[] = [createCircleShape('circle-1', 5, 5, 10)];
         const selectedIds = new Set(['circle-1']);
 
         const points = generateShapePoints(shapes, selectedIds);
@@ -285,7 +285,7 @@ describe('generateShapePoints', () => {
     });
 
     it('should generate points for selected arc shapes', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createArcShape('arc-1', 0, 0, 5, 0, Math.PI / 2),
         ];
         const selectedIds = new Set(['arc-1']);
@@ -302,7 +302,7 @@ describe('generateShapePoints', () => {
     });
 
     it('should only generate points for selected shapes', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLineShape('line-1', 0, 0, 10, 10),
             createLineShape('line-2', 20, 20, 30, 30),
         ];
@@ -314,7 +314,7 @@ describe('generateShapePoints', () => {
     });
 
     it('should return empty array when no shapes selected', () => {
-        const shapes: Shape[] = [createLineShape('line-1', 0, 0, 10, 10)];
+        const shapes: ShapeData[] = [createLineShape('line-1', 0, 0, 10, 10)];
         const selectedIds = new Set<string>();
 
         const points = generateShapePoints(shapes, selectedIds);
@@ -324,7 +324,7 @@ describe('generateShapePoints', () => {
 });
 
 describe('generateChainEndpoints', () => {
-    const createTestChain = (id: string, shapes: Shape[]): Chain => ({
+    const createTestChain = (id: string, shapes: ShapeData[]): ChainData => ({
         id,
         shapes,
     });
@@ -335,7 +335,7 @@ describe('generateChainEndpoints', () => {
         y1: number,
         x2: number,
         y2: number
-    ): Shape => ({
+    ): ShapeData => ({
         id,
         type: GeometryType.LINE,
         geometry: {
@@ -345,11 +345,11 @@ describe('generateChainEndpoints', () => {
     });
 
     it('should generate endpoints for open chain', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLineShape('line-1', 0, 0, 10, 0),
             createLineShape('line-2', 10, 0, 20, 0),
         ];
-        const chains: Chain[] = [createTestChain('chain-1', shapes)];
+        const chains: ChainData[] = [createTestChain('chain-1', shapes)];
 
         const endpoints = generateChainEndpoints(chains);
 
@@ -369,13 +369,13 @@ describe('generateChainEndpoints', () => {
     });
 
     it('should generate single endpoint for closed chain', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             createLineShape('line-1', 0, 0, 10, 0),
             createLineShape('line-2', 10, 0, 10, 10),
             createLineShape('line-3', 10, 10, 0, 10),
             createLineShape('line-4', 0, 10, 0, 0), // Closes the loop
         ];
-        const chains: Chain[] = [createTestChain('chain-1', shapes)];
+        const chains: ChainData[] = [createTestChain('chain-1', shapes)];
 
         const endpoints = generateChainEndpoints(chains);
 
@@ -389,7 +389,7 @@ describe('generateChainEndpoints', () => {
     });
 
     it('should skip empty chains', () => {
-        const chains: Chain[] = [
+        const chains: ChainData[] = [
             createTestChain('empty-chain', []),
             createTestChain('chain-1', [
                 createLineShape('line-1', 0, 0, 10, 0),
@@ -403,8 +403,8 @@ describe('generateChainEndpoints', () => {
     });
 
     it('should handle chains with single shape', () => {
-        const shapes: Shape[] = [createLineShape('line-1', 0, 0, 10, 10)];
-        const chains: Chain[] = [createTestChain('chain-1', shapes)];
+        const shapes: ShapeData[] = [createLineShape('line-1', 0, 0, 10, 10)];
+        const chains: ChainData[] = [createTestChain('chain-1', shapes)];
 
         const endpoints = generateChainEndpoints(chains);
 
@@ -424,9 +424,13 @@ describe('generateChainEndpoints', () => {
     });
 
     it('should handle multiple chains', () => {
-        const chain1Shapes: Shape[] = [createLineShape('line-1', 0, 0, 10, 0)];
-        const chain2Shapes: Shape[] = [createLineShape('line-2', 20, 0, 30, 0)];
-        const chains: Chain[] = [
+        const chain1Shapes: ShapeData[] = [
+            createLineShape('line-1', 0, 0, 10, 0),
+        ];
+        const chain2Shapes: ShapeData[] = [
+            createLineShape('line-2', 20, 0, 30, 0),
+        ];
+        const chains: ChainData[] = [
             createTestChain('chain-1', chain1Shapes),
             createTestChain('chain-2', chain2Shapes),
         ];

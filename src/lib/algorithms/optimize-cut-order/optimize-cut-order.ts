@@ -14,8 +14,7 @@
  *    - Eliminates repeated iteration through parts array during TSP
  */
 
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Part, PartData } from '$lib/cam/part/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
@@ -28,26 +27,25 @@ import {
 import { getChainEndPoint } from '$lib/geometry/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
-import type { Rapid } from '$lib/cam/rapid/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 
 /**
  * Result of the cut order optimization
+ * Rapids are now stored in Cut.rapidIn instead of a separate array
  */
 interface OptimizationResult {
     orderedCuts: Cut[];
-    rapids: Rapid[];
     totalDistance: number;
 }
 
 /**
- * Process nearest cut by adding rapid and updating tracking state
+ * Process nearest cut by attaching rapid and updating tracking state
  */
 function processNearestCut(
     nearestResult: { cut: Cut; distance: number },
     chains: Map<string, Chain>,
     currentPoint: Point2D,
     findPartForChain: (chainId: string) => Part | undefined,
-    rapids: Rapid[],
     orderedCuts: Cut[],
     unvisited: Set<Cut>,
     cutPointsCache: Map<string, CutPointsCache>
@@ -68,15 +66,47 @@ function processNearestCut(
         cutEnd = getCutEndPoint(nearestResult.cut, chain, part);
     }
 
-    rapids.push({
-        id: crypto.randomUUID(),
-        start: currentPoint,
-        end: cutStart,
-        type: 'rapid',
+    // Attach rapid to the cut
+    const cutData = nearestResult.cut.toData();
+    const cutWithRapid = new Cut({
+        id: cutData.id,
+        name: cutData.name,
+        enabled: cutData.enabled,
+        order: cutData.order,
+        operationId: cutData.operationId,
+        chainId: cutData.chainId,
+        toolId: cutData.toolId,
+        feedRate: cutData.feedRate,
+        pierceHeight: cutData.pierceHeight,
+        pierceDelay: cutData.pierceDelay,
+        arcVoltage: cutData.arcVoltage,
+        thcEnabled: cutData.thcEnabled,
+        overcutLength: cutData.overcutLength,
+        cutDirection: cutData.cutDirection,
+        cutChain: cutData.cutChain,
+        executionClockwise: cutData.executionClockwise,
+        normal: cutData.normal,
+        normalConnectionPoint: cutData.normalConnectionPoint,
+        normalSide: cutData.normalSide,
+        isHole: cutData.isHole,
+        holeUnderspeedPercent: cutData.holeUnderspeedPercent,
+        leadInConfig: cutData.leadInConfig,
+        leadOutConfig: cutData.leadOutConfig,
+        leadIn: cutData.leadIn,
+        leadOut: cutData.leadOut,
+        kerfWidth: cutData.kerfWidth,
+        kerfCompensation: cutData.kerfCompensation,
+        offset: cutData.offset,
+        rapidIn: {
+            id: crypto.randomUUID(),
+            start: currentPoint,
+            end: cutStart,
+            type: 'rapid',
+        },
     });
 
     const totalDistance = nearestResult.distance;
-    orderedCuts.push(nearestResult.cut);
+    orderedCuts.push(cutWithRapid);
     unvisited.delete(nearestResult.cut);
 
     return { updatedPoint: cutEnd, totalDistance };
@@ -130,10 +160,12 @@ function getCutEndPoint(cut: Cut, chain: Chain, part?: PartData): Point2D {
 
     // Fallback to chain end point (use offset if available)
     if (cut.offset && cut.offset.offsetShapes.length > 0) {
-        const offsetChain: Chain = {
+        const offsetChain = new Chain({
             id: chainToUse.id + '_offset_temp',
-            shapes: cut.offset.offsetShapes,
-        };
+            shapes: cut.offset.offsetShapes.map((s) => s.toData()),
+            clockwise: chainToUse.clockwise,
+            originalChainId: chainToUse.originalChainId || chainToUse.id,
+        });
         return getChainEndPoint(offsetChain);
     }
 
@@ -202,6 +234,11 @@ function nearestNeighborTSP(
         return chainToPartMap.get(chainId);
     }
 
+    // Convert Cut to Cut instances
+    const cutInstances: Cut[] = cuts.map((c) => new Cut(c));
+    const CutMap = new Map<string, Cut>();
+    cuts.forEach((c) => CutMap.set(c.id, c));
+
     // PRE-CALCULATE all cut start/end points once to avoid O(N²) lead calculations
     const cutPointsCache = buildCutPointsCache(cuts, chains, findPartForChain);
 
@@ -212,8 +249,7 @@ function nearestNeighborTSP(
     }
 
     const orderedCuts: Cut[] = [];
-    const rapids: Rapid[] = [];
-    const unvisited: Set<Cut> = new Set(cuts);
+    const unvisited: Set<Cut> = new Set(cutInstances);
     let currentPoint: Point2D = startPoint;
     let totalDistance: number = 0;
 
@@ -222,7 +258,7 @@ function nearestNeighborTSP(
     const cutsWithoutPart: Cut[] = [];
 
     // Find which part each cut belongs to
-    for (const cut of cuts) {
+    for (const cut of cutInstances) {
         const chain: Chain | undefined = chains.get(cut.chainId);
         if (!chain) continue;
 
@@ -271,13 +307,12 @@ function nearestNeighborTSP(
 
         if (!nearestResult.cut) break;
 
-        // Add rapid from current point to cut start
+        // Add rapid to cut and process
         const result = processNearestCut(
             { cut: nearestResult.cut, distance: nearestResult.distance },
             chains,
             currentPoint,
             findPartForChain,
-            rapids,
             orderedCuts,
             unvisited,
             cutPointsCache
@@ -329,13 +364,12 @@ function nearestNeighborTSP(
 
             if (!nearestResult.cut) break;
 
-            // Add rapid and cut
+            // Add rapid to cut and process
             const result = processNearestCut(
                 { cut: nearestResult.cut, distance: nearestResult.distance },
                 chains,
                 currentPoint,
                 findPartForChain,
-                rapids,
                 orderedCuts,
                 unvisited,
                 cutPointsCache
@@ -363,13 +397,12 @@ function nearestNeighborTSP(
 
             if (!nearestResult.cut) break;
 
-            // Add rapid and cut
+            // Add rapid to cut and process
             const result = processNearestCut(
                 { cut: nearestResult.cut, distance: nearestResult.distance },
                 chains,
                 currentPoint,
                 findPartForChain,
-                rapids,
                 orderedCuts,
                 unvisited,
                 cutPointsCache
@@ -428,7 +461,6 @@ function nearestNeighborTSP(
                     chains,
                     currentPoint,
                     findPartForChain,
-                    rapids,
                     orderedCuts,
                     unvisited,
                     cutPointsCache
@@ -465,15 +497,47 @@ function nearestNeighborTSP(
 
                 const dist: number = calculateDistance(currentPoint, cutStart);
 
-                rapids.push({
-                    id: crypto.randomUUID(),
-                    start: currentPoint,
-                    end: cutStart,
-                    type: 'rapid',
+                // Attach rapid to the shell cut
+                const shellCutData = shellCut.toData();
+                const shellCutWithRapid = new Cut({
+                    id: shellCutData.id,
+                    name: shellCutData.name,
+                    enabled: shellCutData.enabled,
+                    order: shellCutData.order,
+                    operationId: shellCutData.operationId,
+                    chainId: shellCutData.chainId,
+                    toolId: shellCutData.toolId,
+                    feedRate: shellCutData.feedRate,
+                    pierceHeight: shellCutData.pierceHeight,
+                    pierceDelay: shellCutData.pierceDelay,
+                    arcVoltage: shellCutData.arcVoltage,
+                    thcEnabled: shellCutData.thcEnabled,
+                    overcutLength: shellCutData.overcutLength,
+                    cutDirection: shellCutData.cutDirection,
+                    cutChain: shellCutData.cutChain,
+                    executionClockwise: shellCutData.executionClockwise,
+                    normal: shellCutData.normal,
+                    normalConnectionPoint: shellCutData.normalConnectionPoint,
+                    normalSide: shellCutData.normalSide,
+                    isHole: shellCutData.isHole,
+                    holeUnderspeedPercent: shellCutData.holeUnderspeedPercent,
+                    leadInConfig: shellCutData.leadInConfig,
+                    leadOutConfig: shellCutData.leadOutConfig,
+                    leadIn: shellCutData.leadIn,
+                    leadOut: shellCutData.leadOut,
+                    kerfWidth: shellCutData.kerfWidth,
+                    kerfCompensation: shellCutData.kerfCompensation,
+                    offset: shellCutData.offset,
+                    rapidIn: {
+                        id: crypto.randomUUID(),
+                        start: currentPoint,
+                        end: cutStart,
+                        type: 'rapid',
+                    },
                 });
 
                 totalDistance += dist;
-                orderedCuts.push(shellCut);
+                orderedCuts.push(shellCutWithRapid);
                 unvisited.delete(shellCut);
                 currentPoint = cutEnd;
             }
@@ -482,20 +546,19 @@ function nearestNeighborTSP(
 
     return {
         orderedCuts,
-        rapids,
         totalDistance,
     };
 }
 
 /**
  * Generate rapids from an ordered list of cuts without optimization.
- * Creates rapids between consecutive cuts based on their current order.
+ * Attaches rapids to each cut based on their current order.
  *
  * @param cuts - Array of cuts in desired order
  * @param chains - Map of chain IDs to chains
  * @param parts - Array of detected parts
  * @param origin - Starting point (usually drawing origin 0,0)
- * @returns Rapids connecting the cuts in order
+ * @returns Cuts with rapids attached
  */
 export function generateRapidsFromCutOrder(
     cuts: Cut[],
@@ -506,7 +569,6 @@ export function generateRapidsFromCutOrder(
     if (cuts.length === 0) {
         return {
             orderedCuts: [],
-            rapids: [],
             totalDistance: 0,
         };
     }
@@ -527,7 +589,7 @@ export function generateRapidsFromCutOrder(
     // Pre-calculate all cut start/end points
     const cutPointsCache = buildCutPointsCache(cuts, chains, findPartForChain);
 
-    const rapids: Rapid[] = [];
+    const orderedCuts: Cut[] = [];
     let currentPoint: Point2D = origin;
     let totalDistance: number = 0;
 
@@ -538,20 +600,52 @@ export function generateRapidsFromCutOrder(
 
         const distance = calculateDistance(currentPoint, cachedPoints.start);
 
-        rapids.push({
-            id: crypto.randomUUID(),
-            start: currentPoint,
-            end: cachedPoints.start,
-            type: 'rapid',
+        // Attach rapid to the cut
+        const cutDataForRapid = cut.toData();
+        const cutWithRapid = new Cut({
+            id: cutDataForRapid.id,
+            name: cutDataForRapid.name,
+            enabled: cutDataForRapid.enabled,
+            order: cutDataForRapid.order,
+            operationId: cutDataForRapid.operationId,
+            chainId: cutDataForRapid.chainId,
+            toolId: cutDataForRapid.toolId,
+            feedRate: cutDataForRapid.feedRate,
+            pierceHeight: cutDataForRapid.pierceHeight,
+            pierceDelay: cutDataForRapid.pierceDelay,
+            arcVoltage: cutDataForRapid.arcVoltage,
+            thcEnabled: cutDataForRapid.thcEnabled,
+            overcutLength: cutDataForRapid.overcutLength,
+            cutDirection: cutDataForRapid.cutDirection,
+            cutChain: cutDataForRapid.cutChain,
+            executionClockwise: cutDataForRapid.executionClockwise,
+            normal: cutDataForRapid.normal,
+            normalConnectionPoint: cutDataForRapid.normalConnectionPoint,
+            normalSide: cutDataForRapid.normalSide,
+            isHole: cutDataForRapid.isHole,
+            holeUnderspeedPercent: cutDataForRapid.holeUnderspeedPercent,
+            leadInConfig: cutDataForRapid.leadInConfig,
+            leadOutConfig: cutDataForRapid.leadOutConfig,
+            leadIn: cutDataForRapid.leadIn,
+            leadOut: cutDataForRapid.leadOut,
+            kerfWidth: cutDataForRapid.kerfWidth,
+            kerfCompensation: cutDataForRapid.kerfCompensation,
+            offset: cutDataForRapid.offset,
+            rapidIn: {
+                id: crypto.randomUUID(),
+                start: currentPoint,
+                end: cachedPoints.start,
+                type: 'rapid',
+            },
         });
 
+        orderedCuts.push(cutWithRapid);
         totalDistance += distance;
         currentPoint = cachedPoints.end;
     }
 
     return {
-        orderedCuts: cuts,
-        rapids,
+        orderedCuts,
         totalDistance,
     };
 }
@@ -564,7 +658,7 @@ export function generateRapidsFromCutOrder(
  * @param parts - Array of detected parts (for shell/hole ordering)
  * @param origin - Starting point (usually drawing origin 0,0)
  * @param cutHolesFirst - When true, cut all holes before any shells
- * @returns Optimized cut order with rapids
+ * @returns Optimized cut order with rapids attached to each cut
  */
 export function optimizeCutOrder(
     cuts: Cut[],
@@ -576,7 +670,6 @@ export function optimizeCutOrder(
     if (cuts.length === 0) {
         return {
             orderedCuts: [],
-            rapids: [],
             totalDistance: 0,
         };
     }
@@ -587,7 +680,6 @@ export function optimizeCutOrder(
     if (validCuts.length === 0) {
         return {
             orderedCuts: [],
-            rapids: [],
             totalDistance: 0,
         };
     }

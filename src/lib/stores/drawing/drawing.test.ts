@@ -3,7 +3,7 @@ import { get } from 'svelte/store';
 import { drawingStore } from './store';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
@@ -24,7 +24,7 @@ vi.mock('../parts/functions', () => ({
 }));
 
 vi.mock('$lib/geometry', () => ({
-    moveShape: vi.fn((shape: Shape, delta: Point2D) => ({
+    moveShape: vi.fn((shape: ShapeData, delta: Point2D) => ({
         ...shape,
         geometry:
             shape.type === 'line'
@@ -43,11 +43,13 @@ vi.mock('$lib/geometry', () => ({
                       ...shape.geometry,
                   },
     })),
-    rotateShape: vi.fn((shape: Shape, _angle: number, _origin: Point2D) => ({
-        ...shape,
-        geometry: { ...shape.geometry, rotated: true },
-    })),
-    scaleShape: vi.fn((shape: Shape, scale: number, _origin: Point2D) => ({
+    rotateShape: vi.fn(
+        (shape: ShapeData, _angle: number, _origin: Point2D) => ({
+            ...shape,
+            geometry: { ...shape.geometry, rotated: true },
+        })
+    ),
+    scaleShape: vi.fn((shape: ShapeData, scale: number, _origin: Point2D) => ({
         ...shape,
         geometry: { ...shape.geometry, scaled: scale },
     })),
@@ -126,10 +128,6 @@ describe('drawingStore', () => {
                 },
             },
         ],
-        bounds: {
-            min: { x: 0, y: 0 },
-            max: { x: 10, y: 10 },
-        },
         units: Unit.MM,
         fileName: 'test.dxf',
     });
@@ -535,7 +533,7 @@ describe('drawingStore', () => {
         });
 
         it('should replace all shapes', async () => {
-            const newShapes: Shape[] = [
+            const newShapes: ShapeData[] = [
                 {
                     id: 'new-shape-1',
                     type: GeometryType.LINE,
@@ -554,7 +552,7 @@ describe('drawingStore', () => {
         });
 
         it('should reset downstream stages from prepare', async () => {
-            const newShapes: Shape[] = [];
+            const newShapes: ShapeData[] = [];
 
             await drawingStore.replaceAllShapes(newShapes);
 

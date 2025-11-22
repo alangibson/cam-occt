@@ -6,7 +6,7 @@
  */
 
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { PartType } from './enums';
 import type { Part as PartClass } from './classes.svelte';
 
@@ -14,7 +14,7 @@ export type Part = PartClass;
 
 export interface PartData {
     id: string;
-    shell: Chain;
+    shell: ChainData;
     type: PartType.SHELL;
     boundingBox: BoundingBox;
     voids: PartVoid[];
@@ -25,7 +25,7 @@ export interface PartData {
 // Closed Chain inside of a shell
 export interface PartVoid {
     id: string;
-    chain: Chain;
+    chain: ChainData;
     type: PartType.HOLE;
     boundingBox: BoundingBox;
 }
@@ -33,7 +33,7 @@ export interface PartVoid {
 // Open Chain inside of a shell
 export interface PartSlot {
     id: string;
-    chain: Chain;
+    chain: ChainData;
     type: PartType.SLOT;
     boundingBox: BoundingBox;
 }

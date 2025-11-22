@@ -8,12 +8,12 @@ import type { Line } from '$lib/geometry/line/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
-import type { Chain } from './interfaces';
+import type { ChainData } from './interfaces';
 
 // Helper function to create test chains
-function createTestChain(id: string, shapes: Shape[]): Chain {
+function createTestChain(id: string, shapes: ShapeData[]): ChainData {
     return {
         id,
         shapes,
@@ -26,7 +26,7 @@ function createRectangle(
     y: number,
     width: number,
     height: number
-): Shape[] {
+): ShapeData[] {
     return [
         {
             id: '1',
@@ -72,7 +72,7 @@ describe('isChainClosed', () => {
     });
 
     it('should return false for open chain', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,
@@ -102,7 +102,7 @@ describe('isChainClosed', () => {
     });
 
     it('should handle chain with points close but not within tolerance', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,
@@ -153,7 +153,7 @@ describe('calculateChainArea', () => {
     });
 
     it('should return 0 for open chain', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,
@@ -177,7 +177,7 @@ describe('calculateChainArea', () => {
     });
 
     it('should return 0 for chain with less than 3 points', () => {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,
@@ -216,8 +216,8 @@ describe('isChainContainedInChain', () => {
     });
 
     it('should return false when outer chain is not closed', () => {
-        const innerShapes: Shape[] = createRectangle(2, 2, 6, 6);
-        const outerShapes: Shape[] = [
+        const innerShapes: ShapeData[] = createRectangle(2, 2, 6, 6);
+        const outerShapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,
@@ -244,7 +244,7 @@ describe('isChainContainedInChain', () => {
     });
 
     it('should handle open inner chain (linestring)', () => {
-        const innerShapes: Shape[] = [
+        const innerShapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,
@@ -271,7 +271,7 @@ describe('isChainContainedInChain', () => {
 
     it('should handle error cases gracefully', () => {
         // Create chains that might cause JSTS errors
-        const problematicShapes: Shape[] = [
+        const problematicShapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,
@@ -293,7 +293,9 @@ describe('isChainContainedInChain', () => {
 });
 
 describe('getChainEndPoint', () => {
-    const createTestChain = (overrides: Partial<Chain> = {}): Chain => ({
+    const createTestChain = (
+        overrides: Partial<ChainData> = {}
+    ): ChainData => ({
         id: 'test-chain',
         shapes: [
             {
@@ -308,7 +310,7 @@ describe('getChainEndPoint', () => {
         ...overrides,
     });
 
-    const createTestShape = (start: Point2D, end: Point2D): Shape => ({
+    const createTestShape = (start: Point2D, end: Point2D): ShapeData => ({
         id: 'test-line',
         type: GeometryType.LINE,
         geometry: {
@@ -350,7 +352,7 @@ describe('getChainEndPoint', () => {
     });
 
     it('should work with different shape types', () => {
-        const arcShape: Shape = {
+        const arcShape: ShapeData = {
             id: 'arc1',
             type: GeometryType.ARC,
             geometry: {

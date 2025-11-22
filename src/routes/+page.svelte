@@ -18,6 +18,10 @@
     import { settingsStore } from '$lib/stores/settings/store';
     import { ImportUnitSetting } from '$lib/config/settings/enums';
     import { kerfStore } from '$lib/stores/kerfs/store';
+    import { operationsStore } from '$lib/stores/operations/store';
+    import { planStore } from '$lib/stores/plan/store';
+    import { cutStore } from '$lib/stores/cuts/store';
+    import { rapidStore } from '$lib/stores/rapids/store';
 
     let cleanupAutoSave: (() => void) | null = null;
     let isMenuOpen = false;
@@ -36,11 +40,15 @@
         // Reset File Measurement Units to default (Automatic)
         settingsStore.setImportUnitSetting(ImportUnitSetting.Automatic);
 
-        // Reset drawing store to empty state (this also clears chains, parts, cuts, operations, rapids, tessellation, overlay)
+        // Reset drawing store to empty state
         drawingStore.reset();
 
-        // Clear additional stores that aren't cleared by setDrawing
+        // Clear downstream stores (chains are auto-generated from drawing layers)
         prepareStageStore.reset();
+        operationsStore.reset(); // Clear operations
+        planStore.reset(); // Clear cuts (which contain rapids as cut.rapidIn)
+        cutStore.reset(); // Clear cut UI state (selection, highlighting)
+        rapidStore.reset(); // Clear rapid UI state (selection, highlighting)
         kerfStore.clearKerfs();
 
         // Reset workflow to import stage

@@ -1,23 +1,24 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
+import { Shape } from '$lib/geometry/shape/classes';
 
 describe('SimulateStage offset cut detection', () => {
-    let mockCut: Cut;
-    let mockChain: Chain;
+    let mockCut: CutData;
+    let mockChain: ChainData;
     let mockShapes: Shape[];
     let mockOffsetShapes: Shape[];
 
     beforeEach(() => {
         // Create mock shapes for original chain
         mockShapes = [
-            {
+            new Shape({
                 id: 'shape1',
                 type: GeometryType.LINE,
                 layer: 'layer1',
@@ -25,8 +26,8 @@ describe('SimulateStage offset cut detection', () => {
                     start: { x: 0, y: 0 },
                     end: { x: 100, y: 0 },
                 } as Line,
-            },
-            {
+            }),
+            new Shape({
                 id: 'shape2',
                 type: GeometryType.LINE,
                 layer: 'layer1',
@@ -34,12 +35,12 @@ describe('SimulateStage offset cut detection', () => {
                     start: { x: 100, y: 0 },
                     end: { x: 100, y: 100 },
                 } as Line,
-            },
+            }),
         ];
 
         // Create mock offset shapes (with different lengths to test properly)
         mockOffsetShapes = [
-            {
+            new Shape({
                 id: 'offset-shape1',
                 type: GeometryType.LINE,
                 layer: 'layer1',
@@ -47,8 +48,8 @@ describe('SimulateStage offset cut detection', () => {
                     start: { x: -5, y: -5 },
                     end: { x: 105, y: -5 },
                 } as Line,
-            },
-            {
+            }),
+            new Shape({
                 id: 'offset-shape2',
                 type: GeometryType.LINE,
                 layer: 'layer1',
@@ -56,7 +57,7 @@ describe('SimulateStage offset cut detection', () => {
                     start: { x: 105, y: -5 },
                     end: { x: 105, y: 105 },
                 } as Line,
-            },
+            }),
         ];
 
         mockChain = {
@@ -124,7 +125,7 @@ describe('SimulateStage offset cut detection', () => {
         });
 
         it('should fall back to original chain shapes when no offset exists', () => {
-            const cutWithoutOffset: Cut = {
+            const cutWithoutOffset: CutData = {
                 ...mockCut,
                 offset: undefined,
             };
@@ -149,7 +150,7 @@ describe('SimulateStage offset cut detection', () => {
             };
 
             // Mock shape length calculation (simplified)
-            function getShapeLength(shape: Shape): number {
+            function getShapeLength(shape: ShapeData): number {
                 if (shape.type === 'line') {
                     const line = shape.geometry as Line;
                     return Math.sqrt(
@@ -239,7 +240,7 @@ describe('SimulateStage offset cut detection', () => {
 
     describe('Mixed operations handling', () => {
         it('should handle mixed cuts with and without offsets', () => {
-            const cutWithOffset: Cut = {
+            const cutWithOffset: CutData = {
                 ...mockCut,
                 offset: {
                     offsetShapes: mockOffsetShapes,
@@ -251,7 +252,7 @@ describe('SimulateStage offset cut detection', () => {
                 },
             };
 
-            const cutWithoutOffset: Cut = {
+            const cutWithoutOffset: CutData = {
                 ...mockCut,
                 id: 'cut2',
                 offset: undefined,

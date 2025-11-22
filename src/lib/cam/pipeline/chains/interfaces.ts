@@ -4,7 +4,7 @@
  * Type definitions for the CAM pipeline chain preparation module.
  */
 
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { Chain } from '$lib/geometry/chain/classes';
 
 /**
  * Result of creating a cut chain with execution ordering

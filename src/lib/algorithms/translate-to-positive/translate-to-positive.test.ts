@@ -9,14 +9,14 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { translateToPositiveQuadrant } from './translate-to-positive';
 
 describe('Translate to Positive Quadrant Algorithm', () => {
     describe('Basic Functionality', () => {
         it('should translate shapes with negative coordinates to positive quadrant', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -36,7 +36,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should not translate shapes already in positive quadrant', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -54,7 +54,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should translate only in X direction when only X is negative', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -74,7 +74,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should translate only in Y direction when only Y is negative', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -96,7 +96,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
 
     describe('Arc Shape Handling', () => {
         it('should not translate quarter arc already in positive quadrant', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'arc1',
                     type: GeometryType.ARC,
@@ -120,7 +120,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should translate arc extending into negative quadrant', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'arc1',
                     type: GeometryType.ARC,
@@ -148,7 +148,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should handle clockwise arc with negative bounds', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'arc1',
                     type: GeometryType.ARC,
@@ -173,7 +173,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should handle arc crossing angle boundaries', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'arc1',
                     type: GeometryType.ARC,
@@ -200,7 +200,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
 
     describe('Shape Types', () => {
         it('should translate circles correctly', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'circle1',
                     type: GeometryType.CIRCLE,
@@ -222,7 +222,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should translate arcs correctly', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'arc1',
                     type: GeometryType.ARC,
@@ -260,7 +260,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 false
             );
 
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = translateToPositiveQuadrant(shapes);
 
@@ -286,7 +286,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 false
             );
 
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = translateToPositiveQuadrant(shapes);
 
@@ -317,7 +317,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 false
             );
 
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = translateToPositiveQuadrant(shapes);
 
@@ -344,7 +344,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
                 false
             );
 
-            const shapes: Shape[] = [polylineShape];
+            const shapes: ShapeData[] = [polylineShape];
 
             const result = translateToPositiveQuadrant(shapes);
 
@@ -365,7 +365,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should translate ellipses correctly', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'ellipse1',
                     type: GeometryType.ELLIPSE,
@@ -392,7 +392,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
 
     describe('Multiple Shapes', () => {
         it('should translate multiple shapes by the same amount based on global minimum', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -434,7 +434,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should handle shapes at origin', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -452,7 +452,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should handle shapes with zero-size bounding box', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -472,7 +472,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
         });
 
         it('should preserve shape properties', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -495,7 +495,7 @@ describe('Translate to Positive Quadrant Algorithm', () => {
 
     describe('Precision', () => {
         it('should handle very small negative coordinates', () => {
-            const shapes: Shape[] = [
+            const shapes: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,

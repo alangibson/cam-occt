@@ -2,7 +2,6 @@
     import { onMount } from 'svelte';
     import ThreeColumnLayout from '$components/layout/ThreeColumnLayout.svelte';
     import Operations from './Operations.svelte';
-    import Cuts from './Cuts.svelte';
     import AccordionPanel from '$components/panels/AccordionPanel.svelte';
     import InspectPanel from '$components/panels/InspectPanel.svelte';
     import OptimizePanel from '$components/panels/OptimizePanel.svelte';
@@ -10,16 +9,8 @@
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { SvelteMap } from 'svelte/reactivity';
-    import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { Cut } from '$lib/cam/cut/interfaces';
-    import { cutStore } from '$lib/stores/cuts/store';
-    import { rapidStore } from '$lib/stores/rapids/store';
-    import {
-        toggleRapidSelection,
-        highlightRapid,
-        clearRapidHighlight,
-    } from '$lib/stores/rapids/functions';
+    import { Chain } from '$lib/geometry/chain/classes';
+    import { planStore } from '$lib/stores/plan/store';
     import {
         optimizeCutOrder,
         generateRapidsFromCutOrder,
@@ -60,10 +51,7 @@
             ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
             : []
     );
-    const cuts = $derived($cutStore.cuts);
-    const rapids = $derived($rapidStore.rapids);
-    const selectedRapidIds = $derived($rapidStore.selectedRapidIds);
-    const highlightedRapidId = $derived($rapidStore.highlightedRapidId);
+    const cuts = $derived($planStore.plan.cuts);
     const optimizationSettings = $derived(
         $settingsStore.settings.optimizationSettings
     );
@@ -151,31 +139,10 @@
         }
     });
 
-    // Clear rapids when no cuts exist
-    $effect(() => {
-        if (cuts.length === 0) {
-            rapidStore.clearRapids();
-            rapidStore.clearSelection();
-        }
-    });
-
     function handleNext() {
         if ($workflowStore.canAdvanceTo(WorkflowStage.SIMULATE)) {
             workflowStore.setStage(WorkflowStage.SIMULATE);
         }
-    }
-
-    // Rapid selection functions
-    function handleRapidClick(rapidId: string) {
-        toggleRapidSelection(rapidId);
-    }
-
-    function handleRapidMouseEnter(rapidId: string) {
-        highlightRapid(rapidId);
-    }
-
-    function handleRapidMouseLeave() {
-        clearRapidHighlight();
     }
 
     // Handle adding new operation
@@ -195,13 +162,15 @@
         }
 
         // Create a map of chain IDs to chains for quick lookup
-        const chainMap = new SvelteMap<string, Chain>();
+        // eslint-disable-next-line svelte/prefer-svelte-reactivity
+        const chainMap = new Map<string, Chain>();
         chains.forEach((chain) => {
-            chainMap.set(chain.id, chain);
+            chainMap.set(chain.id, new Chain(chain));
         });
 
         let result;
 
+        // Convert Cut[] to CutData[] for optimization functions
         // Check if rapid optimization is disabled
         if (optimizationSettings.rapidOptimizationAlgorithm === 'none') {
             console.log(
@@ -224,19 +193,22 @@
         }
 
         // Update the cut order in the store with corrected order property
+        // Rapids are already attached to cuts by optimize/generate functions
         const orderedCutsWithUpdatedOrder = result.orderedCuts.map(
-            (cut: Cut, index: number) => ({
-                ...cut,
+            (cut, index: number) => ({
+                ...cut.toData(),
                 order: index + 1,
             })
         );
-        cutStore.reorderCuts(orderedCutsWithUpdatedOrder);
+        planStore.updateCuts(orderedCutsWithUpdatedOrder);
 
-        // Update the rapids in the store
-        rapidStore.setRapids(result.rapids);
+        // Count rapids for logging
+        const rapidCount = result.orderedCuts.filter(
+            (cut) => cut.rapidIn !== undefined
+        ).length;
 
         console.log(
-            `${optimizationSettings.rapidOptimizationAlgorithm === 'none' ? 'Generated' : 'Optimized'} cut order: ${result.orderedCuts.length} cuts, ${result.rapids.length} rapids, total distance: ${result.totalDistance.toFixed(2)} units`
+            `${optimizationSettings.rapidOptimizationAlgorithm === 'none' ? 'Generated' : 'Optimized'} cut order: ${result.orderedCuts.length} cuts, ${rapidCount} rapids, total distance: ${result.totalDistance.toFixed(2)} units`
         );
     }
 </script>
@@ -248,59 +220,6 @@
     >
         <svelte:fragment slot="left">
             <LayersPanel />
-
-            <div class="arrow-separator">
-                <svg
-                    width="100%"
-                    height="16"
-                    viewBox="0 0 100 16"
-                    preserveAspectRatio="none"
-                >
-                    <polygon points="50,14 0,0 100,0" fill="#9ca3af" />
-                </svg>
-            </div>
-
-            <AccordionPanel title="Cuts ({cuts.length})" isExpanded={false}>
-                <Cuts />
-            </AccordionPanel>
-
-            <AccordionPanel title="Rapids ({rapids.length})" isExpanded={false}>
-                <div class="cut-order-list">
-                    {#if rapids.length > 0}
-                        {#each rapids as rapid, index (rapid.id)}
-                            <div
-                                class="rapid-item {selectedRapidIds.has(
-                                    rapid.id
-                                )
-                                    ? 'selected'
-                                    : ''} {highlightedRapidId === rapid.id
-                                    ? 'highlighted'
-                                    : ''}"
-                                role="button"
-                                tabindex="0"
-                                onclick={() => handleRapidClick(rapid.id)}
-                                onkeydown={(e) =>
-                                    e.key === 'Enter' &&
-                                    handleRapidClick(rapid.id)}
-                                onmouseenter={() =>
-                                    handleRapidMouseEnter(rapid.id)}
-                                onmouseleave={handleRapidMouseLeave}
-                            >
-                                <span class="rapid-index">{index + 1}.</span>
-                                <span class="rapid-description">
-                                    Rapid to ({rapid.end.x.toFixed(2)}, {rapid.end.y.toFixed(
-                                        2
-                                    )})
-                                </span>
-                            </div>
-                        {/each}
-                    {:else}
-                        <p class="no-rapids">No rapids generated yet.</p>
-                    {/if}
-                </div>
-            </AccordionPanel>
-
-            <InspectPanel />
 
             <ShowPanel />
         </svelte:fragment>
@@ -329,6 +248,8 @@
             </AccordionPanel>
 
             <OptimizePanel />
+
+            <InspectPanel />
 
             <AccordionPanel title="Next Stage" isExpanded={true}>
                 <div class="next-stage-content">
@@ -409,58 +330,6 @@
 
     /* Removed .panel-title styles - now handled by AccordionPanel component */
 
-    /* Cut Order section styles */
-    .cut-order-list {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .rapid-item {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.5rem;
-        background-color: #f9fafb;
-        border: 1px solid transparent;
-        border-radius: 0.375rem;
-        font-size: 0.875rem;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .rapid-item:hover {
-        background-color: #f3f4f6;
-    }
-
-    .rapid-item.highlighted {
-        background-color: #fef3c7;
-        border-color: #f59e0b;
-    }
-
-    .rapid-item.selected {
-        background-color: #e6f2ff;
-        border-color: rgb(0, 83, 135);
-    }
-
-    .rapid-index {
-        font-weight: 600;
-        color: #374151;
-        min-width: 1.5rem;
-    }
-
-    .rapid-description {
-        color: #6b7280;
-    }
-
-    .no-rapids {
-        color: #6b7280;
-        font-size: 0.875rem;
-        text-align: center;
-        padding: 1rem;
-        margin: 0;
-    }
-
     .add-operation-button {
         padding: 0.25rem 0.5rem;
         background: rgb(0, 83, 135);
@@ -475,9 +344,5 @@
 
     .add-operation-button:hover {
         background: rgb(0, 83, 135);
-    }
-
-    .arrow-separator {
-        padding: 0;
     }
 </style>

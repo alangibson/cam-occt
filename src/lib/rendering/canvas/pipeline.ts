@@ -15,7 +15,7 @@ import {
 } from './utils/hit-test';
 import { DrawingContext } from './utils/context';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import {
     InteractionManager,
@@ -110,10 +110,10 @@ export class RenderingPipeline {
         this.addRenderer(
             new ShapeRenderer('shape-renderer-offset', coordinator, (state) => {
                 // Extract offset shapes from all enabled cuts
-                const offsetShapes: Shape[] = [];
+                const offsetShapes: ShapeData[] = [];
 
-                if (state.cutsState?.cuts) {
-                    for (const cut of state.cutsState.cuts) {
+                if (state.cuts) {
+                    for (const cut of state.cuts) {
                         // Only include offset shapes from cuts with enabled operations
                         if (!cut.operationId) continue;
 

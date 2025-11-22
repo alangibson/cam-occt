@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import { type Chain } from '$lib/geometry/chain/interfaces';
+import { type ChainData } from '$lib/geometry/chain/interfaces';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
 import {
@@ -57,7 +57,7 @@ describe('Chain-7 vs Chain-13 Identical Letter T Comparison', () => {
         // const typesMatch = JSON.stringify(chain7Types) === JSON.stringify(chain13Types);
 
         // Check closure after normalization
-        const checkChainClosure = (chain: Chain, _name: string): number => {
+        const checkChainClosure = (chain: ChainData, _name: string): number => {
             const firstShape = chain.shapes[0];
             const lastShape = chain.shapes[chain.shapes.length - 1];
             const firstStart = getShapeStartPoint(firstShape);

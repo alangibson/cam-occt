@@ -5,7 +5,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { readFileSync } from 'fs';
 import path from 'path';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
 describe('Polyline Decomposition', () => {
     it('should decompose polylines with bulges into lines and arcs', async () => {
@@ -31,7 +31,9 @@ describe('Polyline Decomposition', () => {
 
         // Original should only contain polylines
         expect(
-            drawingOriginal.shapes.every((s: Shape) => s.type === 'polyline')
+            drawingOriginal.shapes.every(
+                (s: ShapeData) => s.type === 'polyline'
+            )
         ).toBe(true);
     });
 

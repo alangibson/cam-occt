@@ -8,16 +8,18 @@ import {
     getCachedLeadGeometry,
     hasValidCachedLeads,
 } from './lead-persistence';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import { calculateCutLeads } from '$lib/cam/pipeline/leads/lead-orchestration';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
+import { Shape } from '$lib/geometry/shape/classes';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { OperationData } from '$lib/cam/operation/interface';
 import type { LeadResult } from '$lib/cam/lead/interfaces';
 
 // Mock the stores
@@ -81,7 +83,7 @@ vi.mock('svelte/store', async (importOriginal) => {
 });
 
 describe('Lead Persistence Utils', () => {
-    const mockCut: Cut = {
+    const mockCut: CutData = {
         id: 'cut-1',
         name: 'Test Cut',
         operationId: 'op-1',
@@ -109,7 +111,7 @@ describe('Lead Persistence Utils', () => {
         },
     };
 
-    const mockOperation: Operation = {
+    const mockOperation: OperationData = {
         id: 'op-1',
         name: 'Test Operation',
         toolId: 'tool-1',
@@ -135,7 +137,7 @@ describe('Lead Persistence Utils', () => {
         kerfCompensation: KerfCompensation.NONE,
     };
 
-    const mockChain: Chain = {
+    const mockChain: ChainData = {
         id: 'chain-1',
         shapes: [
             {
@@ -186,7 +188,7 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should return true for cut with valid cached leads', () => {
-            const cutWithCache: Cut = {
+            const cutWithCache: CutData = {
                 ...mockCut,
                 leadIn: {
                     geometry: {
@@ -219,7 +221,7 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should return false for cut with mismatched lead types', () => {
-            const cutWithMismatch: Cut = {
+            const cutWithMismatch: CutData = {
                 ...mockCut,
                 leadInConfig: {
                     ...mockCut.leadInConfig!,
@@ -244,7 +246,7 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should return false for cut with outdated version', () => {
-            const cutWithOldVersion: Cut = {
+            const cutWithOldVersion: CutData = {
                 ...mockCut,
                 leadIn: {
                     geometry: {
@@ -265,7 +267,7 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should handle cuts with lead type "none"', () => {
-            const cutWithNoLeads: Cut = {
+            const cutWithNoLeads: CutData = {
                 ...mockCut,
                 leadInConfig: {
                     type: LeadType.NONE,
@@ -286,7 +288,7 @@ describe('Lead Persistence Utils', () => {
 
     describe('getCachedLeadGeometry', () => {
         it('should return cached lead geometry', () => {
-            const cutWithCache: Cut = {
+            const cutWithCache: CutData = {
                 ...mockCut,
                 leadIn: {
                     geometry: {
@@ -311,12 +313,6 @@ describe('Lead Persistence Utils', () => {
                     type: LeadType.ARC,
                     generatedAt: '2023-01-01T12:00:00.000Z',
                     version: '1.0.0',
-                },
-                leadValidation: {
-                    isValid: true,
-                    warnings: ['Test warning'],
-                    severity: 'warning',
-                    validatedAt: '2023-01-01T12:00:00.000Z',
                 },
             };
 
@@ -346,7 +342,6 @@ describe('Lead Persistence Utils', () => {
                 generatedAt: '2023-01-01T12:00:00.000Z',
                 version: '1.0.0',
             });
-            expect(result.validation).toEqual(cutWithCache.leadValidation);
         });
 
         it('should return undefined for missing cached leads', () => {
@@ -354,7 +349,6 @@ describe('Lead Persistence Utils', () => {
 
             expect(result.leadIn).toBeUndefined();
             expect(result.leadOut).toBeUndefined();
-            expect(result.validation).toBeUndefined();
         });
     });
 
@@ -425,28 +419,30 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should use offset geometry when calculatedOffset is present', async () => {
-            const cutWithOffset: Cut = {
+            const cutWithOffset: CutData = {
                 ...mockCut,
                 offset: {
                     offsetShapes: [
-                        {
+                        new Shape({
                             id: 'offset-shape-1',
                             type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: -2 },
                                 end: { x: 10, y: -2 },
                             },
-                        },
+                            layer: '0',
+                        }),
                     ],
                     originalShapes: [
-                        {
+                        new Shape({
                             id: 'shape-1',
                             type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
                             },
-                        },
+                            layer: '0',
+                        }),
                     ],
                     direction: OffsetDirection.INSET,
                     kerfWidth: 4,
@@ -482,19 +478,20 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should use original geometry when calculatedOffset has empty shapes', async () => {
-            const cutWithEmptyOffset: Cut = {
+            const cutWithEmptyOffset: CutData = {
                 ...mockCut,
                 offset: {
                     offsetShapes: [], // Empty offset shapes
                     originalShapes: [
-                        {
+                        new Shape({
                             id: 'shape-1',
                             type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: 0 },
                                 end: { x: 10, y: 0 },
                             },
-                        },
+                            layer: '0',
+                        }),
                     ],
                     direction: OffsetDirection.INSET,
                     kerfWidth: 4,
@@ -512,7 +509,7 @@ describe('Lead Persistence Utils', () => {
 
             // Verify that calculateLeads was called with original chain (not offset)
             expect(calculateLeads).toHaveBeenCalledWith(
-                mockChain, // Should use original chain
+                expect.any(Chain), // Should use original chain (as Chain instance)
                 expect.any(Object), // leadInConfig
                 expect.any(Object), // leadOutConfig
                 CutDirection.CLOCKWISE,
@@ -525,7 +522,7 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should skip calculation when both leads are disabled', async () => {
-            const cutNoLeads: Cut = {
+            const cutNoLeads: CutData = {
                 ...mockCut,
                 leadInConfig: {
                     type: LeadType.NONE,
@@ -577,7 +574,7 @@ describe('Lead Persistence Utils', () => {
     });
 
     describe('calculateLeadPoints', () => {
-        const mockChainMap = new Map<string, Chain>();
+        const mockChainMap = new Map<string, ChainData>();
         const mockPartMap = new Map();
 
         beforeEach(() => {
@@ -700,20 +697,20 @@ describe('Lead Persistence Utils', () => {
         });
 
         it('should use offset shapes when available', async () => {
-            const cutWithOffset: Cut = {
+            const cutWithOffset: CutData = {
                 ...mockCut,
                 offset: {
                     offsetShapes: [
-                        {
+                        new Shape({
                             id: 'offset-shape-1',
                             type: GeometryType.LINE,
                             geometry: {
                                 start: { x: 0, y: -2 },
                                 end: { x: 10, y: -2 },
                             },
-                        },
+                        }),
                     ],
-                    originalShapes: [mockChain.shapes[0]],
+                    originalShapes: [new Shape(mockChain.shapes[0])],
                     direction: OffsetDirection.INSET,
                     kerfWidth: 4,
                     generatedAt: '2023-01-01T12:00:00.000Z',

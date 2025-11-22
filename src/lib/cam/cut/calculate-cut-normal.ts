@@ -20,7 +20,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { CutDirection, NormalSide } from './enums';
 import {
@@ -54,7 +54,7 @@ interface CutNormalResult {
  * @returns Normal vector and connection point
  */
 export function calculateCutNormal(
-    chain: Chain,
+    chain: ChainData,
     cutDirection: CutDirection,
     part?: PartData,
     kerfCompensation?: OffsetDirection

@@ -1,23 +1,23 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 import type { ChainEndpoint } from '$lib/stores/overlay/interfaces';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 
 // Helper functions to generate chain overlay data
-export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {
+export function generateChainEndpoints(chains: ChainData[]): ChainEndpoint[] {
     const endpoints: ChainEndpoint[] = [];
 
     chains.forEach((chain) => {
         if (chain.shapes.length === 0) return;
 
-        const firstShape: Shape = chain.shapes[0];
-        const lastShape: Shape = chain.shapes[chain.shapes.length - 1];
+        const firstShape: ShapeData = chain.shapes[0];
+        const lastShape: ShapeData = chain.shapes[chain.shapes.length - 1];
 
         const start: Point2D = getShapeStartPoint(firstShape);
         const end: Point2D = getShapeEndPoint(lastShape);
@@ -38,8 +38,8 @@ export function generateChainEndpoints(chains: Chain[]): ChainEndpoint[] {
 // Helper to check if a shape is part of any chain
 export function getShapeChainId(
     shapeId: string,
-    chains: Chain[],
-    cuts?: Cut[] // Optional cuts parameter for searching offset shapes
+    chains: ChainData[],
+    cuts?: CutData[] // Optional cuts parameter for searching offset shapes
 ): string | null {
     // First search original chains (existing logic)
     for (const chain of chains) {
@@ -53,7 +53,7 @@ export function getShapeChainId(
         for (const cut of cuts) {
             if (cut.offset?.offsetShapes) {
                 const found = cut.offset.offsetShapes.some(
-                    (s: Shape) => s.id === shapeId
+                    (s: ShapeData) => s.id === shapeId
                 );
                 if (found) {
                     return cut.chainId; // Return the chain that this cut is based on
@@ -66,7 +66,10 @@ export function getShapeChainId(
 }
 
 // Helper to get all shape IDs in the same chain
-export function getChainShapeIds(shapeId: string, chains: Chain[]): string[] {
+export function getChainShapeIds(
+    shapeId: string,
+    chains: ChainData[]
+): string[] {
     for (const chain of chains) {
         if (chain.shapes.some((shape) => shape.id === shapeId)) {
             return chain.shapes.map((shape) => shape.id);
@@ -76,6 +79,9 @@ export function getChainShapeIds(shapeId: string, chains: Chain[]): string[] {
 }
 
 // Helper to get chain by ID
-export function getChainById(chainId: string, chains: Chain[]): Chain | null {
+export function getChainById(
+    chainId: string,
+    chains: ChainData[]
+): ChainData | null {
     return chains.find((chain) => chain.id === chainId) || null;
 }

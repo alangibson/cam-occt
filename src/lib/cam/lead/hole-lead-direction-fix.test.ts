@@ -6,7 +6,8 @@
 
 import { describe, expect, it } from 'vitest';
 import { calculateLeads } from './lead-calculation';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
@@ -15,7 +16,7 @@ import { detectParts } from '$lib/cam/part/part-detection';
 describe('Hole Lead Direction Fix', () => {
     it('should calculate hole leads pointing into hole void for offset chains', async () => {
         // Create a simple rectangular part with a hole
-        const _outerShell: Chain = {
+        const _outerShell: ChainData = {
             id: 'outer-shell',
             shapes: [
                 {
@@ -48,7 +49,7 @@ describe('Hole Lead Direction Fix', () => {
             clockwise: true,
         };
 
-        const _holeChain: Chain = {
+        const _holeChain: ChainData = {
             id: 'hole-chain',
             shapes: [
                 {
@@ -88,7 +89,7 @@ describe('Hole Lead Direction Fix', () => {
         };
 
         // Create offset hole chain (inset by 2 units)
-        const offsetHoleChain: Chain = {
+        const offsetHoleChain: ChainData = {
             id: 'hole-chain-offset',
             shapes: [
                 {
@@ -143,7 +144,7 @@ describe('Hole Lead Direction Fix', () => {
         };
 
         const leadResult = calculateLeads(
-            offsetHoleChain,
+            new Chain(offsetHoleChain),
             leadConfig,
             leadConfig,
             CutDirection.CLOCKWISE,
@@ -173,7 +174,7 @@ describe('Hole Lead Direction Fix', () => {
 
     it('should demonstrate consistent behavior between original and offset hole chains', async () => {
         // Create the same hole geometry for comparison
-        const originalHole: Chain = {
+        const originalHole: ChainData = {
             id: 'original-hole',
             shapes: [
                 {
@@ -212,7 +213,7 @@ describe('Hole Lead Direction Fix', () => {
             clockwise: false,
         };
 
-        const offsetHole: Chain = {
+        const offsetHole: ChainData = {
             id: 'offset-hole',
             shapes: [
                 {
@@ -266,7 +267,7 @@ describe('Hole Lead Direction Fix', () => {
 
         // Calculate leads for both
         const originalLeadResult = calculateLeads(
-            originalHole,
+            new Chain(originalHole),
             leadConfig,
             leadConfig,
             CutDirection.CLOCKWISE,
@@ -275,7 +276,7 @@ describe('Hole Lead Direction Fix', () => {
         );
 
         const offsetLeadResult = calculateLeads(
-            offsetHole,
+            new Chain(offsetHole),
             leadConfig,
             leadConfig,
             CutDirection.CLOCKWISE,

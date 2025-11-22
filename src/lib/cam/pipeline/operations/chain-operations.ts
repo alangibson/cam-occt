@@ -2,13 +2,13 @@
  * Chain operations module - handles cut generation for individual chains
  */
 
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import type { Part } from '$lib/cam/part/classes.svelte';
-import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import { Cut } from '$lib/cam/cut/classes.svelte';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';
 import { optimizeCutStartPoint } from '$lib/cam/cut/optimize-cut-start-point';
@@ -16,38 +16,37 @@ import { getToolValue } from '$lib/cam/tool/tool-utils';
 import { calculateChainOffset } from '$lib/cam/pipeline/operations/offset-calculation';
 import { calculateCutLeads } from '$lib/cam/pipeline/leads/lead-orchestration';
 import type { OffsetCalculation, CutGenerationResult } from './interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { Operation } from '$lib/cam/operation/classes.svelte';
 import { KerfCompensation } from '$lib/cam/operation/enums';
 
 /**
  * Generate a cut for a single chain with an operation
  *
- * @param operation - The operation defining cut parameters
- * @param targetId - The chain ID to cut
+ * @param operation - The operation defining cut parameters (contains tool and targets)
  * @param index - Index of this target in the operation's target list
- * @param chains - All available chains
- * @param tools - All available tools
- * @param parts - All available parts
  * @param tolerance - Tolerance for geometric operations
  * @returns Promise of cut generation result with cuts and warnings
  */
 export async function generateCutsForChainsWithOperation(
     operation: Operation,
-    targetId: string,
     index: number,
-    chains: Chain[],
-    tools: Tool[],
-    parts: Part[],
     tolerance: number
 ): Promise<CutGenerationResult> {
-    // Use the operation's preferred cut direction
-    // For open cuts, the stored clockwise property will be null (indicating 'none')
-    const chain: Chain | undefined = chains.find((c) => c.id === targetId);
+    // Get chain from operation targets
+    const chain = operation.targets[index] as ChainData;
+    const tool = operation.tool;
 
-    // Return empty arrays if chain not found
-    if (!chain) {
+    // Return empty arrays if chain not found or tool missing
+    if (!chain || !tool) {
         return { cuts: [], warnings: [] };
     }
+
+    const targetId = chain.id;
+
+    // Get all parts from operation targets (for finding part containing chain)
+    const parts: Part[] = operation.targets.filter(
+        (t) => !('shapes' in t)
+    ) as Part[];
     const cutDirection: CutDirection = operation.cutDirection;
 
     // Convert KerfCompensation to OffsetDirection for chains
@@ -80,16 +79,12 @@ export async function generateCutsForChainsWithOperation(
         clearExistingWarnings: boolean;
     } | null = null;
 
-    if (
-        kerfCompensation !== OffsetDirection.NONE &&
-        chain &&
-        operation.toolId
-    ) {
+    if (kerfCompensation !== OffsetDirection.NONE && chain && tool) {
         const offsetResult = await calculateChainOffset(
             chain,
             kerfCompensation,
-            operation.toolId,
-            tools
+            tool.id,
+            [tool]
         );
         if (offsetResult) {
             // Prepare warnings for return instead of directly updating stores
@@ -107,7 +102,6 @@ export async function generateCutsForChainsWithOperation(
                 kerfWidth: offsetResult.kerfWidth,
                 generatedAt: new Date().toISOString(),
                 version: '1.0.0',
-                gapFills: offsetResult.gapFills,
             };
         }
     }
@@ -139,13 +133,10 @@ export async function generateCutsForChainsWithOperation(
 
     // Get kerf width from tool (needed for cutter visualization even when compensation is NONE)
     let kerfWidth: number | undefined = undefined;
-    if (operation.toolId) {
-        const tool = tools.find((t) => t.id === operation.toolId);
-        if (tool) {
-            const toolKerfWidth = getToolValue(tool, 'kerfWidth');
-            if (toolKerfWidth) {
-                kerfWidth = toolKerfWidth;
-            }
+    if (tool) {
+        const toolKerfWidth = getToolValue(tool, 'kerfWidth');
+        if (toolKerfWidth) {
+            kerfWidth = toolKerfWidth;
         }
     }
 
@@ -153,12 +144,12 @@ export async function generateCutsForChainsWithOperation(
     // Extract chain number from targetId format: layername-chain-number
     const chainIdParts = targetId.split('-');
     const chainNumber = chainIdParts[chainIdParts.length - 1];
-    const cutToReturn: Cut = {
+    const cutToReturn = new Cut({
         id: crypto.randomUUID(),
         name: `${operation.name} - Chain ${chainNumber}`,
         operationId: operation.id,
         chainId: targetId,
-        toolId: operation.toolId,
+        toolId: tool.id,
         enabled: true,
         order: index + 1,
         cutDirection: cutDirection,
@@ -174,7 +165,7 @@ export async function generateCutsForChainsWithOperation(
         normal: cutNormalResult.normal,
         normalConnectionPoint: cutNormalResult.connectionPoint,
         normalSide: cutNormalResult.normalSide,
-    };
+    });
 
     // Optimize start point if enabled
     if (
@@ -204,7 +195,7 @@ export async function generateCutsForChainsWithOperation(
 
             // Update offset shapes to match optimized cutChain
             if (cutToReturn.offset && cutToReturn.cutChain) {
-                cutToReturn.offset.offsetShapes = cutToReturn.cutChain.shapes;
+                cutToReturn.offset!.offsetShapes = cutToReturn.cutChain.shapes;
             }
         }
     }
@@ -231,13 +222,6 @@ export async function generateCutsForChainsWithOperation(
             ...leadResult.leadOut,
             generatedAt: new Date().toISOString(),
             version: '1.0.0',
-        };
-    }
-
-    if (leadResult.validation) {
-        cutToReturn.leadValidation = {
-            ...leadResult.validation,
-            validatedAt: new Date().toISOString(),
         };
     }
 

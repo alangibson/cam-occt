@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -63,7 +63,7 @@ function createDrawingStore(): DrawingStore {
             });
         },
 
-        selectShape: (shapeIdOrShape: string | Shape, multi = false) =>
+        selectShape: (shapeIdOrShape: string | ShapeData, multi = false) =>
             update((state) => {
                 if (!state.drawing) return state;
 
@@ -76,12 +76,12 @@ function createDrawingStore(): DrawingStore {
                     typeof shapeIdOrShape === 'object'
                         ? shapeIdOrShape
                         : state.drawing.shapes.find(
-                              (s: Shape) => s.id === shapeId
+                              (s: ShapeData) => s.id === shapeId
                           );
 
                 // Check if this is an original shape (in drawing.shapes)
                 const isOriginalShape = state.drawing.shapes.some(
-                    (s: Shape) => s.id === shapeId
+                    (s: ShapeData) => s.id === shapeId
                 );
 
                 if (isOriginalShape) {
@@ -124,8 +124,8 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.filter(
-                    (shape: Shape) => !state.selectedShapes.has(shape.id)
+                const shapes: ShapeData[] = state.drawing.shapes.filter(
+                    (shape: ShapeData) => !state.selectedShapes.has(shape.id)
                 );
 
                 // Reset downstream stages when shapes are deleted
@@ -144,8 +144,8 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.map(
-                    (shape: Shape) => {
+                const shapes: ShapeData[] = state.drawing.shapes.map(
+                    (shape: ShapeData) => {
                         if (shapeIds.includes(shape.id)) {
                             return moveShape(shape, delta);
                         }
@@ -172,8 +172,8 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.map(
-                    (shape: Shape) => {
+                const shapes: ShapeData[] = state.drawing.shapes.map(
+                    (shape: ShapeData) => {
                         if (shapeIds.includes(shape.id)) {
                             return scaleShape(shape, scaleFactor, origin);
                         }
@@ -196,8 +196,8 @@ function createDrawingStore(): DrawingStore {
             update((state) => {
                 if (!state.drawing) return state;
 
-                const shapes: Shape[] = state.drawing.shapes.map(
-                    (shape: Shape) => {
+                const shapes: ShapeData[] = state.drawing.shapes.map(
+                    (shape: ShapeData) => {
                         if (shapeIds.includes(shape.id)) {
                             return rotateShape(shape, angle, origin);
                         }
@@ -292,7 +292,7 @@ function createDrawingStore(): DrawingStore {
                 displayUnit: unit,
             })),
 
-        replaceAllShapes: (shapes: Shape[]) =>
+        replaceAllShapes: (shapes: ShapeData[]) =>
             update((state) => {
                 if (!state.drawing) return state;
 
@@ -336,7 +336,7 @@ function createDrawingStore(): DrawingStore {
             }));
         },
 
-        selectOffsetShape: (shape: Shape | null) =>
+        selectOffsetShape: (shape: ShapeData | null) =>
             update((state) => ({
                 ...state,
                 selectedOffsetShape: shape,
@@ -349,7 +349,20 @@ function createDrawingStore(): DrawingStore {
                 selectedOffsetShape: null,
             })),
 
-        reset: () => set(initialState),
+        reset: () =>
+            set({
+                drawing: null,
+                selectedShapes: new Set(),
+                hoveredShape: null,
+                selectedOffsetShape: null,
+                isDragging: false,
+                dragStart: null,
+                scale: 1,
+                offset: { x: 0, y: 0 },
+                layerVisibility: {},
+                displayUnit: Unit.MM,
+                canvasDimensions: null,
+            }),
     };
 }
 

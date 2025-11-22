@@ -62,6 +62,7 @@ describe('Workflow Integration', () => {
                 shapes: [],
                 bounds: { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
                 units: Unit.MM as const,
+                fileName: '',
             };
 
             drawingStore.setDrawing(new Drawing(mockDrawing), 'test.dxf');

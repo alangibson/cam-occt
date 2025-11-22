@@ -3,11 +3,12 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { type PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 
@@ -19,8 +20,8 @@ describe('Lead Solid Area Avoidance', () => {
         minY: number,
         maxX: number,
         maxY: number
-    ): Chain {
-        const shapes: Shape[] = [
+    ): ChainData {
+        const shapes: ShapeData[] = [
             {
                 id: `${id}_bottom`,
                 type: GeometryType.LINE,
@@ -159,7 +160,7 @@ describe('Lead Solid Area Avoidance', () => {
             const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
-                shellChain,
+                new Chain(shellChain),
                 leadIn,
                 leadOut,
                 CutDirection.NONE,
@@ -236,7 +237,7 @@ describe('Lead Solid Area Avoidance', () => {
             const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
             const result = calculateLeads(
-                holeChain,
+                new Chain(holeChain),
                 leadIn,
                 leadOut,
                 CutDirection.NONE,
@@ -319,7 +320,7 @@ describe('Lead Solid Area Avoidance', () => {
             const leadConfig: LeadConfig = { type: LeadType.ARC, length: 12 };
 
             const result1 = calculateLeads(
-                hole1Chain,
+                new Chain(hole1Chain),
                 leadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.NONE,
@@ -327,7 +328,7 @@ describe('Lead Solid Area Avoidance', () => {
                 { x: 1, y: 0 }
             );
             const result2 = calculateLeads(
-                hole2Chain,
+                new Chain(hole2Chain),
                 leadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.NONE,
@@ -395,7 +396,7 @@ describe('Lead Solid Area Avoidance', () => {
 
             // Generate leads with default direction
             const result1 = calculateLeads(
-                shellChain,
+                new Chain(shellChain),
                 leadIn,
                 {
                     type: LeadType.NONE,

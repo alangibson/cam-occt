@@ -13,7 +13,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import {
     isChainClosed,
     tessellateChainToShapes,
@@ -46,7 +46,7 @@ import { getDefaults } from '$lib/config/defaults/defaults-manager';
  * ```
  */
 export async function offsetChain(
-    chain: Chain,
+    chain: ChainData,
     distance: number,
     params: ChainOffsetParameters = DEFAULT_CHAIN_OFFSET_PARAMETERS
 ): Promise<ChainOffsetResult> {

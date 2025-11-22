@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -11,7 +11,7 @@ import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 
 // Helper function to create test chains
-function createTestChain(id: string, shapes: Shape[]): Chain {
+function createTestChain(id: string, shapes: ShapeData[]): ChainData {
     return {
         id,
         shapes,
@@ -24,7 +24,7 @@ function createRectangle(
     y: number,
     width: number,
     height: number
-): Shape[] {
+): ShapeData[] {
     return [
         {
             id: '1',
@@ -62,7 +62,12 @@ function createRectangle(
 }
 
 // Helper function to create test circle
-function createCircle(id: string, x: number, y: number, radius: number): Shape {
+function createCircle(
+    id: string,
+    x: number,
+    y: number,
+    radius: number
+): ShapeData {
     return {
         id,
         type: GeometryType.CIRCLE,
@@ -81,7 +86,7 @@ function createArc(
     startAngle: number,
     endAngle: number,
     clockwise: boolean = false
-): Shape {
+): ShapeData {
     return {
         id,
         type: GeometryType.ARC,
@@ -103,7 +108,7 @@ function createEllipse(
     minorToMajorRatio: number,
     startParam?: number,
     endParam?: number
-): Shape {
+): ShapeData {
     return {
         id,
         type: GeometryType.ELLIPSE,
@@ -122,7 +127,7 @@ function createSpline(
     id: string,
     controlPoints: { x: number; y: number }[],
     degree: number = 3
-): Shape {
+): ShapeData {
     return {
         id,
         type: GeometryType.SPLINE,
@@ -268,7 +273,7 @@ describe('isChainGeometricallyContained', () => {
 
     it('should handle splines that fallback to fit points', () => {
         const outerRect = createRectangle(0, 0, 20, 20);
-        const splineWithBadNURBS: Shape = {
+        const splineWithBadNURBS: ShapeData = {
             id: 'bad-spline',
             type: GeometryType.SPLINE,
             geometry: {
@@ -295,7 +300,7 @@ describe('isChainGeometricallyContained', () => {
 
     it('should handle splines that fallback to control points', () => {
         const outerRect = createRectangle(0, 0, 20, 20);
-        const splineWithNoFitPoints: Shape = {
+        const splineWithNoFitPoints: ShapeData = {
             id: 'no-fit-points-spline',
             type: GeometryType.SPLINE,
             geometry: {
@@ -322,7 +327,7 @@ describe('isChainGeometricallyContained', () => {
 
     it('should handle polylines', () => {
         const outerRect = createRectangle(0, 0, 20, 20);
-        const polyline: Shape = {
+        const polyline: ShapeData = {
             id: 'polyline',
             type: GeometryType.POLYLINE,
             geometry: {
@@ -351,7 +356,7 @@ describe('isChainGeometricallyContained', () => {
     });
 
     it('should throw error for chains with insufficient points', () => {
-        const singleLineShapes: Shape[] = [
+        const singleLineShapes: ShapeData[] = [
             {
                 id: '1',
                 type: GeometryType.LINE,

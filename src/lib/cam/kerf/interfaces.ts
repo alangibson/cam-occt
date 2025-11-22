@@ -1,4 +1,4 @@
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { CacheableLead } from '$lib/cam/lead/interfaces';
 
 /**
@@ -32,14 +32,14 @@ export interface Kerf {
      * For closed cuts, this is the inner boundary of the kerf
      * For open cuts, this is the left side offset
      */
-    innerChain: Chain;
+    innerChain: ChainData;
 
     /**
      * Outer offset chain (offset outward by kerfWidth/2)
      * For closed cuts, this is the outer boundary of the kerf
      * For open cuts, this is the right side offset
      */
-    outerChain: Chain;
+    outerChain: ChainData;
 
     /** Whether the source cut was closed */
     isClosed: boolean;
@@ -51,16 +51,16 @@ export interface Kerf {
     leadOut?: CacheableLead;
 
     /** Inner kerf chain for lead-in (left side offset) */
-    leadInInnerChain?: Chain;
+    leadInInnerChain?: ChainData;
 
     /** Outer kerf chain for lead-in (right side offset) */
-    leadInOuterChain?: Chain;
+    leadInOuterChain?: ChainData;
 
     /** Inner kerf chain for lead-out (left side offset) */
-    leadOutInnerChain?: Chain;
+    leadOutInnerChain?: ChainData;
 
     /** Outer kerf chain for lead-out (right side offset) */
-    leadOutOuterChain?: Chain;
+    leadOutOuterChain?: ChainData;
 
     /** Whether lead-in kerf overlaps with the cut's underlying chain */
     leadInKerfOverlapsChain?: boolean;

@@ -6,7 +6,7 @@ import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 
 describe('Lead Solid Area Verification - Catch the Error', () => {
     it('Debug: Verify part 5 geometry and chain association', async () => {
@@ -40,7 +40,7 @@ describe('Lead Solid Area Verification - Catch the Error', () => {
         }
 
         // Check holes
-        part5.voids.forEach((hole: { chain: { shapes: Shape[] } }) => {
+        part5.voids.forEach((hole: { chain: { shapes: ShapeData[] } }) => {
             // Process hole
             void hole;
         });

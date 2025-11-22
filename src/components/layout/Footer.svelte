@@ -5,7 +5,7 @@
     import {
         calculateDrawingSize,
         type DrawingSize,
-    } from '$lib/algorithms/drawing-size/drawing-size';
+    } from '$lib/cam/drawing/drawing-size';
 
     const drawing = $derived($drawingStore.drawing);
     const scale = $derived($drawingStore.scale);

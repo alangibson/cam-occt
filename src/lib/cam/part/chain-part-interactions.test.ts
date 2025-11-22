@@ -11,13 +11,13 @@ import {
 import { type PartData, type PartVoid } from './interfaces';
 import { Part } from './classes.svelte';
 import { PartType } from './enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 
 describe('findPartContainingChain', () => {
     // Helper function to create a mock chain
-    function createMockChain(id: string): Chain {
+    function createMockChain(id: string): ChainData {
         return {
             id,
             shapes: [],

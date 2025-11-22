@@ -19,14 +19,13 @@
     import ThreeColumnLayout from '$components/layout/ThreeColumnLayout.svelte';
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
-    import { cutStore } from '$lib/stores/cuts/store';
-    import { rapidStore } from '$lib/stores/rapids/store';
+    import { planStore } from '$lib/stores/plan/store';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { overlayStore } from '$lib/stores/overlay/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { onMount, onDestroy } from 'svelte';
-    import type { Shape } from '$lib/geometry/shape/interfaces';
+    import type { ShapeData } from '$lib/geometry/shape/interfaces';
     import { GeometryType } from '$lib/geometry/shape/enums';
     import type { Point2D } from '$lib/geometry/point/interfaces';
     import type { Line } from '$lib/geometry/line/interfaces';
@@ -35,8 +34,8 @@
     import type { Polyline } from '$lib/geometry/polyline/interfaces';
     import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
     import type { Spline } from '$lib/geometry/spline/interfaces';
-    import type { Chain } from '$lib/geometry/chain/interfaces';
-    import type { Cut } from '$lib/cam/cut/interfaces';
+    import type { ChainData } from '$lib/geometry/chain/interfaces';
+    import type { CutData } from '$lib/cam/cut/interfaces';
     import type { Rapid } from '$lib/cam/rapid/interfaces';
     import type { Tool } from '$lib/cam/tool/interfaces';
     import type { DrawingState } from '$lib/stores/drawing/interfaces';
@@ -61,6 +60,8 @@
         getCachedLeadGeometry,
         hasValidCachedLeads,
     } from '$lib/cam/cut/lead-persistence';
+    import { Chain } from '$lib/geometry/chain/classes';
+    import { Shape } from '$lib/geometry/shape/classes';
 
     // Props from WorkflowContainer for shared canvas
     let {
@@ -101,7 +102,7 @@
     // Animation data
     let animationSteps: Array<{
         type: 'rapid' | 'cut';
-        cut: Cut | null;
+        cut: CutData | null;
         rapid: Rapid | null;
         startTime: number;
         endTime: number;
@@ -110,8 +111,7 @@
     }> = [];
 
     // Store subscriptions
-    let cutStoreState: { cuts: Cut[] } | null = null;
-    let rapidStoreState: { rapids: Rapid[] } | null = null;
+    let planStoreState = $state<{ plan: { cuts: CutData[] } } | null>(null);
     let drawingState = $state<DrawingState | null>(null);
     let toolStoreState: Tool[] | null = null;
     let settingsStoreState: SettingsState | null = null;
@@ -155,7 +155,7 @@
     }
 
     // Helper function to get feedRate from tool or use default, accounting for hole underspeed
-    function getFeedRateForCut(cut: Cut): number {
+    function getFeedRateForCut(cut: CutData): number {
         let baseFeedRate = 1000; // Default feed rate
         const displayUnitEnum = displayUnit === 'mm' ? Unit.MM : Unit.INCH;
 
@@ -205,10 +205,7 @@
 
     // Auto-complete simulate stage when simulation data is available
     $effect(() => {
-        if (
-            (cutStoreState?.cuts && cutStoreState.cuts.length > 0) ||
-            (rapidStoreState?.rapids && rapidStoreState.rapids.length > 0)
-        ) {
+        if (planStoreState?.plan.cuts && planStoreState.plan.cuts.length > 0) {
             workflowStore.completeStage(WorkflowStage.SIMULATE);
         }
     });
@@ -217,8 +214,7 @@
     $effect(() => {
         if (
             settingsStoreState?.settings.camSettings.rapidRate &&
-            cutStoreState &&
-            rapidStoreState
+            planStoreState
         ) {
             buildAnimationSteps();
         }
@@ -231,14 +227,8 @@
         unsubscribers = [];
 
         unsubscribers.push(
-            cutStore.subscribe((state) => {
-                cutStoreState = state;
-            })
-        );
-
-        unsubscribers.push(
-            rapidStore.subscribe((state) => {
-                rapidStoreState = state;
+            planStore.subscribe((state) => {
+                planStoreState = state;
             })
         );
 
@@ -263,7 +253,7 @@
 
     // Initialize simulation data
     function initializeSimulation() {
-        if (!cutStoreState || !rapidStoreState) return;
+        if (!planStoreState) return;
 
         buildAnimationSteps();
         resetSimulation();
@@ -280,11 +270,13 @@
         pierceCount = 0;
         estimatedCutTime = 0;
 
-        // Get ordered cuts and rapids
-        const orderedCuts = cutStoreState
-            ? [...cutStoreState.cuts].sort((a, b) => a.order - b.order)
+        // Get ordered cuts and extract rapids from them
+        const orderedCuts = planStoreState
+            ? [...planStoreState.plan.cuts].sort((a, b) => a.order - b.order)
             : [];
-        const rapids = rapidStoreState ? rapidStoreState.rapids : [];
+        const rapids = orderedCuts
+            .map((cut) => cut.rapidIn)
+            .filter((rapid) => rapid !== undefined);
 
         // Count pierces (one per cut)
         pierceCount = orderedCuts.length;
@@ -363,7 +355,7 @@
     }
 
     // Get rapid rate from settings store and convert to display units
-    function getRapidRateForCut(_cut: Cut): number {
+    function getRapidRateForCut(_cut: CutData): number {
         if (!settingsStoreState) return 3000; // Fallback
 
         // Get rapid rate from settings (stored in measurement system units)
@@ -408,7 +400,7 @@
      * @param cut - The cut to get the starting point for
      * @returns The starting point coordinates
      */
-    function getCutStartPoint(cut: Cut): Point2D {
+    function getCutStartPoint(cut: CutData): Point2D {
         // Use execution chain if available (contains shapes in correct execution order)
         let shapes = cut.cutChain?.shapes;
 
@@ -416,7 +408,7 @@
         if (!shapes) {
             shapes =
                 cut.offset?.offsetShapes ||
-                chains.find((c: Chain) => c.id === cut.chainId)?.shapes;
+                chains.find((c: ChainData) => c.id === cut.chainId)?.shapes;
         }
 
         if (!shapes || shapes.length === 0) return { x: 0, y: 0 };
@@ -448,11 +440,18 @@
                 const part = findPartForChain(cut.chainId);
 
                 // Use offset shapes if available
-                const chain = chains.find((c: Chain) => c.id === cut.chainId);
+                const chain = chains.find(
+                    (c: ChainData) => c.id === cut.chainId
+                );
                 if (!chain) return { x: 0, y: 0 };
 
                 const chainForLeads = cut.offset
-                    ? { ...chain, shapes: cut.offset.offsetShapes }
+                    ? new Chain({
+                          ...chain.toData(),
+                          shapes: cut.offset.offsetShapes.map((s: Shape) =>
+                              s.toData()
+                          ),
+                      })
                     : chain;
 
                 const leadInConfig: LeadConfig = cut.leadInConfig || {
@@ -519,10 +518,10 @@
      * @param cut - The cut to calculate distance for
      * @returns Total cut distance including leads
      */
-    function getCutDistance(cut: Cut): number {
+    function getCutDistance(cut: CutData): number {
         // Use execution chain if available
         let shapes = cut.cutChain?.shapes;
-        const chain = chains.find((c: Chain) => c.id === cut.chainId);
+        const chain = chains.find((c: ChainData) => c.id === cut.chainId);
 
         // Fallback for backward compatibility
         if (!shapes) {
@@ -594,12 +593,14 @@
                         angle: 0,
                     };
 
-                    const chainForLeads =
+                    const chainForLeads: Chain | undefined =
                         cut.offset && chain
-                            ? {
-                                  ...chain,
-                                  shapes: cut.offset.offsetShapes,
-                              }
+                            ? new Chain({
+                                  ...chain.toData(),
+                                  shapes: cut.offset.offsetShapes.map(
+                                      (s: Shape) => s.toData()
+                                  ),
+                              })
                             : chain;
 
                     if (chainForLeads) {
@@ -645,7 +646,7 @@
     }
 
     // Calculate length of a shape (simplified but functional)
-    function getShapeLength(shape: Shape): number {
+    function getShapeLength(shape: ShapeData): number {
         switch (shape.type) {
             case GeometryType.LINE:
                 const line = shape.geometry as Line;
@@ -887,14 +888,14 @@
      * @param cut - The cut being simulated
      * @param progress - Progress along the cut (0-1)
      */
-    function updateToolHeadOnCut(cut: Cut, progress: number) {
+    function updateToolHeadOnCut(cut: CutData, progress: number) {
         // Use execution chain if available
         let shapes = cut.cutChain?.shapes;
         let chain = cut.cutChain;
 
         // Fallback for backward compatibility
         if (!shapes) {
-            chain = chains.find((c: Chain) => c.id === cut.chainId);
+            chain = chains.find((c: ChainData) => c.id === cut.chainId);
             if (!chain) return;
             shapes =
                 cut.offset?.offsetShapes ||
@@ -957,10 +958,12 @@
 
                     const chainForLeads =
                         cut.offset && chain
-                            ? {
-                                  ...chain,
-                                  shapes: cut.offset.offsetShapes,
-                              }
+                            ? new Chain({
+                                  ...chain.toData(),
+                                  shapes: cut.offset.offsetShapes.map(
+                                      (s: Shape) => s.toData()
+                                  ),
+                              })
                             : chain;
 
                     if (chainForLeads) {
@@ -1003,7 +1006,14 @@
         // Calculate lengths
         const leadInLength = calculatePolylineLength(leadInGeometry);
         const chainLength =
-            chain && shapes ? getChainDistance({ ...chain, shapes }) : 0; // Use offset shapes if available
+            chain && shapes
+                ? getChainDistance({
+                      ...chain.toData(),
+                      shapes: shapes.map((s: Shape | ShapeData) =>
+                          'toData' in s ? s.toData() : s
+                      ),
+                  })
+                : 0; // Use offset shapes if available
         const leadOutLength = calculatePolylineLength(leadOutGeometry);
         const totalLength = leadInLength + chainLength + leadOutLength;
 
@@ -1028,7 +1038,12 @@
             const chainProgress =
                 chainLength > 0 ? chainTargetDistance / chainLength : 0;
             toolHeadPosition = getPositionOnChain(
-                { ...chain, shapes },
+                {
+                    ...chain.toData(),
+                    shapes: shapes.map((s: Shape | ShapeData) =>
+                        'toData' in s ? s.toData() : s
+                    ),
+                },
                 chainProgress
             );
         } else {
@@ -1097,7 +1112,7 @@
     }
 
     // Get position along a chain (original chain geometry)
-    function getPositionOnChain(chain: Chain, progress: number): Point2D {
+    function getPositionOnChain(chain: ChainData, progress: number): Point2D {
         const totalLength = getChainDistance(chain);
         const targetDistance = totalLength * progress;
 
@@ -1128,7 +1143,7 @@
     }
 
     // Calculate total distance of a chain
-    function getChainDistance(chain: Chain): number {
+    function getChainDistance(chain: ChainData): number {
         let totalDistance = 0;
         for (const shape of chain.shapes) {
             totalDistance += getShapeLength(shape);
@@ -1137,7 +1152,7 @@
     }
 
     // Get position along a shape at given progress (0-1) - simplified
-    function getPositionOnShape(shape: Shape, progress: number): Point2D {
+    function getPositionOnShape(shape: ShapeData, progress: number): Point2D {
         progress = Math.max(0, Math.min(1, progress)); // Clamp to 0-1
 
         switch (shape.type) {

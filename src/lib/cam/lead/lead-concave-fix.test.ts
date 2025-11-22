@@ -3,12 +3,13 @@ import { calculateLeads } from './lead-calculation';
 import { type LeadConfig } from './interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { convertLeadGeometryToPoints } from './functions';
 
 describe('Lead Concave Area Fix', () => {
@@ -40,7 +41,7 @@ describe('Lead Concave Area Fix', () => {
     }
 
     // Helper to create a complex shape that has both convex and concave areas
-    function createComplexConcaveShape(): Chain {
+    function createComplexConcaveShape(): ChainData {
         // Create a shape that resembles the problematic geometry from ADLER.dxf
         // This will have concave areas where centroid-based logic fails
         const points: Point2D[] = [
@@ -57,7 +58,7 @@ describe('Lead Concave Area Fix', () => {
             { x: 0, y: 0 }, // Back to start
         ];
 
-        const shapes: Shape[] = [];
+        const shapes: ShapeData[] = [];
         for (let i: number = 0; i < points.length - 1; i++) {
             shapes.push({
                 id: `line${i}`,
@@ -91,7 +92,7 @@ describe('Lead Concave Area Fix', () => {
         const leadOut: LeadConfig = { type: LeadType.NONE, length: 0 };
 
         const result = calculateLeads(
-            chain,
+            new Chain(chain),
             leadIn,
             leadOut,
             CutDirection.NONE,
@@ -154,7 +155,7 @@ describe('Lead Concave Area Fix', () => {
             { x: 0, y: 10 },
         ];
 
-        const shapes: Shape[] = [];
+        const shapes: ShapeData[] = [];
         for (let i: number = 0; i < points.length - 1; i++) {
             shapes.push({
                 id: `line${i}`,
@@ -172,7 +173,7 @@ describe('Lead Concave Area Fix', () => {
             layer: 'layer1',
         });
 
-        const chain: Chain = { id: 'simple_concave', shapes };
+        const chain: ChainData = { id: 'simple_concave', shapes };
 
         const part: PartData = {
             id: 'part1',
@@ -186,7 +187,7 @@ describe('Lead Concave Area Fix', () => {
 
         const leadIn: LeadConfig = { type: LeadType.ARC, length: 3 };
         const result = calculateLeads(
-            chain,
+            new Chain(chain),
             leadIn,
             { type: LeadType.NONE, length: 0 },
             CutDirection.NONE,

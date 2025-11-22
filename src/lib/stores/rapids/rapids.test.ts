@@ -8,101 +8,20 @@ import {
     toggleRapidSelection,
     clearRapidSelection,
 } from './functions';
-import type { Rapid } from '$lib/cam/rapid/interfaces';
 
 describe('rapidStore', () => {
     beforeEach(() => {
         rapidStore.reset();
     });
 
-    const createTestRapid = (id: string): Rapid => ({
-        id,
-        start: { x: 0, y: 0 },
-        end: { x: 10, y: 10 },
-        type: 'rapid',
-    });
-
     describe('initial state', () => {
-        it('should start with empty rapids and default settings', () => {
+        it('should start with default settings', () => {
             const state = get(rapidStore);
 
-            expect(state.rapids).toHaveLength(0);
             expect(state.showRapids).toBe(true);
+            expect(state.showRapidDirections).toBe(false);
             expect(state.selectedRapidIds).toEqual(new Set());
             expect(state.highlightedRapidId).toBeNull();
-        });
-    });
-
-    describe('setRapids', () => {
-        it('should set rapids array', () => {
-            const rapids = [
-                createTestRapid('rapid-1'),
-                createTestRapid('rapid-2'),
-            ];
-
-            rapidStore.setRapids(rapids);
-
-            const state = get(rapidStore);
-            expect(state.rapids).toEqual(rapids);
-            expect(state.rapids).toHaveLength(2);
-        });
-
-        it('should replace existing rapids', () => {
-            const initialRapids = [createTestRapid('rapid-1')];
-            const newRapids = [
-                createTestRapid('rapid-2'),
-                createTestRapid('rapid-3'),
-            ];
-
-            rapidStore.setRapids(initialRapids);
-            rapidStore.setRapids(newRapids);
-
-            const state = get(rapidStore);
-            expect(state.rapids).toEqual(newRapids);
-            expect(state.rapids).toHaveLength(2);
-            expect(state.rapids[0].id).toBe('rapid-2');
-        });
-
-        it('should handle empty rapids array', () => {
-            const rapids = [createTestRapid('rapid-1')];
-
-            rapidStore.setRapids(rapids);
-            rapidStore.setRapids([]);
-
-            const state = get(rapidStore);
-            expect(state.rapids).toHaveLength(0);
-        });
-    });
-
-    describe('clearRapids', () => {
-        it('should clear rapids array', () => {
-            const rapids = [
-                createTestRapid('rapid-1'),
-                createTestRapid('rapid-2'),
-            ];
-
-            rapidStore.setRapids(rapids);
-            rapidStore.clearRapids();
-
-            const state = get(rapidStore);
-            expect(state.rapids).toHaveLength(0);
-        });
-
-        it('should preserve other state when clearing rapids', () => {
-            const rapids = [createTestRapid('rapid-1')];
-
-            rapidStore.setRapids(rapids);
-            rapidStore.setShowRapids(false);
-            rapidStore.selectRapids(new Set(['rapid-1']));
-            rapidStore.highlightRapid('rapid-1');
-
-            rapidStore.clearRapids();
-
-            const state = get(rapidStore);
-            expect(state.rapids).toHaveLength(0);
-            expect(state.showRapids).toBe(false);
-            expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
-            expect(state.highlightedRapidId).toBe('rapid-1');
         });
     });
 
@@ -154,6 +73,22 @@ describe('rapidStore', () => {
 
             const state = get(rapidStore);
             expect(state.showRapids).toBe(true);
+        });
+    });
+
+    describe('setShowRapidDirections', () => {
+        it('should set showRapidDirections to true', () => {
+            rapidStore.setShowRapidDirections(true);
+
+            const state = get(rapidStore);
+            expect(state.showRapidDirections).toBe(true);
+        });
+
+        it('should set showRapidDirections to false', () => {
+            rapidStore.setShowRapidDirections(false);
+
+            const state = get(rapidStore);
+            expect(state.showRapidDirections).toBe(false);
         });
     });
 
@@ -289,9 +224,6 @@ describe('rapidStore', () => {
 
     describe('reset', () => {
         it('should reset to initial state', () => {
-            const rapids = [createTestRapid('rapid-1')];
-
-            rapidStore.setRapids(rapids);
             rapidStore.setShowRapids(false);
             rapidStore.selectRapids(new Set(['rapid-1']));
             rapidStore.highlightRapid('rapid-1');
@@ -300,7 +232,6 @@ describe('rapidStore', () => {
 
             const state = get(rapidStore);
             expect(state).toEqual({
-                rapids: [],
                 showRapids: true,
                 showRapidDirections: false,
                 selectedRapidIds: new Set(),
@@ -309,14 +240,11 @@ describe('rapidStore', () => {
         });
 
         it('should reset multiple times correctly', () => {
-            const rapids = [createTestRapid('rapid-1')];
-
-            rapidStore.setRapids(rapids);
+            rapidStore.setShowRapids(false);
             rapidStore.reset();
             rapidStore.reset();
 
             const state = get(rapidStore);
-            expect(state.rapids).toHaveLength(0);
             expect(state.showRapids).toBe(true);
         });
     });
@@ -341,19 +269,11 @@ describe('rapidStore', () => {
         });
 
         it('should maintain state integrity after multiple operations', () => {
-            const rapids = [
-                createTestRapid('rapid-1'),
-                createTestRapid('rapid-2'),
-            ];
-
-            rapidStore.setRapids(rapids);
             rapidStore.setShowRapids(false);
             rapidStore.selectRapids(new Set(['rapid-1']));
             rapidStore.highlightRapid('rapid-2');
-            rapidStore.clearRapids();
 
             const state = get(rapidStore);
-            expect(state.rapids).toHaveLength(0);
             expect(state.showRapids).toBe(false);
             expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
             expect(state.highlightedRapidId).toBe('rapid-2');
@@ -436,22 +356,11 @@ describe('helper functions', () => {
 
     describe('helper function integration', () => {
         it('should work together with store methods', () => {
-            const rapids: Rapid[] = [
-                {
-                    id: 'rapid-1',
-                    start: { x: 0, y: 0 },
-                    end: { x: 5, y: 5 },
-                    type: 'rapid',
-                },
-            ];
-
-            rapidStore.setRapids(rapids);
             selectRapids(new Set(['rapid-1']));
             highlightRapid('rapid-1');
             rapidStore.setShowRapids(false);
 
             const state = get(rapidStore);
-            expect(state.rapids).toHaveLength(1);
             expect(state.selectedRapidIds).toEqual(new Set(['rapid-1']));
             expect(state.highlightedRapidId).toBe('rapid-1');
             expect(state.showRapids).toBe(false);

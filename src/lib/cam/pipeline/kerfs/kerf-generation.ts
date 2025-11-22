@@ -2,9 +2,9 @@
  * Kerf generation and adjustment orchestration
  */
 
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import {
     cutToKerf,
@@ -30,9 +30,9 @@ import type { KerfGenerationResult } from './interfaces';
  * @returns Result indicating success and whether adjustment was performed
  */
 export async function generateAndAdjustKerf(
-    cut: Cut,
+    cut: CutData,
     tool: Tool,
-    originalChain: Chain,
+    originalChain: ChainData,
     tolerance: number,
     parts: Part[]
 ): Promise<KerfGenerationResult> {

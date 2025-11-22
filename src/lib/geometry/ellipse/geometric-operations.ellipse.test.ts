@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
 
@@ -12,7 +12,7 @@ function createEllipseShape(
     minorToMajorRatio: number,
     startParam?: number,
     endParam?: number
-): Shape {
+): ShapeData {
     const geometry: Ellipse = {
         center,
         majorAxisEndpoint,
@@ -29,7 +29,10 @@ function createEllipseShape(
 }
 
 // Helper function to create a chain from shapes
-function createChain(shapes: Shape[], id: string = 'test-chain'): Chain {
+function createChain(
+    shapes: ShapeData[],
+    id: string = 'test-chain'
+): ChainData {
     return {
         id,
         shapes,
@@ -39,7 +42,7 @@ function createChain(shapes: Shape[], id: string = 'test-chain'): Chain {
 describe('Geometric Operations - Ellipse support', () => {
     describe('Ellipse polygon approximation', () => {
         it('should generate polygon points for a full ellipse', () => {
-            const ellipse: Shape = createEllipseShape(
+            const ellipse: ShapeData = createEllipseShape(
                 { x: 0, y: 0 },
                 { x: 10, y: 0 }, // Horizontal major axis
                 0.5 // Minor axis is half of major
@@ -55,7 +58,7 @@ describe('Geometric Operations - Ellipse support', () => {
         });
 
         it('should generate polygon points for an ellipse arc', () => {
-            const ellipse: Shape = createEllipseShape(
+            const ellipse: ShapeData = createEllipseShape(
                 { x: 0, y: 0 },
                 { x: 20, y: 0 },
                 0.6,
@@ -72,7 +75,7 @@ describe('Geometric Operations - Ellipse support', () => {
         });
 
         it('should handle rotated ellipse correctly', () => {
-            const ellipse: Shape = createEllipseShape(
+            const ellipse: ShapeData = createEllipseShape(
                 { x: 50, y: 50 },
                 { x: 0, y: 15 }, // Vertical major axis
                 0.8
@@ -164,14 +167,14 @@ describe('Geometric Operations - Ellipse support', () => {
     describe('Mixed geometry containment with ellipses', () => {
         it('should handle containment between ellipse and other shapes', () => {
             // Create a large ellipse
-            const ellipse: Shape = createEllipseShape(
+            const ellipse: ShapeData = createEllipseShape(
                 { x: 0, y: 0 },
                 { x: 100, y: 0 },
                 0.8
             );
 
             // Create a small circle that should be contained
-            const circle: Shape = {
+            const circle: ShapeData = {
                 id: 'test-circle',
                 type: GeometryType.CIRCLE,
                 geometry: {
@@ -192,7 +195,7 @@ describe('Geometric Operations - Ellipse support', () => {
 
         it('should handle ellipse contained within rectangular boundary', () => {
             // Create a rectangle using lines
-            const rectLines: Shape[] = [
+            const rectLines: ShapeData[] = [
                 {
                     id: 'line1',
                     type: GeometryType.LINE,
@@ -228,7 +231,7 @@ describe('Geometric Operations - Ellipse support', () => {
             ];
 
             // Create ellipse that fits within rectangle
-            const ellipse: Shape = createEllipseShape(
+            const ellipse: ShapeData = createEllipseShape(
                 { x: 0, y: 0 },
                 { x: 40, y: 0 },
                 0.75
@@ -247,7 +250,7 @@ describe('Geometric Operations - Ellipse support', () => {
 
     describe('Ellipse polygon quality', () => {
         it('should generate sufficient points for accurate containment testing', () => {
-            const ellipse: Shape = createEllipseShape(
+            const ellipse: ShapeData = createEllipseShape(
                 { x: 0, y: 0 },
                 { x: 30, y: 0 },
                 0.5

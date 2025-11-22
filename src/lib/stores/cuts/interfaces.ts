@@ -4,17 +4,7 @@
  * Type definitions for cuts and cut-related data.
  */
 
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import { OffsetDirection } from '$lib/cam/offset/types';
-import type { CutLeadResult } from '$lib/cam/pipeline/leads/interfaces';
-import type { Cut } from '$lib/cam/cut/interfaces';
-import type { Operation } from '$lib/cam/operation/interface';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Part } from '$lib/cam/part/classes.svelte';
-import type { Tool } from '$lib/cam/tool/interfaces';
-
 export interface CutsState {
-    cuts: Cut[];
     selectedCutIds: Set<string>;
     highlightedCutId: string | null;
     showCutNormals: boolean;
@@ -27,38 +17,11 @@ export interface CutsState {
 
 export interface CutsStore {
     subscribe: (run: (value: CutsState) => void) => () => void;
-    addCut: (cut: Cut) => void;
-    addCuts: (cuts: Cut[]) => void;
-    addCutsByOperation: (
-        operation: Operation,
-        chains: Chain[],
-        parts: Part[],
-        tools: Tool[],
-        tolerance: number
-    ) => Promise<void>;
-    updateCut: (id: string, updates: Partial<Cut>) => void;
-    deleteCut: (id: string) => void;
-    deleteCutsByOperation: (operationId: string) => void;
     selectCut: (cutId: string | null, multi?: boolean) => void;
     deselectCut: (cutId: string) => void;
     toggleCutSelection: (cutId: string) => void;
     highlightCut: (cutId: string | null) => void;
     clearHighlight: () => void;
-    reorderCuts: (newCuts: Cut[]) => void;
-    getCutsByChain: (chainId: string) => Cut[];
-    getChainsWithCuts: () => string[];
-    updateCutLeadGeometry: (cutId: string, leadGeometry: CutLeadResult) => void;
-    clearCutLeadGeometry: (cutId: string) => void;
-    updateCutOffsetGeometry: (
-        cutId: string,
-        offsetGeometry: {
-            offsetShapes: Shape[];
-            originalShapes: Shape[];
-            direction: OffsetDirection;
-            kerfWidth: number;
-        }
-    ) => void;
-    clearCutOffsetGeometry: (cutId: string) => void;
     setShowCutNormals: (show: boolean) => void;
     setShowCutDirections: (show: boolean) => void;
     setShowCutPaths: (show: boolean) => void;

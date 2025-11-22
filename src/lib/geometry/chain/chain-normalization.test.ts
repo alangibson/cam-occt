@@ -9,11 +9,11 @@ import {
     createPolylineFromVertices,
     polylineToPoints,
 } from '$lib/geometry/polyline/functions';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { analyzeChainTraversal, normalizeChain } from './chain-normalization';
 
 describe('Chain Normalization', () => {
@@ -31,16 +31,16 @@ describe('Chain Normalization', () => {
         id: string,
         start: { x: number; y: number },
         end: { x: number; y: number }
-    ): Shape {
+    ): ShapeData {
         return {
             id,
             type: GeometryType.LINE,
             geometry: { start, end },
-        } as Shape;
+        } as ShapeData;
     }
 
     // Helper function to create a test chain
-    function createChain(id: string, shapes: Shape[]): Chain {
+    function createChain(id: string, shapes: ShapeData[]): ChainData {
         return {
             id,
             shapes,
@@ -445,7 +445,7 @@ describe('Chain Normalization', () => {
                 startAngle: number,
                 endAngle: number,
                 clockwise: boolean = false
-            ): Shape {
+            ): ShapeData {
                 return {
                     id,
                     type: GeometryType.ARC,
@@ -456,7 +456,7 @@ describe('Chain Normalization', () => {
                         endAngle,
                         clockwise,
                     },
-                } as Shape;
+                } as ShapeData;
             }
 
             // Create shapes that require arc reversal for proper chain connectivity
@@ -507,7 +507,7 @@ describe('Chain Normalization', () => {
             function createPolylineWithBulges(
                 id: string,
                 vertices: Array<{ x: number; y: number; bulge?: number }>
-            ): Shape {
+            ): ShapeData {
                 const verticesWithBulge = vertices.map((v) => ({
                     x: v.x,
                     y: v.y,

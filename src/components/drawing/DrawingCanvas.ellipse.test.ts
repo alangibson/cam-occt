@@ -6,7 +6,7 @@ import { Unit } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 
@@ -49,7 +49,7 @@ function createEllipseShape(
     startParam?: number,
     endParam?: number,
     id: string = 'test-ellipse'
-): Shape {
+): ShapeData {
     const geometry: Ellipse = {
         center,
         majorAxisEndpoint,
@@ -97,7 +97,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: 50, y: 90 }, max: { x: 150, y: 210 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -135,7 +134,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: -30, y: -40 }, max: { x: 30, y: 40 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -161,7 +159,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: 5, y: 5 }, max: { x: 45, y: 45 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -197,7 +194,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: -30, y: -15 }, max: { x: 30, y: 15 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -230,7 +226,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: 25, y: 30 }, max: { x: 75, y: 70 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -266,7 +261,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: 60, y: 76 }, max: { x: 140, y: 124 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -294,7 +288,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: 45, y: 104 }, max: { x: 105, y: 146 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -321,7 +314,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: -25, y: -20 }, max: { x: 25, y: 20 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -346,7 +338,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: 50, y: 70 }, max: { x: 150, y: 130 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -385,7 +376,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [ellipse],
-                bounds: { min: { x: 70, y: 85 }, max: { x: 130, y: 115 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -425,7 +415,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [flatEllipse],
-                bounds: { min: { x: -100, y: -1 }, max: { x: 100, y: 1 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -445,7 +434,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [degenerateEllipse],
-                bounds: { min: { x: -1, y: -1 }, max: { x: 1, y: 1 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };
@@ -465,7 +453,6 @@ describe.skip('DrawingCanvas - Ellipse rendering', () => {
 
             const drawing: DrawingData = {
                 shapes: [zeroRatioEllipse],
-                bounds: { min: { x: 25, y: 50 }, max: { x: 75, y: 50 } },
                 units: Unit.MM,
                 fileName: 'test.dxf',
             };

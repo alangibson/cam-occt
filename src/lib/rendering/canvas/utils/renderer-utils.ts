@@ -3,7 +3,7 @@
  */
 
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 
 /**
  * Constants for renderer utilities
@@ -15,7 +15,7 @@ const DEFAULT_HIT_TOLERANCE_PX = 5;
  * Check if a cut is enabled and should be rendered
  */
 export function isCutEnabledForRendering(
-    cut: Cut,
+    cut: CutData,
     state: RenderState
 ): boolean {
     const operation = state.operations.find((op) => op.id === cut.operationId);
@@ -74,12 +74,12 @@ export function applyCutStyling(
 export function setupHitTest(
     state: RenderState,
     hitTolerancePx: number = DEFAULT_HIT_TOLERANCE_PX
-): { hitTolerance: number; enabledCuts: Cut[] } | null {
-    if (!state.cutsState || state.cutsState.cuts.length === 0) return null;
+): { hitTolerance: number; enabledCuts: CutData[] } | null {
+    if (!state.cuts || state.cuts.length === 0) return null;
 
     const hitTolerance =
         state.transform.coordinator.screenToWorldDistance(hitTolerancePx);
-    const enabledCuts = state.cutsState.cuts.filter((cut) =>
+    const enabledCuts = state.cuts.filter((cut) =>
         isCutEnabledForRendering(cut, state)
     );
 

@@ -1,6 +1,6 @@
 import type { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -592,7 +592,7 @@ function generateFooter(options: GCodeOptions): GCodeCommand[] {
 }
 
 function generateNativeSplineCommands(
-    shape: Shape,
+    shape: ShapeData,
     options: GCodeOptions,
     toolCut?: CutPath
 ): GCodeCommand[] {

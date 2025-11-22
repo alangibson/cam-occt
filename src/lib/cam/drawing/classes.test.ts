@@ -8,9 +8,7 @@ describe('Drawing class', () => {
         it('should serialize all DrawingData fields including fileName', () => {
             const drawingData: DrawingData = {
                 shapes: [],
-                bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                 units: Unit.MM,
-                rawInsUnits: 4,
                 fileName: 'test-drawing.dxf',
             };
 
@@ -20,9 +18,7 @@ describe('Drawing class', () => {
 
             expect(serialized).toEqual({
                 shapes: [],
-                bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                 units: Unit.MM,
-                rawInsUnits: 4,
                 fileName: 'test-drawing.dxf',
             });
         });
@@ -30,8 +26,8 @@ describe('Drawing class', () => {
         it('should include fileName even when modified after construction', () => {
             const drawingData: DrawingData = {
                 shapes: [],
-                bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                 units: Unit.MM,
+                fileName: '',
             };
 
             const drawing = new Drawing(drawingData);
@@ -45,8 +41,8 @@ describe('Drawing class', () => {
         it('should handle missing fileName gracefully', () => {
             const drawingData: DrawingData = {
                 shapes: [],
-                bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                 units: Unit.MM,
+                fileName: '',
             };
 
             const drawing = new Drawing(drawingData);

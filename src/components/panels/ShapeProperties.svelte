@@ -1,6 +1,6 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
-    import type { Shape } from '$lib/geometry/shape/interfaces';
+    import type { ShapeData } from '$lib/geometry/shape/interfaces';
     import { GeometryType } from '$lib/geometry/shape/enums';
     import type { Point2D } from '$lib/geometry/point/interfaces';
     import type { Line } from '$lib/geometry/line/interfaces';
@@ -38,7 +38,7 @@
         selectedShapes.size === 0 &&
         hoveredShape === displayShape?.id;
 
-    function getShapeOrigin(shape: Shape): Point2D {
+    function getShapeOrigin(shape: ShapeData): Point2D {
         switch (shape.type) {
             case GeometryType.LINE:
                 const line = shape.geometry as Line;
@@ -67,10 +67,7 @@
         return `(${point.x.toFixed(2)}, ${point.y.toFixed(2)})`;
     }
 
-    function getShapeTypeDisplay(shape: Shape): string {
-        if (shape.originalType) {
-            return `${shape.originalType.toUpperCase()} (${shape.type})`;
-        }
+    function getShapeTypeDisplay(shape: ShapeData): string {
         return shape.type.toUpperCase();
     }
 
@@ -83,60 +80,6 @@
         } catch (err) {
             console.error('Failed to copy to clipboard:', err);
         }
-    }
-
-    // Helper function to calculate a point on an ellipse at a given parameter
-    // Uses the ezdxf approach: calculating minor axis using counterclockwise perpendicular
-    function _getEllipsePointAtParameter(
-        ellipse: {
-            center: Point2D;
-            majorAxisEndpoint: Point2D;
-            minorToMajorRatio: number;
-        },
-        parameter: number
-    ): Point2D {
-        // IMPORTANT: majorAxisEndpoint is already a VECTOR from center, not an absolute point!
-        // This is how DXF stores ellipse data (group codes 11,21,31)
-        const majorAxisVector = ellipse.majorAxisEndpoint;
-
-        // Calculate major axis length (this is the semi-major axis length)
-        const majorAxisLength = Math.sqrt(
-            majorAxisVector.x * majorAxisVector.x +
-                majorAxisVector.y * majorAxisVector.y
-        );
-
-        // Calculate minor axis length (this is the semi-minor axis length)
-        const minorAxisLength = majorAxisLength * ellipse.minorToMajorRatio;
-
-        // Calculate unit vectors
-        const majorAxisUnit = {
-            x: majorAxisVector.x / majorAxisLength,
-            y: majorAxisVector.y / majorAxisLength,
-        };
-
-        // Minor axis is perpendicular to major axis (counterclockwise rotation)
-        // This is equivalent to the 2D cross product: z_axis × major_axis (right-hand rule)
-        const minorAxisUnit = {
-            x: -majorAxisUnit.y, // counterclockwise perpendicular
-            y: majorAxisUnit.x,
-        };
-
-        // Calculate point using parametric ellipse equation from ezdxf
-        const cosParam = Math.cos(parameter);
-        const sinParam = Math.sin(parameter);
-
-        const x =
-            cosParam * majorAxisLength * majorAxisUnit.x +
-            sinParam * minorAxisLength * minorAxisUnit.x;
-        const y =
-            cosParam * majorAxisLength * majorAxisUnit.y +
-            sinParam * minorAxisLength * minorAxisUnit.y;
-
-        // Translate to ellipse center
-        return {
-            x: ellipse.center.x + x,
-            y: ellipse.center.y + y,
-        };
     }
 </script>
 

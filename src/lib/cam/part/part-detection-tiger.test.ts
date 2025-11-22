@@ -4,17 +4,18 @@ import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import {
     getShapeEndPoint,
     getShapeStartPoint,
 } from '$lib/geometry/shape/functions';
 import { isChainClosed } from '$lib/geometry/chain/functions';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 
 /**
  * Calculate the gap distance between first and last shape in a chain
  */
-function calculateChainGap(chain: Chain): number {
+function calculateChainGap(chain: ChainData): number {
     if (chain.shapes.length === 0) return 0;
 
     const firstShape = chain.shapes[0];
@@ -147,10 +148,11 @@ describe('Part Detection - Tiger DXF Imperial Unit Issue', () => {
         // Parse with original units (cm → mm)
         const drawing = await parseDXF(dxfContent);
 
+        const bounds = getBoundingBoxForShapes(drawing.shapes);
         console.log(`\n=== Analyzing Tiger DXF Gaps ===`);
         console.log(`Drawing units: ${drawing.units}`);
         console.log(
-            `Drawing bounds: (${drawing.bounds.min.x}, ${drawing.bounds.min.y}) to (${drawing.bounds.max.x}, ${drawing.bounds.max.y})`
+            `Drawing bounds: (${bounds.min.x}, ${bounds.min.y}) to (${bounds.max.x}, ${bounds.max.y})`
         );
         console.log(`Shape count: ${drawing.shapes.length}`);
 

@@ -12,24 +12,24 @@ describe('calculateDrawingSize', () => {
     it('returns null for drawing with no shapes', () => {
         const drawing: DrawingData = {
             shapes: [],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 0, y: 0 } },
             units: Unit.MM,
+            fileName: '',
         };
 
         expect(calculateDrawingSize(drawing)).toBeNull();
     });
 
-    it('uses DXF bounds when valid', () => {
+    it('calculates bounds from shapes', () => {
         const drawing: DrawingData = {
             shapes: [
                 {
                     id: 'test',
                     type: GeometryType.LINE,
-                    geometry: { start: { x: 0, y: 0 }, end: { x: 10, y: 10 } },
+                    geometry: { start: { x: 0, y: 0 }, end: { x: 100, y: 50 } },
                 },
             ],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 50 } },
             units: Unit.MM,
+            fileName: '',
         };
 
         const result = calculateDrawingSize(drawing);
@@ -41,7 +41,7 @@ describe('calculateDrawingSize', () => {
         });
     });
 
-    it('falls back to calculated bounds when DXF bounds invalid', () => {
+    it('calculates bounds with inch units', () => {
         const drawing: DrawingData = {
             shapes: [
                 {
@@ -50,8 +50,8 @@ describe('calculateDrawingSize', () => {
                     geometry: { start: { x: 5, y: 10 }, end: { x: 15, y: 20 } },
                 },
             ],
-            bounds: { min: { x: NaN, y: 0 }, max: { x: 100, y: 50 } },
             units: Unit.INCH,
+            fileName: '',
         };
 
         const result = calculateDrawingSize(drawing);

@@ -2,8 +2,9 @@ import { describe, expect, it, beforeAll } from 'vitest';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import type { Chain } from '$lib/geometry/chain/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -39,7 +40,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
     // Split the top side into two lines, with start point at the midpoint
     function createRectangleChain(): Chain {
         const midX = 75; // Midpoint of top side (150/2)
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -82,16 +83,16 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             },
         ];
 
-        return {
+        return new Chain({
             id: 'rect-chain',
             shapes,
             clockwise: true,
-        };
+        });
     }
 
     // Create a pill-shaped chain (two lines connected by arcs) - larger size
     function createPillChain(): Chain {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'line1',
                 type: GeometryType.LINE,
@@ -132,16 +133,16 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             },
         ];
 
-        return {
+        return new Chain({
             id: 'pill-chain',
             shapes,
             clockwise: true,
-        };
+        });
     }
 
     // Create a simple circular chain
     function createCircleChain(clockwise: boolean = true): Chain {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             {
                 id: 'circle1',
                 type: GeometryType.CIRCLE,
@@ -152,11 +153,11 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             },
         ];
 
-        return {
+        return new Chain({
             id: 'circle-chain',
             shapes,
             clockwise,
-        };
+        });
     }
 
     // Helper to get cut normal for a chain
@@ -174,7 +175,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             const rectangleChain = createRectangleChain();
 
             // Create a circle in the center of the rectangle (75, 37.5)
-            const circleChain: Chain = {
+            const circleChain: ChainData = {
                 id: 'circle-hole',
                 shapes: [
                     {
@@ -218,12 +219,12 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
             // Calculate leads for shell - CLOCKWISE
             const cwShellNormal = calculateCutNormal(
-                shellChain,
+                new Chain(shellChain),
                 CutDirection.CLOCKWISE,
                 part
             );
             const cwShellResult = calculateLeads(
-                shellChain,
+                new Chain(shellChain),
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
@@ -233,12 +234,12 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
             // Calculate leads for shell - COUNTERCLOCKWISE
             const ccwShellNormal = calculateCutNormal(
-                shellChain,
+                new Chain(shellChain),
                 CutDirection.COUNTERCLOCKWISE,
                 part
             );
             const ccwShellResult = calculateLeads(
-                shellChain,
+                new Chain(shellChain),
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
@@ -248,12 +249,12 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
             // Calculate leads for hole - CLOCKWISE
             const cwHoleNormal = calculateCutNormal(
-                holeChain,
+                new Chain(holeChain),
                 CutDirection.CLOCKWISE,
                 part
             );
             const cwHoleResult = calculateLeads(
-                holeChain,
+                new Chain(holeChain),
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
@@ -263,12 +264,12 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
             // Calculate leads for hole - COUNTERCLOCKWISE
             const ccwHoleNormal = calculateCutNormal(
-                holeChain,
+                new Chain(holeChain),
                 CutDirection.COUNTERCLOCKWISE,
                 part
             );
             const ccwHoleResult = calculateLeads(
-                holeChain,
+                new Chain(holeChain),
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
@@ -758,8 +759,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
                 // Add original chain shapes for CCW (offset)
                 chain.shapes.forEach((shape) => {
-                    const offsetShape = {
-                        ...shape,
+                    const offsetShape: ShapeData = {
+                        id: shape.id + '-offset',
+                        type: shape.type,
                         geometry: {
                             ...(shape.geometry as Circle),
                             center: {
@@ -878,7 +880,7 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
     // Create a circle made from splines (from 2013-11-08.dxf)
     function createSplineCircleChain(): Chain {
-        const shapes: Shape[] = [
+        const shapes: ShapeData[] = [
             // First spline segment from the DXF
             {
                 id: 'spline1',
@@ -989,18 +991,18 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
             },
         ];
 
-        return {
+        return new Chain({
             id: 'spline-circle-chain',
             shapes,
             clockwise: true,
-        };
+        });
     }
 
     describe('Spline Circle - Arc Leads', () => {
         it('should place arc leads on circle made from splines (from 2013-11-08.dxf)', () => {
             const rawChain = createSplineCircleChain();
             // Normalize the chain to ensure proper connectivity between spline segments
-            const chain = normalizeChain(rawChain);
+            const chain = new Chain(normalizeChain(rawChain));
 
             const leadInConfig = {
                 type: LeadType.ARC,
@@ -1146,8 +1148,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
                 chain.shapes.forEach((shape) => {
                     // For splines, we need to offset all control points
                     const splineGeometry = shape.geometry as Spline;
-                    const offsetShape = {
-                        ...shape,
+                    const offsetShape: ShapeData = {
+                        id: shape.id + '-offset',
+                        type: shape.type,
                         geometry: {
                             ...splineGeometry,
                             controlPoints: splineGeometry.controlPoints.map(
@@ -1298,12 +1301,12 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
             // Calculate leads for CLOCKWISE on the detected part
             const cwNormal = calculateCutNormal(
-                shellChain,
+                new Chain(shellChain),
                 CutDirection.CLOCKWISE,
                 part
             );
             const cwResult = calculateLeads(
-                shellChain,
+                new Chain(shellChain),
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.CLOCKWISE,
@@ -1313,12 +1316,12 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
             // Calculate leads for COUNTERCLOCKWISE on the detected part
             const ccwNormal = calculateCutNormal(
-                shellChain,
+                new Chain(shellChain),
                 CutDirection.COUNTERCLOCKWISE,
                 part
             );
             const ccwResult = calculateLeads(
-                shellChain,
+                new Chain(shellChain),
                 leadInConfig,
                 leadOutConfig,
                 CutDirection.COUNTERCLOCKWISE,
@@ -1667,8 +1670,9 @@ describe('Lead Direction Bug - Leads should flip with cut direction', () => {
 
                 // Add original chain shapes for CCW (offset)
                 chain.shapes.forEach((shape) => {
-                    const offsetShape = {
-                        ...shape,
+                    const offsetShape: ShapeData = {
+                        id: shape.id + '-offset',
+                        type: shape.type,
                         geometry:
                             shape.type === GeometryType.LINE
                                 ? {

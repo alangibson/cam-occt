@@ -1,7 +1,7 @@
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { describe, expect, it } from 'vitest';
 import { generateId } from '$lib/domain/id';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
 
 describe('Slot Detection in Parts', () => {
@@ -28,7 +28,7 @@ describe('Slot Detection in Parts', () => {
         y: number,
         width: number,
         height: number
-    ): Chain {
+    ): ChainData {
         return {
             id: generateId(),
             shapes: [
@@ -46,7 +46,7 @@ describe('Slot Detection in Parts', () => {
         startY: number,
         endX: number,
         endY: number
-    ): Chain {
+    ): ChainData {
         return {
             id: generateId(),
             shapes: [createLine(startX, startY, endX, endY)],

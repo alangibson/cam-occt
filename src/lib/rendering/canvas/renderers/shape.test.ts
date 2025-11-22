@@ -8,7 +8,7 @@ import { createEmptyRenderState } from '$lib/rendering/canvas/state/render-state
 import { LayerId } from '$lib/rendering/canvas/layers/types';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import { Unit } from '$lib/config/units/units';
@@ -98,7 +98,7 @@ describe('ShapeRenderer', () => {
         const state = createEmptyRenderState();
 
         // Create a simple line shape
-        const lineShape: Shape = {
+        const lineShape: ShapeData = {
             id: 'line1',
             type: GeometryType.LINE,
             geometry: {
@@ -110,8 +110,8 @@ describe('ShapeRenderer', () => {
 
         const drawing: DrawingData = {
             shapes: [lineShape],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
             units: Unit.MM,
+            fileName: '',
         };
 
         state.drawing = drawing;
@@ -137,7 +137,7 @@ describe('ShapeRenderer', () => {
         const state = createEmptyRenderState();
 
         // Create a circle shape at origin
-        const circleShape: Shape = {
+        const circleShape: ShapeData = {
             id: 'circle1',
             type: GeometryType.CIRCLE,
             geometry: {
@@ -149,8 +149,8 @@ describe('ShapeRenderer', () => {
 
         const drawing: DrawingData = {
             shapes: [circleShape],
-            bounds: { min: { x: -50, y: -50 }, max: { x: 50, y: 50 } },
             units: Unit.MM,
+            fileName: '',
         };
 
         state.drawing = drawing;
@@ -175,7 +175,7 @@ describe('ShapeRenderer', () => {
         const state = createEmptyRenderState();
 
         // Create shape on layer 'hidden'
-        const shape: Shape = {
+        const shape: ShapeData = {
             id: 'shape1',
             type: GeometryType.LINE,
             geometry: {
@@ -187,8 +187,8 @@ describe('ShapeRenderer', () => {
 
         const drawing: DrawingData = {
             shapes: [shape],
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
             units: Unit.MM,
+            fileName: '',
         };
 
         state.drawing = drawing;

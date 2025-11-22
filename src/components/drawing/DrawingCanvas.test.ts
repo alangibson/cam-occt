@@ -9,7 +9,7 @@ import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import { PartType } from '$lib/cam/part/enums';
 import type { PartData } from '$lib/cam/part/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 
 // Mock stores
 const mockPartStore = {
@@ -46,7 +46,7 @@ describe('DrawingCanvas Part Highlighting', () => {
         const clickPoint: Point2D = { x: 100, y: 100 };
 
         // Create a mock chain for the shell
-        const mockChain: Chain = {
+        const mockChain: ChainData = {
             id: 'chain-1',
             shapes: [],
             clockwise: true,
@@ -154,7 +154,7 @@ describe('DrawingCanvas Part Highlighting', () => {
         const clickPoint: Point2D = { x: 150, y: 150 };
 
         // Create a mock chain for the shell
-        const mockChain2: Chain = {
+        const mockChain2: ChainData = {
             id: 'chain-2',
             shapes: [],
             clockwise: true,

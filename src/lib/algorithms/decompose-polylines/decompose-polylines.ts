@@ -1,4 +1,4 @@
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
@@ -11,8 +11,8 @@ import { generateId } from '$lib/domain/id';
  * This algorithm converts polyline shapes into their constituent line and arc segments,
  * making them easier to process for CAM operations. Each segment becomes an independent shape.
  */
-export function decomposePolylines(shapes: Shape[]): Shape[] {
-    const decomposedShapes: Shape[] = [];
+export function decomposePolylines(shapes: ShapeData[]): ShapeData[] {
+    const decomposedShapes: ShapeData[] = [];
 
     shapes.forEach((shape) => {
         if (shape.type === GeometryType.POLYLINE) {

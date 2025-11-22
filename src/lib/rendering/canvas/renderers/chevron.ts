@@ -2,8 +2,8 @@ import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
-import type { Cut } from '$lib/cam/cut/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { CutData } from '$lib/cam/cut/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import { sampleShapes } from '$lib/geometry/shape/functions';
@@ -37,8 +37,8 @@ export class ChevronRenderer extends BaseRenderer {
         // Only draw cut chevrons if showCutDirections is enabled
         if (
             state.visibility.showCutDirections &&
-            state.cutsState &&
-            state.cutsState.cuts.length > 0
+            state.cuts &&
+            state.cuts.length > 0
         ) {
             this.drawCutChevrons(ctx, state);
         }
@@ -61,15 +61,15 @@ export class ChevronRenderer extends BaseRenderer {
         ctx: CanvasRenderingContext2D,
         state: RenderState
     ): void {
-        if (!state.cutsState || state.cutsState.cuts.length === 0) return;
+        if (!state.cuts || state.cuts.length === 0) return;
 
-        state.cutsState.cuts.forEach((cut: Cut) => {
+        state.cuts.forEach((cut: CutData) => {
             // Only draw chevrons for enabled cuts with enabled operations
             if (!isCutEnabledForRendering(cut, state)) {
                 return;
             }
 
-            let shapesToSample: Shape[] = [];
+            let shapesToSample: ShapeData[] = [];
 
             // Use execution chain if available (contains shapes in correct execution order)
             if (cut.cutChain && cut.cutChain.shapes.length > 0) {

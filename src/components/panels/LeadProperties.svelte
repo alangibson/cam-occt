@@ -1,6 +1,6 @@
 <script lang="ts">
     import { leadStore, parseLeadId } from '$lib/stores/leads/store';
-    import { cutStore } from '$lib/stores/cuts/store';
+    import { planStore } from '$lib/stores/plan/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { LeadType } from '$lib/cam/lead/enums';
 
@@ -11,7 +11,7 @@
         selectedLeadIds.size === 1 ? Array.from(selectedLeadIds)[0] : null;
     $: highlightedLeadId = leadState.highlightedLeadId;
     $: activeLeadId = selectedLeadId || highlightedLeadId;
-    $: cuts = $cutStore.cuts;
+    $: cuts = $planStore.plan.cuts;
     $: operations = $operationsStore;
 
     // Parse lead ID and get associated data

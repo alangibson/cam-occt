@@ -42,7 +42,6 @@ describe('Footer Fit Button', () => {
                 } as any,
             ],
             units: Unit.MM,
-            bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
             fileName: 'test.dxf',
         };
 
@@ -67,7 +66,6 @@ describe('Footer Fit Button', () => {
                 } as any,
             ],
             units: Unit.MM,
-            bounds: { min: { x: 25, y: 25 }, max: { x: 75, y: 75 } },
             fileName: 'test.dxf',
         };
 
@@ -98,7 +96,6 @@ describe('Footer Fit Button', () => {
         const testDrawing: DrawingData = {
             shapes: [],
             units: Unit.MM,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
             fileName: 'test.dxf',
         };
 
@@ -119,7 +116,6 @@ describe('Footer Fit Button', () => {
         const testDrawing: DrawingData = {
             shapes: [],
             units: Unit.MM,
-            bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
             fileName: 'test.dxf',
         };
 

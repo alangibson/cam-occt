@@ -1,7 +1,4 @@
-import type { Rapid } from '$lib/cam/rapid/interfaces';
-
 export interface RapidsState {
-    rapids: Rapid[];
     showRapids: boolean;
     showRapidDirections: boolean;
     selectedRapidIds: Set<string>;
@@ -10,8 +7,6 @@ export interface RapidsState {
 
 export interface RapidsStore {
     subscribe: (run: (value: RapidsState) => void) => () => void;
-    setRapids: (rapids: Rapid[]) => void;
-    clearRapids: () => void;
     toggleShowRapids: () => void;
     setShowRapids: (show: boolean) => void;
     setShowRapidDirections: (show: boolean) => void;

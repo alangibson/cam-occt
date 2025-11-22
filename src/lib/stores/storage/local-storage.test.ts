@@ -85,8 +85,8 @@ describe('State Persistence', () => {
             // Drawing state
             drawing: {
                 shapes: [],
-                bounds: { min: { x: 0, y: 0 }, max: { x: 100, y: 100 } },
                 units: Unit.MM,
+                fileName: '',
             },
             selectedShapes: ['shape1', 'shape2'],
             hoveredShape: 'shape3',
@@ -125,7 +125,6 @@ describe('State Persistence', () => {
             highlightedPartId: null,
 
             // Rapids state
-            rapids: [],
             showRapids: true,
             selectedRapidIds: [],
             highlightedRapidId: null,
@@ -243,12 +242,6 @@ describe('State Persistence', () => {
                         generatedAt: '2023-01-01T12:00:00.000Z',
                         version: '1.0.0',
                     },
-                    leadValidation: {
-                        isValid: true,
-                        warnings: ['Lead may intersect with solid area'],
-                        severity: 'warning',
-                        validatedAt: '2023-01-01T12:00:00.000Z',
-                    },
                 },
             ],
             tools: [
@@ -334,7 +327,6 @@ describe('State Persistence', () => {
             parts: [],
             partWarnings: [],
             highlightedPartId: null,
-            rapids: [],
             showRapids: false,
             selectedRapidIds: [],
             highlightedRapidId: null,

@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 
 /**
  * Test to verify the bug where offset chains lose the clockwise property,
@@ -21,8 +22,8 @@ describe('Clockwise Property Bug in Offset Chains', () => {
     };
 
     // Helper to create a horizontal line chain
-    function createHorizontalLineChain(clockwise?: boolean): Chain {
-        const shape: Shape = {
+    function createHorizontalLineChain(clockwise?: boolean): ChainData {
+        const shape: ShapeData = {
             id: 'line1',
             type: GeometryType.LINE,
             geometry: {
@@ -40,7 +41,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
     }
 
     // Helper to simulate how offset chains are created (with missing clockwise property)
-    function createOffsetChain(originalChain: Chain): Chain {
+    function createOffsetChain(originalChain: ChainData): ChainData {
         return {
             id: originalChain.id + '_offset_temp',
             shapes: originalChain.shapes.map((shape) => ({
@@ -64,7 +65,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
 
             // Calculate leads with same cut direction
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -73,7 +74,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
             );
 
             const offsetResult = calculateLeads(
-                offsetChain,
+                new Chain(offsetChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -125,7 +126,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
             const originalChain = createHorizontalLineChain(false);
 
             // Create offset chain that preserves the clockwise property
-            const offsetChainFixed: Chain = {
+            const offsetChainFixed: ChainData = {
                 id: originalChain.id + '_offset_temp',
                 shapes: originalChain.shapes.map((shape) => ({
                     ...shape,
@@ -142,7 +143,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
 
             // Calculate leads
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -151,7 +152,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
             );
 
             const offsetResultFixed = calculateLeads(
-                offsetChainFixed,
+                new Chain(offsetChainFixed),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -192,13 +193,13 @@ describe('Clockwise Property Bug in Offset Chains', () => {
             const originalChain = createHorizontalLineChain(true);
 
             const offsetChainBroken = createOffsetChain(originalChain);
-            const offsetChainFixed: Chain = {
+            const offsetChainFixed: ChainData = {
                 ...offsetChainBroken,
                 clockwise: originalChain.clockwise,
             };
 
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.COUNTERCLOCKWISE,
@@ -207,7 +208,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
             );
 
             const offsetResultFixed = calculateLeads(
-                offsetChainFixed,
+                new Chain(offsetChainFixed),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.COUNTERCLOCKWISE,
@@ -237,13 +238,13 @@ describe('Clockwise Property Bug in Offset Chains', () => {
             const originalChain = createHorizontalLineChain(undefined);
 
             const offsetChainBroken = createOffsetChain(originalChain);
-            const offsetChainFixed: Chain = {
+            const offsetChainFixed: ChainData = {
                 ...offsetChainBroken,
                 clockwise: originalChain.clockwise, // Should preserve undefined
             };
 
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -252,7 +253,7 @@ describe('Clockwise Property Bug in Offset Chains', () => {
             );
 
             const offsetResultFixed = calculateLeads(
-                offsetChainFixed,
+                new Chain(offsetChainFixed),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,

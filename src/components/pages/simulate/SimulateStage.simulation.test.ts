@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 
@@ -14,7 +14,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
  * This mirrors the getPositionOnChain and getPositionOnShape logic from SimulateStage.svelte
  */
 
-function getShapeLength(shape: Shape): number {
+function getShapeLength(shape: ShapeData): number {
     switch (shape.type) {
         case 'line':
             const line = shape.geometry as Line;
@@ -32,7 +32,7 @@ function getShapeLength(shape: Shape): number {
 }
 
 function getPositionOnShape(
-    shape: Shape,
+    shape: ShapeData,
     progress: number,
     cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'
 ): Point2D {
@@ -60,7 +60,7 @@ function getPositionOnShape(
     }
 }
 
-function getChainDistance(chain: Chain): number {
+function getChainDistance(chain: ChainData): number {
     let totalDistance = 0;
     for (const shape of chain.shapes) {
         totalDistance += getShapeLength(shape);
@@ -69,7 +69,7 @@ function getChainDistance(chain: Chain): number {
 }
 
 function getPositionOnChain(
-    chain: Chain,
+    chain: ChainData,
     progress: number,
     cutDirection: 'clockwise' | 'counterclockwise' | 'none' = 'counterclockwise'
 ): Point2D {
@@ -118,7 +118,7 @@ describe('Simulation Toolhead Movement', () => {
     describe('Cut Direction Handling', () => {
         it('should move smoothly along clockwise path without jerking', () => {
             // Create a simple rectangular path
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: 'line1-cw',
                 type: GeometryType.LINE,
                 geometry: {
@@ -127,7 +127,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: 'line2-cw',
                 type: GeometryType.LINE,
                 geometry: {
@@ -136,7 +136,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const line3: Shape = {
+            const line3: ShapeData = {
                 id: 'line3-cw',
                 type: GeometryType.LINE,
                 geometry: {
@@ -145,7 +145,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const line4: Shape = {
+            const line4: ShapeData = {
                 id: 'line4-cw',
                 type: GeometryType.LINE,
                 geometry: {
@@ -154,7 +154,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-chain',
                 shapes: [line1, line2, line3, line4],
             };
@@ -200,7 +200,7 @@ describe('Simulation Toolhead Movement', () => {
 
         it('should move smoothly along counterclockwise path without jerking', () => {
             // Same rectangular path as above
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: 'line1-ccw2',
                 type: GeometryType.LINE,
                 geometry: {
@@ -209,7 +209,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: 'line2-ccw2',
                 type: GeometryType.LINE,
                 geometry: {
@@ -218,7 +218,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const line3: Shape = {
+            const line3: ShapeData = {
                 id: 'line3-ccw2',
                 type: GeometryType.LINE,
                 geometry: {
@@ -227,7 +227,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const line4: Shape = {
+            const line4: ShapeData = {
                 id: 'line4-ccw2',
                 type: GeometryType.LINE,
                 geometry: {
@@ -236,7 +236,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-chain',
                 shapes: [line1, line2, line3, line4],
             };
@@ -282,7 +282,7 @@ describe('Simulation Toolhead Movement', () => {
 
         it('should produce different but smooth paths for clockwise vs counterclockwise', () => {
             // Simple L-shaped path
-            const line1: Shape = {
+            const line1: ShapeData = {
                 id: 'line1-L',
                 type: GeometryType.LINE,
                 geometry: {
@@ -291,7 +291,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const line2: Shape = {
+            const line2: ShapeData = {
                 id: 'line2-L',
                 type: GeometryType.LINE,
                 geometry: {
@@ -300,7 +300,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-chain',
                 shapes: [line1, line2],
             };
@@ -337,7 +337,7 @@ describe('Simulation Toolhead Movement', () => {
             // 2. Individual shape progress was also reversed for counterclockwise
             // This caused erratic movement as the toolhead tried to traverse shapes backwards twice
 
-            const line: Shape = {
+            const line: ShapeData = {
                 id: 'line-single',
                 type: GeometryType.LINE,
                 geometry: {
@@ -346,7 +346,7 @@ describe('Simulation Toolhead Movement', () => {
                 } as Line,
             };
 
-            const chain: Chain = {
+            const chain: ChainData = {
                 id: 'test-chain',
                 shapes: [line],
             };

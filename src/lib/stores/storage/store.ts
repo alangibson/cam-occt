@@ -37,7 +37,10 @@ import { prepareStageStore } from '$lib/stores/prepare-stage/store';
 import type { PrepareStageState } from '$lib/stores/prepare-stage/interfaces';
 import { DEFAULT_ALGORITHM_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 import { operationsStore } from '$lib/stores/operations/store';
-import type { Operation } from '$lib/cam/operation/interface';
+import type { OperationData } from '$lib/cam/operation/interface';
+import { Operation } from '$lib/cam/operation/classes.svelte';
+import { Cut } from '$lib/cam/cut/classes.svelte';
+import { planStore } from '$lib/stores/plan/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import type { CutsState } from '$lib/stores/cuts/interfaces';
 import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
@@ -54,15 +57,18 @@ function collectCurrentState(): PersistedState {
     const workflow: WorkflowState = get(workflowStore);
     const chains: ChainStore = get(chainStore);
     const parts: PartStore = get(partStore);
-    const rapids: RapidsState = get(rapidStore);
     const ui: UIState = get(uiStore);
     const tessellation: TessellationState = get(tessellationStore);
     const overlay: OverlayState = get(overlayStore);
     const prepareStage: PrepareStageState = get(prepareStageStore);
-    const operations: Operation[] = get(operationsStore);
-    const cuts: CutsState = get(cutStore);
+    const operations: OperationData[] = get(operationsStore).map((op) =>
+        op.toData()
+    );
+    const plan = get(planStore).plan;
+    const cutsUIState: CutsState = get(cutStore);
     const tools: Tool[] = get(toolStore);
     const settings: SettingsState = get(settingsStore);
+    const rapidUIState: RapidsState = get(rapidStore);
 
     // Collect chains from drawing layers
     const allChains =
@@ -102,11 +108,10 @@ function collectCurrentState(): PersistedState {
         highlightedPartId: parts.highlightedPartId,
         selectedPartIds: Array.from(parts.selectedPartIds),
 
-        // Rapids state
-        rapids: rapids.rapids,
-        showRapids: rapids.showRapids,
-        selectedRapidIds: Array.from(rapids.selectedRapidIds),
-        highlightedRapidId: rapids.highlightedRapidId,
+        // Rapids UI state (rapids data is now in Cut.rapidIn)
+        showRapids: rapidUIState.showRapids,
+        selectedRapidIds: Array.from(rapidUIState.selectedRapidIds),
+        highlightedRapidId: rapidUIState.highlightedRapidId,
 
         // UI state
         showToolTable: ui.showToolTable,
@@ -124,15 +129,15 @@ function collectCurrentState(): PersistedState {
 
         // Operations, cuts, and tools
         operations: operations,
-        cuts: cuts.cuts, // Just the cuts array
-        selectedCutIds: Array.from(cuts.selectedCutIds), // Cut selection state
-        highlightedCutId: cuts.highlightedCutId, // Cut highlight state
-        showCutNormals: cuts.showCutNormals, // Cut normals visibility state
-        showCutDirections: cuts.showCutDirections, // Cut directions visibility state
-        showCutPaths: cuts.showCutPaths, // Cut paths visibility state
-        showCutStartPoints: cuts.showCutStartPoints, // Cut start points visibility state
-        showCutEndPoints: cuts.showCutEndPoints, // Cut end points visibility state
-        showCutTangentLines: cuts.showCutTangentLines, // Cut tangent lines visibility state
+        cuts: plan?.cuts?.map((cut) => cut.toData()) ?? [], // Cuts from Plan (convert Cut[] to CutData[])
+        selectedCutIds: Array.from(cutsUIState.selectedCutIds), // Cut selection state
+        highlightedCutId: cutsUIState.highlightedCutId, // Cut highlight state
+        showCutNormals: cutsUIState.showCutNormals, // Cut normals visibility state
+        showCutDirections: cutsUIState.showCutDirections, // Cut directions visibility state
+        showCutPaths: cutsUIState.showCutPaths, // Cut paths visibility state
+        showCutStartPoints: cutsUIState.showCutStartPoints, // Cut start points visibility state
+        showCutEndPoints: cutsUIState.showCutEndPoints, // Cut end points visibility state
+        showCutTangentLines: cutsUIState.showCutTangentLines, // Cut tangent lines visibility state
         tools: tools,
 
         // Application settings
@@ -197,8 +202,7 @@ function restoreStateToStores(state: PersistedState): void {
             state.completedStages as WorkflowStage[]
         );
 
-        // Restore rapids state
-        rapidStore.setRapids(state.rapids);
+        // Restore rapids UI state (rapids data is now in Cut.rapidIn)
         rapidStore.setShowRapids(state.showRapids);
         if (state.selectedRapidIds && state.selectedRapidIds.length > 0) {
             rapidStore.selectRapids(new Set(state.selectedRapidIds));
@@ -296,13 +300,25 @@ function restoreStateToStores(state: PersistedState): void {
 
         // Restore operations and cuts using reorder methods to avoid side effects
         if (state.operations && Array.isArray(state.operations)) {
-            operationsStore.reorderOperations(state.operations);
+            operationsStore.reorderOperations(
+                state.operations.map((opData) => new Operation(opData))
+            );
         }
 
         if (state.cuts && Array.isArray(state.cuts)) {
-            // Restore cuts with their original IDs and lead geometry
-            const cutsState: CutsState = {
-                cuts: state.cuts,
+            // Restore cuts to Plan (convert CutData[] to Cut[])
+            const plan = get(planStore).plan;
+            plan.cuts = state.cuts.map((cutData) => {
+                // Validate that cut has required fields
+                if (!cutData.id) {
+                    console.error('Cut missing required id field:', cutData);
+                    throw new Error('Cut data missing required id field');
+                }
+                return new Cut(cutData);
+            });
+
+            // Restore cuts UI state to cutStore
+            const cutsUIState: CutsState = {
                 selectedCutIds: new Set(state.selectedCutIds || []),
                 highlightedCutId: state.highlightedCutId || null,
                 showCutNormals: state.showCutNormals || false,
@@ -312,7 +328,7 @@ function restoreStateToStores(state: PersistedState): void {
                 showCutEndPoints: state.showCutEndPoints || false,
                 showCutTangentLines: state.showCutTangentLines || false,
             };
-            cutStore.restore(cutsState);
+            cutStore.restore(cutsUIState);
         }
 
         if (state.tools && Array.isArray(state.tools)) {

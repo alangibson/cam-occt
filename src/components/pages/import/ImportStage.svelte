@@ -12,11 +12,20 @@
         ImportUnitSetting,
     } from '$lib/config/settings/enums';
     import { Unit } from '$lib/config/units/units';
+    import type { DrawingData } from '$lib/cam/drawing/interfaces';
 
     // Get current settings
-    $: settings = $settingsStore.settings;
+    let settings = $derived($settingsStore.settings);
 
-    async function handleFileImported(event: CustomEvent) {
+    async function handleFileImported(detail: {
+        drawing: DrawingData;
+        fileName: string;
+        originalUnits: Unit | null;
+    }) {
+        console.log('[ImportStage] handleFileImported started', {
+            fileName: detail.fileName,
+            originalUnits: detail.originalUnits,
+        });
         // Reset all application state when a new file is imported
         // This ensures clean state for the new drawing
 
@@ -33,7 +42,7 @@
         tessellationStore.clearTessellation();
 
         // Update import unit setting based on the file's original units
-        const { originalUnits } = event.detail;
+        const { originalUnits } = detail;
         if (originalUnits) {
             let newImportUnitSetting: ImportUnitSetting;
 
@@ -54,9 +63,11 @@
 
         // Mark import stage as complete
         workflowStore.completeStage(WorkflowStage.IMPORT);
+        console.log('[ImportStage] handleFileImported completed');
     }
 
     function handleImportAdvance() {
+        console.log('[ImportStage] handleImportAdvance started');
         // Ensure units are never 'none' beyond import stage
         const drawing = $drawingStore.drawing;
         if (drawing && drawing.units === Unit.NONE) {
@@ -76,6 +87,9 @@
         if (nextStage) {
             workflowStore.setStage(nextStage);
         }
+        console.log('[ImportStage] handleImportAdvance completed', {
+            nextStage,
+        });
     }
 </script>
 
@@ -88,8 +102,8 @@
         <div class="import-content">
             <div class="file-import-section">
                 <FileImport
-                    on:fileImported={handleFileImported}
-                    on:importAdvance={handleImportAdvance}
+                    onfileImported={handleFileImported}
+                    onimportAdvance={handleImportAdvance}
                 />
             </div>
 
@@ -101,7 +115,7 @@
                     <select
                         id="measurement-system"
                         value={settings.measurementSystem}
-                        on:change={(e) =>
+                        onchange={(e) =>
                             settingsStore.setMeasurementSystem(
                                 e.currentTarget.value as MeasurementSystem
                             )}
@@ -118,7 +132,7 @@
                     <select
                         id="import-unit-setting"
                         value={settings.importUnitSetting}
-                        on:change={(e) =>
+                        onchange={(e) =>
                             settingsStore.setImportUnitSetting(
                                 e.currentTarget.value as ImportUnitSetting
                             )}

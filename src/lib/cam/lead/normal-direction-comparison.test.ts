@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import type { Shape } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { getChainTangent } from '$lib/geometry/chain/functions';
 
@@ -27,8 +28,8 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
     function createHorizontalLineChain(
         start: Point2D = { x: 0, y: 0 },
         end: Point2D = { x: 10, y: 0 }
-    ): Chain {
-        const shape: Shape = {
+    ): ChainData {
+        const shape: ShapeData = {
             id: 'line1',
             type: GeometryType.LINE,
             geometry: { start, end } as Line,
@@ -43,7 +44,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
     }
 
     // Helper to create an "offset" chain with identical geometry but different chain ID
-    function createIdenticalOffsetChain(originalChain: Chain): Chain {
+    function createIdenticalOffsetChain(originalChain: ChainData): ChainData {
         return {
             ...originalChain,
             id: 'offset-chain1', // Different ID to simulate offset chain
@@ -88,7 +89,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
 
             // Calculate leads with same configuration
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -97,7 +98,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
             );
 
             const offsetResult = calculateLeads(
-                offsetChain,
+                new Chain(offsetChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -137,7 +138,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
                 CutDirection.COUNTERCLOCKWISE,
             ]) {
                 const originalResult = calculateLeads(
-                    originalChain,
+                    new Chain(originalChain),
                     baseLeadConfig,
                     { type: LeadType.NONE, length: 0 },
                     cutDirection,
@@ -146,7 +147,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
                 );
 
                 const offsetResult = calculateLeads(
-                    offsetChain,
+                    new Chain(offsetChain),
                     baseLeadConfig,
                     { type: LeadType.NONE, length: 0 },
                     cutDirection,
@@ -191,7 +192,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
             );
 
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -200,7 +201,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
             );
 
             const modifiedResult = calculateLeads(
-                modifiedChain,
+                new Chain(modifiedChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -230,7 +231,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
 
             // Test with no part context (should behave identically)
             const originalResult = calculateLeads(
-                originalChain,
+                new Chain(originalChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.NONE, // No cut direction to isolate material avoidance logic
@@ -239,7 +240,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
             );
 
             const offsetResult = calculateLeads(
-                offsetChain,
+                new Chain(offsetChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.NONE,
@@ -284,7 +285,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
             ccwChain.clockwise = false;
 
             const cwResult = calculateLeads(
-                cwChain,
+                new Chain(cwChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,
@@ -293,7 +294,7 @@ describe('Normal Direction Comparison: Original vs Offset Chains', () => {
             );
 
             const ccwResult = calculateLeads(
-                ccwChain,
+                new Chain(ccwChain),
                 baseLeadConfig,
                 { type: LeadType.NONE, length: 0 },
                 CutDirection.CLOCKWISE,

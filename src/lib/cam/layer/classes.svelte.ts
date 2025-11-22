@@ -1,26 +1,28 @@
 import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
 import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
 import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import { Chain } from '$lib/geometry/chain/classes';
 import type { LayerData } from './interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
 
-export class Layer {
-    private data: LayerData;
+export class Layer implements LayerData {
+    #data: LayerData;
     #chains: Chain[] = $state([]);
     #parts: Part[] = $state([]);
     #partsGenerated: boolean = false;
 
     constructor(data: LayerData) {
-        this.data = data;
+        this.#data = data;
+        const layerName = data.name ?? '0';
+
         // Detect chains and normalize them to set clockwise property
-        const detectedChains: Chain[] = detectShapeChains(this.shapes, {
+        const detectedChains = detectShapeChains(this.shapes, {
             tolerance: 0.05,
         });
-        const layerName = data.name ?? '0';
+
         this.#chains.push(
             ...detectedChains.map((chain) => {
                 // Prefix chain ID with layer name to ensure global uniqueness
@@ -28,10 +30,11 @@ export class Layer {
                     ...chain,
                     id: `${layerName}-${chain.id}`,
                 };
-                return normalizeChain(
+                const normalizedChain = normalizeChain(
                     prefixedChain,
                     DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM
                 );
+                return new Chain(normalizedChain);
             })
         );
 
@@ -42,7 +45,7 @@ export class Layer {
     async #generateParts() {
         if (this.#partsGenerated) return;
 
-        const layerName = this.data.name ?? '0';
+        const layerName = this.#data.name ?? '0';
         const result = await detectParts(
             this.#chains,
             CHAIN_CLOSURE_TOLERANCE,
@@ -54,7 +57,7 @@ export class Layer {
     }
 
     get shapes() {
-        return this.data.shapes;
+        return this.#data.shapes;
     }
 
     get chains() {
@@ -66,14 +69,13 @@ export class Layer {
     }
 
     get name() {
-        return this.data.name ?? '(none)';
+        return this.#data.name ?? '(none)';
     }
 
-    get visible() {
-        return this.data.visible ?? true;
-    }
-
-    get color() {
-        return this.data.color ?? '#000000';
+    toData(): LayerData {
+        return {
+            shapes: this.shapes,
+            name: this.name,
+        };
     }
 }
