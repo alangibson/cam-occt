@@ -1,4 +1,5 @@
 export enum GeometryType {
+    POINT = 'point',
     LINE = 'line',
     ARC = 'arc',
     CIRCLE = 'circle',

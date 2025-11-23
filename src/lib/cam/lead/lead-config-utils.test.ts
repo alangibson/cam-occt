@@ -7,6 +7,7 @@ import {
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import type { CutData } from '$lib/cam/cut/interfaces';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 // Helper function to create test cut
 function createTestCut(overrides: Partial<CutData> = {}): CutData {
@@ -18,6 +19,7 @@ function createTestCut(overrides: Partial<CutData> = {}): CutData {
         toolId: null,
         enabled: true,
         order: 1,
+        action: OperationAction.CUT,
         cutDirection: CutDirection.COUNTERCLOCKWISE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },

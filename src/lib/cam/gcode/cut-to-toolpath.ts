@@ -305,6 +305,8 @@ export async function cutToToolPath(
         kerf: tool ? getToolKerfWidth(tool, unitToUse) : 0,
         isHole: cut.isHole || false,
         holeUnderspeedPercent: cut.holeUnderspeedPercent,
+        action: cut.action,
+        spotDuration: cut.spotDuration,
     };
 
     // Set originalShape for native command generation

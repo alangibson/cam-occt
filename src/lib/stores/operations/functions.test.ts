@@ -18,8 +18,8 @@ import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { Shape } from '$lib/geometry/shape/classes';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
-import { KerfCompensation } from '$lib/cam/operation/enums';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { OperationData } from '$lib/cam/operation/interface';
 import { Operation } from '$lib/cam/operation/classes.svelte';
@@ -133,6 +133,7 @@ describe('Operations Functions', () => {
     const mockOperation: OperationData = {
         id: 'op-1',
         name: 'Test Operation',
+        action: OperationAction.CUT,
         toolId: 'tool-1',
         targetType: 'chains',
         targetIds: ['chain-1'],
@@ -166,6 +167,7 @@ describe('Operations Functions', () => {
         toolId: 'tool-1',
         enabled: true,
         order: 1,
+        action: OperationAction.CUT,
         cutDirection: CutDirection.CLOCKWISE,
         leadInConfig: {
             type: LeadType.ARC,

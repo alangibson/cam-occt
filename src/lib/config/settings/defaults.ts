@@ -1,5 +1,5 @@
 import { DEFAULT_RAPID_RATE_MM } from '$lib/cam/constants';
-import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import { CutterCompensation } from '$lib/cam/gcode/enums';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
 import {
     RapidOptimizationAlgorithm,

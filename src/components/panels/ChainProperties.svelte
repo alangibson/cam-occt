@@ -44,7 +44,7 @@
             'selectedChain:',
             selectedChain?.id,
             'detectedChains:',
-            detectedChains.map(c => c.id),
+            detectedChains.map((c) => c.id),
             'selectedChainAnalysis:',
             selectedChainAnalysis
         );
@@ -82,16 +82,16 @@
             </div>
 
             {#if selectedChainAnalysis}
-            <div class="property-row">
-                <span class="property-label">Traversable:</span>
-                <span
-                    class="property-value {selectedChainAnalysis.canTraverse
-                        ? 'can-traverse'
-                        : 'cannot-traverse'}"
-                >
-                    {selectedChainAnalysis.canTraverse ? 'Yes' : 'No'}
-                </span>
-            </div>
+                <div class="property-row">
+                    <span class="property-label">Traversable:</span>
+                    <span
+                        class="property-value {selectedChainAnalysis.canTraverse
+                            ? 'can-traverse'
+                            : 'cannot-traverse'}"
+                    >
+                        {selectedChainAnalysis.canTraverse ? 'Yes' : 'No'}
+                    </span>
+                </div>
             {/if}
 
             <div class="property-row">
@@ -137,12 +137,12 @@
             </div>
 
             {#if selectedChainAnalysis}
-            <div class="property-row">
-                <span class="property-label">Issues:</span>
-                <span class="property-value"
-                    >{selectedChainAnalysis.issues.length}</span
-                >
-            </div>
+                <div class="property-row">
+                    <span class="property-label">Issues:</span>
+                    <span class="property-value"
+                        >{selectedChainAnalysis.issues.length}</span
+                    >
+                </div>
             {/if}
         </div>
 

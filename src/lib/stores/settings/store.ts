@@ -28,7 +28,7 @@ import {
 } from '$lib/config/settings/enums';
 import { DefaultsManager } from '$lib/config/defaults/defaults-manager';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import { CutterCompensation } from '$lib/cam/gcode/enums';
 import { MM_PER_INCH } from '$lib/config/units/units';
 import {
     DEFAULT_OPTIMIZATION_SETTINGS,

@@ -10,7 +10,7 @@ import { Operation } from '$lib/cam/operation/classes.svelte';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import { KerfCompensation } from '$lib/cam/operation/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { PartType } from '$lib/cam/part/enums';
@@ -72,6 +72,7 @@ describe('createCutsFromOperation', () => {
     const mockOperation: OperationData = {
         id: 'op-1',
         name: 'Test Operation',
+        action: OperationAction.CUT,
         enabled: true,
         toolId: 'tool-1',
         targetType: 'chains',

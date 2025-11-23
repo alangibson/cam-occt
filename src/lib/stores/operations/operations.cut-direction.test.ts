@@ -11,7 +11,7 @@ import { Unit } from '$lib/config/units/units';
 import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/cam/operation/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { OperationData } from '$lib/cam/operation/interface';
 
@@ -139,6 +139,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             // Create operation with clockwise cut direction
             const operation: Omit<OperationData, 'id'> = {
                 name: 'Test Clockwise Operation',
+                action: OperationAction.CUT,
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.CLOCKWISE,
@@ -224,6 +225,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             // Create operation with counterclockwise cut direction
             const operation: Omit<OperationData, 'id'> = {
                 name: 'Test Counterclockwise Operation',
+                action: OperationAction.CUT,
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
@@ -306,6 +308,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             const operation: Omit<OperationData, 'id'> = {
                 name: 'Test Counterclockwise Operation',
+                action: OperationAction.CUT,
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
@@ -387,6 +390,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             const operation: Omit<OperationData, 'id'> = {
                 name: 'Test Clockwise Operation',
+                action: OperationAction.CUT,
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.CLOCKWISE,
@@ -453,6 +457,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
             // Test clockwise operation
             const clockwiseOp: Omit<OperationData, 'id'> = {
                 name: 'Clockwise Circle',
+                action: OperationAction.CUT,
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.CLOCKWISE,
@@ -497,6 +502,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             const counterclockwiseOp: Omit<OperationData, 'id'> = {
                 name: 'Counterclockwise Circle',
+                action: OperationAction.CUT,
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
@@ -556,6 +562,7 @@ describe('Operations Store - Absolute Cut Direction Logic', () => {
 
             const operation: Omit<OperationData, 'id'> = {
                 name: 'Open Line Operation',
+                action: OperationAction.CUT,
                 targetType: 'chains',
                 targetIds: [chainId],
                 cutDirection: CutDirection.CLOCKWISE, // This should be applied to open chains

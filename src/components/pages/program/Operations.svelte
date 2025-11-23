@@ -12,10 +12,12 @@
     import type { ChainData } from '$lib/geometry/chain/interfaces';
     import type { Part } from '$lib/cam/part/classes.svelte';
     import {
+        DEFAULT_OPERATION_ACTION,
         DEFAULT_CUT_DIRECTION,
         DEFAULT_KERF_COMPENSATION,
         DEFAULT_HOLE_UNDERSPEED,
         DEFAULT_OPERATION_ENABLED,
+        DEFAULT_SPOT_DURATION,
     } from '$lib/config/defaults/operation-defaults';
     import {
         getDefaultLeadInConfig,
@@ -23,6 +25,7 @@
     } from '$lib/config/defaults/lead-defaults';
     import OperationsPanel from '$components/panels/OperationsPanel.svelte';
     import { DEFAULT_OPTIMIZE_STARTS } from '$lib/cam/cut/defaults';
+    import { OperationAction } from '$lib/cam/operation/enums';
 
     let operations: Operation[] = [];
     let chains: ChainData[] = [];
@@ -176,6 +179,7 @@
 
         operationsStore.addOperation({
             name: `Operation ${newOrder}`,
+            action: DEFAULT_OPERATION_ACTION,
             toolId: $toolStore.length > 0 ? $toolStore[0].id : null,
             targetType,
             targetIds,
@@ -191,6 +195,7 @@
             holeUnderspeedEnabled: DEFAULT_HOLE_UNDERSPEED.enabled,
             holeUnderspeedPercent: DEFAULT_HOLE_UNDERSPEED.percent,
             optimizeStarts: DEFAULT_OPTIMIZE_STARTS,
+            spotDuration: DEFAULT_SPOT_DURATION,
         });
     }
 
@@ -213,7 +218,15 @@
         field: K,
         value: OperationData[K]
     ) {
-        operationsStore.updateOperation(id, { [field]: value });
+        // If changing action to Spot, clear all selected targets
+        if (field === 'action' && value === OperationAction.SPOT) {
+            operationsStore.updateOperation(id, {
+                [field]: value,
+                targetIds: [],
+            });
+        } else {
+            operationsStore.updateOperation(id, { [field]: value });
+        }
 
         // Update plan with the modified operation
         const operation = operations.find((op) => op.id === id);

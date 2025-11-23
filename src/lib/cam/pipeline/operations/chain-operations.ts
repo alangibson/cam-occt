@@ -152,6 +152,7 @@ export async function generateCutsForChainsWithOperation(
         toolId: tool.id,
         enabled: true,
         order: index + 1,
+        action: operation.action,
         cutDirection: cutDirection,
         executionClockwise: executionClockwise,
         leadInConfig: operation.leadInConfig,
@@ -203,7 +204,7 @@ export async function generateCutsForChainsWithOperation(
     // Calculate leads for the cut (uses the updated normal if optimization was applied)
     const leadResult = await calculateCutLeads(
         cutToReturn,
-        operation,
+        operation.toData(),
         chain,
         parts
     );

@@ -301,7 +301,14 @@ function restoreStateToStores(state: PersistedState): void {
         // Restore operations and cuts using reorder methods to avoid side effects
         if (state.operations && Array.isArray(state.operations)) {
             operationsStore.reorderOperations(
-                state.operations.map((opData) => new Operation(opData))
+                state.operations.map(
+                    (opData) =>
+                        new Operation({
+                            ...opData,
+                            // Migration: add default action if not present
+                            action: opData.action || 'cut',
+                        })
+                )
             );
         }
 

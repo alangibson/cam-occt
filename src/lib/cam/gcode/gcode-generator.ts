@@ -15,10 +15,10 @@ import {
     GCODE_PARAMETER_PRECISION,
     IMPERIAL_FEED_RATE_MM,
 } from '$lib/cam/constants';
-import { CutterCompensation } from '$lib/cam/cut-generator/enums';
-import type { CutPath } from '$lib/cam/cut-generator/interfaces';
-import type { CuttingParameters, GCodeCommand } from './interfaces';
+import { CutterCompensation } from '$lib/cam/gcode/enums';
+import type { CuttingParameters, GCodeCommand, CutPath } from './interfaces';
 import { NormalSide } from '$lib/cam/cut/enums';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 /**
  * G-code path blending tolerance for metric units (mm)
@@ -329,11 +329,150 @@ function generateTemporaryMaterial(
     return commands;
 }
 
+/**
+ * Generate G-code commands for rapid movements between cuts
+ * Only outputs G0 rapid moves without any torch commands
+ */
+function generateRapidCommands(
+    cut: CutPath,
+    options: GCodeOptions
+): GCodeCommand[] {
+    const commands: GCodeCommand[] = [];
+
+    // Rapids should only move to safe height and position
+    // No torch commands, no piercing, no cutting moves
+
+    if (cut.points.length < 2) {
+        return commands;
+    }
+
+    // Move to safe height
+    commands.push({
+        code: 'G0',
+        parameters: { Z: options.safeZ },
+        comment: 'Move to safe height',
+    });
+
+    // Rapid to end position (rapids are simple two-point paths)
+    const endPoint = cut.points[cut.points.length - 1];
+    commands.push({
+        code: 'G0',
+        parameters: { X: endPoint.x, Y: endPoint.y },
+        comment: 'Rapid move',
+    });
+
+    return commands;
+}
+
+/**
+ * Generate G-code commands for spot operations
+ * Uses QtPlasmaC spotting tool ($2) with minimal movement
+ */
+function generateSpotCommands(
+    cut: CutPath,
+    options: GCodeOptions,
+    index: number
+): GCodeCommand[] {
+    const commands: GCodeCommand[] = [];
+
+    if (options.includeComments) {
+        commands.push({
+            code: '',
+            parameters: {},
+            comment: `Spot ${index + 1}`,
+        });
+    }
+
+    // Get spot location from the cut points (should be a single point at centroid)
+    const spotPoint = cut.points[0];
+
+    if (!spotPoint) {
+        console.warn(`Spot operation ${index + 1} has no point data`);
+        return commands;
+    }
+
+    // Move to safe height
+    commands.push({
+        code: 'G0',
+        parameters: { Z: options.safeZ },
+        comment: 'Move to safe height',
+    });
+
+    // Set high feed rate BEFORE moving to spot location (per QtPlasmaC docs)
+    commands.push({
+        code: 'F99999',
+        parameters: {},
+        comment: 'Set high feed rate for spotting',
+    });
+
+    // Rapid to spot location
+    commands.push({
+        code: 'G0',
+        parameters: { X: spotPoint.x, Y: spotPoint.y },
+        comment: 'Move to spot location',
+    });
+
+    // Turn on spotting tool (tool $2)
+    commands.push({
+        code: 'M3',
+        parameters: { $2: '', S: 1 },
+        comment: 'Spotting tool on',
+    });
+
+    // Switch to relative positioning
+    commands.push({
+        code: 'G91',
+        parameters: {},
+        comment: 'Relative distance mode',
+    });
+
+    // Minimal movement required by LinuxCNC between M3 and M5
+    // Use string to preserve exact precision per QtPlasmaC docs
+    commands.push({
+        code: 'G1',
+        parameters: { X: '0.000001' },
+        comment: 'Minimal movement for spotting',
+    });
+
+    // Switch back to absolute positioning
+    commands.push({
+        code: 'G90',
+        parameters: {},
+        comment: 'Absolute distance mode',
+    });
+
+    // Turn off spotting tool
+    commands.push({
+        code: 'M5',
+        parameters: { $2: '' },
+        comment: 'Spotting tool off',
+    });
+
+    // Retract to safe height
+    commands.push({
+        code: 'G0',
+        parameters: { Z: options.safeZ },
+        comment: 'Retract to safe height',
+    });
+
+    return commands;
+}
+
 function generateCutCommands(
     cut: CutPath,
     options: GCodeOptions,
     index: number
 ): GCodeCommand[] {
+    // Check if this is a rapid movement (takes precedence)
+    if (cut.isRapid) {
+        return generateRapidCommands(cut, options);
+    }
+
+    // Check if this is a spot operation
+    if (cut.parameters?.action === OperationAction.SPOT) {
+        return generateSpotCommands(cut, options, index);
+    }
+
     const commands: GCodeCommand[] = [];
 
     if (options.includeComments) {
@@ -573,13 +712,6 @@ function generateFooter(options: GCodeOptions): GCodeCommand[] {
             comment: 'Return to default material',
         });
     }
-
-    // Return to home
-    commands.push({
-        code: 'G0',
-        parameters: { X: 0, Y: 0 },
-        comment: 'Return to home',
-    });
 
     // Program end
     commands.push({

@@ -18,6 +18,7 @@ import { LeadType } from '$lib/cam/lead/enums';
 import { Cut } from './classes.svelte';
 import { Chain } from '$lib/geometry/chain/classes';
 import { Shape } from '$lib/geometry/shape/classes';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('cut-optimization-utils - branch coverage', () => {
     // Mock data
@@ -43,6 +44,7 @@ describe('cut-optimization-utils - branch coverage', () => {
         toolId: null,
         enabled: true,
         order: 1,
+        action: OperationAction.CUT,
         cutDirection: CutDirection.CLOCKWISE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },

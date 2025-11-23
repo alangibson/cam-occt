@@ -1,4 +1,4 @@
-import type { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import type { CutterCompensation } from '$lib/cam/gcode/enums';
 import type {
     RapidOptimizationAlgorithm,
     MeasurementSystem,

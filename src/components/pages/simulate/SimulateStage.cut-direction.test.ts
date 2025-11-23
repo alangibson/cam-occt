@@ -8,6 +8,7 @@ import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { Cut } from '$lib/cam/cut/classes.svelte';
 import { GeometryType } from '$lib/geometry/shape/enums';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 describe.skip('SimulateStage Cut Direction', () => {
     // NOTE: These tests need to be refactored for the new layer-based chain system
@@ -48,6 +49,7 @@ describe.skip('SimulateStage Cut Direction', () => {
                 toolId: 'tool-1',
                 enabled: true,
                 order: 1,
+                action: OperationAction.CUT,
                 cutDirection: CutDirection.CLOCKWISE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },
@@ -65,6 +67,7 @@ describe.skip('SimulateStage Cut Direction', () => {
                 toolId: 'tool-1',
                 enabled: true,
                 order: 2,
+                action: OperationAction.CUT,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },
@@ -129,6 +132,7 @@ describe.skip('SimulateStage Cut Direction', () => {
                 toolId: 'tool-1',
                 enabled: true,
                 order: 3,
+                action: OperationAction.CUT,
                 cutDirection: CutDirection.CLOCKWISE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },
@@ -146,6 +150,7 @@ describe.skip('SimulateStage Cut Direction', () => {
                 toolId: 'tool-1',
                 enabled: true,
                 order: 4,
+                action: OperationAction.CUT,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },
@@ -189,6 +194,7 @@ describe.skip('SimulateStage Cut Direction', () => {
                 toolId: 'tool-1',
                 enabled: true,
                 order: 5,
+                action: OperationAction.CUT,
                 cutDirection: CutDirection.NONE,
                 feedRate: 1000,
                 normal: { x: 1, y: 0 },

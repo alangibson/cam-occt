@@ -56,6 +56,8 @@
     import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
     import { getToolFeedRate } from '$lib/config/units/tool-units';
     import { Unit } from '$lib/config/units/units';
+    import { OperationAction } from '$lib/cam/operation/enums';
+    import { DEFAULT_SPOT_DURATION } from '$lib/config/defaults/operation-defaults';
     import {
         getCachedLeadGeometry,
         hasValidCachedLeads,
@@ -95,6 +97,7 @@
     let currentOperation = $state('Ready');
     let lastFrameTime = $state(0);
     let simulationSpeed = $state(1); // 1x real-time default
+    let isTorchOn = $state(false); // Torch status indicator
 
     // Tool head position and animation data
     let toolHeadPosition: Point2D = $state({ x: 0, y: 0 });
@@ -327,13 +330,28 @@
             }
 
             // Add cut
-            const cutDistance = getCutDistance(cut);
-            const feedRate = getFeedRateForCut(cut); // Get feed rate from tool
+            let cutTime: number;
+            let cutDistanceInDisplayUnits: number;
+            let cutDistance: number;
 
-            // Convert cut distance to display units for time calculation
-            const cutDistanceInDisplayUnits =
-                convertDistanceToDisplayUnit(cutDistance);
-            const cutTime = (cutDistanceInDisplayUnits / feedRate) * 60; // Convert to seconds (feedRate is units/min)
+            // Check if this is a spot operation
+            if (cut.action === OperationAction.SPOT) {
+                // For spot operations, use spotDuration directly (convert ms to seconds)
+                // Use DEFAULT_SPOT_DURATION if not specified or 0, matching Operation class behavior
+                const spotDurationMs = cut.spotDuration || DEFAULT_SPOT_DURATION;
+                cutTime = spotDurationMs / 1000;
+                cutDistanceInDisplayUnits = 0; // Spots don't contribute to cut distance
+                cutDistance = 0; // Spots have no distance
+            } else {
+                // For regular cuts, calculate time from distance and feed rate
+                cutDistance = getCutDistance(cut);
+                const feedRate = getFeedRateForCut(cut); // Get feed rate from tool
+
+                // Convert cut distance to display units for time calculation
+                cutDistanceInDisplayUnits =
+                    convertDistanceToDisplayUnit(cutDistance);
+                cutTime = (cutDistanceInDisplayUnits / feedRate) * 60; // Convert to seconds (feedRate is units/min)
+            }
 
             // Update statistics (keep in display units)
             totalCutDistance += cutDistanceInDisplayUnits;
@@ -775,6 +793,7 @@
         currentProgress = 0;
         currentOperation = 'Ready';
         lastFrameTime = 0;
+        isTorchOn = false;
 
         // Reset tool head to starting position
         if (animationSteps.length > 0) {
@@ -840,6 +859,7 @@
             currentProgress = 100;
             currentOperation = 'Complete';
             isPlaying = false;
+            isTorchOn = false;
             workflowStore.completeStage(WorkflowStage.SIMULATE);
             return;
         }
@@ -860,7 +880,11 @@
                 currentTime >= step.startTime && currentTime <= step.endTime
         );
 
-        if (!currentStep) return;
+        if (!currentStep) {
+            // No step found, torch should be off
+            isTorchOn = false;
+            return;
+        }
 
         const stepProgress =
             (currentTime - currentStep.startTime) /
@@ -869,13 +893,21 @@
         if (currentStep.type === 'rapid' && currentStep.rapid) {
             const rapidRate = currentStep.rapidRate || 3000;
             currentOperation = `Rapid Movement (${rapidRate} ${displayUnit}/min)`;
+            isTorchOn = false; // Torch is off during rapids
             const rapid = currentStep.rapid;
             toolHeadPosition = {
                 x: rapid.start.x + (rapid.end.x - rapid.start.x) * stepProgress,
                 y: rapid.start.y + (rapid.end.y - rapid.start.y) * stepProgress,
             };
         } else if (currentStep.type === 'cut' && currentStep.cut) {
-            currentOperation = `Cutting (${getFeedRateForCut(currentStep.cut)} ${displayUnit}/min)`;
+            // Check if this is a spot operation
+            if (currentStep.cut.action === OperationAction.SPOT) {
+                const spotDuration = currentStep.cut.spotDuration || DEFAULT_SPOT_DURATION;
+                currentOperation = `Spot (${spotDuration}ms)`;
+            } else {
+                currentOperation = `Cutting (${getFeedRateForCut(currentStep.cut)} ${displayUnit}/min)`;
+            }
+            isTorchOn = true; // Torch is on during cutting/spotting
             updateToolHeadOnCut(currentStep.cut, stepProgress);
         }
     }
@@ -889,6 +921,16 @@
      * @param progress - Progress along the cut (0-1)
      */
     function updateToolHeadOnCut(cut: CutData, progress: number) {
+        // Special handling for spot operations - stay at the spot point
+        if (cut.action === OperationAction.SPOT) {
+            // Spot cuts have a cutChain with a single POINT shape at the centroid
+            const spotPoint = cut.normalConnectionPoint;
+            if (spotPoint) {
+                toolHeadPosition = { ...spotPoint };
+            }
+            return;
+        }
+
         // Use execution chain if available
         let shapes = cut.cutChain?.shapes;
         let chain = cut.cutChain;
@@ -1483,6 +1525,12 @@
                     >Current Operation: <strong>{currentOperation}</strong
                     ></span
                 >
+                <span class="torch-status">
+                    Torch: <span
+                        class="torch-indicator"
+                        class:torch-on={isTorchOn}
+                    ></span>
+                </span>
             </div>
             <div class="progress-bar">
                 <div
@@ -1611,9 +1659,30 @@
     .progress-info {
         display: flex;
         justify-content: space-between;
+        align-items: center;
         margin-bottom: 0.5rem;
         font-size: 0.875rem;
         color: #6b7280;
+    }
+
+    .torch-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .torch-indicator {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        border: 1px solid #000000;
+        background-color: transparent;
+        transition: background-color 0.2s ease;
+    }
+
+    .torch-indicator.torch-on {
+        background-color: #ff0000;
     }
 
     .progress-bar {

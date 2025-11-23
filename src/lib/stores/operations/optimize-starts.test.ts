@@ -10,7 +10,7 @@ import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { KerfCompensation } from '$lib/cam/operation/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 
 // Helper function to create Operation with resolved references
 function createOperation(
@@ -100,6 +100,7 @@ describe('Optimize Starts for Operations', () => {
         operation = {
             id: 'op-1',
             name: 'Test Operation',
+            action: OperationAction.CUT,
             toolId: mockTool.id,
             targetType: 'chains',
             targetIds: ['chain-square'],

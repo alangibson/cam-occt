@@ -3,10 +3,10 @@
     import { planStore } from '$lib/stores/plan/store';
     import { toolStore } from '$lib/stores/tools/store';
     import { SvelteMap } from 'svelte/reactivity';
-    import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+    import { CutterCompensation } from '$lib/cam/gcode/enums';
     import { onMount, createEventDispatcher } from 'svelte';
-    import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
-    import { generateGCode } from '$lib/cam/gcode-generator/gcode-generator';
+    import { cutsToToolPaths } from '$lib/cam/gcode/cut-to-toolpath';
+    import { generateGCode } from '$lib/cam/gcode/gcode-generator';
     import type { ChainData } from '$lib/geometry/chain/interfaces';
     import type { PartData } from '$lib/cam/part/interfaces';
     import type { ShapeData } from '$lib/geometry/shape/interfaces';

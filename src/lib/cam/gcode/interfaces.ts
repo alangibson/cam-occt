@@ -1,3 +1,23 @@
+import type { OperationAction } from '$lib/cam/operation/enums';
+import type { Point2D } from '$lib/geometry/point/interfaces';
+import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { NormalSide } from '$lib/cam/cut/enums';
+import type { Lead } from './types';
+
+export interface CutPath {
+    id: string;
+    shapeId: string;
+    points: Point2D[];
+    leadIn?: Lead;
+    leadOut?: Lead;
+    isRapid: boolean;
+    parameters?: CuttingParameters;
+    originalShape?: ShapeData; // Preserve original shape for native G-code generation
+    executionClockwise?: boolean | null; // Execution direction from cut (true=CW, false=CCW, null=no direction)
+    normalSide?: NormalSide; // Which side the normal is on (for machine cutter compensation)
+    hasOffset?: boolean; // Whether this cut has an offset applied
+}
+
 export interface CuttingParameters {
     feedRate: number; // mm/min or inch/min
     pierceHeight: number; // mm or inch
@@ -19,6 +39,10 @@ export interface CuttingParameters {
     // Hole cutting parameters
     isHole?: boolean; // Whether this is a hole (for velocity reduction)
     holeUnderspeedPercent?: number; // Velocity percentage for hole cutting (10-100)
+
+    // Operation action parameters
+    action?: OperationAction; // Operation action type (cut, spot)
+    spotDuration?: number; // Duration in milliseconds for spot operations
 }
 
 export interface GCodeCommand {

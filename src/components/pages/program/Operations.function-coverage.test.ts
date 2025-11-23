@@ -9,7 +9,7 @@ import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/cam/operation/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
 import type { ChainData } from '$lib/geometry/chain/interfaces';
@@ -176,6 +176,7 @@ describe('Operations Component - Function Coverage', () => {
         beforeEach(() => {
             operationsStore.addOperation({
                 name: 'Test Operation',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: ['part-1'],
@@ -241,6 +242,7 @@ describe('Operations Component - Function Coverage', () => {
         beforeEach(() => {
             operationsStore.addOperation({
                 name: 'Operation 1',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: [],
@@ -265,6 +267,7 @@ describe('Operations Component - Function Coverage', () => {
             });
             operationsStore.addOperation({
                 name: 'Operation 2',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: [],
@@ -342,6 +345,7 @@ describe('Operations Component - Function Coverage', () => {
         beforeEach(() => {
             operationsStore.addOperation({
                 name: 'Test Op',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: [],
@@ -454,6 +458,7 @@ describe('Operations Component - Function Coverage', () => {
         beforeEach(() => {
             operationsStore.addOperation({
                 name: 'Test Op',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: [],
@@ -512,6 +517,7 @@ describe('Operations Component - Function Coverage', () => {
 
             operationsStore.addOperation({
                 name: 'Test Op',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: [],
@@ -559,6 +565,7 @@ describe('Operations Component - Function Coverage', () => {
 
             operationsStore.addOperation({
                 name: 'Test Op',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: [],
@@ -604,6 +611,7 @@ describe('Operations Component - Function Coverage', () => {
 
             operationsStore.addOperation({
                 name: 'Test Op',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'chains',
                 targetIds: [],
@@ -644,6 +652,7 @@ describe('Operations Component - Function Coverage', () => {
         beforeEach(() => {
             operationsStore.addOperation({
                 name: 'Test Op',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: [],
@@ -704,6 +713,7 @@ describe('Operations Component - Function Coverage', () => {
         beforeEach(() => {
             operationsStore.addOperation({
                 name: 'Test Op',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: [],
@@ -751,6 +761,7 @@ describe('Operations Component - Function Coverage', () => {
         beforeEach(() => {
             operationsStore.addOperation({
                 name: 'Test Operation',
+                action: OperationAction.CUT,
                 toolId: null,
                 targetType: 'parts',
                 targetIds: [],

@@ -186,18 +186,67 @@ export function calculatePolygonCentroid(points: Point2D[]): Point2D {
         cy: number = 0;
     for (let i: number = 0; i < points.length; i++) {
         const j: number = (i + 1) % points.length;
+        // Standard shoelace cross product
         const cross: number =
             points[i].x * points[j].y - points[j].x * points[i].y;
         cx += (points[i].x + points[j].x) * cross;
         cy += (points[i].y + points[j].y) * cross;
     }
 
-    // The formula works correctly with signed area - don't use absolute value
-    // If the polygon is CW (positive area), the centroid calculation is direct
-    // If the polygon is CCW (negative area), both area and cross products are negative, so they cancel out
+    // calculateSignedArea uses trapezoidal formula which has opposite sign from shoelace
+    // Trapezoidal: positive for CW, negative for CCW
+    // Shoelace: negative for CW, positive for CCW
+    // Centroid formula uses shoelace convention, so negate the trapezoidal area
     // eslint-disable-next-line no-magic-numbers
-    const factor: number = 1 / (6 * area);
+    const factor: number = 1 / (6 * -area);
     return { x: cx * factor, y: cy * factor };
+}
+
+/**
+ * Get the center point (centroid) of a chain
+ *
+ * Special cases:
+ * - Single circle: returns circle center
+ * - Single arc: returns arc center
+ * - General case: tessellates shapes and calculates polygon centroid
+ *
+ * @param chain - The chain to find the center of
+ * @returns The center point of the chain
+ */
+export function getChainCentroid(chain: ChainData): Point2D {
+    if (chain.shapes.length === 0) {
+        return { x: 0, y: 0 };
+    }
+
+    // Special case: single circle - return center
+    if (
+        chain.shapes.length === 1 &&
+        chain.shapes[0].type === GeometryType.CIRCLE
+    ) {
+        const circle = chain.shapes[0].geometry as Circle;
+        return circle.center;
+    }
+
+    // Special case: single arc - return center
+    if (
+        chain.shapes.length === 1 &&
+        chain.shapes[0].type === GeometryType.ARC
+    ) {
+        const arc = chain.shapes[0].geometry as Arc;
+        return arc.center;
+    }
+
+    // General case: tessellate all shapes and calculate polygon centroid
+    const points: Point2D[] = [];
+    for (const shape of chain.shapes) {
+        const shapePoints = tessellateShape(
+            shape,
+            DEFAULT_PART_DETECTION_PARAMETERS
+        );
+        points.push(...shapePoints);
+    }
+
+    return calculatePolygonCentroid(points);
 }
 
 /**

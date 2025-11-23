@@ -5,6 +5,7 @@ import type { Tool } from '$lib/cam/tool/interfaces';
 import { operationsStore } from '$lib/stores/operations/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('Operations Store Integration', () => {
     beforeEach(() => {
@@ -64,6 +65,7 @@ describe('Operations Store Integration', () => {
         // Create an operation that references the tool
         operationsStore.addOperation({
             name: 'Test Operation',
+            action: OperationAction.CUT,
             toolId: toolId,
             targetType: 'parts',
             targetIds: [],

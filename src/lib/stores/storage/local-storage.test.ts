@@ -13,6 +13,7 @@ import {
 import { type PersistedState } from './interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
+import { OperationAction } from '$lib/cam/operation/enums';
 import { Unit } from '$lib/config/units/units';
 import { PartType } from '$lib/cam/part/enums';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
@@ -183,6 +184,7 @@ describe('State Persistence', () => {
                 {
                     id: 'op1',
                     name: 'Cut Part',
+                    action: OperationAction.CUT,
                     toolId: 'tool1',
                     targetType: 'parts',
                     targetIds: ['part1'],
@@ -212,6 +214,7 @@ describe('State Persistence', () => {
                     operationId: 'op1',
                     chainId: 'chain1',
                     toolId: 'tool1',
+                    action: OperationAction.CUT,
                     cutDirection: CutDirection.CLOCKWISE,
                     enabled: true,
                     order: 1,

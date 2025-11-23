@@ -14,7 +14,7 @@ import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/cam/operation/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { Shape } from '$lib/geometry/shape/classes';
@@ -91,6 +91,7 @@ describe('Lead Persistence Utils', () => {
         toolId: 'tool-1',
         enabled: true,
         order: 1,
+        action: OperationAction.CUT,
         cutDirection: CutDirection.CLOCKWISE,
         normal: { x: 1, y: 0 },
         normalConnectionPoint: { x: 0, y: 0 },
@@ -114,6 +115,7 @@ describe('Lead Persistence Utils', () => {
     const mockOperation: OperationData = {
         id: 'op-1',
         name: 'Test Operation',
+        action: OperationAction.CUT,
         toolId: 'tool-1',
         targetType: 'chains',
         targetIds: ['chain-1'],

@@ -1,9 +1,6 @@
 import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import type { Circle } from '$lib/geometry/circle/interfaces';
-import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { generateId } from '$lib/domain/id';
@@ -187,8 +184,7 @@ export function polylineToVertices(polyline: Polyline): PolylineVertex[] {
         const vertices: PolylineVertex[] = [];
 
         for (let i: number = 0; i < polyline.shapes.length; i++) {
-            const segment: Line | Arc | Circle | Polyline | Ellipse | Spline =
-                polyline.shapes[i].geometry;
+            const segment = polyline.shapes[i].geometry;
 
             if ('start' in segment && 'end' in segment) {
                 // Line segment - add start point with no bulge
@@ -238,13 +234,8 @@ export function polylineToVertices(polyline: Polyline): PolylineVertex[] {
 
         // For non-closed polylines, add the final end point
         if (!polyline.closed && polyline.shapes.length > 0) {
-            const lastSegment:
-                | Line
-                | Arc
-                | Circle
-                | Polyline
-                | Ellipse
-                | Spline = polyline.shapes[polyline.shapes.length - 1].geometry;
+            const lastSegment =
+                polyline.shapes[polyline.shapes.length - 1].geometry;
             if ('start' in lastSegment && 'end' in lastSegment) {
                 vertices.push({
                     x: lastSegment.end.x,
@@ -298,8 +289,7 @@ export function polylineToPoints(polyline: Polyline): Point2D[] {
         const points: Point2D[] = [];
 
         for (let i: number = 0; i < polyline.shapes.length; i++) {
-            const segment: Line | Arc | Circle | Polyline | Ellipse | Spline =
-                polyline.shapes[i].geometry;
+            const segment = polyline.shapes[i].geometry;
 
             if ('start' in segment && 'end' in segment) {
                 // Line segment - add start point
@@ -318,13 +308,8 @@ export function polylineToPoints(polyline: Polyline): Point2D[] {
 
         // For non-closed polylines, add the final end point
         if (!polyline.closed && polyline.shapes.length > 0) {
-            const lastSegment:
-                | Line
-                | Arc
-                | Circle
-                | Polyline
-                | Ellipse
-                | Spline = polyline.shapes[polyline.shapes.length - 1].geometry;
+            const lastSegment =
+                polyline.shapes[polyline.shapes.length - 1].geometry;
             if ('start' in lastSegment && 'end' in lastSegment) {
                 points.push({ x: lastSegment.end.x, y: lastSegment.end.y });
             } else if ('center' in lastSegment && 'radius' in lastSegment) {
@@ -381,8 +366,7 @@ export function reversePolyline(polyline: Polyline): Polyline {
     const reversedShapes: ShapeData[] = [...polyline.shapes]
         .reverse()
         .map((shape) => {
-            const segment: Line | Arc | Circle | Polyline | Ellipse | Spline =
-                shape.geometry;
+            const segment = shape.geometry;
             if ('start' in segment && 'end' in segment) {
                 // Line segment - swap start and end points
                 return {

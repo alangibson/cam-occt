@@ -1,15 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
-import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import { CutterCompensation } from '$lib/cam/gcode/enums';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { GeometryType } from '$lib/geometry/shape/enums';
-import { cutsToToolPaths } from '$lib/cam/cut-generator/cut-to-toolpath';
+import { cutsToToolPaths } from '$lib/cam/gcode/cut-to-toolpath';
 import { generateGCode } from './gcode-generator';
 import { Shape } from '$lib/geometry/shape/classes';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('G-code generation with offset cuts', () => {
     // Create test shapes for a simple rectangle
@@ -75,6 +76,7 @@ describe('G-code generation with offset cuts', () => {
             toolId: 'tool-1',
             enabled: true,
             order: 1,
+            action: OperationAction.CUT,
             cutDirection: CutDirection.CLOCKWISE,
             feedRate: 1000,
             pierceHeight: 3.8,
@@ -126,6 +128,7 @@ describe('G-code generation with offset cuts', () => {
             toolId: 'tool-1',
             enabled: true,
             order: 1,
+            action: OperationAction.CUT,
             cutDirection: CutDirection.CLOCKWISE,
             feedRate: 1000,
             pierceHeight: 3.8,
@@ -191,6 +194,7 @@ describe('G-code generation with offset cuts', () => {
             toolId: 'tool-1',
             enabled: true,
             order: 1,
+            action: OperationAction.CUT,
             cutDirection: CutDirection.CLOCKWISE,
             feedRate: 1000,
             pierceHeight: 3.8,
@@ -286,6 +290,7 @@ describe('G-code generation with offset cuts', () => {
             toolId: 'tool-1',
             enabled: true,
             order: 1,
+            action: OperationAction.CUT,
             cutDirection: CutDirection.CLOCKWISE,
             feedRate: 1000.12345,
             pierceHeight: 3.87654,

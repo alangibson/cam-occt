@@ -3,12 +3,13 @@ import { GeometryType } from '$lib/geometry/shape/enums';
 import { describe, expect, it } from 'vitest';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import type { CutPath } from '$lib/cam/cut-generator/interfaces';
+import type { CutPath } from '$lib/cam/gcode/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import { CutterCompensation } from '$lib/cam/gcode/enums';
 import { Unit } from '$lib/config/units/units';
 import { generateGCode } from './gcode-generator';
 import type { Circle } from '$lib/geometry/circle/interfaces';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('generateGCode', () => {
     const mockDrawing: DrawingData = {
@@ -148,10 +149,12 @@ describe('generateGCode', () => {
                 cutterCompensation: CutterCompensation.NONE,
             });
 
-            // Current implementation treats rapids as regular cuts but without parameters
-            // This test verifies that it handles undefined parameters gracefully
+            // Rapids should only generate G0 moves, no cutting (G1) or torch commands
             expect(gcode).toContain('G0'); // Should contain rapid moves
-            expect(gcode).toContain('G1'); // Should contain linear moves for the cut
+            expect(gcode).not.toContain('G1'); // Should NOT contain cutting moves
+            expect(gcode).not.toContain('M3'); // Should NOT contain torch on
+            expect(gcode).not.toContain('M5'); // Should NOT contain torch off
+            expect(gcode).not.toContain('G4 P'); // Should NOT contain pierce delay
         });
 
         it('should handle cuts without lead-in/lead-out', () => {
@@ -550,6 +553,278 @@ describe('generateGCode', () => {
             expect(gcode).toContain('G4'); // Pierce delay (always included)
             // M190 is not used with o=0 format, material params are in magic comment
             expect(gcode).toContain('(o=0'); // Material parameters in magic comment
+        });
+    });
+
+    describe('Spot Operations', () => {
+        const mockSpotCut: CutPath = {
+            id: 'spot1',
+            shapeId: 'shape1',
+            points: [{ x: 50, y: 50 }], // Single point at centroid
+            isRapid: false,
+            parameters: {
+                feedRate: 1000,
+                pierceHeight: 3.8,
+                pierceDelay: 0.5,
+                cutHeight: 1.5,
+                kerf: 0,
+                action: 'spot' as any, // OperationAction.SPOT
+                spotDuration: 100,
+            },
+        };
+
+        it('should generate spot-specific M-codes', () => {
+            const gcode = generateGCode([mockSpotCut], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            expect(gcode).toContain('M3 $2'); // Spotting tool on
+            expect(gcode).toContain('M5 $2'); // Spotting tool off
+        });
+
+        it('should generate minimal movement sequence for spot', () => {
+            const gcode = generateGCode([mockSpotCut], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            expect(gcode).toContain('G91'); // Relative mode
+            expect(gcode).toContain('G1 X0.000001'); // Minimal movement
+            expect(gcode).toContain('G90'); // Back to absolute mode
+        });
+
+        it('should set high feed rate before moving to spot location', () => {
+            const gcode = generateGCode([mockSpotCut], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            expect(gcode).toContain('F99999'); // High feed rate
+
+            // Verify F99999 comes before the G0 move to spot location
+            const f99999Index = gcode.indexOf('F99999');
+            const g0SpotIndex = gcode.indexOf('G0 X50 Y50');
+            expect(f99999Index).toBeLessThan(g0SpotIndex);
+        });
+
+        it('should move to spot location', () => {
+            const gcode = generateGCode([mockSpotCut], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            expect(gcode).toContain('X50'); // Spot X coordinate
+            expect(gcode).toContain('Y50'); // Spot Y coordinate
+        });
+
+        it('should include spot comment when comments enabled', () => {
+            const gcode = generateGCode([mockSpotCut], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            expect(gcode).toContain('(Spot 1)');
+        });
+
+        it('should not include pierce commands for spot operations', () => {
+            const gcode = generateGCode([mockSpotCut], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            // Spot operations should NOT have pierce delay
+            const lines = gcode.split('\n');
+            const spotSection = lines.slice(
+                lines.findIndex((l) => l.includes('(Spot 1)')),
+                lines.findIndex((l) => l.includes('M5 $2'))
+            );
+            const spotSectionText = spotSection.join('\n');
+
+            expect(spotSectionText).not.toContain('G4'); // No pierce delay
+            expect(spotSectionText).not.toContain('M3 $0'); // Not plasma torch
+        });
+    });
+
+    describe('Spot Action Field Preservation (Integration)', () => {
+        it('should use spot G-code when CutPath has action=SPOT', () => {
+            const spotCutPath: CutPath = {
+                id: 'spot-1',
+                shapeId: 'chain-1',
+                points: [{ x: 50, y: 50 }],
+                isRapid: false,
+                parameters: {
+                    feedRate: 1000,
+                    pierceHeight: 3.8,
+                    pierceDelay: 0.5,
+                    cutHeight: 1.5,
+                    kerf: 0,
+                    action: OperationAction.SPOT,
+                    spotDuration: 100,
+                },
+            };
+
+            const gcode = generateGCode([spotCutPath], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            // Should generate spot G-code
+            expect(gcode).toContain('M3 $2');
+            expect(gcode).toContain('M5 $2');
+            expect(gcode).toContain('G91'); // Relative mode
+            expect(gcode).toContain('G1 X0.000001'); // Minimal movement
+            expect(gcode).toContain('G90'); // Absolute mode
+
+            // Should NOT generate cut G-code
+            expect(gcode).not.toContain('M3 $0');
+            expect(gcode).not.toContain('M5 $0');
+            expect(gcode).not.toContain('G4 P'); // No pierce delay
+        });
+
+        it('should use cut G-code when CutPath has action=CUT', () => {
+            const cutCutPath: CutPath = {
+                id: 'cut-1',
+                shapeId: 'chain-1',
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 100, y: 0 },
+                ],
+                isRapid: false,
+                parameters: {
+                    feedRate: 1000,
+                    pierceHeight: 3.8,
+                    pierceDelay: 0.5,
+                    cutHeight: 1.5,
+                    kerf: 1.5,
+                    action: OperationAction.CUT,
+                },
+            };
+
+            const gcode = generateGCode([cutCutPath], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            // Should generate cut G-code
+            expect(gcode).toContain('M3 $0');
+            expect(gcode).toContain('M5 $0');
+            expect(gcode).toContain('G4 P0.5'); // Pierce delay
+
+            // Should NOT generate spot G-code
+            expect(gcode).not.toContain('M3 $2');
+            expect(gcode).not.toContain('M5 $2');
+        });
+
+        it('should default to cut G-code when action is undefined', () => {
+            const undefinedActionPath: CutPath = {
+                id: 'cut-1',
+                shapeId: 'chain-1',
+                points: [
+                    { x: 0, y: 0 },
+                    { x: 100, y: 0 },
+                ],
+                isRapid: false,
+                parameters: {
+                    feedRate: 1000,
+                    pierceHeight: 3.8,
+                    pierceDelay: 0.5,
+                    cutHeight: 1.5,
+                    kerf: 1.5,
+                    // action: undefined - not set
+                },
+            };
+
+            const gcode = generateGCode([undefinedActionPath], mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            // Should default to cut G-code
+            expect(gcode).toContain('M3 $0');
+            expect(gcode).toContain('M5 $0');
+
+            // Should NOT generate spot G-code
+            expect(gcode).not.toContain('M3 $2');
+            expect(gcode).not.toContain('M5 $2');
+        });
+
+        it('should handle mixed SPOT and CUT operations in same G-code', () => {
+            const paths: CutPath[] = [
+                {
+                    id: 'cut-1',
+                    shapeId: 'chain-1',
+                    points: [
+                        { x: 0, y: 0 },
+                        { x: 100, y: 0 },
+                    ],
+                    isRapid: false,
+                    parameters: {
+                        feedRate: 1000,
+                        pierceHeight: 3.8,
+                        pierceDelay: 0.5,
+                        cutHeight: 1.5,
+                        kerf: 1.5,
+                        action: OperationAction.CUT,
+                    },
+                },
+                {
+                    id: 'spot-1',
+                    shapeId: 'chain-2',
+                    points: [{ x: 50, y: 50 }],
+                    isRapid: false,
+                    parameters: {
+                        feedRate: 1000,
+                        pierceHeight: 3.8,
+                        pierceDelay: 0.5,
+                        cutHeight: 1.5,
+                        kerf: 0,
+                        action: OperationAction.SPOT,
+                        spotDuration: 100,
+                    },
+                },
+            ];
+
+            const gcode = generateGCode(paths, mockDrawing, {
+                units: Unit.MM,
+                safeZ: 10,
+                rapidFeedRate: 5000,
+                includeComments: true,
+                cutterCompensation: CutterCompensation.NONE,
+            });
+
+            // Should have both cut and spot commands
+            expect(gcode).toContain('M3 $0'); // Cut command
+            expect(gcode).toContain('M5 $0'); // Cut off
+            expect(gcode).toContain('M3 $2'); // Spot command
+            expect(gcode).toContain('M5 $2'); // Spot off
         });
     });
 });

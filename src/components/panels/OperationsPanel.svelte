@@ -2,14 +2,13 @@
     import type { OperationData } from '$lib/cam/operation/interface';
     import { Operation } from '$lib/cam/operation/classes.svelte';
     import type { ChainData } from '$lib/geometry/chain/interfaces';
+    import { Chain } from '$lib/geometry/chain/classes';
     import type { Part } from '$lib/cam/part/classes.svelte';
     import type { Tool } from '$lib/cam/tool/interfaces';
     import { flip } from 'svelte/animate';
-    import { CutDirection } from '$lib/cam/cut/enums';
-    import { LeadType } from '$lib/cam/lead/enums';
-    import { KerfCompensation } from '$lib/cam/operation/enums';
-    import { getReactiveUnitSymbol } from '$lib/config/units/units';
-    import { settingsStore } from '$lib/stores/settings/store';
+    import { OperationAction } from '$lib/cam/operation/enums';
+    import CutOperationDetails from './CutOperationDetails.svelte';
+    import SpotOperationProperties from './SpotOperationProperties.svelte';
 
     // Props
     export let operations: Operation[] = [];
@@ -70,6 +69,34 @@
         operationId: string
     ) => boolean;
     export let toggleOperationCollapse: (operationId: string) => void;
+
+    // Helper function to check if a chain is cyclic
+    function isChainCyclic(chain: ChainData): boolean {
+        return new Chain(chain).isCyclic();
+    }
+
+    // Helper function to check if a target should be disabled for Spot action
+    function isTargetDisabledForSpot(
+        operation: Operation,
+        targetType: 'parts' | 'chains',
+        chain?: ChainData
+    ): boolean {
+        if (operation.action !== OperationAction.SPOT) {
+            return false;
+        }
+
+        if (targetType === 'parts') {
+            // All parts are disabled for Spot action
+            return true;
+        }
+
+        if (targetType === 'chains' && chain) {
+            // Only non-cyclic chains are disabled for Spot action
+            return !isChainCyclic(chain);
+        }
+
+        return false;
+    }
 </script>
 
 <div class="operations-container">
@@ -200,6 +227,26 @@
                                 {/if}
                             </div>
                         </div>
+
+                        <div class="field-group">
+                            <label for="action-{operation.id}">Action:</label>
+                            <select
+                                id="action-{operation.id}"
+                                value={operation.action}
+                                onchange={(e) =>
+                                    updateOperationField(
+                                        operation.id,
+                                        'action',
+                                        e.currentTarget.value as OperationAction
+                                    )}
+                                class="action-select"
+                            >
+                                <option value={OperationAction.CUT}>Cut</option>
+                                <option value={OperationAction.SPOT}
+                                    >Spot</option
+                                >
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Apply to section on its own row -->
@@ -292,11 +339,19 @@
                                                             'parts',
                                                             operation.id
                                                         )}
+                                                    {@const isDisabledForSpot =
+                                                        isTargetDisabledForSpot(
+                                                            operation,
+                                                            'parts'
+                                                        )}
+                                                    {@const isDisabled =
+                                                        isAssigned ||
+                                                        isDisabledForSpot}
                                                     <label
                                                         class="target-option {hoveredPartId ===
                                                         part.id
                                                             ? 'hovered'
-                                                            : ''} {isAssigned
+                                                            : ''} {isDisabled
                                                             ? 'disabled'
                                                             : ''}"
                                                         onmouseenter={() =>
@@ -313,7 +368,7 @@
                                                             checked={operation.targetIds.includes(
                                                                 part.id
                                                             )}
-                                                            disabled={isAssigned}
+                                                            disabled={isDisabled}
                                                             onchange={() =>
                                                                 toggleTargetSelection(
                                                                     operation.id,
@@ -353,6 +408,12 @@
                                                                 class="assigned-indicator"
                                                                 >Assigned</span
                                                             >
+                                                        {:else if isDisabledForSpot}
+                                                            <span
+                                                                class="assigned-indicator"
+                                                                >Not available
+                                                                for Spot</span
+                                                            >
                                                         {/if}
                                                     </label>
                                                 {/each}
@@ -369,11 +430,20 @@
                                                             'chains',
                                                             operation.id
                                                         )}
+                                                    {@const isDisabledForSpot =
+                                                        isTargetDisabledForSpot(
+                                                            operation,
+                                                            'chains',
+                                                            chain
+                                                        )}
+                                                    {@const isDisabled =
+                                                        isAssigned ||
+                                                        isDisabledForSpot}
                                                     <label
                                                         class="target-option {hoveredChainId ===
                                                         chain.id
                                                             ? 'hovered'
-                                                            : ''} {isAssigned
+                                                            : ''} {isDisabled
                                                             ? 'disabled'
                                                             : ''}"
                                                         onmouseenter={() =>
@@ -390,7 +460,7 @@
                                                             checked={operation.targetIds.includes(
                                                                 chain.id
                                                             )}
-                                                            disabled={isAssigned}
+                                                            disabled={isDisabled}
                                                             onchange={() =>
                                                                 toggleTargetSelection(
                                                                     operation.id,
@@ -415,6 +485,11 @@
                                                                 class="assigned-indicator"
                                                                 >Assigned</span
                                                             >
+                                                        {:else if isDisabledForSpot}
+                                                            <span
+                                                                class="assigned-indicator"
+                                                                >Not cyclic</span
+                                                            >
                                                         {/if}
                                                     </label>
                                                 {/each}
@@ -434,240 +509,18 @@
                     <!-- Divider -->
                     <div class="operation-divider"></div>
 
-                    <!-- Cut Direction -->
-                    <div class="operation-row">
-                        <div class="field-group">
-                            <label for="cut-direction-{operation.id}"
-                                >Cut Direction:</label
-                            >
-                            <select
-                                id="cut-direction-{operation.id}"
-                                value={operation.cutDirection}
-                                onchange={(e) =>
-                                    updateOperationField(
-                                        operation.id,
-                                        'cutDirection',
-                                        e.currentTarget.value as CutDirection
-                                    )}
-                                class="cut-direction-select"
-                            >
-                                <option value="counterclockwise"
-                                    >Counterclockwise</option
-                                >
-                                <option value="clockwise">Clockwise</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Hole Cutting Settings (only for part operations) -->
-                    {#if operation.targetType === 'parts'}
-                        <div class="operation-row">
-                            <div class="field-group">
-                                <label class="hole-underspeed-label">
-                                    <input
-                                        type="checkbox"
-                                        checked={operation.holeUnderspeedEnabled ||
-                                            false}
-                                        onchange={(e) =>
-                                            updateOperationField(
-                                                operation.id,
-                                                'holeUnderspeedEnabled',
-                                                e.currentTarget.checked
-                                            )}
-                                        class="hole-checkbox"
-                                    />
-                                    Enable hole underspeed
-                                </label>
-                            </div>
-                            {#if operation.holeUnderspeedEnabled}
-                                <div class="field-group">
-                                    <label for="hole-underspeed-{operation.id}"
-                                        >Velocity (%):</label
-                                    >
-                                    <input
-                                        id="hole-underspeed-{operation.id}"
-                                        type="number"
-                                        min="10"
-                                        max="100"
-                                        step="5"
-                                        value={operation.holeUnderspeedPercent ||
-                                            60}
-                                        onchange={(e) =>
-                                            updateOperationField(
-                                                operation.id,
-                                                'holeUnderspeedPercent',
-                                                Math.max(
-                                                    10,
-                                                    Math.min(
-                                                        100,
-                                                        parseInt(
-                                                            e.currentTarget
-                                                                .value
-                                                        ) || 60
-                                                    )
-                                                )
-                                            )}
-                                        class="hole-input"
-                                    />
-                                </div>
-                            {/if}
-                        </div>
+                    <!-- Cut Operation Details (only for cut action) -->
+                    {#if operation.action === OperationAction.CUT}
+                        <CutOperationDetails
+                            {operation}
+                            {updateOperationField}
+                        />
+                    {:else if operation.action === OperationAction.SPOT}
+                        <SpotOperationProperties
+                            {operation}
+                            {updateOperationField}
+                        />
                     {/if}
-
-                    <!-- Lead-in and Lead-out Settings -->
-                    <div class="lead-settings">
-                        <div class="field-group">
-                            <label for="lead-in-type-{operation.id}"
-                                >Lead-in:</label
-                            >
-                            <select
-                                id="lead-in-type-{operation.id}"
-                                value={operation.leadInConfig?.type ||
-                                    LeadType.NONE}
-                                onchange={(e) =>
-                                    updateOperationField(
-                                        operation.id,
-                                        'leadInConfig',
-                                        {
-                                            ...operation.leadInConfig,
-                                            type: e.currentTarget
-                                                .value as LeadType,
-                                        }
-                                    )}
-                                class="lead-select"
-                            >
-                                <option value="none">None</option>
-                                <option value="arc">Arc</option>
-                            </select>
-                        </div>
-
-                        <div class="field-group">
-                            <label for="lead-out-type-{operation.id}"
-                                >Lead-out:</label
-                            >
-                            <select
-                                id="lead-out-type-{operation.id}"
-                                value={operation.leadOutConfig?.type ||
-                                    LeadType.NONE}
-                                onchange={(e) =>
-                                    updateOperationField(
-                                        operation.id,
-                                        'leadOutConfig',
-                                        {
-                                            ...operation.leadOutConfig,
-                                            type: e.currentTarget
-                                                .value as LeadType,
-                                        }
-                                    )}
-                                class="lead-select"
-                            >
-                                <option value="none">None</option>
-                                <option value="arc">Arc</option>
-                            </select>
-                        </div>
-
-                        {#if operation.leadInConfig?.type !== 'none'}
-                            <div class="field-group">
-                                <label for="lead-in-length-{operation.id}"
-                                    >Length ({getReactiveUnitSymbol(
-                                        $settingsStore.settings
-                                            .measurementSystem
-                                    )}):</label
-                                >
-                                <input
-                                    id="lead-in-length-{operation.id}"
-                                    type="number"
-                                    min="0"
-                                    step="0.1"
-                                    value={operation.leadInConfig?.length || 0}
-                                    onchange={(e) =>
-                                        updateOperationField(
-                                            operation.id,
-                                            'leadInConfig',
-                                            {
-                                                ...operation.leadInConfig,
-                                                length:
-                                                    parseFloat(
-                                                        e.currentTarget.value
-                                                    ) || 0,
-                                            }
-                                        )}
-                                    class="lead-input"
-                                />
-                            </div>
-                        {:else}
-                            <div class="field-group"></div>
-                        {/if}
-
-                        {#if operation.leadOutConfig?.type !== 'none'}
-                            <div class="field-group">
-                                <label for="lead-out-length-{operation.id}"
-                                    >Length ({getReactiveUnitSymbol(
-                                        $settingsStore.settings
-                                            .measurementSystem
-                                    )}):</label
-                                >
-                                <input
-                                    id="lead-out-length-{operation.id}"
-                                    type="number"
-                                    min="0"
-                                    step="0.1"
-                                    value={operation.leadOutConfig?.length || 0}
-                                    onchange={(e) =>
-                                        updateOperationField(
-                                            operation.id,
-                                            'leadOutConfig',
-                                            {
-                                                ...operation.leadOutConfig,
-                                                length:
-                                                    parseFloat(
-                                                        e.currentTarget.value
-                                                    ) || 0,
-                                            }
-                                        )}
-                                    class="lead-input"
-                                />
-                            </div>
-                        {:else}
-                            <div class="field-group"></div>
-                        {/if}
-                    </div>
-
-                    <!-- Kerf Compensation Settings -->
-                    <div class="kerf-compensation-row">
-                        <div class="field-group">
-                            <label for="kerf-compensation-{operation.id}"
-                                >Kerf Compensation:</label
-                            >
-                            <select
-                                id="kerf-compensation-{operation.id}"
-                                value={operation.kerfCompensation ||
-                                    KerfCompensation.NONE}
-                                onchange={(e) =>
-                                    updateOperationField(
-                                        operation.id,
-                                        'kerfCompensation',
-                                        e.currentTarget.value as
-                                            | KerfCompensation
-                                            | undefined
-                                    )}
-                                class="lead-select"
-                            >
-                                <option value={KerfCompensation.NONE}
-                                    >None</option
-                                >
-                                <option value={KerfCompensation.INNER}
-                                    >Inner</option
-                                >
-                                <option value={KerfCompensation.OUTER}
-                                    >Outer</option
-                                >
-                                <option value={KerfCompensation.PART}
-                                    >Part</option
-                                >
-                            </select>
-                        </div>
-                    </div>
 
                     <!-- Divider -->
                     <!-- <div class="operation-divider"></div> -->
@@ -858,7 +711,7 @@
         margin-left: 0.5rem;
     }
 
-    .cut-direction-select {
+    .action-select {
         width: 100%;
         padding: 0.25rem 0.5rem;
         border: 1px solid #d1d5db;
@@ -868,12 +721,12 @@
         cursor: pointer;
     }
 
-    .cut-direction-select:hover {
+    .action-select:hover {
         border-color: #9ca3af;
         background: #f9fafb;
     }
 
-    .cut-direction-select:focus {
+    .action-select:focus {
         outline: none;
         border-color: rgb(0, 83, 135);
         box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
@@ -1101,56 +954,6 @@
         font-size: 0.75rem;
     }
 
-    /* Lead settings */
-    .lead-settings {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 0.75rem 1rem;
-        margin-top: 0.75rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .lead-select {
-        width: 100%;
-        padding: 0.25rem 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-        background: white;
-        cursor: pointer;
-    }
-
-    .lead-select:hover {
-        border-color: #9ca3af;
-        background: #f9fafb;
-    }
-
-    .lead-select:focus {
-        outline: none;
-        border-color: rgb(0, 83, 135);
-        box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
-    }
-
-    .lead-input {
-        padding: 0.25rem 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-        background: white;
-    }
-
-    .lead-input:hover {
-        border-color: #9ca3af;
-        background: #f9fafb;
-    }
-
-    .lead-input:focus {
-        outline: none;
-        border-color: rgb(0, 83, 135);
-        box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
-    }
-
     /* Apply to row styling */
     .apply-to-row {
         width: 100%;
@@ -1168,51 +971,5 @@
         height: 1px;
         background-color: #e5e7eb;
         margin: 0.75rem 0;
-    }
-
-    /* Kerf compensation row styling */
-    .kerf-compensation-row {
-        margin-top: 0.75rem;
-        padding-top: 0.75rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .kerf-compensation-row .field-group {
-        max-width: 200px;
-    }
-
-    /* Hole underspeed styling */
-    .hole-underspeed-label {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        font-size: 0.875rem;
-        color: #374151;
-        cursor: pointer;
-    }
-
-    .hole-checkbox {
-        margin: 0;
-        cursor: pointer;
-    }
-
-    .hole-input {
-        width: 80px;
-        padding: 0.25rem 0.5rem;
-        border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-        background: white;
-    }
-
-    .hole-input:hover {
-        border-color: #9ca3af;
-        background: #f9fafb;
-    }
-
-    .hole-input:focus {
-        outline: none;
-        border-color: rgb(0, 83, 135);
-        box-shadow: 0 0 0 2px rgba(0, 83, 135, 0.2);
     }
 </style>

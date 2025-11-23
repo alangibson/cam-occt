@@ -8,7 +8,7 @@ import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/cam/operation/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import { sampleShapes } from '$lib/geometry/shape/functions';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { OperationData } from '$lib/cam/operation/interface';
@@ -104,6 +104,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         // Test 1: Create operation with COUNTERCLOCKWISE direction (opposite of natural)
         const operation: Omit<OperationData, 'id'> = {
             name: 'Test Operation',
+            action: OperationAction.CUT,
             targetType: 'chains',
             targetIds: ['test-chain'],
             cutDirection: CutDirection.COUNTERCLOCKWISE, // User wants counterclockwise
@@ -198,6 +199,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
         // Create operation with CLOCKWISE direction (opposite of natural)
         const operation: Omit<OperationData, 'id'> = {
             name: 'Test Operation',
+            action: OperationAction.CUT,
             targetType: 'chains',
             targetIds: ['test-chain'],
             cutDirection: CutDirection.CLOCKWISE, // User wants clockwise
@@ -279,6 +281,7 @@ describe.skip('Cut Direction End-to-End Integration', () => {
 
         const operation: Omit<OperationData, 'id'> = {
             name: 'Test Operation',
+            action: OperationAction.CUT,
             targetType: 'chains',
             targetIds: ['test-chain'],
             cutDirection: CutDirection.CLOCKWISE, // Start with clockwise

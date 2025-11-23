@@ -7,7 +7,7 @@
         OffsetImplementation,
     } from '$lib/config/settings/enums';
     import { resetApplicationToDefaults } from '$lib/stores/storage/store';
-    import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+    import { CutterCompensation } from '$lib/cam/gcode/enums';
 
     const allStages = [
         WorkflowStage.IMPORT,

@@ -11,6 +11,7 @@ import { drawingStore } from '$lib/stores/drawing/store';
 import { uiStore } from '$lib/stores/ui/store';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { Cut } from '$lib/cam/cut/classes.svelte';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 // Mock settings store to return all stages enabled (for testing workflow logic)
 vi.mock('$lib/stores/settings/store', () => ({
@@ -108,6 +109,7 @@ describe('SimulateStage store subscription cleanup', () => {
                 toolId: 'test-tool',
                 enabled: true,
                 order: 1,
+                action: OperationAction.CUT,
                 feedRate: 1000,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },

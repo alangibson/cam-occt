@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { get } from 'svelte/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/cam/operation/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 
 // Now import the modules we need
 import { operationsStore } from './store';
@@ -88,6 +88,7 @@ describe('operationsStore', () => {
 
     const createTestOperation = (): Omit<OperationData, 'id'> => ({
         name: 'Test Operation',
+        action: OperationAction.CUT,
         toolId: 'tool-1',
         targetType: 'chains',
         targetIds: ['chain-1'],
@@ -150,6 +151,7 @@ describe('operationsStore', () => {
 
             operationsStore.updateOperation('mock-uuid-123', {
                 name: 'Updated Operation',
+                action: OperationAction.CUT,
             });
 
             const operations = get(operationsStore);
@@ -162,6 +164,7 @@ describe('operationsStore', () => {
 
             operationsStore.updateOperation('mock-uuid-123', {
                 name: 'Updated',
+                action: OperationAction.CUT,
             });
 
             // Verify operation was updated (warning stores removed)
@@ -172,6 +175,7 @@ describe('operationsStore', () => {
         it('should not update non-existent operation', () => {
             operationsStore.updateOperation('non-existent', {
                 name: 'Updated',
+                action: OperationAction.CUT,
             });
 
             const operations = get(operationsStore);
@@ -226,6 +230,7 @@ describe('operationsStore', () => {
                 ...operation,
                 id: 'duplicate-uuid-789',
                 name: 'Test Operation (Copy)',
+                action: OperationAction.CUT,
                 order: 2,
             });
         });
@@ -276,6 +281,7 @@ describe('operationsStore', () => {
             const op2 = {
                 ...createTestOperation(),
                 name: 'Disabled',
+                action: OperationAction.CUT,
                 enabled: false,
             };
 

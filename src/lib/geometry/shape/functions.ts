@@ -119,6 +119,10 @@ export function getShapePoints(
     } = options;
 
     switch (shape.type) {
+        case GeometryType.POINT:
+            const point: Point2D = shape.geometry as Point2D;
+            return [point];
+
         case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             return [line.start, line.end];
@@ -461,6 +465,11 @@ export function tessellateShape(
     const points: Point2D[] = [];
 
     switch (shape.type) {
+        case GeometryType.POINT:
+            const point: Point2D = shape.geometry as Point2D;
+            points.push(point);
+            break;
+
         case GeometryType.LINE:
             const line: Line = shape.geometry as Line;
             points.push(...tessellateLine(line));
@@ -525,6 +534,8 @@ export function tessellateShape(
 export function getShapeStartPoint(shapeInput: ShapeInput): Point2D {
     const shape = toShapeData(shapeInput);
     switch (shape.type) {
+        case 'point':
+            return shape.geometry as Point2D;
         case 'line':
             return getLineStartPoint(shape.geometry as Line);
         case 'circle':
@@ -548,6 +559,8 @@ export function getShapeStartPoint(shapeInput: ShapeInput): Point2D {
 export function getShapeEndPoint(shapeInput: ShapeInput): Point2D {
     const shape = toShapeData(shapeInput);
     switch (shape.type) {
+        case 'point':
+            return shape.geometry as Point2D;
         case 'line':
             return getLineEndPoint(shape.geometry as Line);
         case 'circle':
@@ -572,6 +585,9 @@ export function reverseShape(shapeInput: ShapeInput): ShapeData {
     const shape = toShapeData(shapeInput);
     const reversed: ShapeData = { ...shape };
     switch (shape.type) {
+        case 'point':
+            // Points have no direction, return as-is
+            break;
         case 'line':
             reversed.geometry = reverseLine(shape.geometry as Line);
             break;
@@ -599,6 +615,8 @@ export function reverseShape(shapeInput: ShapeInput): ShapeData {
 export function getShapePointAt(shapeInput: ShapeInput, t: number): Point2D {
     const shape = toShapeData(shapeInput);
     switch (shape.type) {
+        case 'point':
+            return shape.geometry as Point2D;
         case 'line':
             return getLinePointAt(shape.geometry as Line, t);
         case 'arc':
@@ -688,6 +706,10 @@ export function getShapeLength(shapeInput: ShapeInput): number {
                     (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)))
                 );
             }
+
+        case 'point':
+            // Points have zero length
+            return 0;
 
         default:
             return 0;

@@ -9,6 +9,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
+import type { Point2D } from '$lib/geometry/point/interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { normalizeAngle } from '$lib/geometry/math/functions';
@@ -16,6 +17,29 @@ import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
 import { tessellateShape } from '$lib/geometry/shape/functions';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
+
+// Point rendering constants
+const POINT_RADIUS_PX = 2; // Radius of point marker in pixels
+
+/**
+ * Draw a point shape
+ * Renders as a small filled circle to mark the spot location
+ */
+function drawPoint(ctx: CanvasRenderingContext2D, point: Point2D): void {
+    // Get the current transformation matrix to extract scale
+    const transform = ctx.getTransform();
+    const scaleX = Math.sqrt(
+        transform.a * transform.a + transform.b * transform.b
+    );
+
+    // Convert desired pixel radius to world coordinates
+    // Radius should remain constant in screen pixels regardless of zoom
+    const radiusInWorldUnits = POINT_RADIUS_PX / scaleX;
+
+    ctx.beginPath();
+    ctx.arc(point.x, point.y, radiusInWorldUnits, 0, 2 * Math.PI);
+    ctx.fill();
+}
 
 /**
  * Draw a line shape
@@ -145,6 +169,9 @@ export function drawShape(
     shape: ShapeData
 ): void {
     switch (shape.type) {
+        case GeometryType.POINT:
+            drawPoint(ctx, shape.geometry as Point2D);
+            break;
         case GeometryType.LINE:
             drawLine(ctx, shape.geometry as Line);
             break;

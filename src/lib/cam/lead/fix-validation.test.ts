@@ -3,6 +3,7 @@ import type { ChainData } from '$lib/geometry/chain/interfaces';
 import { Chain } from '$lib/geometry/chain/classes';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
+import { OperationAction } from '$lib/cam/operation/enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
 import { GeometryType } from '$lib/geometry/shape/enums';
@@ -85,6 +86,7 @@ describe('Clockwise Property Fix Validation', () => {
             toolId: 'test-tool',
             enabled: true,
             order: 1,
+            action: OperationAction.CUT,
             leadInConfig: baseLeadConfig,
             leadOutConfig: { type: LeadType.NONE, length: 0 },
             cutDirection: CutDirection.CLOCKWISE,

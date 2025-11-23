@@ -14,6 +14,7 @@ import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { LeadType } from '$lib/cam/lead/enums';
 import { Chain } from '$lib/geometry/chain/classes';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('adjustCutStartPointForLeadKerfOverlap', () => {
     // Helper to create a simple square chain
@@ -98,6 +99,7 @@ describe('adjustCutStartPointForLeadKerfOverlap', () => {
             name: 'Test Cut',
             enabled: true,
             order: 1,
+            action: OperationAction.CUT,
             operationId: 'test-op',
             chainId: cutChain.id,
             toolId,

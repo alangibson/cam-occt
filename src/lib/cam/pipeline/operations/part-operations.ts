@@ -167,6 +167,7 @@ export async function generateCutsForPartsWithOperation(
         toolId: tool.id,
         enabled: true,
         order: index + 1,
+        action: operation.action,
         cutDirection: shellCutDirection,
         executionClockwise: shellExecutionClockwise,
         leadInConfig: operation.leadInConfig,
@@ -221,7 +222,7 @@ export async function generateCutsForPartsWithOperation(
     if (shellChain) {
         const shellLeadResult = await calculateCutLeads(
             shellCut,
-            operation,
+            operation.toData(),
             shellChain,
             parts
         );
@@ -361,6 +362,7 @@ export async function generateCutsForPartsWithOperation(
                 toolId: tool?.id || null,
                 enabled: true,
                 order: cutOrder++,
+                action: operation.action,
                 cutDirection: holeCutDirection,
                 executionClockwise: holeExecutionClockwise,
                 leadInConfig: operation.leadInConfig,
@@ -415,7 +417,7 @@ export async function generateCutsForPartsWithOperation(
             if (holeChain) {
                 const holeLeadResult = await calculateCutLeads(
                     holeCut,
-                    operation,
+                    operation.toData(),
                     holeChain,
                     parts
                 );
@@ -559,6 +561,7 @@ export async function generateCutsForPartsWithOperation(
                 toolId: tool?.id || null,
                 enabled: true,
                 order: cutOrder++,
+                action: operation.action,
                 cutDirection: slotCutDirection,
                 executionClockwise: slotExecutionClockwise,
                 leadInConfig:
@@ -621,7 +624,7 @@ export async function generateCutsForPartsWithOperation(
             ) {
                 const slotLeadResult = await calculateCutLeads(
                     slotCut,
-                    operation,
+                    operation.toData(),
                     slotChain,
                     parts
                 );

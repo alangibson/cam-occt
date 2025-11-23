@@ -14,6 +14,7 @@ import { getShapePoints } from '$lib/geometry/shape/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { Shape } from '$lib/geometry/shape/classes';
 import { Chain } from '$lib/geometry/chain/classes';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 // Mock getShapePoints function
 vi.mock('$lib/geometry/shape/functions', async () => {
@@ -44,6 +45,7 @@ describe('cutToToolPath', () => {
         toolId: null,
         enabled: true,
         order: 0,
+        action: OperationAction.CUT,
         cutDirection: 'clockwise' as CutDirection,
         feedRate: 2000,
         pierceHeight: 4.0,
@@ -122,6 +124,7 @@ describe('cutToToolPath', () => {
                 leadOut: undefined,
                 isRapid: false,
                 parameters: {
+                    action: 'cut',
                     feedRate: 2000,
                     pierceHeight: 4.0,
                     pierceDelay: 1.0,
@@ -130,6 +133,7 @@ describe('cutToToolPath', () => {
                     // Lead lengths now come from cut configs, not parameters
                     isHole: false,
                     holeUnderspeedPercent: undefined,
+                    spotDuration: undefined,
                 },
                 originalShape: undefined,
                 executionClockwise: undefined,
@@ -224,6 +228,7 @@ describe('cutToToolPath', () => {
             );
 
             expect(result.parameters).toEqual({
+                action: 'cut',
                 feedRate: 1000,
                 pierceHeight: 1,
                 pierceDelay: 0.5,
@@ -232,6 +237,7 @@ describe('cutToToolPath', () => {
                 // Lead lengths now come from cut configs, not parameters
                 isHole: false,
                 holeUnderspeedPercent: undefined,
+                spotDuration: undefined,
             });
         });
     });
@@ -830,6 +836,7 @@ describe('cutsToToolPaths', () => {
         toolId: null,
         enabled: true,
         order: 0,
+        action: OperationAction.CUT,
         cutDirection: 'clockwise' as CutDirection,
         feedRate: 2000,
         pierceHeight: 4.0,
@@ -1135,6 +1142,76 @@ describe('cutsToToolPaths', () => {
             );
 
             expect(result).toEqual([]);
+        });
+    });
+
+    describe('action field preservation', () => {
+        it('should preserve SPOT action from cut to parameters', async () => {
+            const cut = createMockCut({
+                action: 'spot' as any, // OperationAction.SPOT
+                spotDuration: 100,
+            });
+            const shapes: Shape[] = [
+                createMockLine('line1', { x: 50, y: 50 }, { x: 50, y: 50 }),
+            ];
+
+            mockGetShapePoints.mockReturnValueOnce([{ x: 50, y: 50 }]);
+
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
+
+            expect(result.parameters?.action).toBe('spot');
+            expect(result.parameters?.spotDuration).toBe(100);
+        });
+
+        it('should preserve CUT action from cut to parameters', async () => {
+            const cut = createMockCut({
+                action: 'cut' as any, // OperationAction.CUT
+            });
+            const shapes: Shape[] = [
+                createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
+            ];
+
+            mockGetShapePoints.mockReturnValueOnce([
+                { x: 0, y: 0 },
+                { x: 10, y: 0 },
+            ]);
+
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
+
+            expect(result.parameters?.action).toBe('cut');
+        });
+
+        it('should handle cut with undefined action', async () => {
+            const cut = createMockCut({
+                action: undefined,
+            });
+            const shapes: Shape[] = [
+                createMockLine('line1', { x: 0, y: 0 }, { x: 10, y: 0 }),
+            ];
+
+            mockGetShapePoints.mockReturnValueOnce([
+                { x: 0, y: 0 },
+                { x: 10, y: 0 },
+            ]);
+
+            const result = await cutToToolPath(
+                cut,
+                shapes,
+                [],
+                CutterCompensation.NONE
+            );
+
+            expect(result.parameters?.action).toBeUndefined();
         });
     });
 });

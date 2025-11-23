@@ -4,3 +4,8 @@ export enum KerfCompensation {
     OUTER = 'outer',
     PART = 'part',
 }
+
+export enum OperationAction {
+    CUT = 'cut',
+    SPOT = 'spot',
+}

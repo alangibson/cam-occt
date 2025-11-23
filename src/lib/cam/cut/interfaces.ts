@@ -6,6 +6,7 @@ import type { OffsetDirection } from '$lib/cam/offset/types';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 import type { OffsetData } from '$lib/cam/offset/interfaces';
 import type { Chain } from '$lib/geometry/chain/classes';
+import type { OperationAction } from '$lib/cam/operation/enums';
 
 export interface CutData {
     id: string;
@@ -16,6 +17,7 @@ export interface CutData {
     operationId: string; // Reference to the operation that created this cut
     chainId: string; // Reference to the source chain
     toolId: string | null; // Reference to the tool used
+    action: OperationAction; // Operation action type (cut, spot)
 
     feedRate?: number; // Cutting speed
     pierceHeight?: number; // Height for pierce operation
@@ -48,6 +50,11 @@ export interface CutData {
     isHole?: boolean;
     // Velocity percentage for hole cutting (10-100)
     holeUnderspeedPercent?: number;
+
+    // Spot
+    //
+    // Duration in milliseconds for spot operations
+    spotDuration?: number;
 
     // Rapids
     //

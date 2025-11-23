@@ -5,7 +5,9 @@ import type { CutGenerationResult } from './interfaces';
 import type { Operation } from '$lib/cam/operation/classes.svelte';
 import { generateCutsForChainsWithOperation } from './chain-operations';
 import { generateCutsForPartsWithOperation } from './part-operations';
+import { generateSpotsForChainsWithOperation } from './spot-operations';
 import { generateAndAdjustKerf } from '$lib/cam/pipeline/kerfs/kerf-generation';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 /**
  * Generate cuts from an operation (pure function)
@@ -36,20 +38,35 @@ export async function createCutsFromOperation(
 
     // Generate cuts for all targets in parallel
     const cutPromises = operation.targets.map((target, index) => {
-        if (operation.targetType === 'chains') {
-            return generateCutsForChainsWithOperation(
-                operation,
-                index,
-                tolerance
-            );
-        } else if (operation.targetType === 'parts') {
-            return generateCutsForPartsWithOperation(
-                operation,
-                index,
-                tolerance
-            );
+        // Route based on operation action
+        if (operation.action === OperationAction.SPOT) {
+            // Spot operations only work with chains
+            if (operation.targetType === 'chains') {
+                return generateSpotsForChainsWithOperation(operation, index);
+            } else {
+                // Parts are disabled for spot operations in UI
+                return Promise.resolve({ cuts: [], warnings: [] });
+            }
+        } else if (operation.action === OperationAction.CUT) {
+            // Regular cut operations
+            if (operation.targetType === 'chains') {
+                return generateCutsForChainsWithOperation(
+                    operation,
+                    index,
+                    tolerance
+                );
+            } else if (operation.targetType === 'parts') {
+                return generateCutsForPartsWithOperation(
+                    operation,
+                    index,
+                    tolerance
+                );
+            } else {
+                // Return empty result for unknown target types
+                return Promise.resolve({ cuts: [], warnings: [] });
+            }
         } else {
-            // Return empty result for unknown target types
+            // Return empty result for unknown action types
             return Promise.resolve({ cuts: [], warnings: [] });
         }
     });
@@ -66,7 +83,12 @@ export async function createCutsFromOperation(
     );
 
     // Generate kerfs for all cuts (shells, holes, slots) with overlap detection
-    if (tool && tool.kerfWidth > 0) {
+    // Skip kerf generation for spot operations
+    if (
+        tool &&
+        tool.kerfWidth > 0 &&
+        operation.action === OperationAction.CUT
+    ) {
         // Get all chains from targets
         const allChains: ChainData[] = [];
         const allParts: Part[] = [];

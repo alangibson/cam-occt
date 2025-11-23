@@ -120,6 +120,14 @@ export class Cut {
         return this.#data.holeUnderspeedPercent;
     }
 
+    get action() {
+        return this.#data.action;
+    }
+
+    get spotDuration(): number | undefined {
+        return this.#data.spotDuration;
+    }
+
     get rapidIn(): Rapid | undefined {
         return this.#data.rapidIn;
     }

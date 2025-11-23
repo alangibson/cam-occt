@@ -2,6 +2,7 @@ import type { OperationData } from './interface';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { Part } from '$lib/cam/part/classes.svelte';
+import { DEFAULT_SPOT_DURATION } from '$lib/config/defaults/operation-defaults';
 
 export class Operation {
     private data: OperationData;
@@ -18,6 +19,10 @@ export class Operation {
 
     get name() {
         return this.data.name;
+    }
+
+    get action() {
+        return this.data.action;
     }
 
     get toolId() {
@@ -66,6 +71,10 @@ export class Operation {
 
     get optimizeStarts() {
         return this.data.optimizeStarts;
+    }
+
+    get spotDuration() {
+        return this.data.spotDuration ?? DEFAULT_SPOT_DURATION;
     }
 
     get tool(): Tool | null {

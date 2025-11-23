@@ -17,7 +17,7 @@ import { toolStore } from '$lib/stores/tools/store';
 import { kerfStore } from '$lib/stores/kerfs/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/cam/operation/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -94,6 +94,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         const firstOPart = oParts[0];
         operationsStore.addOperation({
             name: 'Cut First O',
+            action: OperationAction.CUT,
             toolId: toolId,
             targetType: 'parts',
             targetIds: [firstOPart.id],
@@ -214,6 +215,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         // Create first operation
         operationsStore.addOperation({
             name: 'Cut First O',
+            action: OperationAction.CUT,
             toolId: toolId,
             targetType: 'parts',
             targetIds: [oParts[0].id],
@@ -255,6 +257,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         // Create second operation
         operationsStore.addOperation({
             name: 'Cut Second O',
+            action: OperationAction.CUT,
             toolId: toolId,
             targetType: 'parts',
             targetIds: [oParts[1].id],
@@ -393,6 +396,7 @@ describe.skip('Spline Rendering Race Condition', () => {
         // Add both operations
         operationsStore.addOperation({
             name: 'Cut First O',
+            action: OperationAction.CUT,
             toolId: toolId,
             targetType: 'parts',
             targetIds: [oParts[0].id],
@@ -418,6 +422,7 @@ describe.skip('Spline Rendering Race Condition', () => {
 
         operationsStore.addOperation({
             name: 'Cut Second O',
+            action: OperationAction.CUT,
             toolId: toolId,
             targetType: 'parts',
             targetIds: [oParts[1].id],

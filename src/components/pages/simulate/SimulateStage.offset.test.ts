@@ -8,6 +8,7 @@ import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { Shape } from '$lib/geometry/shape/classes';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('SimulateStage offset cut detection', () => {
     let mockCut: CutData;
@@ -73,6 +74,7 @@ describe('SimulateStage offset cut detection', () => {
             toolId: 'tool1',
             enabled: true,
             order: 0,
+            action: OperationAction.CUT,
             cutDirection: CutDirection.COUNTERCLOCKWISE,
             feedRate: 1000,
             kerfCompensation: OffsetDirection.OUTSET,

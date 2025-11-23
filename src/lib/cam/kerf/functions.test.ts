@@ -11,6 +11,7 @@ import { LeadType } from '$lib/cam/lead/enums';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { Chain } from '$lib/geometry/chain/classes';
 import { Shape } from '$lib/geometry/shape/classes';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('cutToKerf', () => {
     // Helper to create a simple rectangular cut
@@ -64,6 +65,7 @@ describe('cutToKerf', () => {
             name: 'Rectangular Cut',
             enabled: true,
             order: 1,
+            action: OperationAction.CUT,
             operationId: crypto.randomUUID(),
             chainId: chain.id,
             toolId: crypto.randomUUID(),
@@ -101,6 +103,7 @@ describe('cutToKerf', () => {
             name: 'Circular Cut',
             enabled: true,
             order: 1,
+            action: OperationAction.CUT,
             operationId: crypto.randomUUID(),
             chainId: chain.id,
             toolId: crypto.randomUUID(),
@@ -451,6 +454,7 @@ describe('cutToKerf', () => {
             name: 'Operation 1 - Part 1 (Hole 8)',
             enabled: true,
             order: 0,
+            action: OperationAction.CUT,
             operationId: 'op-1',
             chainId: 'chain-14',
             toolId: 'tool-1',

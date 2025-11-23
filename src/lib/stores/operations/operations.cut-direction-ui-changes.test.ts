@@ -11,7 +11,7 @@ import { Unit } from '$lib/config/units/units';
 import type { ShapeData } from '$lib/geometry/shape/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { KerfCompensation } from '$lib/cam/operation/enums';
+import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import type { OperationData } from '$lib/cam/operation/interface';
 
@@ -162,6 +162,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         // Create initial operation with clockwise cut direction
         const operation: Omit<OperationData, 'id'> = {
             name: 'Test Operation',
+            action: OperationAction.CUT,
             targetType: 'chains',
             targetIds: [chainId],
             cutDirection: CutDirection.CLOCKWISE,
@@ -293,6 +294,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
         // Create initial operation with counterclockwise cut direction
         const operation: Omit<OperationData, 'id'> = {
             name: 'Test Operation',
+            action: OperationAction.CUT,
             targetType: 'chains',
             targetIds: [chainId],
             cutDirection: CutDirection.COUNTERCLOCKWISE,
@@ -398,6 +400,7 @@ describe('Operations Store - Cut Direction UI Changes Integration Test', () => {
 
         const operation: Omit<OperationData, 'id'> = {
             name: 'Test Operation',
+            action: OperationAction.CUT,
             targetType: 'chains',
             targetIds: [chainId],
             cutDirection: CutDirection.CLOCKWISE,

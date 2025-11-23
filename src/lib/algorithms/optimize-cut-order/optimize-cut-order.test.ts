@@ -4,11 +4,9 @@ import type { CutData } from '$lib/cam/cut/interfaces';
 import { Cut } from '$lib/cam/cut/classes.svelte';
 import type { ChainData } from '$lib/geometry/chain/interfaces';
 import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { PartData, PartVoid } from '$lib/cam/part/interfaces';
@@ -17,6 +15,7 @@ import { PartType } from '$lib/cam/part/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
+import { OperationAction } from '$lib/cam/operation/enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import * as pathOptUtils from '$lib/cam/cut/cut-optimization-utils';
@@ -54,6 +53,7 @@ describe('Optimize Cut Order', () => {
             toolId: 'tool-1',
             enabled: true,
             order: 1,
+            action: OperationAction.CUT,
             cutDirection: CutDirection.COUNTERCLOCKWISE,
             normal: { x: 1, y: 0 },
             normalConnectionPoint: { x: 0, y: 0 },
@@ -972,6 +972,7 @@ describe('Optimize Cut Order', () => {
                 toolId: 'tool-1',
                 enabled: true,
                 order: 1,
+                action: OperationAction.CUT,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
@@ -1034,6 +1035,7 @@ describe('Optimize Cut Order', () => {
                 toolId: 'tool-1',
                 enabled: true,
                 order: 1,
+                action: OperationAction.CUT,
                 cutDirection: CutDirection.COUNTERCLOCKWISE,
                 normal: { x: 1, y: 0 },
                 normalConnectionPoint: { x: 0, y: 0 },
@@ -1077,7 +1079,7 @@ describe('Optimize Cut Order', () => {
 
             // Create a shape for each type
             shapeTypes.forEach((type, index) => {
-                let geometry: Line | Arc | Circle | Polyline | Ellipse | Spline;
+                let geometry;
 
                 switch (type) {
                     case 'line':
@@ -1160,6 +1162,7 @@ describe('Optimize Cut Order', () => {
                         toolId: 'tool-1',
                         enabled: true,
                         order: index + 1,
+                        action: OperationAction.CUT,
                         cutDirection: CutDirection.COUNTERCLOCKWISE,
                         normal: { x: 1, y: 0 },
                         normalConnectionPoint: { x: 0, y: 0 },

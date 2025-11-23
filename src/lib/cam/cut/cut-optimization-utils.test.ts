@@ -15,6 +15,7 @@ import { OffsetDirection } from '$lib/cam/offset/types';
 import { Cut } from './classes.svelte';
 import { Chain } from '$lib/geometry/chain/classes';
 import { Shape } from '$lib/geometry/shape/classes';
+import { OperationAction } from '$lib/cam/operation/enums';
 
 // Test data setup
 const createTestCut = (overrides: Partial<CutData> = {}): CutData => ({
@@ -25,6 +26,7 @@ const createTestCut = (overrides: Partial<CutData> = {}): CutData => ({
     toolId: 'test-tool',
     enabled: true,
     order: 1,
+    action: OperationAction.CUT,
     leadInConfig: {
         type: LeadType.ARC,
         length: 5,

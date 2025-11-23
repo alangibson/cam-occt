@@ -27,7 +27,7 @@
     }
 </script>
 
-<AccordionPanel title="Simulate" isExpanded={true}>
+<AccordionPanel title="Machine" isExpanded={true}>
     <div class="simulate-content">
         <div class="field-group">
             <label for="rapid-rate" class="field-label">

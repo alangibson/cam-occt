@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { generateGCode } from './gcode-generator';
-import { CutterCompensation } from '$lib/cam/cut-generator/enums';
+import { CutterCompensation } from '$lib/cam/gcode/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { CutPath } from '$lib/cam/cut-generator/interfaces';
+import type { CutPath } from '$lib/cam/gcode/interfaces';
 import { Unit } from '$lib/config/units/units';
 
 describe('GCode Generator - THC and Paused Motion', () => {

@@ -10,6 +10,7 @@ import { drawingStore } from '$lib/stores/drawing/store';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
+import { OperationAction } from '$lib/cam/operation/enums';
 import { GeometryType } from '$lib/geometry/shape/enums';
 import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
@@ -53,6 +54,7 @@ describe('Operations Auto-Selection Feature', () => {
         const partHighlighted = get(partStore).highlightedPartId;
         operationsStore.addOperation({
             name: 'Test Operation',
+            action: OperationAction.CUT,
             toolId: '1',
             targetType: 'parts',
             targetIds: partHighlighted ? [partHighlighted] : [],
@@ -94,6 +96,7 @@ describe('Operations Auto-Selection Feature', () => {
         // Simulate operation creation with selected chain
         operationsStore.addOperation({
             name: 'Test Operation',
+            action: OperationAction.CUT,
             toolId: '1',
             targetType: 'chains',
             targetIds: (() => {
@@ -142,6 +145,7 @@ describe('Operations Auto-Selection Feature', () => {
 
         operationsStore.addOperation({
             name: 'Test Operation',
+            action: OperationAction.CUT,
             toolId: '1',
             targetType: partHighlighted ? 'parts' : 'chains',
             targetIds: partHighlighted
@@ -186,6 +190,7 @@ describe('Operations Auto-Selection Feature', () => {
         // Simulate operation creation with nothing selected and no parts/chains
         operationsStore.addOperation({
             name: 'Test Operation',
+            action: OperationAction.CUT,
             toolId: '1',
             targetType: 'parts', // defaults to parts
             targetIds: [], // empty array
