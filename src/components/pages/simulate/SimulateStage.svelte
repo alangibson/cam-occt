@@ -338,7 +338,8 @@
             if (cut.action === OperationAction.SPOT) {
                 // For spot operations, use spotDuration directly (convert ms to seconds)
                 // Use DEFAULT_SPOT_DURATION if not specified or 0, matching Operation class behavior
-                const spotDurationMs = cut.spotDuration || DEFAULT_SPOT_DURATION;
+                const spotDurationMs =
+                    cut.spotDuration || DEFAULT_SPOT_DURATION;
                 cutTime = spotDurationMs / 1000;
                 cutDistanceInDisplayUnits = 0; // Spots don't contribute to cut distance
                 cutDistance = 0; // Spots have no distance
@@ -902,7 +903,8 @@
         } else if (currentStep.type === 'cut' && currentStep.cut) {
             // Check if this is a spot operation
             if (currentStep.cut.action === OperationAction.SPOT) {
-                const spotDuration = currentStep.cut.spotDuration || DEFAULT_SPOT_DURATION;
+                const spotDuration =
+                    currentStep.cut.spotDuration || DEFAULT_SPOT_DURATION;
                 currentOperation = `Spot (${spotDuration}ms)`;
             } else {
                 currentOperation = `Cutting (${getFeedRateForCut(currentStep.cut)} ${displayUnit}/min)`;

@@ -17,7 +17,6 @@
     } from '$lib/algorithms/optimize-cut-order/optimize-cut-order';
     import DrawingCanvasContainer from '$components/layout/DrawingCanvasContainer.svelte';
     import ShowPanel from '$components/panels/ShowPanel.svelte';
-    import { applyAutoPreprocessing } from '$lib/preprocessing/auto-preprocess';
     import { settingsStore } from '$lib/stores/settings/store';
 
     // Props from WorkflowContainer for shared canvas
@@ -56,36 +55,9 @@
         $settingsStore.settings.optimizationSettings
     );
 
-    // Track preprocessing state
-    let hasRunPreprocessing = false;
-
-    // Run preprocessing when stage mounts (only if chains/parts don't exist)
+    // Apply zoom to fit when stage mounts
     onMount(async () => {
         const settings = $settingsStore.settings;
-        const currentChains = chains;
-        const currentParts = drawing
-            ? Object.values(drawing.layers).flatMap((layer) => layer.parts)
-            : [];
-
-        // Only run preprocessing if we don't have chains or parts yet
-        // and preprocessing steps are enabled
-        if (
-            (currentChains.length === 0 || currentParts.length === 0) &&
-            settings.enabledPreprocessingSteps.length > 0 &&
-            !hasRunPreprocessing
-        ) {
-            console.log(
-                'Program stage: Running auto-preprocessing to detect chains/parts...'
-            );
-            hasRunPreprocessing = true;
-
-            try {
-                await applyAutoPreprocessing();
-                console.log('Auto-preprocessing completed successfully');
-            } catch (error) {
-                console.error('Error during auto-preprocessing:', error);
-            }
-        }
 
         // Apply zoom to fit if enabled in settings
         if (settings.optimizationSettings.zoomToFit) {

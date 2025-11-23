@@ -13,6 +13,7 @@
     } from '$lib/config/settings/enums';
     import { Unit } from '$lib/config/units/units';
     import type { DrawingData } from '$lib/cam/drawing/interfaces';
+    import { applyAutoPreprocessing } from '$lib/preprocessing/auto-preprocess';
 
     // Get current settings
     let settings = $derived($settingsStore.settings);
@@ -66,7 +67,7 @@
         console.log('[ImportStage] handleFileImported completed');
     }
 
-    function handleImportAdvance() {
+    async function handleImportAdvance() {
         console.log('[ImportStage] handleImportAdvance started');
         // Ensure units are never 'none' beyond import stage
         const drawing = $drawingStore.drawing;
@@ -81,6 +82,11 @@
             drawing.units = targetUnit;
             drawingStore.setDrawing(drawing, drawing.fileName);
         }
+
+        // Apply all enabled preprocessing steps before advancing
+        console.log('[ImportStage] Applying auto-preprocessing...');
+        await applyAutoPreprocessing();
+        console.log('[ImportStage] Auto-preprocessing complete');
 
         // Advance to next enabled stage when user clicks "Import >"
         const nextStage = workflowStore.getNextStage();

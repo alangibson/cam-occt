@@ -12,7 +12,10 @@ import { DEFAULT_SPOT_DURATION } from '$lib/config/defaults/operation-defaults';
  * Recreate the buildAnimationSteps logic to test spot duration handling
  * This mirrors the core timing logic from SimulateStage.svelte
  */
-function calculateCutTime(cut: CutData, getCutDistance: (cut: CutData) => number): number {
+function calculateCutTime(
+    cut: CutData,
+    getCutDistance: (cut: CutData) => number
+): number {
     // Check if this is a spot operation
     if (cut.action === OperationAction.SPOT) {
         // For spot operations, use spotDuration directly (convert ms to seconds)
@@ -177,7 +180,8 @@ describe('SimulateStage Spot Duration', () => {
             };
 
             // Simulate the distance calculation
-            const cutDistance = spotCut.action === OperationAction.SPOT ? 0 : 100;
+            const cutDistance =
+                spotCut.action === OperationAction.SPOT ? 0 : 100;
 
             expect(cutDistance).toBe(0);
         });
