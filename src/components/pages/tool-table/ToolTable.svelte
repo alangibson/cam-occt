@@ -1,35 +1,15 @@
 <script lang="ts">
     import type { Tool } from '$lib/cam/tool/interfaces';
     import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
-    import { onMount } from 'svelte';
 
     let tools: Tool[] = [];
     let draggedTool: Tool | null = null;
     let dragOverIndex: number | null = null;
 
-    // Load tools from localStorage on mount
-    onMount(() => {
-        const savedTools = localStorage.getItem('metalheadcam-tools');
-        if (savedTools) {
-            try {
-                const parsedTools = JSON.parse(savedTools);
-                toolStore.reorderTools(parsedTools);
-            } catch (e) {
-                console.error('Failed to load tools from localStorage:', e);
-            }
-        } else {
-            // Add a default tool only if no saved tools
-            addNewTool();
-        }
-    });
-
-    // Subscribe to tool store and save to localStorage
+    // Subscribe to tool store
+    // Note: Tool persistence is handled by the main storage system in store.ts
     toolStore.subscribe((value) => {
         tools = value;
-        // Save to localStorage whenever tools change
-        if (typeof window !== 'undefined' && value.length > 0) {
-            localStorage.setItem('metalheadcam-tools', JSON.stringify(value));
-        }
     });
 
     function addNewTool() {

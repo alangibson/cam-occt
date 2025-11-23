@@ -22,6 +22,8 @@
     import { planStore } from '$lib/stores/plan/store';
     import { cutStore } from '$lib/stores/cuts/store';
     import { rapidStore } from '$lib/stores/rapids/store';
+    import { toolStore, createDefaultTool } from '$lib/stores/tools/store';
+    import { get } from 'svelte/store';
 
     let cleanupAutoSave: (() => void) | null = null;
     let isMenuOpen = false;
@@ -65,6 +67,13 @@
         const restored = restoreApplicationState();
         if (restored) {
             console.log('Application state restored from previous session');
+        }
+
+        // Ensure at least one tool exists (required for operations)
+        const tools = get(toolStore);
+        if (tools.length === 0) {
+            toolStore.addTool(createDefaultTool(1));
+            console.log('Created default tool - no tools found in storage');
         }
 
         // Setup auto-save for all state changes

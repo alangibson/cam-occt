@@ -43,8 +43,6 @@ describe('ToolTable Component - Function Coverage', () => {
     beforeEach(() => {
         vi.clearAllMocks();
         toolStore.reset();
-        // Prevent auto tool creation by default
-        localStorageMock.getItem.mockReturnValue('[]');
     });
 
     afterEach(() => {
@@ -53,12 +51,13 @@ describe('ToolTable Component - Function Coverage', () => {
 
     describe('addNewTool function', () => {
         it('should create first tool with number 1', async () => {
-            // Enable auto tool creation for this test
-            localStorageMock.getItem.mockReturnValue(null);
+            const { container } = render(ToolTable);
 
-            render(ToolTable);
+            // Click add button to create first tool
+            const addButton = container.querySelector('.btn-primary');
+            expect(addButton).toBeTruthy();
+            await fireEvent.click(addButton!);
 
-            // Should automatically add a tool on mount when no saved tools
             const tools = get(toolStore);
             expect(tools.length).toBe(1);
             expect(tools[0].toolNumber).toBe(1);
@@ -66,22 +65,18 @@ describe('ToolTable Component - Function Coverage', () => {
         });
 
         it('should increment tool number correctly', async () => {
-            // Component automatically adds Tool 1 on mount, then we add another manually
-            localStorageMock.getItem.mockReturnValue(null);
-
             const { container } = render(ToolTable);
 
-            // Should have 1 tool from auto-creation
+            // Click add button twice to create two tools
+            const addButton = container.querySelector('.btn-primary');
+            expect(addButton).toBeTruthy();
+
+            await fireEvent.click(addButton!);
             let tools = get(toolStore);
             expect(tools.length).toBe(1);
+            expect(tools[0].toolNumber).toBe(1);
 
-            const addButton =
-                container.querySelector('.btn-primary') ||
-                container.querySelector('button');
-            if (addButton) {
-                await fireEvent.click(addButton);
-            }
-
+            await fireEvent.click(addButton!);
             tools = get(toolStore);
             expect(tools.length).toBe(2);
             expect(tools[1].toolNumber).toBe(2);
@@ -115,43 +110,67 @@ describe('ToolTable Component - Function Coverage', () => {
         });
 
         it('should handle max tool number calculation with gaps', async () => {
-            // Use JSON with existing tools to prevent auto-creation of Tool 1
-            const existingTools = JSON.stringify([
+            // Manually add tools with gaps in tool numbers
+            toolStore.reorderTools([
                 {
                     toolNumber: 5,
                     toolName: 'Tool 5',
                     feedRate: 100,
+                    feedRateMetric: 100,
+                    feedRateImperial: 3.937,
                     pierceHeight: 3.8,
+                    pierceHeightMetric: 3.8,
+                    pierceHeightImperial: 0.15,
+                    cutHeight: 3.8,
+                    cutHeightMetric: 3.8,
+                    cutHeightImperial: 0.15,
                     pierceDelay: 0.5,
                     arcVoltage: 120,
                     kerfWidth: 1.5,
+                    kerfWidthMetric: 1.5,
+                    kerfWidthImperial: 0.06,
                     thcEnable: true,
                     gasPressure: 4.5,
                     pauseAtEnd: 0,
                     puddleJumpHeight: 50,
+                    puddleJumpHeightMetric: 50,
+                    puddleJumpHeightImperial: 1.97,
                     puddleJumpDelay: 0,
                     plungeRate: 500,
+                    plungeRateMetric: 500,
+                    plungeRateImperial: 19.685,
                     id: 'tool-5',
                 },
                 {
                     toolNumber: 10,
                     toolName: 'Tool 10',
                     feedRate: 100,
+                    feedRateMetric: 100,
+                    feedRateImperial: 3.937,
                     pierceHeight: 3.8,
+                    pierceHeightMetric: 3.8,
+                    pierceHeightImperial: 0.15,
+                    cutHeight: 3.8,
+                    cutHeightMetric: 3.8,
+                    cutHeightImperial: 0.15,
                     pierceDelay: 0.5,
                     arcVoltage: 120,
                     kerfWidth: 1.5,
+                    kerfWidthMetric: 1.5,
+                    kerfWidthImperial: 0.06,
                     thcEnable: true,
                     gasPressure: 4.5,
                     pauseAtEnd: 0,
                     puddleJumpHeight: 50,
+                    puddleJumpHeightMetric: 50,
+                    puddleJumpHeightImperial: 1.97,
                     puddleJumpDelay: 0,
                     plungeRate: 500,
+                    plungeRateMetric: 500,
+                    plungeRateImperial: 19.685,
                     id: 'tool-10',
                 },
             ]);
-
-            localStorageMock.getItem.mockReturnValue(existingTools);
 
             const { container } = render(ToolTable);
 
@@ -169,78 +188,43 @@ describe('ToolTable Component - Function Coverage', () => {
         });
     });
 
-    describe('localStorage integration', () => {
-        it('should load tools from localStorage on mount', () => {
-            const savedTools = [
-                {
-                    id: 'tool-1',
-                    toolNumber: 1,
-                    toolName: 'Saved Tool',
-                    feedRate: 200,
-                    pierceHeight: 4.0,
-                    pierceDelay: 0.6,
-                    arcVoltage: 130,
-                    kerfWidth: 2.0,
-                    thcEnable: false,
-                    gasPressure: 5.0,
-                    pauseAtEnd: 1,
-                    puddleJumpHeight: 60,
-                    puddleJumpDelay: 0.5,
-                    plungeRate: 600,
-                },
-            ];
-
-            localStorageMock.getItem.mockReturnValue(
-                JSON.stringify(savedTools)
-            );
-
-            render(ToolTable);
-
-            expect(localStorageMock.getItem).toHaveBeenCalledWith(
-                'metalheadcam-tools'
-            );
-        });
-
-        it('should handle invalid localStorage data gracefully', () => {
-            localStorageMock.getItem.mockReturnValue('invalid json');
-
-            // Should render without throwing
-            expect(() => render(ToolTable)).not.toThrow();
-        });
-
-        it('should add default tool when no localStorage data', () => {
-            localStorageMock.getItem.mockReturnValue(null);
-
-            render(ToolTable);
-
-            const tools = get(toolStore);
-            expect(tools.length).toBe(1);
-            expect(tools[0].toolName).toBe('Tool 1');
-        });
-    });
+    // localStorage integration tests removed - tool persistence is now handled
+    // by the main application storage system in src/lib/stores/storage/store.ts
 
     describe('tool operations', () => {
         beforeEach(() => {
-            // Use JSON with existing tool to prevent auto-creation
-            const existingTools = JSON.stringify([
+            // Add test tool directly to store
+            toolStore.reorderTools([
                 {
                     toolNumber: 1,
                     toolName: 'Test Tool',
                     feedRate: 100,
+                    feedRateMetric: 100,
+                    feedRateImperial: 3.937,
                     pierceHeight: 3.8,
+                    pierceHeightMetric: 3.8,
+                    pierceHeightImperial: 0.15,
+                    cutHeight: 3.8,
+                    cutHeightMetric: 3.8,
+                    cutHeightImperial: 0.15,
                     pierceDelay: 0.5,
                     arcVoltage: 120,
                     kerfWidth: 1.5,
+                    kerfWidthMetric: 1.5,
+                    kerfWidthImperial: 0.06,
                     thcEnable: true,
                     gasPressure: 4.5,
                     pauseAtEnd: 0,
                     puddleJumpHeight: 50,
+                    puddleJumpHeightMetric: 50,
+                    puddleJumpHeightImperial: 1.97,
                     puddleJumpDelay: 0,
                     plungeRate: 500,
+                    plungeRateMetric: 500,
+                    plungeRateImperial: 19.685,
                     id: 'test-tool-1',
                 },
             ]);
-            localStorageMock.getItem.mockReturnValue(existingTools);
         });
 
         it('should delete tool', async () => {
@@ -504,42 +488,67 @@ describe('ToolTable Component - Function Coverage', () => {
 
     describe('drag and drop functionality', () => {
         beforeEach(() => {
-            // Use JSON with existing tools to prevent auto-creation
-            const existingTools = JSON.stringify([
+            // Add test tools directly to store
+            toolStore.reorderTools([
                 {
                     toolNumber: 1,
                     toolName: 'Tool 1',
                     feedRate: 100,
+                    feedRateMetric: 100,
+                    feedRateImperial: 3.937,
                     pierceHeight: 3.8,
+                    pierceHeightMetric: 3.8,
+                    pierceHeightImperial: 0.15,
+                    cutHeight: 3.8,
+                    cutHeightMetric: 3.8,
+                    cutHeightImperial: 0.15,
                     pierceDelay: 0.5,
                     arcVoltage: 120,
                     kerfWidth: 1.5,
+                    kerfWidthMetric: 1.5,
+                    kerfWidthImperial: 0.06,
                     thcEnable: true,
                     gasPressure: 4.5,
                     pauseAtEnd: 0,
                     puddleJumpHeight: 50,
+                    puddleJumpHeightMetric: 50,
+                    puddleJumpHeightImperial: 1.97,
                     puddleJumpDelay: 0,
                     plungeRate: 500,
+                    plungeRateMetric: 500,
+                    plungeRateImperial: 19.685,
                     id: 'tool-1',
                 },
                 {
                     toolNumber: 2,
                     toolName: 'Tool 2',
                     feedRate: 200,
+                    feedRateMetric: 200,
+                    feedRateImperial: 7.874,
                     pierceHeight: 4.0,
+                    pierceHeightMetric: 4.0,
+                    pierceHeightImperial: 0.157,
+                    cutHeight: 4.0,
+                    cutHeightMetric: 4.0,
+                    cutHeightImperial: 0.157,
                     pierceDelay: 0.6,
                     arcVoltage: 130,
                     kerfWidth: 2.0,
+                    kerfWidthMetric: 2.0,
+                    kerfWidthImperial: 0.079,
                     thcEnable: false,
                     gasPressure: 5.0,
                     pauseAtEnd: 1,
                     puddleJumpHeight: 60,
+                    puddleJumpHeightMetric: 60,
+                    puddleJumpHeightImperial: 2.362,
                     puddleJumpDelay: 0.5,
                     plungeRate: 600,
+                    plungeRateMetric: 600,
+                    plungeRateImperial: 23.622,
                     id: 'tool-2',
                 },
             ]);
-            localStorageMock.getItem.mockReturnValue(existingTools);
         });
 
         it('should handle drag start', async () => {
@@ -613,8 +622,35 @@ describe('ToolTable Component - Function Coverage', () => {
 
     describe('unit display functionality', () => {
         it('should show mm units correctly', () => {
-            // Enable auto tool creation for this test so we have at least one tool row
-            localStorageMock.getItem.mockReturnValue(null);
+            // Add a test tool so we have at least one tool row
+            toolStore.addTool({
+                toolNumber: 1,
+                toolName: 'Test Tool',
+                feedRate: 100,
+                feedRateMetric: 100,
+                feedRateImperial: 3.937,
+                pierceHeight: 3.8,
+                pierceHeightMetric: 3.8,
+                pierceHeightImperial: 0.15,
+                cutHeight: 3.8,
+                cutHeightMetric: 3.8,
+                cutHeightImperial: 0.15,
+                pierceDelay: 0.5,
+                arcVoltage: 120,
+                kerfWidth: 1.5,
+                kerfWidthMetric: 1.5,
+                kerfWidthImperial: 0.06,
+                thcEnable: true,
+                gasPressure: 4.5,
+                pauseAtEnd: 0,
+                puddleJumpHeight: 50,
+                puddleJumpHeightMetric: 50,
+                puddleJumpHeightImperial: 1.97,
+                puddleJumpDelay: 0,
+                plungeRate: 500,
+                plungeRateMetric: 500,
+                plungeRateImperial: 19.685,
+            });
 
             const { container } = render(ToolTable);
 
