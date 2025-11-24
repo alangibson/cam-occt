@@ -1,4 +1,4 @@
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 
 export interface LayerData {
     shapes: ShapeData[];

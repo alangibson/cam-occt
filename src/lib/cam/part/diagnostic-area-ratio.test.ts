@@ -1,10 +1,10 @@
 import { describe, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { isChainClosed, tessellateChain } from '$lib/geometry/chain/functions';
-import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
+import { isChainClosed, tessellateChain } from '$lib/cam/chain/functions';
+import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 import { getClipper2 } from '$lib/cam/offset/clipper-init';
 import {

@@ -1,4 +1,4 @@
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import type { PartData, PartDetectionWarning } from '$lib/cam/part/interfaces';
 import type { OperationData } from '$lib/cam/operation/interface';

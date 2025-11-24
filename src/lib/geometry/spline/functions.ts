@@ -11,7 +11,7 @@ import {
     EPSILON,
     STANDARD_TESSELLATION_COUNT,
 } from '$lib/geometry/math/constants';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import {
     DEFAULT_CONFIG,

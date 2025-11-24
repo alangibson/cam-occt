@@ -12,7 +12,7 @@ import { PreprocessingStep } from '$lib/config/settings/enums';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { joinColinearLines } from '$lib/algorithms/join-colinear-lines';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { optimizeStartPoints } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
 

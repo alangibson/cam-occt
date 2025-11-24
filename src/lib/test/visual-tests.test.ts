@@ -3,12 +3,12 @@ import { mkdirSync } from 'fs';
 import { join } from 'path';
 import { beforeAll, describe, it } from 'vitest';
 import { offsetChain } from '$lib/cam/offset/index';
-import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
+import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import type { OffsetChain } from '$lib/cam/offset/types';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { generateChainOffsetSVG } from './visual-tests';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { GeometryType } from '$lib/geometry/enums';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 
 describe('visual-tests', () => {
     // Ensure output directory exists

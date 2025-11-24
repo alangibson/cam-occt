@@ -2,8 +2,8 @@ import { describe, expect, it, vi } from 'vitest';
 import { optimizeCutOrder } from './optimize-cut-order';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import { Cut } from '$lib/cam/cut/classes.svelte';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -12,15 +12,15 @@ import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { PartData, PartVoid } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OperationAction } from '$lib/cam/operation/enums';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import * as pathOptUtils from '$lib/cam/cut/cut-optimization-utils';
-import { Chain } from '$lib/geometry/chain/classes';
-import { Shape } from '$lib/geometry/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
+import { Shape } from '$lib/cam/shape/classes';
 
 // Helper to create a Chain map from ChainData entries
 function createChainMap(entries: [string, ChainData][]): Map<string, Chain> {

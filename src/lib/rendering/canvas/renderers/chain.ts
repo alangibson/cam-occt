@@ -18,19 +18,16 @@ import {
 import { getChainById } from '$lib/stores/chains/functions';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { Shape } from '$lib/geometry/shape/classes';
-import {
-    getChainTangent,
-    tessellateChain,
-} from '$lib/geometry/chain/functions';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
+import { getChainTangent, tessellateChain } from '$lib/cam/chain/functions';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { PartVoid, PartSlot } from '$lib/cam/part/interfaces';
 import {
     getShapeStartPoint,
     getShapeEndPoint,
     getShapeNormal,
-} from '$lib/geometry/shape/functions';
+} from '$lib/cam/shape/functions';
 import {
     drawNormalLine,
     drawTessellationPoint,

@@ -1,13 +1,13 @@
 import { describe, it } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import {
     isChainClosed,
     isChainContainedInChainClipper2,
-} from '$lib/geometry/chain/functions';
-import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
+} from '$lib/cam/chain/functions';
+import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 
 describe('Diagnostic - Clipper2 Containment', () => {
     it('test Clipper2 containment for small circle chains in Tractor Light Mount', async () => {

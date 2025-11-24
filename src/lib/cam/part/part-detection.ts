@@ -9,19 +9,16 @@
  *
  */
 
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,
 } from '$lib/cam/part/geometric-containment';
-import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
-import {
-    getShapeEndPoint,
-    getShapeStartPoint,
-} from '$lib/geometry/shape/functions';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
-import { isChainClosed } from '$lib/geometry/chain/functions';
+import { normalizeChain } from '$lib/cam/chain/chain-normalization';
+import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
+import { isChainClosed } from '$lib/cam/chain/functions';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type {
@@ -32,7 +29,7 @@ import type {
 } from './interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 import { PartType } from './enums';
-import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
+import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
 import { Part } from './classes.svelte';
 
 /**

@@ -12,9 +12,9 @@ import { describe, it, expect } from 'vitest';
 import { calculateCutNormal } from './calculate-cut-normal';
 import { CutDirection, NormalSide } from './enums';
 import type { PartData } from '$lib/cam/part/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { isPointInsidePart } from '$lib/cam/chain/point-in-chain';
+import { GeometryType } from '$lib/geometry/enums';
 import { PartType } from '$lib/cam/part/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 

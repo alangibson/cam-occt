@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { optimizeStartPoints } from './optimize-start-points';
-import { isChainClosed } from '$lib/geometry/chain/functions';
+import { isChainClosed } from '$lib/cam/chain/functions';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import { DEFAULT_START_POINT_OPTIMIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
 
 describe('optimizeStartPoints - closed polylines', () => {

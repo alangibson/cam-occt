@@ -6,7 +6,7 @@ import { drawingStore } from '$lib/stores/drawing/store';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import { Unit } from '$lib/config/units/units';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 
 // Mock window.prompt
 const mockPrompt = vi.fn();

@@ -5,7 +5,7 @@ import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { readFileSync } from 'fs';
 import path from 'path';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 
 describe('Polyline Decomposition', () => {
     it('should decompose polylines with bulges into lines and arcs', async () => {

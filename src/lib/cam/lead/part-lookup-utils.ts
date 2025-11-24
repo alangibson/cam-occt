@@ -1,5 +1,5 @@
 import type { PartData } from '$lib/cam/part/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 
 /**
  * Determine if a chain (original or offset) is a hole within the given part.

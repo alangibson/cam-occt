@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 
 function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
     const layerMap = new Map<string, ShapeData[]>();

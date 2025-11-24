@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
-import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
+import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 
 describe('Tractor Seat Mount Normalized Chains Part Detection Bug', () => {
     it('should detect 1 part with 12 holes after chain normalization', async () => {

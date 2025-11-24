@@ -5,15 +5,12 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { sampleEllipse } from '$lib/geometry/ellipse/functions';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { EPSILON } from '$lib/geometry/math/constants';
-import {
-    getShapeEndPoint,
-    getShapeStartPoint,
-} from '$lib/geometry/shape/functions';
+import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
 import { calculateArcPoint, isArc } from '$lib/geometry/arc/functions';
 import { isLine } from '$lib/geometry/line/functions';
 

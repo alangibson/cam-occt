@@ -4,7 +4,7 @@ import { get } from 'svelte/store';
 import Footer from './Footer.svelte';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 

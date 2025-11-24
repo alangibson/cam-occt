@@ -1,4 +1,4 @@
-import type { Shape } from '$lib/geometry/shape/classes';
+import type { Shape } from '$lib/cam/shape/classes';
 import type { OffsetDirection } from '$lib/cam/offset/types';
 
 export interface OffsetData {

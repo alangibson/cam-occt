@@ -14,7 +14,7 @@ import {
     tessellateArc,
 } from './functions';
 import type { Arc } from './interfaces';
-import type { Geometry } from '$lib/geometry/shape/types';
+import type { Geometry } from '$lib/geometry/types';
 import type { Line } from '$lib/geometry/line/interfaces';
 
 describe('getArcStartPoint', () => {

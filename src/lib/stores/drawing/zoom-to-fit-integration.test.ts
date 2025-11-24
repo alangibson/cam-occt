@@ -4,7 +4,7 @@ import { drawingStore } from './store';
 import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 
 describe('Drawing Store Zoom-to-Fit Integration', () => {
     beforeEach(() => {

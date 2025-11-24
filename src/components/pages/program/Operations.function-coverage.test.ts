@@ -12,8 +12,8 @@ import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
 
 // Mock DragEvent for jsdom
 interface MockDragEventInit extends EventInit {

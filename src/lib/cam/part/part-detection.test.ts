@@ -1,7 +1,7 @@
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { describe, expect, it } from 'vitest';
 import { generateId } from '$lib/domain/id';
-import type { ChainData as ShapeChain } from '$lib/geometry/chain/interfaces';
+import type { ChainData as ShapeChain } from '$lib/cam/chain/interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
 
 describe('Part Detection Algorithm', () => {

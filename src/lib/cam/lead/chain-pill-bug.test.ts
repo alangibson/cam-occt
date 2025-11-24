@@ -1,19 +1,19 @@
 import { describe, expect, it, beforeAll } from 'vitest';
 import { readFileSync } from 'fs';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { scaleShape } from '$lib/geometry/shape/functions';
+import { scaleShape } from '$lib/cam/shape/functions';
 import { calculateDynamicTolerance } from '$lib/geometry/bounding-box/functions';
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
+import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { Unit, getPhysicalScaleFactor } from '$lib/config/units/units';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { calculateLeads } from './lead-calculation';
-import { Chain } from '$lib/geometry/chain/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import { isArc } from '$lib/geometry/arc/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 

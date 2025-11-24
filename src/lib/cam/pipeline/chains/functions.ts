@@ -5,16 +5,13 @@
  * Handles chain direction analysis and cut chain creation with proper ordering.
  */
 
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { Shape } from '$lib/geometry/shape/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
-import {
-    getChainCutDirection,
-    reverseChain,
-} from '$lib/geometry/chain/functions';
+import { getChainCutDirection, reverseChain } from '$lib/cam/chain/functions';
 import type { CutChainResult } from './interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import { Chain } from '$lib/cam/chain/classes';
 
 /**
  * Helper function to create cut chain with deep cloned shapes ordered for execution.

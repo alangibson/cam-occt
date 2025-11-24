@@ -11,16 +11,16 @@ import type { Kerf } from './interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { OffsetChain } from '$lib/cam/offset/types';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import type { Part } from '$lib/cam/part/classes.svelte';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import {
     isChainClosed,
     tessellateChainToShapes,
     sampleChainAtDistanceInterval,
     getChainPointAt,
-} from '$lib/geometry/chain/functions';
+} from '$lib/cam/chain/functions';
 import {
     offsetPaths,
     type OffsetOptions,
@@ -33,8 +33,8 @@ import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import { getClipper2 } from '$lib/cam/offset/clipper-init';
 import { getToolValue } from '$lib/cam/tool/tool-utils';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
-import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
-import { getShapeLength } from '$lib/geometry/shape/functions';
+import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
+import { getShapeLength } from '$lib/cam/shape/functions';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { findPartContainingChain } from '$lib/cam/part/chain-part-interactions';

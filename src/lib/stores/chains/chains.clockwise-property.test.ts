@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
 
 describe('Layer - Clockwise Property Detection', () => {
     it('should automatically detect clockwise property for clockwise chain', () => {

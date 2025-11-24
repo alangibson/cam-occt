@@ -7,7 +7,7 @@ import {
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import { getBoundingBoxForArc } from '$lib/geometry/bounding-box/functions';
-import { getShapePoints } from '$lib/geometry/shape/functions';
+import { getShapePoints } from '$lib/cam/shape/functions';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -16,7 +16,7 @@ import type {
     PolylineVertex,
 } from '$lib/geometry/polyline/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { EPSILON } from '$lib/geometry/math/constants';
 
 // Helper function to calculate bounds for translated shapes

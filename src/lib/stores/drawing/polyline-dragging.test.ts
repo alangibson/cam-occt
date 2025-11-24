@@ -8,7 +8,7 @@ import {
     polylineToVertices,
 } from '$lib/geometry/polyline/functions';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
 

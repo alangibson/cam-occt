@@ -6,7 +6,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { POLYGON_POINTS_MIN } from '$lib/geometry/chain/constants';
+import { POLYGON_POINTS_MIN } from '$lib/cam/chain/constants';
 import { doLineSegmentsIntersect } from '$lib/geometry/line/functions';
 import { calculateDistanceBetweenPoints } from '$lib/geometry/math/functions';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';

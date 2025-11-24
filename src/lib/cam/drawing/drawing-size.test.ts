@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { calculateDrawingSize } from './drawing-size';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 
 describe('calculateDrawingSize', () => {
     it('returns null for empty drawing', () => {

@@ -6,7 +6,7 @@
  */
 
 import type { PartData, PartVoid, PartSlot } from './interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { PartType } from './enums';
 

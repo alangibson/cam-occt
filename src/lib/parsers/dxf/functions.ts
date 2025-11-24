@@ -2,11 +2,11 @@ import { parseString } from 'dxf';
 import type { DXFBlock, DXFEntity, DXFParsed } from 'dxf';
 import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { PolylineVertex } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { generateId } from '$lib/domain/id';
 import { generateSegments } from '$lib/geometry/polyline/functions';
 import { normalizeSplineWeights } from '$lib/geometry/spline/functions';
@@ -15,7 +15,7 @@ import {
     HALF_CIRCLE_DEG,
 } from '$lib/geometry/circle/constants';
 import { MIN_VERTICES_FOR_LINE } from '$lib/geometry/line/constants';
-import { transformShape, scaleShape } from '$lib/geometry/shape/functions';
+import { transformShape, scaleShape } from '$lib/cam/shape/functions';
 import {
     DEFAULT_ELLIPSE_START_PARAM,
     DXF_INSUNITS_INCHES,

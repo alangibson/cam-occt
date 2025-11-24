@@ -20,13 +20,10 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { CutDirection, NormalSide } from './enums';
-import {
-    getChainStartPoint,
-    getChainTangent,
-} from '$lib/geometry/chain/functions';
+import { getChainStartPoint, getChainTangent } from '$lib/cam/chain/functions';
 import { isChainShellInPart } from '$lib/cam/lead/part-lookup-utils';
 import { OffsetDirection } from '$lib/cam/offset/types';
 

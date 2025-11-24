@@ -2,13 +2,13 @@
     import { chainStore } from '$lib/stores/chains/store';
     import { drawingStore } from '$lib/stores/drawing/store';
     import { prepareStageStore } from '$lib/stores/prepare-stage/store';
-    import { isChainClosed } from '$lib/geometry/chain/functions';
+    import { isChainClosed } from '$lib/cam/chain/functions';
     import { detectCutDirection } from '$lib/cam/cut/cut-direction';
     import { CutDirection } from '$lib/cam/cut/enums';
     import {
         getShapeStartPoint,
         getShapeEndPoint,
-    } from '$lib/geometry/shape/functions';
+    } from '$lib/cam/shape/functions';
 
     // Reactive chain and analysis data
     const drawing = $derived($drawingStore.drawing);

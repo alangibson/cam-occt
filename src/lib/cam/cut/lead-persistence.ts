@@ -8,8 +8,8 @@
 
 import type { CutData } from '$lib/cam/cut/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { type LeadConfig, type LeadResult } from '$lib/cam/lead/interfaces';

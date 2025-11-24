@@ -7,7 +7,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { EPSILON } from '$lib/geometry/math/constants';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type {
     Polyline,
     PolylineVertex,

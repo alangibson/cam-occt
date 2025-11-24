@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
-import { getShapePoints } from '$lib/geometry/shape/functions';
+import { getShapePoints } from '$lib/cam/shape/functions';
 import { translateToPositiveQuadrant } from '$lib/algorithms/translate-to-positive/translate-to-positive';
 import { decomposePolylines } from '$lib/algorithms/decompose-polylines/decompose-polylines';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 
 // Helper function to calculate bounds for translated shapes
 function calculateBounds(shapes: ShapeData[]) {

@@ -9,7 +9,7 @@ import type { CutData } from '$lib/cam/cut/interfaces';
 import { OptimizeStarts } from './enums';
 import { optimizeChainStartPoint } from '$lib/algorithms/optimize-start-points/optimize-start-points';
 import type { StartPointOptimizationParameters } from '$lib/preprocessing/algorithm-parameters';
-import { Chain } from '$lib/geometry/chain/classes';
+import { Chain } from '$lib/cam/chain/classes';
 
 /**
  * Optimizes the start point of a cut by optimizing its cutChain.

@@ -27,7 +27,7 @@ WASM files are bundled with the module in `src/lib/cam/offset/wasm/`:
 
 ```typescript
 import { offsetChain } from '$lib/cam/offset';
-import type { Chain } from '$lib/geometry/chain/interfaces';
+import type { Chain } from '$lib/cam/chain/interfaces';
 
 const chain: Chain = {
   id: 'my-chain',
@@ -249,7 +249,7 @@ npm run test src/lib/cam/offset/visual.test.ts
 ### Custom Tessellation
 
 ```typescript
-import { tessellateChainToShapes } from '$lib/geometry/chain/functions';
+import { tessellateChainToShapes } from '$lib/cam/chain/functions';
 import { offsetPaths } from '$lib/cam/offset/clipper-offset';
 
 // Custom tessellation parameters

@@ -8,7 +8,7 @@ import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import { HitTestType } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
+import { isPointInsidePart } from '$lib/cam/chain/point-in-chain';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 
 /**

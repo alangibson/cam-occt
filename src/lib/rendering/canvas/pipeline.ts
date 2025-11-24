@@ -15,7 +15,7 @@ import {
 } from './utils/hit-test';
 import { DrawingContext } from './utils/context';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import {
     InteractionManager,

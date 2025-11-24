@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { isPointInsidePart } from '$lib/geometry/chain/point-in-chain';
+import { isPointInsidePart } from '$lib/cam/chain/point-in-chain';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 
 describe('Part Selection - Point-in-Part Detection', () => {
     it('should detect point inside shell but outside voids', () => {

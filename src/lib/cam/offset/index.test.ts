@@ -5,8 +5,8 @@
 import { describe, it, expect } from 'vitest';
 import { offsetChain } from './index';
 import { getClipper2 } from './clipper-init';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';

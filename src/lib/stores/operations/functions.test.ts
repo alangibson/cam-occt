@@ -8,14 +8,11 @@ import {
     calculateCutLeads,
 } from '$lib/cam/pipeline/leads/lead-orchestration';
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
-import {
-    getChainCutDirection,
-    reverseChain,
-} from '$lib/geometry/chain/functions';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { Shape } from '$lib/geometry/shape/classes';
+import { getChainCutDirection, reverseChain } from '$lib/cam/chain/functions';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
@@ -27,7 +24,7 @@ import type { CutData } from '$lib/cam/cut/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { PartType } from '$lib/cam/part/enums';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { offsetChain as polylineOffset } from '$lib/cam/offset';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import {
@@ -48,7 +45,7 @@ function createOperation(
 }
 
 // Mock dependencies
-vi.mock('$lib/geometry/chain/functions', () => ({
+vi.mock('$lib/cam/chain/functions', () => ({
     reverseChain: vi.fn(),
     getChainCutDirection: vi.fn((chain) => {
         if (!chain) return CutDirection.NONE;
@@ -81,7 +78,7 @@ vi.mock('$lib/geometry/chain/functions', () => ({
     isChainClosed: vi.fn((chain) => chain?.closed ?? false),
 }));
 
-vi.mock('$lib/geometry/chain/constants', () => ({
+vi.mock('$lib/cam/chain/constants', () => ({
     CHAIN_CLOSURE_TOLERANCE: 0.01,
 }));
 

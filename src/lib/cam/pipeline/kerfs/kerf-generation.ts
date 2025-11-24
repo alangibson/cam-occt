@@ -4,7 +4,7 @@
 
 import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import {
     cutToKerf,

@@ -1,8 +1,8 @@
 import type { Line } from '$lib/geometry/line/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { describe, expect, it } from 'vitest';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import {
     buildContainmentHierarchy,
     calculateNestingLevel,

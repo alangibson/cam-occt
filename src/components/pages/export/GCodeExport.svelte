@@ -7,9 +7,9 @@
     import { onMount, createEventDispatcher } from 'svelte';
     import { cutsToToolPaths } from '$lib/cam/gcode/cut-to-toolpath';
     import { generateGCode } from '$lib/cam/gcode/gcode-generator';
-    import type { ChainData } from '$lib/geometry/chain/interfaces';
+    import type { ChainData } from '$lib/cam/chain/interfaces';
     import type { PartData } from '$lib/cam/part/interfaces';
-    import type { ShapeData } from '$lib/geometry/shape/interfaces';
+    import type { ShapeData } from '$lib/cam/shape/interfaces';
     import { Unit } from '$lib/config/units/units';
 
     // Props from parent component

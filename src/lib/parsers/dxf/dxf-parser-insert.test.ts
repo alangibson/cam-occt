@@ -5,7 +5,7 @@ import { join } from 'path';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 
 describe('DXF Parser - INSERT Entities', () => {
     it('should parse INSERT entities from Blocktest.dxf', async () => {

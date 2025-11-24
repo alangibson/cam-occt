@@ -1,11 +1,11 @@
 import type { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { DEFAULT_SPLINE_DEGREE } from '$lib/geometry/spline/constants';
 import {
     DEFAULT_CUT_HEIGHT_MM,

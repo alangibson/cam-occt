@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { offsetPaths } from './clipper-offset';
 import { reconstructChain } from './reconstruct';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 
 describe('offsetPaths', () => {

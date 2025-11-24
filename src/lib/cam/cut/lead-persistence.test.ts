@@ -10,14 +10,14 @@ import {
 } from './lead-persistence';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import { calculateCutLeads } from '$lib/cam/pipeline/leads/lead-orchestration';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection, NormalSide } from './enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
-import { Shape } from '$lib/geometry/shape/classes';
+import { Shape } from '$lib/cam/shape/classes';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import type { OperationData } from '$lib/cam/operation/interface';
 import type { LeadResult } from '$lib/cam/lead/interfaces';

@@ -1,12 +1,12 @@
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
-import { normalizeChain } from '$lib/geometry/chain/chain-normalization';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
+import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { DEFAULT_CHAIN_NORMALIZATION_PARAMETERS_MM } from '$lib/preprocessing/algorithm-parameters';
-import { Chain } from '$lib/geometry/chain/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import type { LayerData } from './interfaces';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { Part } from '$lib/cam/part/classes.svelte';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 
 export class Layer implements LayerData {
     #data: LayerData;

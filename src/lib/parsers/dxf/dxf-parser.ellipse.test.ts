@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseDXF } from './functions';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 
 describe('DXF Parser - ELLIPSE entity support', () => {

@@ -6,11 +6,11 @@
 
 import { describe, it, expect } from 'vitest';
 import { createCutChain } from './functions';
-import { getChainCutDirection } from '$lib/geometry/chain/functions';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import { getChainCutDirection } from '$lib/cam/chain/functions';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import { Shape } from '$lib/geometry/shape/classes';
+import { GeometryType } from '$lib/geometry/enums';
+import { Shape } from '$lib/cam/shape/classes';
 
 describe('getChainCutDirection', () => {
     it('should return NONE for undefined chain', () => {

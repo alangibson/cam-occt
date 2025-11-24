@@ -6,7 +6,7 @@
  */
 
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { PartType } from './enums';
 import type { Part as PartClass } from './classes.svelte';
 

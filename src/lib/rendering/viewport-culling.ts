@@ -6,7 +6,7 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { getBoundingBoxForShape } from '$lib/geometry/bounding-box/functions';
 import {

@@ -1,5 +1,5 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 
 export interface PolylineVertex extends Point2D {
     bulge?: number;

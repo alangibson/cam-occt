@@ -6,9 +6,9 @@
 
 import { describe, expect, it } from 'vitest';
 import { calculateLeads } from './lead-calculation';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
+import { GeometryType } from '$lib/geometry/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { detectParts } from '$lib/cam/part/part-detection';

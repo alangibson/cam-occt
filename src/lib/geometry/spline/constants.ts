@@ -1,4 +1,4 @@
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import type { SplineTessellationConfig } from './interfaces';
 
 /**

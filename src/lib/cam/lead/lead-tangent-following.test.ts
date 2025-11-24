@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { Chain } from '$lib/geometry/chain/classes';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { Chain } from '$lib/cam/chain/classes';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -9,10 +9,7 @@ import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import { calculateCutNormal } from '$lib/cam/cut/calculate-cut-normal';
 import { getArcStartPoint, getArcEndPoint } from '$lib/geometry/arc/functions';
-import {
-    getChainTangent,
-    getChainStartPoint,
-} from '$lib/geometry/chain/functions';
+import { getChainTangent, getChainStartPoint } from '$lib/cam/chain/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import type { PartData } from '$lib/cam/part/interfaces';
 import { PartType } from '$lib/cam/part/enums';

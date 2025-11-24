@@ -2,7 +2,7 @@
  * Interfaces for offset calculation pipeline
  */
 
-import type { Shape } from '$lib/geometry/shape/classes';
+import type { Shape } from '$lib/cam/shape/classes';
 import type { OffsetDirection } from '$lib/cam/offset/types';
 import type { Cut } from '$lib/cam/cut/classes.svelte';
 

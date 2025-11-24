@@ -1,8 +1,8 @@
 <script lang="ts">
     import type { OperationData } from '$lib/cam/operation/interface';
     import { Operation } from '$lib/cam/operation/classes.svelte';
-    import type { ChainData } from '$lib/geometry/chain/interfaces';
-    import { Chain } from '$lib/geometry/chain/classes';
+    import type { ChainData } from '$lib/cam/chain/interfaces';
+    import { Chain } from '$lib/cam/chain/classes';
     import type { Part } from '$lib/cam/part/classes.svelte';
     import type { Tool } from '$lib/cam/tool/interfaces';
     import { flip } from 'svelte/animate';

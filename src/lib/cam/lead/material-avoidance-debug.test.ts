@@ -1,15 +1,15 @@
 import { describe, it } from 'vitest';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
-import { getChainTangent } from '$lib/geometry/chain/functions';
+import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
+import { getChainTangent } from '$lib/cam/chain/functions';
 
 /**
  * Debug test to understand the material avoidance logic and identify the correct behavior

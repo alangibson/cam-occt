@@ -3,15 +3,15 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import { Shape } from '$lib/geometry/shape/classes';
+import { Shape } from '$lib/cam/shape/classes';
 import {
     isFullEllipse,
     distanceFromEllipsePerimeter,

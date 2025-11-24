@@ -4,7 +4,7 @@ import { parseDXF } from '$lib/parsers/dxf/functions';
 import {
     detectShapeChains,
     setChainsDirection,
-} from '$lib/geometry/chain/chain-detection';
+} from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
@@ -18,7 +18,7 @@ import { kerfStore } from '$lib/stores/kerfs/store';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 

@@ -1,15 +1,12 @@
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { CutDirection } from './enums';
-import {
-    getShapeEndPoint,
-    getShapeStartPoint,
-} from '$lib/geometry/shape/functions';
+import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
 import {
     CHAIN_CLOSURE_TOLERANCE,
     POLYGON_POINTS_MIN,
-} from '$lib/geometry/chain/constants';
-import { getChainPoints } from '$lib/geometry/chain/functions';
+} from '$lib/cam/chain/constants';
+import { getChainPoints } from '$lib/cam/chain/functions';
 import { isPointsClosed } from '$lib/geometry/point/functions';
 import { calculateSignedArea } from '$lib/geometry/polygon/functions';
 

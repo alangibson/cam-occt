@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
 import type { LeadConfig } from './interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import { getChainTangent } from '$lib/geometry/chain/functions';
+import { getChainTangent } from '$lib/cam/chain/functions';
 
 /**
  * Test to isolate the bug where normal directions are calculated correctly on original chains

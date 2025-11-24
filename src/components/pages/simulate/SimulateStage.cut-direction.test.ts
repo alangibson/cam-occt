@@ -3,11 +3,11 @@ import { get } from 'svelte/store';
 import { planStore } from '$lib/stores/plan/store';
 import { cutStore } from '$lib/stores/cuts/store';
 import { chainStore } from '$lib/stores/chains/store';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { Cut } from '$lib/cam/cut/classes.svelte';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe.skip('SimulateStage Cut Direction', () => {

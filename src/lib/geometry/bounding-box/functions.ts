@@ -1,4 +1,4 @@
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
@@ -7,7 +7,7 @@ import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { BoundingBox } from './interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import {
@@ -16,7 +16,7 @@ import {
 } from '$lib/geometry/spline/constants';
 import { calculateArcPoint } from '$lib/geometry/arc/functions';
 import { THREE_HALVES_PI } from './constants';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
 export function getBoundingBoxForLine(line: Line): BoundingBox {

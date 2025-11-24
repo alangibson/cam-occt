@@ -1,21 +1,21 @@
 import { LeadType } from '$lib/cam/lead/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { CutPath } from './interfaces';
 import type { Lead } from './types';
 import { CutterCompensation } from './enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import { getShapePoints } from '$lib/geometry/shape/functions';
+import { GeometryType } from '$lib/geometry/enums';
+import { getShapePoints } from '$lib/cam/shape/functions';
 import {
     calculateLeadPoints,
     getCachedLeadGeometry,
     hasValidCachedLeads,
 } from '$lib/cam/cut/lead-persistence';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { PartData } from '$lib/cam/part/interfaces';
 import {
     CAM_CALCULATION_TOLERANCE_MM,

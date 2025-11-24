@@ -6,14 +6,14 @@ import { describe, it, expect } from 'vitest';
 import { adjustCutStartPointForLeadKerfOverlap } from './functions';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { LeadType } from '$lib/cam/lead/enums';
-import { Chain } from '$lib/geometry/chain/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('adjustCutStartPointForLeadKerfOverlap', () => {

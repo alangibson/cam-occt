@@ -8,7 +8,7 @@ import {
     isCircle,
     reverseCircle,
 } from '$lib/geometry/circle/functions';
-import type { Geometry } from '$lib/geometry/shape/types';
+import type { Geometry } from '$lib/geometry/types';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 

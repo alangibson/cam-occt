@@ -2,11 +2,11 @@
  * Part operations module - handles cut generation for parts (shells, holes, and slots)
  */
 
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { createCutChain } from '$lib/cam/pipeline/chains/functions';
-import { getChainCutDirection } from '$lib/geometry/chain/functions';
+import { getChainCutDirection } from '$lib/cam/chain/functions';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import type { PartVoid, PartSlot } from '$lib/cam/part/interfaces';

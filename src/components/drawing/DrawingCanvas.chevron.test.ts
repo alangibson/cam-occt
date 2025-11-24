@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { sampleShapes } from '$lib/geometry/shape/functions';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { sampleShapes } from '$lib/cam/shape/functions';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { CutDirection } from '$lib/cam/cut/enums';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 
 /**
  * Integration tests for chevron arrow rendering

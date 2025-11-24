@@ -6,7 +6,7 @@ import { drawingStore } from '$lib/stores/drawing/store';
 import { Unit } from '$lib/config/units/units';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { calculateDrawingSize } from '$lib/cam/drawing/drawing-size';
 
 // Mock the drawing size calculation

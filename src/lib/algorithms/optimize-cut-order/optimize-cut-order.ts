@@ -24,10 +24,10 @@ import {
     getCutStartPoint,
     prepareChainsAndLeadConfigs,
 } from '$lib/cam/cut/cut-optimization-utils';
-import { getChainEndPoint } from '$lib/geometry/chain/functions';
+import { getChainEndPoint } from '$lib/cam/chain/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
 import { convertLeadGeometryToPoints } from '$lib/cam/lead/functions';
-import { Chain } from '$lib/geometry/chain/classes';
+import { Chain } from '$lib/cam/chain/classes';
 
 /**
  * Result of the cut order optimization

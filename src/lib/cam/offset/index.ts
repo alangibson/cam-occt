@@ -13,11 +13,11 @@
  */
 
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import {
     isChainClosed,
     tessellateChainToShapes,
-} from '$lib/geometry/chain/functions';
+} from '$lib/cam/chain/functions';
 import { offsetPaths } from './clipper-offset';
 import { reconstructChain, createOffsetChain } from './reconstruct';
 import type { ChainOffsetParameters, ChainOffsetResult } from './types';

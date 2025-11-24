@@ -1,6 +1,6 @@
 import type { OperationData } from './interface';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import { DEFAULT_SPOT_DURATION } from '$lib/config/defaults/operation-defaults';
 

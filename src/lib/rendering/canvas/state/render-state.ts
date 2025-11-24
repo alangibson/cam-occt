@@ -3,7 +3,7 @@
  */
 
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { WorkflowStage } from '$lib/stores/workflow/enums';
 import type { Part } from '$lib/cam/part/classes.svelte';
@@ -14,7 +14,7 @@ import { Unit } from '$lib/config/units/units';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Kerf } from '$lib/cam/kerf/interfaces';
-import type { Chain } from '$lib/geometry/chain/classes';
+import type { Chain } from '$lib/cam/chain/classes';
 
 /**
  * Transform state for canvas rendering

@@ -4,10 +4,10 @@
 
 import { describe, it, expect } from 'vitest';
 import { doesLeadKerfOverlapChain } from './functions';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { OffsetChain } from '$lib/cam/offset/types';
 import type { Line } from '$lib/geometry/line/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 
 describe('doesLeadKerfOverlapChain', () => {
     it('should return false when leadKerfOuterChain is undefined', () => {

@@ -6,10 +6,10 @@ import type { DrawingData } from '$lib/cam/drawing/interfaces';
 import { Unit } from '$lib/config/units/units';
 import { LeadType } from '$lib/cam/lead/enums';
 import { OffsetDirection } from '$lib/cam/offset/types';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { cutsToToolPaths } from '$lib/cam/gcode/cut-to-toolpath';
 import { generateGCode } from './gcode-generator';
-import { Shape } from '$lib/geometry/shape/classes';
+import { Shape } from '$lib/cam/shape/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('G-code generation with offset cuts', () => {

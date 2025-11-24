@@ -5,7 +5,7 @@ import type { NormalSide } from './enums';
 import type { OffsetDirection } from '$lib/cam/offset/types';
 import type { Rapid } from '$lib/cam/rapid/interfaces';
 import type { OffsetData } from '$lib/cam/offset/interfaces';
-import type { Chain } from '$lib/geometry/chain/classes';
+import type { Chain } from '$lib/cam/chain/classes';
 import type { OperationAction } from '$lib/cam/operation/enums';
 
 export interface CutData {

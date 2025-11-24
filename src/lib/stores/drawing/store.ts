@@ -1,14 +1,10 @@
 import { writable } from 'svelte/store';
 import { Drawing } from '$lib/cam/drawing/classes.svelte';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
 import { WorkflowStage } from '$lib/stores/workflow/enums';
-import {
-    moveShape,
-    rotateShape,
-    scaleShape,
-} from '$lib/geometry/shape/functions';
+import { moveShape, rotateShape, scaleShape } from '$lib/cam/shape/functions';
 import type { DrawingState, DrawingStore } from './interfaces';
 import { resetDownstreamStages } from './functions';
 import { calculateZoomToFitForDrawing } from '$lib/cam/drawing/functions';

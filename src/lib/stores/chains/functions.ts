@@ -1,11 +1,8 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import {
-    getShapeEndPoint,
-    getShapeStartPoint,
-} from '$lib/geometry/shape/functions';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import type { ChainEndpoint } from '$lib/stores/overlay/interfaces';
 import type { CutData } from '$lib/cam/cut/interfaces';
 

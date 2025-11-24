@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import { isChainGeometricallyContained } from '$lib/geometry/chain/functions';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
+import { isChainGeometricallyContained } from '$lib/cam/chain/functions';
 
 // Helper function to create ellipse shapes for testing
 function createEllipseShape(

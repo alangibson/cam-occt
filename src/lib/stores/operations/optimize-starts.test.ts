@@ -2,14 +2,14 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { createCutsFromOperation } from '$lib/cam/pipeline/operations/cut-generation';
 import type { OperationData } from '$lib/cam/operation/interface';
 import { Operation } from '$lib/cam/operation/classes.svelte';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import { CutDirection, OptimizeStarts } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { KerfCompensation, OperationAction } from '$lib/cam/operation/enums';
 
 // Helper function to create Operation with resolved references

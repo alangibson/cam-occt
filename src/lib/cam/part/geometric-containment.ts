@@ -9,15 +9,12 @@
  * shapes within shapes, and polygon containment hierarchies.
  */
 
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from './defaults';
 import { calculatePolygonArea } from '$lib/geometry/polygon/functions';
 import { DEFAULT_ARRAY_NOT_FOUND_INDEX } from '$lib/geometry/constants';
-import {
-    calculateChainArea,
-    isChainClosed,
-} from '$lib/geometry/chain/functions';
+import { calculateChainArea, isChainClosed } from '$lib/cam/chain/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type { PartDetectionParameters } from './interfaces';
 import {
@@ -140,7 +137,7 @@ export async function buildContainmentHierarchy(
 
             // Do full geometric containment check using Clipper2
             const { isChainContainedInChainClipper2 } = await import(
-                '$lib/geometry/chain/functions'
+                '$lib/cam/chain/functions'
             );
             let isContained = await isChainContainedInChainClipper2(
                 current.chain,

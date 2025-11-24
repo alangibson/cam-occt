@@ -1,8 +1,8 @@
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { describe, expect, it } from 'vitest';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { CutPath } from '$lib/cam/gcode/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { CutterCompensation } from '$lib/cam/gcode/enums';

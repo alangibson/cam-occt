@@ -2,11 +2,11 @@ import { BaseRenderer } from './base';
 import type { RenderState } from '$lib/rendering/canvas/state/render-state';
 import type { HitTestResult } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import { sampleShapes } from '$lib/geometry/shape/functions';
+import { sampleShapes } from '$lib/cam/shape/functions';
 import { isCutEnabledForRendering } from '$lib/rendering/canvas/utils/renderer-utils';
 import { drawChevronArrow } from '$lib/rendering/canvas/utils/chevron-drawing';
 

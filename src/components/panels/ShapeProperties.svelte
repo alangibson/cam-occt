@@ -1,7 +1,7 @@
 <script lang="ts">
     import { drawingStore } from '$lib/stores/drawing/store';
-    import type { ShapeData } from '$lib/geometry/shape/interfaces';
-    import { GeometryType } from '$lib/geometry/shape/enums';
+    import type { ShapeData } from '$lib/cam/shape/interfaces';
+    import { GeometryType } from '$lib/geometry/enums';
     import type { Point2D } from '$lib/geometry/point/interfaces';
     import type { Line } from '$lib/geometry/line/interfaces';
     import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -12,7 +12,7 @@
     import {
         getShapeStartPoint,
         getShapeEndPoint,
-    } from '$lib/geometry/shape/functions';
+    } from '$lib/cam/shape/functions';
     import { polylineToPoints } from '$lib/geometry/polyline/functions';
 
     $: drawing = $drawingStore.drawing;

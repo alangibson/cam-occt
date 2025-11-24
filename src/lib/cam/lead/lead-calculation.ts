@@ -16,17 +16,17 @@ import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import {
     isPointInsidePart,
     isPointInsideChainExact,
-} from '$lib/geometry/chain/point-in-chain';
+} from '$lib/cam/chain/point-in-chain';
 import {
     getChainEndPoint,
     getChainStartPoint,
     getChainTangent,
     isChainClosed,
-} from '$lib/geometry/chain/functions';
+} from '$lib/cam/chain/functions';
 import { isChainHoleInPart, isChainShellInPart } from './part-lookup-utils';
-import { CHAIN_CLOSURE_TOLERANCE } from '$lib/geometry/chain/constants';
+import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import type { LeadConfig, LeadResult, Lead } from './interfaces';
-import type { Chain } from '$lib/geometry/chain/classes';
+import type { Chain } from '$lib/cam/chain/classes';
 
 /**
  * Calculate lead-in and lead-out geometry for a chain.

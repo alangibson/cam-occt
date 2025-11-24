@@ -11,7 +11,7 @@ import {
 import { type PartData, type PartVoid } from './interfaces';
 import { Part } from './classes.svelte';
 import { PartType } from './enums';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import { chainStore } from '$lib/stores/chains/store';
 import { partStore } from '$lib/stores/parts/store';
 

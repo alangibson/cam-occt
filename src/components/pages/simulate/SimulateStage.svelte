@@ -25,8 +25,8 @@
     import { overlayStore } from '$lib/stores/overlay/store';
     import { settingsStore } from '$lib/stores/settings/store';
     import { onMount, onDestroy } from 'svelte';
-    import type { ShapeData } from '$lib/geometry/shape/interfaces';
-    import { GeometryType } from '$lib/geometry/shape/enums';
+    import type { ShapeData } from '$lib/cam/shape/interfaces';
+    import { GeometryType } from '$lib/geometry/enums';
     import type { Point2D } from '$lib/geometry/point/interfaces';
     import type { Line } from '$lib/geometry/line/interfaces';
     import type { Arc } from '$lib/geometry/arc/interfaces';
@@ -34,7 +34,7 @@
     import type { Polyline } from '$lib/geometry/polyline/interfaces';
     import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
     import type { Spline } from '$lib/geometry/spline/interfaces';
-    import type { ChainData } from '$lib/geometry/chain/interfaces';
+    import type { ChainData } from '$lib/cam/chain/interfaces';
     import type { CutData } from '$lib/cam/cut/interfaces';
     import type { Rapid } from '$lib/cam/rapid/interfaces';
     import type { Tool } from '$lib/cam/tool/interfaces';
@@ -44,7 +44,7 @@
         tessellateSpline,
     } from '$lib/geometry/spline/functions';
     import { polylineToPoints } from '$lib/geometry/polyline/functions';
-    import { getShapePointAt } from '$lib/geometry/shape/functions';
+    import { getShapePointAt } from '$lib/cam/shape/functions';
     import { calculateLeads } from '$lib/cam/lead/lead-calculation';
     import { type LeadConfig } from '$lib/cam/lead/interfaces';
     import { MeasurementSystem } from '$lib/config/settings/enums';
@@ -62,8 +62,8 @@
         getCachedLeadGeometry,
         hasValidCachedLeads,
     } from '$lib/cam/cut/lead-persistence';
-    import { Chain } from '$lib/geometry/chain/classes';
-    import { Shape } from '$lib/geometry/shape/classes';
+    import { Chain } from '$lib/cam/chain/classes';
+    import { Shape } from '$lib/cam/shape/classes';
 
     // Props from WorkflowContainer for shared canvas
     let {

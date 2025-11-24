@@ -1,5 +1,5 @@
-import { GeometryType } from '$lib/geometry/shape/enums';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';

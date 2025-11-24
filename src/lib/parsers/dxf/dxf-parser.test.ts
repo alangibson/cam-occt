@@ -3,7 +3,7 @@ import { parseDXF } from './functions';
 import { readFileSync } from 'fs';
 import { parseString } from 'dxf';
 import type { DXFEntity } from 'dxf';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 
 describe('DXF Parser', () => {
     it('should be able to import the DXF parser module without errors', async () => {

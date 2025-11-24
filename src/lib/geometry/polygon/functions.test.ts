@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { calculatePolygonCentroid } from '$lib/geometry/chain/functions';
+import { calculatePolygonCentroid } from '$lib/cam/chain/functions';
 import {
     calculatePolygonBounds,
     calculatePolygonCentroid2,

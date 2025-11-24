@@ -5,7 +5,7 @@
  */
 
 import type { Drawing } from '$lib/cam/drawing/classes.svelte';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import { Unit } from '$lib/config/units/units';
 

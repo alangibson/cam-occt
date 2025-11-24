@@ -12,9 +12,9 @@ import {
     getBoundingBoxForSpline,
 } from './functions';
 import { createPolylineFromVertices } from '$lib/geometry/polyline/functions';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import type { Geometry } from '$lib/geometry/shape/types';
+import { GeometryType } from '$lib/geometry/enums';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import type { Geometry } from '$lib/geometry/types';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';

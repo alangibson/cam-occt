@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 
 // Import the simulation functions - we'll need to extract these from the component

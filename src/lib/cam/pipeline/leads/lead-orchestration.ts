@@ -5,8 +5,8 @@
 import type { CutData } from '$lib/cam/cut/interfaces';
 import { Cut } from '$lib/cam/cut/classes.svelte';
 import type { OperationData } from '$lib/cam/operation/interface';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import type { Part, PartData, PartVoid } from '$lib/cam/part/interfaces';
 import { calculateLeads } from '$lib/cam/lead/lead-calculation';
 import { prepareChainsAndLeadConfigs } from '$lib/cam/cut/cut-optimization-utils';

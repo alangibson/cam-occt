@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { generateSpotsForChainsWithOperation } from './spot-operations';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
 import type { OperationData } from '$lib/cam/operation/interface';
 import { Operation } from '$lib/cam/operation/classes.svelte';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { OperationAction } from '$lib/cam/operation/enums';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';

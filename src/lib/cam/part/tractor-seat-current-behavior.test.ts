@@ -2,12 +2,9 @@ import { describe, it } from 'vitest';
 import { readFileSync } from 'fs';
 import path from 'path';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
-import {
-    getShapeEndPoint,
-    getShapeStartPoint,
-} from '$lib/geometry/shape/functions';
+import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
 
 describe('Tractor Seat Mount Current Behavior', () => {
     it('should confirm current behavior: detects 11 parts instead of 1 part with voids', async () => {

@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { CutData } from '$lib/cam/cut/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import { Shape } from '$lib/geometry/shape/classes';
+import { GeometryType } from '$lib/geometry/enums';
+import { Shape } from '$lib/cam/shape/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('SimulateStage offset cut detection', () => {

@@ -7,9 +7,9 @@
 
 import { writable, get } from 'svelte/store';
 import type { AlgorithmParameters } from '$lib/preprocessing/algorithm-parameters';
-import type { ChainNormalizationResult } from '$lib/geometry/chain/chain-normalization';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainNormalizationResult } from '$lib/cam/chain/chain-normalization';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { PrepareStageState, PrepareStageStore } from './interfaces';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 import { settingsStore } from '$lib/stores/settings/store';

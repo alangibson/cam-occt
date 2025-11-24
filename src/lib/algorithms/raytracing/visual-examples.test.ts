@@ -12,10 +12,10 @@
  */
 
 import { describe, expect, test } from 'vitest';
-import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
 
 describe('Visual Examples: Ray-Tracing Accuracy Improvements', () => {
     test('Example 1: Circle with High-Precision Offsets', () => {

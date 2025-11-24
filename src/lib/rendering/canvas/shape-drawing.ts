@@ -3,19 +3,19 @@
  * Extracted from ShapeRenderer to avoid code duplication
  */
 
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import { normalizeAngle } from '$lib/geometry/math/functions';
 import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import { ELLIPSE_TESSELLATION_POINTS } from '$lib/geometry/ellipse/constants';
-import { tessellateShape } from '$lib/geometry/shape/functions';
+import { tessellateShape } from '$lib/cam/shape/functions';
 import { DEFAULT_PART_DETECTION_PARAMETERS } from '$lib/cam/part/defaults';
 
 // Point rendering constants

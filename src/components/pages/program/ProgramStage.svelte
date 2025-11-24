@@ -9,7 +9,7 @@
     import { workflowStore } from '$lib/stores/workflow/store';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { drawingStore } from '$lib/stores/drawing/store';
-    import { Chain } from '$lib/geometry/chain/classes';
+    import { Chain } from '$lib/cam/chain/classes';
     import { planStore } from '$lib/stores/plan/store';
     import {
         optimizeCutOrder,

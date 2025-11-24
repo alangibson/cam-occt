@@ -2,10 +2,10 @@
  * Offset calculation for chain kerf compensation
  */
 
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { Shape } from '$lib/geometry/shape/classes';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import { OffsetDirection } from '$lib/cam/offset/types';
 import { offsetChain as polylineOffset } from '$lib/cam/offset';
 import {

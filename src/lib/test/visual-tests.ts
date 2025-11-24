@@ -1,6 +1,6 @@
 /* eslint-disable no-magic-numbers */
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
 import { sampleEllipse } from '$lib/geometry/ellipse/functions';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
@@ -9,7 +9,7 @@ import { writeFileSync } from 'fs';
 import { join } from 'path';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { OffsetChain } from '$lib/cam/offset/types';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';

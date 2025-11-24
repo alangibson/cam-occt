@@ -2,15 +2,15 @@ import { describe, it, expect } from 'vitest';
 import { cutToKerf } from './functions';
 import type { CutData } from '$lib/cam/cut/interfaces';
 import type { Tool } from '$lib/cam/tool/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import { LeadType } from '$lib/cam/lead/enums';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
-import { Chain } from '$lib/geometry/chain/classes';
-import { Shape } from '$lib/geometry/shape/classes';
+import { Chain } from '$lib/cam/chain/classes';
+import { Shape } from '$lib/cam/shape/classes';
 import { OperationAction } from '$lib/cam/operation/enums';
 
 describe('cutToKerf', () => {

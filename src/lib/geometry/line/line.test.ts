@@ -7,7 +7,7 @@ import {
     reverseLine,
 } from './functions';
 import type { Line } from './interfaces';
-import type { Geometry } from '$lib/geometry/shape/types';
+import type { Geometry } from '$lib/geometry/types';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 

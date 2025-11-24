@@ -1,6 +1,6 @@
 import type { CutData } from '$lib/cam/cut/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import { GeometryType } from '$lib/geometry/enums';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
@@ -13,13 +13,10 @@ import {
     createLeadOutConfig,
 } from '$lib/cam/lead/functions';
 import { calculateSquaredDistance } from '$lib/geometry/math/functions';
-import {
-    getChainEndPoint,
-    getChainStartPoint,
-} from '$lib/geometry/chain/functions';
+import { getChainEndPoint, getChainStartPoint } from '$lib/cam/chain/functions';
 import { calculateMidpoint } from '$lib/geometry/point/functions';
 import { calculateArcMidpointAngle } from '$lib/geometry/arc/functions';
-import { Chain } from '$lib/geometry/chain/classes';
+import { Chain } from '$lib/cam/chain/classes';
 import { Cut } from './classes.svelte';
 
 /**

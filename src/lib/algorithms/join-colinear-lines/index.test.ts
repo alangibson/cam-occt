@@ -4,12 +4,12 @@ import {
     joinColinearLinesInChains,
     joinColinearLinesInPolyline,
 } from './index';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import { generateId } from '$lib/domain/id';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 
 describe('join-colinear-lines', () => {
     describe('joinColinearLinesInPolyline', () => {

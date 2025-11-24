@@ -2,14 +2,14 @@
  * Spot operations module - handles spot cut generation for cyclic chains
  */
 
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import { Cut } from '$lib/cam/cut/classes.svelte';
 import { CutDirection, NormalSide } from '$lib/cam/cut/enums';
 import type { CutGenerationResult } from './interfaces';
 import type { Operation } from '$lib/cam/operation/classes.svelte';
-import { GeometryType } from '$lib/geometry/shape/enums';
-import { Shape } from '$lib/geometry/shape/classes';
+import { GeometryType } from '$lib/geometry/enums';
+import { Shape } from '$lib/cam/shape/classes';
 
 /**
  * Generate a spot cut for a single cyclic chain with an operation

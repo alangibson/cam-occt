@@ -1,10 +1,10 @@
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import {
     getShapeEndPoint,
     getShapeOrigin,
     getShapeStartPoint,
-} from '$lib/geometry/shape/functions';
+} from '$lib/cam/shape/functions';
 import type { ShapePoint } from '$lib/stores/overlay/interfaces';
 
 // Helper functions to generate shape overlay data

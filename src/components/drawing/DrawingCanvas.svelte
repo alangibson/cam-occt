@@ -31,7 +31,7 @@
         getChainShapeIds,
     } from '$lib/stores/chains/functions';
     import { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-    import type { ShapeData } from '$lib/geometry/shape/interfaces';
+    import type { ShapeData } from '$lib/cam/shape/interfaces';
     import { WorkflowStage } from '$lib/stores/workflow/enums';
     import { SelectionMode } from '$lib/config/settings/enums';
     import { getPhysicalScaleFactor } from '$lib/config/units/units';

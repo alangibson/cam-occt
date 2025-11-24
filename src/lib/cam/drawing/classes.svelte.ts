@@ -1,6 +1,6 @@
 import type { DrawingData } from './interfaces';
 import type { LayerData } from '$lib/cam/layer/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
 import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 import { Layer } from '$lib/cam/layer/classes.svelte';

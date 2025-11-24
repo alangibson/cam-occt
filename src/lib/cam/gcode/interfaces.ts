@@ -1,6 +1,6 @@
 import type { OperationAction } from '$lib/cam/operation/enums';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { NormalSide } from '$lib/cam/cut/enums';
 import type { Lead } from './types';
 

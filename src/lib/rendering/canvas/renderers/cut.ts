@@ -7,19 +7,16 @@ import {
     HitTestUtils,
 } from '$lib/rendering/canvas/utils/hit-test';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
-import { Shape } from '$lib/geometry/shape/classes';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
+import { Shape } from '$lib/cam/shape/classes';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import { drawShape } from '$lib/rendering/canvas/shape-drawing';
 import type { CutData } from '$lib/cam/cut/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import { LayerId as LayerIdEnum } from '$lib/rendering/canvas/layers/types';
 import type { CoordinateTransformer } from '$lib/rendering/coordinate-transformer';
-import {
-    getShapeStartPoint,
-    getShapeEndPoint,
-} from '$lib/geometry/shape/functions';
+import { getShapeStartPoint, getShapeEndPoint } from '$lib/cam/shape/functions';
 import {
     isCutEnabledForRendering,
     applyCutStyling,

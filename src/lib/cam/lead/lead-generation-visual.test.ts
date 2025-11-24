@@ -1,12 +1,12 @@
 import { mkdirSync, writeFileSync } from 'fs';
 import { describe, it } from 'vitest';
 import { SVGBuilder } from '$lib/test/svg-builder';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import type { Spline } from '$lib/geometry/spline/interfaces';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
-import { Chain } from '$lib/geometry/chain/classes';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import { CutDirection } from '$lib/cam/cut/enums';
 import { LeadType } from './enums';
 import { calculateLeads } from './lead-calculation';
@@ -17,7 +17,7 @@ import {
     getChainStartPoint,
     getChainEndPoint,
     getChainTangent,
-} from '$lib/geometry/chain/functions';
+} from '$lib/cam/chain/functions';
 
 describe('Lead Generation Visual Test with Specific Spline', () => {
     it('should generate SVG with spline and colored lead arcs', async () => {

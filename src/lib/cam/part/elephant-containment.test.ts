@@ -1,12 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import { parseDXF } from '$lib/parsers/dxf/functions';
-import { detectShapeChains } from '$lib/geometry/chain/chain-detection';
+import { detectShapeChains } from '$lib/cam/chain/chain-detection';
 import { detectParts } from '$lib/cam/part/part-detection';
-import {
-    getShapeStartPoint,
-    getShapeEndPoint,
-} from '$lib/geometry/shape/functions';
-import { isPointInsideChainExact } from '$lib/geometry/chain/point-in-chain';
+import { getShapeStartPoint, getShapeEndPoint } from '$lib/cam/shape/functions';
+import { isPointInsideChainExact } from '$lib/cam/chain/point-in-chain';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import type { Spline } from '$lib/geometry/spline/interfaces';

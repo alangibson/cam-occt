@@ -1,7 +1,7 @@
-import { GeometryType } from '$lib/geometry/shape/enums';
+import { GeometryType } from '$lib/geometry/enums';
 import { get } from 'svelte/store';
 import { describe, expect, it } from 'vitest';
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import { chainStore } from './store';
 import { getChainById, getChainShapeIds, getShapeChainId } from './functions';
 

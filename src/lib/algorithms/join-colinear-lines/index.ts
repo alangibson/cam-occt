@@ -1,9 +1,9 @@
-import type { ChainData } from '$lib/geometry/chain/interfaces';
+import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import { MACHINE_TOLERANCE } from '$lib/geometry/math/constants';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { ShapeData } from '$lib/geometry/shape/interfaces';
+import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { JoinColinearLinesParameters } from '$lib/preprocessing/algorithm-parameters';
 
 /**
