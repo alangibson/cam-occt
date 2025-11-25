@@ -1,5 +1,5 @@
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
-import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 
 export interface DrawingSize {
@@ -17,7 +17,7 @@ export function calculateDrawingSize(
     }
 
     try {
-        const bounds: BoundingBox = getBoundingBoxForShapes(drawing.shapes);
+        const bounds: BoundingBoxData = getBoundingBoxForShapes(drawing.shapes);
         return {
             width: Math.abs(bounds.max.x - bounds.min.x),
             height: Math.abs(bounds.max.y - bounds.min.y),

@@ -585,7 +585,8 @@ describe('cutToKerf', () => {
         // Since the lead goes from ~(0,50) to (10,50), and the kerf adds ±2mm,
         // the kerf zone will definitely overlap the original chain edge at x=0
         const tool = createTool(4.0);
-        const kerf = await cutToKerf(cut, tool);
+        // Pass checkOverlap=true to enable overlap detection
+        const kerf = await cutToKerf(cut, tool, true);
 
         // The lead kerf should overlap with the original chain
         // because the lead extends outward from x=10 toward x=0,

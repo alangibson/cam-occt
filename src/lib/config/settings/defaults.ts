@@ -25,6 +25,7 @@ export const DEFAULT_OPTIMIZATION_SETTINGS: OptimizationSettings = {
     cutHolesFirst: true,
     rapidOptimizationAlgorithm: RapidOptimizationAlgorithm.TravelingSalesman,
     zoomToFit: true,
+    avoidLeadKerfOverlap: false,
 };
 // Default application settings
 export const DEFAULT_SETTINGS: ApplicationSettings = {

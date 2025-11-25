@@ -57,6 +57,7 @@ const defaultApplicationSettings = {
         rapidOptimizationAlgorithm:
             RapidOptimizationAlgorithm.TravelingSalesman,
         zoomToFit: true,
+        avoidLeadKerfOverlap: false,
     },
     offsetImplementation: OffsetImplementation.Exact,
     camSettings: {

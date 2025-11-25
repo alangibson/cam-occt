@@ -11,6 +11,11 @@
         settingsStore.setCutHolesFirst(target.checked);
     }
 
+    function handleAvoidLeadKerfOverlapChange(event: Event) {
+        const target = event.target as HTMLInputElement;
+        settingsStore.setAvoidLeadKerfOverlap(target.checked);
+    }
+
     function handleAlgorithmChange(event: Event) {
         const target = event.target as HTMLSelectElement;
         settingsStore.setRapidOptimizationAlgorithm(
@@ -30,6 +35,18 @@
                     class="checkbox-input"
                 />
                 Cut holes first
+            </label>
+        </div>
+
+        <div class="field-group">
+            <label class="checkbox-label">
+                <input
+                    type="checkbox"
+                    checked={optimizationSettings.avoidLeadKerfOverlap}
+                    onchange={handleAvoidLeadKerfOverlapChange}
+                    class="checkbox-input"
+                />
+                Avoid lead kerf overlap
             </label>
         </div>
 

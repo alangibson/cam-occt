@@ -5,6 +5,7 @@ import { WorkflowStage } from '$lib/stores/workflow/enums';
 import { chainStore } from '$lib/stores/chains/store';
 import { drawingStore } from '$lib/stores/drawing/store';
 import { toolStore } from '$lib/stores/tools/store';
+import { settingsStore } from '$lib/stores/settings/store';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { OperationsStore } from './interfaces';
@@ -142,6 +143,7 @@ function createOperationsStore(): OperationsStore {
             const operations = get({ subscribe });
             const chainsState = get(chainStore);
             const plan = get(planStore).plan;
+            const settings = get(settingsStore).settings;
 
             // Look up Operation by id
             const operation: Operation | undefined = operations.find(
@@ -150,7 +152,11 @@ function createOperationsStore(): OperationsStore {
 
             if (operation && operation.enabled) {
                 // Generate and add cuts for this operation using Plan
-                await plan.add(operation, chainsState.tolerance);
+                await plan.add(
+                    operation,
+                    chainsState.tolerance,
+                    settings.optimizationSettings.avoidLeadKerfOverlap
+                );
 
                 // Check if any cuts exist and mark program stage as complete
                 if (plan.cuts.length > 0) {

@@ -7,7 +7,7 @@
 
 import type { PartData, PartVoid, PartSlot } from './interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
-import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { PartType } from './enums';
 
 export class Part {
@@ -29,7 +29,7 @@ export class Part {
         return this.#data.type;
     }
 
-    get boundingBox(): BoundingBox {
+    get boundingBox(): BoundingBoxData {
         return this.#data.boundingBox;
     }
 

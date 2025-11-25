@@ -17,7 +17,11 @@ export class Plan {
      * Operation already contains tool and targets via setters
      * Idempotent: concurrent calls for the same operation will be ignored
      */
-    async add(operation: Operation, tolerance: number): Promise<void> {
+    async add(
+        operation: Operation,
+        tolerance: number,
+        avoidLeadKerfOverlap: boolean = false
+    ): Promise<void> {
         // Guard: skip if this operation is already being processed
         if (this.pendingOperations.has(operation.id)) {
             console.log(
@@ -37,7 +41,11 @@ export class Plan {
             );
 
             // Generate cuts with leads (async, parallelized)
-            const result = await createCutsFromOperation(operation, tolerance);
+            const result = await createCutsFromOperation(
+                operation,
+                tolerance,
+                avoidLeadKerfOverlap
+            );
 
             // Validate all cuts have IDs
             for (const cut of result.cuts) {

@@ -54,30 +54,31 @@ export class KerfRenderer extends BaseRenderer {
     }
 
     render(ctx: CanvasRenderingContext2D, state: RenderState): void {
-        // Check if we should render kerfs or lead kerfs
+        // Check if we should render anything at all
         if (
             !state.visibility.showKerfPaths &&
-            !state.visibility.showLeadKerfs
+            !state.visibility.showLeadKerfs &&
+            !state.visibility.showCutter
         ) {
             return;
         }
 
-        // Get kerfs from state
-        const kerfs = state.kerfs || [];
-        if (kerfs.length === 0) {
-            return;
-        }
+        // Render kerf paths if enabled
+        if (state.visibility.showKerfPaths || state.visibility.showLeadKerfs) {
+            // Get kerfs from state
+            const kerfs = state.kerfs || [];
 
-        // Render each enabled kerf
-        for (const kerf of kerfs) {
-            if (!kerf.enabled) {
-                continue;
+            // Render each enabled kerf
+            for (const kerf of kerfs) {
+                if (!kerf.enabled) {
+                    continue;
+                }
+
+                this.renderKerf(ctx, kerf, state);
             }
-
-            this.renderKerf(ctx, kerf, state);
         }
 
-        // Render cutter path if enabled
+        // Render cutter path if enabled (independent of kerf path visibility)
         if (state.visibility.showCutter) {
             this.drawCutterPath(ctx, state);
         }

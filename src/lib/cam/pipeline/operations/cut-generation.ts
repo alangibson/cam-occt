@@ -1,8 +1,9 @@
-import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import type { Cut } from '$lib/cam/cut/classes.svelte';
 import type { CutGenerationResult } from './interfaces';
 import type { Operation } from '$lib/cam/operation/classes.svelte';
+import type { ChainData } from '$lib/cam/chain/interfaces';
+import { Chain } from '$lib/cam/chain/classes';
 import { generateCutsForChainsWithOperation } from './chain-operations';
 import { generateCutsForPartsWithOperation } from './part-operations';
 import { generateSpotsForChainsWithOperation } from './spot-operations';
@@ -19,11 +20,13 @@ import { OperationAction } from '$lib/cam/operation/enums';
  *
  * @param operation - The operation to generate cuts for (contains tool and targets)
  * @param tolerance - Geometric tolerance for calculations
+ * @param avoidLeadKerfOverlap - Whether to attempt adjusting start point if lead kerf overlaps
  * @returns Generated cuts and any warnings
  */
 export async function createCutsFromOperation(
     operation: Operation,
-    tolerance: number
+    tolerance: number,
+    avoidLeadKerfOverlap: boolean = false
 ): Promise<CutGenerationResult> {
     // If operation is disabled or has no targets, don't generate cuts
     if (!operation.enabled || operation.targets.length === 0) {
@@ -107,33 +110,37 @@ export async function createCutsFromOperation(
             }
         }
 
-        for (const cut of allCuts) {
-            try {
-                // Get original chain for this cut
-                const chain = allChains.find((c) => c.id === cut.chainId);
-                if (chain) {
-                    const originalShapes =
-                        cut.offset?.originalShapes || chain.shapes;
-                    const originalChainForKerf: ChainData = {
-                        id: chain.id,
-                        shapes: originalShapes,
-                    };
-                    await generateAndAdjustKerf(
-                        cut,
-                        tool,
-                        originalChainForKerf,
-                        tolerance,
-                        allParts
-                    );
-                } else {
-                    console.warn(
-                        `Cannot find chain ${cut.chainId} for cut ${cut.name} - skipping kerf generation`
-                    );
-                }
-            } catch (error) {
-                console.warn('Failed to generate kerf for cut:', error);
+        // Collect kerf generation promises for parallel execution
+        const kerfPromises = allCuts.map((cut) => {
+            // Get original chain for this cut
+            const chain = allChains.find((c) => c.id === cut.chainId);
+            if (!chain) {
+                console.warn(
+                    `Cannot find chain ${cut.chainId} for cut ${cut.name} - skipping kerf generation`
+                );
+                return Promise.resolve();
             }
-        }
+
+            const originalShapes = cut.offset?.originalShapes || chain.shapes;
+            const originalChainForKerf = new Chain({
+                id: chain.id,
+                shapes: originalShapes,
+            });
+
+            return generateAndAdjustKerf(
+                cut,
+                tool,
+                originalChainForKerf,
+                tolerance,
+                allParts,
+                avoidLeadKerfOverlap
+            ).catch((error) => {
+                console.warn('Failed to generate kerf for cut:', error);
+            });
+        });
+
+        // Execute all kerf generation in parallel
+        await Promise.all(kerfPromises);
     }
 
     return {

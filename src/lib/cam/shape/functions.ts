@@ -721,11 +721,13 @@ export function getShapeLength(shapeInput: ShapeInput): number {
  *
  * @param shapes - Array of shapes to sample along
  * @param intervalDistance - The distance between each sample point along the path (in drawing units)
+ * @param includeDirection - Whether to calculate direction vectors (default: true)
  * @returns Array of sampled points with their direction vectors at each sample location
  */
 export function sampleShapes(
     shapes: ShapeInput[],
-    intervalDistance: number // in drawing units
+    intervalDistance: number, // in drawing units
+    includeDirection: boolean = true
 ): { point: Point2D; direction: Point2D }[] {
     if (shapes.length === 0 || intervalDistance <= 0) return [];
 
@@ -749,18 +751,26 @@ export function sampleShapes(
             // Get point at this parameter
             const point = getShapePointAt(shape, t);
 
-            // Get direction by sampling nearby points
-            const epsilon = 0.001;
-            const t1 = Math.max(0, t - epsilon);
-            const t2 = Math.min(1, t + epsilon);
-            const p1 = getShapePointAt(shape, t1);
-            const p2 = getShapePointAt(shape, t2);
+            let direction: Point2D;
 
-            // Calculate direction vector
-            const direction = normalizeVector({
-                x: p2.x - p1.x,
-                y: p2.y - p1.y,
-            });
+            if (includeDirection) {
+                // Get direction by sampling nearby points
+                const epsilon = 0.001;
+                const t1 = Math.max(0, t - epsilon);
+                const t2 = Math.min(1, t + epsilon);
+                const p1 = getShapePointAt(shape, t1);
+                const p2 = getShapePointAt(shape, t2);
+
+                // Calculate direction vector
+                direction = normalizeVector({
+                    x: p2.x - p1.x,
+                    y: p2.y - p1.y,
+                });
+            } else {
+                // Provide a zero vector when direction is not needed
+                // Skip the expensive getShapePointAt calls for direction calculation
+                direction = { x: 0, y: 0 };
+            }
 
             samples.push({ point, direction });
             nextSampleDistance += intervalDistance;

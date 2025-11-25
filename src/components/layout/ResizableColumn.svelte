@@ -88,7 +88,9 @@
         class:dragging={isDragging}
         aria-label="Resize {position} panel (Arrow keys to adjust)"
         type="button"
-    ></button>
+    >
+        <div class="handle-indicator"></div>
+    </button>
 
     <slot />
 </div>
@@ -124,6 +126,9 @@
         padding: 0;
         z-index: 10;
         transition: background-color 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .resize-handle:hover {
@@ -134,6 +139,43 @@
     .resize-handle.dragging {
         background-color: rgb(0, 83, 135);
         opacity: 0.5;
+    }
+
+    /* Visual indicator - three vertical lines (grip pattern) */
+    .handle-indicator {
+        width: 4px;
+        height: 32px;
+        position: relative;
+        pointer-events: none;
+        transition: all 0.15s ease;
+    }
+
+    .handle-indicator::before,
+    .handle-indicator::after {
+        content: '';
+        position: absolute;
+        width: 3px;
+        height: 100%;
+        background-color: #9ca3af;
+        top: 0;
+    }
+
+    .handle-indicator::before {
+        left: 0;
+    }
+
+    .handle-indicator::after {
+        right: 0;
+    }
+
+    .resize-handle:hover .handle-indicator::before,
+    .resize-handle:hover .handle-indicator::after {
+        background-color: rgb(0, 83, 135);
+    }
+
+    .resize-handle.dragging .handle-indicator::before,
+    .resize-handle.dragging .handle-indicator::after {
+        background-color: rgb(0, 83, 135);
     }
 
     .resize-handle-left {

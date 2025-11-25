@@ -1,7 +1,7 @@
 import type { DrawingData } from './interfaces';
 import type { LayerData } from '$lib/cam/layer/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
-import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 import { Layer } from '$lib/cam/layer/classes.svelte';
 import { Unit } from '$lib/config/units/units';
@@ -33,7 +33,7 @@ export class Drawing implements DrawingData {
         this.#layers = undefined;
     }
 
-    get bounds(): BoundingBox {
+    get bounds(): BoundingBoxData {
         const shapes = this.#data?.shapes ?? [];
         if (shapes.length === 0) {
             return EMPTY_BOUNDS;

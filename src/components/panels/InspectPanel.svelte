@@ -84,6 +84,17 @@
         !!(selectedLayerId || highlightedLayerId)
     );
 
+    const hasAnySelection = $derived(
+        hasLeadSelection ||
+            hasRapidSelection ||
+            !!selectedKerfId ||
+            hasCutSelection ||
+            hasPartSelection ||
+            hasChainSelection ||
+            hasShapeSelection ||
+            hasLayerSelection
+    );
+
     $effect(() => {
         console.log('[InspectPanel] Selection state:', {
             hasLeadSelection,
@@ -94,11 +105,12 @@
             hasChainSelection,
             hasShapeSelection,
             hasLayerSelection,
+            hasAnySelection,
         });
     });
 </script>
 
-<AccordionPanel title="Inspect" isExpanded={true}>
+<AccordionPanel title="Inspect" isExpanded={hasAnySelection}>
     {#if hasLeadSelection}
         {console.log('[InspectPanel] Rendering LeadProperties')}
         <LeadProperties />

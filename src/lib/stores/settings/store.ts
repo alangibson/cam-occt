@@ -73,6 +73,12 @@ function loadSettings(): ApplicationSettings {
                                       .zoomToFit === 'boolean'
                                       ? parsed.optimizationSettings.zoomToFit
                                       : DEFAULT_OPTIMIZATION_SETTINGS.zoomToFit,
+                              avoidLeadKerfOverlap:
+                                  typeof parsed.optimizationSettings
+                                      .avoidLeadKerfOverlap === 'boolean'
+                                      ? parsed.optimizationSettings
+                                            .avoidLeadKerfOverlap
+                                      : DEFAULT_OPTIMIZATION_SETTINGS.avoidLeadKerfOverlap,
                           }
                         : DEFAULT_OPTIMIZATION_SETTINGS;
 
@@ -382,6 +388,23 @@ function createSettingsStore(): SettingsStore {
                     optimizationSettings: {
                         ...state.settings.optimizationSettings,
                         zoomToFit: enabled,
+                    },
+                };
+                saveSettings(newSettings);
+                return {
+                    ...state,
+                    settings: newSettings,
+                };
+            });
+        },
+
+        setAvoidLeadKerfOverlap(enabled: boolean) {
+            update((state) => {
+                const newSettings = {
+                    ...state.settings,
+                    optimizationSettings: {
+                        ...state.settings.optimizationSettings,
+                        avoidLeadKerfOverlap: enabled,
                     },
                 };
                 saveSettings(newSettings);

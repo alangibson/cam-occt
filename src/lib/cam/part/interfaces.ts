@@ -5,7 +5,7 @@
  * for part detection algorithms.
  */
 
-import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import type { PartType } from './enums';
 import type { Part as PartClass } from './classes.svelte';
@@ -16,7 +16,7 @@ export interface PartData {
     id: string;
     shell: ChainData;
     type: PartType.SHELL;
-    boundingBox: BoundingBox;
+    boundingBox: BoundingBoxData;
     voids: PartVoid[];
     slots: PartSlot[];
     layerName: string;
@@ -27,7 +27,7 @@ export interface PartVoid {
     id: string;
     chain: ChainData;
     type: PartType.HOLE;
-    boundingBox: BoundingBox;
+    boundingBox: BoundingBoxData;
 }
 
 // Open Chain inside of a shell
@@ -35,7 +35,7 @@ export interface PartSlot {
     id: string;
     chain: ChainData;
     type: PartType.SLOT;
-    boundingBox: BoundingBox;
+    boundingBox: BoundingBoxData;
 }
 
 export interface PartDetectionParameters {

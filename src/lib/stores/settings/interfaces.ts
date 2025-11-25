@@ -60,6 +60,9 @@ export interface SettingsStore {
     /** Set whether to automatically zoom to fit on Program stage */
     setZoomToFit: (enabled: boolean) => void;
 
+    /** Set whether to avoid lead kerf overlap */
+    setAvoidLeadKerfOverlap: (enabled: boolean) => void;
+
     /** Set the offset implementation */
     setOffsetImplementation: (implementation: OffsetImplementation) => void;
 

@@ -37,7 +37,7 @@ vi.mock('./part-operations', () => ({
 }));
 
 vi.mock('$lib/cam/pipeline/kerfs/kerf-generation', () => ({
-    generateAndAdjustKerf: vi.fn(),
+    generateAndAdjustKerf: vi.fn().mockResolvedValue({ success: true }),
 }));
 
 describe('createCutsFromOperation', () => {
@@ -309,16 +309,16 @@ describe('createCutsFromOperation', () => {
         const result = await createCutsFromOperation(operation, tolerance);
 
         expect(result.cuts).toHaveLength(1);
-        expect(generateAndAdjustKerf).toHaveBeenCalledWith(
-            mockCut,
-            mockTool,
-            expect.objectContaining({
-                id: 'chain-1',
-                shapes: mockChain.shapes,
-            }),
-            tolerance,
-            []
-        );
+
+        // Check that generateAndAdjustKerf was called
+        expect(generateAndAdjustKerf).toHaveBeenCalledTimes(1);
+        const callArgs = vi.mocked(generateAndAdjustKerf).mock.calls[0];
+        expect(callArgs[0]).toBe(mockCut);
+        expect(callArgs[1]).toBe(mockTool);
+        // Check that the chain argument has the correct id (it's a Chain instance)
+        expect(callArgs[2].id).toBe('chain-1');
+        expect(callArgs[3]).toBe(tolerance);
+        expect(callArgs[4]).toEqual([]);
     });
 
     it('should not generate kerfs when tool has zero kerf width', async () => {

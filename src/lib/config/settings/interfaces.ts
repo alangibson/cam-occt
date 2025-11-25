@@ -32,6 +32,9 @@ export interface OptimizationSettings {
 
     /** When true, automatically zoom to fit when entering the Program stage */
     zoomToFit: boolean;
+
+    /** When true, attempt to adjust cut start points to avoid lead kerf overlap */
+    avoidLeadKerfOverlap: boolean;
 }
 /**
  * Application settings interface

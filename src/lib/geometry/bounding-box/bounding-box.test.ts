@@ -20,7 +20,7 @@ import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
-import type { BoundingBox } from './interfaces';
+import type { BoundingBoxData } from './interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 
@@ -425,7 +425,7 @@ describe('getBoundingBoxForShape', () => {
 
 describe('combineBoundingBoxes', () => {
     it('combines multiple bounding boxes correctly', () => {
-        const boxes: BoundingBox[] = [
+        const boxes: BoundingBoxData[] = [
             { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             { min: { x: 5, y: 15 }, max: { x: 20, y: 25 } },
             { min: { x: -5, y: 5 }, max: { x: 8, y: 12 } },
@@ -439,7 +439,7 @@ describe('combineBoundingBoxes', () => {
     });
 
     it('handles single bounding box', () => {
-        const boxes: BoundingBox[] = [
+        const boxes: BoundingBoxData[] = [
             { min: { x: 10, y: 20 }, max: { x: 30, y: 40 } },
         ];
 
@@ -457,7 +457,7 @@ describe('combineBoundingBoxes', () => {
     });
 
     it('throws error for invalid bounding box', () => {
-        const invalidBoxes: BoundingBox[] = [
+        const invalidBoxes: BoundingBoxData[] = [
             { min: { x: 0, y: 0 }, max: { x: 10, y: 10 } },
             { min: { x: NaN, y: 0 }, max: { x: 20, y: 20 } },
         ];
@@ -875,7 +875,7 @@ describe('Edge Cases - getBoundingBoxForShape', () => {
 
 describe('Edge Cases - combineBoundingBoxes', () => {
     it('should throw error for bounding box with null min', () => {
-        const boxes: BoundingBox[] = [
+        const boxes: BoundingBoxData[] = [
             { min: null as unknown as Point2D, max: { x: 10, y: 10 } },
         ];
 
@@ -885,7 +885,7 @@ describe('Edge Cases - combineBoundingBoxes', () => {
     });
 
     it('should throw error for bounding box with null max', () => {
-        const boxes: BoundingBox[] = [
+        const boxes: BoundingBoxData[] = [
             { min: { x: 0, y: 0 }, max: null as unknown as Point2D },
         ];
 
@@ -895,7 +895,7 @@ describe('Edge Cases - combineBoundingBoxes', () => {
     });
 
     it('should throw error for bounding box with Infinity values', () => {
-        const boxes: BoundingBox[] = [
+        const boxes: BoundingBoxData[] = [
             { min: { x: 0, y: 0 }, max: { x: Infinity, y: 10 } },
         ];
 

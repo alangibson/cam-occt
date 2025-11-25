@@ -1,6 +1,7 @@
 <script lang="ts">
     import { layerStore } from '$lib/stores/layers/store.svelte';
     import { drawingStore } from '$lib/stores/drawing/store';
+    import InspectProperties from './InspectProperties.svelte';
 
     // Reactive layer data
     const drawing = $derived($drawingStore.drawing);
@@ -12,6 +13,43 @@
         activeLayerId
             ? layers.find((layer) => layer.name === activeLayerId)
             : null
+    );
+
+    // Build properties array
+    const properties = $derived(
+        selectedLayer
+            ? (() => {
+                  const props: Array<{ property: string; value: string }> = [];
+
+                  // Type is always first
+                  props.push({
+                      property: 'Type',
+                      value: 'Layer',
+                  });
+
+                  props.push({
+                      property: 'Name',
+                      value: selectedLayer.name,
+                  });
+
+                  props.push({
+                      property: 'Shapes',
+                      value: String(selectedLayer.shapes.length),
+                  });
+
+                  props.push({
+                      property: 'Chains',
+                      value: String(selectedLayer.chains.length),
+                  });
+
+                  props.push({
+                      property: 'Parts',
+                      value: String(selectedLayer.parts.length),
+                  });
+
+                  return props;
+              })()
+            : []
     );
 
     async function copyLayerToClipboard() {
@@ -29,106 +67,12 @@
 
 <div class="layer-properties">
     {#if selectedLayer}
-        <div class="property-group">
-            <div class="property-row">
-                <span class="property-label">Name:</span>
-                <span class="property-value">{selectedLayer.name}</span>
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Shapes:</span>
-                <span class="property-value">{selectedLayer.shapes.length}</span
-                >
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Chains:</span>
-                <span class="property-value">{selectedLayer.chains.length}</span
-                >
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Parts:</span>
-                <span class="property-value">{selectedLayer.parts.length}</span>
-            </div>
-        </div>
-
-        <div class="button-row">
-            <button
-                class="copy-button"
-                onclick={copyLayerToClipboard}
-                title="Copy layer info to clipboard"
-            >
-                Copy
-            </button>
-        </div>
+        <InspectProperties {properties} onCopy={copyLayerToClipboard} />
     {/if}
 </div>
 
 <style>
     .layer-properties {
         min-height: 200px;
-    }
-
-    .property-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .property-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 0.5rem;
-        padding: 0.25rem 0;
-        min-width: 0;
-    }
-
-    .property-label {
-        font-weight: 500;
-        color: #333;
-        min-width: 60px;
-        flex-shrink: 0;
-    }
-
-    .property-value {
-        font-family: 'Courier New', monospace;
-        color: #666;
-        text-align: right;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        min-width: 0;
-        flex-shrink: 1;
-    }
-
-    .button-row {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .copy-button {
-        padding: 0.25rem 0.75rem;
-        background-color: #fff;
-        color: #374151;
-        border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .copy-button:hover {
-        background-color: #f9fafb;
-        border-color: #9ca3af;
-    }
-
-    .copy-button:active {
-        background-color: #f3f4f6;
     }
 </style>

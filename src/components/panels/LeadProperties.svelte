@@ -3,6 +3,7 @@
     import { planStore } from '$lib/stores/plan/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { LeadType } from '$lib/cam/lead/enums';
+    import InspectProperties from './InspectProperties.svelte';
 
     // Reactive lead data
     $: leadState = $leadStore;
@@ -63,22 +64,98 @@
         let sweep: number;
 
         if (clockwise) {
-            // For clockwise arcs, sweep from start to end going clockwise
             sweep = startAngle - endAngle;
             if (sweep < 0) {
                 sweep += 2 * Math.PI;
             }
         } else {
-            // For counterclockwise arcs, sweep from start to end going counterclockwise
             sweep = endAngle - startAngle;
             if (sweep < 0) {
                 sweep += 2 * Math.PI;
             }
         }
 
-        // Convert to degrees
         return radiansToDegrees(sweep);
     }
+
+    // Build properties array
+    $: properties =
+        parsedLead && selectedCut && leadConfig
+            ? (() => {
+                  const props: Array<{ property: string; value: string }> = [];
+
+                  // Type is always first
+                  props.push({
+                      property: 'Type',
+                      value: getLeadTypeName(parsedLead.leadType),
+                  });
+
+                  props.push({
+                      property: 'Cut',
+                      value: selectedCut.name,
+                  });
+
+                  if (selectedOperation) {
+                      props.push({
+                          property: 'Operation',
+                          value: selectedOperation.name,
+                      });
+                  }
+
+                  props.push({
+                      property: 'Lead Type',
+                      value: getLeadTypeLabel(leadConfig.type),
+                  });
+
+                  props.push({
+                      property: 'Length',
+                      value: `${leadConfig.length.toFixed(2)} units`,
+                  });
+
+                  if (leadConfig.angle !== undefined) {
+                      props.push({
+                          property: 'Angle',
+                          value: `${leadConfig.angle}°`,
+                      });
+                  } else {
+                      props.push({
+                          property: 'Angle',
+                          value: 'Auto-calculated',
+                      });
+                  }
+
+                  props.push({
+                      property: 'Flip Side',
+                      value: leadConfig.flipSide ? 'Yes' : 'No',
+                  });
+
+                  if (leadConfig.fit !== undefined) {
+                      props.push({
+                          property: 'Auto-fit',
+                          value: leadConfig.fit ? 'Yes' : 'No',
+                      });
+                  }
+
+                  // Add geometry properties if available
+                  if (leadGeometry) {
+                      if (leadGeometry.connectionPoint) {
+                          props.push({
+                              property: 'Connection',
+                              value: `(${leadGeometry.connectionPoint.x.toFixed(2)}, ${leadGeometry.connectionPoint.y.toFixed(2)})`,
+                          });
+                      }
+
+                      if (leadGeometry.normal) {
+                          props.push({
+                              property: 'Normal',
+                              value: `(${leadGeometry.normal.x.toFixed(3)}, ${leadGeometry.normal.y.toFixed(3)})`,
+                          });
+                      }
+                  }
+
+                  return props;
+              })()
+            : [];
 
     async function copyLeadToClipboard() {
         if (!selectedLeadId || !parsedLead || !selectedCut || !leadConfig)
@@ -104,158 +181,63 @@
 
 <div class="lead-properties">
     {#if parsedLead && selectedCut && leadConfig}
-        <div class="property-group">
-            <div class="property-row">
-                <span class="property-label">Type:</span>
-                <span class="property-value lead-type">
-                    {getLeadTypeName(parsedLead.leadType)}
-                </span>
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Cut:</span>
-                <span class="property-value">{selectedCut.name}</span>
-            </div>
-
-            {#if selectedOperation}
-                <div class="property-row">
-                    <span class="property-label">Operation:</span>
-                    <span class="property-value">{selectedOperation.name}</span>
+        <InspectProperties {properties} onCopy={copyLeadToClipboard}>
+            {#if leadConfig.type === LeadType.ARC && leadGeometry?.geometry}
+                <div class="geometry-section">
+                    <h4 class="section-title">Arc Geometry:</h4>
+                    <div class="geometry-properties">
+                        <div class="geometry-row">
+                            <span class="geometry-label">Center:</span>
+                            <span class="geometry-value">
+                                ({leadGeometry.geometry.center.x.toFixed(2)}, {leadGeometry.geometry.center.y.toFixed(
+                                    2
+                                )})
+                            </span>
+                        </div>
+                        <div class="geometry-row">
+                            <span class="geometry-label">Radius:</span>
+                            <span class="geometry-value">
+                                {leadGeometry.geometry.radius.toFixed(2)} units
+                            </span>
+                        </div>
+                        <div class="geometry-row">
+                            <span class="geometry-label">Start Angle:</span>
+                            <span class="geometry-value">
+                                {radiansToDegrees(
+                                    leadGeometry.geometry.startAngle
+                                ).toFixed(1)}°
+                            </span>
+                        </div>
+                        <div class="geometry-row">
+                            <span class="geometry-label">End Angle:</span>
+                            <span class="geometry-value">
+                                {radiansToDegrees(
+                                    leadGeometry.geometry.endAngle
+                                ).toFixed(1)}°
+                            </span>
+                        </div>
+                        <div class="geometry-row">
+                            <span class="geometry-label">Sweep:</span>
+                            <span class="geometry-value">
+                                {calculateSweepAngle(
+                                    leadGeometry.geometry.startAngle,
+                                    leadGeometry.geometry.endAngle,
+                                    leadGeometry.geometry.clockwise
+                                ).toFixed(1)}°
+                            </span>
+                        </div>
+                        <div class="geometry-row">
+                            <span class="geometry-label">Direction:</span>
+                            <span class="geometry-value">
+                                {leadGeometry.geometry.clockwise
+                                    ? 'Clockwise'
+                                    : 'Counter-clockwise'}
+                            </span>
+                        </div>
+                    </div>
                 </div>
             {/if}
-
-            <div class="property-section-title">Lead Configuration</div>
-
-            <div class="property-row">
-                <span class="property-label">Lead Type:</span>
-                <span class="property-value"
-                    >{getLeadTypeLabel(leadConfig.type)}</span
-                >
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Length:</span>
-                <span class="property-value"
-                    >{leadConfig.length.toFixed(2)} units</span
-                >
-            </div>
-
-            {#if leadConfig.angle !== undefined}
-                <div class="property-row">
-                    <span class="property-label">Angle:</span>
-                    <span class="property-value">{leadConfig.angle}°</span>
-                </div>
-            {:else}
-                <div class="property-row">
-                    <span class="property-label">Angle:</span>
-                    <span class="property-value auto">Auto-calculated</span>
-                </div>
-            {/if}
-
-            <div class="property-row">
-                <span class="property-label">Flip Side:</span>
-                <span class="property-value"
-                    >{leadConfig.flipSide ? 'Yes' : 'No'}</span
-                >
-            </div>
-
-            {#if leadConfig.fit !== undefined}
-                <div class="property-row">
-                    <span class="property-label">Auto-fit:</span>
-                    <span class="property-value"
-                        >{leadConfig.fit ? 'Yes' : 'No'}</span
-                    >
-                </div>
-            {/if}
-
-            {#if leadGeometry}
-                <div class="property-section-title">Lead Geometry</div>
-
-                {#if leadGeometry.connectionPoint}
-                    <div class="property-row">
-                        <span class="property-label">Connection:</span>
-                        <span class="property-value">
-                            ({leadGeometry.connectionPoint.x.toFixed(2)}, {leadGeometry.connectionPoint.y.toFixed(
-                                2
-                            )})
-                        </span>
-                    </div>
-                {/if}
-
-                {#if leadGeometry.normal}
-                    <div class="property-row">
-                        <span class="property-label">Normal:</span>
-                        <span class="property-value">
-                            ({leadGeometry.normal.x.toFixed(3)}, {leadGeometry.normal.y.toFixed(
-                                3
-                            )})
-                        </span>
-                    </div>
-                {/if}
-
-                {#if leadConfig.type === LeadType.ARC && leadGeometry.geometry}
-                    <div class="property-section-title">Arc Geometry</div>
-
-                    <div class="property-row">
-                        <span class="property-label">Center:</span>
-                        <span class="property-value">
-                            ({leadGeometry.geometry.center.x.toFixed(2)}, {leadGeometry.geometry.center.y.toFixed(
-                                2
-                            )})
-                        </span>
-                    </div>
-
-                    <div class="property-row">
-                        <span class="property-label">Radius:</span>
-                        <span class="property-value"
-                            >{leadGeometry.geometry.radius.toFixed(2)} units</span
-                        >
-                    </div>
-
-                    <div class="property-row">
-                        <span class="property-label">Start Angle:</span>
-                        <span class="property-value"
-                            >{radiansToDegrees(
-                                leadGeometry.geometry.startAngle
-                            ).toFixed(1)}°</span
-                        >
-                    </div>
-
-                    <div class="property-row">
-                        <span class="property-label">End Angle:</span>
-                        <span class="property-value"
-                            >{radiansToDegrees(
-                                leadGeometry.geometry.endAngle
-                            ).toFixed(1)}°</span
-                        >
-                    </div>
-
-                    <div class="property-row">
-                        <span class="property-label">Sweep:</span>
-                        <span class="property-value"
-                            >{calculateSweepAngle(
-                                leadGeometry.geometry.startAngle,
-                                leadGeometry.geometry.endAngle,
-                                leadGeometry.geometry.clockwise
-                            ).toFixed(1)}°</span
-                        >
-                    </div>
-
-                    <div class="property-row">
-                        <span class="property-label">Direction:</span>
-                        <span class="property-value"
-                            >{leadGeometry.geometry.clockwise
-                                ? 'Clockwise'
-                                : 'Counter-clockwise'}</span
-                        >
-                    </div>
-                {/if}
-            {/if}
-
-            <button class="copy-button" onclick={copyLeadToClipboard}>
-                Copy to Clipboard
-            </button>
-        </div>
+        </InspectProperties>
     {:else}
         <p class="no-selection">No lead selected</p>
     {/if}
@@ -264,72 +246,50 @@
 <style>
     .lead-properties {
         padding: 0.5rem;
+        min-height: 200px;
     }
 
-    .property-group {
+    .geometry-section {
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background-color: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 0.25rem;
+    }
+
+    .section-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .geometry-properties {
         display: flex;
         flex-direction: column;
-        gap: 0.5rem;
+        gap: 0.25rem;
     }
 
-    .property-section-title {
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: #333;
-        margin-top: 0.5rem;
-        padding-top: 0.5rem;
-        border-top: 1px solid #e0e0e0;
-    }
-
-    .property-row {
+    .geometry-row {
         display: flex;
         justify-content: space-between;
-        align-items: flex-start;
-        gap: 1rem;
-        font-size: 0.875rem;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
     }
 
-    .property-label {
+    .geometry-label {
         font-weight: 500;
-        color: #666;
-        flex-shrink: 0;
+        color: #6b7280;
     }
 
-    .property-value {
-        text-align: right;
-        word-break: break-word;
-        color: #333;
-        font-family: 'Courier New', monospace;
-    }
-
-    .property-value.lead-type {
-        font-weight: 600;
-        color: rgb(0, 83, 135);
-    }
-
-    .property-value.auto {
-        font-style: italic;
-        color: #999;
-    }
-
-    .copy-button {
-        margin-top: 0.5rem;
-        padding: 0.5rem;
-        background-color: #f5f5f5;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 0.875rem;
-        transition: all 0.2s ease;
-    }
-
-    .copy-button:hover {
-        background-color: #e0e0e0;
-        border-color: #999;
-    }
-
-    .copy-button:active {
-        background-color: #d0d0d0;
+    .geometry-value {
+        font-family: monospace;
+        color: #374151;
+        background-color: #f3f4f6;
+        padding: 0.125rem 0.25rem;
+        border-radius: 0.125rem;
+        font-size: 0.75rem;
     }
 
     .no-selection {

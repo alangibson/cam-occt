@@ -7,7 +7,7 @@ import type { ShapeData } from '$lib/cam/shape/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Ellipse } from '$lib/geometry/ellipse/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
-import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { PartData, PartVoid } from '$lib/cam/part/interfaces';
 import { Part } from '$lib/cam/part/classes.svelte';
@@ -83,7 +83,7 @@ describe('Optimize Cut Order', () => {
         shellChain: ChainData,
         holeChains: ChainData[] = []
     ): Part => {
-        const createBoundingBox = (): BoundingBox => ({
+        const createBoundingBox = (): BoundingBoxData => ({
             min: { x: 0, y: 0 },
             max: { x: 100, y: 100 },
         });

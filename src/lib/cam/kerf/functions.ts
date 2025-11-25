@@ -15,11 +15,13 @@ import type { ChainData } from '$lib/cam/chain/interfaces';
 import { Chain } from '$lib/cam/chain/classes';
 import type { Part } from '$lib/cam/part/classes.svelte';
 import { GeometryType } from '$lib/geometry/enums';
+import { BoundingBox } from '$lib/geometry/bounding-box/classes';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 import {
     isChainClosed,
     tessellateChainToShapes,
-    sampleChainAtDistanceInterval,
     getChainPointAt,
+    sampleChain,
 } from '$lib/cam/chain/functions';
 import {
     offsetPaths,
@@ -144,17 +146,14 @@ function validateChainClosure(
  * @param tool - The Tool providing kerf width
  * @returns Promise resolving to a Kerf object with inner and outer offset chains
  * @throws Error if cut is missing cutChain or tool is missing kerfWidth
- *
- * @example
- * ```typescript
- * const kerf = await cutToKerf(myCut, myTool);
- * console.log('Inner kerf boundary:', kerf.innerChain);
- * console.log('Outer kerf boundary:', kerf.outerChain);
- * console.log('Total kerf width:', kerf.kerfWidth);
- * console.log('Includes leads:', kerf.leadIn !== undefined || kerf.leadOut !== undefined);
- * ```
  */
-export async function cutToKerf(cut: CutData, tool: Tool): Promise<Kerf> {
+export async function cutToKerf(
+    cut: CutData,
+    tool: Tool,
+    checkOverlap: boolean = false
+): Promise<Kerf> {
+    console.log(`[Kerf Gen] Running for cut "${cut.name}"`);
+
     // Validation
     if (!cut.cutChain) {
         throw new Error('Cut must have a cutChain to generate kerf');
@@ -318,46 +317,48 @@ export async function cutToKerf(cut: CutData, tool: Tool): Promise<Kerf> {
     }
 
     // Check if lead kerfs overlap with the ORIGINAL chain (before offset)
-    // We need to check the original chain, not the offset cut chain
+    // Only perform this check if requested (when avoidLeadKerfOverlap is enabled)
     let leadInKerfOverlapsChain = false;
     let leadOutKerfOverlapsChain = false;
 
-    // Get the original chain shapes (before any offset was applied)
-    const originalShapes = cut.offset?.originalShapes || cutChain.shapes;
-    const originalChain: ChainData = {
-        id: cutChain.id,
-        shapes: originalShapes,
-    };
+    if (checkOverlap) {
+        // Get the original chain shapes (before any offset was applied)
+        const originalShapes = cut.offset?.originalShapes || cutChain.shapes;
+        const originalChain: ChainData = {
+            id: cutChain.id,
+            shapes: originalShapes,
+        };
 
-    if (leadInOuterChain) {
+        if (leadInOuterChain) {
+            console.log(
+                `[Kerf Gen] Checking lead-in kerf overlap for cut "${cut.name}"`
+            );
+            // Check if original chain intersects with the lead-in kerf zone
+            // Sampling interval scales with kerf width for unit independence
+            leadInKerfOverlapsChain = doesLeadKerfOverlapChain(
+                leadInOuterChain,
+                originalChain,
+                kerfWidth
+            );
+        }
+
+        if (leadOutOuterChain) {
+            console.log(
+                `[Kerf Gen] Checking lead-out kerf overlap for cut "${cut.name}"`
+            );
+            // Check if original chain intersects with the lead-out kerf zone
+            // Sampling interval scales with kerf width for unit independence
+            leadOutKerfOverlapsChain = doesLeadKerfOverlapChain(
+                leadOutOuterChain,
+                originalChain,
+                kerfWidth
+            );
+        }
+
         console.log(
-            `[Kerf Gen] Checking lead-in kerf overlap for cut "${cut.name}"`
-        );
-        // Check if original chain intersects with the lead-in kerf zone
-        // Use half of kerf width as sampling interval for appropriate resolution
-        leadInKerfOverlapsChain = doesLeadKerfOverlapChain(
-            leadInOuterChain,
-            originalChain,
-            kerfWidth / 2
+            `[Kerf Gen] Lead kerf overlap summary for "${cut.name}": leadIn=${leadInKerfOverlapsChain}, leadOut=${leadOutKerfOverlapsChain}`
         );
     }
-
-    if (leadOutOuterChain) {
-        console.log(
-            `[Kerf Gen] Checking lead-out kerf overlap for cut "${cut.name}"`
-        );
-        // Check if original chain intersects with the lead-out kerf zone
-        // Use half of kerf width as sampling interval for appropriate resolution
-        leadOutKerfOverlapsChain = doesLeadKerfOverlapChain(
-            leadOutOuterChain,
-            originalChain,
-            kerfWidth / 2
-        );
-    }
-
-    console.log(
-        `[Kerf Gen] Lead kerf overlap summary for "${cut.name}": leadIn=${leadInKerfOverlapsChain}, leadOut=${leadOutKerfOverlapsChain}`
-    );
 
     // Create Kerf object with lead geometry from the cut
     const kerf: Kerf = {
@@ -381,29 +382,31 @@ export async function cutToKerf(cut: CutData, tool: Tool): Promise<Kerf> {
         version: KERF_VERSION,
     };
 
+    console.log(`[Kerf Gen] Done running for cut "${cut.name}"`);
+
     return kerf;
 }
 
 /**
  * Check if a lead kerf overlaps with the original chain
  *
- * Uses point sampling + ray tracing to detect if the original chain passes through
- * the Lead Kerf surface. The original chain is sampled at regular intervals
- * (specified by distanceInterval), and each sampled point is tested against the
- * Lead Kerf polygon using ray-tracing point-in-polygon algorithms.
+ * Uses distance-based sampling + ray tracing to detect if the original chain passes through
+ * the Lead Kerf surface. The original chain is sampled at intervals based on the kerf width,
+ * and each point is tested against the Lead Kerf polygon using ray-tracing point-in-polygon
+ * algorithms.
  *
  * For leads (which are open paths), Clipper2 with EndType.Round produces a single
  * closed polygon in the outer chain that represents the entire kerf surface.
  *
  * @param leadKerfOuterChain - The outer kerf chain for the lead (closed polygon from Clipper2)
  * @param originalChain - The original chain before any offset was applied
- * @param distanceInterval - Distance between sampling points on the original chain
+ * @param kerfWidth - The kerf width in current units (used to determine sampling interval)
  * @returns true if the lead kerf overlaps with the original chain
  */
 export function doesLeadKerfOverlapChain(
     leadKerfOuterChain: OffsetChain | undefined,
     originalChain: ChainData,
-    distanceInterval: number
+    kerfWidth: number
 ): boolean {
     // For leads, only the outer chain exists (it's a closed polygon from Clipper2)
     if (!leadKerfOuterChain) {
@@ -413,14 +416,39 @@ export function doesLeadKerfOverlapChain(
         return false;
     }
 
-    // Sample the original chain at the specified distance interval
-    const samples = sampleChainAtDistanceInterval(
-        originalChain,
-        distanceInterval
-    );
+    // Fast bounding box pre-filtering: if bounding boxes don't overlap, chains can't overlap
+    // Only perform if both chains have shapes
+    if (
+        leadKerfOuterChain.shapes.length > 0 &&
+        originalChain.shapes.length > 0
+    ) {
+        const leadKerfBBox = new BoundingBox(
+            getBoundingBoxForShapes(leadKerfOuterChain.shapes)
+        );
+        const originalBBox = new BoundingBox(
+            getBoundingBoxForShapes(originalChain.shapes)
+        );
+
+        if (!leadKerfBBox.overlaps(originalBBox)) {
+            console.log(
+                `[Overlap Check] ✓ Bounding boxes don't overlap - fast exit for chain "${originalChain.id}"`
+            );
+            return false;
+        }
+    }
+
+    // Sample the original chain at intervals based on kerf width
+    // Use 2.5× kerf width as the sampling interval - much coarser than kerfWidth/2 but sufficient
+    // This works in both mm and inches since kerfWidth is already in the correct units
+    const SAMPLE_INTERVAL_MULTIPLIER = 2.5;
+    const sampleInterval = kerfWidth * SAMPLE_INTERVAL_MULTIPLIER;
+
+    // Skip direction calculation for overlap detection (only need positions)
+    // This eliminates 2 extra getShapePointAt() calls per sample point
+    const samples = sampleChain(originalChain, sampleInterval, false);
 
     console.log(
-        `[Overlap Check] Checking chain "${originalChain.id}" with ${samples.length} sample points (interval: ${distanceInterval.toFixed(INTERVAL_DECIMAL_PLACES)})`
+        `[Overlap Check] Checking chain "${originalChain.id}" with ${samples.length} sample points (interval: ${sampleInterval.toFixed(INTERVAL_DECIMAL_PLACES)} units, kerf: ${kerfWidth.toFixed(INTERVAL_DECIMAL_PLACES)} units)`
     );
 
     // If no samples, no overlap is possible
@@ -438,10 +466,11 @@ export function doesLeadKerfOverlapChain(
 
     // Test each sampled point against the Lead Kerf polygon using ray tracing
     for (const sample of samples) {
+        const point = sample.point;
         try {
-            if (isPointInsideChainExact(sample.point, leadKerfPolygon)) {
+            if (isPointInsideChainExact(point, leadKerfPolygon)) {
                 console.log(
-                    `[Overlap Check] ✗ Sample point (${sample.point.x.toFixed(2)}, ${sample.point.y.toFixed(2)}) is INSIDE lead kerf polygon`
+                    `[Overlap Check] ✗ Test point (${point.x.toFixed(2)}, ${point.y.toFixed(2)}) is INSIDE lead kerf polygon`
                 );
                 console.log(
                     `[Overlap Check] OVERLAP DETECTED for chain "${originalChain.id}"`

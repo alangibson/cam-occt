@@ -6,7 +6,7 @@ import type { Point2D } from '$lib/geometry/point/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { Spline } from '$lib/geometry/spline/interfaces';
 import type { Arc } from '$lib/geometry/arc/interfaces';
-import type { BoundingBox } from './interfaces';
+import type { BoundingBoxData } from './interfaces';
 import { GeometryType } from '$lib/geometry/enums';
 import { polylineToPoints } from '$lib/geometry/polyline/functions';
 import { tessellateSpline } from '$lib/geometry/spline/functions';
@@ -19,7 +19,7 @@ import { THREE_HALVES_PI } from './constants';
 import type { ChainData } from '$lib/cam/chain/interfaces';
 import { getDefaults } from '$lib/config/defaults/defaults-manager';
 
-export function getBoundingBoxForLine(line: Line): BoundingBox {
+export function getBoundingBoxForLine(line: Line): BoundingBoxData {
     if (
         !line.start ||
         !line.end ||
@@ -45,7 +45,7 @@ export function getBoundingBoxForLine(line: Line): BoundingBox {
     };
 }
 
-export function getBoundingBoxForCircle(circle: Circle): BoundingBox {
+export function getBoundingBoxForCircle(circle: Circle): BoundingBoxData {
     if (
         !circle.center ||
         !isFinite(circle.center.x) ||
@@ -70,7 +70,7 @@ export function getBoundingBoxForCircle(circle: Circle): BoundingBox {
     };
 }
 
-export function getBoundingBoxForArc(arc: Arc): BoundingBox {
+export function getBoundingBoxForArc(arc: Arc): BoundingBoxData {
     if (
         !arc.center ||
         !isFinite(arc.center.x) ||
@@ -150,7 +150,7 @@ export function getBoundingBoxForArc(arc: Arc): BoundingBox {
     };
 }
 
-export function getBoundingBoxForPolyline(polyline: Polyline): BoundingBox {
+export function getBoundingBoxForPolyline(polyline: Polyline): BoundingBoxData {
     let minX: number = Infinity;
     let maxX: number = -Infinity;
     let minY: number = Infinity;
@@ -202,7 +202,7 @@ export function getBoundingBoxForPolyline(polyline: Polyline): BoundingBox {
     };
 }
 
-export function getBoundingBoxForEllipse(ellipse: Ellipse): BoundingBox {
+export function getBoundingBoxForEllipse(ellipse: Ellipse): BoundingBoxData {
     if (
         !ellipse.center ||
         !isFinite(ellipse.center.x) ||
@@ -257,7 +257,7 @@ export function getBoundingBoxForEllipse(ellipse: Ellipse): BoundingBox {
     };
 }
 
-export function getBoundingBoxForSpline(spline: Spline): BoundingBox {
+export function getBoundingBoxForSpline(spline: Spline): BoundingBoxData {
     if (!spline.controlPoints || spline.controlPoints.length === 0) {
         throw new Error('Invalid spline: must have control points');
     }
@@ -324,7 +324,7 @@ export function getBoundingBoxForSpline(spline: Spline): BoundingBox {
     };
 }
 
-export function getBoundingBoxForShape(shape: ShapeData): BoundingBox {
+export function getBoundingBoxForShape(shape: ShapeData): BoundingBoxData {
     switch (shape.type) {
         case GeometryType.LINE:
             return getBoundingBoxForLine(shape.geometry as Line);
@@ -343,7 +343,9 @@ export function getBoundingBoxForShape(shape: ShapeData): BoundingBox {
     }
 }
 
-export function combineBoundingBoxes(boxes: BoundingBox[]): BoundingBox {
+export function combineBoundingBoxes(
+    boxes: BoundingBoxData[]
+): BoundingBoxData {
     if (boxes.length === 0) {
         throw new Error('Cannot combine empty array of bounding boxes');
     }
@@ -380,14 +382,14 @@ export function combineBoundingBoxes(boxes: BoundingBox[]): BoundingBox {
     };
 }
 
-export function getBoundingBoxForShapes(shapes: ShapeData[]): BoundingBox {
+export function getBoundingBoxForShapes(shapes: ShapeData[]): BoundingBoxData {
     if (shapes.length === 0) {
         throw new Error(
             'Cannot calculate bounding box for empty array of shapes'
         );
     }
 
-    const boundingBoxes: BoundingBox[] = shapes.map((shape) =>
+    const boundingBoxes: BoundingBoxData[] = shapes.map((shape) =>
         getBoundingBoxForShape(shape)
     );
     return combineBoundingBoxes(boundingBoxes);
@@ -400,7 +402,7 @@ export function calculateDynamicTolerance(
     if (shapes.length === 0) return fallbackTolerance;
 
     try {
-        const boundingBox: BoundingBox = getBoundingBoxForShapes(shapes);
+        const boundingBox: BoundingBoxData = getBoundingBoxForShapes(shapes);
         const width: number = boundingBox.max.x - boundingBox.min.x;
         const height: number = boundingBox.max.y - boundingBox.min.y;
         const diagonal: number = Math.sqrt(width * width + height * height);
@@ -420,7 +422,7 @@ export function calculateDynamicTolerance(
 /**
  * Calculates the bounding box of a chain by aggregating bounds of all shapes
  */
-export function calculateChainBoundingBox(chain: ChainData): BoundingBox {
+export function calculateChainBoundingBox(chain: ChainData): BoundingBoxData {
     const shapeBounds = chain.shapes.map((shape) =>
         getBoundingBoxForShape(shape)
     );
@@ -432,7 +434,7 @@ export function calculateChainBoundingBox(chain: ChainData): BoundingBox {
  * @deprecated Use getBoundingBoxForShape from '$lib/geometry/bounding-box' instead
  */
 
-export function getShapeBoundingBox(shape: ShapeData): BoundingBox {
+export function getShapeBoundingBox(shape: ShapeData): BoundingBoxData {
     return getBoundingBoxForShape(shape);
 }
 

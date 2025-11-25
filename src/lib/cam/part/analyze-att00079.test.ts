@@ -12,7 +12,7 @@ import { isChainClosed } from '$lib/cam/chain/functions';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 
 const problematicChains = [
     'chain-34',
@@ -24,7 +24,7 @@ const problematicChains = [
 
 interface ContainerInfo {
     chainId: string;
-    bounds: BoundingBox;
+    bounds: BoundingBoxData;
     areaRatio: number;
     shapeTypes: string;
 }
@@ -33,7 +33,7 @@ interface ChainAnalysis {
     chainId: string;
     shapeCount: number;
     shapeTypes: string;
-    bounds: BoundingBox;
+    bounds: BoundingBoxData;
     gapDistance: number;
     isClosed: boolean;
     potentialContainers: ContainerInfo[];

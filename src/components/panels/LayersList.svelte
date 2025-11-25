@@ -73,7 +73,7 @@
                                           data: layer.shapes.map((shape) => ({
                                               id: shape.id,
                                               name: shape.id,
-                                              type: shape.type,
+                                              type: `Shape<${shape.type}>`,
                                           })),
                                       },
                                       {
@@ -91,7 +91,7 @@
                                                   (shape) => ({
                                                       id: `chain-${chain.id}-${shape.id}`,
                                                       name: shape.id,
-                                                      type: shape.type,
+                                                      type: `Shape<${shape.type}>`,
                                                       shapeId: shape.id, // Store actual shape ID for selection
                                                   })
                                               ),
@@ -279,15 +279,18 @@
                 // Clear layer selection when selecting anything else
                 layerStore.clearSelection();
 
-                // Only process leaf rows, ignore other container rows
-                if (
-                    !rowId.startsWith('shapes-') &&
-                    !rowId.startsWith('chains-') &&
-                    !rowId.startsWith('parts-') &&
-                    !rowId.startsWith('part-') &&
-                    rowId !== 'cuts' &&
-                    rowId !== 'layers'
-                ) {
+                // Only process leaf rows, ignore container rows
+                // Container rows: shapes-, chains-, parts-, part-*-chains, part-*-voids, cuts, layers
+                const isContainer =
+                    rowId.startsWith('shapes-') ||
+                    rowId.startsWith('chains-') ||
+                    rowId.startsWith('parts-') ||
+                    rowId.endsWith('-chains') ||
+                    rowId.endsWith('-voids') ||
+                    rowId === 'cuts' ||
+                    rowId === 'layers';
+
+                if (!isContainer) {
                     // Get the row data to check if it has a chainId, partId, or cutId property
                     const rowData = findRowData(treeData, rowId);
 
@@ -329,22 +332,49 @@
                         drawingStore.clearSelection();
                     } else if (rowData?.shellChainId) {
                         // It's a part shell row - select the shell chain
+                        console.log(
+                            '[LayersList] Selecting shell chain:',
+                            rowData.shellChainId
+                        );
                         chainStore.selectChain(rowData.shellChainId);
                         partStore.clearPartSelection();
+                        partStore.clearHighlight();
+                        partStore.clearPartHover();
                         drawingStore.clearSelection();
                         cutStore.selectCut(null);
+                        selectLead(null);
+                        rapidStore.clearSelection();
+                        kerfStore.selectKerf(null);
                     } else if (rowData?.voidChainId) {
                         // It's a part void row - select the void chain
+                        console.log(
+                            '[LayersList] Selecting void chain:',
+                            rowData.voidChainId
+                        );
                         chainStore.selectChain(rowData.voidChainId);
                         partStore.clearPartSelection();
+                        partStore.clearHighlight();
+                        partStore.clearPartHover();
                         drawingStore.clearSelection();
                         cutStore.selectCut(null);
+                        selectLead(null);
+                        rapidStore.clearSelection();
+                        kerfStore.selectKerf(null);
                     } else if (rowData?.slotChainId) {
                         // It's a part slot row - select the slot chain
+                        console.log(
+                            '[LayersList] Selecting slot chain:',
+                            rowData.slotChainId
+                        );
                         chainStore.selectChain(rowData.slotChainId);
                         partStore.clearPartSelection();
+                        partStore.clearHighlight();
+                        partStore.clearPartHover();
                         drawingStore.clearSelection();
                         cutStore.selectCut(null);
+                        selectLead(null);
+                        rapidStore.clearSelection();
+                        kerfStore.selectKerf(null);
                     } else if (rowData?.chainId) {
                         // It's a chain row - select the chain
                         console.log(

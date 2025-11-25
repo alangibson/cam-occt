@@ -999,10 +999,8 @@
     function handleWheel(e: globalThis.WheelEvent) {
         e.preventDefault();
 
-        const interactionState = renderingPipeline.getInteractionState();
-        if (!interactionState) return;
-
-        const { mousePos } = interactionState;
+        // Use the actual wheel event position for zoom center
+        const zoomPoint = { x: e.offsetX, y: e.offsetY };
 
         // Calculate new scale in 5% increments
         const currentPercent = Math.round(zoomScale * 100);
@@ -1010,9 +1008,12 @@
         const newPercent = Math.max(5, currentPercent + increment); // Minimum 5% zoom
         const newZoomScale = newPercent / 100;
 
+        // Ensure coordinator has current transform before calculating
+        coordinator.updateTransform(zoomScale, panOffset, unitScale);
+
         // Zoom towards mouse position using coordinate transformer
         const newPanOffset = coordinator.calculateZoomOffset(
-            mousePos,
+            zoomPoint,
             zoomScale,
             newZoomScale
         );

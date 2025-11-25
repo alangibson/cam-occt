@@ -14,6 +14,7 @@
         getShapeEndPoint,
     } from '$lib/cam/shape/functions';
     import { polylineToPoints } from '$lib/geometry/polyline/functions';
+    import InspectProperties from './InspectProperties.svelte';
 
     $: drawing = $drawingStore.drawing;
     $: selectedShapes = $drawingStore.selectedShapes;
@@ -71,6 +72,169 @@
         return shape.type.toUpperCase();
     }
 
+    // Build properties array for the grid
+    $: properties = displayShape
+        ? (() => {
+              const props: Array<{ property: string; value: string }> = [];
+
+              // Type is always first
+              props.push({
+                  property: 'Type',
+                  value: getShapeTypeDisplay(displayShape),
+              });
+
+              props.push({
+                  property: 'Name',
+                  value: displayShape.id,
+              });
+
+              if (displayShape.layer) {
+                  props.push({
+                      property: 'Layer',
+                      value: displayShape.layer,
+                  });
+              }
+
+              props.push({
+                  property: 'Origin',
+                  value: formatPoint(getShapeOrigin(displayShape)),
+              });
+
+              props.push({
+                  property: 'Start',
+                  value: formatPoint(getShapeStartPoint(displayShape)),
+              });
+
+              props.push({
+                  property: 'End',
+                  value: formatPoint(getShapeEndPoint(displayShape)),
+              });
+
+              // Add type-specific properties
+              if (
+                  displayShape.type === GeometryType.CIRCLE ||
+                  displayShape.type === GeometryType.ARC
+              ) {
+                  const geometry = displayShape.geometry as Circle | Arc;
+                  props.push({
+                      property: 'Radius',
+                      value: geometry.radius.toFixed(2),
+                  });
+
+                  if (displayShape.type === GeometryType.ARC) {
+                      const arcGeometry = displayShape.geometry as Arc;
+                      props.push({
+                          property: 'Start Angle',
+                          value:
+                              (
+                                  (arcGeometry.startAngle * 180) /
+                                  Math.PI
+                              ).toFixed(1) + '°',
+                      });
+                      props.push({
+                          property: 'End Angle',
+                          value:
+                              ((arcGeometry.endAngle * 180) / Math.PI).toFixed(
+                                  1
+                              ) + '°',
+                      });
+                      props.push({
+                          property: 'Direction',
+                          value: arcGeometry.clockwise
+                              ? 'Clockwise'
+                              : 'Counter-clockwise',
+                      });
+                  }
+              }
+
+              if (displayShape.type === GeometryType.ELLIPSE) {
+                  const ellipseGeometry = displayShape.geometry as Ellipse;
+                  props.push({
+                      property: 'Center',
+                      value: formatPoint(ellipseGeometry.center),
+                  });
+                  props.push({
+                      property: 'Major Axis End',
+                      value: formatPoint(ellipseGeometry.majorAxisEndpoint),
+                  });
+                  props.push({
+                      property: 'Minor/Major Ratio',
+                      value: ellipseGeometry.minorToMajorRatio.toFixed(3),
+                  });
+
+                  if (
+                      ellipseGeometry.startParam !== undefined &&
+                      ellipseGeometry.endParam !== undefined
+                  ) {
+                      props.push({
+                          property: 'Start Param',
+                          value: ellipseGeometry.startParam.toFixed(3),
+                      });
+                      props.push({
+                          property: 'End Param',
+                          value: ellipseGeometry.endParam.toFixed(3),
+                      });
+                      props.push({
+                          property: 'Direction',
+                          value: 'Counter-clockwise',
+                      });
+                  }
+              }
+
+              if (displayShape.type === GeometryType.SPLINE) {
+                  const splineGeometry = displayShape.geometry as Spline;
+                  props.push({
+                      property: 'Degree',
+                      value: String(splineGeometry.degree),
+                  });
+
+                  if (
+                      splineGeometry.controlPoints &&
+                      splineGeometry.controlPoints.length > 0
+                  ) {
+                      props.push({
+                          property: 'Control Points',
+                          value: String(splineGeometry.controlPoints.length),
+                      });
+                  }
+
+                  if (splineGeometry.knots && splineGeometry.knots.length > 0) {
+                      props.push({
+                          property: 'Knots',
+                          value: String(splineGeometry.knots.length),
+                      });
+                  }
+
+                  if (
+                      splineGeometry.weights &&
+                      splineGeometry.weights.length > 0
+                  ) {
+                      props.push({
+                          property: 'Weights',
+                          value: String(splineGeometry.weights.length),
+                      });
+                  }
+
+                  if (
+                      splineGeometry.fitPoints &&
+                      splineGeometry.fitPoints.length > 0
+                  ) {
+                      props.push({
+                          property: 'Fit Points',
+                          value: String(splineGeometry.fitPoints.length),
+                      });
+                  }
+
+                  props.push({
+                      property: 'Closed',
+                      value: splineGeometry.closed ? 'Yes' : 'No',
+                  });
+              }
+
+              return props;
+          })()
+        : [];
+
     async function copyShapeToClipboard() {
         if (!displayShape) return;
 
@@ -85,260 +249,19 @@
 
 <div class="shape-properties">
     {#if displayShape}
-        <div class="property-group">
-            <div class="property-row">
-                <span class="property-label">Name:</span>
-                <span class="property-value">{displayShape.id}</span>
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Type:</span>
-                <span class="property-value"
-                    >{getShapeTypeDisplay(displayShape)}</span
-                >
-            </div>
-
-            {#if displayShape.layer}
-                <div class="property-row">
-                    <span class="property-label">Layer:</span>
-                    <span class="property-value">{displayShape.layer}</span>
-                </div>
+        <InspectProperties {properties} onCopy={copyShapeToClipboard}>
+            {#if isShowingOffset}
+                <p class="offset-info">Showing offset shape</p>
+            {:else if isShowingHovered}
+                <p class="hover-info">
+                    Showing hovered shape (click to select)
+                </p>
+            {:else if selectedShapes.size > 1}
+                <p class="multi-selection">
+                    {selectedShapes.size} shapes selected (showing first)
+                </p>
             {/if}
-
-            <div class="property-row">
-                <span class="property-label">Origin:</span>
-                <span class="property-value"
-                    >{formatPoint(getShapeOrigin(displayShape))}</span
-                >
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Start:</span>
-                <span class="property-value"
-                    >{formatPoint(getShapeStartPoint(displayShape))}</span
-                >
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">End:</span>
-                <span class="property-value"
-                    >{formatPoint(getShapeEndPoint(displayShape))}</span
-                >
-            </div>
-
-            {#if displayShape.type === GeometryType.CIRCLE || displayShape.type === GeometryType.ARC}
-                {@const geometry = displayShape.geometry as Circle | Arc}
-                <div class="property-row">
-                    <span class="property-label">Radius:</span>
-                    <span class="property-value"
-                        >{geometry.radius.toFixed(2)}</span
-                    >
-                </div>
-
-                {#if displayShape.type === GeometryType.ARC}
-                    {@const arcGeometry = displayShape.geometry as Arc}
-                    <div class="property-row">
-                        <span class="property-label">Start Angle:</span>
-                        <span class="property-value"
-                            >{(
-                                (arcGeometry.startAngle * 180) /
-                                Math.PI
-                            ).toFixed(1)}°</span
-                        >
-                    </div>
-                    <div class="property-row">
-                        <span class="property-label">End Angle:</span>
-                        <span class="property-value"
-                            >{((arcGeometry.endAngle * 180) / Math.PI).toFixed(
-                                1
-                            )}°</span
-                        >
-                    </div>
-                    <div class="property-row">
-                        <span class="property-label">Direction:</span>
-                        <span class="property-value"
-                            >{arcGeometry.clockwise
-                                ? 'Clockwise'
-                                : 'Counter-clockwise'}</span
-                        >
-                    </div>
-                {/if}
-            {/if}
-
-            {#if displayShape.type === GeometryType.ELLIPSE}
-                {@const ellipseGeometry = displayShape.geometry as Ellipse}
-                <div class="property-row">
-                    <span class="property-label">Center:</span>
-                    <span class="property-value"
-                        >{formatPoint(ellipseGeometry.center)}</span
-                    >
-                </div>
-                <div class="property-row">
-                    <span class="property-label">Major Axis End:</span>
-                    <span class="property-value"
-                        >{formatPoint(ellipseGeometry.majorAxisEndpoint)}</span
-                    >
-                </div>
-                <div class="property-row">
-                    <span class="property-label">Minor/Major Ratio:</span>
-                    <span class="property-value"
-                        >{ellipseGeometry.minorToMajorRatio.toFixed(3)}</span
-                    >
-                </div>
-
-                {#if ellipseGeometry.startParam !== undefined && ellipseGeometry.endParam !== undefined}
-                    <div class="property-row">
-                        <span class="property-label">Start Param:</span>
-                        <span class="property-value"
-                            >{ellipseGeometry.startParam.toFixed(3)}</span
-                        >
-                    </div>
-                    <div class="property-row">
-                        <span class="property-label">End Param:</span>
-                        <span class="property-value"
-                            >{ellipseGeometry.endParam.toFixed(3)}</span
-                        >
-                    </div>
-                    <div class="property-row">
-                        <span class="property-label">Direction:</span>
-                        <span class="property-value">Counter-clockwise</span>
-                    </div>
-                {/if}
-            {/if}
-
-            {#if displayShape.type === GeometryType.SPLINE}
-                {@const splineGeometry = displayShape.geometry as Spline}
-                <div class="property-row">
-                    <span class="property-label">Degree:</span>
-                    <span class="property-value">{splineGeometry.degree}</span>
-                </div>
-
-                {#if splineGeometry.controlPoints && splineGeometry.controlPoints.length > 0}
-                    <div class="property-row">
-                        <span class="property-label">Control Points:</span>
-                        <span class="property-value"
-                            >{splineGeometry.controlPoints.length}</span
-                        >
-                    </div>
-                    <div class="spline-points">
-                        {#each splineGeometry.controlPoints.slice(0, 5) as point, index (index)}
-                            <div class="property-row small">
-                                <span class="property-label">
-                                    CP {index + 1}:</span
-                                >
-                                <span class="property-value"
-                                    >({point.x.toFixed(2)}, {point.y.toFixed(
-                                        2
-                                    )})</span
-                                >
-                            </div>
-                        {/each}
-                        {#if splineGeometry.controlPoints.length > 5}
-                            <div class="property-row small">
-                                <span class="property-label"> ...</span>
-                                <span class="property-value"
-                                    >+{splineGeometry.controlPoints.length - 5} more</span
-                                >
-                            </div>
-                        {/if}
-                    </div>
-                {/if}
-
-                {#if splineGeometry.knots && splineGeometry.knots.length > 0}
-                    <div class="property-row">
-                        <span class="property-label">Knots:</span>
-                        <span class="property-value"
-                            >{splineGeometry.knots.length}</span
-                        >
-                    </div>
-                    <div class="spline-knots">
-                        {#each splineGeometry.knots.slice(0, 10) as knot, index (index)}
-                            <div class="property-row small">
-                                <span class="property-label">
-                                    K {index + 1}:</span
-                                >
-                                <span class="property-value"
-                                    >{knot.toFixed(3)}</span
-                                >
-                            </div>
-                        {/each}
-                        {#if splineGeometry.knots.length > 10}
-                            <div class="property-row small">
-                                <span class="property-label"> ...</span>
-                                <span class="property-value"
-                                    >+{splineGeometry.knots.length - 10} more</span
-                                >
-                            </div>
-                        {/if}
-                    </div>
-                {/if}
-
-                {#if splineGeometry.weights && splineGeometry.weights.length > 0}
-                    <div class="property-row">
-                        <span class="property-label">Weights:</span>
-                        <span class="property-value"
-                            >{splineGeometry.weights.length}</span
-                        >
-                    </div>
-                    <div class="spline-weights">
-                        {#each splineGeometry.weights.slice(0, 10) as weight, index (index)}
-                            <div class="property-row small">
-                                <span class="property-label">
-                                    W {index + 1}:</span
-                                >
-                                <span class="property-value"
-                                    >{weight.toFixed(3)}</span
-                                >
-                            </div>
-                        {/each}
-                        {#if splineGeometry.weights.length > 10}
-                            <div class="property-row small">
-                                <span class="property-label"> ...</span>
-                                <span class="property-value"
-                                    >+{splineGeometry.weights.length - 10} more</span
-                                >
-                            </div>
-                        {/if}
-                    </div>
-                {/if}
-
-                {#if splineGeometry.fitPoints && splineGeometry.fitPoints.length > 0}
-                    <div class="property-row">
-                        <span class="property-label">Fit Points:</span>
-                        <span class="property-value"
-                            >{splineGeometry.fitPoints.length}</span
-                        >
-                    </div>
-                {/if}
-
-                <div class="property-row">
-                    <span class="property-label">Closed:</span>
-                    <span class="property-value"
-                        >{splineGeometry.closed ? 'Yes' : 'No'}</span
-                    >
-                </div>
-            {/if}
-        </div>
-
-        {#if isShowingOffset}
-            <p class="offset-info">Showing offset shape</p>
-        {:else if isShowingHovered}
-            <p class="hover-info">Showing hovered shape (click to select)</p>
-        {:else if selectedShapes.size > 1}
-            <p class="multi-selection">
-                {selectedShapes.size} shapes selected (showing first)
-            </p>
-        {/if}
-
-        <div class="button-row">
-            <button
-                class="copy-button"
-                onclick={copyShapeToClipboard}
-                title="Copy shape JSON to clipboard"
-            >
-                Copy
-            </button>
-        </div>
+        </InspectProperties>
     {/if}
 </div>
 
@@ -347,103 +270,29 @@
         min-height: 200px;
     }
 
-    .button-row {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .copy-button {
-        padding: 0.25rem 0.75rem;
-        background-color: #fff;
-        color: #374151;
-        border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .copy-button:hover {
-        background-color: #f9fafb;
-        border-color: #9ca3af;
-    }
-
-    .copy-button:active {
-        background-color: #f3f4f6;
-    }
-
-    /* h3 header removed - title now handled by AccordionPanel */
-
-    .property-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .property-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 0.5rem;
-        padding: 0.25rem 0;
-        min-width: 0;
-    }
-
-    .property-row.small {
-        padding: 0.125rem 0;
-        font-size: 0.9rem;
-        margin-left: 0.5rem;
-    }
-
-    .spline-points,
-    .spline-knots,
-    .spline-weights {
+    .multi-selection,
+    .hover-info,
+    .offset-info {
         margin-top: 0.5rem;
-    }
-
-    .property-label {
-        font-weight: 500;
-        color: #333;
-        min-width: 60px;
-        flex-shrink: 0;
-    }
-
-    .property-value {
-        font-family: 'Courier New', monospace;
-        color: #666;
-        text-align: right;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        min-width: 0;
-        flex-shrink: 1;
+        font-size: 0.875rem;
+        font-style: italic;
+        text-align: center;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
     }
 
     .multi-selection {
-        margin-top: 1rem;
-        font-size: 0.9rem;
         color: #666;
-        font-style: italic;
-        text-align: center;
+        background-color: #f9fafb;
     }
 
     .hover-info {
-        margin-top: 1rem;
-        font-size: 0.9rem;
         color: rgb(0, 83, 135);
-        font-style: italic;
-        text-align: center;
+        background-color: #eff6ff;
     }
 
     .offset-info {
-        margin-top: 1rem;
-        font-size: 0.9rem;
         color: rgb(0, 133, 84);
-        font-style: italic;
-        text-align: center;
+        background-color: #f0fdf4;
     }
 </style>

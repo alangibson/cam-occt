@@ -12,7 +12,7 @@ import type { Circle } from '$lib/geometry/circle/interfaces';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { Polyline } from '$lib/geometry/polyline/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
-import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import type { DrawingData } from '$lib/cam/drawing/interfaces';
 
 function filterToLargestLayer(shapes: ShapeData[]): ShapeData[] {
@@ -164,7 +164,7 @@ function calculateClosureTolerance(chain: ChainData): number {
     return cappedTolerance;
 }
 
-function calculateChainBoundingBox(chain: ChainData): BoundingBox {
+function calculateChainBoundingBox(chain: ChainData): BoundingBoxData {
     let minX = Infinity,
         maxX = -Infinity,
         minY = Infinity,
@@ -184,7 +184,7 @@ function calculateChainBoundingBox(chain: ChainData): BoundingBox {
     };
 }
 
-function getShapeBoundingBox(shape: ShapeData): BoundingBox {
+function getShapeBoundingBox(shape: ShapeData): BoundingBoxData {
     switch (shape.type) {
         case 'line':
             const line = shape.geometry as Line;

@@ -3,6 +3,7 @@
     import { cutStore } from '$lib/stores/cuts/store';
     import { operationsStore } from '$lib/stores/operations/store';
     import { CutDirection } from '$lib/cam/cut/enums';
+    import InspectProperties from './InspectProperties.svelte';
 
     // Reactive cut data
     $: cuts = $planStore.plan.cuts;
@@ -38,6 +39,116 @@
         return `${config.type.charAt(0).toUpperCase() + config.type.slice(1)}${config.length ? ` (${config.length.toFixed(2)})` : ''}`;
     }
 
+    // Build properties array
+    $: properties = selectedCut
+        ? (() => {
+              const props: Array<{ property: string; value: string }> = [];
+
+              // Type is always first
+              props.push({
+                  property: 'Type',
+                  value: 'Cut',
+              });
+
+              props.push({
+                  property: 'Name',
+                  value: selectedCut.name,
+              });
+
+              props.push({
+                  property: 'Enabled',
+                  value: selectedCut.enabled ? 'Yes' : 'No',
+              });
+
+              props.push({
+                  property: 'Order',
+                  value: String(selectedCut.order),
+              });
+
+              if (selectedOperation) {
+                  props.push({
+                      property: 'Operation',
+                      value: selectedOperation.name,
+                  });
+              }
+
+              props.push({
+                  property: 'Chain ID',
+                  value: selectedCut.chainId,
+              });
+
+              props.push({
+                  property: 'Cut Direction',
+                  value: getCutDirectionLabel(selectedCut.cutDirection),
+              });
+
+              if (selectedCut.isHole !== undefined) {
+                  props.push({
+                      property: 'Is Hole',
+                      value: selectedCut.isHole ? 'Yes' : 'No',
+                  });
+              }
+
+              if (selectedCut.holeUnderspeedPercent !== undefined) {
+                  props.push({
+                      property: 'Hole Speed',
+                      value: `${selectedCut.holeUnderspeedPercent}%`,
+                  });
+              }
+
+              if (selectedCut.feedRate !== undefined) {
+                  props.push({
+                      property: 'Feed Rate',
+                      value: String(selectedCut.feedRate),
+                  });
+              }
+
+              if (selectedCut.kerfWidth !== undefined) {
+                  props.push({
+                      property: 'Kerf Width',
+                      value: selectedCut.kerfWidth.toFixed(3),
+                  });
+              }
+
+              if (selectedCut.kerfCompensation !== undefined) {
+                  props.push({
+                      property: 'Kerf Comp',
+                      value: selectedCut.kerfCompensation,
+                  });
+              }
+
+              if (selectedCut.leadInConfig) {
+                  props.push({
+                      property: 'Lead In',
+                      value: getLeadConfigLabel(selectedCut.leadInConfig),
+                  });
+              }
+
+              if (selectedCut.leadOutConfig) {
+                  props.push({
+                      property: 'Lead Out',
+                      value: getLeadConfigLabel(selectedCut.leadOutConfig),
+                  });
+              }
+
+              if (selectedCut.pierceHeight !== undefined) {
+                  props.push({
+                      property: 'Pierce Height',
+                      value: selectedCut.pierceHeight.toFixed(2),
+                  });
+              }
+
+              if (selectedCut.pierceDelay !== undefined) {
+                  props.push({
+                      property: 'Pierce Delay',
+                      value: `${selectedCut.pierceDelay.toFixed(2)}s`,
+                  });
+              }
+
+              return props;
+          })()
+        : [];
+
     async function copyCutToClipboard() {
         if (!selectedCut) return;
 
@@ -52,213 +163,12 @@
 
 <div class="cut-properties">
     {#if selectedCut}
-        <div class="property-group">
-            <div class="property-row">
-                <span class="property-label">Name:</span>
-                <span class="property-value">{selectedCut.name}</span>
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Enabled:</span>
-                <span
-                    class="property-value {selectedCut.enabled
-                        ? 'enabled'
-                        : 'disabled'}"
-                >
-                    {selectedCut.enabled ? 'Yes' : 'No'}
-                </span>
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Order:</span>
-                <span class="property-value">{selectedCut.order}</span>
-            </div>
-
-            {#if selectedOperation}
-                <div class="property-row">
-                    <span class="property-label">Operation:</span>
-                    <span class="property-value">{selectedOperation.name}</span>
-                </div>
-            {/if}
-
-            <div class="property-row">
-                <span class="property-label">Chain ID:</span>
-                <span class="property-value">{selectedCut.chainId}</span>
-            </div>
-
-            <div class="property-row">
-                <span class="property-label">Cut Direction:</span>
-                <span class="property-value"
-                    >{getCutDirectionLabel(selectedCut.cutDirection)}</span
-                >
-            </div>
-
-            {#if selectedCut.isHole !== undefined}
-                <div class="property-row">
-                    <span class="property-label">Is Hole:</span>
-                    <span class="property-value"
-                        >{selectedCut.isHole ? 'Yes' : 'No'}</span
-                    >
-                </div>
-            {/if}
-
-            {#if selectedCut.holeUnderspeedPercent !== undefined}
-                <div class="property-row">
-                    <span class="property-label">Hole Speed:</span>
-                    <span class="property-value"
-                        >{selectedCut.holeUnderspeedPercent}%</span
-                    >
-                </div>
-            {/if}
-
-            {#if selectedCut.feedRate !== undefined}
-                <div class="property-row">
-                    <span class="property-label">Feed Rate:</span>
-                    <span class="property-value">{selectedCut.feedRate}</span>
-                </div>
-            {/if}
-
-            {#if selectedCut.kerfWidth !== undefined}
-                <div class="property-row">
-                    <span class="property-label">Kerf Width:</span>
-                    <span class="property-value"
-                        >{selectedCut.kerfWidth.toFixed(3)}</span
-                    >
-                </div>
-            {/if}
-
-            {#if selectedCut.kerfCompensation !== undefined}
-                <div class="property-row">
-                    <span class="property-label">Kerf Comp:</span>
-                    <span class="property-value"
-                        >{selectedCut.kerfCompensation}</span
-                    >
-                </div>
-            {/if}
-
-            {#if selectedCut.leadInConfig}
-                <div class="property-row">
-                    <span class="property-label">Lead In:</span>
-                    <span class="property-value"
-                        >{getLeadConfigLabel(selectedCut.leadInConfig)}</span
-                    >
-                </div>
-            {/if}
-
-            {#if selectedCut.leadOutConfig}
-                <div class="property-row">
-                    <span class="property-label">Lead Out:</span>
-                    <span class="property-value"
-                        >{getLeadConfigLabel(selectedCut.leadOutConfig)}</span
-                    >
-                </div>
-            {/if}
-
-            {#if selectedCut.pierceHeight !== undefined}
-                <div class="property-row">
-                    <span class="property-label">Pierce Height:</span>
-                    <span class="property-value"
-                        >{selectedCut.pierceHeight.toFixed(2)}</span
-                    >
-                </div>
-            {/if}
-
-            {#if selectedCut.pierceDelay !== undefined}
-                <div class="property-row">
-                    <span class="property-label">Pierce Delay:</span>
-                    <span class="property-value"
-                        >{selectedCut.pierceDelay.toFixed(2)}s</span
-                    >
-                </div>
-            {/if}
-        </div>
-
-        <div class="button-row">
-            <button
-                class="copy-button"
-                onclick={copyCutToClipboard}
-                title="Copy cut JSON to clipboard"
-            >
-                Copy
-            </button>
-        </div>
+        <InspectProperties {properties} onCopy={copyCutToClipboard} />
     {/if}
 </div>
 
 <style>
     .cut-properties {
         min-height: 200px;
-    }
-
-    .property-group {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    .property-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 0.5rem;
-        padding: 0.25rem 0;
-        min-width: 0;
-    }
-
-    .property-label {
-        font-weight: 500;
-        color: #333;
-        min-width: 90px;
-        flex-shrink: 0;
-    }
-
-    .property-value {
-        font-family: 'Courier New', monospace;
-        color: #666;
-        text-align: right;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        min-width: 0;
-        flex-shrink: 1;
-    }
-
-    .property-value.enabled {
-        color: rgb(0, 133, 84);
-        font-weight: 600;
-    }
-
-    .property-value.disabled {
-        color: rgb(133, 18, 0);
-        font-weight: 600;
-    }
-
-    .button-row {
-        display: flex;
-        justify-content: flex-end;
-        margin-top: 1rem;
-        padding-top: 1rem;
-        border-top: 1px solid #e5e7eb;
-    }
-
-    .copy-button {
-        padding: 0.25rem 0.75rem;
-        background-color: #fff;
-        color: #374151;
-        border: 1px solid #d1d5db;
-        border-radius: 0.25rem;
-        font-size: 0.875rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s ease;
-    }
-
-    .copy-button:hover {
-        background-color: #f9fafb;
-        border-color: #9ca3af;
-    }
-
-    .copy-button:active {
-        background-color: #f3f4f6;
     }
 </style>

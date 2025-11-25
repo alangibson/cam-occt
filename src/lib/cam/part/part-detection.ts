@@ -19,7 +19,7 @@ import { normalizeChain } from '$lib/cam/chain/chain-normalization';
 import { getShapeEndPoint, getShapeStartPoint } from '$lib/cam/shape/functions';
 import { CHAIN_CLOSURE_TOLERANCE } from '$lib/cam/chain/constants';
 import { isChainClosed } from '$lib/cam/chain/functions';
-import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import { calculateChainBoundingBox } from '$lib/geometry/bounding-box/functions';
 import type {
     PartData,
@@ -57,9 +57,9 @@ export async function detectParts(
     );
 
     // Calculate bounding boxes for all closed chains
-    const chainBounds: Map<string, BoundingBox> = new Map<
+    const chainBounds: Map<string, BoundingBoxData> = new Map<
         string,
-        BoundingBox
+        BoundingBoxData
     >();
     for (const chain of closedChains) {
         chainBounds.set(chain.id, calculateChainBoundingBox(chain));
@@ -239,10 +239,10 @@ function identifyPartChains(
 function checkOpenChainBoundaryCrossing(
     openChain: ChainData,
     closedChains: ChainData[],
-    chainBounds: Map<string, BoundingBox>
+    chainBounds: Map<string, BoundingBoxData>
 ): string | null {
     for (const closedChain of closedChains) {
-        const closedBounds: BoundingBox | undefined = chainBounds.get(
+        const closedBounds: BoundingBoxData | undefined = chainBounds.get(
             closedChain.id
         );
         if (!closedBounds) continue;
@@ -291,7 +291,7 @@ function getOpenChainEnd(chain: ChainData): Point2D | null {
  */
 function isPointInBoundingBox(
     point: Point2D | null,
-    bbox: BoundingBox
+    bbox: BoundingBoxData
 ): boolean {
     if (!point) return false;
     return (

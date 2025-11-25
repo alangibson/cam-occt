@@ -7,6 +7,8 @@ import { getArcStartPoint, getArcEndPoint } from '$lib/geometry/arc/functions';
 import { calculateSquaredDistance } from '$lib/geometry/math/functions';
 import { CONTAINMENT_AREA_TOLERANCE } from '$lib/geometry/constants';
 import { getChainCentroid } from './functions';
+import { BoundingBox } from '$lib/geometry/bounding-box/classes';
+import { getBoundingBoxForShapes } from '$lib/geometry/bounding-box/functions';
 
 // Minimum number of points required to define a circle
 const MIN_CIRCLE_POINTS = 3;
@@ -19,6 +21,7 @@ const CYCLIC_CHECK_TOLERANCE = 0.01;
 export class Chain implements ChainData {
     #data: ChainData;
     #shapesCache?: Shape[];
+    #boundaryCache?: BoundingBox;
 
     constructor(data: ChainData) {
         this.#data = data;
@@ -61,6 +64,20 @@ export class Chain implements ChainData {
      */
     centerPoint(): Point2D {
         return getChainCentroid(this.#data);
+    }
+
+    /**
+     * Get the bounding box for this chain
+     * Lazily calculates and caches the bounding box on first access
+     *
+     * @returns BoundingBox instance for spatial operations
+     */
+    get boundary(): BoundingBox {
+        if (!this.#boundaryCache) {
+            const boundingBoxData = getBoundingBoxForShapes(this.#data.shapes);
+            this.#boundaryCache = new BoundingBox(boundingBoxData);
+        }
+        return this.#boundaryCache;
     }
 
     /**

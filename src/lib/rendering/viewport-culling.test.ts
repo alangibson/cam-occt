@@ -10,7 +10,7 @@ import {
 import { GeometryType } from '$lib/geometry/enums';
 import type { Line } from '$lib/geometry/line/interfaces';
 import type { ShapeData } from '$lib/cam/shape/interfaces';
-import type { BoundingBox } from '$lib/geometry/bounding-box/interfaces';
+import type { BoundingBoxData } from '$lib/geometry/bounding-box/interfaces';
 import type { Circle } from '$lib/geometry/circle/interfaces';
 import { getBoundingBoxForShape } from '$lib/geometry/bounding-box/functions';
 
@@ -22,7 +22,7 @@ vi.mock('$lib/geometry/bounding-box/functions', () => ({
 describe('viewport-culling', () => {
     describe('calculateShapeBounds', () => {
         it('should convert bounding box to shape bounds format', async () => {
-            const mockBoundingBox: BoundingBox = {
+            const mockBoundingBox: BoundingBoxData = {
                 min: { x: -5, y: -3 },
                 max: { x: 15, y: 12 },
             };
